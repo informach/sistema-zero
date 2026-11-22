@@ -31,8 +31,8 @@ outro processo:
   `studio-mission.yml`). No Python a medida roda no quadro e o Investigar roda no worker, então a
   conta é a CPU de todos os processos de página (`SystemInfo.getProcessInfo`), com o laço real da aba
   Investigar (`runPythonInvestigation`, lendo as variáveis a cada meio segundo). O servidor de provas
-  Python exige Bun 1.4 no Windows, então esta parte só roda no CI (Linux). O número entra aqui
-  quando a homologação rodar.
+  Python exige Bun 1.4 no Windows, então esta parte só roda no CI (Linux). Custo = (CPU por
+  segundo com a aba − sem) ÷ 1000 ms, na mediana das rodadas; o teste reprova acima de 5%.
 
 ## Resultado (local, Windows, Chromium completo, 3 rodadas)
 
@@ -48,6 +48,23 @@ em porcentagem do quadro de 16,7 ms:
 | Jogo 3D Avançado | Defesa da Torre Profissional | 0,36% | 0,64% | 1,23 a 1,62 |
 | Pro (JavaScript) | canvas sintético com a ponte do Pro | 0,35% | não se aplica | 0,60 a 0,81 |
 
+## Resultado do Python (CI, Linux, homologação)
+
+Homologação 45026124308 sobre `b4acc3fd6`, job `python-browser-isolation`, nos dois Chromium da
+suíte (o Chrome do canal e o Chromium do Playwright). Em porcentagem de um segundo de CPU:
+
+| Motor | Navegador | Desempenho | Investigar |
+|---|---|---|---|
+| Pygame Zero | Chrome | 0,25% | 2,00% |
+| Pygame Zero | Chromium | 1,00% | 1,25% |
+| Turtle | Chrome | −1,25% | 1,00% |
+| Turtle | Chromium | −1,75% | 1,25% |
+| Raylib | Chrome | −1,00% | 1,00% |
+| Raylib | Chromium | 1,50% | 1,50% |
+
+O Investigar é o mais caro dos dois no Python (o observador lê as variáveis no worker a cada meio
+segundo), e mesmo assim fica em até 2%. Os negativos são ruído, como nos jogos JavaScript.
+
 ### O que cada ambiente cobra (revisão do lote 3)
 
 - **Jogo 2D, 2D Avançado e Pro:** reprovam acima de 5% em qualquer máquina, inclusive no CI.
@@ -58,7 +75,7 @@ em porcentagem do quadro de 16,7 ms:
   tabela acima, medida com placa de vídeo.
 - **Pro:** a ponte de verdade da prévia do Pro sobre um jogo de canvas sintético, não a prévia
   real (o playground não abre o Pro sem o WebContainer).
-- **Python:** cobrado na suíte da homologação; o número entra aqui quando ela rodar.
+- **Python:** cobrado na suíte da homologação (tabela acima).
 - **Toda janela prova que a aba trabalhou:** o braço do Desempenho recebe as fatias da medida e o
   do Investigar recebe os estados, contados na página do editor; a gaveta fechada não recebe nada.
   O palco tem o mesmo tamanho nos três braços (no fechado, a gaveta abre na aba Mensagens).
