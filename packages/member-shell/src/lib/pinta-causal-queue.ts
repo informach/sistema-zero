@@ -1,4 +1,9 @@
 import {
+  isPintaVersionedKind,
+  PINTA_MAP_WRITE_FORMAT_VERSION,
+  PintaClientOutdatedError,
+} from '@sistemazero/core/creations'
+import {
   type PintaCausalIntent,
   type PintaCausalMember,
   type PintaCausalRead,
@@ -48,14 +53,30 @@ export async function flushPintaCausalOutbox(options: {
   cloud: Pick<PintaCausalCloud, 'upload'> &
     Partial<Pick<PintaCausalCloud, 'snapshot' | 'verifyEpoch'>>
   reader: number
+  writer?: number
+  inventoryFloor?: number
   signal: AbortSignal
 }): Promise<void> {
   const { local, cloud, reader, signal } = options
+  const writer = Math.min(reader, options.writer ?? PINTA_MAP_WRITE_FORMAT_VERSION)
+  function permit(members: readonly PintaCausalMember[], declaredReader: number) {
+    if (
+      declaredReader > writer ||
+      (options.inventoryFloor ?? 1) > writer ||
+      members.some(
+        (part) =>
+          part.action === 'put' &&
+          part.formatVersion > (isPintaVersionedKind(part.kind) ? writer : 1),
+      )
+    )
+      throw new PintaClientOutdatedError()
+  }
   let renewed = false
   for (;;) {
     signal.throwIfAborted()
     const upload = await local.inFlight()
     if (upload) {
+      permit(upload.sealed.intent.members, upload.sealed.intent.reader)
       let receipt: Awaited<ReturnType<PintaCausalCloud['upload']>>
       try {
         receipt = await cloud.upload({ ...upload.sealed, blobs: upload.blobs }, signal)
@@ -139,11 +160,12 @@ export async function flushPintaCausalOutbox(options: {
         operation,
       })
     }
+    permit(members, writer)
     const intent: PintaCausalIntent = {
       protocol: 1,
       opId: pending.opId,
       baseEpoch: pending.baseEpoch,
-      reader,
+      reader: writer,
       members: members.sort((a, b) => (a.itemId < b.itemId ? -1 : 1)),
       readSet,
       ...(pending.inverseOf ? { inverseOf: pending.inverseOf } : {}),

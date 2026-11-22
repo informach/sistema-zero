@@ -462,12 +462,12 @@ export function createCloudMirroredPintaPersistence(options: {
       )
     else cloud.reportPintaQueue([...ids], 'saving')
   }
-  async function probeCausal() {
+  async function probeCausal(signal = causalSession.signal) {
     if (!causalLocal || !causalCloud) return null
     const snapshot = await discoverPintaCausalSnapshot({
       local: causalLocal,
       cloud: causalCloud,
-      signal: causalSession.signal,
+      signal,
     })
     knownLegacy = snapshot === null
     return snapshot
@@ -1868,16 +1868,17 @@ export function createCloudMirroredPintaPersistence(options: {
     causalLocal && causalCloud
       ? {
           async confirm(id, options) {
-            if (!(await causalLocal.inspect()).protocolKnown && !(await probeCausal()))
-              return cloud.confirm(id, options)
             const signal = AbortSignal.any([
               causalSession.signal,
               AbortSignal.timeout(options?.timeoutMs ?? 15_000),
             ])
+            const snapshot = await probeCausal(signal)
+            if (!snapshot) return cloud.confirm(id, options)
             await flushPintaCausalOutbox({
               local: causalLocal,
               cloud: causalCloud,
               reader: PINTA_MAX_READ_FORMAT_VERSION,
+              inventoryFloor: snapshot.requiredFormat,
               signal,
             })
             const { pending, sealed, confirmed } = await causalLocal.inspect()

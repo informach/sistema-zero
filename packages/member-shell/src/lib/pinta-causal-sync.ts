@@ -16,6 +16,7 @@ export async function syncPintaCausalAccount(options: {
   cloud: PintaCausalCloud
   local: PintaCausalLocalPort
   reader: number
+  writer?: number
   signal: AbortSignal
   canContinue(): boolean
   isOpen(id: string): boolean
@@ -29,7 +30,14 @@ export async function syncPintaCausalAccount(options: {
   let failedUnit: PintaCausalRequestError | undefined
   if (queued.sealed || queued.pending.length > 0) {
     try {
-      await flushPintaCausalOutbox({ local, cloud, reader, signal })
+      await flushPintaCausalOutbox({
+        local,
+        cloud,
+        reader,
+        ...(options.writer !== undefined ? { writer: options.writer } : {}),
+        inventoryFloor: snapshot.requiredFormat,
+        signal,
+      })
     } catch (error) {
       if (
         !cloud.settle ||

@@ -100,3 +100,93 @@ it('the worker seals the exact preparation before network and keeps its bytes on
     confirmed: true,
   })
 })
+
+it('leitor A guarda PUT novo e recusa seal, replay e exclusão protegidos antes da rede', async () => {
+  const signal = new AbortController().signal
+  const asset = createPixelSpriteAsset({ name: 'mapa', frameSize: 8 })
+  const { puts, blobs } = await createPintaCausalPersistence({
+    namespace: 'rollback-proof',
+  }).causal.encodeCandidates([asset], signal)
+  const put = { ...puts[0]!, kind: 'tilemap' as const, formatVersion: 8 }
+  const pending = {
+    opId: crypto.randomUUID(),
+    baseEpoch: '2',
+    preparation: 'rev',
+    readSet: [],
+    members: [
+      {
+        itemId: asset.id,
+        localRevision: 'r1',
+        baseRevision: 1,
+        action: 'put' as const,
+        operation: { type: 'update' as const },
+      },
+    ],
+  }
+  const intent = {
+    protocol: 1 as const,
+    reader: 8,
+    opId: pending.opId,
+    baseEpoch: '2',
+    readSet: [],
+    members: [
+      { ...put, action: 'put' as const, operation: { type: 'update' as const }, baseRevision: 1 },
+    ],
+  }
+  const sealed = {
+    intent,
+    intentHash: 'a'.repeat(64),
+    bytes: blobs.get(asset.id)!.size,
+    local: pending,
+  }
+  let seals = 0
+  let uploads = 0
+  for (const phase of ['pending', 'sealed', 'delete']) {
+    const deleting = {
+      ...pending,
+      members: [
+        { itemId: asset.id, localRevision: 'r2', baseRevision: 1, action: 'delete' as const },
+      ],
+    }
+    const local: Parameters<typeof flushPintaCausalOutbox>[0]['local'] = {
+      inspect: async () => ({
+        version: 3,
+        epoch: '2',
+        protocolKnown: true,
+        confirmed: new Map(),
+        sealed: null,
+        pending: [phase === 'delete' ? deleting : pending],
+      }),
+      retained: async () => ({ puts: phase === 'delete' ? [] : [put], blobs }),
+      inFlight: async () => (phase === 'sealed' ? { sealed, blobs } : null),
+      prepare: async () => {
+        throw Error('não deve remontar')
+      },
+      encodeCandidates: async () => {
+        throw Error('não deve recodificar')
+      },
+      seal: async () => {
+        seals++
+        return false
+      },
+      acknowledge: async () => {
+        throw Error('não deve confirmar')
+      },
+    }
+    await expect(
+      flushPintaCausalOutbox({
+        local,
+        reader: 8,
+        signal,
+        inventoryFloor: phase === 'delete' ? 8 : 1,
+        cloud: {
+          upload: async () => {
+            uploads++
+            throw Error('não deve enviar')
+          },
+        },
+      }),
+    ).rejects.toMatchObject({ code: 'CREATION_CLIENT_OUTDATED' })
+  }
+  expect({ seals, uploads }).toEqual({ seals: 0, uploads: 0 })
+})
