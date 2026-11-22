@@ -19,3 +19,24 @@
 - Um arquivo Python curto importa `pinta` efetivamente provisionado. A árvore do projeto traz código autoral e PNGs, sem fontes do motor. Exercitar as três extensões nativas e os três backends no navegador com os módulos efetivamente carregados pela distribuição candidata.
 - Usar o PNG real de Vila/Cabana para abrir porta tipada, voltar e confirmar por pixels específicos as duas passagens e animação em dois instantes. Verificar colisão e pouso, objetos e propriedades, limites assinados e mundo esparso. Repetir os controles legados do PyDe e comparar o `pinta.py` CE publicado e os quatro formatos de imagem com as fixtures existentes.
 - Falha em arquivo, schema, recurso ou orçamento preserva cenário inicial sem textura parcial. Verificar fim de sessão e fechamento de janela. Exercitar módulo autoral homônimo, extensão errada, capacidade ausente e 3D. Conferir que nenhuma alteração existe na sessão, impressão do projeto ou catálogos publicados atribuível a provisionar o módulo.
+
+
+## Blocos da capacidade candidata
+
+Os três catálogos 2D compartilham os descritores das operações e mantêm seus próprios IDs. A categoria é **Cenários do Pinta**. A ordem do catálogo tenta métodos com receptor comprovado antes dos blocos amplos de Pygame-ce. A projeção de um cenário é comprovada pelo resultado de `pinta.carregar_cenario`, inclusive quando `pinta` tem alias. Uma chamada de origem desconhecida continua no caminho genérico. Abrir uma porta devolve o lugar para uso explícito no jogo.
+
+| Operação | Pygame-ce | Pygame Zero | Raylib 2D |
+| --- | --- | --- | --- |
+| Abrir cenário | `sz_py_pygame_pinta_scene_load` | `sz_py_pgzero_pinta_scene_load` | `sz_py_rl2d_pinta_scene_load` |
+| Desenhar | `sz_py_pygame_pinta_scene_draw` | `sz_py_pgzero_pinta_scene_draw` | `sz_py_rl2d_pinta_scene_draw` |
+| Posição inicial | `sz_py_pygame_pinta_scene_start` | `sz_py_pgzero_pinta_scene_start` | `sz_py_rl2d_pinta_scene_start` |
+| Objetos | `sz_py_pygame_pinta_scene_objects` | `sz_py_pgzero_pinta_scene_objects` | `sz_py_rl2d_pinta_scene_objects` |
+| Propriedade de objeto | `sz_py_pygame_pinta_scene_property` | `sz_py_pgzero_pinta_scene_property` | `sz_py_rl2d_pinta_scene_property` |
+| Lugar de uma porta | `sz_py_pygame_pinta_scene_open_door` | `sz_py_pgzero_pinta_scene_open_door` | `sz_py_rl2d_pinta_scene_open_door` |
+| Corpo bloqueado | `sz_py_pygame_pinta_scene_blocked` | `sz_py_pgzero_pinta_scene_blocked` | `sz_py_rl2d_pinta_scene_blocked` |
+| Pouso | `sz_py_pygame_pinta_scene_landing` | `sz_py_pgzero_pinta_scene_landing` | `sz_py_rl2d_pinta_scene_landing` |
+| Liberar cenário | `sz_py_pygame_pinta_scene_dispose` | `sz_py_pgzero_pinta_scene_dispose` | `sz_py_rl2d_pinta_scene_dispose` |
+
+Os blocos usam o gate de runtime e os IDs aprovados da paleta. As listas legadas do curso e do catálogo publicado preservam seus IDs e sua ordem. A prova combina ida e volta da AST, alias real, sombreamento autoral, argumentos nomeados e opcionais, assinatura gráfica de cada extensão e acesso sob autorização.
+
+A prova focada passou com 49 testes e 1.367 asserções. Além da projeção da AST, os três programas foram salvos e reabertos pelo serializador real do Blockly. Os catálogos legados passaram pelos controles de seleção, assinaturas da Raylib, curso e compatibilidade da Ponte.

@@ -2,6 +2,7 @@ import { type PythonApiParam, pythonApiCallCodec } from '../../blocks/apiCallCod
 import type { PythonBlockCodec } from '../../blocks/contract'
 import { attribute, integer, name, node, text } from '../../blocks/nodes'
 import type { PythonNode } from '../../language/types'
+import { pintaSceneCodecs } from '../pintaScenes'
 
 /** A first game must be drawable and playable before classes, groups and maps are taught. */
 const FIRST_CONCEPTS = new Set([
@@ -749,3 +750,5 @@ export const PYTHON_PYGAME_CODECS: readonly PythonBlockCodec[] = Object.freeze([
     param('value', 'de 0 a 1', n(1)),
   ]),
 ])
+
+export const PYTHON_PYGAME_PINTA_SCENE_CODECS = pintaSceneCodecs('python-pygame')
