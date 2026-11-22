@@ -66,3 +66,15 @@ O comando seguinte executa os 22 casos. No checkpoint 85e, as cinco falhas das q
 ```powershell
 python ./repetir.py --retencao C:/caminho/do/checkout-85e --legado C:/caminho/do/checkout-64c
 ```
+
+## Arquivos da fila de disco v3
+
+No checkpoint `4cfb1d323f78c7f96256fe9ffc84156df09aeb02`, 20 dos mesmos 22 casos passaram. O desenho e o gzip conservaram o mesmo pixel mesmo quando o chamador editou o argumento durante a compressão. A primeira adoção preservou a criação local quando a instalação anterior a excluiu. Nas duas sequências em que só o mapa tinha gzip, o cliente interrompeu a descida com o epoch e o arquivo originais.
+
+Um controle adicional abre a fila do escritor de disco v3, executa a escrita concorrente pela API 64c, fecha o host e reabre a sessão sem rede. Com o leitor 4cf, o ZIP produzido pela API continha o mapa original, com ID, nome, ID da folha e digest conferidos depois da descompressão. A galeria deixou de mostrar o botão após reiniciar quando o escritor anterior tinha alterado só a folha. O controle chegou à nona asserção e falhou na visibilidade do botão.
+
+O parâmetro `--v3` permite repetir esse caso com a mesma fila antiga e um leitor posterior. O script preserva o escritor v3 mesmo quando o primeiro caminho aponta para um leitor novo. [Recibos da fila v3](indice.json)
+
+```powershell
+python ./repetir.py --retencao C:/caminho/do/checkout-leitor --legado C:/caminho/do/checkout-64c --v3 C:/caminho/do/checkout-4cf
+```

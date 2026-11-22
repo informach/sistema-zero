@@ -203,6 +203,15 @@
         "ensaios/archive-flow-review.inc"
       ],
       "sha256": "0d2c4aaef1c65f064bde6b679bf2c05828976a29541673bcca23897ca4a03c45"
+    },
+    {
+      "alvo": "leitorV3",
+      "nome": "offline-cross-review.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/offline-cross-review.inc"
+      ],
+      "sha256": "a1f8fc123360f27e6fc684d60ec662fe4aecad2ddd34cc8d95275af815428175"
     }
   ],
   "recibos": [
@@ -289,6 +298,20 @@
       "sha256": "3a2b48f89828d8d7cb225e2f2bf152e2fa4284f42b0f87711832b57fc47a1368",
       "commit": "85e506f85f1e2d23bceb69bcea2407c3076f734d",
       "resultado": "2 falham/8 asserções"
+    },
+    {
+      "arquivo": "recibos/repetir-4cf.txt",
+      "originalSha256": "fbbc2c00bd85b69689b3e7615c699e6b03133d3018f4e556e3f2f570eabac885",
+      "sha256": "bae56432fcd8805d6c5913ae0549887cf1874e81cb4129ba3e70e18257e22e16",
+      "commit": "4cfb1d323f78c7f96256fe9ffc84156df09aeb02",
+      "resultado": "20 passam/2 falham/181 asserções"
+    },
+    {
+      "arquivo": "recibos/cross-4cf.txt",
+      "originalSha256": "53b05cdbf2cf80428ab98db6576514f9f53825049df5850e5944849b4a1d8b87",
+      "sha256": "a24fc4cb2b5322f6d968351ec495d0a99cc29e51eb7469e35d2017a5f2cf7046",
+      "commit": "4cfb1d323f78c7f96256fe9ffc84156df09aeb02",
+      "resultado": "1 falha/9 asserções"
     }
   ],
   "arvoresGit": {
@@ -312,9 +335,15 @@
       "packages/pinta/src": "f0376341bbf05da953cd30274101dbc61d2fea79",
       "packages/member-shell/src/lib": "586777bc885c17b5b3979d6d26e69af331be7686",
       "packages/core/src/creations": "d8194a9bf000900057970cef45b5209ead9fdefd"
+    },
+    "escritorDiscoV3": {
+      "packages/pinta/src": "4571abd9d78a98fa589620364de6b8f411eae8b5",
+      "packages/member-shell/src/lib": "f62f92aa48e5dab792d59d930cba4321a9f0b46d",
+      "packages/core/src/creations": "d8194a9bf000900057970cef45b5209ead9fdefd"
     }
   },
   "terminal": "5ef94cc8593c847d9c4a25c395f7a8a6f5797b94",
   "legado": "64c197d5332a36b73af54de6ae5bf045a4a7699e",
-  "retencao": "85e506f85f1e2d23bceb69bcea2407c3076f734d"
+  "retencao": "85e506f85f1e2d23bceb69bcea2407c3076f734d",
+  "escritorDiscoV3": "4cfb1d323f78c7f96256fe9ffc84156df09aeb02"
 }

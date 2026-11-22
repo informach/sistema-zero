@@ -25,7 +25,7 @@ def source(case):
     return text
 
 
-def run_candidate(root, database, legacy=None, retention=False):
+def run_candidate(root, database, legacy=None, retention=False, v3=None):
     package = root / "packages"
     members = package / "members"
     env = os.environ.copy()
@@ -35,6 +35,12 @@ def run_candidate(root, database, legacy=None, retention=False):
             raise SystemExit("Checkout do escritor antigo sem o módulo de persistência.")
         env["PINTA_REVIEW_LEGACY_ENTRY"] = str(entry)
         targets = {"retencao" if retention else "terminal": package / "member-shell"}
+        if v3:
+            v3_entry = v3 / "packages/pinta/src/state/persistence.ts"
+            if not v3_entry.is_file():
+                raise SystemExit("Checkout do escritor de fila v3 sem a persistência.")
+            env["PINTA_REVIEW_V3_ENTRY"] = str(v3_entry)
+            targets["leitorV3"] = package / "member-shell"
     elif database:
         url = urlsplit(os.environ.get("PINTA_CAUSAL_TEST_DATABASE_URL", ""))
         if url.hostname not in ("127.0.0.1", "localhost", "::1"):
@@ -81,9 +87,12 @@ def main():
     parser.add_argument("--terminal", type=Path, metavar="CHECKOUT")
     parser.add_argument("--retencao", type=Path, metavar="CHECKOUT")
     parser.add_argument("--legado", type=Path, metavar="CHECKOUT")
+    parser.add_argument("--v3", type=Path, metavar="CHECKOUT")
     args = parser.parse_args()
     if bool(args.terminal or args.retencao) != bool(args.legado):
         parser.error("--terminal e --retencao usam o checkout do escritor --legado")
+    if args.v3 and not args.retencao:
+        parser.error("--v3 requer o leitor --retencao")
     for receipt in INDEX["recibos"]:
         path = HERE / receipt["arquivo"]
         verify_text(path.read_text("utf-8"), receipt["sha256"], path.name)
@@ -95,7 +104,8 @@ def main():
     if args.terminal:
         run_candidate(args.terminal.resolve(), False, args.legado.resolve())
     if args.retencao:
-        run_candidate(args.retencao.resolve(), False, args.legado.resolve(), retention=True)
+        run_candidate(args.retencao.resolve(), False, args.legado.resolve(),
+                      retention=True, v3=args.v3.resolve() if args.v3 else None)
     if args.members:
         run_candidate(args.members.resolve(), True)
 

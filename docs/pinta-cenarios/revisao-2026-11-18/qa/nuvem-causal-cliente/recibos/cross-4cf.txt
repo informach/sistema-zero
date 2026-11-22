@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+.cache\pinta-review-20261122\fonte-4cfb1d323\packages\member-shell\tests\fixtures\offline-cross-review.test.ts:
+189 |       const zip=unzipSync(new Uint8Array(await (await zipRetainedRecoveryFiles(files)).arrayBuffer()))
+190 |       const native=await new Response(new Blob([zip[key]]).stream().pipeThrough(new DecompressionStream('gzip'))).text()
+191 |       expect(reopened.causal.decodeCandidate(native)).toMatchObject({id:map.id,name:'vila-do-aparelho',tilesetId:sheet.id})
+192 |       expect(Object.keys(zip).sort()).toEqual([key,'LEIA-ME.txt'].sort())
+193 |       expect((await reopened.causal.inspect()).epoch).toBe('1')
+194 |       expect(offlineWrapper.needsRetainedRecovery()).toBe(true)
+                                                           ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\fonte-4cfb1d323\packages\member-shell\tests\fixtures\offline-cross-review.test.ts:194:54)
+(fail) um conflito de dependência anterior à v4 continua oferecendo download após reiniciar offline [94.00ms]
+
+ 0 pass
+ 1 fail
+ 9 expect() calls
+Ran 1 test across 1 file. [303.00ms]

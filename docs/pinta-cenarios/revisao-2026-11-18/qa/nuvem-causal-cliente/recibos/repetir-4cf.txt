@@ -1,0 +1,70 @@
+bun test v1.3.11 (af24e281)
+
+packages\member-shell\.cache\pinta-qa-g67ebq33\real-shadow-quota-review.test.ts:
+(pass) galeria aceita o desenho no limite, recusa o gzip adicional e permite tentar de novo após liberar espaço [875.00ms]
+
+packages\member-shell\.cache\pinta-qa-g67ebq33\shadow-rollback-review.test.ts:
+(pass) a troca de um gzip mutável usa a mesma transação, espaço e chave [31.00ms]
+
+packages\member-shell\.cache\pinta-qa-g67ebq33\terminal-doors-review.test.ts:
+(pass) cópias autorais e preexistentes religam o mapa à folha da mesma versão [78.00ms]
+
+packages\member-shell\.cache\pinta-qa-g67ebq33\terminal-fixed-review.test.ts:
+(pass) último PUT, escritor anterior delete e situação unknown [32.00ms]
+(pass) último PUT, escritor anterior delete e situação expired [15.00ms]
+(pass) último PUT, escritor anterior delete e situação aborted
+(pass) último PUT, escritor anterior overwrite e situação unknown [16.00ms]
+(pass) último PUT, escritor anterior overwrite e situação expired [15.00ms]
+(pass) último PUT, escritor anterior overwrite e situação aborted [16.00ms]
+(pass) último PUT, escritor anterior none e situação unknown [16.00ms]
+(pass) último PUT, escritor anterior none e situação expired [15.00ms]
+(pass) último PUT, escritor anterior none e situação aborted [16.00ms]
+
+packages\member-shell\.cache\pinta-qa-g67ebq33\terminal-graph-review.test.ts:
+(pass) cópias autorais e preexistentes religam o mapa à folha da mesma versão [31.00ms]
+
+packages\member-shell\.cache\pinta-qa-g67ebq33\terminal-http-review.test.ts:
+(pass) dois PUTs escritos uma vez, último falha, outro commit vence abort e somente recibo exato libera a unidade [31.00ms]
+
+packages\member-shell\.cache\pinta-qa-g67ebq33\terminal-mutable-encode-review.test.ts:
+(pass) mutação durante encode mantém documento e gzip da mesma autoria: sem base
+(pass) mutação durante encode mantém documento e gzip da mesma autoria: com base
+
+packages\member-shell\.cache\pinta-qa-g67ebq33\terminal-pending-fixed-review.test.ts:
+(pass) último PUT, escritor anterior overwrite e situação unknown [31.00ms]
+
+packages\member-shell\.cache\pinta-qa-g67ebq33\terminal-unbased-region-review.test.ts:
+(pass) primeira base recupera documento de valor 4 apesar da API antiga: edit [16.00ms]
+(pass) primeira base recupera documento de valor 4 apesar da API antiga: delete
+(pass) última edição nativa8 10000² sobrevive à edição regional antiga e à primeira descida densa [31.00ms]
+
+packages\member-shell\.cache\pinta-qa-g67ebq33\archive-flow-review.test.ts:
+217 |     pull.archived = await readRetainedCandidates(local, state, recovery, budget, signal)
+218 |     impact = await local.pullImpact(pull)
+219 |   }
+220 |   if (impact.ids.some(options.isOpen) || (impact.blocked && !impact.needsArchive)) return false
+221 |   await cloud.verifyEpoch(snapshot.epoch, signal)
+222 |   if (impact.needsArchive) throw new PintaCausalRecoveryNeedsFilesError()
+                                       ^
+Error:
+      at pullPintaCausalSnapshot (⟨worktree⟩\.cache\pinta-review-20261122\fonte-4cfb1d323\packages\member-shell\src\lib\pinta-causal-pull.ts:222:34)
+      at async syncPintaCausalAccount (⟨worktree⟩\.cache\pinta-review-20261122\fonte-4cfb1d323\packages\member-shell\src\lib\pinta-causal-sync.ts:89:25)
+      at async <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\fonte-4cfb1d323\packages\member-shell\.cache\pinta-qa-g67ebq33\archive-flow-review.test.ts:166:27)
+(fail) uma folha externa sem a revisão observada exige o grafo completo, writer também altera mapa false [16.00ms]
+217 |     pull.archived = await readRetainedCandidates(local, state, recovery, budget, signal)
+218 |     impact = await local.pullImpact(pull)
+219 |   }
+220 |   if (impact.ids.some(options.isOpen) || (impact.blocked && !impact.needsArchive)) return false
+221 |   await cloud.verifyEpoch(snapshot.epoch, signal)
+222 |   if (impact.needsArchive) throw new PintaCausalRecoveryNeedsFilesError()
+                                       ^
+Error:
+      at pullPintaCausalSnapshot (⟨worktree⟩\.cache\pinta-review-20261122\fonte-4cfb1d323\packages\member-shell\src\lib\pinta-causal-pull.ts:222:34)
+      at async syncPintaCausalAccount (⟨worktree⟩\.cache\pinta-review-20261122\fonte-4cfb1d323\packages\member-shell\src\lib\pinta-causal-sync.ts:89:25)
+      at async <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\fonte-4cfb1d323\packages\member-shell\.cache\pinta-qa-g67ebq33\archive-flow-review.test.ts:166:27)
+(fail) uma folha externa sem a revisão observada exige o grafo completo, writer também altera mapa true [15.00ms]
+
+ 20 pass
+ 2 fail
+ 181 expect() calls
+Ran 22 tests across 10 files. [1.61s]
