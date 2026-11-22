@@ -4,6 +4,7 @@ import {
   PintaCausalArchivePageSchema,
   PintaCausalAttestationSchema,
   PintaCausalIntentSchema,
+  type PintaCausalManifest,
   PintaCausalManifestSchema,
   PintaCausalReservePageSchema,
   PintaCausalSnapshotPageSchema,
@@ -89,7 +90,7 @@ test('stored manifest distinguishes unknown, empty, implicit tile zero and live 
     roles: ['art'],
     implicitArtSlotZero: true,
     indices: `01${'00'.repeat(31)}`,
-  }
+  } satisfies PintaCausalManifest['refs'][number]
   const m = {
     version: 1,
     itemId: 'map',
@@ -100,7 +101,7 @@ test('stored manifest distinguishes unknown, empty, implicit tile zero and live 
     requiredNativeSchema: 7,
     refs: [ref],
     doorSelectors: ['Cabana'],
-  }
+  } satisfies PintaCausalManifest
   expect(PintaCausalManifestSchema.parse(m)).toEqual(m)
   for (const broken of [
     { ...m, refs: [ref, ref] },
