@@ -47,7 +47,7 @@ python ./repetir.py --terminal C:/caminho/do/checkout-5ef --legado C:/caminho/do
 
 ## Retenção da última edição aceita no aparelho
 
-Em `85e506f85f1e2d23bceb69bcea2407c3076f734d`, passaram 17 dos 20 casos de retenção e quota, com 171 asserções executadas. O escritor anterior continua sendo o checkout 64c. Nos casos com mapas, cada cópia abriu a folha e o mapa de destino da respectiva edição. As referências tipadas e as portas foram conferidas depois de reabrir a galeria.
+Em `85e506f85f1e2d23bceb69bcea2407c3076f734d`, passaram 17 dos 22 casos de retenção e quota, com 179 asserções executadas. O escritor anterior continua sendo o checkout 64c. Quando o PUT do mapa incluía a folha e o mapa de destino, cada cópia abriu os recursos da respectiva edição. As referências tipadas e as portas foram conferidas depois de reabrir a galeria.
 
 | Sequência | Resultado no checkpoint 85e |
 | --- | --- |
@@ -58,8 +58,10 @@ Em `85e506f85f1e2d23bceb69bcea2407c3076f734d`, passaram 17 dos 20 casos de reten
 | Primeira adoção de um mapa regional alterado por outro escritor | O mapa esparso de 10.000 × 10.000 células conservou a origem (−64, −64), as versões locais 4 e 5 e suas folhas. A leitura oficial instalou o mapa de valor 7. |
 | Exclusão anterior à primeira adoção | A fila reteve o gzip de valor 4, mas deixou de instalar a versão oficial 7 após a lápide do escritor anterior. |
 | Mutação do argumento enquanto o gzip está pronto e a transação ainda aguarda | Tanto na primeira escrita quanto após reconhecer um epoch, o aparelho confirmou um desenho de valor 4 junto a um gzip de valor 3. O ensaio usa uma barreira após a compressão real. |
+| Mapa salvo após observar o pixel 3 de uma folha já confirmada, escritor anterior muda somente a folha para 5 | O PUT continha só o mapa e identificava a leitura exata da folha por revisão e hash. Ao receber a versão 7 da conta, a sincronização declarou sucesso e a cópia do mapa passou a exibir o pixel 5. A folha autoral de valor 3 se perdeu. |
+| Mesmo PUT, escritor anterior muda a folha e o mapa | O cliente pediu arquivos para recuperação. O gzip guardado continha só o mapa. A folha original de valor 3 continuou indisponível. |
 
-O comando seguinte executa os vinte casos. No checkpoint 85e, as três falhas das duas últimas linhas produzem código de saída 1. Os recibos incluem a execução conjunta de recuperação e a execução de fronteira com 32 MiB. [Índice de fontes e recibos](indice.json)
+O comando seguinte executa os 22 casos. No checkpoint 85e, as cinco falhas das quatro últimas linhas produzem código de saída 1. Os recibos incluem a recuperação do grupo, o teste de fronteira com 32 MiB e o controle separado para a folha externa observada. [Índice de fontes e recibos](indice.json)
 
 ```powershell
 python ./repetir.py --retencao C:/caminho/do/checkout-85e --legado C:/caminho/do/checkout-64c

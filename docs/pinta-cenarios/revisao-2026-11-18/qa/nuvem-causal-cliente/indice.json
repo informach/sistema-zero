@@ -194,6 +194,15 @@
         "ensaios/terminal-unbased-region-review.inc"
       ],
       "sha256": "24113af36eb311bb11dcae1f3e1b2eadcfb248f77a1d249186cf251e4b17578a"
+    },
+    {
+      "alvo": "retencao",
+      "nome": "archive-flow-review.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/archive-flow-review.inc"
+      ],
+      "sha256": "0d2c4aaef1c65f064bde6b679bf2c05828976a29541673bcca23897ca4a03c45"
     }
   ],
   "recibos": [
@@ -273,6 +282,13 @@
       "sha256": "2f08ae7950b977717e48a690196a854d91ba79d734c48139cf9aaa142166658a",
       "commit": "85e506f85f1e2d23bceb69bcea2407c3076f734d",
       "resultado": "1 passa/10 asserções"
+    },
+    {
+      "arquivo": "recibos/missing-observed-85e.txt",
+      "originalSha256": "d57106b9af106b9adfffcb189f0dd68e412f999ee31351b9b03bb69efa255a8e",
+      "sha256": "3a2b48f89828d8d7cb225e2f2bf152e2fa4284f42b0f87711832b57fc47a1368",
+      "commit": "85e506f85f1e2d23bceb69bcea2407c3076f734d",
+      "resultado": "2 falham/8 asserções"
     }
   ],
   "arvoresGit": {
