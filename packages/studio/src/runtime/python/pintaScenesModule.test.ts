@@ -11,6 +11,7 @@ import { pintaBrowser2dProject } from '../../../../../experiments/studio-python-
 import { buildPythonSourceFiles } from '../../export/pythonSource'
 import { pythonOfficialModules } from '../../python/officialModules'
 import { pythonEnvironmentFixture } from '../../state/fixtures/pythonEnvironment'
+import { refinePythonProjectDocument } from '../../state/pythonProjectValidation'
 import { PGZERO_EXTENSION } from './pgzero/contract'
 import { PYGAME_EXTENSION } from './pygame/contract'
 import { PYGAME_DESKTOP_SOURCES } from './pygame/desktopSources.generated'
@@ -108,7 +109,9 @@ async function projectFor(extension: { id: string; version: string }, body: stri
   project.python.dependencyLock = approved.python.dependencyLock
   project.installedExtensions = [{ ...extension, installedAt: project.createdAt }]
   project.tree = { 'main.py': { kind: 'file', content: body } }
-  return { project, catalog: environment.catalog }
+  const validated = await refinePythonProjectDocument(project)
+  if (validated.kind !== 'pro') throw new Error('Projeto profissional esperado')
+  return { project: validated, catalog: environment.catalog }
 }
 
 test('the desktop module is selected only by the pinned release and exact active 2D extension', async () => {

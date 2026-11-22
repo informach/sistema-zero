@@ -124,7 +124,7 @@ test.skipIf(!hasPython)(
     const rural = regionVila()
     const regional = await exportPintaRegionScene(
       rural.map,
-      (id) => rural.assets.find((asset) => asset.id === id),
+      (id) => rural.assets.find((asset) => asset.id === id) ?? null,
       nativeImageOf,
     )
     const cover = new Uint8Array(createCanvas(16, 16).toBuffer('image/png'))

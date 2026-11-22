@@ -41,7 +41,7 @@ function corruptIdat(url: string) {
 
 async function worlds() {
   const { map, cabana, assets } = regionVila()
-  const find = (id: string) => assets.find((asset) => asset.id === id)
+  const find = (id: string) => assets.find((asset) => asset.id === id) ?? null
   const root = await exportPintaRegionScene(map, find, nativeImageOf)
   const child = await exportPintaRegionScene(cabana, find, nativeImageOf)
   const childSheet = child.scene.tilesets[0]
