@@ -2,11 +2,9 @@ import { z } from 'zod'
 import { canonicalJson } from '../creations/content-fingerprint'
 import { PYTHON_PINTA_PHYSICS_FEATURE, PYTHON_PINTA_WORLD_FEATURE } from './python-runtime-features'
 
-const id = z
-  .string()
-  .min(1)
-  .max(200)
-  .regex(/^[^\p{Cc}]+$/u)
+export const PINTA_IMAGE_ID_PATTERN = /^[^\p{Cc}]+$/u
+export const PINTA_IMAGE_WORLD_PNG_PATTERN = /^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/
+const id = z.string().min(1).max(200).regex(PINTA_IMAGE_ID_PATTERN)
 const sha256 = z.string().regex(/^[a-f0-9]{64}$/)
 const positiveInteger = z.number().int().positive().max(Number.MAX_SAFE_INTEGER)
 
@@ -39,7 +37,7 @@ export const PintaImageWorldSchema = z
           png: z
             .string()
             .max(PINTA_IMAGE_WORLD_LIMITS.encodedChars)
-            .regex(/^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/),
+            .regex(PINTA_IMAGE_WORLD_PNG_PATTERN),
         }),
       )
       .max(PINTA_IMAGE_WORLD_LIMITS.maps - 1),

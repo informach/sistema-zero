@@ -339,6 +339,23 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    com JavaScript. Expansão limitada e entrada acima do teto recusam antes da
    alocação ampliada. Sem promoção de formato ou catálogo; seguir ao registro
    completo de mundos no Python, com admissão agregada antes de devolver dados.
+   Lote verificado: registro de mundo PNG 5 no Python comum. Capturar raiz,
+   destinos e recursos; conferir nomes, IDs, escalas, geometria e saldos antes
+   dos índices. Tabela de envelope derivada do Core conserva controles Unicode
+   e refinamentos de mundos. Medir JSON.stringify sem alocar outra string grande,
+   com Unicode/UTF-16 e números binary64. Decodificação de tentativa única,
+   nenhuma publicação parcial ou alteração de outro mundo válido.
+   Provas em `qa/mundo-png-python-compartilhado-2026-11-22/`: Core 3.253,
+   Pinta 2.804, 47 focados e sondagem de 100.026 padrões numéricos sem divergência.
+   Tipos Core/Pinta e do gerador, lint e gerados aprovados. Limites reais de
+   índices, mapas e texto têm aceitação exata e recusa seguinte; cabeçalhos de
+   recursos inválidos recusam antes de buffers. IDAT/pixels e superfícies não
+   são qualificados pelo loader; seguir ao núcleo de jogo e três adaptadores.
+   Execução paralela autorizada em 22/11: núcleo Python comum (Astra/high),
+   adaptadores Pygame Zero/Raylib 2D e motores JavaScript (Sol/high), com arquivos
+   e worktrees exclusivos, gates pesados coordenados e revisão central.
+   Pygame-ce e integração permanecem na frente principal. Cada entrega passa
+   por revisão e provas antes da integração; sem promoção pública antecipada.
 
 Na promoção do store, conferir também os orçamentos globais de metadados e JSON
 antes do histórico/autosave. A soma de objetos/propriedades em várias camadas

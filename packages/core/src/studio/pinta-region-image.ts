@@ -19,6 +19,9 @@ const header = z.strictObject({
   world: PintaImageWorldSchema.optional(),
 })
 
+/** Structure for portable reader generation, not scene/world or PNG admission. */
+export const PintaRegionImageHeaderSchema = header
+
 export type PintaRegionImageData = Omit<z.infer<typeof header>, 'scene'> & {
   scene: PintaRegionScene
 }

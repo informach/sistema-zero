@@ -1,5 +1,12 @@
 /** Build-time constraint table. Runtime consumers must also validate scene semantics/cells. */
 import { z } from 'zod'
+import {
+  PINTA_IMAGE_ID_PATTERN,
+  PINTA_IMAGE_WORLD_LIMITS,
+  PINTA_IMAGE_WORLD_PNG_PATTERN,
+  PintaImageWorldSchema,
+} from '../src/studio/pinta-image'
+import { PintaRegionImageHeaderSchema } from '../src/studio/pinta-region-image'
 import { PintaRegionSceneHeaderSchema } from '../src/studio/pinta-region-scene'
 import {
   PINTA_SCENE_COLOR_PATTERN,
@@ -35,34 +42,46 @@ const keywords = new Set([
   'type',
   'x-pinta-pattern-flags',
   'x-pinta-property',
+  'x-pinta-no-controls',
+  'x-pinta-world',
 ])
 const patterns = new Map([
   [PINTA_SCENE_PROPERTY_KEY_PATTERN.source, PINTA_SCENE_PROPERTY_KEY_PATTERN.flags],
   [PINTA_SCENE_COLOR_PATTERN.source, PINTA_SCENE_COLOR_PATTERN.flags],
+  [PINTA_IMAGE_WORLD_PNG_PATTERN.source, PINTA_IMAGE_WORLD_PNG_PATTERN.flags],
 ])
 type Schema = Record<string, unknown>
 
 export function pythonSceneSchemaTable() {
-  const schema = z.toJSONSchema(PintaRegionSceneHeaderSchema, {
-    io: 'input',
-    target: 'draft-2020-12',
-    reused: 'ref',
-    cycles: 'throw',
-    override({ zodSchema, jsonSchema }) {
-      const output = jsonSchema as Schema
-      if (zodSchema === PintaScenePropertySchema) output['x-pinta-property'] = true
-      if (zodSchema === PintaSceneObjectSchema.shape.properties)
-        output.maxProperties = PINTA_SCENE_MAX_PROPERTIES
-      if (typeof output.pattern === 'string') {
-        const flags = patterns.get(output.pattern)
-        if (flags === undefined)
-          throw new Error(`Unsupported Python schema pattern: ${output.pattern}`)
-        if (flags !== '' && flags !== 'i')
-          throw new Error(`Unsupported Python regex flags: ${flags}`)
-        output['x-pinta-pattern-flags'] = flags
-      }
-    },
-  })
+  const convert = (source: z.ZodType) =>
+    z.toJSONSchema(source, {
+      io: 'input',
+      target: 'draft-2020-12',
+      reused: 'ref',
+      cycles: 'throw',
+      override({ zodSchema, jsonSchema }) {
+        const output = jsonSchema as Schema
+        if (zodSchema === PintaScenePropertySchema) output['x-pinta-property'] = true
+        if (zodSchema === PintaImageWorldSchema) output['x-pinta-world'] = true
+        if (zodSchema === PintaSceneObjectSchema.shape.properties)
+          output.maxProperties = PINTA_SCENE_MAX_PROPERTIES
+        if (typeof output.pattern === 'string') {
+          if (output.pattern === PINTA_IMAGE_ID_PATTERN.source) {
+            if (output.pattern !== '^[^\\p{Cc}]+$' || PINTA_IMAGE_ID_PATTERN.flags !== 'u')
+              throw new Error('Unsupported Unicode ID pattern.')
+            delete output.pattern
+            output['x-pinta-no-controls'] = true
+            return
+          }
+          const flags = patterns.get(output.pattern)
+          if (flags === undefined)
+            throw new Error(`Unsupported Python schema pattern: ${output.pattern}`)
+          if (flags !== '' && flags !== 'i')
+            throw new Error(`Unsupported Python regex flags: ${flags}`)
+          output['x-pinta-pattern-flags'] = flags
+        }
+      },
+    })
   const visit = (node: Schema | boolean): void => {
     if (typeof node === 'boolean') return
     for (const key of Object.keys(node))
@@ -81,11 +100,16 @@ export function pythonSceneSchemaTable() {
     for (const key of ['anyOf', 'oneOf'])
       for (const child of (node[key] ?? []) as Schema[]) visit(child)
   }
+  const schema = convert(PintaRegionSceneHeaderSchema)
+  const image = convert(PintaRegionImageHeaderSchema)
   visit(schema as Schema)
+  visit(image as Schema)
   if (PINTA_SCENE_PROPERTY_COLOR_PATTERN.flags !== 'i')
     throw new Error('Unsupported typed color regex flags.')
   return {
     region: schema,
+    image,
+    worldEncodedChars: PINTA_IMAGE_WORLD_LIMITS.encodedChars,
     propertyColor: {
       pattern: PINTA_SCENE_PROPERTY_COLOR_PATTERN.source,
       flags: PINTA_SCENE_PROPERTY_COLOR_PATTERN.flags,

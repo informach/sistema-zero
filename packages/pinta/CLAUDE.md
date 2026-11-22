@@ -4135,3 +4135,12 @@ UTF-8 estrito e somente o BOM inicial removido. Não usar `flush` como teto nem
 repassar uma grande sobra comprimida a cada janela de saída. Não interpreta
 JSON, IDAT/pixels ou mundos. Provas e comparação com o leitor JavaScript em
 `docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-png-python-compartilhado-2026-11-22/`.
+
+`pythonRegionWorld.ts` compõe os leitores em um registro privado de mapas e
+imagens. Admite todos os cabeçalhos/recursos e os tetos agregados antes dos
+índices; devolve o mundo completo ou recusa. O medidor `pythonJsonWire.ts`
+conserva o tamanho/projeção de JSON.stringify para a cena; não é JCS.
+Não confundir CRC/perfil PNG com validação de IDAT/pixels ou superfícies: essa
+prova pertence a cada adaptador. Os formatos públicos continuam inalterados.
+Provas e limites em
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/mundo-png-python-compartilhado-2026-11-22/`.

@@ -36,15 +36,17 @@ def _scene_property(value):
         return type(item) is str and _scene_pattern(color['pattern'], color['flags'], item)
     return kind in ('object', 'asset') and type(item) is str
 
-def _scene_schema(value, schema):
+def _scene_schema(value, schema, root=None):
     """Only the generated, build-checked constraint vocabulary, not arbitrary JSON Schema."""
     if type(schema) is bool:
         return schema
-    if '$ref' in schema and not _scene_schema(value, _SCENE_SCHEMA['$defs'][schema['$ref'].split('/')[-1]]):
+    if root is None:
+        root=_SCENE_SCHEMA
+    if '$ref' in schema and not _scene_schema(value, root['$defs'][schema['$ref'].split('/')[-1]],root):
         return False
-    if 'anyOf' in schema and not any(_scene_schema(value, child) for child in schema['anyOf']):
+    if 'anyOf' in schema and not any(_scene_schema(value, child,root) for child in schema['anyOf']):
         return False
-    if 'oneOf' in schema and sum(_scene_schema(value, child) for child in schema['oneOf']) != 1:
+    if 'oneOf' in schema and sum(_scene_schema(value, child,root) for child in schema['oneOf']) != 1:
         return False
     kind = schema.get('type')
     if kind == 'object' and type(value) is not dict or kind == 'array' and type(value) is not list or kind == 'string' and type(value) is not str or kind == 'boolean' and type(value) is not bool:
@@ -57,10 +59,12 @@ def _scene_schema(value, schema):
         return False
     if type(value) is str:
         # Zod measures JS UTF-16 code units, including escaped lone surrogates.
-        length = len(value) + sum(ord(char) > 65535 for char in value)
+        length = len(value) if value.isascii() else len(value) + sum(ord(char) > 65535 for char in value)
         if length < schema.get('minLength', 0) or 'maxLength' in schema and length > schema['maxLength']:
             return False
         if 'pattern' in schema and not _scene_pattern(schema['pattern'], schema.get('x-pinta-pattern-flags', ''), value):
+            return False
+        if schema.get('x-pinta-no-controls') and any(ord(char)<32 or 127<=ord(char)<=159 for char in value):
             return False
     if _scene_number(value):
         if 'minimum' in schema and value < schema['minimum'] or 'maximum' in schema and value > schema['maximum'] or 'exclusiveMinimum' in schema and value <= schema['exclusiveMinimum']:
@@ -68,40 +72,46 @@ def _scene_schema(value, schema):
     if type(value) is list:
         if len(value) < schema.get('minItems', 0) or 'maxItems' in schema and len(value) > schema['maxItems']:
             return False
-        if 'items' in schema and not all(_scene_schema(item, schema['items']) for item in value):
+        if 'items' in schema and not all(_scene_schema(item, schema['items'],root) for item in value):
             return False
     if type(value) is dict:
         if any(key not in value for key in schema.get('required', [])) or 'maxProperties' in schema and len(value) > schema['maxProperties']:
             return False
-        if 'propertyNames' in schema and not all(_scene_schema(key, schema['propertyNames']) for key in value):
+        if 'propertyNames' in schema and not all(_scene_schema(key, schema['propertyNames'],root) for key in value):
             return False
         properties = schema.get('properties', {})
         if 'properties' in schema or 'additionalProperties' in schema:
             for key, item in value.items():
-                if not _scene_schema(item, properties.get(key, schema.get('additionalProperties', True))):
+                if not _scene_schema(item, properties.get(key, schema.get('additionalProperties', True)),root):
                     return False
+        if schema.get('x-pinta-world'):
+            ids=[value['rootId']]+[item['id'] for item in value['maps']]
+            if len(ids)!=len(set(ids)) or sum(len(item['png']) for item in value['maps'])>_SCENE_TABLE['worldEncodedChars']:
+                return False
     return True
 
-def _scene_native(value, schema):
+def _scene_native(value, schema, root=None):
     """After admission, give declared integer/float fields native Python types."""
     if type(schema) is bool:
         return value
+    if root is None:
+        root=_SCENE_SCHEMA
     if '$ref' in schema:
-        value = _scene_native(value, _SCENE_SCHEMA['$defs'][schema['$ref'].split('/')[-1]])
+        value = _scene_native(value, root['$defs'][schema['$ref'].split('/')[-1]],root)
     for union in ('anyOf', 'oneOf'):
         for child in schema.get(union, []):
-            if _scene_schema(value, child):
-                value = _scene_native(value, child)
+            if _scene_schema(value, child,root):
+                value = _scene_native(value, child,root)
                 break
     if schema.get('type') == 'integer' or 'const' in schema and _region_integer(schema['const']):
         return int(value)
     if type(value) is list and 'items' in schema:
         for index in range(len(value)):
-            value[index] = _scene_native(value[index], schema['items'])
+            value[index] = _scene_native(value[index], schema['items'],root)
     if type(value) is dict and ('properties' in schema or 'additionalProperties' in schema):
         properties = schema.get('properties', {})
         for key in value:
-            value[key] = _scene_native(value[key], properties.get(key, schema.get('additionalProperties', True)))
+            value[key] = _scene_native(value[key], properties.get(key, schema.get('additionalProperties', True)),root)
     if schema.get('x-pinta-property') and type(value) is dict:
         if value['type'] == 'int':
             value['value'] = int(value['value'])
@@ -224,31 +234,36 @@ class _PlanoCena:
                 index += 1
         return scene
 
+def _preparar_cena_valor(scene,max_index_bytes):
+    # Internal owned JSON snapshot only. The caller must first admit its wire size.
+    if not _region_integer(max_index_bytes) or max_index_bytes<0 or max_index_bytes>_SCENE_MAX_INDICES or not _scene_schema(scene,_SCENE_SCHEMA):
+        return None
+    plans,index_bytes=[],0
+    for current in [scene]+scene.get('sets',[]):
+        grids=[layer['cells'] for layer in current['layers'] if layer['kind']=='tiles']
+        plan=preparar_regioes(grids,dict(current['origin'],cols=current['cols'],rows=current['rows']))
+        if plan is None:
+            return None
+        index_bytes+=plan.index_bytes
+        if index_bytes>max_index_bytes:
+            return None
+        plans.append(plan)
+    if not _scene_metadata(scene,plans):
+        return None
+    scene=_scene_native(scene,_SCENE_SCHEMA)
+    return _PlanoCena(scene,plans,index_bytes)
+
+def _pinta_parse_json(text):
+    def invalid_constant(value):
+        raise ValueError('Non-JSON numeric constant')
+    return json.loads(text,parse_int=float,parse_float=float,parse_constant=invalid_constant)
+
 def preparar_cena(text, max_index_bytes=_SCENE_MAX_INDICES):
     """Strict private scene-4 JSON; no graphics, network or dense world allocation."""
     try:
         if type(text) is not str or len(text) > _SCENE_MAX_JSON or len(text.encode('utf-8')) > _SCENE_MAX_JSON or not _region_integer(max_index_bytes) or max_index_bytes < 0 or max_index_bytes > _SCENE_MAX_INDICES:
             return None
-        def invalid_constant(value):
-            raise ValueError('Non-JSON numeric constant')
-        # Match JSON.parse's binary64 numbers, including large integer rounding.
-        scene = json.loads(text, parse_int=float, parse_float=float, parse_constant=invalid_constant)
-        if not _scene_schema(scene, _SCENE_SCHEMA):
-            return None
-        plans, index_bytes = [], 0
-        for current in [scene] + scene.get('sets', []):
-            grids = [layer['cells'] for layer in current['layers'] if layer['kind'] == 'tiles']
-            plan = preparar_regioes(grids, dict(current['origin'], cols=current['cols'], rows=current['rows']))
-            if plan is None:
-                return None
-            index_bytes += plan.index_bytes
-            if index_bytes > max_index_bytes:
-                return None
-            plans.append(plan)
-        if not _scene_metadata(scene, plans):
-            return None
-        scene = _scene_native(scene, _SCENE_SCHEMA)
-        return _PlanoCena(scene, plans, index_bytes)
+        return _preparar_cena_valor(_pinta_parse_json(text),max_index_bytes)
     except (ValueError, TypeError, KeyError, OverflowError, RecursionError):
         return None
 `
