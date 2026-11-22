@@ -168,9 +168,28 @@ export async function commitRetainedProject(
     throw new ProjectWriteConflict()
   const old = new Set(retainedBodyIds(before?.parts ?? {})),
     next = new Set(selected)
-  const changed = [...new Set([...old, ...next])].filter((hash) => old.has(hash) !== next.has(hash))
+  const touched = [...new Set([...old, ...next])]
+  const retired = [...old].filter((hash) => !next.has(hash))
+  const expectedRetired = new Map<string, { text: string; bytes: number }>()
+  const previousBodies = await readValues(scope.store, retired.map(bodyKey))
+  let retiredBytes = 0
+  for (const [index, hash] of retired.entries()) {
+    const text = previousBodies[index]
+    if (typeof text !== 'string' || text.length > RETAINED_PROJECT_LIMITS.projectBytes)
+      invalidRetention()
+    const bytes = retentionSize(text)
+    retiredBytes += bytes
+    if (retiredBytes > RETAINED_PROJECT_LIMITS.projectBytes || (await sha256Hex(text)) !== hash)
+      invalidRetention()
+    expectedRetired.set(hash, { text, bytes })
+  }
   const guards = source.map(([key]) => key)
-  const readKeys = [headKey, LEDGER, ...guards, ...changed.map(refKey)]
+  const readKeys = [
+    headKey,
+    LEDGER,
+    ...guards,
+    ...touched.flatMap((hash) => [refKey(hash), bodyKey(hash)]),
+  ]
   return conditionalWrite(
     scope.store,
     scope.identity,
@@ -190,11 +209,16 @@ export async function commitRetainedProject(
       used += keySize(headKey, nextText) - (typeof raw === 'string' ? keySize(headKey, raw) : 0)
       const puts: NonNullable<IdbWrite['puts']>[number][] = [[headKey, nextText]]
       const deletes: IDBValidKey[] = []
-      for (const [index, hash] of changed.entries()) {
-        const state = parseRef(values[2 + source.length + index])
+      for (const [index, hash] of touched.entries()) {
+        const position = 2 + source.length + index * 2
+        const state = parseRef(values[position])
+        const stored = values[position + 1]
+        const body = next.has(hash) ? ownedBodies.get(hash)! : expectedRetired.get(hash)!
+        if (state) {
+          if (state.bytes !== body.bytes || stored !== body.text) invalidRetention()
+        } else if (stored !== undefined || old.has(hash)) invalidRetention()
+        if (old.has(hash) && next.has(hash)) continue
         if (next.has(hash)) {
-          const body = ownedBodies.get(hash)!
-          if (state && state.bytes !== body.bytes) invalidRetention()
           if (!state) {
             used += itemCharge(hash, body.bytes)
             puts.push([bodyKey(hash), body.text])

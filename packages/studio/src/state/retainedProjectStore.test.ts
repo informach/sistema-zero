@@ -128,3 +128,29 @@ test('usa a origem e a receita capturadas quando o chamador muda seus argumentos
   ).rejects.toThrow()
   expect(await readRetainedManifest(scope, head.id)).toEqual(gone)
 })
+
+test('recusa reuso de corpo ausente, trocado ou órfão antes de publicar outra cabeça', async () => {
+  const scope = privateRegionalProjectScope('reuso-corpos-v5')
+  const candidate = await prepareRetainedParts(sample('a'))
+  await commitRetainedProject(scope, { id: 'a', origin, expectedToken: null, candidate })
+  const hash = candidate.parts.files!.strings[0]![1]
+  const key = 'sz:v5:body:' + hash,
+    ref = 'sz:v5:references:' + hash,
+    ledger = 'sz:v5:retention-bytes'
+  const preserved = [retainedProjectKey('a'), retainedProjectKey('b'), ledger]
+  const initial = await readValues(scope.store, preserved)
+  const target = await prepareRetainedParts(sample('b'))
+  const publish = () =>
+    commitRetainedProject(scope, { id: 'b', origin, expectedToken: null, candidate: target })
+  await writeInOneTransaction(scope.store, { deletes: [key] })
+  await expect(publish()).rejects.toThrow()
+  expect(await readValues(scope.store, preserved)).toEqual(initial)
+  const foreign = candidate.bodies.get(hash)!.text.replace('Vila', 'Mapa')
+  await writeInOneTransaction(scope.store, { puts: [[key, foreign]] })
+  await expect(publish()).rejects.toThrow()
+  expect(await readValues(scope.store, preserved)).toEqual(initial)
+  await writeInOneTransaction(scope.store, { deletes: [ref] })
+  await expect(publish()).rejects.toThrow()
+  expect(await readValues(scope.store, preserved)).toEqual(initial)
+  expect(await readValue(scope.store, key)).toBe(foreign)
+})
