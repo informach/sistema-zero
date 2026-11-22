@@ -21,6 +21,7 @@ import {
   type TilemapObject,
   type TilemapResourceVersion,
   tilemapTilesetIds,
+  type VersionablePintaAsset,
 } from '../core/project'
 import { PINTA_MAX_SCHEMA, PINTA_RESOURCE_LIMITS } from '../core/projectConfig'
 import type { AuthorMap } from './mapCellEdits'
@@ -55,6 +56,19 @@ function animationInSource(
   return name ? (source.animations.find((animation) => animation.name === name)?.id ?? null) : null
 }
 
+export function mapResourceSnapshotAsset(
+  source: VersionablePintaAsset,
+  id: string,
+): VersionablePintaAsset {
+  const asset = { ...structuredClone(source), id }
+  if (asset.kind === 'tileset' || asset.kind === 'vector-tileset')
+    for (const properties of Object.values(asset.tileProperties ?? {}))
+      for (const [key, value] of Object.entries(properties))
+        if (typeof value === 'object' && value.type === 'asset' && value.value === source.id)
+          properties[key] = { ...value, value: asset.id }
+  return asset
+}
+
 export function captureMapResourceVersion<Map extends AuthorMap>(
   map: Map,
   source: PintaAsset,
@@ -82,12 +96,7 @@ export function captureMapResourceVersion<Map extends AuthorMap>(
     retainedAssetBytes(source) +
     (map.resources ?? []).reduce((sum, version) => sum + retainedAssetBytes(version.asset), 0)
   if (bytes > PINTA_RESOURCE_LIMITS.maxSnapshotBytes) return { ok: false, reason: 'memory-budget' }
-  const asset = { ...structuredClone(source), id: newId() }
-  if (asset.kind === 'tileset' || asset.kind === 'vector-tileset')
-    for (const properties of Object.values(asset.tileProperties ?? {}))
-      for (const [key, value] of Object.entries(properties))
-        if (typeof value === 'object' && value.type === 'asset' && value.value === source.id)
-          properties[key] = { ...value, value: asset.id }
+  const asset = mapResourceSnapshotAsset(source, newId())
   let version: TilemapResourceVersion = { sourceId: source.id, capturedAt: now, asset }
   if ('origin' in map) {
     // Native 8 refuses normalization that would lose authorial data. Validate only

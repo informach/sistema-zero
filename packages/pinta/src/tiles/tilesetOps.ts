@@ -48,8 +48,10 @@ type TileOf<A extends AnyTilesetAsset> = A['tiles'][number]
  * Um mapa que fica vazio SOME (a chave sai do desenho): `animations: {}` faria o conjunto pedir
  * o formato mais novo sem usar nada dele. O terreno continua existindo mesmo sem peça marcada.
  */
-function remapTileMetadata<A extends AnyTilesetAsset>(asset: A, at: number, remove = false): A {
-  const index = (n: number) => (remove ? (n === at ? -1 : n > at ? n - 1 : n) : n >= at ? n + 1 : n)
+export function remapTileMetadata<A extends AnyTilesetAsset>(
+  asset: A,
+  index: (previous: number) => number,
+): A {
   const remap = <T>(values: Record<string, T>, convert: (v: T) => T | null): Record<string, T> =>
     Object.fromEntries(
       Object.entries(values).flatMap(([k, v]) => {
@@ -115,7 +117,12 @@ export function addTile<A extends AnyTilesetAsset>(asset: A, afterIndex: number)
   tiles.splice(afterIndex + 1, 0, emptyTileFor(asset))
   solid.splice(afterIndex + 1, 0, false)
   platform.splice(afterIndex + 1, 0, false)
-  return { ...remapTileMetadata(asset, afterIndex + 1), tiles, solid, platform }
+  return {
+    ...remapTileMetadata(asset, (slot) => shiftedIndex(slot, { insertedAt: afterIndex + 1 })),
+    tiles,
+    solid,
+    platform,
+  }
 }
 
 export function duplicateTile<A extends AnyTilesetAsset>(asset: A, index: number): A {
@@ -128,7 +135,7 @@ export function duplicateTile<A extends AnyTilesetAsset>(asset: A, index: number
   tiles.splice(index + 1, 0, cloneTileOf(asset, source))
   solid.splice(index + 1, 0, asset.solid[index] === true)
   platform.splice(index + 1, 0, asset.platform[index] === true)
-  const next = remapTileMetadata(asset, index + 1)
+  const next = remapTileMetadata(asset, (slot) => shiftedIndex(slot, { insertedAt: index + 1 }))
   if (asset.animations?.[index])
     // A cópia ganha a animação da original, com quadros próprios (editar uma não mexe na outra).
     next.animations = {
@@ -157,7 +164,7 @@ export function duplicateTile<A extends AnyTilesetAsset>(asset: A, index: number
 export function removeTile<A extends AnyTilesetAsset>(asset: A, index: number): A {
   if (asset.tiles.length <= 1 || !asset.tiles[index]) return asset
   return {
-    ...remapTileMetadata(asset, index, true),
+    ...remapTileMetadata(asset, (slot) => shiftedIndex(slot, { removedAt: index })),
     tiles: (asset.tiles as TileOf<A>[]).filter((_, i) => i !== index),
     solid: asset.solid.filter((_, i) => i !== index),
     platform: asset.platform.filter((_, i) => i !== index),
@@ -201,6 +208,13 @@ export function cycleCollision<A extends AnyTilesetAsset>(asset: A, index: numbe
  * camadas de outro. Sem ele, todas as camadas de peças (o comportamento antigo).
  */
 export type TileIndexChange = { insertedAt: number } | { removedAt: number }
+
+function shiftedIndex(tile: number, change: TileIndexChange): number {
+  if ('insertedAt' in change) return tile >= change.insertedAt ? tile + 1 : tile
+  if (tile === change.removedAt) return -1
+  return tile > change.removedAt ? tile - 1 : tile
+}
+
 export type TilemapRemapFailure = 'invalid-change' | 'invalid-map' | 'tile-budget' | 'cell-budget'
 export type TilemapRemapResult<Map extends AuthorMap> =
   | { ok: true; map: Map }
@@ -225,6 +239,31 @@ export function tryRemapTilemapCells<Map extends AuthorMap>(
   const at = 'insertedAt' in change ? change.insertedAt : change.removedAt
   if (!Number.isSafeInteger(at) || at < 0 || at >= PINTA_MAP_FORMAT_LIMITS.maxTiles)
     return { ok: false, reason: 'invalid-change' }
+  return tryRemapTileIndices(tilemap, (tile) => shiftedIndex(tile, change), tilesetId)
+}
+
+/** Applies a composed layout change using the same cell and art semantics as one edit. */
+export function tryRemapTilemapIndices<Map extends AuthorMap>(
+  tilemap: Map,
+  oldToNew: readonly number[],
+  tilesetId: string,
+): TilemapRemapResult<Map> {
+  const limit = PINTA_MAP_FORMAT_LIMITS.maxTiles
+  const used = new Set<number>()
+  if (oldToNew.length < 1 || oldToNew.length > limit) return { ok: false, reason: 'invalid-change' }
+  for (const index of oldToNew) {
+    if (!Number.isSafeInteger(index) || index < -1 || index >= limit || used.has(index))
+      return { ok: false, reason: 'invalid-change' }
+    if (index !== -1) used.add(index)
+  }
+  return tryRemapTileIndices(tilemap, (tile) => oldToNew[tile], tilesetId)
+}
+
+function tryRemapTileIndices<Map extends AuthorMap>(
+  tilemap: Map,
+  remap: (tile: number) => number | undefined,
+  tilesetId?: string,
+): TilemapRemapResult<Map> {
   const regional = 'origin' in tilemap
   if (
     !parsePintaRegionBounds(mapCellBounds(tilemap)) ||
@@ -278,12 +317,6 @@ export function tryRemapTilemapCells<Map extends AuthorMap>(
       if (!(chunk.cells instanceof Int16Array) || chunk.cells.length !== PINTA_REGION_CELL_COUNT)
         return { ok: false, reason: 'invalid-map' }
   }
-  const remapOne = (value: number): number => {
-    if (value < 0) return -1
-    if ('insertedAt' in change) return value >= change.insertedAt ? value + 1 : value
-    if (value === change.removedAt) return -1
-    return value > change.removedAt ? value - 1 : value
-  }
   function remapBuffer(
     cells: Int16Array,
   ):
@@ -295,7 +328,9 @@ export function tryRemapTilemapCells<Map extends AuthorMap>(
       const before = cells[i]!
       if (!isValidCellForTiles(before, PINTA_MAP_FORMAT_LIMITS.maxTiles))
         return { ok: false, reason: 'invalid-map' }
-      const tile = remapOne(cellTile(before))
+      const oldTile = cellTile(before)
+      const tile = oldTile === EMPTY_CELL ? EMPTY_CELL : remap(oldTile)
+      if (tile === undefined) return { ok: false, reason: 'invalid-map' }
       if (tile >= PINTA_MAP_FORMAT_LIMITS.maxTiles) return { ok: false, reason: 'tile-budget' }
       const value = withCellTile(before, tile)
       if (value !== before && next === cells) next = cells.slice()
@@ -319,7 +354,8 @@ export function tryRemapTilemapCells<Map extends AuthorMap>(
         const tile = o.art.tile ?? 0
         if (!Number.isSafeInteger(tile) || tile < 0 || tile >= PINTA_MAP_FORMAT_LIMITS.maxTiles)
           return { ok: false, reason: 'invalid-map' }
-        const next = remapOne(tile)
+        const next = remap(tile)
+        if (next === undefined) return { ok: false, reason: 'invalid-map' }
         if (next >= PINTA_MAP_FORMAT_LIMITS.maxTiles) return { ok: false, reason: 'tile-budget' }
         if (next === tile) {
           objects.push(o)

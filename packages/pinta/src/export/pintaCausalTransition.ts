@@ -1,56 +1,33 @@
-import type {
-  PintaCausalManifest,
-  PintaCausalOperation,
+import {
+  type PintaCausalManifest,
+  type PintaCausalOperation,
+  pintaCausalMaskFits,
+  pintaCausalMaskHasSlot,
 } from '@sistemazero/core/creations/pinta-causal'
 import { pintaValuesEqual } from '../core/assetEquality'
 import type { PintaMemoryAsset } from '../core/assetMemory'
-import { type AnyTilesetAsset, isTilesetKind, tilemapOfAsset } from '../core/project'
 import {
-  addTile,
-  duplicateTile,
-  removeTile,
-  type TileIndexChange,
-  tryRemapTilemapCells,
-} from '../tiles/tilesetOps'
+  type AnyTilesetAsset,
+  isObjectLayer,
+  isTilesetKind,
+  remapTilemapTilesetIds,
+  type TilemapResourceVersion,
+  tilemapOfAsset,
+} from '../core/project'
+import type { AuthorMap } from '../tiles/mapCellEdits'
+import { mapResourceSnapshotAsset } from '../tiles/resourceVersions'
+import { remapTileMetadata, tryRemapTilemapIndices } from '../tiles/tilesetOps'
 
 type RemapOperation = Extract<PintaCausalOperation, { type: 'remap' }>
+type Art = { assetId: string; tile?: number; animationId?: string }
 
-/** Translate only recipes implemented by the authoring reducer. */
-export function pintaCausalRemapChange(operation: RemapOperation): TileIndexChange | null {
-  const { count, oldToNew } = operation
-  if (count === oldToNew.length - 1) {
-    const removedAt = oldToNew.indexOf(-1)
-    if (
-      removedAt >= 0 &&
-      oldToNew.every(
-        (slot, index) => slot === (index === removedAt ? -1 : index - Number(index > removedAt)),
-      )
-    )
-      return { removedAt }
-  } else if (count === oldToNew.length + 1) {
-    const moved = oldToNew.findIndex((slot, index) => slot !== index)
-    const insertedAt = moved < 0 ? oldToNew.length : moved
-    if (oldToNew.every((slot, index) => slot === index + Number(index >= insertedAt)))
-      return { insertedAt }
-  }
-  return null
+function comparableDocument(asset: PintaMemoryAsset) {
+  const { updatedAt: _updatedAt, schema: _schema, ...document } = { schema: undefined, ...asset }
+  if (document.kind !== 'map-set') return document
+  const { schema: _mapSchema, ...map } = document.map
+  return { ...document, map }
 }
 
-function sameDocument(expected: PintaMemoryAsset, proposed: PintaMemoryAsset): boolean {
-  const {
-    updatedAt: _beforeTime,
-    schema: _beforeSchema,
-    ...before
-  } = { schema: undefined, ...expected }
-  const {
-    updatedAt: _afterTime,
-    schema: _afterSchema,
-    ...after
-  } = { schema: undefined, ...proposed }
-  return pintaValuesEqual(before, after)
-}
-
-/** Palette and terrain definitions also affect the interpretation of existing slots. */
 function sheetDefinition(sheet: AnyTilesetAsset) {
   const {
     tiles: _tiles,
@@ -66,65 +43,88 @@ function sheetDefinition(sheet: AnyTilesetAsset) {
     sourceRef: _source,
     ...definition
   } = sheet
-  return {
-    ...definition,
-    terrains: terrains?.map(({ tiles: _tiles, ...terrain }) => terrain),
-  }
+  return { ...definition, terrains: terrains?.map(({ tiles: _tiles, ...terrain }) => terrain) }
 }
 
-function bitAt(mask: string | undefined, index: number): boolean {
-  if (mask === undefined) return false
-  const byte = (index >> 3) * 2
-  return (Number.parseInt(mask.slice(byte, byte + 2), 16) & (1 << (index & 7))) !== 0
-}
-
-function sameSlot(before: AnyTilesetAsset, after: AnyTilesetAsset, index: number): boolean {
+function sameSlot(
+  before: AnyTilesetAsset,
+  after: AnyTilesetAsset,
+  source: number,
+  target = source,
+  metadata = before,
+): boolean {
   return (
-    pintaValuesEqual(before.tiles[index], after.tiles[index]) &&
-    before.solid[index] === after.solid[index] &&
-    before.platform[index] === after.platform[index] &&
-    pintaValuesEqual(before.animations?.[index], after.animations?.[index]) &&
-    pintaValuesEqual(before.tileProperties?.[index], after.tileProperties?.[index]) &&
-    (before.terrains?.every((terrain, i) =>
-      pintaValuesEqual(terrain.tiles[index], after.terrains?.[i]?.tiles[index]),
+    pintaValuesEqual(before.tiles[source], after.tiles[target]) &&
+    before.solid[source] === after.solid[target] &&
+    before.platform[source] === after.platform[target] &&
+    pintaValuesEqual(metadata.animations?.[target], after.animations?.[target]) &&
+    pintaValuesEqual(metadata.tileProperties?.[target], after.tileProperties?.[target]) &&
+    (metadata.terrains?.every((terrain, i) =>
+      pintaValuesEqual(terrain.tiles[target], after.terrains?.[i]?.tiles[target]),
     ) ??
       true)
   )
 }
 
-/** IDs generated for a vector duplicate may differ, with every other field tied to the recipe. */
-function matchesDuplicate(
+/** Final surviving indices whose content differs after applying the canonical metadata remap. */
+export function pintaCausalChangedSurvivingSlots(
   before: AnyTilesetAsset,
   after: AnyTilesetAsset,
-  sourceIndex: number,
-): boolean {
-  const duplicate = duplicateTile(before, sourceIndex)
-  if (duplicate === before) return false
-  if (before.kind === 'tileset') return sameDocument(duplicate, after)
-  if (duplicate.kind !== 'vector-tileset' || after.kind !== 'vector-tileset') return false
-  const insertedAt = sourceIndex + 1
-  const created = after.tiles[insertedAt]
-  const original = before.tiles[sourceIndex]
-  if (!created || !original || created.length !== original.length) return false
-  const existing = new Set<string>()
-  for (const shapes of before.tiles)
-    for (const shape of shapes) {
-      existing.add(shape.id)
-      if (shape.motionId) existing.add(shape.motionId)
-    }
-  for (const [index, shape] of created.entries()) {
-    const { id, motionId, ...art } = shape
-    if (!motionId || id === motionId || existing.has(id) || existing.has(motionId)) return false
-    existing.add(id)
-    existing.add(motionId)
-    const { id: _id, motionId: _motionId, ...sourceArt } = original[index]!
-    if (!pintaValuesEqual(art, sourceArt)) return false
+  oldToNew: readonly number[],
+): number[] | null {
+  if (
+    before.id !== after.id ||
+    before.kind !== after.kind ||
+    before.tileSize !== after.tileSize ||
+    before.createdAt !== after.createdAt ||
+    oldToNew.length !== before.tiles.length
+  )
+    return null
+
+  const survivors = new Set<number>()
+  for (const target of oldToNew) {
+    if (
+      !Number.isSafeInteger(target) ||
+      target < -1 ||
+      target >= after.tiles.length ||
+      survivors.has(target)
+    )
+      return null
+    if (target !== -1) survivors.add(target)
   }
-  const tiles = duplicate.tiles.map((tile, index) => (index === insertedAt ? created : tile))
-  return sameDocument({ ...duplicate, tiles }, after)
+  if (!pintaValuesEqual(sheetDefinition(before), sheetDefinition(after))) return [...survivors]
+
+  const metadata = remapTileMetadata(before, (index) => oldToNew[index] ?? -1)
+  const changed: number[] = []
+  for (const [source, target] of oldToNew.entries())
+    if (target >= 0 && !sameSlot(before, after, source, target, metadata)) changed.push(target)
+  return changed
 }
 
-/** Proves the operation from exact, separately decoded before and proposed revisions. */
+/** A new vector slot may carry new art, with identities independent of existing shapes. */
+function newVectorShapeIdsAreIndependent(
+  before: AnyTilesetAsset,
+  after: AnyTilesetAsset,
+  survivingTargets: ReadonlySet<number>,
+): boolean {
+  if (before.kind !== 'vector-tileset' || after.kind !== 'vector-tileset') return true
+  const known = new Set<string>()
+  for (const shapes of before.tiles)
+    for (const shape of shapes) {
+      known.add(shape.id)
+      if (shape.motionId) known.add(shape.motionId)
+    }
+  for (const [index, shapes] of after.tiles.entries()) {
+    if (survivingTargets.has(index)) continue
+    for (const { id, motionId } of shapes) {
+      if (known.has(id) || (motionId && (id === motionId || known.has(motionId)))) return false
+      known.add(id)
+      if (motionId) known.add(motionId)
+    }
+  }
+  return true
+}
+
 export function provePintaCausalMutation(
   before: PintaMemoryAsset | null,
   after: PintaMemoryAsset,
@@ -133,72 +133,177 @@ export function provePintaCausalMutation(
   if (operation.type === 'create') return before === null
   if (!before || before.id !== after.id || before.kind !== after.kind) return false
   if (!isTilesetKind(before) || !isTilesetKind(after)) return operation.type === 'update'
-  if (before.tileSize !== after.tileSize) return false
+  if (before.tileSize !== after.tileSize || before.createdAt !== after.createdAt) return false
+
   if (operation.type === 'remap') {
-    if (before.tiles.length !== operation.oldToNew.length || after.tiles.length !== operation.count)
-      return false
-    const change = pintaCausalRemapChange(operation)
-    if (!change) return false
-    if ('removedAt' in change) return sameDocument(removeTile(before, change.removedAt), after)
-    const sourceIndex = change.insertedAt - 1
-    return (
-      sameDocument(addTile(before, sourceIndex), after) ||
-      (sourceIndex >= 0 && matchesDuplicate(before, after, sourceIndex))
+    if (
+      after.tiles.length !== operation.count ||
+      (operation.paintedSlots && !pintaCausalMaskFits(operation.paintedSlots, operation.count))
     )
+      return false
+    const changed = pintaCausalChangedSurvivingSlots(before, after, operation.oldToNew)
+    if (!changed?.every((slot) => maskHasSlot(operation.paintedSlots, slot))) return false
+    return newVectorShapeIdsAreIndependent(before, after, new Set(operation.oldToNew))
   }
 
-  if (!pintaValuesEqual(sheetDefinition(before), sheetDefinition(after))) return false
   const oldCount = before.tiles.length
   if (operation.type === 'append') {
     if (operation.count !== after.tiles.length || after.tiles.length <= oldCount) return false
   } else if (oldCount !== after.tiles.length) return false
   const painted = operation.type === 'paint' ? operation.slots : undefined
-  if (painted) {
-    for (let slot = oldCount; slot < painted.length * 4; slot++)
-      if (bitAt(painted, slot)) return false
-  }
-  return before.tiles.every((_, index) => bitAt(painted, index) || sameSlot(before, after, index))
+  if (painted && !pintaCausalMaskFits(painted, oldCount)) return false
+  const sharedDefinition = pintaValuesEqual(sheetDefinition(before), sheetDefinition(after))
+  return before.tiles.every(
+    (_, index) =>
+      maskHasSlot(painted, index) || (sharedDefinition && sameSlot(before, after, index)),
+  )
+}
+
+function maskHasSlot(mask: string | undefined, slot: number): boolean {
+  return mask !== undefined && pintaCausalMaskHasSlot(mask, slot)
 }
 
 interface SheetRemap {
   sheetId: string
   operation: RemapOperation
 }
+type BeforeDocument = { asset: PintaMemoryAsset; manifest: PintaCausalManifest }
 
-/** The manifest finds likely consumers. The full comparison proves positions, flags and object art. */
-export function provePintaCausalConsumerRemaps(
-  before: { asset: PintaMemoryAsset; manifest: PintaCausalManifest },
-  after: PintaMemoryAsset,
-  remaps: readonly SheetRemap[],
-): { sheetId: string; mode: 'mapped' }[] | null {
-  let expected = tilemapOfAsset(before.asset)
-  const verified: { sheetId: string; mode: 'mapped' }[] = []
-  for (const { sheetId, operation } of remaps) {
-    const edge = before.manifest.refs.find((ref) => ref.id === sheetId)
-    if (
-      !edge ||
-      !operation.oldToNew.some(
+function affectedRemaps(before: BeforeDocument, remaps: readonly SheetRemap[]): SheetRemap[] {
+  const refs = new Map(before.manifest.refs.map((ref) => [ref.id, ref]))
+  return remaps.filter(({ sheetId, operation }) => {
+    const edge = refs.get(sheetId)
+    return (
+      edge &&
+      operation.oldToNew.some(
         (next, slot) =>
-          next !== slot && (bitAt(edge.indices, slot) || (slot === 0 && edge.implicitArtSlotZero)),
+          next !== slot &&
+          (maskHasSlot(edge.indices, slot) || (slot === 0 && edge.implicitArtSlotZero)),
       )
     )
+  })
+}
+
+function newSnapshotVersions(
+  before: PintaMemoryAsset,
+  after: PintaMemoryAsset,
+): TilemapResourceVersion[] {
+  const known = new Set(tilemapOfAsset(before)?.resources?.map((version) => version.asset.id))
+  return (tilemapOfAsset(after)?.resources ?? []).filter((version) => !known.has(version.asset.id))
+}
+
+/** Only look up bases when a failed mapped proof has a candidate private snapshot to verify. */
+export function pintaCausalPinSourceIds(
+  before: BeforeDocument,
+  after: PintaMemoryAsset,
+  remaps: readonly SheetRemap[],
+): string[] {
+  const snapshots = new Set(
+    newSnapshotVersions(before.asset, after).map(({ sourceId }) => sourceId),
+  )
+  return affectedRemaps(before, remaps)
+    .map(({ sheetId }) => sheetId)
+    .filter((id) => snapshots.has(id))
+}
+
+function compareAssetWithMap(asset: PintaMemoryAsset, map: AuthorMap) {
+  return (asset.kind === 'map-set' ? { ...asset, map } : map) as PintaMemoryAsset
+}
+
+/** Update only authored artwork references; other typed properties remain untouched. */
+function mapArtwork<Map extends AuthorMap>(map: Map, change: (art: Art) => Art): Map {
+  return {
+    ...map,
+    layers: map.layers.map((layer) =>
+      isObjectLayer(layer)
+        ? {
+            ...layer,
+            objects: layer.objects.map((object) =>
+              object.art ? { ...object, art: change(object.art) } : object,
+            ),
+          }
+        : layer,
+    ),
+  } as Map
+}
+
+function zeroAsDefault(art: Art, sheets: ReadonlySet<string>): Art {
+  if (art.tile !== 0 || !sheets.has(art.assetId)) return art
+  const { tile: _tile, ...implicit } = art
+  return implicit
+}
+
+/** Compare every authored layer, placement and flag after a composed index change. */
+export function provePintaCausalConsumerRemaps(
+  before: BeforeDocument,
+  after: PintaMemoryAsset,
+  remaps: readonly SheetRemap[],
+  pinBases: ReadonlyMap<string, AnyTilesetAsset> = new Map(),
+): { sheetId: string; mode: 'mapped' | 'pinned' }[] | null {
+  const affected = affectedRemaps(before, remaps)
+  if (!affected.length) return []
+  let expected = tilemapOfAsset(before.asset)
+  const proposed = tilemapOfAsset(after)
+  if (!expected || !proposed) return null
+
+  const snapshots = newSnapshotVersions(before.asset, after)
+  const reserved = new Set([
+    before.asset.id,
+    expected.id,
+    ...before.manifest.refs.map(({ id }) => id),
+  ])
+  const recognized = new Set<string>()
+  const added = new Set<TilemapResourceVersion>()
+  const verified: { sheetId: string; mode: 'mapped' | 'pinned' }[] = []
+  for (const { sheetId, operation } of affected) {
+    const source = pinBases.get(sheetId)
+    recognized.add(sheetId)
+    if (!source) {
+      const result: ReturnType<typeof tryRemapTilemapIndices> = tryRemapTilemapIndices(
+        expected,
+        operation.oldToNew,
+        sheetId,
+      )
+      if (!result.ok) return null
+      expected = result.map
+      verified.push({ sheetId, mode: 'mapped' })
       continue
-    if (!expected) return null
-    const change = pintaCausalRemapChange(operation)
-    if (!change) return null
-    const result: ReturnType<typeof tryRemapTilemapCells> = tryRemapTilemapCells(
-      expected,
-      change,
-      sheetId,
+    }
+    const candidates = snapshots.filter((snapshot) => snapshot.sourceId === sheetId)
+    const pinned = candidates[0]
+    if (
+      source.id !== sheetId ||
+      candidates.length !== 1 ||
+      !pinned ||
+      reserved.has(pinned.asset.id) ||
+      !pintaValuesEqual(mapResourceSnapshotAsset(source, pinned.asset.id), pinned.asset)
     )
-    if (!result.ok) return null
-    expected = result.map
-    verified.push({ sheetId, mode: 'mapped' })
+      return null
+
+    const pinnedId = pinned.asset.id
+    reserved.add(pinnedId)
+    recognized.add(pinnedId)
+    added.add(pinned)
+    expected = remapTilemapTilesetIds(expected, (id) => (id === sheetId ? pinnedId : id))
+    expected = mapArtwork(expected, (art) =>
+      art.assetId === sheetId ? { ...art, assetId: pinnedId } : art,
+    )
+    verified.push({ sheetId, mode: 'pinned' })
   }
-  if (!verified.length) return verified
-  if (!expected) return null
-  // The definition keeps its own creation identity while the outer item carries updatedAt.
-  const expectedAsset =
-    before.asset.kind === 'map-set' ? { ...before.asset, map: expected } : expected
-  return sameDocument(expectedAsset as PintaMemoryAsset, after) ? verified : null
+  if (added.size > 0)
+    expected = {
+      ...expected,
+      resources: [...(expected.resources ?? []), ...snapshots.filter((entry) => added.has(entry))],
+    }
+
+  const compare = (asset: PintaMemoryAsset, map: AuthorMap) =>
+    comparableDocument(
+      compareAssetWithMap(
+        asset,
+        mapArtwork(map, (art) => zeroAsDefault(art, recognized)),
+      ),
+    )
+  return pintaValuesEqual(compare(before.asset, expected), compare(after, proposed))
+    ? verified
+    : null
 }

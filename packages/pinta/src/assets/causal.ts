@@ -5,6 +5,8 @@ export type {
 } from '../export/pintaCausalManifest'
 export { inspectPintaCausalDocument } from '../export/pintaCausalManifest'
 export {
+  pintaCausalChangedSurvivingSlots,
+  pintaCausalPinSourceIds,
   provePintaCausalConsumerRemaps,
   provePintaCausalMutation,
 } from '../export/pintaCausalTransition'
