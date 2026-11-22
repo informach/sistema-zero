@@ -881,3 +881,43 @@ Studio encontrou três erros em `molda-cenarios-motor/src/compilar/imagens.ts`,
 arquivo ainda idêntico ao remoto; não é um gate aprovado. Os 27 blocos candidatos
 e a ponte real de materiais para execução Clássico/Pro seguem em revisão.
 Nenhuma versão de motor, lista pública de blocos, formato ou flag foi promovida.
+
+### Paletas e execução privada integrada — 22/11
+
+A staging `e27c60f85` foi incorporada sem alterar os arquivos funcionais 3D
+recebidos. A biblioteca de paletas passou a guardar a revisão, a base confirmada,
+as remoções autorais e o candidato enviado no mesmo commit IndexedDB. A revisão
+privada física 3 conserva também remoções que ultrapassam as 48 lápides do JSON
+de transporte. Escritores anteriores recusam esse registro; alterações observadas
+do escritor histórico são preservadas como cópias locais estáveis. O replay no
+Chrome confirmou o GET tardio da revisão 52, nenhuma cor reintroduzida, nenhum
+upload automático e a mesma cópia depois de reabrir.
+
+O protocolo privado `palette-cas-v1` separa reserva, upload, selagem e confirmação.
+Members e o SQL conservam a geração adotada mesmo quando a flag é desligada.
+A cerca foi revista para não alcançar projetos de outra ferramenta com o mesmo
+ID. O ensaio integrado BFF/Gateway/PostgreSQL/MinIO passou em um caso e 40
+verificações; o replay de PUT antigo não mudou os bytes confirmados. A seleção
+por sessão foi ligada aos hosts existentes, com flags desligadas por padrão e
+autorização novamente conferida no servidor. Não houve adoção remota neste corte.
+
+Os cinco jogadores receberam a ponte privada para os PNGs completos do próprio
+projeto. Os dois motores JavaScript abriram Clássico e Pro; Pygame-ce abriu ambas
+as formas, Pygame Zero e Raylib 2D abriram seus programas. Onze ensaios de Chrome
+passaram na repetição integrada com materiais reabertos do IndexedDB, incluindo
+recusa de SHA adulterado antes do programa. Os focados passaram em 73 casos do
+Studio e 30 do Core; outros 65 casos de prévia mantiveram os controles existentes.
+O typecheck do Member Shell passou depois de corrigir os pontos encontrados na
+integração. As regressões reais do banco passaram em 21 casos causais, um HTTP,
+23 do armazenamento legado e quatro de purga.
+
+A prova com o binário histórico `16bf6725f` revelou que o restauro baseado numa
+cabeça recém-lida e a exclusão silenciosa ainda alcançam o projeto privado novo.
+Preservar apenas o material não protege o programa e os blocos. O desenho e a
+reprodução estão em `qa/projeto-autoridade-offline-2026-11-22/`. Está em execução
+a autoridade física V5 por projeto, com retenção granular, CAS, orçamento próprio
+e recuperação offline da autoria antiga observada. Ela precede qualquer promoção
+pública do PNG 5. Também seguem em execução os leitores de partes imutáveis da
+nuvem e o round-trip regional nos exportadores externos. As etapas macro 1–9
+continuam abertas; estes resultados não representam publicação, release Python
+ou homologação autenticada de todo o fluxo.
