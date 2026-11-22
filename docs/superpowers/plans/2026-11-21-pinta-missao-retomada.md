@@ -256,6 +256,13 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    Python/Pygame e suas extensões continuam obrigatórios também para regiões,
    atualização sem perda de programação e homologação externa, antes de fechar
    a missão. Não reduzir a entrega a JavaScript ou aos formatos anteriores.
+   Admissão dos metadados do mundo preparada em duas fases em
+   `qa/admissao-de-mundos-regionais-2026-11-22/`: todos os cabeçalhos e o saldo
+   global de texto/índices precedem o primeiro chunk; retorno inteiro ou recusa.
+   Vila/Cabana em PNGs reais reabrem em outra página com IDs e início preservados.
+   Suítes 3.251 Core/2.748 Pinta, 26 focados, 144 comparações históricas e 77
+   ensaios de navegador. Não fecha loader PNG: faltam descompressão limitada,
+   CRC/captura de imagens, pixels/superfícies e adaptadores de runtime.
 
 Na promoção do store, conferir também os orçamentos globais de metadados e JSON
 antes do histórico/autosave. A soma de objetos/propriedades em várias camadas

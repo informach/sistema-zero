@@ -1,5 +1,22 @@
 # CLAUDE.md — @sistemazero/core
 
+## Admissão de metadados regionais em duas fases (22/11/2026)
+
+`preparePintaRegionScene` e `preparePintaRegionImageData` conferem cabeçalhos,
+referências e orçamento sem decodificar células. Retornam planos congelados,
+com fonte JSON privada e uma única tentativa de `decode`. Os leitores existentes
+continuam preparando/decodificando em uma chamada; resultados e contratos
+publicados não mudaram. Outra tentativa exige preparar novamente o texto.
+
+`readPintaRegionImageWorldMetadata` confere todos os destinos antes do primeiro
+chunk: IDs/nomes/escala, ausência de mundo aninhado, 16 MiB cumulativos de texto
+descomprimido e 4 MiB de índices. O resolvedor recebe o PNG capturado e o saldo
+de descompressão. Só devolve o registro se todas as cenas forem decodificadas.
+É admissão de metadados/índices, não parser PNG, orçamento de pixels ou loader
+de runtime: essas fronteiras ainda precisam ser integradas. Não usar a extração
+simples das fixtures como descompressor de arquivos desconhecidos. Provas em
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/admissao-de-mundos-regionais-2026-11-22/`.
+
 ## Contexto de consultas regionais (22/11/2026)
 
 `studio/pinta-scene-query.ts` cria uma visão em memória de cena 4 admitida e

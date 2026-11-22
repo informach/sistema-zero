@@ -62,11 +62,30 @@ export type PintaRegionScene = Omit<z.infer<typeof header>, 'layers' | 'sets'> &
   sets?: PintaRegionSceneMap[]
 }
 
+export interface PintaRegionScenePlan {
+  readonly id: string
+  readonly name: string
+  readonly indexBytes: number
+  /** One attempt, after the caller has admitted all linked headers/budgets. */
+  decode(): PintaRegionScene | null
+}
+
 /** Only JSON crosses this boundary: cap input before parsing objects, art or base64. */
 export function readPintaRegionScene(
   text: string,
   maxIndexBytes = PINTA_REGION_SCENE_MAX_INDEX_BYTES,
 ): PintaRegionScene | null {
+  return preparePintaRegionScene(text, maxIndexBytes)?.decode() ?? null
+}
+
+/** Header/semantic admission without decoding a single chunk. The private JSON
+ * snapshot stays inside a one-use plan, so callers cannot change it after admission.
+ * PNG/world readers must sum every plan's bytes before calling any decoder.
+ */
+export function preparePintaRegionScene(
+  text: string,
+  maxIndexBytes = PINTA_REGION_SCENE_MAX_INDEX_BYTES,
+): PintaRegionScenePlan | null {
   try {
     if (
       !Number.isSafeInteger(maxIndexBytes) ||
@@ -83,6 +102,7 @@ export function readPintaRegionScene(
     const source = parsed.data
     const maps = [source, ...(source.sets ?? [])]
     let indexBytes = 0
+    const counts = new Map<unknown, number>()
     // Admit every map/definition before decoding the first chunk of the first map.
     for (const map of maps) {
       const grids = map.layers.flatMap((layer) => (layer.kind === 'tiles' ? [layer.cells] : []))
@@ -94,10 +114,37 @@ export function readPintaRegionScene(
         true,
       )
       if (!locations) return null
-      for (const chunks of locations)
-        indexBytes += chunks.length * PINTA_REGION_CELL_COUNT * Int16Array.BYTES_PER_ELEMENT
+      for (let index = 0; index < grids.length; index++) {
+        const count = locations[index]!.length * PINTA_REGION_CELL_COUNT
+        counts.set(grids[index], count)
+        indexBytes += count * Int16Array.BYTES_PER_ELEMENT
+      }
       if (indexBytes > maxIndexBytes) return null
     }
+    if (
+      source.physics === 'legacy' &&
+      maps.some((map) =>
+        map.layers.some(
+          (layer) => layer.kind === 'objects' && layer.objects.some((object) => object.collision),
+        ),
+      )
+    )
+      return null
+    let metadataValid = true
+    validatePintaSceneCells(
+      source,
+      {
+        addIssue: () => {
+          metadataValid = false
+        },
+      },
+      {
+        count: (cells) => counts.get(cells) ?? 0,
+        // Tile contents are checked by decode; all non-cell references are checked now.
+        valid: () => true,
+      },
+    )
+    if (!metadataValid) return null
     const decodeMap = (map: MapHeader): PintaRegionSceneMap | null => {
       const grids = parsePintaRegionLayers(
         map.layers.flatMap((layer) => (layer.kind === 'tiles' ? [layer.cells] : [])),
@@ -112,46 +159,48 @@ export function readPintaRegionScene(
         ),
       }
     }
-    const root = decodeMap(source)
-    if (!root) return null
-    const sets: PintaRegionSceneMap[] = []
-    for (const set of source.sets ?? []) {
-      const decoded = decodeMap(set)
-      if (!decoded) return null
-      sets.push(decoded)
-    }
-    const { sets: sourceSets, ...body } = source
-    const scene: PintaRegionScene = {
-      ...body,
-      layers: root.layers,
-      ...(sourceSets ? { sets } : {}),
-    }
-    if (
-      scene.physics === 'legacy' &&
-      [scene.layers, ...(scene.sets ?? []).map((set) => set.layers)].some((layers) =>
-        layers.some(
-          (layer) => layer.kind === 'objects' && layer.objects.some((object) => object.collision),
-        ),
-      )
-    )
-      return null
-    let valid = true
-    validatePintaSceneCells(
-      scene,
-      {
-        addIssue: () => {
-          valid = false
-        },
+    let consumed = false
+    return Object.freeze({
+      id: source.id,
+      name: source.name,
+      indexBytes,
+      decode(): PintaRegionScene | null {
+        if (consumed) return null
+        consumed = true
+        try {
+          const root = decodeMap(source)
+          if (!root) return null
+          const sets: PintaRegionSceneMap[] = []
+          for (const set of source.sets ?? []) {
+            const decoded = decodeMap(set)
+            if (!decoded) return null
+            sets.push(decoded)
+          }
+          const { sets: sourceSets, ...body } = source
+          const scene: PintaRegionScene = {
+            ...body,
+            layers: root.layers,
+            ...(sourceSets ? { sets } : {}),
+          }
+          // All metadata was admitted above. Only decoded cell contents remain.
+          const tileCounts = new Map(scene.tilesets.map((tileset) => [tileset.id, tileset.count]))
+          const valid = [scene, ...sets].every((map) =>
+            map.layers.every(
+              (layer) =>
+                layer.kind !== 'tiles' ||
+                layer.cells.chunks.every((chunk) =>
+                  chunk.cells.every(
+                    (cell) => cell < 0 || (cell & 4095) < tileCounts.get(layer.tilesetId)!,
+                  ),
+                ),
+            ),
+          )
+          return valid ? scene : null
+        } catch {
+          return null
+        }
       },
-      {
-        count: (cells) => cells.chunks.length * PINTA_REGION_CELL_COUNT,
-        valid: (cells, _cols, _rows, tileCount) =>
-          cells.chunks.every((chunk) =>
-            chunk.cells.every((cell) => cell < 0 || (cell & 4095) < tileCount),
-          ),
-      },
-    )
-    return valid ? scene : null
+    })
   } catch {
     return null
   }

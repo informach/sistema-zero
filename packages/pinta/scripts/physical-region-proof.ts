@@ -2,7 +2,10 @@
 
 export { unzlibSync } from 'fflate'
 export { createStore } from 'idb-keyval'
-export { readPintaRegionImageData } from '../../core/src/studio/pinta-region-image'
+export {
+  readPintaRegionImageData,
+  readPintaRegionImageWorldMetadata,
+} from '../../core/src/studio/pinta-region-image'
 export { readPintaRegionScene } from '../../core/src/studio/pinta-region-scene'
 export { readPintaScene } from '../../core/src/studio/pinta-scene'
 export {

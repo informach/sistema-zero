@@ -1262,3 +1262,134 @@ test('regional geometry queries reopen a signed Vila PNG without a world-sized c
     contentType: 'application/json',
   })
 })
+
+test('linked PNG-5 metadata admits Vila and Cabana together before decoding their regional cells', async ({
+  page,
+  context,
+}, info) => {
+  const encoded = await page.evaluate(async () => {
+    const p = window.pintaPhysicalRegions,
+      { map, cabana, assets } = p.vilaEFloresta()
+    const url = (bytes: Uint8Array) => {
+      let binary = ''
+      for (const byte of bytes) binary += String.fromCharCode(byte)
+      return `data:image/png;base64,${btoa(binary)}`
+    }
+    const make = async (
+      native: typeof map,
+      world?: { version: 1; rootId: string; maps: { id: string; name: string; png: string }[] },
+    ) => {
+      const converted = p.prepareMapRegions(native)
+      if (!converted.ok) throw Error(converted.reason)
+      const scene = await p.exportPintaRegionScene(
+        converted.map,
+        (id) => assets.find((asset) => asset.id === id) ?? null,
+      )
+      const cover = await p.scenePng(scene.scene, 1, 512)
+      if (!cover) throw Error('Capa ausente')
+      const png = await p.embedPintaRegionImage(
+        Uint8Array.from(atob(cover.dataUrl.split(',')[1]!), (char) => char.charCodeAt(0)),
+        scene.json,
+        { world },
+      )
+      return url(png.png)
+    }
+    const child = await make(cabana)
+    return make(map, {
+      version: 1,
+      rootId: map.id,
+      maps: [{ id: cabana.id, name: cabana.name, png: child }],
+    })
+  })
+  await page.close()
+  const reopened = await context.newPage()
+  if (info.project.name === 'cpu-4x')
+    await (await context.newCDPSession(reopened)).send('Emulation.setCPUThrottlingRate', {
+      rate: 4,
+    })
+  await proof(reopened)
+  const result = await reopened.evaluate((encoded) => {
+    const p = window.pintaPhysicalRegions,
+      original = globalThis.atob
+    // The test reads only PNGs just produced above. This is not the product's
+    // bounded PNG decompressor/pixel preflight, which remains a separate boundary.
+    const text = (url: string) => {
+      const bytes = Uint8Array.from(original(url.split(',')[1]!), (char) => char.charCodeAt(0)),
+        view = new DataView(bytes.buffer),
+        size = view.getUint32(33)
+      return new TextDecoder().decode(p.unzlibSync(bytes.subarray(51, 41 + size)))
+    }
+    const rootText = text(encoded),
+      seen: string[] = []
+    let decodes = 0,
+      headersBeforeCells = true,
+      remainingBudgetRespected = true
+    globalThis.atob = (source) => {
+      decodes++
+      return original(source)
+    }
+    try {
+      const maps = p.readPintaRegionImageWorldMetadata(rootText, (descriptor, remaining) => {
+        headersBeforeCells &&= decodes === 0
+        seen.push(descriptor.id)
+        const decoded = text(descriptor.png)
+        remainingBudgetRespected &&= new TextEncoder().encode(decoded).byteLength <= remaining
+        return decoded
+      })
+      if (!maps) throw Error('O mundo não reabriu')
+      const validDecodes = decodes
+      const root = JSON.parse(rootText)
+      root.world.maps[0].name = 'Nome trocado'
+      decodes = 0
+      const refused =
+        p.readPintaRegionImageWorldMetadata(JSON.stringify(root), (descriptor) =>
+          text(descriptor.png),
+        ) === null
+      return {
+        ids: [...maps.keys()],
+        seen,
+        headersBeforeCells,
+        remainingBudgetRespected,
+        validDecodes,
+        rootObjects: p.createRegionSceneQueries(maps.get('vila-e-floresta')!.scene).objects()
+          .length,
+        rootObjectIds: p
+          .createRegionSceneQueries(maps.get('vila-e-floresta')!.scene)
+          .objects()
+          .map((object) => object.id),
+        childStart: p.createRegionSceneQueries(maps.get('cabana')!.scene).spawn(),
+        childHasNoNestedWorld: maps.get('cabana')!.world === undefined,
+        refusedWrongName: refused,
+        decodesBeforeRefusal: decodes,
+        publicReaderRefused: p.readPintaScene(maps.get('vila-e-floresta')!.scene) === null,
+      }
+    } finally {
+      globalThis.atob = original
+    }
+  }, encoded)
+  expect(result.ids).toEqual(['vila-e-floresta', 'cabana'])
+  expect(result.rootObjects).toBe(6)
+  expect(result.rootObjectIds).toEqual([
+    'start',
+    'door',
+    'danger',
+    'path',
+    'morador-obj',
+    'instance',
+  ])
+  expect(result.validDecodes).toBeGreaterThan(1)
+  expect(result).toMatchObject({
+    seen: ['cabana'],
+    headersBeforeCells: true,
+    remainingBudgetRespected: true,
+    childStart: { x: 32, y: 32 },
+    childHasNoNestedWorld: true,
+    refusedWrongName: true,
+    decodesBeforeRefusal: 0,
+    publicReaderRefused: true,
+  })
+  await test.info().attach('metadados-mundo-regional.json', {
+    body: Buffer.from(JSON.stringify(result, null, 2)),
+    contentType: 'application/json',
+  })
+})
