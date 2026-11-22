@@ -1,7 +1,7 @@
 /**
  * O caminho do editor com as áreas do projeto (abrir → gesto nos blocos → transação visual), com o
  * analisador CPython de verdade: os comentários de área, a codificação, a ida de uma linha para
- * dentro de uma função e a exclusão da última área. Sem Python 3.12+ no PATH, pula com aviso.
+ * dentro de uma função e a exclusão da última área. Sem Python 3.13+ no PATH, pula com aviso.
  */
 import { afterEach, describe, expect, test } from 'bun:test'
 import { fileURLToPath } from 'node:url'
@@ -24,10 +24,14 @@ import { preparePythonVisualTransaction } from './visualTransaction'
 
 const DRIVER = fileURLToPath(new URL('../blocks/areas.differential.py', import.meta.url))
 
+/**
+ * O analisador do Estúdio (`analyzer.py`) usa `ast.parse(..., optimize=0)`, que só existe a partir do
+ * Python 3.13 (o do Pyodide): num 3.12 ele recusa tudo, e a prova não diria nada.
+ */
 function findPython(): string | undefined {
   for (const command of ['python3', 'python']) {
     try {
-      const probe = Bun.spawnSync([command, '-c', 'import sys; print(sys.version_info >= (3, 12))'])
+      const probe = Bun.spawnSync([command, '-c', 'import sys; print(sys.version_info >= (3, 13))'])
       if (probe.exitCode === 0 && probe.stdout.toString().trim() === 'True') return command
     } catch {
       // sem este comando: tenta o próximo
@@ -36,7 +40,7 @@ function findPython(): string | undefined {
   return undefined
 }
 const PYTHON = findPython()
-if (!PYTHON) console.warn('[areas.transaction] sem Python 3.12+ no PATH: prova do editor pulada')
+if (!PYTHON) console.warn('[areas.transaction] sem Python 3.13+ no PATH: prova do editor pulada')
 
 function service(request: Record<string, unknown>) {
   const result = Bun.spawnSync([PYTHON!, '-I', DRIVER], {

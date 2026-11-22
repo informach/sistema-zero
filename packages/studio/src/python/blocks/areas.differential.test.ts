@@ -3,7 +3,7 @@
  * programa roda na ordem original e na ordem que `planPythonOrganize` escolheu, e o que ele
  * escreve, o erro em que para e os valores que sobram têm de ser iguais.
  *
- * Sem Python 3.12+ no PATH a prova é pulada com aviso (como a do executor sem Chromium).
+ * Sem Python 3.13+ no PATH a prova é pulada com aviso (como a do executor sem Chromium).
  */
 import { describe, expect, test } from 'bun:test'
 import { fileURLToPath } from 'node:url'
@@ -12,10 +12,14 @@ import { analyzePythonModuleAreas, planPythonOrganize } from './areas'
 
 const DRIVER = fileURLToPath(new URL('./areas.differential.py', import.meta.url))
 
+/**
+ * O analisador do Estúdio (`analyzer.py`) usa `ast.parse(..., optimize=0)`, que só existe a partir do
+ * Python 3.13 (o do Pyodide): num 3.12 ele recusa tudo, e a prova não diria nada.
+ */
 function findPython(): string | undefined {
   for (const command of ['python3', 'python']) {
     try {
-      const probe = Bun.spawnSync([command, '-c', 'import sys; print(sys.version_info >= (3, 12))'])
+      const probe = Bun.spawnSync([command, '-c', 'import sys; print(sys.version_info >= (3, 13))'])
       if (probe.exitCode === 0 && probe.stdout.toString().trim() === 'True') return command
     } catch {
       // sem este comando: tenta o próximo
@@ -25,7 +29,7 @@ function findPython(): string | undefined {
 }
 
 const PYTHON = findPython()
-if (!PYTHON) console.warn('[areas.differential] sem Python 3.12+ no PATH: prova diferencial pulada')
+if (!PYTHON) console.warn('[areas.differential] sem Python 3.13+ no PATH: prova diferencial pulada')
 
 function driver<T>(request: unknown): T {
   const result = Bun.spawnSync([PYTHON!, '-I', DRIVER], {
