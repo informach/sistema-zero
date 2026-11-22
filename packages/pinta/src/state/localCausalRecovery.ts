@@ -93,40 +93,33 @@ export function localRecoveryClosure<Asset extends PintaMemoryAsset>(
 }
 
 /** A portal follows the original global target even when the map has an embedded alias. */
-function restoreDoorTargets<Map extends TilemapAsset<TilemapCells>>(
+function restoreDoorTargets(
   before: TilemapAsset<TilemapCells>,
-  copy: Map,
+  copy: TilemapAsset<TilemapCells>,
   originals: ReadonlyMap<string, PintaMemoryAsset>,
   recoveredIds: ReadonlyMap<string, string>,
-): Map {
-  return {
-    ...copy,
-    layers: copy.layers.map((layer, i) => {
-      const original = before.layers[i]
-      if (!original || !isObjectLayer(original) || !isObjectLayer(layer)) return layer
-      return {
-        ...layer,
-        objects: layer.objects.map((obj, j) => {
-          const source = original.objects[j]
-          if (source?.role !== 'door') return obj
-          const properties = { ...obj.properties }
-          for (const key of ['destino', 'destination']) {
-            const value = source.properties[key]
-            if (value === undefined) continue
-            const selector = typeof value === 'object' ? value.value : value
-            const binding =
-              typeof selector === 'string' ? pintaDoorBinding(selector, originals) : null
-            const target = binding?.type === 'target' ? recoveredIds.get(binding.id) : undefined
-            properties[key] = target
-              ? typeof value === 'object'
-                ? { ...value, value: target }
-                : target
-              : value
-          }
-          return { ...obj, properties }
-        }),
+): void {
+  for (const [i, layer] of copy.layers.entries()) {
+    const original = before.layers[i]
+    if (!original || !isObjectLayer(original) || !isObjectLayer(layer)) continue
+    for (const [j, obj] of layer.objects.entries()) {
+      const source = original.objects[j]
+      if (source?.role !== 'door') continue
+      const properties = { ...obj.properties }
+      for (const key of ['destino', 'destination']) {
+        const value = source.properties[key]
+        if (value === undefined) continue
+        const selector = typeof value === 'object' ? value.value : value
+        const binding = typeof selector === 'string' ? pintaDoorBinding(selector, originals) : null
+        const target = binding?.type === 'target' ? recoveredIds.get(binding.id) : undefined
+        properties[key] = target
+          ? typeof value === 'object'
+            ? { ...value, value: target }
+            : target
+          : value
       }
-    }),
+      layer.objects[j] = { ...obj, properties }
+    }
   }
 }
 
@@ -167,12 +160,9 @@ export function recoverLocalAssets<Asset extends PintaMemoryAsset>(
     const original = selected[index]!
     const copy = { ...restored, createdAt: original.createdAt }
     if (copy.kind === 'tilemap' && original.kind === 'tilemap')
-      return restoreDoorTargets(original, copy, snapshot.assets, imported.idMap)
+      restoreDoorTargets(original, copy, snapshot.assets, imported.idMap)
     if (copy.kind === 'map-set' && original.kind === 'map-set')
-      return {
-        ...copy,
-        map: restoreDoorTargets(original.map, copy.map, snapshot.assets, imported.idMap),
-      }
+      restoreDoorTargets(original.map, copy.map, snapshot.assets, imported.idMap)
     return copy
   })
   const projected = new Map(snapshot.assets)
