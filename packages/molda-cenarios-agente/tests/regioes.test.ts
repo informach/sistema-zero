@@ -67,6 +67,35 @@ test('sobreposição e vizinha desconhecida voltam com o recado, sem gravar', as
   expect((await host.abrirCenario(id)).documento.regioes).toHaveLength(1)
 })
 
+test('a nona vizinha volta com o recado em português, sem gravar (revisão do lote 7)', async () => {
+  const { host, a, id } = await cenarioVazio()
+  await a.desenharRegiao(id, { nome: 'Vila', x0: -10, z0: -10, x1: 0, z1: 10 })
+  for (let i = 0; i < 8; i++)
+    await a.desenharRegiao(id, {
+      nome: `V${i}`,
+      x0: -10 + i * 1.25,
+      z0: 10,
+      x1: -10 + (i + 1) * 1.25,
+      z1: 12,
+      vizinhas: ['Vila'],
+    })
+  let recado = ''
+  try {
+    await a.desenharRegiao(id, {
+      nome: 'Nona',
+      x0: -12,
+      z0: -10,
+      x1: -10,
+      z1: 10,
+      vizinhas: ['Vila'],
+    })
+  } catch (erro) {
+    recado = erro instanceof Error ? erro.message : String(erro)
+  }
+  expect(recado).toBe('A região Vila tem 9 vizinhas. Uma região pode ter até 8.')
+  expect((await host.abrirCenario(id)).documento.regioes).toHaveLength(9)
+})
+
 test('as três ferramentas existem, com nomes distintos do consultar_regiao', () => {
   const nomes = FERRAMENTAS.map((f) => f.name)
   for (const nome of ['desenhar_regiao', 'apagar_regiao', 'listar_regioes', 'consultar_regiao'])

@@ -51,6 +51,15 @@ export function useRegioes({
   atual.current = { criando, ativo, ler: e.lerRascunho, mudar: e.mudar, abrir: e.abrir }
 
   useEffect(() => () => palco.current?.definirCapturaDeCaminho(null, 'regioes'), [palco])
+  // Fora da aba (ou no Testar), o "criando" e os cantos não sobrevivem: o rascunho da base já é
+  // desfeito com o `ativo` falso, e sem isto a oficina ficava presa marcando cantos que ninguém via
+  // (revisão do lote 7).
+  useEffect(() => {
+    if (ativo) return
+    setCriando(false)
+    setMovendoCantos(false)
+    setSelecionado(null)
+  }, [ativo])
   useEffect(() => {
     const p = palco.current
     if (!p) return
@@ -110,6 +119,13 @@ export function useRegioes({
       }
       const r = s.ler()
       if (!r) return
+      if (g.pontos.length !== 4) {
+        // Um Delete apagou um canto: a região continua com os quatro, e o rascunho novo (a mesma
+        // caixa) refaz a captura com eles (revisão do lote 7).
+        setSelecionado(null)
+        s.mudar({ ...r })
+        return
+      }
       setSelecionado(g.selecionado)
       s.mudar({ ...r, caixa: caixaPelosCantos(doc, r.caixa, g.pontos, g.selecionado) })
     },
@@ -144,6 +160,8 @@ export function useRegioes({
       setCriando(false)
       setMovendoCantos(false)
       setSelecionado(null)
+      // Como "Nova região": a seleção de antes não fica viva por trás da região aberta.
+      controlador.selecionar([])
     },
     moverCantos: (ligar: boolean) => {
       if (e.aplicando) return

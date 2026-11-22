@@ -265,6 +265,12 @@ function SeloDeGuardar({
   )
 }
 
+/**
+ * A ferramenta Regiões aberta (com rascunho ou marcando os cantos) segura a oficina como os
+ * rascunhos do Jogo e do Ambiente (revisão do lote 7).
+ */
+const regioesAbertas = (r: { ocupado: boolean; criando: boolean }) => r.ocupado || r.criando
+
 function OficinaAberta({
   host,
   aberto,
@@ -592,12 +598,7 @@ function OficinaAberta({
   regioesAtual.current = regioes
   abaAtual.current = aba
   const edicaoAberta =
-    agua.ocupado ||
-    caminhos.ocupado ||
-    jogo.ocupado ||
-    ambiente.ocupado ||
-    regioes.ocupado ||
-    regioes.criando
+    agua.ocupado || caminhos.ocupado || jogo.ocupado || ambiente.ocupado || regioesAbertas(regioes)
   bloqueioDaTransferencia.current =
     edicaoAberta || terreno.ocupado || emEnsaio || janelaTeste || escolhendoPersonagem
   const aoEditarPontosDeCaminho = useCallback(
@@ -621,7 +622,12 @@ function OficinaAberta({
   const editarCaminho = caminhos.editar
   const aoSelecionarMarcador = useCallback(
     (id: string) => {
-      if (jogoAtual.current.ocupado || ambienteAtual.current.ocupado) return
+      if (
+        jogoAtual.current.ocupado ||
+        ambienteAtual.current.ocupado ||
+        regioesAbertas(regioesAtual.current)
+      )
+        return
       if (controlador.getState().somarSelecao) {
         controlador.tocar(id, true)
         return
@@ -714,7 +720,8 @@ function OficinaAberta({
         aguaAtual.current.ocupado ||
         caminhosAtual.current.ocupado ||
         jogoAtual.current.ocupado ||
-        ambienteAtual.current.ocupado
+        ambienteAtual.current.ocupado ||
+        regioesAbertas(regioesAtual.current)
       )
         return false
       if (
@@ -993,7 +1000,11 @@ function OficinaAberta({
     ponto: LocalDeColocacao | null,
     aceite?: string,
   ) => {
-    if (jogoAtual.current.ocupado || ambienteAtual.current.ocupado) {
+    if (
+      jogoAtual.current.ocupado ||
+      ambienteAtual.current.ocupado ||
+      regioesAbertas(regioesAtual.current)
+    ) {
       setErroDoMolde('Termine ou cancele o rascunho antes de colocar um modelo.')
       return
     }
@@ -1027,7 +1038,13 @@ function OficinaAberta({
     const alvo = troca.current
     const paraPincel = controlador.getState().ferramenta === 'espalhar'
     const aplicarModelo = (modelo: ModeloDeBiblioteca, lugar: LocalDeColocacao | null) => {
-      if (jogoAtual.current.ocupado || ambienteAtual.current.ocupado || ensaioAtivo.current) return
+      if (
+        jogoAtual.current.ocupado ||
+        ambienteAtual.current.ocupado ||
+        regioesAbertas(regioesAtual.current) ||
+        ensaioAtivo.current
+      )
+        return
       if (paraCaminho) {
         const atual = caminhosAtual.current
         if (!idDoCaminho) {
@@ -1160,7 +1177,8 @@ function OficinaAberta({
         aguaAtual.current.ocupado ||
         caminhosAtual.current.ocupado ||
         jogoAtual.current.ocupado ||
-        ambienteAtual.current.ocupado
+        ambienteAtual.current.ocupado ||
+        regioesAbertas(regioesAtual.current)
       ) {
         if (
           evento.key === 'Escape' &&
@@ -1169,6 +1187,7 @@ function OficinaAberta({
           evento.preventDefault()
           if (jogoAtual.current.ocupado) jogoAtual.current.cancelar()
           else if (ambienteAtual.current.ocupado) ambienteAtual.current.cancelar()
+          else if (regioesAbertas(regioesAtual.current)) regioesAtual.current.cancelar()
           else if (caminhosAtual.current.ocupado) caminhosAtual.current.cancelar()
           else aguaAtual.current.cancelar()
         }
@@ -1538,7 +1557,11 @@ function OficinaAberta({
                 aria-label={COPY.oficina.abas[valor]}
                 aria-pressed={aba === valor}
                 disabled={
-                  agua.aplicando || caminhos.aplicando || jogo.aplicando || ambiente.aplicando
+                  agua.aplicando ||
+                  caminhos.aplicando ||
+                  jogo.aplicando ||
+                  ambiente.aplicando ||
+                  regioes.aplicando
                 }
                 onClick={() => {
                   if (valor === aba) return
@@ -1546,6 +1569,7 @@ function OficinaAberta({
                   caminhos.cancelar()
                   jogo.cancelar()
                   ambiente.cancelar()
+                  regioes.cancelar()
                   if (valor !== 'objetos') pincel.fechar()
                   setAba(valor)
                   setModoPainel('escolha')
@@ -1891,7 +1915,13 @@ function OficinaAberta({
                   key={tipo}
                   icone={Icone}
                   rotulo={NOMES_JOGO[tipo]}
-                  desligado={jogo.aplicando || terreno.ocupado || !relevoPronto || estado.ocupado}
+                  desligado={
+                    jogo.aplicando ||
+                    regioesAbertas(regioes) ||
+                    terreno.ocupado ||
+                    !relevoPronto ||
+                    estado.ocupado
+                  }
                   aoTocar={() => {
                     jogo.iniciar(tipo)
                     setGavetaAberta(false)
@@ -2045,7 +2075,14 @@ function OficinaAberta({
         <div
           className="mld-workshop-stage flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden"
           onDragOver={(evento) => {
-            if (emEnsaio || agua.ocupado || jogo.ocupado || ambiente.ocupado) return
+            if (
+              emEnsaio ||
+              agua.ocupado ||
+              jogo.ocupado ||
+              ambiente.ocupado ||
+              regioesAbertas(regioes)
+            )
+              return
             if (!evento.dataTransfer.types.includes(ARRASTO_DE_MODELO)) return
             evento.preventDefault()
             evento.dataTransfer.dropEffect = 'copy'
@@ -2065,7 +2102,13 @@ function OficinaAberta({
           }}
           onDrop={(evento) => {
             palco.current?.esconderPreviaDeModelo(true)
-            if (!emEnsaio && !agua.ocupado && !jogo.ocupado && !ambiente.ocupado)
+            if (
+              !emEnsaio &&
+              !agua.ocupado &&
+              !jogo.ocupado &&
+              !ambiente.ocupado &&
+              !regioesAbertas(regioes)
+            )
               aoSoltarNoPalco(evento)
           }}
         >

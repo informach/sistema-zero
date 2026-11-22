@@ -125,6 +125,29 @@ describe('verbos do palco', () => {
     })
   })
 
+  test('girar a cena toca os botões da vista do jogo 3D, seguidos, num gesto só', () => {
+    // Prévia de 800 × 600: o botão fica a 32 px da direita; "para o outro lado" a 122 px de baixo,
+    // "para um lado" a 168 px (Ilha, Aula 2, Parte 2: a chave atrás da pedra aparece girando).
+    const outro = { seletor: 'iframe[title="Pré-visualização"]', u: 768 / 800, v: 478 / 600 }
+    expect(agir('girar a cena para o outro lado 3 vezes', jogos, pagina())).toEqual([
+      { fazer: 'clicar', alvo: outro },
+      { fazer: 'clicar', alvo: outro },
+      { fazer: 'clicar', alvo: outro },
+    ])
+    expect(agir('girar a cena', jogos, pagina())).toEqual([
+      {
+        fazer: 'clicar',
+        alvo: { seletor: 'iframe[title="Pré-visualização"]', u: 768 / 800, v: 432 / 600 },
+      },
+    ])
+    // Sem a prévia (o Estúdio fechado), o gesto pede para expandir.
+    expect(() => agir('girar a cena 2 vezes', jogos, pagina({ previa: () => null }))).toThrow(
+      /Expanda/,
+    )
+    // O jogo fica à vista para o giro.
+    expect(jogoPara('girar a cena para o outro lado 6 vezes')).toBe(true)
+  })
+
   test('expandir e reduzir o Estúdio só terminam com ele no outro estado', () => {
     // Farol, Parte 6: a seta segurada logo depois de expandir mediu a prévia ainda no lugar antigo.
     // Ilha, Aula 2, Parte 4: expandido com o projeto ainda abrindo, a área ficava sem os blocos; o

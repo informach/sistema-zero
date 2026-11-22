@@ -1,0 +1,618 @@
+{
+  "pertenca": {
+    "regioes": [
+      {
+        "id": "vila",
+        "nome": "Vila",
+        "caixa": {
+          "x0": -50,
+          "z0": -50,
+          "x1": 0,
+          "z1": 50
+        },
+        "vizinhas": ["praia"]
+      },
+      {
+        "id": "praia",
+        "nome": "Praia",
+        "caixa": {
+          "x0": 0,
+          "z0": -50,
+          "x1": 50,
+          "z1": 50
+        },
+        "vizinhas": ["vila"]
+      }
+    ],
+    "itens": {
+      "entidades": [
+        {
+          "id": "casa",
+          "propriedades": {}
+        },
+        {
+          "id": "bau",
+          "propriedades": {
+            "moedas": 3
+          }
+        },
+        {
+          "id": "lago"
+        },
+        {
+          "id": "mar"
+        }
+      ],
+      "nos": [
+        {
+          "id": "so-na-vila",
+          "entidade": null,
+          "volume": {
+            "min": {
+              "x": -20,
+              "y": 0,
+              "z": -5
+            },
+            "max": {
+              "x": -10,
+              "y": 2,
+              "z": 5
+            }
+          }
+        },
+        {
+          "id": "na-borda",
+          "entidade": null,
+          "volume": {
+            "min": {
+              "x": -2,
+              "y": 0,
+              "z": -2
+            },
+            "max": {
+              "x": 2,
+              "y": 2,
+              "z": 2
+            }
+          }
+        },
+        {
+          "id": "plano-na-borda",
+          "entidade": null,
+          "volume": {
+            "min": {
+              "x": 0,
+              "y": 0,
+              "z": -2
+            },
+            "max": {
+              "x": 0,
+              "y": 2,
+              "z": 2
+            }
+          }
+        },
+        {
+          "id": "encosta-na-borda",
+          "entidade": null,
+          "volume": {
+            "min": {
+              "x": -4,
+              "y": 0,
+              "z": -2
+            },
+            "max": {
+              "x": 0,
+              "y": 2,
+              "z": 2
+            }
+          }
+        },
+        {
+          "id": "fora",
+          "entidade": null,
+          "volume": {
+            "min": {
+              "x": 60,
+              "y": 0,
+              "z": 60
+            },
+            "max": {
+              "x": 70,
+              "y": 2,
+              "z": 70
+            }
+          }
+        },
+        {
+          "id": "ator",
+          "entidade": "casa",
+          "volume": {
+            "min": {
+              "x": -20,
+              "y": 0,
+              "z": -20
+            },
+            "max": {
+              "x": -18,
+              "y": 2,
+              "z": -18
+            }
+          },
+          "preservarHierarquia": true
+        },
+        {
+          "id": "bau-no",
+          "entidade": "bau",
+          "volume": {
+            "min": {
+              "x": 10,
+              "y": 0,
+              "z": 10
+            },
+            "max": {
+              "x": 12,
+              "y": 2,
+              "z": 12
+            }
+          }
+        },
+        {
+          "id": "lote",
+          "entidade": null,
+          "volume": {
+            "min": {
+              "x": -30,
+              "y": 0,
+              "z": 0
+            },
+            "max": {
+              "x": -25,
+              "y": 2,
+              "z": 5
+            }
+          },
+          "faixas": [
+            {
+              "entidade": "casa"
+            },
+            {
+              "entidade": "bau"
+            }
+          ]
+        },
+        {
+          "id": "lote-simples",
+          "entidade": null,
+          "volume": {
+            "min": {
+              "x": 20,
+              "y": 0,
+              "z": 0
+            },
+            "max": {
+              "x": 25,
+              "y": 2,
+              "z": 5
+            }
+          },
+          "faixas": [
+            {
+              "entidade": "casa"
+            }
+          ]
+        },
+        {
+          "id": "lago-a",
+          "entidade": "lago",
+          "volume": {
+            "min": {
+              "x": -10,
+              "y": 0,
+              "z": 20
+            },
+            "max": {
+              "x": -5,
+              "y": 2,
+              "z": 25
+            }
+          },
+          "efeito": "agua"
+        },
+        {
+          "id": "lago-b",
+          "entidade": "lago",
+          "volume": {
+            "min": {
+              "x": -5,
+              "y": 0,
+              "z": 20
+            },
+            "max": {
+              "x": -1,
+              "y": 2,
+              "z": 25
+            }
+          },
+          "efeito": "agua"
+        },
+        {
+          "id": "mar-no",
+          "entidade": "mar",
+          "volume": {
+            "min": {
+              "x": -100,
+              "y": 0,
+              "z": -100
+            },
+            "max": {
+              "x": 100,
+              "y": 2,
+              "z": 100
+            }
+          },
+          "efeito": "agua"
+        }
+      ],
+      "colisoes": [
+        {
+          "id": "chao",
+          "entidade": null,
+          "tipo": "terreno",
+          "volume": {
+            "min": {
+              "x": -50,
+              "y": 0,
+              "z": -50
+            },
+            "max": {
+              "x": 50,
+              "y": 2,
+              "z": 50
+            }
+          }
+        },
+        {
+          "id": "piso",
+          "entidade": null,
+          "tipo": "caixa",
+          "volume": {
+            "min": {
+              "x": -50,
+              "y": 0,
+              "z": -50
+            },
+            "max": {
+              "x": 50,
+              "y": 2,
+              "z": 50
+            }
+          }
+        },
+        {
+          "id": "pedra",
+          "entidade": null,
+          "tipo": "caixa",
+          "volume": {
+            "min": {
+              "x": 30,
+              "y": 0,
+              "z": 30
+            },
+            "max": {
+              "x": 32,
+              "y": 2,
+              "z": 32
+            }
+          }
+        },
+        {
+          "id": "bau-col",
+          "entidade": "bau",
+          "tipo": "caixa",
+          "volume": {
+            "min": {
+              "x": 10,
+              "y": 0,
+              "z": 10
+            },
+            "max": {
+              "x": 12,
+              "y": 2,
+              "z": 12
+            }
+          }
+        },
+        {
+          "id": "lago-col",
+          "entidade": "lago",
+          "tipo": "agua",
+          "volume": {
+            "min": {
+              "x": -10,
+              "y": 0,
+              "z": 20
+            },
+            "max": {
+              "x": -6,
+              "y": 2,
+              "z": 25
+            }
+          }
+        },
+        {
+          "id": "lago-fundo",
+          "entidade": "lago",
+          "tipo": "caixa",
+          "volume": {
+            "min": {
+              "x": -3,
+              "y": 0,
+              "z": 20
+            },
+            "max": {
+              "x": 3,
+              "y": 2,
+              "z": 25
+            }
+          }
+        }
+      ],
+      "aguas": [
+        {
+          "id": "lago",
+          "tipo": "lago"
+        },
+        {
+          "id": "mar",
+          "tipo": "mar"
+        },
+        {
+          "id": "poca",
+          "tipo": "lago"
+        }
+      ],
+      "plano": {
+        "colisao": "piso"
+      }
+    },
+    "esperado": [
+      {
+        "id": "vila",
+        "nos": ["so-na-vila", "na-borda", "plano-na-borda", "encosta-na-borda", "lago-a", "lago-b"],
+        "colisoes": ["lago-col", "lago-fundo"],
+        "aguas": ["lago"]
+      },
+      {
+        "id": "praia",
+        "nos": ["na-borda", "plano-na-borda", "lote-simples", "lago-a", "lago-b"],
+        "colisoes": ["pedra", "lago-col", "lago-fundo"],
+        "aguas": ["lago"]
+      }
+    ]
+  },
+  "plano": [
+    {
+      "regioes": [
+        {
+          "id": "a",
+          "nome": "Vila",
+          "caixa": {
+            "x0": 0,
+            "z0": 0,
+            "x1": 100,
+            "z1": 100
+          },
+          "vizinhas": ["b"]
+        },
+        {
+          "id": "b",
+          "nome": "Floresta",
+          "caixa": {
+            "x0": 100,
+            "z0": 0,
+            "x1": 200,
+            "z1": 100
+          },
+          "vizinhas": ["a", "c"]
+        },
+        {
+          "id": "c",
+          "nome": "Caverna",
+          "caixa": {
+            "x0": 200,
+            "z0": 0,
+            "x1": 300,
+            "z1": 100
+          },
+          "vizinhas": ["b"]
+        }
+      ],
+      "passos": [
+        {
+          "foco": [50, 50],
+          "agora": 0,
+          "esperado": {
+            "atual": "a",
+            "segura": "a",
+            "obrigatorias": ["a", "b"],
+            "carregadas": ["a", "b"],
+            "entradas": ["Vila"]
+          }
+        },
+        {
+          "foco": [99.8, 50],
+          "agora": 1,
+          "esperado": {
+            "atual": "a",
+            "segura": "a",
+            "obrigatorias": ["a", "b"],
+            "carregadas": ["a", "b"],
+            "entradas": []
+          }
+        },
+        {
+          "foco": [100.3, 50],
+          "agora": 2,
+          "esperado": {
+            "atual": "a",
+            "segura": "a",
+            "obrigatorias": ["a", "b"],
+            "carregadas": ["a", "b"],
+            "entradas": []
+          }
+        },
+        {
+          "foco": [100.6, 50],
+          "agora": 3,
+          "esperado": {
+            "atual": "b",
+            "segura": "b",
+            "obrigatorias": ["a", "b", "c"],
+            "carregadas": ["a", "b", "c"],
+            "entradas": ["Floresta"]
+          }
+        },
+        {
+          "foco": [150, 50],
+          "agora": 4,
+          "esperado": {
+            "atual": "b",
+            "segura": "b",
+            "obrigatorias": ["a", "b", "c"],
+            "carregadas": ["a", "b", "c"],
+            "entradas": []
+          }
+        },
+        {
+          "foco": [50, 50],
+          "agora": 5,
+          "esperado": {
+            "atual": "a",
+            "segura": "a",
+            "obrigatorias": ["a", "b"],
+            "carregadas": ["a", "b", "c"],
+            "entradas": ["Vila"]
+          }
+        },
+        {
+          "foco": [50, 50],
+          "agora": 6.5,
+          "esperado": {
+            "atual": "a",
+            "segura": "a",
+            "obrigatorias": ["a", "b"],
+            "carregadas": ["a", "b", "c"],
+            "entradas": []
+          }
+        },
+        {
+          "foco": [50, 50],
+          "agora": 7.1,
+          "esperado": {
+            "atual": "a",
+            "segura": "a",
+            "obrigatorias": ["a", "b"],
+            "carregadas": ["a", "b"],
+            "entradas": []
+          }
+        },
+        {
+          "foco": [50, 50],
+          "agora": 8,
+          "camera": [50, -100],
+          "esperado": {
+            "atual": "a",
+            "segura": "a",
+            "obrigatorias": ["a", "b"],
+            "carregadas": ["a", "b", "c"],
+            "entradas": []
+          }
+        },
+        {
+          "foco": [50, 150],
+          "agora": 9,
+          "esperado": {
+            "atual": null,
+            "segura": "a",
+            "obrigatorias": ["a", "b"],
+            "carregadas": ["a", "b", "c"],
+            "entradas": []
+          }
+        },
+        {
+          "foco": [50, 50],
+          "agora": 10,
+          "esperado": {
+            "atual": "a",
+            "segura": "a",
+            "obrigatorias": ["a", "b"],
+            "carregadas": ["a", "b", "c"],
+            "entradas": ["Vila"]
+          }
+        }
+      ]
+    },
+    {
+      "regioes": [
+        {
+          "id": "a",
+          "nome": "Vila",
+          "caixa": {
+            "x0": 0,
+            "z0": 0,
+            "x1": 100,
+            "z1": 100
+          },
+          "vizinhas": ["b"]
+        },
+        {
+          "id": "b",
+          "nome": "Floresta",
+          "caixa": {
+            "x0": 100,
+            "z0": 0,
+            "x1": 200,
+            "z1": 100
+          },
+          "vizinhas": ["a", "c"]
+        },
+        {
+          "id": "c",
+          "nome": "Caverna",
+          "caixa": {
+            "x0": 200,
+            "z0": 0,
+            "x1": 300,
+            "z1": 100
+          },
+          "vizinhas": ["b"]
+        }
+      ],
+      "passos": [
+        {
+          "foco": [350, 50],
+          "agora": 0,
+          "esperado": {
+            "atual": null,
+            "segura": "c",
+            "obrigatorias": ["b", "c"],
+            "carregadas": ["b", "c"],
+            "entradas": []
+          }
+        },
+        {
+          "foco": [250, 50],
+          "agora": 1,
+          "esperado": {
+            "atual": "c",
+            "segura": "c",
+            "obrigatorias": ["b", "c"],
+            "carregadas": ["b", "c"],
+            "entradas": ["Caverna"]
+          }
+        }
+      ]
+    }
+  ]
+}

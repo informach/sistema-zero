@@ -36,6 +36,7 @@ export default defineConfig({
         /engine-gpu-cycles\.spec\.ts/,
         /engine-2d-offscreen\.spec\.ts/,
         /devtools-cost\.spec\.ts/,
+        /engine-regions\.spec\.ts/,
       ],
       use: {
         ...devices['Desktop Chrome'],

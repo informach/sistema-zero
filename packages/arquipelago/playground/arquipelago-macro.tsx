@@ -224,7 +224,7 @@ function MundoMacro({
   )
   const chaoPublicado = useCallback(
     (x: number, z: number) => {
-      const p = ativas.find((a) => a.regiao.contem(x, z))
+      const p = ativas.find((a) => a.regiaoDaIlha.contem(x, z))
       if (!p) return alturaDoArquipelago(x, z)
       if (!p.alturas) return p.piso(x, z) ?? FUNDO_DO_ARQUIPELAGO
       return p.alturas.temChao?.({ x, z }) === false ? FUNDO_DO_ARQUIPELAGO : p.alturas(x, z)
@@ -544,7 +544,7 @@ function Blockout() {
       const ilha = territorioEm(m.x, m.z)
       if (
         ilha &&
-        !cenariosPublicados.current.some((p) => p.regiao.contem(m.x, m.z)) &&
+        !cenariosPublicados.current.some((p) => p.regiaoDaIlha.contem(m.x, m.z)) &&
         (ilha.id !== 'bosque' || ensaio.current.ponteInstalada)
       ) {
         const local = paraLocal(ilha, m)
@@ -590,7 +590,7 @@ function Blockout() {
     contexto.movimento.ida = null
     // Na ilha publicada, a altura e o chão são os do cenário compilado: a chegada segura dele
     // diz onde pisar, e a colisão do destino solta a espera (`CenarioPublicado`).
-    const publicado = cenariosPublicados.current.find((c) => c.regiao.contem(p.x, p.z))
+    const publicado = cenariosPublicados.current.find((c) => c.regiaoDaIlha.contem(p.x, p.z))
     if (publicado) {
       try {
         const piso = publicado.piso(p.x, p.z)

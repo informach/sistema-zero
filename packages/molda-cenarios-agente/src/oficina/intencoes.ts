@@ -28,6 +28,7 @@ import {
   dominioDoChao,
   type EstadoDoTerreno,
   encaixarNaVizinha,
+  errosDasRegioes,
   executarLote,
   type FonteDeAlturas,
   type IntencaoDeAguaSchema,
@@ -591,14 +592,15 @@ export function criarIntencoes(host: CenariosHost) {
         },
         vizinhas,
       }
-      return gravar(
-        aberto,
-        cenarioId,
-        comandosParaDefinirRegiao(regioes, regiao),
-        null,
-        opcoes,
-        existente ? [] : [id],
-      )
+      const comandos = comandosParaDefinirRegiao(regioes, regiao)
+      // As regiões como ficariam depois do lote: o recado do núcleo chega antes do esquema do
+      // servidor (a nona vizinha de uma região voltava como "comando fora do formato", revisão do
+      // lote 7).
+      const depois = new Map(regioes.map((r) => [r.id, r]))
+      for (const c of comandos) depois.set(c.regiao.id, c.regiao)
+      const [problema] = errosDasRegioes([...depois.values()], aberto.documento.base)
+      if (problema) throw Error(problema)
+      return gravar(aberto, cenarioId, comandos, null, opcoes, existente ? [] : [id])
     },
 
     /** Apaga a região pelo nome ou pelo id; quem a citava como vizinha deixa de citar. */

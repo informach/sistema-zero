@@ -196,6 +196,12 @@ export const VERBOS: Verbo[] = [
       'Toca no jogo da pré-visualização do Estúdio: num alvo do jogo pronto da aula ou num ponto (tocar prévia 137 209), em pixels do jogo.',
   },
   {
+    verbo: 'girar a cena',
+    exemplo: 'girar a cena para o outro lado 6 vezes',
+    descricao:
+      'Gira a câmera do jogo 3D pelos botões da vista no canto da prévia, um pouco a cada vez, num gesto só (sem "para o outro lado", o botão de girar para um lado).',
+  },
+  {
     verbo: 'apontar prévia',
     exemplo: 'apontar prévia 75 26',
     descricao: 'Aponta um ponto do jogo na pré-visualização, como o placar.',
@@ -343,7 +349,7 @@ export const ZOOM_SEM_JOGO = 1
 const MONTAGEM =
   /^(categoria |abrir categoria |encaixar |mover |soltar |trocar |abrir campo |arrastar at[eé] |apontar (bloco|encaixe|abaixo de|mais de) |apontar lugar sem blocos|apontar paleta$|abrir ["“]|jogar na lixeira |mostrar blocos |organizar blocos$|clicar fora dos blocos$)/i
 const NO_JOGO =
-  /^((tocar|apontar) pr[eé]via\b|segurar seta .* na pr[eé]via|apontar (as )?setas na pr[eé]via|reduzir est[uú]dio$|rodar( de novo)?$)/i
+  /^((tocar|apontar) pr[eé]via\b|girar a cena\b|segurar seta .* na pr[eé]via|apontar (as )?setas na pr[eé]via|reduzir est[uú]dio$|rodar( de novo)?$)/i
 
 /**
  * O que a ação pede do jogo ao lado dos blocos: escondido (montar), à vista (testar no jogo, ou
@@ -802,6 +808,27 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
       ]
     const alvo = naPrevia(pagina, jogos, (previa[2] ?? '').trim())
     return [{ fazer: fold(previa[1]) === 'tocar' ? 'clicar' : 'apontar', alvo }]
+  }
+  // Os botões da vista do jogo 3D (framedButtons em game-3d/runtime.ts): uma coluna no canto de
+  // baixo à direita da prévia, 40 px cada e 6 px entre eles, a 12 px da direita e 56 px de baixo;
+  // de baixo para cima, Voltar à vista do começo, Girar para o outro lado, Girar para um lado. Cada
+  // toque gira um pouco (0,4 rad): os toques vão seguidos, num gesto só, para a chave aparecer
+  // enquanto a fala ainda fala dela (Ilha, Aula 2, Parte 2, pedido da Helena, 22/11/2026).
+  const girar = /^girar a cena( para o outro lado| para um lado)?(?: (\d+) vez(?:es)?)?$/i.exec(
+    texto,
+  )
+  if (girar) {
+    const tela = precisaDaPagina(pagina).previa()
+    if (!tela)
+      throw new Error('A pré-visualização do Estúdio não está na tela. Expanda o Estúdio antes.')
+    const acima = fold(girar[1] ?? '') === 'para o outro lado' ? 1 : 2
+    const vezes = Math.min(12, Math.max(1, Number(girar[2] ?? 1)))
+    const alvo: Alvo = {
+      seletor: 'iframe[title="Pré-visualização"]',
+      u: (tela.width - 32) / tela.width,
+      v: (tela.height - 76 - 46 * acima) / tela.height,
+    }
+    return Array.from({ length: vezes }, (): Passo => ({ fazer: 'clicar', alvo }))
   }
   // "rolar até" é o do EdiAula (rola a página): a área do Estúdio se arrasta.
   const rolar = /^arrastar at[eé] ["“]([^"”]+)["”]$/i.exec(texto)

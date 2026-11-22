@@ -52,6 +52,11 @@ export interface PythonBlockField {
   label: string
   value: string
   options?: readonly (readonly [label: string, value: string])[]
+  /**
+   * Um texto livre com seletor: `scene-region` lista as regiões dos cenários do Molda trazidos
+   * para o projeto (o mesmo campo do bloco de região do JavaScript). O valor continua livre.
+   */
+  picker?: 'scene-region'
 }
 export interface PythonBlockInput {
   name: string

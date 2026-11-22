@@ -6,6 +6,12 @@ export const PYTHON_PINTA_WORLD_FEATURE = 'pinta-map-world-v1' as const
 /** Complete PNG-4 reader, including the earlier map/world formats and scene-3 physics. */
 export const PYTHON_PINTA_PHYSICS_FEATURE = 'pinta-scene-physics-v1' as const
 export const PYTHON_MOLDA_SCENE_FEATURE = 'molda-scene-assets-v1' as const
+/**
+ * O `cenario.py` com regiões (lote 7b da conclusão do plano do Estúdio, 22/11/2026): a carga por
+ * regiões (`atualizar`, `regiao`, `entrou_na_regiao`) e o `carregar(modulo)` dos blocos. Os blocos
+ * de cenário do Raylib 3D só aparecem numa versão do runtime que traz isto.
+ */
+export const PYTHON_MOLDA_REGIONS_FEATURE = 'molda-scene-regions-v1' as const
 /** Host-owned background execution never requests focus from its canvas. */
 export const PYTHON_BACKGROUND_FOCUS_FEATURE = 'python-background-focus-v1' as const
 export const STUDIO_PYTHON_RUNTIME_FEATURES = [
@@ -15,6 +21,7 @@ export const STUDIO_PYTHON_RUNTIME_FEATURES = [
   PYTHON_PINTA_PHYSICS_FEATURE,
   PYTHON_MOLDA_SCENE_FEATURE,
   PYTHON_BACKGROUND_FOCUS_FEATURE,
+  PYTHON_MOLDA_REGIONS_FEATURE,
 ] as const
 export const StudioPythonRuntimeFeatureSchema = z.enum(STUDIO_PYTHON_RUNTIME_FEATURES)
 export type StudioPythonRuntimeFeature = z.infer<typeof StudioPythonRuntimeFeatureSchema>

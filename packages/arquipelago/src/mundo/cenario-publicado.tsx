@@ -34,9 +34,11 @@ export function CenarioPublicado({
       giro: 0,
       y: 0,
       consultaNivel(x, z, raio) {
-        return pronto.regiao.contem(x, z) ? (pronto.agua.nivel(x, z, raio)?.nivel ?? null) : null
+        return pronto.regiaoDaIlha.contem(x, z)
+          ? (pronto.agua.nivel(x, z, raio)?.nivel ?? null)
+          : null
       },
-      cobre: (x, z) => pronto.regiao.contem(x, z),
+      cobre: (x, z) => pronto.regiaoDaIlha.contem(x, z),
     }
     movimento.aguas.push(agua)
     return () => {
@@ -47,7 +49,7 @@ export function CenarioPublicado({
   const placas = useMemo(
     () =>
       pronto.perfil.placas
-        .filter((p) => pronto.regiao.contem(p.matriz[12]!, p.matriz[14]!))
+        .filter((p) => pronto.regiaoDaIlha.contem(p.matriz[12]!, p.matriz[14]!))
         .map((p) => {
           return {
             id: p.entidade,
@@ -111,7 +113,7 @@ export function CenarioPublicado({
       // Com duas ilhas publicadas montadas, só a dona do destino solta a espera.
       if (
         pedidos.chaoChegando.has('cenario-publicado') &&
-        pronto.regiao.contem(foco.x, foco.z) &&
+        pronto.regiaoDaIlha.contem(foco.x, foco.z) &&
         setorMontado.current === chave &&
         x === colisao.celula.x &&
         z === colisao.celula.z
@@ -139,7 +141,7 @@ export function CenarioPublicado({
     const destino = pedidos.teleporte ?? rastro,
       alvo = celulaDe(destino)
     if (
-      pronto.regiao.contem(destino.x, destino.z) &&
+      pronto.regiaoDaIlha.contem(destino.x, destino.z) &&
       alvo.x === colisao.celula.x &&
       alvo.z === colisao.celula.z
     )
