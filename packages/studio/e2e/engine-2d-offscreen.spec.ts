@@ -8,8 +8,8 @@ import { gameTwoDRuntime } from '../src/official-extensions/game-2d/runtime'
  * mexer: o Jogo 2D desenha todos os sprites de um grupo, inclusive os fora da tela (o inventário
  * de `docs/estudio-evolucao/motores-inventario.md`). Quanto isso custa? O runtime de verdade numa
  * página em branco do Chromium, 400 sprites (o teto de um grupo; metade com imagem), com o tempo
- * do `drawGroup` por quadro medido com todos dentro do palco e com todos fora dele. É registro: o
- * número decide se o recorte vale um lote.
+ * do `drawGroup` por quadro medido com todos dentro do palco e com todos fora dele. Desde o lote 8
+ * da conclusão (22/11/2026), com o recorte, fora custa no máximo 20% de dentro.
  */
 
 const OUTPUT = resolve(
@@ -106,4 +106,7 @@ test('quanto custa desenhar 400 sprites fora do palco no Jogo 2D', async ({
   expect(result.inside.p50).toBeGreaterThan(0.01)
   // Anti-vácuo da imagem: metade dos sprites desenhou a imagem de verdade.
   expect(result.imagesDrawnPerFrame).toBeGreaterThanOrEqual(200)
+  // O recorte (lote 8 da conclusão, 22/11/2026): quem está fora do palco só atualiza o estado do
+  // quadro, então desenhar os 400 fora custa no máximo 20% de desenhar os 400 dentro.
+  expect(result.outside.p50).toBeLessThanOrEqual(result.inside.p50 * 0.2)
 })

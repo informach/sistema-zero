@@ -630,7 +630,16 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
    * Texto e formas usam seus renderizadores próprios em _drawSpriteRaw.
    */
   // Wrapper público: aplica o "piscar" (invencibilidade) e delega o desenho real.
-  function drawSprite(ctx, sprite) {
+  function drawSprite(ctx, sprite) { _drawSprite(ctx, sprite); }
+  /**
+   * O desenho de um sprite. "fora" (só os grupos passam): ele está longe do palco. O estado do
+   * quadro (texto, ordem de pintura que o clique usa, piscar) continua igual; só o desenho fica
+   * de fora (lote 8 da conclusão do plano do Estúdio, 22/11/2026).
+   * @param {CanvasRenderingContext2D} ctx
+   * @param {*} sprite o mesmo de sempre do drawSprite (o corpo antigo lê campos internos)
+   * @param {boolean} [fora]
+   */
+  function _drawSprite(ctx, sprite, fora) {
     if (!ctx || !sprite || _isDestroyedSprite(sprite)) return;
     if (_spriteScene && _spriteScene.owns(sprite) && !_spriteScenePainting) return;
     _layoutSpriteText(sprite);
@@ -647,6 +656,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
       // Fase "apagada" do piscar: meia transparência por cima da opacidade atual.
       if (Math.floor(sprite.blinkFrames / 6) % 2 === 0) op = op * 0.35;
     }
+    if (fora) return;
     if (op >= 1) { _drawSpriteRaw(ctx, sprite); return; }
     var pa = ctx.globalAlpha;
     ctx.globalAlpha = Math.max(0, op);
