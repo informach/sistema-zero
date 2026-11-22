@@ -28,7 +28,7 @@ const database = process.env.PINTA_PALETTE_TEST_DATABASE_URL
 if (endpoint !== 'http://127.0.0.1:5578' || !bucket?.startsWith('pinta-causal-qa-') || !database)
   throw new Error('Configure the disposable QA bucket and database.')
 const pg = kidsJourneyTestTarget(database)
-if (pg.port !== '55553' || pg.pathname !== '/kids_journey_pinta_palette_protocol')
+if (pg.port !== '55553' || pg.pathname !== '/kids_journey_pinta_palette_scope_v2')
   throw new Error('Use the dedicated Pinta palette database.')
 
 const sha = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex')

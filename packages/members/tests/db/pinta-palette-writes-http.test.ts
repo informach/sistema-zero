@@ -10,6 +10,7 @@ import {
 } from '@sistemazero/core/creations/pinta-palette-writer'
 import { createApplication } from '../../src/composition-root'
 import { loadEnv } from '../../src/infrastructure/config/env'
+import { DrizzleCreationsRepository } from '../../src/infrastructure/persistence/drizzle/creations.repository'
 import { kidsJourneyTestTarget, openKidsJourneyTestDatabase } from './kids-journey-database'
 
 const target = process.env.PINTA_PALETTE_TEST_DATABASE_URL
@@ -62,8 +63,8 @@ async function server(
 }
 
 function clients(service: Awaited<ReturnType<typeof server>>, actor: ReturnType<typeof fixture>) {
-  const external = (suffix: string, method: string, body?: unknown) =>
-    service.fetch(oldId + suffix, {
+  const external = (suffix: string, method: string, body?: unknown, itemPath = oldId) =>
+    service.fetch(itemPath + suffix, {
       method,
       headers: {
         ...gateway,
@@ -151,6 +152,42 @@ describe.skipIf(!target)('palette writer across actual Members HTTP deployments'
       expect(await (await current.external('/download', 'GET')).json()).toMatchObject({
         storageKey: pintaPaletteBlobKey(actor, ticket, 'sealed'),
       })
+      const studioItem = `/members/creations/studio/${itemId}`
+      const studioReserve = await current.external(
+        '/upload',
+        'POST',
+        { ...beforeCapability, name: 'Projeto Studio', kind: 'classic', formatVersion: 2 },
+        studioItem,
+      )
+      expect(studioReserve.status).toBe(200)
+      const studioTicket = await studioReserve.json()
+      expect(
+        (
+          await current.external(
+            '/commit',
+            'POST',
+            { revision: studioTicket.revision, verifiedPartHashes: [], verifiedFormatVersion: 2 },
+            studioItem,
+          )
+        ).status,
+      ).toBe(200)
+      expect(
+        await (await current.external('/download', 'GET', undefined, studioItem)).json(),
+      ).toMatchObject({ storageKey: studioTicket.storageKey })
+      expect(
+        (
+          await current.external(
+            '',
+            'DELETE',
+            { baseRevision: studioTicket.revision, maxFormatVersion: 2 },
+            studioItem,
+          )
+        ).status,
+      ).toBe(200)
+      expect((await current.external('/download', 'GET', undefined, studioItem)).status).toBe(404)
+      expect(await (await current.internal('head', {})).json()).toMatchObject({
+        paletteHead: receipt.paletteHead,
+      })
       expect(
         (
           await current.external('/upload', 'POST', {
@@ -200,6 +237,47 @@ describe.skipIf(!target)('palette writer across actual Members HTTP deployments'
         formatVersion: 1,
       }
       try {
+        const returning = fixture()
+        const older = clients(previous, returning)
+        const expiredAt = new Date(Date.now() - 12 * 60_000)
+        const expired = await new DrizzleCreationsRepository(db.db).reserveUpload({
+          ...returning,
+          ...meta,
+          tool: 'pinta',
+          itemId,
+          itemUpdatedAt: expiredAt,
+          now: expiredAt,
+          thumb: null,
+          baseRevision: 0,
+          limits: {
+            maxItemBytes: 40 * 1024 * 1024,
+            maxTotalBytes: 40 * 1024 * 1024,
+            maxItemsPerTool: 100,
+          },
+          paletteWrite: { protocol, baseGeneration: null },
+        })
+        if (!expired.ok || !expired.paletteTicket) throw new Error('expired fixture not reserved')
+        expect(
+          (await older.external('/commit', 'POST', { revision: expired.revision })).status,
+        ).toBe(500)
+        expect((await older.external('/download', 'GET')).status).toBe(404)
+        // Uma linha histórica pode ter o contador abaixo da reserva. Exercita o
+        // predecessor que aloca o mesmo número nesta linha após expirar.
+        await db.sql`update members.creations set last_reserved_revision = 0
+          where user_id = ${returning.userId} and tool = 'pinta' and item_id = ${itemId}`
+        const retry = await older.external('/upload', 'POST', { ...meta, baseRevision: 0 })
+        expect(retry.status).toBe(200)
+        const reopened = (await retry.json()).revision
+        expect(reopened).toBe(1)
+        expect(reopened).toBe(expired.revision)
+        const [physical] = await db.sql`select pending_palette_write from members.creations
+          where user_id = ${returning.userId} and tool = 'pinta' and item_id = ${itemId}`
+        expect(physical?.pending_palette_write).toBeNull()
+        expect((await older.external('/commit', 'POST', { revision: reopened })).status).toBe(200)
+        expect(await (await older.external('/download', 'GET')).json()).toMatchObject({
+          revision: reopened,
+        })
+
         const created = await old.external('/upload', 'POST', { ...meta, baseRevision: 0 })
         expect(created.status).toBe(200)
         const { revision } = await created.json()
@@ -217,9 +295,7 @@ describe.skipIf(!target)('palette writer across actual Members HTTP deployments'
         })
         expect(pending.status).toBe(200)
         const ticket = PintaPaletteTicketSchema.parse((await pending.json()).ticket)
-        expect(
-          (await old.external('/commit', 'POST', { revision: oldPending })).status,
-        ).toBeGreaterThanOrEqual(400)
+        expect((await old.external('/commit', 'POST', { revision: oldPending })).status).toBe(409)
         expect((await current.internal('commit', { ticket, sha256: '9'.repeat(64) })).status).toBe(
           200,
         )
@@ -232,11 +308,11 @@ describe.skipIf(!target)('palette writer across actual Members HTTP deployments'
         expect(
           (await old.external('/upload', 'POST', { ...meta, baseRevision: ticket.revision }))
             .status,
-        ).toBeGreaterThanOrEqual(400)
+        ).toBe(500)
         expect(
           (await old.external('', 'DELETE', { baseRevision: ticket.revision, maxFormatVersion: 7 }))
             .status,
-        ).toBeGreaterThanOrEqual(400)
+        ).toBe(500)
         expect(await (await old.external('/download', 'GET')).json()).toMatchObject({
           revision: ticket.revision,
         })

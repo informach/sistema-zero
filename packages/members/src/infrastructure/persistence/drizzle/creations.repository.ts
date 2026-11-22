@@ -500,6 +500,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
           id: creations.id,
           accountId: creations.accountId,
           formatVersion: creations.formatVersion,
+          pendingRevision: creations.pendingRevision,
           pendingFormatVersion: creations.pendingFormatVersion,
           pendingUnit: creations.pendingUnit,
           pendingPaletteWrite: creations.pendingPaletteWrite,
@@ -582,7 +583,13 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       )
       // A revisão desta reserva (1 para linha nova; o contador NUNCA volta): é a chave no R2
       // do manifesto e das partes que subirem agora.
-      const revision = existing ? existing.lastReservedRevision + 1 : 1
+      const lastRevision = existing?.lastReservedRevision ?? 0
+      // Uma reserva de paletas deve ultrapassar a revisão publicada e a pendente,
+      // inclusive em linhas históricas com contador desalinhado.
+      const revision =
+        (reservedPalette
+          ? Math.max(lastRevision, existing?.revision ?? 0, existing?.pendingRevision ?? 0)
+          : lastRevision) + 1
       const paletteTicket =
         input.paletteWrite && observedPalette
           ? newPaletteTicket(observedPalette, revision, input.bytes, input.itemUpdatedAt, input.now)

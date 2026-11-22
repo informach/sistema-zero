@@ -7,9 +7,13 @@ DECLARE
   adopted boolean;
   verified_writer boolean := coalesce(current_setting('members.pinta_palette_writer', true) = 'palette-cas-v1', false);
 BEGIN
-  IF TG_OP = 'DELETE' OR (TG_OP = 'UPDATE' AND
-       (OLD.item_id = 'sz-pinta-palettes' OR OLD.kind = 'palette-library'))
-    THEN owner_row := OLD; ELSE owner_row := NEW; END IF;
+  -- Identity changes cannot enter or leave this namespace. Checking before the
+  -- scope lookup also prevents moving a legacy row into an adopted profile.
+  IF TG_OP = 'UPDATE' AND (OLD.id, OLD.user_id, OLD.account_id, OLD.audience, OLD.tool, OLD.item_id, OLD.kind)
+    IS DISTINCT FROM (NEW.id, NEW.user_id, NEW.account_id, NEW.audience, NEW.tool, NEW.item_id, NEW.kind) THEN
+    RAISE EXCEPTION 'Pinta palette identity is immutable' USING ERRCODE = '23514';
+  END IF;
+  IF TG_OP = 'DELETE' THEN owner_row := OLD; ELSE owner_row := NEW; END IF;
 
   IF TG_OP = 'DELETE' AND EXISTS (
     SELECT 1 FROM members.account_deletion_fences WHERE account_id = owner_row.account_id
@@ -28,10 +32,6 @@ BEGIN
     IF (NEW.tool, NEW.item_id, NEW.kind)
       IS DISTINCT FROM ('pinta'::members.creation_tool, 'sz-pinta-palettes', 'palette-library') THEN
       RAISE EXCEPTION 'Pinta palette identity is invalid' USING ERRCODE = '23514';
-    END IF;
-    IF TG_OP = 'UPDATE' AND (OLD.id, OLD.user_id, OLD.account_id, OLD.audience, OLD.tool, OLD.item_id, OLD.kind)
-      IS DISTINCT FROM (NEW.id, NEW.user_id, NEW.account_id, NEW.audience, NEW.tool, NEW.item_id, NEW.kind) THEN
-      RAISE EXCEPTION 'Pinta palette identity is immutable' USING ERRCODE = '23514';
     END IF;
     RETURN NEW;
   END IF;
@@ -58,7 +58,12 @@ BEGIN
           NEW.revision = (OLD.pending_palette_write ->> 'revision')::integer THEN
         RAISE EXCEPTION 'Pinta palette reservation expired' USING ERRCODE = '23514';
       END IF;
-      IF NEW.pending_revision IS DISTINCT FROM OLD.pending_revision THEN NEW.pending_palette_write := NULL; END IF;
+      -- A legacy allocation advances its counter even when a historical row
+      -- reuses the expired pending revision number.
+      IF (NEW.pending_revision, NEW.last_reserved_revision)
+        IS DISTINCT FROM (OLD.pending_revision, OLD.last_reserved_revision) THEN
+        NEW.pending_palette_write := NULL;
+      END IF;
     END IF;
   END IF;
   IF TG_OP = 'DELETE' THEN RETURN OLD; END IF;
@@ -66,16 +71,16 @@ BEGIN
 END $$;
 --> statement-breakpoint
 CREATE TRIGGER pinta_palette_insert_fence BEFORE INSERT ON members.creations
-  FOR EACH ROW WHEN (NEW.item_id = 'sz-pinta-palettes' OR NEW.kind = 'palette-library')
+  FOR EACH ROW WHEN (NEW.tool = 'pinta' AND (NEW.item_id = 'sz-pinta-palettes' OR NEW.kind = 'palette-library'))
   EXECUTE FUNCTION members.pinta_palette_write_fence();
 --> statement-breakpoint
 CREATE TRIGGER pinta_palette_update_fence BEFORE UPDATE ON members.creations
-  FOR EACH ROW WHEN (OLD.item_id = 'sz-pinta-palettes' OR NEW.item_id = 'sz-pinta-palettes'
-                       OR OLD.kind = 'palette-library' OR NEW.kind = 'palette-library')
+  FOR EACH ROW WHEN ((OLD.tool = 'pinta' AND (OLD.item_id = 'sz-pinta-palettes' OR OLD.kind = 'palette-library'))
+                  OR (NEW.tool = 'pinta' AND (NEW.item_id = 'sz-pinta-palettes' OR NEW.kind = 'palette-library')))
   EXECUTE FUNCTION members.pinta_palette_write_fence();
 --> statement-breakpoint
 CREATE TRIGGER pinta_palette_delete_fence BEFORE DELETE ON members.creations
-  FOR EACH ROW WHEN (OLD.item_id = 'sz-pinta-palettes' OR OLD.kind = 'palette-library')
+  FOR EACH ROW WHEN (OLD.tool = 'pinta' AND (OLD.item_id = 'sz-pinta-palettes' OR OLD.kind = 'palette-library'))
   EXECUTE FUNCTION members.pinta_palette_write_fence();
 --> statement-breakpoint
 CREATE FUNCTION members.pinta_palette_generation_fence() RETURNS trigger LANGUAGE plpgsql AS $$

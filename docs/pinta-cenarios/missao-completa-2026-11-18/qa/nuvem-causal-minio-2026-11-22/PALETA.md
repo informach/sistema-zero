@@ -6,7 +6,7 @@ O perfil real precisa ser elegível por audiência, conta e usuário. O Member S
 
 ## Reproduzir
 
-Use o PostgreSQL de QA em `127.0.0.1:55553` e apenas o banco isolado `kids_journey_pinta_palette_protocol`, com o mesmo container e dependências do [roteiro MinIO](README.md). Em PowerShell, com Bun 1.4.3 disponível:
+Use o PostgreSQL de QA em `127.0.0.1:55553` e o banco isolado `kids_journey_pinta_palette_scope_v2`, com o mesmo container e dependências do [roteiro MinIO](README.md). O banco `kids_journey_pinta_palette_protocol` preserva o histórico do primeiro ensaio. Em PowerShell, com Bun 1.4.3 disponível, execute o runner a partir da raiz.
 
     ./docs/pinta-cenarios/missao-completa-2026-11-18/qa/nuvem-causal-minio-2026-11-22/run.ps1 -Palette
 
@@ -14,7 +14,7 @@ O runner usa a imagem e o SHA do MinIO já fixados no roteiro. Ele destina somen
 
 As suítes `packages/members/tests/db/pinta-palette-writes{,-http}.test.ts` aceitam `PINTA_PALETTE_TEST_DATABASE_URL`. Para o segundo caso HTTP, aponte `PINTA_PALETTE_PREDECESSOR_ROOT` para um checkout com dependências e código Members de `d5bf4f2158eff3e23576bdf7e7214f3d34b5fb97`. O replay usou um checkout cuja árvore `packages/members/src` foi conferida como idêntica a essa revisão. Inicie as duas suítes em sequência, pois o preparo do banco detecta outro cliente conectado.
 
-## Resultados
+## Resultados da primeira rodada
 
 | Ensaio | Resultado |
 | --- | --- |
@@ -29,3 +29,11 @@ O PUT condicional da nova reserva respondeu 412 no replay. A URL ainda válida d
 No ensaio separado com o **processo Members anterior** aberto contra as migrações novas, a tentativa de gravar ou excluir após adoção chegou ao SQL e foi revertida pelo trigger. O processo anterior devolveu HTTP 500 porque seu mapeador não conhece essa recusa. A versão nova devolveu HTTP 409 estruturado mesmo com a flag desligada. A leitura antiga continuou funcionando. A prova qualifica preservação com o servidor anterior, com erro de escrita degradado até ele ser atualizado.
 
 A verificação do gzip cobre tamanho reservado, conteúdo, timestamp autoral, SHA-256, estrutura canônica e selagem em `If-None-Match: *`. O sistema não relê como imutável uma chave de upload antiga. O [contrato](../../../../superpowers/plans/2026-11-22-pinta-paleta-escrita-verificada.md) registra o limite de compatibilidade anterior à primeira adoção.
+
+## Revisão de escopo e de reservas históricas
+
+O primeiro SQL retornava `23514` ao atualizar um projeto Studio com o mesmo ID em um perfil que havia adotado paletas. A migração revisada restringe o gatilho ao canal Pinta em `OLD` e `NEW`. O projeto Studio completou reserva, commit, download e exclusão por HTTP. A paleta manteve a mesma geração e o mesmo ponteiro. Escrever o kind `palette-library` pelo Studio e mover ou renomear a identidade protegida continuaram proibidos.
+
+Também foi reproduzida uma linha histórica com ticket vencido na revisão 1 e contador de alocação atrás. O predecessor reservava novamente a revisão 1 e deixava o ticket vencido registrado na linha. O trigger revisado limpa o marcador quando muda o contador, e o predecessor confirmou a nova revisão por HTTP 200. A tentativa direta de confirmar o ticket vencido foi revertida antes da nova reserva. O PostgreSQL também confirmou o reaproveitamento após compactação, a purga autorizada e a revisão 21 para uma linha histórica com publicação 10, pendência 20 e contador 5.
+
+No banco isolado `kids_journey_pinta_palette_scope_v2` passaram 8 testes SQL/HTTP e 103 verificações com o predecessor real. Passaram também 16 testes e 136 verificações do Core, 15 testes e 76 verificações de BFF e Pensa, e o fluxo real MinIO com 1 teste e 40 verificações. O replay MinIO usou a migração de SHA-256 `11925676080604587b6ab2702af9aa6791e9508fac9962c6bf6583d8f96898c8` e preservou o gzip da fixture com SHA-256 `0d62a37ac4c4d75e13078ff8e38961102d60508b0049efa06633a6de7e471c2d`. Os bancos `kids_journey_pinta_palette_protocol` e `kids_journey_pinta_palette_scope` preservam as duas rodadas anteriores.

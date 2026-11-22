@@ -4,7 +4,7 @@ param([switch]$Journey, [switch]$Palette)
 $ErrorActionPreference = 'Stop'
 if ($Journey -and $Palette) { throw 'Escolha um ensaio por execução.' }
 function Get-JourneyDatabaseUrl(
-  [ValidateSet('kids_journey_pinta_causal_bff_journey','kids_journey_pinta_palette_protocol')]
+  [ValidateSet('kids_journey_pinta_causal_bff_journey','kids_journey_pinta_palette_scope_v2')]
   [string]$DatabaseName
 ) {
   $postgres = 'pinta-causal-20261122-db'
@@ -82,7 +82,7 @@ try {
     $env:PINTA_CAUSAL_JOURNEY_DATABASE_URL = Get-JourneyDatabaseUrl 'kids_journey_pinta_causal_bff_journey'
   }
   if ($Palette -and !$env:PINTA_PALETTE_TEST_DATABASE_URL) {
-    $env:PINTA_PALETTE_TEST_DATABASE_URL = Get-JourneyDatabaseUrl 'kids_journey_pinta_palette_protocol'
+    $env:PINTA_PALETTE_TEST_DATABASE_URL = Get-JourneyDatabaseUrl 'kids_journey_pinta_palette_scope_v2'
   }
   $env:R2_ACCESS_KEY_ID = 'pintatest' + [Guid]::NewGuid().ToString('N')
   $env:R2_SECRET_ACCESS_KEY = [Guid]::NewGuid().ToString('N') + [Guid]::NewGuid().ToString('N')

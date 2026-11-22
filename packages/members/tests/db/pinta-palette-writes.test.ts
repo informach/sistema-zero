@@ -150,6 +150,125 @@ describe.skipIf(!target)('reserved palette writer authority', () => {
     expect((await repo.getPaletteHead(actor)).paletteHead.adopted).toBe(false)
   })
 
+  test('a Pinta palette generation leaves coincident Studio identities independent', async () => {
+    const actor = fixture()
+    const now = new Date()
+    const studio = { ...actor, tool: 'studio' as const, itemId }
+    await conn.sql`
+      insert into members.creations(id,user_id,account_id,tool,item_id,kind,name,
+        item_updated_at,created_at,synced_at,revision,last_reserved_revision,format_version,bytes,storage_ref)
+      values(gen_random_uuid(),${actor.userId},${actor.accountId},'studio',${itemId},
+        'classic','Jogo legado',now(),now(),now(),1,1,2,100,'studio/legacy')
+    `
+    const initial = await reserve(actor, 0, null)
+    if (!initial.ok || !initial.paletteTicket) throw new Error('verified reserve failed')
+    expect((await commit(actor, initial.revision, initial.paletteTicket)).ok).toBe(true)
+
+    await conn.sql`update members.creations set name = 'Jogo renomeado'
+      where user_id = ${actor.userId} and tool = 'studio' and item_id = ${itemId}`
+    expect(await repo.get(actor.userId, 'studio', itemId)).toMatchObject({
+      name: 'Jogo renomeado',
+      revision: 1,
+      storageRef: 'studio/legacy',
+    })
+    const updated = await repo.reserveUpload({
+      ...studio,
+      kind: 'classic',
+      name: 'Jogo atualizado',
+      itemUpdatedAt: now,
+      bytes: 200,
+      thumb: null,
+      baseRevision: 1,
+      formatVersion: 2,
+      limits,
+      now,
+    })
+    if (!updated.ok) throw new Error(`Studio reserve failed: ${updated.reason}`)
+    expect(
+      await repo.commit({
+        ...studio,
+        revision: updated.revision,
+        storageRef: 'studio/current',
+        verifiedFormatVersion: 2,
+        verifiedPartHashes: [],
+        limits,
+        now,
+      }),
+    ).toMatchObject({ ok: true })
+    expect(await repo.get(actor.userId, 'studio', itemId)).toMatchObject({
+      name: 'Jogo atualizado',
+      storageRef: 'studio/current',
+      revision: updated.revision,
+    })
+    await expect(
+      (async () => conn.sql`update members.creations set tool = 'pinta', kind = 'palette-library'
+      where user_id = ${actor.userId} and tool = 'studio' and item_id = ${itemId}`)(),
+    ).rejects.toThrow('identity is immutable')
+    expect(
+      await repo.softDelete(actor.userId, 'studio', itemId, updated.revision, now, 2),
+    ).toMatchObject({ ok: true, deleted: true })
+
+    await expect(
+      (async () => conn.sql`update members.creations set tool = 'molda'
+      where user_id = ${actor.userId} and tool = 'pinta' and item_id = ${itemId}`)(),
+    ).rejects.toThrow('identity is immutable')
+    await expect(
+      (async () => conn.sql`update members.creations set item_id = 'palette-moved'
+      where user_id = ${actor.userId} and tool = 'pinta' and item_id = ${itemId}`)(),
+    ).rejects.toThrow('identity are immutable')
+    const reservedKind = await repo.reserveUpload({
+      ...studio,
+      itemId: 'outro-jogo',
+      kind: 'palette-library',
+      name: 'Paleta falsa',
+      itemUpdatedAt: now,
+      bytes: 100,
+      thumb: null,
+      baseRevision: 0,
+      formatVersion: 2,
+      limits,
+      now,
+    })
+    expect(reservedKind).toEqual({ ok: false, reason: 'palette-library-identity' })
+    const read = await repo.getPaletteHead(actor)
+    expect(read.paletteHead).toMatchObject({ adopted: true, exists: true })
+    expect(read.download?.storageKey).toBe(
+      pintaPaletteBlobKey(actor, initial.paletteTicket, 'sealed'),
+    )
+  })
+
+  test('a compacted expired ticket does not block a legitimate legacy revision with the same number', async () => {
+    const actor = fixture()
+    const now = new Date()
+    const abandoned = await reserve(actor, 0, null, new Date(now.getTime() - 12 * 60_000))
+    if (!abandoned.ok || !abandoned.paletteTicket) throw new Error('expired fixture not reserved')
+    expect(abandoned.revision).toBe(1)
+    await expect(commit(actor, 1)).rejects.toThrow('protocol-required')
+
+    expect(await repo.softDelete(actor.userId, tool, itemId, 0, now, 1)).toMatchObject({ ok: true })
+    expect(await repo.compactTombstones(new Date(now.getTime() + 1), 100)).toBeGreaterThan(0)
+    expect(await repo.get(actor.userId, tool, itemId)).toBeNull()
+
+    const legacy = await reserve(actor, 0)
+    if (!legacy.ok) throw new Error(`legacy reserve failed: ${legacy.reason}`)
+    expect(legacy.revision).toBe(1)
+    const [pending] = await conn.sql`select pending_palette_write from members.creations
+      where user_id = ${actor.userId} and tool = 'pinta' and item_id = ${itemId}`
+    expect(pending?.pending_palette_write).toBeNull()
+    await expect(commit(actor, legacy.revision, abandoned.paletteTicket)).rejects.toThrow(
+      'ticket-invalid',
+    )
+    expect(await commit(actor, legacy.revision)).toMatchObject({
+      ok: true,
+      alreadyCommitted: false,
+    })
+    expect((await repo.getPaletteHead(actor)).paletteHead).toMatchObject({
+      revision: 1,
+      exists: true,
+      adopted: false,
+    })
+  })
+
   test('an offline first save starts an incarnation; delete and compaction preserve its replacement', async () => {
     const actor = fixture()
     const first = await reserve(actor, 0, null)
@@ -210,5 +329,25 @@ describe.skipIf(!target)('reserved palette writer authority', () => {
       await conn.sql`select user_id from members.creation_inventory_floors where user_id = ${actor.userId}`,
     ).toHaveLength(0)
     await expect(repo.getPaletteHead(actor)).rejects.toThrow('account-deleting')
+  }, 20_000)
+
+  test('reservation advances an older palette with a lagging allocation counter', async () => {
+    const actor = fixture()
+    const legacy = await reserve(actor, 0)
+    if (!legacy.ok) throw new Error('legacy palette not reserved')
+    expect((await commit(actor, legacy.revision)).ok).toBe(true)
+    await conn.sql`update members.creations
+      set revision = 10, pending_revision = 20, last_reserved_revision = 5
+      where user_id = ${actor.userId} and tool = 'pinta' and item_id = ${itemId}`
+    const head = (await repo.getPaletteHead(actor)).paletteHead
+    expect(head).toMatchObject({ revision: 10, adopted: false, exists: true })
+    const modern = await reserve(actor, head.revision, head.generation)
+    if (!modern.ok || !modern.paletteTicket) throw new Error('palette writer not reserved')
+    expect(modern.paletteTicket).toMatchObject({ revision: 21, baseRevision: 10 })
+    await expect(commit(actor, 20)).rejects.toThrow('protocol-required')
+    expect(await commit(actor, modern.revision, modern.paletteTicket)).toMatchObject({
+      ok: true,
+      paletteHead: { revision: 21, adopted: true, exists: true },
+    })
   })
 })
