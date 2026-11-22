@@ -5,6 +5,7 @@ import {
   type PintaRegionBounds,
   type PintaRegionCells,
   parsePintaRegionBounds,
+  regionChunkKey,
 } from '@sistemazero/core/creations'
 import { prepareMapResourceVersions } from '../core/mapResourceVersions'
 import {
@@ -17,7 +18,7 @@ import {
   type TilemapAsset,
   type TilemapLayer,
 } from '../core/project'
-import { isValidCellForTiles } from './cell'
+import { EMPTY_CELL, isValidCellForTiles } from './cell'
 import { collectTileFloodFill } from './floodFill'
 import { createTileCellReader } from './mapCells'
 import {
@@ -245,6 +246,7 @@ export function editRegionMapCells(
   map: RegionTilemapAsset,
   layerId: string,
   edits: readonly RegionCellEdit[],
+  options?: { expand: boolean },
 ): RegionMapResult {
   const layer = map.layers.find((candidate) => candidate.id === layerId)
   if (!layer || !isTileLayer(layer)) return { ok: false, reason: 'invalid-layer' }
@@ -258,19 +260,56 @@ export function editRegionMapCells(
     .filter(isTileLayer)
     .reduce((sum, item) => sum + item.cells.chunks.length, 0)
   if (occupied > PINTA_REGION_LIMITS.maxChunks) return { ok: false, reason: 'cell-budget' }
+  let target = map
+  let writes = edits
+  if (options?.expand) {
+    const current = regionMapBounds(map)
+    const finalOutside = new Map<string, RegionCellEdit>()
+    const inside: RegionCellEdit[] = []
+    for (const edit of edits) {
+      if (!Number.isSafeInteger(edit.col) || !Number.isSafeInteger(edit.row))
+        return { ok: false, reason: 'invalid-edit' }
+      if (
+        edit.col >= current.col &&
+        edit.row >= current.row &&
+        edit.col < current.col + current.cols &&
+        edit.row < current.row + current.rows
+      )
+        inside.push(edit)
+      else finalOutside.set(regionChunkKey(edit.col, edit.row), edit)
+    }
+    let col = current.col
+    let row = current.row
+    let endCol = current.col + current.cols
+    let endRow = current.row + current.rows
+    for (const point of finalOutside.values()) {
+      if (point.cell === EMPTY_CELL) continue
+      col = Math.min(col, point.col)
+      row = Math.min(row, point.row)
+      endCol = Math.max(endCol, point.col + 1)
+      endRow = Math.max(endRow, point.row + 1)
+      inside.push(point)
+    }
+    const grown = expandRegionMap(map, { col, row, cols: endCol - col, rows: endRow - row })
+    if (!grown.ok) return grown
+    target = grown.map
+    writes = inside
+  }
   const result = editRegionCells(
     layer.cells,
-    regionMapBounds(map),
-    edits,
+    regionMapBounds(target),
+    writes,
     PINTA_REGION_LIMITS.maxChunks - occupied + layer.cells.chunks.length,
   )
   if (!result.ok) return result
-  if (result.cells === layer.cells) return { ok: true, map }
+  if (result.cells === layer.cells) return { ok: true, map: target }
   return {
     ok: true,
     map: {
-      ...map,
-      layers: map.layers.map((item) => (item === layer ? { ...layer, cells: result.cells } : item)),
+      ...target,
+      layers: target.layers.map((item) =>
+        item === layer ? { ...layer, cells: result.cells } : item,
+      ),
     },
   }
 }
