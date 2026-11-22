@@ -19,6 +19,7 @@ import { RegionMetadataBudgetCache, regionDocumentMetadata } from './mapDocument
 import {
   isTileLayer,
   type PintaAsset,
+  type RegionMapSetAsset,
   type RegionTilemapAsset,
   sanitizeRegionTilemapAsset,
   type TilemapGroupLayer,
@@ -44,6 +45,10 @@ type ProjectedMap<Grid> = Omit<RegionTilemapAsset, 'schema' | 'layers'> & {
 }
 
 export type ProjectedTilemapAsset = ProjectedMap<ProjectedTileCells>
+export type ProjectedMapSetAsset = Omit<RegionMapSetAsset, 'schema' | 'map'> & {
+  schema: typeof PROJECTED_TILEMAP_SCHEMA
+  map: ProjectedTilemapAsset
+}
 export type ProjectedTilemapDocument = Omit<ProjectedMap<ProjectedWireCells>, 'resources'> & {
   resources?: Array<Omit<TilemapResourceVersion, 'asset'> & { asset: unknown }>
 }
