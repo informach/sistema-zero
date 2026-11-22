@@ -169,6 +169,8 @@ A antiga `activity` do bloco Estúdio saiu em 18/10/2026; não a escreva.
 
 **Materiais:** `content` inclui `kind: "materials"`, `title` e `items`; `bookPreview: true` é opcional
 quando o primeiro PDF deve aparecer como livro na outra coluna, sem duplicar o bloco nem o upload.
+Em curso infantil, item `text` só como rótulo curto dos links (até 120 caracteres): criança assiste ao
+vídeo, não lê (DIRETRIZES-PEDAGOGICAS, seção 5; guarda `qa/materiais-sem-texto.test.ts`).
 Um item `file` precisa do
 `attachmentId` de um arquivo realmente anexado à aula. O manifesto não contém bytes nem URL privada.
 No Dia 1 do Desafio e na primeira aula de Corre, Dino! e O Jogo do Meu Jeito, os blocos dos

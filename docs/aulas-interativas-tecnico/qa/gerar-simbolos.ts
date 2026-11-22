@@ -12,6 +12,7 @@ import { isStudioAuthoringProject } from '../../../packages/core/src/studio/auth
 import { resolveCourseModels } from '../../../packages/studio/src/core/courseModels'
 import { derivadosDeVoz } from './gerar-falas-elevenlabs'
 import { gravarArquivo } from './gravar-arquivo'
+import { ROTULO_DOS_LINKS } from './materiais-sem-texto'
 import { extrairPartesElevenLabs, sincronizarRecadosNaPagina } from './roteiro-elevenlabs'
 import { simbolosAjuda, simbolosAulas, simbolosExperiencia } from './simbolos-conteudo'
 import { simbolosChecks } from './simbolos-criterios'
@@ -225,7 +226,7 @@ for (const [index, aula] of simbolosAulas.entries()) {
         title: 'Passo a passo do projeto: O baú dos símbolos',
         bookPreview: true,
         items: [
-          { id: 'passos', kind: 'text', markdown: help },
+          ROTULO_DOS_LINKS, // sem texto para ler: os passos estão nos vídeos (materiais-sem-texto.ts)
           {
             id: 'como-estudio',
             kind: 'link',

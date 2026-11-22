@@ -20,6 +20,7 @@ import {
   montarProjetoJardim,
 } from './jardim-projeto'
 import { jardimQuiz } from './jardim-quiz'
+import { ROTULO_DOS_LINKS } from './materiais-sem-texto'
 import { extrairPartesElevenLabs, sincronizarRecadosNaPagina } from './roteiro-elevenlabs'
 
 const dir = resolve(import.meta.dirname, '../../aulas-interativas/faisca/o-jardim-secreto')
@@ -172,7 +173,7 @@ for (const [index, aula] of jardimAulas.entries()) {
         title: 'Passo a passo do projeto: O Jardim Secreto',
         bookPreview: true,
         items: [
-          { id: 'passos', kind: 'text', markdown: help },
+          ROTULO_DOS_LINKS, // sem texto para ler: os passos estão nos vídeos (materiais-sem-texto.ts)
           {
             id: 'como-estudio',
             kind: 'link',

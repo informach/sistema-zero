@@ -12,6 +12,7 @@ import { isStudioAuthoringProject } from '../../../packages/core/src/studio/auth
 import { resolveCourseModels } from '../../../packages/studio/src/core/courseModels'
 import { derivadosDeVoz } from './gerar-falas-elevenlabs'
 import { gravarArquivo } from './gravar-arquivo'
+import { ROTULO_DOS_LINKS } from './materiais-sem-texto'
 import { moedasAjuda, moedasAulas, moedasExperiencia } from './moedas-conteudo'
 import { moedasChecks } from './moedas-criterios'
 import {
@@ -228,7 +229,7 @@ for (const [index, aula] of moedasAulas.entries()) {
         title: 'Passo a passo do projeto: Moedas no caminho',
         bookPreview: true,
         items: [
-          { id: 'passos', kind: 'text', markdown: help },
+          ROTULO_DOS_LINKS, // sem texto para ler: os passos estão nos vídeos (materiais-sem-texto.ts)
           {
             id: 'como-estudio',
             kind: 'link',

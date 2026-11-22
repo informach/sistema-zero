@@ -21,6 +21,7 @@ import {
 import { cabanaQuiz2d, cabanaQuiz3d } from './cabana-quiz'
 import { derivadosDeVoz } from './gerar-falas-elevenlabs'
 import { gravarArquivo } from './gravar-arquivo'
+import { ROTULO_DOS_LINKS } from './materiais-sem-texto'
 import { extrairPartesElevenLabs, sincronizarRecadosNaPagina } from './roteiro-elevenlabs'
 
 const dir = resolve(import.meta.dirname, '../../aulas-interativas/faisca/poder-o-segredo-da-cabana')
@@ -217,7 +218,7 @@ for (const [index, aula] of cabanaAulas.entries()) {
         title: 'Passo a passo do projeto: O segredo da cabana',
         bookPreview: true,
         items: [
-          { id: 'passos', kind: 'text', markdown: help },
+          ROTULO_DOS_LINKS, // sem texto para ler: os passos estão nos vídeos (materiais-sem-texto.ts)
           {
             id: 'como-estudio',
             kind: 'link',

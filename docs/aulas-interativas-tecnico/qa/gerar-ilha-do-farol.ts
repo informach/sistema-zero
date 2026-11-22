@@ -22,6 +22,7 @@ import {
   montarProjetoIlha,
 } from './ilha-do-farol-projeto'
 import { ilhaQuiz } from './ilha-do-farol-quiz'
+import { ROTULO_DOS_LINKS } from './materiais-sem-texto'
 import {
   contextoDeEdicao,
   extrairPartesElevenLabs,
@@ -312,23 +313,10 @@ for (const [i, aula] of ilhaAulas.entries()) {
         kind: 'materials',
         title: 'Passo a passo do projeto: A Ilha do Farol',
         bookPreview: true,
+        // O livro do Passo a passo (o PDF anexado) e os links de ajuda, sem texto para ler
+        // (materiais-sem-texto.ts): o que os passos dizem está nos vídeos das partes.
         items: [
-          {
-            id: 'passos',
-            kind: 'text',
-            markdown: ilhaAulas
-              .map(
-                (a) =>
-                  `## ${a.title}\n\n${a.trechos
-                    .filter((t) => t.steps)
-                    .map(
-                      (t) =>
-                        `### ${t.title}\n\n${t.steps!.map((s, i) => `${i + 1}. ${s}`).join('\n')}`,
-                    )
-                    .join('\n\n')}`,
-              )
-              .join('\n\n'),
-          },
+          ROTULO_DOS_LINKS,
           {
             id: 'como-estudio',
             kind: 'link',

@@ -10,6 +10,7 @@ import type { StudioProjectExamples } from '../../../packages/core/src/learning/
 import { isStudioAuthoringProject } from '../../../packages/core/src/studio/authoring-project'
 import { derivadosDeVoz } from './gerar-falas-elevenlabs'
 import { gravarArquivo } from './gravar-arquivo'
+import { ROTULO_DOS_LINKS } from './materiais-sem-texto'
 import { meuDesenhoAjuda, meuDesenhoAula } from './meu-desenho-conteudo'
 import { meuDesenhoChecks } from './meu-desenho-criterios'
 import {
@@ -147,7 +148,7 @@ blocks.push(
       title: 'Passo a passo do projeto: Meu primeiro desenho no Pinta',
       bookPreview: true,
       items: [
-        { id: 'passos', kind: 'text', markdown: help },
+        ROTULO_DOS_LINKS, // sem texto para ler: os passos estão nos vídeos (materiais-sem-texto.ts)
         {
           id: 'como-estudio',
           kind: 'link',
