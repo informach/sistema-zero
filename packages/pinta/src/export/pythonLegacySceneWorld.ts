@@ -123,7 +123,8 @@ def _pinta_legacy_plan(info, data, remaining_cells):
         scale = 1
     else:
         schema = _PINTA_LEGACY_SCHEMAS['scene']
-        if (not _scene_schema(scene, schema, schema) or scene['name'] != data['name']
+        if (not _scene_schema(scene, schema, schema) or not _region_integer(scene['version'])
+                or scene['name'] != data['name']
                 or scene['cols'] != data.get('cols') or scene['rows'] != data.get('rows')
                 or scene['version'] == 3 and data['version'] != 4
                 or 'world' in data and data['version'] < 3):
@@ -163,7 +164,8 @@ def _pinta_legacy_plan(info, data, remaining_cells):
     world = data.get('world')
     if 'world' in data:
         schema = _PINTA_LEGACY_SCHEMAS['world']
-        if not _scene_schema(world, schema, schema) or world['rootId'] != scene['id']:
+        if (not _scene_schema(world, schema, schema) or not _region_integer(world['version'])
+                or world['rootId'] != scene['id']):
             _png_invalid()
     view = dict(name=scene['name'], scale=scale, scene=scene)
     if world is not None:

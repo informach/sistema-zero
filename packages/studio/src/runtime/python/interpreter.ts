@@ -28,7 +28,10 @@ import missionSource from './mission-observer.py'
 import { PGZERO_EXTENSION } from './pgzero/contract'
 import { loadPgzeroModuleSources } from './pgzero/moduleSources'
 import { isPintaTextureRequest, pintaTextureAttachments } from './pintaRegionProtocol'
-import { loadBrowserPintaScenesModule } from './pintaScenesModuleBrowser'
+import {
+  installablePintaScenesSources,
+  loadBrowserPintaScenesModule,
+} from './pintaScenesModuleBrowser'
 import type { PythonConsoleStream, PythonExecutionSnapshot, PythonGraphicsReply } from './protocol'
 import { PYGAME_EXTENSION } from './pygame/contract'
 import { loadPygameModuleSources } from './pygame/moduleSources'
@@ -72,6 +75,8 @@ interface PythonAPI {
     mkdirTree(path: string): void
     writeFile(path: string, bytes: Uint8Array): void
     readFile(path: string): Uint8Array
+    unlink(path: string): void
+    analyzePath(path: string): { exists: boolean }
   }
   runPython(source: string): unknown
   /** Pygame-ce only: the pinned wheel, extracted into the extension directory. */
@@ -173,7 +178,7 @@ async function loadRaylibResources(base: URL, scope: AbortController) {
   scope.signal.throwIfAborted()
   return { protocol, sources }
 }
-type ExtensionResources =
+type CanvasExtensionResources =
   | { kind: 'python-turtle'; value: Awaited<ReturnType<typeof loadTurtleResources>> }
   | { kind: 'python-pgzero'; value: Awaited<ReturnType<typeof loadPgzeroResources>> }
   | { kind: 'python-pygame'; value: Awaited<ReturnType<typeof loadPygameResources>> }
@@ -181,40 +186,37 @@ type ExtensionResources =
       kind: 'python-raylib-2d' | 'python-raylib-3d'
       value: Awaited<ReturnType<typeof loadRaylibResources>>
     }
-function loadCanvasResources(kind: PythonCanvasExtension, base: URL, scope: AbortController) {
-  async function withPinta<T extends { sources: ReadonlyMap<string, Uint8Array<ArrayBuffer>> }>(
-    ordinary: Promise<T>,
-  ): Promise<T> {
-    try {
-      const [value, regional] = await Promise.all([
-        ordinary,
-        loadBrowserPintaScenesModule(kind, base, scope.signal),
-      ])
-      scope.signal.throwIfAborted()
-      return regional
-        ? { ...value, sources: new Map([...value.sources, ['pinta.py', regional]]) }
-        : value
-    } catch (error) {
-      scope.abort(error)
-      throw error
-    }
+async function loadCanvasResources(kind: PythonCanvasExtension, base: URL, scope: AbortController) {
+  try {
+    const [resources, pintaScenes] = await Promise.all([
+      loadCanvasBackend(kind, base, scope),
+      loadBrowserPintaScenesModule(kind, base, scope.signal),
+    ])
+    scope.signal.throwIfAborted()
+    return { ...resources, pintaScenes }
+  } catch (error) {
+    scope.abort(error)
+    throw error
   }
+}
+
+function loadCanvasBackend(kind: PythonCanvasExtension, base: URL, scope: AbortController) {
   switch (kind) {
     case 'python-turtle':
       return loadTurtleResources(base, scope).then(
-        (value): ExtensionResources => ({ kind: 'python-turtle', value }),
+        (value): CanvasExtensionResources => ({ kind: 'python-turtle', value }),
       )
     case 'python-pgzero':
-      return withPinta(loadPgzeroResources(base, scope)).then(
-        (value): ExtensionResources => ({ kind: 'python-pgzero', value }),
+      return loadPgzeroResources(base, scope).then(
+        (value): CanvasExtensionResources => ({ kind: 'python-pgzero', value }),
       )
     case 'python-pygame':
-      return withPinta(loadPygameResources(base, scope)).then(
-        (value): ExtensionResources => ({ kind: 'python-pygame', value }),
+      return loadPygameResources(base, scope).then(
+        (value): CanvasExtensionResources => ({ kind: 'python-pygame', value }),
       )
     default:
-      return withPinta(loadRaylibResources(base, scope)).then(
-        (value): ExtensionResources => ({ kind, value }),
+      return loadRaylibResources(base, scope).then(
+        (value): CanvasExtensionResources => ({ kind, value }),
       )
   }
 }
@@ -388,6 +390,17 @@ export async function createPythonInterpreter(options: {
         studioPortableFileConflict(paths, snapshot.directories)
       )
         throw new Error('A estrutura de arquivos do snapshot é inválida.')
+      if (canvas && !options.graphics)
+        throw new Error('A tela gráfica do Python não está disponível.')
+      const resources = canvas
+        ? prefetchedCanvas?.kind === canvas
+          ? prefetchedCanvas
+          : await loadCanvasResources(canvas, base, resourceScope)
+        : undefined
+      const sources =
+        resources &&
+        installablePintaScenesSources(runtime, resources.value.sources, resources.pintaScenes)
+      resourceScope.signal.throwIfAborted()
       runtime.FS.mkdirTree(PROJECT_ROOT)
       for (const directory of snapshot.directories)
         runtime.FS.mkdirTree(`${PROJECT_ROOT}/${directory}`)
@@ -492,15 +505,9 @@ export async function createPythonInterpreter(options: {
           (id: string) => activityConsole!.matches(id),
         )
       }
-      if (canvas) {
-        if (!options.graphics) throw new Error('A tela gráfica do Python não está disponível.')
-        const resources =
-          prefetchedCanvas?.kind === canvas
-            ? prefetchedCanvas
-            : await loadCanvasResources(canvas, base, resourceScope)
-        resourceScope.signal.throwIfAborted()
+      if (resources && sources) {
         if (resources.kind === 'python-turtle') {
-          const { protocol, sources } = resources.value
+          const { protocol } = resources.value
           const { readTurtleGraphicsRequest, TURTLE_GRAPHICS_LIMITS } = protocol
           const directory = '/studio/extensions/python-turtle-1.0.0'
           runtime.FS.mkdirTree(directory)
@@ -526,7 +533,7 @@ export async function createPythonInterpreter(options: {
             return options.graphics!(JSON.stringify(request), images)
           })
         } else if (resources.kind === 'python-pgzero' || resources.kind === 'python-pygame') {
-          const { protocol, sources } = resources.value
+          const { protocol } = resources.value
           const {
             readPgzeroFrameHeader,
             PGZERO_LIMITS,
@@ -643,7 +650,7 @@ export async function createPythonInterpreter(options: {
             },
           )
         } else {
-          const { protocol, sources } = resources.value
+          const { protocol } = resources.value
           const { readRaylibFrameHeader, RAYLIB_LIMITS, RAYLIB_FONT_ATTACHMENT_BASE } = protocol
           const directory = `/studio/extensions/python-raylib-${RAYLIB_2D_EXTENSION.version}`
           for (const filename of sources.keys())
