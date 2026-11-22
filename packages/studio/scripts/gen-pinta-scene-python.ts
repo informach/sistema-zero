@@ -6,7 +6,10 @@
  */
 import { readFile, writeFile } from 'node:fs/promises'
 import { PINTA_IMAGE_WORLD_LIMITS } from '@sistemazero/core/studio/pinta-image'
-import { pythonSceneSchemaSource } from '../../core/scripts/pinta-scene-python-schema'
+import {
+  pythonLegacySceneSchemaSource,
+  pythonSceneSchemaSource,
+} from '../../core/scripts/pinta-scene-python-schema'
 import { pygameSceneModule } from '../../pinta/src/export/pygameProject'
 
 const path = new URL('../src/runtime/python/pygame/py/pinta.py', import.meta.url)
@@ -28,9 +31,21 @@ const schemaPath = new URL(
   '../../pinta/src/export/pythonSceneSchemas.generated.ts',
   import.meta.url,
 )
-const schemaExpected = pythonSceneSchemaSource()
+const schemas = [
+  [schemaPath, pythonSceneSchemaSource()],
+  [
+    new URL('../../pinta/src/export/pythonLegacySceneSchemas.generated.ts', import.meta.url),
+    pythonLegacySceneSchemaSource(),
+  ],
+] as const
 if (process.argv.includes('--check')) {
-  if ((await readFile(schemaPath, 'utf8')) !== schemaExpected) {
+  if (
+    (
+      await Promise.all(
+        schemas.map(async ([path, source]) => (await readFile(path, 'utf8')) === source),
+      )
+    ).includes(false)
+  ) {
     console.error(
       'O esquema portátil Python está desatualizado. Rode: bun packages/studio/scripts/gen-pinta-scene-python.ts',
     )
@@ -45,5 +60,5 @@ if (process.argv.includes('--check')) {
   console.log('pinta.py: o trecho da cena confere com o pacote portátil do Pinta.')
 } else {
   await writeFile(path, expected)
-  await writeFile(schemaPath, schemaExpected)
+  for (const [path, source] of schemas) await writeFile(path, source)
 }

@@ -75,7 +75,12 @@ def preparar_imagem(text,max_index_bytes=_PINTA_WORLD_MAX_INDICES):
     try:
         if type(text) is not str or len(text)>_PINTA_WORLD_MAX_TEXT or len(text.encode('utf-8'))>_PINTA_WORLD_MAX_TEXT or not _region_integer(max_index_bytes) or max_index_bytes<0 or max_index_bytes>_PINTA_WORLD_MAX_INDICES:
             return None
-        data=_pinta_parse_json(text)
+        return _preparar_imagem_valor(_pinta_parse_json(text),max_index_bytes)
+    except (ValueError,TypeError,KeyError,OverflowError,RecursionError):
+        return None
+
+def _preparar_imagem_valor(data,max_index_bytes):
+    try:
         if not _scene_schema(data,_PINTA_IMAGE_SCHEMA,_PINTA_IMAGE_SCHEMA):
             return None
         source=data['scene']
@@ -97,9 +102,12 @@ def preparar_imagem(text,max_index_bytes=_PINTA_WORLD_MAX_INDICES):
 
 def ler_mundo_png(source):
     """Capture all PNGs/headers/resources before chunks; return the complete registry only."""
-    root=ler_texto_png(source)
+    return _ler_mundo_regional(ler_texto_png(source))
+
+def _ler_mundo_regional(root, root_plan=None):
     metadata_bytes=len(root['text'].encode('utf-8'))
-    root_plan=preparar_imagem(root['text'])
+    if root_plan is None:
+        root_plan=preparar_imagem(root['text'])
     if root_plan is None:
         _png_invalid()
     plans=[root_plan]
@@ -121,7 +129,9 @@ def ler_mundo_png(source):
         plans.append(plan)
         covers[plan.id]={key:child[key] for key in ('png','width','height')}
         child=None
-    images={}
+    return _admitir_mundo_imagens(plans,covers,image_pixels,{})
+
+def _admitir_mundo_imagens(plans,covers,image_pixels,images):
     # Pixel/header admission precedes cell allocation too. No engine surfaces here.
     for plan in plans:
         for url,width,height,exact in plan.image_refs:
@@ -145,5 +155,5 @@ def ler_mundo_png(source):
         if data is None:
             _png_invalid()
         maps[plan.id]=dict(covers[plan.id],data=data)
-    return {'rootId':root_plan.id,'maps':maps,'images':images,'imagePixels':image_pixels}
+    return {'rootId':plans[0].id,'maps':maps,'images':images,'imagePixels':image_pixels}
 `

@@ -136,7 +136,7 @@ def _scene_tile_key(text):
     number = float(text)
     return int(number) if math.isfinite(number) and number.is_integer() else -1
 
-def _scene_metadata(scene, plans):
+def _scene_metadata(scene, grid_index_bytes):
     tilesets, art, sets = scene['tilesets'], scene.get('art', []), scene.get('sets', [])
     def unique(values):
         return len(values) == len(set(values))
@@ -164,7 +164,7 @@ def _scene_metadata(scene, plans):
             return False
     for index, current in enumerate([scene] + sets):
         groups, ids = set(), set()
-        if plans[index].index_bytes // 2 > ${PINTA_SCENE_LIMITS.cells}:
+        if grid_index_bytes[index] // 2 > ${PINTA_SCENE_LIMITS.cells}:
             return False
         for layer in current['layers']:
             if layer['id'] in ids or 'parentId' in layer and layer['parentId'] not in groups:
@@ -248,7 +248,7 @@ def _preparar_cena_valor(scene,max_index_bytes):
         if index_bytes>max_index_bytes:
             return None
         plans.append(plan)
-    if not _scene_metadata(scene,plans):
+    if not _scene_metadata(scene,[plan.index_bytes for plan in plans]):
         return None
     scene=_scene_native(scene,_SCENE_SCHEMA)
     return _PlanoCena(scene,plans,index_bytes)

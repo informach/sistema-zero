@@ -22,7 +22,9 @@ def _tile_frame(sheet, cell, size, time):
             if phase < 0:
                 tile = frame['tile']
                 break
-    return (tile % sheet['columns'] * size, tile // sheet['columns'] * size, size, size)
+    x = tile % sheet['columns'] * size
+    y = tile // sheet['columns'] * size + sheet.get('atlasY', 0)
+    return (x, y, size, size)
 
 
 def _tile_matrix(matrix, cell, col, row, size):
