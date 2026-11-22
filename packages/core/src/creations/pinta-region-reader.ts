@@ -1,39 +1,60 @@
 /** Queries on boundary-admitted immutable region grids. No document writer is activated here. */
-import { PINTA_REGION_SIDE, type PintaRegionBounds, type PintaRegionCells } from './pinta-regions'
+import { PINTA_HEX_EMPTY_CELL } from './pinta-hex-cell'
+import {
+  PINTA_REGION_SIDE,
+  type PintaHexRegionCells,
+  type PintaRegionBounds,
+  type PintaRegionCells,
+} from './pinta-regions'
 
-type RegionChunk = PintaRegionCells['chunks'][number]
+type RegionGrid = PintaRegionCells | PintaHexRegionCells
+type RegionChunk = RegionGrid['chunks'][number]
 const EMPTY_CELL = -1
 /** Memory-index key only, independent of account/storage authority keys. */
 export const regionChunkKey = (col: number, row: number) => `${col},${row}`
 export const compareRegionChunks = (a: RegionChunk, b: RegionChunk) =>
   a.row - b.row || a.col - b.col
-export const indexRegionChunks = (grid: PintaRegionCells) =>
+export const indexRegionChunks = <Chunk extends RegionChunk>(grid: { chunks: readonly Chunk[] }) =>
   new Map(grid.chunks.map((chunk) => [regionChunkKey(chunk.col, chunk.row), chunk]))
 
 const keyOf = regionChunkKey
 const order = compareRegionChunks
 const indexOf = indexRegionChunks
 
-function readChunkCell(chunk: RegionChunk | undefined, col: number, row: number): number {
-  if (!chunk) return EMPTY_CELL
+function readChunkCell(
+  chunk: RegionChunk | undefined,
+  col: number,
+  row: number,
+  empty: number,
+): number {
+  if (!chunk) return empty
   return (
     chunk.cells[
       (row - chunk.row * PINTA_REGION_SIDE) * PINTA_REGION_SIDE +
         col -
         chunk.col * PINTA_REGION_SIDE
-    ] ?? EMPTY_CELL
+    ] ?? empty
   )
 }
 
 /** Allocation-free point lookup. Reuse an indexed reader for a gesture/frame. */
 export function regionCellAt(grid: PintaRegionCells, col: number, row: number): number {
-  if (!Number.isInteger(col) || !Number.isInteger(row)) return EMPTY_CELL
+  return sparseCellAt(grid, col, row, EMPTY_CELL)
+}
+
+export function hexRegionCellAt(grid: PintaHexRegionCells, col: number, row: number): number {
+  return sparseCellAt(grid, col, row, PINTA_HEX_EMPTY_CELL)
+}
+
+function sparseCellAt(grid: RegionGrid, col: number, row: number, empty: number): number {
+  if (!Number.isInteger(col) || !Number.isInteger(row)) return empty
   const chunkCol = Math.floor(col / PINTA_REGION_SIDE),
     chunkRow = Math.floor(row / PINTA_REGION_SIDE)
   return readChunkCell(
     grid.chunks.find((chunk) => chunk.col === chunkCol && chunk.row === chunkRow),
     col,
     row,
+    empty,
   )
 }
 
@@ -43,14 +64,22 @@ export function regionCellAt(grid: PintaRegionCells, col: number, row: number): 
  * The input is an immutable grid already validated at the document boundary.
  */
 export function createRegionCellReader(grid: PintaRegionCells) {
-  const chunks = indexOf(grid)
+  return createSparseCellReader(grid, EMPTY_CELL)
+}
+
+export function createHexRegionCellReader(grid: PintaHexRegionCells) {
+  return createSparseCellReader(grid, PINTA_HEX_EMPTY_CELL)
+}
+
+function createSparseCellReader(grid: RegionGrid, empty: number) {
+  const chunks = indexOf<RegionChunk>(grid)
   return {
     at(col: number, row: number): number {
-      if (!Number.isInteger(col) || !Number.isInteger(row)) return EMPTY_CELL
+      if (!Number.isInteger(col) || !Number.isInteger(row)) return empty
       const chunkCol = Math.floor(col / PINTA_REGION_SIDE),
         chunkRow = Math.floor(row / PINTA_REGION_SIDE)
       const chunk = chunks.get(keyOf(chunkCol, chunkRow))
-      return readChunkCell(chunk, col, row)
+      return readChunkCell(chunk, col, row, empty)
     },
     /** Visits occupied cells in deterministic chunk order; never scans world gaps. */
     visitOccupied(
@@ -75,7 +104,7 @@ export function createRegionCellReader(grid: PintaRegionCells) {
         for (let row = top; row < bottom; row++)
           for (let col = left; col < right; col++) {
             const cell = chunk.cells[(row - originRow) * PINTA_REGION_SIDE + col - originCol]!
-            if (cell !== EMPTY_CELL) visit(cell, col, row)
+            if (cell !== empty) visit(cell, col, row)
           }
       }
       if (traversal !== 'row-major') {
