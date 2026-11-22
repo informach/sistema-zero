@@ -5,6 +5,18 @@ import type { PintaMemoryAsset } from './assetMemory'
 const LOCAL_ORIGIN = Symbol('pinta.localOrigin')
 type Origin = { database: string; id: string; revision: string | null }
 type WithOrigin = PintaMemoryAsset & { [LOCAL_ORIGIN]?: Origin }
+const exactReads = new WeakMap<PintaMemoryAsset, string>()
+
+export interface PintaResourceObservation {
+  id: string
+  localRevision: string | null
+}
+
+/** A read of this object, not the latest revision in a mutable editor lineage. */
+export function pintaResourceObservation(asset: PintaMemoryAsset): PintaResourceObservation | null {
+  const localRevision = exactReads.get(asset)
+  return localRevision ? { id: asset.id, localRevision } : null
+}
 
 /** Opaque identity of the confirmed native revision, for adapters' sync baselines. */
 export function pintaLocalRevisionOf(asset: PintaMemoryAsset): string | undefined {
@@ -22,6 +34,8 @@ export function recordPintaLocalOrigin(
   database: string,
   revision: string | null,
 ): void {
+  if (revision) exactReads.set(asset, revision)
+  else exactReads.delete(asset)
   const existing = pintaLocalOriginOf(asset, database)
   // The same editing lineage (including undo and edits queued during autosave) advances
   // only after ITS write commits. A background read has a separate origin object.

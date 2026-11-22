@@ -1,5 +1,6 @@
 import type { PintaMemoryAsset } from './assetMemory'
 import { COPY } from './copy'
+import { type PintaResourceObservation, pintaResourceObservation } from './localAssetOrigin'
 import { isObjectLayer, PINTA_DEPENDENCY_ASSET_LIMIT, pintaAssetDependencyIds } from './project'
 
 export class SceneMapClosureError extends Error {
@@ -66,6 +67,27 @@ export function pintaDoorDependencyIds(
     ids.add(target.id)
   }
   return [...ids]
+}
+
+/** Observe the revisions on screen before an authored reference is saved. */
+export function observePintaReferences<Asset extends PintaMemoryAsset>(
+  asset: Asset,
+  catalog: readonly Asset[],
+): PintaResourceObservation[] {
+  const byId = new Map(catalog.map((item) => [item.id, item]))
+  byId.set(asset.id, asset)
+  const references = new Set(pintaAssetDependencyIds(asset))
+  try {
+    for (const id of pintaDoorDependencyIds(asset, byId)) references.add(id)
+  } catch (error) {
+    // A legacy door may still be unresolved. The server admits the actual change.
+    if (!(error instanceof SceneMapClosureError)) throw error
+  }
+  references.delete(asset.id)
+  return [...references].map((id) => {
+    const target = byId.get(id)
+    return (target && pintaResourceObservation(target)) || { id, localRevision: null }
+  })
 }
 
 /** Complete authored world, including hidden doors and doors inside linked sets. No raster or UI. */

@@ -85,7 +85,7 @@ export function createLocalRegionAssetAuthority() {
       const asset = sanitizeLocalRegionAsset(raw)
       return asset?.id === id ? asset : null
     },
-    checkBudget(before, after) {
+    checkBudget(before, after, bytes) {
       // Persistence accepts mutable caller revisions, unlike the editor's immutable snapshots.
       // Numerical identity summaries are shared within this transaction, never across writes.
       const sizing = new RegionBackupSizeCache()
@@ -93,14 +93,15 @@ export function createLocalRegionAssetAuthority() {
         assets.some(regional)
           ? sizing.byteLength(assets)
           : galleryBackupByteLength(assets.filter((asset): asset is PintaAsset => !regional(asset)))
-      const projected = size(after)
+      const projected = size(after) + (bytes?.after ?? 0)
       if (projected <= MAX_BACKUP_FILE_BYTES) return
-      if (projected < size(before)) return
+      if (projected < size(before) + (bytes?.before ?? 0)) return
       // Capped sizing returns Infinity beyond a budget. Still permit freeing space,
       // provided every remaining document is exactly the unchanged prior revision.
       const originals = new Map(before.map((asset) => [asset.id, asset]))
       if (
         after.length < before.length &&
+        (bytes?.after ?? 0) <= (bytes?.before ?? 0) &&
         new Set(after.map((asset) => asset.id)).size === after.length &&
         after.every((asset) => pintaValuesEqual(asset, originals.get(asset.id)))
       )

@@ -8,6 +8,7 @@
 import { createStore, type StoreApi } from 'zustand/vanilla'
 import { type PintaMemoryAsset, retainedAssetBytes, sharedAssetParts } from '../core/assetMemory'
 import { createHistory, type SharedPart } from '../core/history'
+import type { PintaResourceObservation } from '../core/localAssetOrigin'
 import { RegionMetadataBudgetCache, regionDocumentMetadata } from '../core/mapDocumentBoundary'
 import { isTilesetKind, type PintaAsset } from '../core/project'
 import { RegionBackupSizeCache } from '../export/regionBackupSize'
@@ -22,6 +23,11 @@ export type PintaSaveResult = { ok: true } | { ok: false; error: string }
 export interface PintaEditorLayoutChange {
   oldToNew: readonly number[]
   count: number
+}
+
+export interface PintaEditorWriteContext {
+  layout?: PintaEditorLayoutChange
+  resources: readonly PintaResourceObservation[]
 }
 
 export interface PintaEditorState<Asset extends PintaMemoryAsset = PintaAsset> {
@@ -81,6 +87,7 @@ interface EditorSnapshot<Asset extends PintaMemoryAsset> {
   asset: Asset
   linkedMaps: Asset[] | null
   slots: readonly symbol[] | null
+  resources: readonly PintaResourceObservation[] | undefined
 }
 
 /** Mescla revisões ligadas por id, preservando assets tocados em commits anteriores. */
@@ -110,10 +117,19 @@ export function* snapshotShared(snapshot: {
   asset: PintaMemoryAsset
   linkedMaps: readonly PintaMemoryAsset[] | null
   slots?: readonly symbol[] | null
+  resources?: readonly PintaResourceObservation[]
 }): Iterable<SharedPart> {
   const maps = [snapshot.asset, ...(snapshot.linkedMaps ?? [])]
   for (const asset of maps) yield* sharedAssetParts(asset)
   if (snapshot.slots) yield { key: snapshot.slots, bytes: snapshot.slots.length * 8 }
+  if (snapshot.resources)
+    yield {
+      key: snapshot.resources,
+      bytes: snapshot.resources.reduce(
+        (sum, item) => sum + (item.id.length + (item.localRevision?.length ?? 0)) * 2,
+        0,
+      ),
+    }
 }
 
 export interface PintaEditorStoreOptions<Asset extends PintaMemoryAsset = PintaAsset> {
@@ -122,7 +138,9 @@ export interface PintaEditorStoreOptions<Asset extends PintaMemoryAsset = PintaA
     asset: Asset,
     linkedAssets: readonly Asset[],
     layout?: PintaEditorLayoutChange,
+    resources?: readonly PintaResourceObservation[],
   ) => Promise<void>
+  observeResources?: (asset: Asset) => readonly PintaResourceObservation[]
   onSaved?: (asset: Asset, linkedAssets: readonly Asset[]) => void
   /** Delay por instância; produção usa 1s, testes podem injetar um valor curto. */
   autosaveDelayMs?: number
@@ -171,6 +189,19 @@ export function createEditorStore<Asset extends PintaMemoryAsset = PintaAsset>(
     ? options.asset.tiles.map(() => Symbol())
     : null
   let savedSlots = currentSlots
+  let currentResources = options.observeResources?.(options.asset)
+  function observeNewBindings(asset: Asset): void {
+    const observed = options.observeResources?.(asset)
+    if (!observed) return
+    const previous = new Map(currentResources?.map((resource) => [resource.id, resource]))
+    const next = observed.map((resource) => previous.get(resource.id) ?? resource)
+    if (
+      !currentResources ||
+      next.length !== currentResources.length ||
+      next.some((resource, index) => resource !== currentResources?.[index])
+    )
+      currentResources = next
+  }
 
   const store = createStore<PintaEditorState<Asset>>((set, get) => {
     async function saveNow(): Promise<PintaSaveResult> {
@@ -188,6 +219,7 @@ export function createEditorStore<Asset extends PintaMemoryAsset = PintaAsset>(
         const snapshot = get().asset
         const linkedSnapshot = currentLinked ? [...currentLinked] : []
         const slots = currentSlots
+        const resources = currentResources
         const layout =
           slots && savedSlots && slots !== savedSlots
             ? { oldToNew: savedSlots.map((slot) => slots.indexOf(slot)), count: slots.length }
@@ -196,7 +228,8 @@ export function createEditorStore<Asset extends PintaMemoryAsset = PintaAsset>(
 
         const request = (async (): Promise<PintaSaveResult> => {
           try {
-            if (layout) await options.persist(snapshot, linkedSnapshot, layout)
+            if (resources) await options.persist(snapshot, linkedSnapshot, layout, resources)
+            else if (layout) await options.persist(snapshot, linkedSnapshot, layout)
             else await options.persist(snapshot, linkedSnapshot)
             savedSlots = slots
             options.onSaved?.(snapshot, linkedSnapshot)
@@ -217,6 +250,7 @@ export function createEditorStore<Asset extends PintaMemoryAsset = PintaAsset>(
               history.clear()
               currentLinked = recovered.linked
               savedSlots = slots
+              currentResources = options.observeResources?.(recovered.asset)
               options.onSaved?.(recovered.asset, recovered.linked)
               set({
                 asset: recovered.asset,
@@ -302,7 +336,13 @@ export function createEditorStore<Asset extends PintaMemoryAsset = PintaAsset>(
       if (recordHistory) {
         // O snapshot restaurado por undo carrega o ESTADO ANTERIOR: para uma
         // edição com remap, os mapas ANTES; senão, o `currentLinked` corrente.
-        history.record({ asset: current, linkedMaps: previousLinked, slots: currentSlots })
+        history.record({
+          asset: current,
+          linkedMaps: previousLinked,
+          slots: currentSlots,
+          resources: currentResources,
+        })
+        observeNewBindings(applied)
       }
       currentSlots = slots
       if (linked) currentLinked = proposedLinked
@@ -349,7 +389,12 @@ export function createEditorStore<Asset extends PintaMemoryAsset = PintaAsset>(
           !admitsSnapshot(base, currentLinked ?? [])
         )
           return
-        history.record({ asset: base, linkedMaps: currentLinked, slots: currentSlots })
+        history.record({
+          asset: base,
+          linkedMaps: currentLinked,
+          slots: currentSlots,
+          resources: currentResources,
+        })
         set({ canUndo: history.canUndo(), canRedo: history.canRedo() })
         scheduleAutosave()
       },
@@ -359,10 +404,12 @@ export function createEditorStore<Asset extends PintaMemoryAsset = PintaAsset>(
           asset: get().asset,
           linkedMaps: currentLinked,
           slots: currentSlots,
+          resources: currentResources,
         })
         if (!prev) return
         currentLinked = prev.linkedMaps
         currentSlots = prev.slots
+        currentResources = prev.resources
         set({
           asset: prev.asset,
           linkedAssets: currentLinked,
@@ -377,10 +424,12 @@ export function createEditorStore<Asset extends PintaMemoryAsset = PintaAsset>(
           asset: get().asset,
           linkedMaps: currentLinked,
           slots: currentSlots,
+          resources: currentResources,
         })
         if (!next) return
         currentLinked = next.linkedMaps
         currentSlots = next.slots
+        currentResources = next.resources
         set({
           asset: next.asset,
           linkedAssets: currentLinked,

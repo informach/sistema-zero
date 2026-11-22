@@ -300,6 +300,7 @@ export const COPY = {
       'Esse desenho veio com algum problema. Use o botão Preciso de ajuda para avisar a equipe.',
     /** Veio pelo botão "Editar" do Estúdio, mas o desenho já tinha sido apagado. */
     drawingGone: 'Esse desenho não está mais aqui. Escolha outro na sua galeria.',
+    drawingOpenError: 'Não consegui abrir esse desenho. Tente de novo.',
     retry: 'Tentar de novo',
     rename: 'Renomear',
     duplicate: 'Duplicar',

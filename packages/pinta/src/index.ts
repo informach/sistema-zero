@@ -32,6 +32,7 @@ export type {
   PintaTaskSession,
 } from './core/types'
 export { holdPintaEditorLock, withClosedPintaEditors } from './state/causalEditorLocks'
+export type { PintaEditorWriteContext } from './state/editorStore'
 /** A biblioteca do perfil também é usada pelo Molda através do host. */
 export { createPaletteLibraryStore, type PaletteLibraryStore } from './state/paletteLibraryStore'
 export {

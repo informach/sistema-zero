@@ -71,6 +71,7 @@ it('a corrupt second member cannot apply or confirm any page of the pull', async
         confirmed: new Map(),
       }),
       capture: async (ids) => ids.map((id) => ({ id, before: null, beforeRevision: null })),
+      pullImpact: async () => ({ ids: [], blocked: false }),
       applyPull: async () => {
         applied = true
         return true

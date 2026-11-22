@@ -1,15 +1,23 @@
 import {
+  PINTA_CAUSAL_LIMITS,
   type PintaCausalIntent,
   PintaCausalIntentSchema,
   type PintaCausalOperation,
+  PintaCausalOperationSchema,
   type PintaCausalRead,
+  PintaCausalReadSchema,
   type PintaCausalResult,
   PintaCausalResultSchema,
+  pintaCausalEpochSchema,
+  pintaCausalItemIdSchema,
+  pintaCausalOpIdSchema,
+  pintaCausalRevisionSchema,
 } from '@sistemazero/core/creations/pinta-causal'
 import { pintaValuesEqual } from '../core/assetEquality'
 import type { PintaMemoryAsset } from '../core/assetMemory'
-import { PintaLocalStorageError, PintaStorageBudgetError } from '../core/localStorageErrors'
-import { MAX_BACKUP_FILE_BYTES } from '../export/projectJson'
+import { PintaLocalStorageError } from '../core/localStorageErrors'
+import { isTilesetKind, pintaAssetDependencyIds } from '../core/project'
+import { pintaDoorDependencyIds, SceneMapClosureError } from '../core/sceneMapClosure'
 import type { LocalAssetTransition, LocalSnapshot } from './localAssetAuthority'
 
 export const PINTA_CAUSAL_OUTBOX_KEY = 'pinta:sync:causal'
@@ -66,12 +74,15 @@ export interface PintaCausalConfirmed {
 export interface PintaCausalLocalPull<Asset extends PintaMemoryAsset> {
   fromEpoch: string | null
   epoch: string
+  coveredIds?: readonly string[]
   transitions: readonly (LocalAssetTransition<Asset> & {
     remote: Pick<PintaCausalConfirmed, 'revision' | 'sha256' | 'layoutRevision'> | null
     /** An exact native revision authenticated before this client started using the outbox. */
     confirmedLegacy?: { revision: number; localRevision: string }
   })[]
 }
+
+export class PintaCausalPullDeferred extends Error {}
 
 export interface LocalCausalState {
   version: 1
@@ -90,38 +101,83 @@ function object(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object' && !Array.isArray(value)
 }
 
+function localRevision(value: unknown): value is string {
+  return typeof value === 'string' && value.length > 0 && value.length <= 128
+}
+
+function digest(value: unknown): value is string {
+  return typeof value === 'string' && /^[0-9a-f]{64}$/.test(value)
+}
+
 function pendingState(value: unknown): value is PintaCausalPending {
-  return (
-    object(value) &&
-    typeof value.opId === 'string' &&
-    typeof value.preparation === 'string' &&
-    typeof value.baseEpoch === 'string' &&
-    (value.inverseOf === undefined || typeof value.inverseOf === 'string') &&
-    Array.isArray(value.readSet) &&
-    Array.isArray(value.members) &&
-    value.members.length > 0 &&
-    value.members.every(
-      (member: unknown) =>
-        object(member) &&
-        typeof member.itemId === 'string' &&
-        typeof member.localRevision === 'string' &&
-        typeof member.baseRevision === 'number' &&
-        (member.action === 'delete' || member.action === 'put'),
-    )
+  if (
+    !object(value) ||
+    !pintaCausalOpIdSchema.safeParse(value.opId).success ||
+    !pintaCausalOpIdSchema.safeParse(value.preparation).success ||
+    !pintaCausalEpochSchema.safeParse(value.baseEpoch).success ||
+    (value.inverseOf !== undefined && !pintaCausalOpIdSchema.safeParse(value.inverseOf).success) ||
+    !Array.isArray(value.readSet) ||
+    value.readSet.length > PINTA_CAUSAL_LIMITS.readEdges ||
+    !Array.isArray(value.members) ||
+    value.members.length === 0 ||
+    value.members.length > PINTA_CAUSAL_LIMITS.members
   )
+    return false
+  const memberIds = new Set<string>()
+  const puts = new Set<string>()
+  for (const raw of value.members as unknown[]) {
+    if (!object(raw)) return false
+    const id = pintaCausalItemIdSchema.safeParse(raw.itemId)
+    const base = pintaCausalRevisionSchema.safeParse(raw.baseRevision)
+    if (!id.success || !base.success || !localRevision(raw.localRevision) || memberIds.has(id.data))
+      return false
+    memberIds.add(id.data)
+    if (raw.action === 'delete') {
+      if (base.data === 0 || raw.operation !== undefined) return false
+      continue
+    }
+    if (raw.action !== 'put') return false
+    const operation = PintaCausalOperationSchema.safeParse(raw.operation)
+    if (!operation.success || (base.data === 0) !== (operation.data.type === 'create')) return false
+    puts.add(id.data)
+  }
+  const edges = new Set<string>()
+  for (const raw of value.readSet as unknown[]) {
+    const edge = PintaCausalReadSchema.safeParse(raw)
+    if (!edge.success) return false
+    const { consumerId, targetId, source } = edge.data
+    const key = `${consumerId}/${targetId}`
+    if (!puts.has(consumerId) || (source === 'unit' && !puts.has(targetId)) || edges.has(key))
+      return false
+    edges.add(key)
+  }
+  return true
 }
 
 function sealedState(value: unknown): value is PintaCausalSealed {
+  if (!object(value) || !pendingState(value.local) || !digest(value.intentHash)) return false
+  const intent = PintaCausalIntentSchema.safeParse(value.intent)
+  if (
+    !intent.success ||
+    intent.data.opId !== value.local.opId ||
+    intent.data.baseEpoch !== value.local.baseEpoch ||
+    intent.data.inverseOf !== value.local.inverseOf ||
+    !pintaValuesEqual(intent.data.readSet, value.local.readSet) ||
+    intent.data.members.length !== value.local.members.length
+  )
+    return false
+  const members = new Map(value.local.members.map((member) => [member.itemId, member]))
   return (
-    object(value) &&
-    pendingState(value.local) &&
-    object(value.intent) &&
-    value.intent.opId === value.local.opId &&
-    Array.isArray(value.intent.members) &&
-    typeof value.intentHash === 'string' &&
-    typeof value.bytes === 'number' &&
-    Number.isSafeInteger(value.bytes) &&
-    value.bytes >= 0
+    intent.data.members.every((member) => {
+      const stored = members.get(member.itemId)
+      return (
+        stored?.action === member.action &&
+        stored.baseRevision === member.baseRevision &&
+        (member.action !== 'put' || pintaValuesEqual(stored.operation, member.operation))
+      )
+    }) &&
+    value.bytes ===
+      intent.data.members.reduce((n, member) => n + (member.action === 'put' ? member.bytes : 0), 0)
   )
 }
 
@@ -129,14 +185,17 @@ function confirmedState(value: unknown): value is Map<string, PintaCausalConfirm
   if (!(value instanceof Map)) return false
   for (const [id, mark] of value) {
     if (
-      typeof id !== 'string' ||
+      !pintaCausalItemIdSchema.safeParse(id).success ||
       !object(mark) ||
-      typeof mark.revision !== 'number' ||
-      typeof mark.localRevision !== 'string' ||
+      !pintaCausalRevisionSchema.safeParse(mark.revision).success ||
+      mark.revision === 0 ||
+      !localRevision(mark.localRevision) ||
       typeof mark.deleted !== 'boolean' ||
-      (mark.sha256 !== null && typeof mark.sha256 !== 'string') ||
-      (mark.layoutRevision !== null && typeof mark.layoutRevision !== 'string') ||
-      (mark.opId !== undefined && typeof mark.opId !== 'string')
+      (mark.sha256 !== null && !digest(mark.sha256)) ||
+      (mark.deleted && (mark.sha256 !== null || mark.layoutRevision !== null)) ||
+      (mark.layoutRevision !== null &&
+        !pintaCausalEpochSchema.safeParse(mark.layoutRevision).success) ||
+      (mark.opId !== undefined && !pintaCausalOpIdSchema.safeParse(mark.opId).success)
     )
       return false
   }
@@ -158,17 +217,28 @@ export function readLocalCausalState(records: ReadonlyMap<string, unknown>): Loc
     !object(value) ||
     value.version !== 1 ||
     (value.protocolKnown !== undefined && typeof value.protocolKnown !== 'boolean') ||
-    (value.epoch != null && typeof value.epoch !== 'string') ||
+    (value.epoch != null && !pintaCausalEpochSchema.safeParse(value.epoch).success) ||
     !Array.isArray(value.pending) ||
+    value.pending.length > PINTA_CAUSAL_LIMITS.members ||
     !value.pending.every(pendingState) ||
     (value.sealed !== null && !sealedState(value.sealed)) ||
     !confirmedState(value.confirmed)
   )
     invalid()
+  const ids = new Set<string>()
+  const owners = new Set<string>()
+  for (const unit of value.pending) {
+    if (ids.has(unit.opId) || unit.opId === value.sealed?.local.opId) invalid()
+    ids.add(unit.opId)
+    for (const member of unit.members) {
+      if (owners.has(member.itemId)) invalid()
+      owners.add(member.itemId)
+    }
+  }
   return {
     version: 1,
     protocolKnown: value.protocolKnown === true,
-    epoch: value.epoch ?? null,
+    epoch: typeof value.epoch === 'string' ? value.epoch : null,
     pending: value.pending,
     sealed: value.sealed,
     confirmed: value.confirmed,
@@ -182,10 +252,14 @@ export function ownsLocalCausalMember(state: LocalCausalState, id: string): bool
   )
 }
 
-function saveState(records: Map<string, unknown>, state: LocalCausalState): void {
+export function localCausalBytes(records: ReadonlyMap<string, unknown>): number {
+  if (records.get(PINTA_CAUSAL_OUTBOX_KEY) === undefined) return 0
+  const state = readLocalCausalState(records)
   const metadata = JSON.stringify({ ...state, confirmed: [...state.confirmed] })
-  const bytes = new TextEncoder().encode(metadata).length + (state.sealed?.bytes ?? 0)
-  if (bytes > MAX_BACKUP_FILE_BYTES) throw new PintaStorageBudgetError(bytes)
+  return new TextEncoder().encode(metadata).length + (state.sealed?.bytes ?? 0)
+}
+
+function saveState(records: Map<string, unknown>, state: LocalCausalState): void {
   records.set(PINTA_CAUSAL_OUTBOX_KEY, state)
 }
 
@@ -194,12 +268,60 @@ export function rememberLocalCausalProtocol(records: Map<string, unknown>): void
   if (!state.protocolKnown) saveState(records, { ...state, protocolKnown: true })
 }
 
+export function localCausalPullImpact<Asset extends PintaMemoryAsset>(
+  pull: PintaCausalLocalPull<Asset>,
+  state: LocalCausalState,
+  snapshot: LocalSnapshot<Asset>,
+): { ids: string[]; blocked: boolean } {
+  const written = new Set(pull.transitions.map(({ id }) => id))
+  const changedLayout = new Set<string>()
+  let hasNameChange = false
+  const projected = new Map(snapshot.assets)
+  for (const { id, before, after, remote } of pull.transitions) {
+    if (after) projected.set(id, after)
+    else projected.delete(id)
+    if (before?.name !== after?.name && (before?.kind === 'tilemap' || after?.kind === 'tilemap'))
+      hasNameChange = true
+    const mark = state.confirmed.get(id)
+    const kindChanged = before && before.kind !== after?.kind
+    const layoutChanged =
+      before &&
+      isTilesetKind(before) &&
+      (mark ? mark.layoutRevision !== remote?.layoutRevision : !pintaValuesEqual(before, after))
+    if (kindChanged || layoutChanged) changedLayout.add(id)
+  }
+  let blocked = (hasNameChange || changedLayout.size > 0) && snapshot.issues.length > 0
+  const affected = new Set(written)
+  if (!hasNameChange && changedLayout.size === 0) return { ids: [...affected], blocked }
+  const doorsIn = (asset: Asset, catalog: ReadonlyMap<string, Asset>): string[] | null => {
+    try {
+      return pintaDoorDependencyIds(asset, catalog).sort()
+    } catch (error) {
+      if (!(error instanceof SceneMapClosureError)) throw error
+      return null
+    }
+  }
+  for (const asset of snapshot.assets.values()) {
+    if (written.has(asset.id)) continue
+    const usesChangedLayout = pintaAssetDependencyIds(asset).some((id) => changedLayout.has(id))
+    const doorChanged =
+      hasNameChange && !pintaValuesEqual(doorsIn(asset, snapshot.assets), doorsIn(asset, projected))
+    if (!usesChangedLayout && !doorChanged) continue
+    affected.add(asset.id)
+    const mark = state.confirmed.get(asset.id)
+    if (!mark || mark.deleted || mark.localRevision !== snapshot.documents.get(asset.id)?.revision)
+      blocked = true
+  }
+  return { ids: [...affected], blocked }
+}
+
 export function installLocalCausalPull<Asset extends PintaMemoryAsset>(
   records: Map<string, unknown>,
   pull: PintaCausalLocalPull<Asset>,
-  write: () => LocalSnapshot<Asset>,
+  write: (authorize: (snapshot: LocalSnapshot<Asset>) => void) => LocalSnapshot<Asset>,
 ): LocalSnapshot<Asset> | null {
   const state = readLocalCausalState(records)
+  if (!pintaCausalEpochSchema.safeParse(pull.epoch).success) invalid()
   if (
     state.epoch !== pull.fromEpoch ||
     (state.epoch !== null && BigInt(pull.epoch) < BigInt(state.epoch))
@@ -217,7 +339,12 @@ export function installLocalCausalPull<Asset extends PintaMemoryAsset>(
       if (!change.remote || !pintaValuesEqual(change.before, change.after)) return null
     } else if (!change.remote && !mark) return null
   }
-  const snapshot = write()
+  const covered = new Set(pull.coveredIds ?? pull.transitions.map(({ id }) => id))
+  const snapshot = write((before) => {
+    const impact = localCausalPullImpact(pull, state, before)
+    if (impact.blocked || impact.ids.some((id) => !covered.has(id)))
+      throw new PintaCausalPullDeferred()
+  })
   const confirmed = new Map(state.confirmed)
   for (const change of pull.transitions) {
     const localRevision = snapshot.documents.get(change.id)?.revision
@@ -278,6 +405,7 @@ export function stageLocalCausalDraft<Asset extends PintaMemoryAsset>(
     readSet: draft.readSet,
     members,
   }
+  if (!pendingState(pending)) invalid()
   saveState(records, {
     ...state,
     protocolKnown: true,

@@ -23,7 +23,7 @@ import { isTextEntryTarget } from '../../core/dom'
 import { fitZoomFor } from '../../core/guidedCanvas'
 import { withinLessonMapLimits } from '../../core/lessonLimits'
 import { assetRole, assetStyle, type PintaAsset, type PintaAssetRole } from '../../core/project'
-import { SceneMapClosureError } from '../../core/sceneMapClosure'
+import { observePintaReferences, SceneMapClosureError } from '../../core/sceneMapClosure'
 import { type ShortcutEditor, shortcut } from '../../core/shortcuts'
 import { filterTools } from '../../core/toolCuration'
 import { buildStudioMapBundle, StudioMapBundleError } from '../../export/studioMapBundle'
@@ -702,7 +702,19 @@ export function EditorScreen({
           : {}),
         // O armazenamento vem do contexto, e não do módulo: o `persistAssets` solto vai direto
         // ao IndexedDB do perfil e furaria o armazenamento injetado pelo host.
-        persist: (saved, linked) => persistence.persistAssets([saved, ...linked]),
+        ...(persistence.observesReferences
+          ? {
+              observeResources: (asset: PintaAsset) =>
+                observePintaReferences(asset, gallery.getState().assets),
+            }
+          : {}),
+        persist: (saved, linked, layout, resources) =>
+          persistence.observesReferences
+            ? persistence.persistAssets([saved, ...linked], {
+                ...(layout ? { layout } : {}),
+                resources: resources ?? [],
+              })
+            : persistence.persistAssets([saved, ...linked]),
         persistErrorMessage: (error) =>
           isPintaStorageBudgetError(error) ? COPY.gallery.storageBudget : COPY.editor.saveError,
         onSaved: (saved, linked) => gallery.getState().absorbMany([saved, ...linked]),

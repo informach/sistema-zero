@@ -8,6 +8,8 @@ Base `c34117d6a`. A publicação causal mantém uma folha, seus mapas e os conju
 - [x] Guardar a intenção estrutural e suas precondições com os membros. Uma unidade pendente referencia as revisões locais correntes. Antes da reserva, selar uma única unidade em voo por perfil, com seus bytes gzip e bases exatas. O recibo confirma apenas a revisão enviada, preservando edições sucessoras.
 - [x] Capturar a transformação de índices em `TileStrip.tsx` e acompanhar os slots nos snapshots existentes de salvar, desfazer e refazer.
 - [x] Testar em IndexedDB falha no último membro, coleções de dois perfis, reinício entre gravação e envio e recibo após editar um membro novamente.
+- [x] Medir documentos, metadados e bytes do envio selado juntos na mesma transação. Uma mudança que reduz o uso continua possível quando o acervo antigo ultrapassa o teto.
+- [x] Validar registros recuperados da fila pelo contrato de epoch, revisão, identificação e intenção. Conservar dados em disco se a validação falhar.
 - [ ] Ligar a exclusão em `galleryStore.ts` e os vínculos do documento externo em `mapSetEditorStore.ts`. As referências novas guardam o layout ou documento que a pessoa realmente leu. Uma referência a um recurso da própria unidade pode apontar para esse membro.
 
 ## Fila da conta
@@ -22,5 +24,6 @@ Base `c34117d6a`. A publicação causal mantém uma folha, seus mapas e os conju
 
 - [ ] Capturar todas as páginas no mesmo epoch, conferir as revisões pinadas e preparar os bytes fora da transação de aplicação. Reusar o portão de formato e o codec atuais. Computar a ausência a partir de um inventário completo e de marcas confirmadas no mesmo banco.
 - [x] Implementar a aplicação de todo o delta Pinta, marcas e lápides em uma transação. Conferir revisões locais e propriedade da fila outra vez no fim. Provar em navegador que uma aba pode adiar o delta inteiro pelo mesmo namespace e que uma edição concorrente invalida o commit.
+- [x] Calcular as dependências retidas no disco antes de aplicar novo layout. Se um mapa local sem confirmação ainda usa os índices anteriores, manter o delta inteiro aguardando.
 - [ ] Preservar os nomes e vínculos oficiais em um fechamento de portas por nome. Um conflito com trabalho local impede aplicação parcial, inclusive quando a alternativa seria alterar apenas um nome remoto.
 - [ ] Testar epoch alterado entre páginas, falha no último download, aba aberta e fechamento, quota, nomes e edição concorrente. Exercitar os caminhos reais com folhas e conjuntos densos, além dos controles de aula e de envio de arte.

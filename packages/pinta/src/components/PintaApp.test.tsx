@@ -9,7 +9,7 @@ import { galleryToPintaJson } from '../export/projectJson'
 import { clearIdbMock } from '../testing/idbMock'
 
 const { PintaApp } = await import('./PintaApp')
-const { setPintaStorageNamespace } = await import('../state/persistence')
+const { createPintaPersistence, setPintaStorageNamespace } = await import('../state/persistence')
 const { createGalleryStore } = await import('../state/galleryStore')
 
 beforeEach(() => {
@@ -18,6 +18,53 @@ beforeEach(() => {
 })
 
 describe('PintaApp — galeria', () => {
+  it('avisa quando a abertura não obtém a reserva e conserva a galeria', async () => {
+    const persistence = createPintaPersistence()
+    await persistence.persistAsset(
+      createPixelBackgroundAsset({ name: 'ceu', width: 16, height: 16 }),
+    )
+    render(
+      <PintaApp
+        persistence={{
+          ...persistence,
+          holdOpen: async () => {
+            throw Error('reserva indisponível')
+          },
+        }}
+      />,
+    )
+    const card = await screen.findByRole('button', { name: /Abrir ceu/ })
+    fireEvent.click(card)
+    expect(await screen.findByText(COPY.gallery.drawingOpenError)).toBeTruthy()
+    expect(screen.getByRole('button', { name: /Abrir ceu/ })).toBeTruthy()
+  })
+
+  it('a abertura anterior libera só sua reserva quando outra tela já abriu e fechou', async () => {
+    const persistence = createPintaPersistence()
+    const a = createPixelBackgroundAsset({ name: 'ceu', width: 16, height: 16 })
+    const b = createPixelBackgroundAsset({ name: 'terra', width: 16, height: 16 })
+    await persistence.persistAssets([a, b])
+    const first = Promise.withResolvers<() => void>()
+    const second = Promise.withResolvers<() => void>()
+    const closed: string[] = []
+    render(
+      <PintaApp
+        persistence={{
+          ...persistence,
+          holdOpen: (id) => (id === a.id ? first.promise : second.promise),
+        }}
+      />,
+    )
+    fireEvent.click(await screen.findByRole('button', { name: /Abrir ceu/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Abrir terra/ }))
+    await act(async () => second.resolve(() => closed.push('terra')))
+    fireEvent.click(await screen.findByRole('button', { name: COPY.editor.back }))
+    expect(await screen.findByRole('button', { name: /Abrir terra/ })).toBeTruthy()
+    await act(async () => first.resolve(() => closed.push('ceu')))
+    expect(closed).toEqual(['terra', 'ceu'])
+    expect(screen.getByRole('button', { name: /Abrir terra/ })).toBeTruthy()
+  })
+
   it('aplica o tema no root (default light; host pode fixar dark)', async () => {
     const { container, unmount } = render(<PintaApp />)
     expect(container.querySelector('[data-pinta-theme="light"]')).toBeTruthy()

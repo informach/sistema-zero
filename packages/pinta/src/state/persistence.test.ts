@@ -1,7 +1,11 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
+import type { PintaCausalIntent } from '@sistemazero/core/creations/pinta-causal'
+import { pintaLocalRevisionOf, pintaResourceObservation } from '../core/localAssetOrigin'
 import type { MapSetAsset, TilemapAsset } from '../core/project'
 import {
   createPixelSpriteAsset,
+  createTilemapAsset,
+  createTilesetAsset,
   createVectorBackgroundAsset,
   withPintaSchemaStamp,
 } from '../core/project'
@@ -15,12 +19,159 @@ import {
 } from '../testing/idbMock'
 import { MAX_IMAGE_SRC_CHARS, type VectorShape } from '../vector/model'
 
-const { PintaStorageBudgetError, createPintaPersistence, persistAsset, setPintaStorageNamespace } =
-  await import('./persistence')
+const {
+  PintaStorageBudgetError,
+  createPintaCausalPersistence,
+  createPintaPersistence,
+  persistAsset,
+  setPintaStorageNamespace,
+} = await import('./persistence')
 
 beforeEach(() => {
   clearIdbMock()
   setPintaStorageNamespace('')
+})
+
+describe('authority of the causal gallery', () => {
+  it('keeps the resource revision actually observed even after the editable lineage advances', async () => {
+    const local = createPintaCausalPersistence({ namespace: 'revision-observada' })
+    const created = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+    await local.persistAsset(created)
+    const before = await local.loadAssetById(created.id)
+    if (!before) throw Error('fixture')
+    const observed = pintaResourceObservation(before)
+    expect(observed?.localRevision).toBe(pintaLocalRevisionOf(before))
+    const edited = { ...before, name: 'pecas-novas' }
+    expect(pintaResourceObservation(edited)).toBeNull()
+    await local.persistAsset(edited)
+    expect(pintaLocalRevisionOf(before)).toBe(pintaLocalRevisionOf(edited))
+    expect(pintaResourceObservation(edited)).not.toEqual(observed)
+    expect(pintaResourceObservation(before)).toEqual(observed)
+  })
+
+  it('preserves an unpublished offline map when a remote sheet changes its indices', async () => {
+    const local = createPintaCausalPersistence({ namespace: 'offline-remap' })
+    const sheet = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+    sheet.tiles.push(structuredClone(sheet.tiles[0]!))
+    sheet.solid.push(false)
+    sheet.platform.push(false)
+    expect(
+      await local.causal.applyPull(
+        {
+          fromEpoch: null,
+          epoch: '1',
+          transitions: [
+            {
+              id: sheet.id,
+              before: null,
+              beforeRevision: null,
+              after: sheet,
+              remote: { revision: 1, layoutRevision: '1', sha256: 'a'.repeat(64) },
+            },
+          ],
+        },
+        () => true,
+      ),
+    ).toBe(true)
+    const map = createTilemapAsset({ name: 'novo-mapa', tilesetId: sheet.id, cols: 2, rows: 2 })
+    map.layers[0]!.cells![0] = 1
+    await local.persistAsset(map)
+    const [base] = await local.causal.capture([sheet.id])
+    if (base?.before?.kind !== 'tileset') throw Error('fixture')
+    const pull = {
+      fromEpoch: '1',
+      epoch: '2',
+      transitions: [
+        {
+          ...base,
+          after: {
+            ...base.before,
+            tiles: base.before.tiles.slice(1),
+            solid: base.before.solid.slice(1),
+            platform: base.before.platform.slice(1),
+          },
+          remote: { revision: 2, layoutRevision: '2', sha256: 'b'.repeat(64) },
+        },
+      ],
+    }
+    const impact = await local.causal.pullImpact(pull)
+    expect(impact).toEqual({ ids: [sheet.id, map.id], blocked: true })
+    expect(await local.causal.applyPull({ ...pull, coveredIds: impact.ids }, () => true)).toBe(
+      false,
+    )
+    expect((await local.causal.inspect()).epoch).toBe('1')
+    expect(await local.loadAssetById(sheet.id)).toMatchObject({ tiles: sheet.tiles })
+    expect(await local.loadAssetById(map.id)).toMatchObject({ layers: map.layers })
+  })
+
+  it('counts drawings and the sealed gzip in the same budget and keeps the draft after refusal', async () => {
+    const local = createPintaCausalPersistence({ namespace: 'causal-budget' })
+    const drawings = Array.from({ length: 20 }, (_, i) =>
+      createPixelSpriteAsset({ name: `arte-${i}`, frameSize: 8 }),
+    )
+    await local.persistAssets(drawings)
+    const [base] = await local.causal.capture([drawings[0]!.id])
+    if (!base?.before) throw Error('fixture')
+    const opId = crypto.randomUUID()
+    const queue = await local.causal.stage({
+      opId,
+      baseEpoch: '1',
+      readSet: [],
+      transitions: [
+        {
+          ...base,
+          after: { ...base.before, name: 'nova-arte' },
+          baseRevision: 1,
+          operation: { type: 'update' },
+        },
+      ],
+    })
+    const bytes = MAX_BACKUP_FILE_BYTES - 4_096
+    const intent = {
+      protocol: 1,
+      opId,
+      baseEpoch: '1',
+      reader: 6,
+      readSet: [],
+      members: [
+        {
+          action: 'put',
+          itemId: base.id,
+          baseRevision: 1,
+          name: 'nova-arte',
+          kind: base.before.kind,
+          formatVersion: 1,
+          itemUpdatedAt: new Date(base.before.updatedAt).toISOString(),
+          bytes,
+          sha256: 'a'.repeat(64),
+          operation: { type: 'update' },
+        },
+      ],
+    } satisfies PintaCausalIntent
+    expect(galleryBackupByteLength(drawings)).toBeGreaterThan(4_096)
+    await expect(
+      local.causal.seal(
+        queue.preparation,
+        intent,
+        'b'.repeat(64),
+        new Map([[base.id, new Blob([new Uint8Array(bytes)])]]),
+      ),
+    ).rejects.toBeInstanceOf(PintaStorageBudgetError)
+    expect((await local.causal.prepare(opId))?.pending).toEqual(queue)
+    expect(await local.causal.inFlight()).toBeNull()
+    expect(await local.listAllAssets()).toHaveLength(drawings.length)
+  })
+
+  it('refuses a malformed durable epoch without discarding the disk record', async () => {
+    const namespace = 'destructive-corruption'
+    const local = createPintaCausalPersistence({ namespace })
+    await local.causal.rememberProtocol()
+    const disk = idbMockDb(`sistema-zero-pinta-${namespace}`)
+    const malformed = { ...(await local.causal.inspect()), epoch: '1e4' }
+    disk.set('pinta:sync:causal', malformed)
+    await expect(local.causal.inspect()).rejects.toThrow('Não consegui conferir')
+    expect(disk.get('pinta:sync:causal')).toEqual(malformed)
+  })
 })
 
 describe('persistência por perfil', () => {

@@ -55,7 +55,7 @@ export async function readPintaCausalJson(
 /** The input represents every visible ID at the same server epoch. */
 export async function pullPintaCausalSnapshot(options: {
   snapshot: PintaCloudSnapshot
-  local: Pick<PintaCausalLocalPort, 'inspect' | 'capture' | 'applyPull'>
+  local: Pick<PintaCausalLocalPort, 'inspect' | 'capture' | 'pullImpact' | 'applyPull'>
   cloud: Pick<PintaCausalCloud, 'download' | 'verifyEpoch'>
   signal: AbortSignal
   isOpen(id: string): boolean
@@ -110,11 +110,14 @@ export async function pullPintaCausalSnapshot(options: {
       ...(confirmedLegacy ? { confirmedLegacy } : {}),
     }
   })
+  const pull = { fromEpoch: state.epoch, epoch: snapshot.epoch, transitions }
+  const impact = await local.pullImpact(pull)
+  if (impact.blocked || impact.ids.some(options.isOpen)) return false
   await cloud.verifyEpoch(snapshot.epoch, signal)
-  return options.withClosed(ids, () =>
+  return options.withClosed(impact.ids, () =>
     local.applyPull(
-      { fromEpoch: state.epoch, epoch: snapshot.epoch, transitions },
-      () => !signal.aborted && !ids.some(options.isOpen),
+      { ...pull, coveredIds: impact.ids },
+      () => !signal.aborted && !impact.ids.some(options.isOpen),
     ),
   )
 }

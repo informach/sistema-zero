@@ -56,13 +56,18 @@ export interface LocalAssetTransition<Asset extends PintaMemoryAsset> {
   after: Asset | null
 }
 
+interface LocalBudgetBytes {
+  before: number
+  after: number
+}
+
 /** Internal format policy; the default exports retain the existing public 0–7 contract. */
 export interface LocalAssetFormat<Asset extends PintaMemoryAsset> {
   readonly maxSchema: number
   sanitize(raw: unknown): Asset | null
   stamp(asset: Asset): Asset
   schema(asset: Asset): number
-  checkBudget(before: readonly Asset[], after: readonly Asset[]): void
+  checkBudget(before: readonly Asset[], after: readonly Asset[], bytes?: LocalBudgetBytes): void
   mirror?(asset: Asset, revision: string): unknown
   readMirror?(raw: unknown, id: string, doc: LocalDocument<Asset> | null): Asset | null
 }
@@ -268,8 +273,12 @@ export function createLocalAssetAuthority<Asset extends PintaMemoryAsset>(
     snapshot.assets.set(asset.id, asset)
     snapshot.documents.set(asset.id, doc)
   }
-  function checkLocalBudget(before: readonly Asset[], after: readonly Asset[]): void {
-    format.checkBudget(before, after)
+  function checkLocalBudget(
+    before: readonly Asset[],
+    after: readonly Asset[],
+    bytes?: LocalBudgetBytes,
+  ): void {
+    format.checkBudget(before, after, bytes)
   }
   function compatibilityContext(
     records: Map<string, unknown>,
@@ -299,6 +308,7 @@ export function createLocalAssetAuthority<Asset extends PintaMemoryAsset>(
     incoming: readonly Asset[],
     observed: ReadonlyMap<string, string | null>,
     database: string,
+    bytes?: LocalBudgetBytes,
   ): LocalSnapshot<Asset> & { forks: Map<string, Asset> } {
     incoming = incoming.map((asset) => format.stamp(asset))
     const snapshot = resolveLocalRecords(records, false),
@@ -346,7 +356,7 @@ export function createLocalAssetAuthority<Asset extends PintaMemoryAsset>(
           snapshot.assets.set(asset.id, asset)
         }
       }
-    checkLocalBudget(before, [...snapshot.assets.values()])
+    checkLocalBudget(before, [...snapshot.assets.values()], bytes)
     return { ...snapshot, forks }
   }
   function deleteLocalRecord(
@@ -355,6 +365,7 @@ export function createLocalAssetAuthority<Asset extends PintaMemoryAsset>(
     observed: ReadonlyMap<string, string | null>,
     database: string,
     base?: Asset,
+    bytes?: LocalBudgetBytes,
   ): LocalSnapshot<Asset> {
     const snapshot = resolveLocalRecords(records, false)
     if (snapshot.issues.some((i) => i.id === id))
@@ -373,7 +384,7 @@ export function createLocalAssetAuthority<Asset extends PintaMemoryAsset>(
         'Este desenho mudou em outra janela. Abra de novo antes de apagar.',
       )
     putTombstone(records, snapshot, id)
-    checkLocalBudget(snapshot.baseline, [...snapshot.assets.values()])
+    checkLocalBudget(snapshot.baseline, [...snapshot.assets.values()], bytes)
     return snapshot
   }
 
@@ -394,8 +405,10 @@ export function createLocalAssetAuthority<Asset extends PintaMemoryAsset>(
     records: Map<string, unknown>,
     transitions: readonly LocalAssetTransition<Asset>[],
     requireKnownInventory: boolean,
+    authorize?: (snapshot: LocalSnapshot<Asset>) => void,
   ): LocalSnapshot<Asset> {
     const snapshot = resolveLocalRecords(records, false)
+    authorize?.(snapshot)
     const ids = new Set(transitions.map(({ id }) => id))
     if (
       ids.size !== transitions.length ||
@@ -446,9 +459,12 @@ const legacyAuthority = createLocalAssetAuthority<PintaAsset>({
   sanitize: sanitizePintaAsset,
   stamp: withPintaSchemaStamp,
   schema: pintaAssetSchema,
-  checkBudget(before, after) {
-    const projected = galleryBackupByteLength([...after])
-    if (projected > MAX_BACKUP_FILE_BYTES && projected >= galleryBackupByteLength([...before]))
+  checkBudget(before, after, bytes) {
+    const projected = galleryBackupByteLength([...after]) + (bytes?.after ?? 0)
+    if (
+      projected > MAX_BACKUP_FILE_BYTES &&
+      projected >= galleryBackupByteLength([...before]) + (bytes?.before ?? 0)
+    )
       throw new PintaStorageBudgetError(projected)
   },
 })

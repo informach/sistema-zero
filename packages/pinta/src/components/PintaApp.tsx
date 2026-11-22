@@ -42,6 +42,14 @@ type PintaView =
 
 const EMPTY_ADAPTER: PintaHostAdapter = {}
 
+function OpenFailureToast({ failure }: { failure: { message: string } | null }) {
+  const { showToast } = useToast()
+  useEffect(() => {
+    if (failure) showToast(failure.message)
+  }, [failure, showToast])
+  return null
+}
+
 /**
  * Abre o desenho pedido pelo host (botão "Editar" do Estúdio → `/pinta?desenho=`).
  *
@@ -219,6 +227,7 @@ export function PintaApp({
   // re-renderiza. Vale para todo host que troque o adapter por qualquer motivo.
   const openGeneration = useRef(0)
   const releaseEditor = useRef<(() => void) | null>(null)
+  const [openFailure, setOpenFailure] = useState<{ message: string } | null>(null)
   const retireOpen = useCallback(() => {
     openGeneration.current++
     releaseEditor.current?.()
@@ -228,6 +237,7 @@ export function PintaApp({
   const open = useCallback(
     (id: string, fit?: boolean) => {
       const generation = ++openGeneration.current
+      setOpenFailure(null)
       const nextView = { screen: 'editor' as const, assetId: id, ...(fit ? { fit } : {}) }
       if (!store.persistence.holdOpen) {
         setView(nextView)
@@ -238,7 +248,11 @@ export function PintaApp({
         try {
           if (generation !== openGeneration.current) return
           const asset = await store.persistence.loadAssetById(id)
-          if (!asset || generation !== openGeneration.current) return
+          if (generation !== openGeneration.current) return
+          if (!asset) {
+            setOpenFailure({ message: COPY.gallery.drawingGone })
+            return
+          }
           gallery.getState().absorb(asset)
           releaseEditor.current?.()
           releaseEditor.current = release ?? null
@@ -247,7 +261,8 @@ export function PintaApp({
           if (releaseEditor.current !== release) release?.()
         }
       })().catch(() => {
-        if (generation === openGeneration.current) void gallery.getState().load()
+        if (generation === openGeneration.current)
+          setOpenFailure({ message: COPY.gallery.drawingOpenError })
       })
     },
     [gallery, store.persistence],
@@ -360,6 +375,7 @@ export function PintaApp({
     >
       <PintaAppProvider value={context}>
         <ToastProvider>
+          <OpenFailureToast failure={openFailure} />
           <InitialCanvasOpener canvas={initialCanvas} onOpen={openFitted} />
           <InitialAssetOpener
             onMissing={(id) => {
