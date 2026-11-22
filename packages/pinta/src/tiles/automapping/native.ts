@@ -87,7 +87,7 @@ export function encodeAutomapBodies(assets: readonly PintaMemoryAsset[]) {
   }
   return encoded
 }
-function sameEncodedValue(a: unknown, b: unknown, depth = 0): boolean {
+export function sameEncodedValue(a: unknown, b: unknown, depth = 0): boolean {
   if (a === b) return true
   if (
     !a ||

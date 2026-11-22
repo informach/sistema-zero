@@ -60,7 +60,10 @@ export function admitsRegionBackupBuffers(
           if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return false
           const layer = raw as Record<string, unknown>
           if (layer.kind !== undefined && layer.kind !== 'tiles') continue
-          if (asset.schema === VERSION) {
+          if (
+            asset.schema === VERSION ||
+            (asset.schema === 9 && Object.hasOwn(asset, 'projection'))
+          ) {
             const grid = layer.cells
             if (
               !grid ||
@@ -69,7 +72,11 @@ export function admitsRegionBackupBuffers(
               !Array.isArray(grid.chunks)
             )
               return false
-            bytes += grid.chunks.length * PINTA_REGION_CELL_COUNT * Int16Array.BYTES_PER_ELEMENT
+            const width =
+              'kind' in grid && grid.kind === 'hex-regions'
+                ? Uint32Array.BYTES_PER_ELEMENT
+                : Int16Array.BYTES_PER_ELEMENT
+            bytes += grid.chunks.length * PINTA_REGION_CELL_COUNT * width
           } else {
             if (
               typeof asset.cols !== 'number' ||
