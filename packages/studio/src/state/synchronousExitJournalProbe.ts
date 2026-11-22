@@ -26,14 +26,21 @@ export function captureExitJournalStorage(): Storage | undefined {
   }
 }
 
-export function hasSynchronousExitJournal(storage: Storage | undefined, scope: string): boolean {
+export function hasSynchronousExitJournal(
+  storage: Storage | undefined,
+  scope: string,
+  projectId?: string,
+): boolean {
   if (!storage) return false
   try {
-    return Object.keys(storage).some(
-      (key) =>
-        key.startsWith(EXIT_JOURNAL_PREFIX) &&
-        key.slice(EXIT_JOURNAL_PREFIX.length).split('|')[1] === encodeURIComponent(scope),
-    )
+    return Object.keys(storage).some((key) => {
+      if (!key.startsWith(EXIT_JOURNAL_PREFIX)) return false
+      const [, owner, id] = key.slice(EXIT_JOURNAL_PREFIX.length).split('|')
+      return (
+        owner === encodeURIComponent(scope) &&
+        (projectId === undefined || !id || id === encodeURIComponent(projectId))
+      )
+    })
   } catch {
     return true
   } // The recovery boundary reports inaccessible storage explicitly.

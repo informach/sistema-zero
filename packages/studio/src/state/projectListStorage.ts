@@ -10,18 +10,20 @@ import {
   projectMetaKey,
   projectRecoveryPrefix,
   projectThumbKey,
+  RETAINED_PROJECT_PREFIX,
 } from './projectStorageKeys'
 import type { StoredProjectRecord } from './projectStorageRecords'
-import { captureProjectStorageScope, type ProjectStorageScope } from './projectStorageRuntime'
+import {
+  captureProjectStorageScope,
+  isPrivateRegionalProjectScope,
+  type ProjectStorageScope,
+} from './projectStorageRuntime'
 import { type ProjectSummary, toProjectSummary } from './projectSummary'
 import { thumbDataUrlOf } from './projectThumbData'
 import { hasSynchronousExitJournal } from './synchronousExitJournalProbe'
 
 export type { ProjectSummary } from './projectSummary'
 
-function getStore(scope?: ProjectStorageScope) {
-  return (scope ?? captureProjectStorageScope()).store
-}
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
@@ -69,11 +71,17 @@ export async function loadProjectSummaryById(
   id: string,
   storageScope?: ProjectStorageScope,
 ): Promise<ProjectSummary | null> {
-  const kvStore = getStore(storageScope)
+  const scope = storageScope ?? captureProjectStorageScope()
+  if (isPrivateRegionalProjectScope(scope)) {
+    const { readRetainedSummary } = await import('./retainedProjectList')
+    const retained = await readRetainedSummary(scope, id, true)
+    if (retained !== undefined) return retained
+  }
+  const kvStore = scope.store
   const [meta, thumb] = await readValues(kvStore, [projectMetaKey(id), projectThumbKey(id)])
   let summary = currentProjectSummary(id, meta)
   if (!summary) {
-    const legacy = await loadHistoricalProject(id, storageScope)
+    const legacy = await loadHistoricalProject(id, scope)
     summary = toProjectSummary(id, legacy)
   }
   if (!summary) return null
@@ -92,21 +100,35 @@ export async function loadProjectSummariesByIds(
   storageScope?: ProjectStorageScope,
 ): Promise<Array<ProjectSummary | null>> {
   if (ids.length === 0) return []
-  const kvStore = getStore(storageScope)
+  const scope = storageScope ?? captureProjectStorageScope()
+  const retained = new Map<string, ProjectSummary | null>()
+  if (isPrivateRegionalProjectScope(scope)) {
+    const { readRetainedSummary } = await import('./retainedProjectList')
+    for (const id of new Set(ids)) {
+      const card = await readRetainedSummary(scope, id, true)
+      if (card !== undefined) retained.set(id, card)
+    }
+  }
+  const legacyIds = ids.filter((id) => !retained.has(id))
   const values = await readValues(
-    kvStore,
-    ids.flatMap((id) => [projectMetaKey(id), projectThumbKey(id)]),
+    scope.store,
+    legacyIds.flatMap((id) => [projectMetaKey(id), projectThumbKey(id)]),
   )
   const out: Array<ProjectSummary | null> = []
-  for (let index = 0; index < ids.length; index += 1) {
-    const id = ids[index] as string
-    let summary = currentProjectSummary(id, values[index * 2])
+  let offset = 0
+  for (const id of ids) {
+    if (retained.has(id)) {
+      out.push(retained.get(id)!)
+      continue
+    }
+    const [meta, thumb] = [values[offset++], values[offset++]]
+    let summary = currentProjectSummary(id, meta)
     if (!summary) {
-      const legacy = await loadHistoricalProject(id, storageScope)
+      const legacy = await loadHistoricalProject(id, scope)
       summary = toProjectSummary(id, legacy)
     }
     if (summary) {
-      const thumbDataUrl = thumbDataUrlOf(values[index * 2 + 1])
+      const thumbDataUrl = thumbDataUrlOf(thumb)
       if (thumbDataUrl) summary.thumbDataUrl = thumbDataUrl
     }
     out.push(summary)
@@ -141,8 +163,20 @@ async function listAllProjectsInternal(
     blockedReads = prepared.blockedReads
     notifyRecoveredProjects(scope, prepared.changed)
   }
+  const retainedIds = new Set(
+    isPrivateRegionalProjectScope(scope)
+      ? allKeys.flatMap((key) =>
+          typeof key === 'string' && key.startsWith(RETAINED_PROJECT_PREFIX)
+            ? [key.slice(RETAINED_PROJECT_PREFIX.length)]
+            : [],
+        )
+      : [],
+  )
   const metaKeys = allKeys.filter(
-    (key): key is string => typeof key === 'string' && key.startsWith(PROJECT_META_KEY_PREFIX),
+    (key): key is string =>
+      typeof key === 'string' &&
+      key.startsWith(PROJECT_META_KEY_PREFIX) &&
+      !retainedIds.has(key.slice(PROJECT_META_KEY_PREFIX.length)),
   )
   const metaValues = await readValues(kvStore, metaKeys)
   const summaries = metaKeys
@@ -157,14 +191,16 @@ async function listAllProjectsInternal(
     }
   const drafts = await listPreservedProjectDrafts(scope, allKeys)
   const listed = new Set(summaries.map((summary) => summary.id))
-  summaries.push(...drafts.filter((draft) => !listed.has(draft.id)))
+  summaries.push(...drafts.filter((draft) => !listed.has(draft.id) && !retainedIds.has(draft.id)))
   const preservedIds = new Set(drafts.map((draft) => draft.id))
   for (const summary of summaries) if (preservedIds.has(summary.id)) summary.hasPreservedEdit = true
   if (options.withThumbs || PROJECT_STORAGE_VERSION === 4) {
     const currentIds = new Set(summaries.map((summary) => summary.id))
     const pendingIds = new Set(pending.map((summary) => summary.id))
     for (const summary of summaries) if (pendingIds.has(summary.id)) summary.hasPreservedEdit = true
-    summaries.push(...pending.filter((summary) => !currentIds.has(summary.id)))
+    summaries.push(
+      ...pending.filter((summary) => !currentIds.has(summary.id) && !retainedIds.has(summary.id)),
+    )
   }
 
   // Anexa as miniaturas (partição própria) aos summaries que têm uma.
@@ -180,6 +216,13 @@ async function listAllProjectsInternal(
     }
   }
 
+  if (retainedIds.size) {
+    const { readRetainedSummary } = await import('./retainedProjectList')
+    for (const id of retainedIds) {
+      const summary = await readRetainedSummary(scope, id, options.withThumbs)
+      if (summary) summaries.push(summary)
+    }
+  }
   summaries.sort((a, b) => b.updatedAt - a.updatedAt)
   return summaries
 }

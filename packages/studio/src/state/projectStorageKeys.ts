@@ -6,6 +6,7 @@ const projectKey = (
   id: string,
   version: ProjectStorageVersion = PROJECT_STORAGE_VERSION,
 ) => `sz:v${version}:project-${part}:${id}`
+export const RETAINED_PROJECT_PREFIX = 'sz:v5:project-authority:'
 export const PROJECT_META_KEY_PREFIX = projectKey('meta', '')
 export const projectMetaKey = (id: string, version?: ProjectStorageVersion) =>
   projectKey('meta', id, version)

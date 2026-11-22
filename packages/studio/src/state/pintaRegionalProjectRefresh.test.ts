@@ -643,3 +643,88 @@ test('existing library sync commits the live editor asset revision before publis
     setProjectStorageNamespace(previousProject)
   }
 })
+
+test('retém a V4 editável, os materiais e o placar; lista a V5 após descarte por escritor antigo', async () => {
+  const { IDBKeyRange: Range } = await import('fake-indexeddb')
+  const { promoteLocalRegionalProject, legacyProjectKeys } = await import(
+    '../project-migrations/localRegionalAuthority'
+  )
+  const { readRetainedManifest, readRetainedParts } = await import('./retainedProjectStore')
+  const { readValue, writeInOneTransaction } = await import('./idbTransaction')
+  const { listProjectSummariesLight, loadProjectSummaryById, loadProjectSummariesByIds } =
+    await import('./projectListStorage')
+  const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'IDBKeyRange')
+  Object.defineProperty(globalThis, 'IDBKeyRange', { value: Range, configurable: true })
+  try {
+    const scope = privateRegionalProjectScope('promocao-v5'),
+      id = 'projeto-em-duas-abas'
+    const base = { ...createEmptyProject(id, 'Vila V4'), blocksState, assets: [image] }
+    await persistProject(base, {}, scope)
+    const keys = legacyProjectKeys(id)
+    await writeInOneTransaction(scope.store, { puts: [[keys.game, { placar: 'oito' }]] })
+    const expected = (await readValue(scope.store, keys.head)) as { token: string }
+    const options = {
+      scope,
+      id,
+      expectedV4Token: expected.token,
+      assets: [{ ...image, ...before }],
+    }
+    const recovery = 'sz:v4:project-recovery:' + id + ':outra-aba'
+    await writeInOneTransaction(scope.store, { puts: [[recovery, { pendente: true }]] })
+    await expect(promoteLocalRegionalProject(options)).rejects.toThrow()
+    expect(await readRetainedManifest(scope, id)).toBeUndefined()
+    await writeInOneTransaction(scope.store, { deletes: [recovery] })
+    const head = await promoteLocalRegionalProject(options)
+    const retained = await readRetainedParts(scope, head)
+    expect(retained.game).toStrictEqual({ placar: 'oito' })
+    expect(retained.assets).toStrictEqual({ id, assets: options.assets })
+    expect(retained.blocks).toStrictEqual({ id, blocksState })
+    expect(await readValue(scope.store, keys.assets)).toStrictEqual({ id, assets: [image] })
+    await writeInOneTransaction(scope.store, { deletes: Object.values(keys) })
+    expect((await listProjectSummariesLight(scope)).map((s) => s.id)).toEqual([id])
+    expect((await loadProjectSummaryById(id, scope))?.name).toBe(base.name)
+    expect((await loadProjectSummariesByIds([id], scope))[0]?.name).toBe(base.name)
+    expect(await readRetainedParts(scope, head)).toStrictEqual(retained)
+  } finally {
+    if (descriptor) Object.defineProperty(globalThis, 'IDBKeyRange', descriptor)
+    else Reflect.deleteProperty(globalThis, 'IDBKeyRange')
+  }
+})
+test('projeto V4 válido acima de 16MiB privados mantém as fontes editáveis e a exportação integral', async () => {
+  const { promoteLocalRegionalProject, legacyProjectKeys } = await import(
+    '../project-migrations/localRegionalAuthority'
+  )
+  const { readRetainedManifest } = await import('./retainedProjectStore')
+  const { exportProjectSource } = await import('../export/sourceExport')
+  const { unzipSync, strFromU8 } = await import('fflate')
+  const { readValue } = await import('./idbTransaction')
+  const scope = privateRegionalProjectScope('limite-regional-v5'),
+    id = 'fonte-ampla'
+  const base = { ...createEmptyProject(id, 'Vila ampla'), blocksState, assets: [image] }
+  const text = '漢'.repeat(2_000_000)
+  base.extraFiles = Array.from({ length: 3 }, (_, i) => ({
+    name: 'modulo' + i + '.js',
+    language: 'javascript' as const,
+    content: '/*' + i + text + '*/',
+  }))
+  await persistProject(base, {}, scope)
+  const keys = legacyProjectKeys(id),
+    expected = (await readValue(scope.store, keys.head)) as { token: string }
+  await expect(
+    promoteLocalRegionalProject({
+      scope,
+      id,
+      expectedV4Token: expected.token,
+      assets: [{ ...image, ...before }],
+    }),
+  ).rejects.toThrow('espaço privado')
+  expect(await readRetainedManifest(scope, id)).toBeUndefined()
+  const still = await prepareEditableStudioProject(await loadProjectById(id, scope))
+  if (!still || isPythonProject(still)) throw Error('Origem JS não abriu')
+  expect(still.extraFiles).toEqual(base.extraFiles)
+  still.name = 'Vila editada'
+  await persistProject(still, {}, scope)
+  const output = await exportProjectSource(still, { runtimeCatalog: null })
+  const files = unzipSync(new Uint8Array(await output.blob.arrayBuffer()))
+  for (const module of base.extraFiles) expect(strFromU8(files[module.name]!)).toBe(module.content)
+})

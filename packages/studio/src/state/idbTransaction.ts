@@ -163,11 +163,15 @@ export function conditionalWrite<T>(
   generation: number,
   keys: readonly IDBValidKey[] | ((keys: readonly IDBValidKey[]) => readonly IDBValidKey[]),
   decide: (values: unknown[], keys: readonly IDBValidKey[]) => { write: IdbWrite; result: T },
+  emptyRanges?: { ranges: readonly IDBKeyRange[]; conflict: () => Error },
 ): Promise<T> {
   // Inventory selection is for stores without the document transport. The key
   // list and its values must be observed inside the same transaction as the put.
   const ready = typeof keys === 'function' ? undefined : prepareProjectTransport(keys)
-  if (ready) return ready.then(() => conditionalWrite(store, identity, generation, keys, decide))
+  if (ready)
+    return ready.then(() =>
+      conditionalWrite(store, identity, generation, keys, decide, emptyRanges),
+    )
   return openTransaction(store, 'readwrite', (objectStore) => {
     const transaction = objectStore.transaction
     if (conditionalGeneration(identity) !== generation) {
@@ -199,7 +203,7 @@ export function conditionalWrite<T>(
     }
     const read = (selected: readonly IDBValidKey[]) => {
       const values: unknown[] = new Array(selected.length)
-      let remaining = selected.length
+      let remaining = selected.length + (emptyRanges?.ranges.length ?? 0)
       const finish = () => {
         try {
           const { write, result } = decide(values, selected)
@@ -211,6 +215,14 @@ export function conditionalWrite<T>(
           if (typeof transaction.commit === 'function') transaction.commit()
         } catch (error) {
           abort(error)
+        }
+      }
+      // Indexed checks observe arrivals in the same CAS as the part writes without listing a profile.
+      for (const range of emptyRanges?.ranges ?? []) {
+        const request = objectStore.count(range)
+        request.onsuccess = () => {
+          if (request.result !== 0) abort(emptyRanges!.conflict())
+          else if (--remaining === 0) finish()
         }
       }
       if (remaining === 0) finish()
