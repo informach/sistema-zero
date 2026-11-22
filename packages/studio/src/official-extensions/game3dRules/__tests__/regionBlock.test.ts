@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import * as Blockly from 'blockly/core'
 import { compileStatements } from '#generators'
-import { behaviorStatements, type SZIR } from '#ir'
+import { behaviorStatements } from '#ir'
 import 'blockly/blocks'
 import { registerExtensionBlocks } from '../../../blockly/blocks'
 import type { BlockDefinition } from '../../../blockly/blocks/types'
@@ -50,7 +50,8 @@ const CASOS = [
   },
 ] as const
 
-const codeOf = (ir: SZIR) => compileStatements(behaviorStatements(ir), 0)
+const codeOf = (ir: Parameters<typeof behaviorStatements>[0]) =>
+  compileStatements(behaviorStatements(ir), 0)
 
 describe('"Quando entrar na região": código ⇄ bloco nos três motores 3D', () => {
   for (const caso of CASOS) {
