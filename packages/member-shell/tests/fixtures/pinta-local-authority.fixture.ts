@@ -536,6 +536,7 @@ test('a mesma unidade vencida renova seus bytes e traduz bases do sucessor via r
   const put = {
     ...source.entry,
     action: 'put' as const,
+    kind: sheet.kind,
     baseRevision: 0,
     sha256: source.entry.sha256!,
     operation: { type: 'create' as const },

@@ -62,8 +62,10 @@ it('the worker seals the exact preparation before network and keeps its bytes on
       local,
       cloud: {
         upload: async ({ intent, intentHash, blobs }) => {
-          expect(blobs).toBe(stored?.blobs)
-          expect(intentHash).toBe(stored?.sealed.intentHash)
+          const frozen = stored
+          if (!frozen) throw Error('Unidade não selada')
+          expect(blobs).toBe(frozen.blobs)
+          expect(intentHash).toBe(frozen.sealed.intentHash)
           if (++remoteAttempts === 1) throw Error('sem internet')
           const member = intent.members[0]
           if (member?.action !== 'put') throw Error('fixture')
