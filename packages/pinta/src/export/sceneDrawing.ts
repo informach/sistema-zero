@@ -1,11 +1,20 @@
-import type { PintaScene, PintaSceneLayer } from '@sistemazero/core/studio/pinta-scene'
+import type { PintaRegionCells } from '@sistemazero/core/creations'
+import type { PintaRegionScene } from '@sistemazero/core/studio/pinta-region-scene'
+import type { PintaScene, PintaSceneCellsLayer } from '@sistemazero/core/studio/pinta-scene'
 import { sceneArtFrame, sceneLayerState } from '@sistemazero/core/studio/pinta-scene-runtime'
 import { cellTile } from '../tiles/cell'
 import { cellMatrix } from '../tiles/chunks'
-import { MAP_IMAGE_LIMITS } from '../tiles/mapImageBudget'
+import { createTileCellReader, mapCellBounds } from '../tiles/mapCells'
+import { MAP_IMAGE_LIMITS, MapImageBudgetError, mapImageSize } from '../tiles/mapImageBudget'
+
+type DrawableScene = PintaScene | PintaRegionScene
+type DrawableLayer = PintaSceneCellsLayer<number[] | PintaRegionCells>
+type DrawableBounds = { cols: number; rows: number; origin?: { col: number; row: number } }
 
 /** Compositor estático/animado compartilhado pela imagem de exportação e pelo teste no Pinta. */
-export async function loadSceneImages(scene: PintaScene): Promise<Map<string, HTMLImageElement>> {
+export async function loadSceneImages(
+  scene: Pick<PintaScene, 'tilesets' | 'art'>,
+): Promise<Map<string, HTMLImageElement>> {
   const result = new Map<string, HTMLImageElement>()
   await Promise.all(
     [...scene.tilesets, ...(scene.art ?? [])].map(async (a) => {
@@ -23,7 +32,7 @@ export async function loadSceneImages(scene: PintaScene): Promise<Map<string, HT
 
 export function drawScene(
   ctx: CanvasRenderingContext2D,
-  scene: PintaScene,
+  scene: DrawableScene,
   images: ReadonlyMap<string, CanvasImageSource>,
   pass: 'back' | 'front',
   time = 0,
@@ -44,7 +53,7 @@ export function drawScene(
     }
     return tile
   }
-  function paint(layers: PintaSceneLayer[], cols: number, view = camera): void {
+  function paint(layers: DrawableLayer[], bounds: DrawableBounds, view = camera): void {
     for (const l of layers) {
       const e = sceneLayerState(layers, l)
       if (!e.visible || !e.opacity) continue
@@ -54,12 +63,12 @@ export function drawScene(
       if (l.kind === 'tiles' && !l.collision && !!l.front === (pass === 'front')) {
         const ts = scene.tilesets.find((t) => t.id === l.tilesetId),
           image = images.get(l.tilesetId)
-        if (ts && image)
-          l.cells.forEach((value, i) => {
+        if (ts && image) {
+          const cell = (value: number, col: number, row: number) => {
             if (value < 0) return
             const tile = animatedTile(cellTile(value), ts.animations)
             ctx.save()
-            ctx.translate(((i % cols) + 0.5) * size, (Math.floor(i / cols) + 0.5) * size)
+            ctx.translate((col + 0.5) * size, (row + 0.5) * size)
             ctx.transform(...cellMatrix(value), 0, 0)
             ctx.drawImage(
               image,
@@ -73,7 +82,16 @@ export function drawScene(
               size,
             )
             ctx.restore()
-          })
+          }
+          if (Array.isArray(l.cells))
+            l.cells.forEach((value, i) => {
+              cell(value, i % bounds.cols, Math.floor(i / bounds.cols))
+            })
+          else {
+            const rect = mapCellBounds(bounds)
+            createTileCellReader(l.cells, rect).visitOccupied(rect, cell, 'row-major')
+          }
+        }
       }
       if (l.kind === 'objects')
         for (const o of l.objects) {
@@ -86,7 +104,8 @@ export function drawScene(
             const set = scene.sets?.find((s) => s.id === o.setId)
             if (set) {
               ctx.scale(o.width / (set.cols * size), o.height / (set.rows * size))
-              paint(set.layers, set.cols, { x: 0, y: 0 })
+              if ('origin' in set) ctx.translate(-set.origin.col * size, -set.origin.row * size)
+              paint(set.layers, set, { x: 0, y: 0 })
             }
           } else if (o.art && pass === 'back') {
             const image = images.get(o.art.assetId),
@@ -129,15 +148,17 @@ export function drawScene(
       ctx.restore()
     }
   }
-  paint(scene.layers, scene.cols)
+  paint(scene.layers, scene)
 }
 
 export async function scenePng(
-  scene: PintaScene,
+  scene: DrawableScene,
   scale = 1,
   maxPx = Infinity,
 ): Promise<{ dataUrl: string; width: number; height: number } | null> {
   const actual = Math.min(scale, maxPx / (Math.max(scene.cols, scene.rows) * scene.tileSize))
+  if ('origin' in scene && !mapImageSize(scene, scene.tileSize, scale, maxPx))
+    throw new MapImageBudgetError()
   if (scene.cols * scene.rows * (scene.tileSize * actual) ** 2 > MAP_IMAGE_LIMITS.pixels)
     throw new Error(
       'A imagem ficou grande demais. Use uma escala menor ou baixe o cenário como projeto.',
@@ -150,6 +171,8 @@ export async function scenePng(
   const images = await loadSceneImages(scene)
   ctx.imageSmoothingEnabled = false
   ctx.scale(actual, actual)
+  if ('origin' in scene)
+    ctx.translate(-scene.origin.col * scene.tileSize, -scene.origin.row * scene.tileSize)
   drawScene(ctx, scene, images, 'back')
   drawScene(ctx, scene, images, 'front')
   return { dataUrl: canvas.toDataURL('image/png'), width: canvas.width, height: canvas.height }

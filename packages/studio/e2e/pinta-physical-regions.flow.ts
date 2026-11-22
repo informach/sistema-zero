@@ -990,3 +990,65 @@ test('the real Pinta producer exports Vila scene 4 with real art images and reop
     publicRefused: true,
   })
 })
+
+test('scene 4 renders the real Vila with identical pixels and a bounded sparse-world thumbnail', async ({
+  page,
+}) => {
+  const result = await page.evaluate(async () => {
+    const p = window.pintaPhysicalRegions,
+      { map, assets } = p.vilaEFloresta(),
+      find = (id: string) => assets.find((asset) => asset.id === id) ?? null,
+      converted = p.prepareMapRegions(map)
+    if (!converted.ok) throw Error(converted.reason)
+    const dense = await p.exportPintaScene(map, find),
+      regional = await p.exportPintaRegionScene(converted.map, find),
+      images = await p.loadSceneImages(dense)
+    let comparisons = 0
+    for (const time of [0, 125, 450])
+      for (const pass of ['back', 'front'] as const) {
+        const frames = [dense, regional.scene].map((scene) => {
+          const canvas = document.createElement('canvas')
+          canvas.width = 128
+          canvas.height = 96
+          const ctx = canvas.getContext('2d')!
+          ctx.imageSmoothingEnabled = false
+          ctx.scale(0.25, 0.25)
+          p.drawScene(ctx, scene, images, pass, time, { x: 7.25, y: -2.5 })
+          return ctx.getImageData(0, 0, 128, 96).data
+        })
+        if (!frames[0]!.every((value, index) => value === frames[1]![index]))
+          throw Error('Pixels diferentes')
+        comparisons++
+      }
+    const png = await p.scenePng(regional.scene, 1, 512),
+      legacyPng = await p.scenePng(dense, 1, 512)
+    if (!png || png.dataUrl !== legacyPng?.dataUrl) throw Error('Miniatura diferente')
+    comparisons++
+    const world = p.regionVila(),
+      exportedWorld = await p.exportPintaRegionScene(
+        world.map,
+        (id) => world.assets.find((asset) => asset.id === id) ?? null,
+      )
+    let refused = false
+    try {
+      await p.scenePng(exportedWorld.scene)
+    } catch (error) {
+      refused = String(error).includes('imagem ficou grande')
+    }
+    const thumbnail = await p.scenePng(exportedWorld.scene, 1, 512)
+    return {
+      comparisons,
+      png,
+      refused,
+      thumbnail: thumbnail && { width: thumbnail.width, height: thumbnail.height },
+    }
+  })
+  expect(result.comparisons).toBe(7)
+  expect(result.refused).toBe(true)
+  expect(result.thumbnail).toEqual({ width: 512, height: 512 })
+  expect(result.png).toMatchObject({ width: 512, height: 384 })
+  await test.info().attach('vila-scene4-render.png', {
+    body: Buffer.from(result.png.dataUrl.split(',')[1]!, 'base64'),
+    contentType: 'image/png',
+  })
+})

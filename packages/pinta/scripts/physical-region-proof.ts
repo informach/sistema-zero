@@ -8,6 +8,8 @@ export { createTilemapAsset, sanitizeRegionTilemapAsset } from '../src/core/proj
 export { regionAssetBundleToJson } from '../src/export/regionAssetBundle'
 export { decodeRegionGalleryBackup } from '../src/export/regionBackup'
 export { exportPintaRegionScene } from '../src/export/regionScene'
+export { exportPintaScene } from '../src/export/scene'
+export { drawScene, loadSceneImages, scenePng } from '../src/export/sceneDrawing'
 export { withAssetTransaction } from '../src/state/assetAuthorityDb'
 export { createLocalRegionAssetAuthority } from '../src/state/localRegionAssetAuthority'
 export { localRegionStorageCodec } from '../src/state/localRegionChunkStorage'
@@ -18,3 +20,4 @@ export {
 export { regionVila } from '../src/testing/regionVila'
 export { expandRegionMap, prepareMapRegions } from '../src/tiles/regionMap'
 export { cellAt, setCell } from '../src/tiles/tilemapOps'
+export { vilaEFloresta } from './homologacao/fixture'

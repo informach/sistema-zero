@@ -32,9 +32,13 @@ export function sceneArtFrame(
     height: sprite.frameHeight,
   }
 }
+type SceneLayerHeader = Pick<
+  PintaSceneLayer,
+  'id' | 'visible' | 'opacity' | 'offsetX' | 'offsetY' | 'parallaxX' | 'parallaxY' | 'parentId'
+>
 export function sceneLayerState(
-  layers: PintaSceneLayer[],
-  layer: PintaSceneLayer,
+  layers: readonly SceneLayerHeader[],
+  layer: SceneLayerHeader,
 ): {
   visible: boolean
   opacity: number

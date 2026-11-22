@@ -14,8 +14,8 @@ removido, frontends compartilhados preservados. Alcance e recibos em
 `qa/rollback-publicado-2026-11-21/`, no diretório da missão. Não confundir essa
 prova com ativação dos futuros contratos de regiões ou com o ciclo final do jogo.
 
-`RegionTilemapAsset`/codec 8 continuam preparação interna: não integram ainda
-a união pública, o escritor público de backup ou o protocolo físico 3. Não subir constantes
+`RegionTilemapAsset`/codec 8 continuam preparação interna: a seleção pública
+ainda não os integra à união de assets, ao backup ou ao protocolo físico 3. Não subir constantes
 para anunciar suporte de oficina antes de completar seus consumidores.
 Plano aprovado: `docs/superpowers/plans/2026-11-21-pinta-missao-retomada.md`.
 Autorregras serão visuais e próprias do Pinta, por exemplos multicamadas.
@@ -28,6 +28,14 @@ Retorna `json` para transporte e `scene` para memória; nunca serializar os
 da versão de armazenamento. Imagens reais e reabertura da Vila em outro contexto
 estão em `qa/emissor-de-cena-regional-2026-11-22/`. Não é suporte no host,
 PNG 5, runtime ou exportadores externos regionais; constantes públicas inalteradas.
+
+O compositor existente `sceneDrawing.ts` também aceita a cena regional privada,
+visitando células armazenadas pelo leitor comum em ordem global. A definição de
+conjunto desconta sua própria origem depois da escala; a imagem final desconta
+a origem do mapa. `scenePng` confere o orçamento regional antes de DOM/imagens,
+mantendo o comportamento legado. Provas de pixels, arte real e miniatura 512
+estão em `qa/composicao-de-cena-regional-2026-11-22/`. Essa composição não é
+exportação de dados PNG 5, runtime de jogo ou ativação na oficina pública.
 
 `state/localRegionChunkStorage.ts` prepara o físico 3 como política opt-in do
 IO transacional existente. `parsePintaRegionLayerLocations` confere cabeçalhos

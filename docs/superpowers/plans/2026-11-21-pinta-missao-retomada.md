@@ -216,6 +216,12 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    ao remoto, sem fonte Pinta/Core/3D alterada. Revisados flush na saída/aba
    escondida, estado do Blockly e arte das atividades. Provas da integração em
    `qa/integracao-staging-2bb893918-2026-11-22/`. Continuar com os adaptadores.
+   Composição privada da cena 4 integrada ao mesmo `drawScene`: origem global,
+   origem de conjuntos e visita esparsa pelo leitor comum, com resolução da
+   imagem admitida antes de DOM/arte. Comparações RGBA denso/regional e históricas,
+   PNGs reais da Vila e miniatura 512 do mundo esparso em
+   `qa/composicao-de-cena-regional-2026-11-22/`. Não é runtime ou PNG de dados 5;
+   seguir a essas fronteiras e aos consumidores públicos antes de fechar o item.
 
 Na promoção do store, conferir também os orçamentos globais de metadados e JSON
 antes do histórico/autosave. A soma de objetos/propriedades em várias camadas
