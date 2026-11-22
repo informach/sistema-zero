@@ -950,3 +950,24 @@ Automapping e a edição incremental também têm commits entregues; a abertura
 inicial sob demanda, a oficina pública, as projeções completas e o ciclo final
 autenticado continuam em desenvolvimento. As suítes completas anteriores não
 qualificam automaticamente os lotes seguintes.
+
+### Execução paralela por lotes — 22/11
+
+Conforme orientação do usuário, cada implementador assume um lote distinto.
+A coordenação concentra revisão, correções de integração, homologação e promoção.
+Os worktrees anteriores ficam preservados; a continuação usa árvores exclusivas
+para impedir que uma execução antiga altere os mesmos arquivos.
+
+| Lote | Implementação exclusiva | Critério para integrar |
+| --- | --- | --- |
+| 1 · Dados | Sombra durável e recuperação de unidades, incluindo leituras externas e portas transitivas | Replay dos negativos com escritor real, CAS/quota, histórico, IndexedDB real e alternativa explícita quando faltarem bytes históricos |
+| 2 · Leitores | PNG 5/cena wire 4 na biblioteca, projeto e preview do Estúdio | Conservar bytes originais, receita e programação; admissão integral; nenhuma herança silenciosa de cena antiga; recusa em runtime incompatível |
+| 3 · Python | Módulo real compartilhado e blocos das três extensões 2D | Importação real em CE/Zero/Raylib, exemplos e código preservados, exportação portátil e capacidade explícita do runtime |
+
+O lote 2 possui o contrato `pinta-scene-regions-v1` e sua constante compartilhada;
+o lote 3 o consome. `pinta.py` legado, `cenario.py` do Molda, `commonCatalog.ts`
+e a organização das áreas de blocos permanecem fora dessas alterações.
+A versão conjunta do motor e a lista aprovada serão fechadas na integração,
+incluindo as mudanças das outras frentes. Nenhum implementador publica ou muda
+o gravador regional por conta própria. A ordem de promoção continua dados →
+leitores → gravador; desenvolvimento independente não dispensa esses gates.
