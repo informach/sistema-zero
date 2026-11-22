@@ -298,7 +298,7 @@ function toEntry(
 }
 
 /** Um exemplo grande: entra no grupo do motor dele e só carrega o jogo no clique. */
-function toBigEntry(example: BigExample): KitEntry {
+function toBigEntry(example: BigExample, exampleFilesBaseUrl?: string): KitEntry {
   return {
     key: `${example.extensionId}:${example.name}`,
     name: example.name,
@@ -309,7 +309,7 @@ function toBigEntry(example: BigExample): KitEntry {
     concepts: example.concepts,
     genre: example.genre,
     cover: example.cover,
-    load: example.load,
+    load: () => example.load(exampleFilesBaseUrl),
   }
 }
 
@@ -336,7 +336,18 @@ export interface KitGroupsResult {
   failedExtensionIds: string[]
 }
 
-export async function buildKitGroupsResult(t: Translator = defaultT): Promise<KitGroupsResult> {
+export interface KitGroupsOptions {
+  /**
+   * Onde buscar os arquivos dos exemplos GRANDES que moram fora do pacote (o jogo E): uma rota do
+   * próprio host. Sem ela, esses cards não aparecem.
+   */
+  exampleFilesBaseUrl?: string
+}
+
+export async function buildKitGroupsResult(
+  t: Translator = defaultT,
+  options: KitGroupsOptions = {},
+): Promise<KitGroupsResult> {
   const catalogs = await loadExtensionExampleCatalogs(OFFICIAL_CATALOG)
   const groups = catalogs.loaded.flatMap(([extensionId, examples]) => {
     const ext = OFFICIAL_CATALOG.find((candidate) => candidate.manifest.id === extensionId)
@@ -366,9 +377,10 @@ export async function buildKitGroupsResult(t: Translator = defaultT): Promise<Ki
     ]
   })
   for (const example of BIG_EXAMPLES)
-    groups
-      .find((group) => group.extensionId === example.extensionId)
-      ?.entries.push(toBigEntry(example))
+    if (!example.arquivo || options.exampleFilesBaseUrl)
+      groups
+        .find((group) => group.extensionId === example.extensionId)
+        ?.entries.push(toBigEntry(example, options.exampleFilesBaseUrl))
   if (CORE_EXAMPLE_SUMMARIES.length > 0) {
     groups.push({
       extensionId: 'core',
@@ -529,6 +541,7 @@ export function KitGallery({
   professional = false,
   javascriptAvailable = true,
   authorizeJavaScript,
+  exampleFilesBaseUrl,
 }: {
   onOpenProject: (projectId: string) => void
   pythonCreation?: PythonExampleCreationPort
@@ -536,6 +549,8 @@ export function KitGallery({
   professional?: boolean
   javascriptAvailable?: boolean
   authorizeJavaScript?: (kind: 'classic' | 'pro', signal?: AbortSignal) => Promise<void>
+  /** Onde moram os arquivos dos exemplos grandes fora do pacote (`KitGroupsOptions`). */
+  exampleFilesBaseUrl?: string
 }): JSX.Element {
   const t = useT()
   const [creating, setCreating] = useState<string | null>(null)
@@ -613,7 +628,7 @@ export function KitGallery({
               failedExtensionIds: [],
             }),
           )
-        : buildKitGroupsResult(t)
+        : buildKitGroupsResult(t, { exampleFilesBaseUrl })
     void pending
       .then(({ groups: nextGroups, failedExtensionIds }) => {
         if (!active) return
@@ -629,7 +644,7 @@ export function KitGallery({
     return () => {
       active = false
     }
-  }, [loadAttempt, t, programmingLanguage])
+  }, [loadAttempt, t, programmingLanguage, exampleFilesBaseUrl])
 
   const hasActiveFilters = query.trim() !== '' || difficulty !== 'all' || experience !== 'all'
   const featuredEntries = useMemo(

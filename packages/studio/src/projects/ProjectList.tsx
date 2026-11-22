@@ -111,6 +111,11 @@ export interface ProjectListProps {
    */
   showExamples?: boolean
   /**
+   * Onde a galeria busca os arquivos dos exemplos GRANDES que moram fora do pacote (o jogo E, 20
+   * MB): uma rota do próprio host, no mesmo domínio. Sem ela, esses cards não aparecem.
+   */
+  exampleFilesBaseUrl?: string
+  /**
    * Seções da galeria definidas pelo HOST (15/10/2026): os projetos que `includes` aceita saem da
    * grade principal e ganham uma faixa própria, com título, frase e um atalho. O Estúdio não sabe
    * quem cria esses jogos (no kids, o Pensa): só agrupa. A busca e o filtro de modo valem para
@@ -188,6 +193,7 @@ export function ProjectList({
   allowedExtensions,
   theme: themeProp,
   showExamples = false,
+  exampleFilesBaseUrl,
   sections,
 }: ProjectListProps): JSX.Element {
   const t = useSharedT()
@@ -730,6 +736,7 @@ export function ProjectList({
                         onOpenProject={onOpenProject}
                         javascriptAvailable={javascriptAvailable}
                         authorizeJavaScript={authorizeJavaScript}
+                        exampleFilesBaseUrl={exampleFilesBaseUrl}
                         professional={professional}
                         pythonCreation={
                           pythonCreation?.authorizeExample
@@ -776,6 +783,7 @@ export function ProjectList({
                             onOpenProject={onOpenProject}
                             javascriptAvailable={javascriptAvailable}
                             authorizeJavaScript={authorizeJavaScript}
+                            exampleFilesBaseUrl={exampleFilesBaseUrl}
                             professional={professional}
                             pythonCreation={
                               pythonCreation?.authorizeExample

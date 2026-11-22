@@ -25,6 +25,7 @@ on:
       - 'packages/studio/playwright.jogo-d.config.ts'
       - 'packages/studio/scripts/serve-jogo-d-proof.ts'
       - 'packages/studio/scripts/gen-jogo-d.ts'
+      - 'packages/studio/scripts/gen-jogo-e-galeria.ts'
       - 'packages/studio/scripts/jogo-d/**'
       - 'packages/studio/src/examples/jogoD*'
       - 'packages/studio/src/examples/__gen_jogoD.ts'
@@ -113,5 +114,8 @@ jobs:
             packages/studio/.cache/mission/engine-2d-offscreen.json
             packages/studio/.cache/mission/devtools-cost.json
             output/cenarios-reforma/jogo-e/medidas.json
+            # O projeto do jogo E e a foto do início: a galeria publica uma foto dele (gen-jogo-e-galeria).
+            output/cenarios-reforma/jogo-e/regioes.project.json
+            output/cenarios-reforma/jogo-e/olhar-inicio.png
             packages/studio/.cache/engines-results
             packages/studio/.cache/mission/jogo-d-results

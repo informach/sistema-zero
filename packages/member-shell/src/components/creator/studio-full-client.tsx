@@ -76,6 +76,7 @@ export function StudioFullClient({
   challenge = null,
   tier,
   showExamples = false,
+  exampleFilesBaseUrl,
   showPythonCreation = false,
   zappyEnabled = false,
   aiCredits = null,
@@ -105,6 +106,11 @@ export function StudioFullClient({
    * o cliente segue sem exemplos. Default `false`.
    */
   showExamples?: boolean
+  /**
+   * Onde a galeria busca os arquivos dos exemplos GRANDES (o jogo E), do mesmo domínio
+   * (`studioExampleFilesBase()` do servidor). Sem ele, esses cards não aparecem.
+   */
+  exampleFilesBaseUrl?: string
   /** Oferta de criação Python decidida pelo host; a autorização permanece no servidor. */
   showPythonCreation?: boolean
   /** Capacidade de oferta derivada no servidor; o BFF mantém o gate autoritativo. */
@@ -824,6 +830,7 @@ export function StudioFullClient({
                   initialExtensions={tier.initialExtensions}
                   allowedExtensions={tier.allowedExtensions}
                   showExamples={showExamples}
+                  exampleFilesBaseUrl={exampleFilesBaseUrl}
                   sections={projectSections}
                 />
               </div>
