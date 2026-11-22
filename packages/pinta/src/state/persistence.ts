@@ -657,7 +657,12 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
           throw error
         })
         if (!snapshot) return false
-        const ids = pull.transitions.map(({ id }) => id)
+        const ids = [
+          ...new Set([
+            ...(pull.coveredIds ?? pull.transitions.map(({ id }) => id)),
+            ...snapshot.recovered.map(({ id }) => id),
+          ]),
+        ]
         backupSizeCache.invalidate(ids)
         accept(snapshot, ids)
         if (ids.length) notifyOtherTabs(storeHandle, dbName, ids)

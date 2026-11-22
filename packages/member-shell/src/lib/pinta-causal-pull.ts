@@ -107,7 +107,12 @@ export async function pullPintaCausalSnapshot(options: {
       remote: visible.get(id) ?? null,
     }
   })
-  const pull = { fromEpoch: state.epoch, epoch: snapshot.epoch, transitions }
+  const pull = {
+    fromEpoch: state.epoch,
+    epoch: snapshot.epoch,
+    transitions,
+    recoverInitial: true as const,
+  }
   const impact = await local.pullImpact(pull)
   if (impact.blocked || impact.ids.some(options.isOpen)) return false
   await cloud.verifyEpoch(snapshot.epoch, signal)

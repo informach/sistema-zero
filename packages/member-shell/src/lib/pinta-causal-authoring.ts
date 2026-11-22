@@ -183,6 +183,25 @@ export async function stagePintaCausalWrite(options: {
   if (epoch === null) throw Error('Ainda estou conferindo os desenhos guardados na conta.')
   const output = new Map((options.assets ?? []).map((asset) => [asset.id, asset]))
   const authoredIds = new Set(output.keys())
+  const observed = new Map(context?.resources.map((ref) => [ref.id, ref.localRevision]))
+  const recovered = new Set<string>()
+  const localCatalog = new Map(options.catalog.map((asset) => [asset.id, asset]))
+  for (const asset of output.values()) {
+    for (const ref of observePintaReferences(asset, options.catalog)) {
+      if (output.has(ref.id)) continue
+      const target = localCatalog.get(ref.id)
+      const revision = state.recovered?.get(ref.id)
+      if (
+        !target ||
+        !revision ||
+        revision !== pintaLocalRevisionOf(target) ||
+        (!recovered.has(asset.id) && observed.get(ref.id) !== revision)
+      )
+        continue
+      recovered.add(ref.id)
+      output.set(ref.id, target)
+    }
+  }
   const held = new Map<string, Unit['members'][number]>()
   const replaces: { opId: string; preparation: string }[] = []
   const carriedReads: Read[] = []
@@ -206,7 +225,6 @@ export async function stagePintaCausalWrite(options: {
   if ([...deleted].some((id) => output.has(id))) throw Error('Essa mudança usa um desenho apagado.')
   const ids = [...output.keys(), ...deleted]
   const bases = await local.capture(ids)
-  const observed = new Map(context?.resources.map((ref) => [ref.id, ref.localRevision]))
   const readSet: Read[] = carriedReads
   const catalog = [...options.catalog, ...(remapBase?.assets ?? []), ...output.values()]
   const transitions: Transition[] = []
@@ -244,11 +262,12 @@ export async function stagePintaCausalWrite(options: {
       (confirmed?.deleted ? 0 : (confirmed?.revision ?? 0))
     if (!after && baseRevision === 0 && !baseAfter)
       throw Error('Esse desenho ainda está aguardando a primeira sincronização.')
-    const origin = authoredIds.has(base.id)
-      ? after
-      : deletion?.id === base.id
-        ? deletion.before
-        : undefined
+    const origin =
+      authoredIds.has(base.id) || recovered.has(base.id)
+        ? after
+        : deletion?.id === base.id
+          ? deletion.before
+          : undefined
     if (origin && base.beforeRevision !== (pintaLocalRevisionOf(origin) ?? null)) {
       if (base.before || !prepared) throw Error('Um dos desenhos mudou em outra janela.')
     }
@@ -268,7 +287,7 @@ export async function stagePintaCausalWrite(options: {
           rootObservation ? undefined : prior?.operation,
         )
       } else operation = pending?.operation ?? { type: 'update' }
-      if (authoredIds.has(after.id)) {
+      if (authoredIds.has(after.id) || recovered.has(after.id)) {
         const original =
           base.id !== root?.id && remapBase?.verifiedConsumers.has(base.id)
             ? originals.get(base.id)
@@ -284,6 +303,7 @@ export async function stagePintaCausalWrite(options: {
             if (
               targetBefore &&
               !(remapBase && root?.id === ref.id) &&
+              !(recovered.has(after.id) && state.recovered?.get(ref.id) === targetBefore) &&
               observed.get(ref.id) !== targetBefore
             )
               throw Error('Um recurso usado pelo desenho mudou desde que foi aberto.')

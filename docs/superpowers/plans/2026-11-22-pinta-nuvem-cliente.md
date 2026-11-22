@@ -26,7 +26,7 @@ Base `c34117d6a`. A publicação causal mantém uma folha, seus mapas e os conju
 ## Descida da conta
 
 - [x] Capturar todas as páginas no mesmo epoch, conferir as revisões pinadas e preparar os bytes fora da transação de aplicação. Reusar o portão de formato e o codec atuais. Computar a ausência a partir de um inventário completo e de marcas confirmadas no mesmo banco. Na adoção, confirmar documento local só após comparação com o corpo remoto. A revisão legada e o relógio podem coincidir após recriação de um ID.
-- [ ] Recuperar dentro do mesmo commit as duas versões quando a primeira adoção encontra documentos divergentes. Religá-las como conjuntos completos e avisar que as cópias continuam neste aparelho.
+- [x] Recuperar no mesmo commit as versões divergentes na primeira adoção. A versão da conta preserva seus IDs. O plano local de importação religa folhas, mapas, propriedades e portas dentro da cópia. O primeiro save explícito de uma dessas cópias pode levar seus recursos observados numa unidade nova.
 - [x] Implementar a aplicação de todo o delta Pinta, marcas e lápides em uma transação. Conferir revisões locais e propriedade da fila outra vez no fim. Provar em navegador que uma aba pode adiar o delta inteiro pelo mesmo namespace e que uma edição concorrente invalida o commit.
 - [x] Calcular as dependências retidas no disco antes de aplicar novo layout. Se um mapa local sem confirmação ainda usa os índices anteriores, manter o delta inteiro aguardando.
 - [ ] Preservar os nomes e vínculos oficiais em um fechamento de portas por nome. Um conflito com trabalho local impede aplicação parcial, inclusive quando a alternativa seria alterar apenas um nome remoto.

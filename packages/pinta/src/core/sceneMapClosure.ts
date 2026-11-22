@@ -72,7 +72,8 @@ export function pintaDoorBindings(
 ) {
   return [...rawDoorSelectors(asset)].map((selector) => ({
     selector,
-    binding: typeof selector === 'string' ? doorBinding(selector, byId) : { type: 'invalid' },
+    binding:
+      typeof selector === 'string' ? doorBinding(selector, byId) : { type: 'invalid' as const },
   }))
 }
 

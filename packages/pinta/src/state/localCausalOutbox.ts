@@ -20,6 +20,11 @@ import { isTilesetKind, pintaAssetDependencyIds } from '../core/project'
 import { pintaDoorBindings } from '../core/sceneMapClosure'
 import { PINTA_CAUSAL_OUTBOX_KEY } from './assetAuthorityKeys'
 import type { LocalAssetTransition, LocalSnapshot } from './localAssetAuthority'
+import {
+  initialRecoveryClosure,
+  initialRecoverySeeds,
+  recoverInitialLocalAssets,
+} from './localCausalRecovery'
 
 export { PINTA_CAUSAL_OUTBOX_KEY } from './assetAuthorityKeys'
 export const PINTA_CAUSAL_BLOBS_KEY = 'pinta:sync:sealed-blobs'
@@ -107,6 +112,7 @@ export interface PintaCausalLocalPull<Asset extends PintaMemoryAsset> {
   fromEpoch: string | null
   epoch: string
   coveredIds?: readonly string[]
+  recoverInitial?: true
   transitions: readonly (LocalAssetTransition<Asset> & {
     remote: Pick<PintaCausalConfirmed, 'revision' | 'sha256' | 'layoutRevision'> | null
   })[]
@@ -121,6 +127,8 @@ export interface LocalCausalState {
   /** A complete read epoch followed by this device's consecutive confirmed writes. */
   writeEpoch?: string
   unbased?: PintaLocalUnbased
+  /** Exact revisions of recovery copies that still live only in this gallery. */
+  recovered?: Map<string, string>
   pending: PintaCausalPending[]
   sealed: PintaCausalSealed | null
   confirmed: Map<string, PintaCausalConfirmed>
@@ -307,6 +315,13 @@ function unbasedState(value: unknown): value is PintaLocalUnbased {
   return true
 }
 
+function recoveryState(value: unknown): value is Map<string, string> {
+  if (!(value instanceof Map)) return false
+  for (const [id, revision] of value)
+    if (!pintaCausalItemIdSchema.safeParse(id).success || !localRevision(revision)) return false
+  return true
+}
+
 export function readLocalCausalState(records: ReadonlyMap<string, unknown>): LocalCausalState {
   const value = records.get(PINTA_CAUSAL_OUTBOX_KEY)
   if (value === undefined)
@@ -326,6 +341,7 @@ export function readLocalCausalState(records: ReadonlyMap<string, unknown>): Loc
     (value.writeEpoch !== undefined &&
       !pintaCausalEpochSchema.safeParse(value.writeEpoch).success) ||
     (value.unbased !== undefined && !unbasedState(value.unbased)) ||
+    (value.recovered !== undefined && !recoveryState(value.recovered)) ||
     !Array.isArray(value.pending) ||
     value.pending.length > PINTA_CAUSAL_LIMITS.members ||
     !value.pending.every(pendingState) ||
@@ -349,6 +365,7 @@ export function readLocalCausalState(records: ReadonlyMap<string, unknown>): Loc
     epoch: typeof value.epoch === 'string' ? value.epoch : null,
     ...(typeof value.writeEpoch === 'string' ? { writeEpoch: value.writeEpoch } : {}),
     ...(unbasedState(value.unbased) ? { unbased: value.unbased } : {}),
+    ...(recoveryState(value.recovered) ? { recovered: value.recovered } : {}),
     pending: value.pending,
     sealed: value.sealed,
     confirmed: value.confirmed,
@@ -409,7 +426,11 @@ export function stageLocalUnbasedDraft<Asset extends PintaMemoryAsset>(
 export function localCausalBytes(records: ReadonlyMap<string, unknown>): number {
   if (records.get(PINTA_CAUSAL_OUTBOX_KEY) === undefined) return 0
   const state = readLocalCausalState(records)
-  const metadata = JSON.stringify({ ...state, confirmed: [...state.confirmed] })
+  const metadata = JSON.stringify({
+    ...state,
+    confirmed: [...state.confirmed],
+    ...(state.recovered ? { recovered: [...state.recovered] } : {}),
+  })
   return new TextEncoder().encode(metadata).length + (state.sealed?.bytes ?? 0)
 }
 
@@ -426,7 +447,7 @@ export function localCausalPullImpact<Asset extends PintaMemoryAsset>(
   pull: PintaCausalLocalPull<Asset>,
   state: LocalCausalState,
   snapshot: LocalSnapshot<Asset>,
-): { ids: string[]; blocked: boolean } {
+): { ids: string[]; blocked: boolean; recover?: string[] } {
   const written = new Set(pull.transitions.map(({ id }) => id))
   const changedLayout = new Set<string>()
   let hasSelectorChange = false
@@ -449,9 +470,17 @@ export function localCausalPullImpact<Asset extends PintaMemoryAsset>(
       (mark ? mark.layoutRevision !== remote?.layoutRevision : !pintaValuesEqual(before, after))
     if (kindChanged || layoutChanged) changedLayout.add(id)
   }
+  const mayRecover =
+    pull.recoverInitial === true &&
+    state.epoch === null &&
+    !state.confirmed.size &&
+    !state.sealed &&
+    !state.pending.length
+  const seeds = mayRecover ? initialRecoverySeeds(pull, snapshot.assets) : new Set<string>()
   let blocked = (hasSelectorChange || changedLayout.size > 0) && snapshot.issues.length > 0
   const affected = new Set(written)
-  if (!hasSelectorChange && changedLayout.size === 0) return { ids: [...affected], blocked }
+  if (!hasSelectorChange && !changedLayout.size && !seeds.size)
+    return { ids: [...affected], blocked }
   for (const asset of snapshot.assets.values()) {
     if (written.has(asset.id)) continue
     const usesChangedLayout = pintaAssetDependencyIds(asset).some((id) => changedLayout.has(id))
@@ -464,8 +493,23 @@ export function localCausalPullImpact<Asset extends PintaMemoryAsset>(
     if (!usesChangedLayout && !doorChanged) continue
     affected.add(asset.id)
     const mark = state.confirmed.get(asset.id)
-    if (!mark || mark.deleted || mark.localRevision !== snapshot.documents.get(asset.id)?.revision)
-      blocked = true
+    if (
+      !mark ||
+      mark.deleted ||
+      mark.localRevision !== snapshot.documents.get(asset.id)?.revision
+    ) {
+      if (mayRecover) seeds.add(asset.id)
+      else blocked = true
+    }
+  }
+  if (seeds.size) {
+    const closure = initialRecoveryClosure(seeds, snapshot.assets)
+    for (const id of closure.ids) affected.add(id)
+    return {
+      ids: [...affected],
+      blocked: blocked || closure.incomplete || snapshot.issues.length > 0,
+      recover: closure.ids,
+    }
   }
   return { ids: [...affected], blocked }
 }
@@ -473,7 +517,9 @@ export function localCausalPullImpact<Asset extends PintaMemoryAsset>(
 export function installLocalCausalPull<Asset extends PintaMemoryAsset>(
   records: Map<string, unknown>,
   pull: PintaCausalLocalPull<Asset>,
-  write: (authorize: (snapshot: LocalSnapshot<Asset>) => void) => LocalSnapshot<Asset>,
+  write: (
+    authorize: (snapshot: LocalSnapshot<Asset>) => readonly LocalAssetTransition<Asset>[],
+  ) => LocalSnapshot<Asset>,
 ): LocalSnapshot<Asset> | null {
   const state = readLocalCausalState(records)
   if (!pintaCausalEpochSchema.safeParse(pull.epoch).success) invalid()
@@ -483,23 +529,35 @@ export function installLocalCausalPull<Asset extends PintaMemoryAsset>(
     (knownEpoch !== null && BigInt(pull.epoch) < BigInt(knownEpoch))
   )
     return null
-  for (const change of pull.transitions) {
-    if (ownsLocalCausalMember(state, change.id, false)) return null
-    const mark = state.confirmed.get(change.id)
-    if (Boolean(change.after) !== Boolean(change.remote)) invalid()
-    if (
-      (change.before !== null || change.beforeRevision !== null) &&
-      mark?.localRevision !== change.beforeRevision
-    ) {
-      // A first download can adopt an identical local file. It never overwrites a different one.
-      if (!change.remote || !pintaValuesEqual(change.before, change.after)) return null
-    } else if (!change.remote && !mark) return null
-  }
   const covered = new Set(pull.coveredIds ?? pull.transitions.map(({ id }) => id))
+  let copies: Asset[] = []
+  let moved = new Set<string>()
   const snapshot = write((before) => {
     const impact = localCausalPullImpact(pull, state, before)
     if (impact.blocked || impact.ids.some((id) => !covered.has(id)))
       throw new PintaCausalPullDeferred()
+    moved = new Set(impact.recover ?? [])
+    for (const change of pull.transitions) {
+      if (Boolean(change.after) !== Boolean(change.remote)) invalid()
+      if (ownsLocalCausalMember(state, change.id, false)) throw new PintaCausalPullDeferred()
+      const mark = state.confirmed.get(change.id)
+      if (
+        (change.before !== null || change.beforeRevision !== null) &&
+        mark?.localRevision !== change.beforeRevision
+      ) {
+        // A weak mark never authorizes replacement of distinct local content.
+        if (
+          !change.remote ||
+          (!pintaValuesEqual(change.before, change.after) && !moved.has(change.id))
+        )
+          throw new PintaCausalPullDeferred()
+      } else if (!change.remote && !mark) throw new PintaCausalPullDeferred()
+    }
+    if (!moved.size) return []
+    const recovery = recoverInitialLocalAssets([...moved], pull, before)
+    if (!recovery) throw new PintaCausalPullDeferred()
+    copies = recovery.copies
+    return recovery.writes
   })
   const confirmed = new Map(state.confirmed)
   for (const change of pull.transitions) {
@@ -516,19 +574,30 @@ export function installLocalCausalPull<Asset extends PintaMemoryAsset>(
       layoutRevision: change.remote?.layoutRevision ?? null,
     })
   }
-  const local = prepareUnbasedCreates(state.unbased, pull, snapshot, confirmed)
-  const { unbased: stillUnbased, ...account } = state
+  const recovered = new Map(state.recovered)
+  for (const copy of copies) {
+    const saved = snapshot.assets.get(copy.id)
+    const revision = snapshot.documents.get(copy.id)?.revision
+    if (!saved || !revision) invalid()
+    recovered.set(copy.id, revision)
+    snapshot.recovered.push(saved)
+  }
+  const { unbased, ...account } = state
+  const stillUnbased = unbased && {
+    ...unbased,
+    members: unbased.members.filter(({ itemId }) => !moved.has(itemId)),
+    readSet: unbased.readSet.filter(({ consumerId }) => !moved.has(consumerId)),
+  }
+  const local = prepareUnbasedCreates(stillUnbased, pull, snapshot, confirmed)
+  if (stillUnbased?.members.length && !local) throw new PintaCausalPullDeferred()
   saveState(records, {
     ...account,
     protocolKnown: true,
     epoch: pull.epoch,
     writeEpoch: pull.epoch,
     confirmed,
-    ...(local
-      ? { pending: local.members.length ? [...state.pending, local] : state.pending }
-      : stillUnbased
-        ? { unbased: stillUnbased }
-        : {}),
+    ...(recovered.size ? { recovered } : {}),
+    ...(local?.members.length ? { pending: [...state.pending, local] } : {}),
   })
   return snapshot
 }
@@ -684,9 +753,12 @@ export function stageLocalCausalDraft<Asset extends PintaMemoryAsset>(
     members,
   }
   if (!pendingState(pending)) invalid()
+  const recovered = new Map(state.recovered)
+  for (const id of items) recovered.delete(id)
   saveState(records, {
     ...state,
     protocolKnown: true,
+    ...(state.recovered ? { recovered } : {}),
     pending: [...state.pending.filter((unit) => !expected.has(unit.opId)), pending],
   })
   return { snapshot, pending }

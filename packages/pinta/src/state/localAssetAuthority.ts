@@ -405,17 +405,18 @@ export function createLocalAssetAuthority<Asset extends PintaMemoryAsset>(
     records: Map<string, unknown>,
     transitions: readonly LocalAssetTransition<Asset>[],
     requireKnownInventory: boolean,
-    authorize?: (snapshot: LocalSnapshot<Asset>) => void,
+    authorize?: (snapshot: LocalSnapshot<Asset>) => readonly LocalAssetTransition<Asset>[],
   ): LocalSnapshot<Asset> {
     const snapshot = resolveLocalRecords(records, false)
-    authorize?.(snapshot)
-    const ids = new Set(transitions.map(({ id }) => id))
+    const additions = authorize?.(snapshot) ?? []
+    const writes = additions.length ? [...transitions, ...additions] : transitions
+    const ids = new Set(writes.map(({ id }) => id))
     if (
-      ids.size !== transitions.length ||
+      ids.size !== writes.length ||
       snapshot.issues.some(({ id }) => requireKnownInventory || ids.has(id))
     )
       throw new PintaLocalStorageError('Não consegui conferir todos os desenhos desta mudança.')
-    for (const { id, before, beforeRevision, after } of transitions) {
+    for (const { id, before, beforeRevision, after } of writes) {
       if (
         (before && before.id !== id) ||
         (after && after.id !== id) ||
@@ -429,7 +430,7 @@ export function createLocalAssetAuthority<Asset extends PintaMemoryAsset>(
         .filter((asset) => !ids.has(asset.id))
         .map((asset) => asset.name),
     )
-    for (const { id, after } of transitions) {
+    for (const { id, after } of writes) {
       if (!after) {
         putTombstone(records, snapshot, id)
         continue

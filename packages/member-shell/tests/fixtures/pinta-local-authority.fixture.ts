@@ -738,3 +738,115 @@ test('o primeiro save offline fica no aparelho antes de haver uma base da conta'
     wrapper.dispose?.()
   }
 })
+
+test('a primeira descida recupera folha e mapa locais como uma cópia religada', async () => {
+  const namespace = 'cloud-recover-first-pull'
+  const initial = createPintaPersistence({ namespace })
+  const sheet = addTile(createTilesetAsset({ name: 'pecas', tileSize: 16, now: 10 }), 0)
+  sheet.tiles[0]!.data[0] = 1
+  sheet.tiles[1]!.data[0] = 2
+  const map = createTilemapAsset({ name: 'vila', cols: 2, rows: 2, tilesetId: sheet.id, now: 10 })
+  map.layers.find(isTileLayer)!.cells[0] = 1
+  await initial.persistAssets([sheet, map])
+  const remoteSheet = { ...sheet, tiles: [...sheet.tiles].reverse(), updatedAt: 20 }
+  const a = await cloudAsset(remoteSheet, 2, '2')
+  const b = await cloudAsset(map, 1)
+  const local = createPintaCausalPersistence({ namespace })
+  const { cloud, queued } = fakeCloud(map, 1)
+  const unused = async (): Promise<never> => {
+    throw Error('Operação não solicitada')
+  }
+  let open = true
+  const transport: PintaCausalCloud = {
+    snapshot: async () => ({ epoch: '2', requiredFormat: 6, entries: [a.entry, b.entry] }),
+    verifyEpoch: async () => {},
+    download: async ({ itemId }) => (itemId === sheet.id ? a.gzip : b.gzip),
+    backfill: unused,
+    upload: unused,
+  }
+  const wrapper = createCloudMirroredPintaPersistence({
+    local,
+    cloud: { ...cloud, pintaCausal: transport },
+    viewerId: 'recover',
+    reconcileMinIntervalMs: 0,
+    isAssetOpen: (id) => open && id === map.id,
+    causal: {
+      local: local.causal,
+      holdOpen: async () => () => {},
+      withClosed: (ids, apply) => {
+        expect(ids).toEqual(expect.arrayContaining([sheet.id, map.id]))
+        return apply()
+      },
+    },
+  })
+  async function pull() {
+    const complete = Promise.withResolvers<void>()
+    const unsubscribe = wrapper.subscribe?.((event) => {
+      if (event.type === 'sync-end') complete.resolve()
+    })
+    try {
+      await wrapper.listAllAssets()
+      await complete.promise
+    } finally {
+      unsubscribe?.()
+    }
+  }
+  try {
+    await pull()
+    expect((await local.causal.inspect()).epoch).toBeNull()
+    expect(await local.listAllAssets()).toHaveLength(2)
+    open = false
+    await pull()
+    const gallery = await local.listAllAssets()
+    expect(gallery).toHaveLength(4)
+    const copy = gallery.find((a) => a.id !== map.id && a.kind === 'tilemap')
+    const copiesSheet = gallery.find((a) => a.id !== sheet.id && a.kind === 'tileset')
+    const official = await local.loadAssetById(sheet.id)
+    if (copy?.kind !== 'tilemap' || copiesSheet?.kind !== 'tileset' || official?.kind !== 'tileset')
+      throw Error('Versões incompletas')
+    expect(copy.tilesetId).toBe(copiesSheet.id)
+    expect(copy.layers.find(isTileLayer)?.cells[0]).toBe(1)
+    expect(copiesSheet.tiles[1]?.data[0]).toBe(2)
+    expect(official.tiles[1]?.data[0]).toBe(1)
+    expect(copiesSheet.createdAt).toBe(sheet.createdAt)
+    const state = await local.causal.inspect()
+    expect(state.recovered?.size).toBe(2)
+    expect(state.confirmed.get(sheet.id)?.revision).toBe(2)
+    expect(state.confirmed.get(copy.id)).toBeUndefined()
+    expect(state.pending).toEqual([])
+    expect(queued).toEqual([])
+    await wrapper.persistAsset(
+      { ...copy, name: 'minha-vila' },
+      {
+        resources: [
+          { id: copiesSheet.id, localRevision: pintaLocalRevisionOf(copiesSheet) ?? null },
+        ],
+      },
+    )
+    const edited = await local.causal.inspect()
+    expect(edited.recovered?.size).toBe(0)
+    expect(edited.pending[0]?.members).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          itemId: copy.id,
+          baseRevision: 0,
+          operation: { type: 'create' },
+        }),
+        expect.objectContaining({
+          itemId: copiesSheet.id,
+          baseRevision: 0,
+          operation: { type: 'create' },
+        }),
+      ]),
+    )
+    expect(edited.pending[0]?.readSet).toEqual([
+      {
+        source: 'unit',
+        consumerId: copy.id,
+        targetId: copiesSheet.id,
+      },
+    ])
+  } finally {
+    wrapper.dispose?.()
+  }
+})

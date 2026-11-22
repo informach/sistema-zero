@@ -159,7 +159,7 @@ export interface CreationsCloud {
   readonly pintaCausal?: PintaCausalCloud
   reportPintaQueue?(
     ids: readonly string[],
-    status: 'saving' | 'offline' | 'error' | 'saved',
+    status: 'saving' | 'offline' | 'error' | 'saved' | 'idle',
     error?: string,
   ): void
   /** A nuvem funciona neste navegador? (`CompressionStream`; sem ele, tudo vira no-op). */
@@ -1337,10 +1337,16 @@ export function createCreationsCloud(options: {
           pintaCausal,
           reportPintaQueue(
             ids: readonly string[],
-            status: 'saving' | 'offline' | 'error' | 'saved',
+            status: 'saving' | 'offline' | 'error' | 'saved' | 'idle',
             error?: string,
           ) {
-            if (disposed || (!ids.length && !pintaPending.size)) return
+            if (
+              disposed ||
+              (!ids.length &&
+                !pintaPending.size &&
+                !(status === 'idle' && state.status === 'saved'))
+            )
+              return
             pintaPending = new Set(ids)
             pintaQueueStatus = { status, lastError: error ?? null }
             for (const id of ids) seen.add(id)

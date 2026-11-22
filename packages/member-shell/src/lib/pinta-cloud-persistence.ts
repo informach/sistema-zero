@@ -376,12 +376,12 @@ export function createCloudMirroredPintaPersistence(options: {
   let causalTimer: ReturnType<typeof setTimeout> | null = null
   async function reportCausalQueue(error?: unknown): Promise<void> {
     if (!causalLocal || !cloud.reportPintaQueue || causalSession.signal.aborted) return
-    const { sealed, pending, unbased } = await causalLocal.inspect()
+    const { sealed, pending, unbased, recovered } = await causalLocal.inspect()
     if (causalSession.signal.aborted) return
     const ids = new Set(pending.flatMap((unit) => unit.members.map((member) => member.itemId)))
     for (const member of sealed?.local.members ?? []) ids.add(member.itemId)
     for (const member of unbased?.members ?? []) ids.add(member.itemId)
-    if (!ids.size) cloud.reportPintaQueue([], 'saved')
+    if (!ids.size) cloud.reportPintaQueue([], recovered?.size ? 'idle' : 'saved')
     else if (typeof navigator !== 'undefined' && !navigator.onLine)
       cloud.reportPintaQueue([...ids], 'offline')
     else if (error)
