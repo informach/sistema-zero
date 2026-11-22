@@ -54,6 +54,7 @@ jobs:
         run: |
           bun tests/image-smoke.ts
           bun tests/validation-smoke.ts
+          bun tests/templates-smoke.ts
       - name: Preparar distribuição hermética para os ensaios nativos
         run: bun packages/studio/scripts/build-python-runtime.ts
       - name: Executar Python e Three reais sem rede externa
