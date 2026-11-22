@@ -1,0 +1,83 @@
+{"version":"new","sha":"09aa01d52244591380d7ac314ecdbe46b217c58e","sourceFiles":70,"bundleSha256":"27cddaea7c079042e939a946d23ff3171f2c95cec22f9cd33516e2ce8865c35d"}
+{"version":"old","sha":"332e94b59e5dcd50729febc25fb8478f0c796e32","sourceFiles":70,"bundleSha256":"6b304f03856ddc73c58a3a24fda609b1fa8b7c87c2dda3583916042a46637827"}
+{"version":"public","sha":"61ef65f2d1a3dbe74fdef83a701a0c1eeb08f98b","sourceFiles":57,"bundleSha256":"058430005e44e8aa0cd627d56af4301f619aa310fa6872004e22c3b20b1e5437"}
+{"version":"before-unbased","sha":"64c197d5332a36b73af54de6ae5bf045a4a7699e","sourceFiles":68,"bundleSha256":"4c950dfd9b9759a24699efaa0c470c4c47a266f4d8c0e8453d02af2d8ca6f903"}
+{"version":"before-recovered","sha":"3d6aad294d5c92961dfbdcaf235180b63ad83230","sourceFiles":69,"bundleSha256":"826690487cda72528f4d4273a66d53603035c0140caf76648f401bbe39ea7725"}
+{"version":"fenced","sha":"e28bb5dbbc9cfa27e0b4d60b89678f3d4eb78b44","sourceFiles":70,"bundleSha256":"c1a70a2bd0dc41bd8b36cb9eb3a76cabd062391879f012b77c749ce0734a37db"}
+{"bunVersion":"1.3.11","sharedCoreSchemaSha256":"4aeb95e0acec9629d60578175059cef1774fbd5afc73da0266a0f6085a1e7e29"}
+{
+  "browser": "157.0.8103.80",
+  "chromeExecutableSha256": "9827861428755ccfa7558d314e1de677a759be5054b684da0760fa84ba690c56",
+  "causalDowngrade": {
+    "beforeLoss": {
+      "readEpoch": "1",
+      "matched": true,
+      "preparedSeen": 0,
+      "wrote": true
+    },
+    "afterLoss": {
+      "epoch": "2",
+      "pending": 1,
+      "prepared": false,
+      "orphanBytes": 333
+    }
+  },
+  "publicLegacy": {
+    "publicWrite": {
+      "maxSchema": 7,
+      "before": 7,
+      "after": 7,
+      "name": "escrito-por-binario-publico",
+      "cell": 0,
+      "noCausal": true
+    },
+    "afterLegacy": {
+      "newestName": "escrito-por-binario-publico",
+      "newestCell": 0,
+      "preparedShaUnchanged": true,
+      "sealed": true,
+      "announced": true,
+      "pending": 0,
+      "dirty": true,
+      "storedName": "escrito-por-binario-publico",
+      "deferred": true,
+      "retainedName": "escrito-por-binario-publico",
+      "recoveryCopies": 0
+    }
+  },
+  "unbasedDowngrade": {
+    "oldInitialWrite": true,
+    "afterInitial": {
+      "epoch": "1",
+      "unbased": 0,
+      "pending": 0,
+      "name": "antes-da-nuvem"
+    }
+  },
+  "recoveredDowngrade": {
+    "oldRecoveryWrite": true,
+    "afterRecovery": {
+      "epoch": "2",
+      "recovered": 0,
+      "copyPreserved": true
+    }
+  },
+  "fencedCompatibility": {
+    "migrate": {
+      "beforeVersion": 1,
+      "afterVersion": 2,
+      "changed": true,
+      "shaUnchanged": true
+    },
+    "refusal": {
+      "inspectionRejected": true,
+      "writeRejected": true
+    },
+    "final": {
+      "version": 2,
+      "epoch": "2",
+      "firstOpUnchanged": true,
+      "shaUnchanged": true
+    }
+  }
+}
