@@ -126,7 +126,16 @@ describe('verbos do palco', () => {
 
   test('expandir e reduzir o Estúdio só terminam com ele no outro estado', () => {
     // Farol, Parte 6: a seta segurada logo depois de expandir mediu a prévia ainda no lugar antigo.
+    // Ilha, Aula 2, Parte 4: expandido com o projeto ainda abrindo, a área ficava sem os blocos; o
+    // Expandir espera a área de blocos aberta e sem o carregamento por cima.
     expect(agir('expandir estúdio', jogos)).toEqual([
+      { fazer: 'esperar', alvo: { seletor: 'svg.blocklySvg' }, estado: 'aparecer', maximo: 30 },
+      {
+        fazer: 'esperar',
+        alvo: { seletor: '[data-sz-blocks-loading]' },
+        estado: 'sumir',
+        maximo: 30,
+      },
       { fazer: 'clicar', alvo: { texto: 'Expandir' } },
       { fazer: 'esperar', alvo: { texto: 'Reduzir' }, estado: 'aparecer', maximo: 10 },
     ])

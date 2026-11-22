@@ -380,6 +380,22 @@ const trocarEstudio = (de: string, para: string): Passo[] => [
   { fazer: 'esperar', alvo: botao(para), estado: 'aparecer', maximo: 10 },
 ]
 
+/**
+ * Antes de expandir, o Estúdio da aula termina de abrir o projeto. Expandido no meio da carga (Ilha,
+ * Aula 2, Parte 4, 22/11/2026: o Expandir clicado com a área de blocos ainda no esqueleto), a área
+ * de trabalho ficava sem nenhum bloco e o jogo fechava; os gestos de bloco esperavam 30 s em vão.
+ * Vale também para um projeto sem blocos: espera a área, não os blocos.
+ */
+const estudioAberto: Passo[] = [
+  { fazer: 'esperar', alvo: { seletor: 'svg.blocklySvg' }, estado: 'aparecer', maximo: 30 },
+  {
+    fazer: 'esperar',
+    alvo: { seletor: '[data-sz-blocks-loading]' },
+    estado: 'sumir',
+    maximo: 30,
+  },
+]
+
 /** Depois de agir num bloco, a mão vai para o fundo da área ao lado dele (o ponto é visto na hora). */
 const afastar = (bloco: string, clicando = false): Passo => ({
   fazer: 'continuar',
@@ -527,7 +543,7 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
     return [{ fazer: 'esperar', alvo: { seletor: 'body' }, estado: 'aparecer', maximo: 1 }]
   // O Estúdio troca de lugar e de tamanho logo depois do clique: o gesto só termina com o botão
   // do outro estado na tela, e o seguinte mede a prévia e as setas já no lugar novo.
-  if (f === 'expandir estudio') return trocarEstudio('Expandir', 'Reduzir')
+  if (f === 'expandir estudio') return [...estudioAberto, ...trocarEstudio('Expandir', 'Reduzir')]
   if (f === 'reduzir estudio') return trocarEstudio('Reduzir', 'Expandir')
   const ampliar = /^ampliar (.+)$/i.exec(texto)
   if (ampliar?.[1]) return [{ fazer: 'clicar', alvo: botao(`Ampliar ${ampliar[1]}`) }]
