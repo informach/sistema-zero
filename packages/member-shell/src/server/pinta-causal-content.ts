@@ -31,6 +31,7 @@ export interface VerifiedPintaCausalBlob extends Pick<PintaCausalDocument, 'asse
 async function readGzip(
   blob: R2PrivateObject,
   expected: Pick<PintaCausalBlobExpectation, 'bytes' | 'sha256'>,
+  maxCompressedBytes: number,
   signal?: AbortSignal,
 ): Promise<{ gzip: Buffer; sha256: string }> {
   const reader = blob.body.getReader()
@@ -44,7 +45,7 @@ async function readGzip(
     if (
       !Number.isSafeInteger(expected.bytes) ||
       expected.bytes < 1 ||
-      expected.bytes > PINTA_CAUSAL_LIMITS.itemBytes ||
+      expected.bytes > maxCompressedBytes ||
       blob.contentLength !== expected.bytes ||
       blob.contentType !== CREATION_BLOB_CONTENT_TYPE
     )
@@ -115,7 +116,11 @@ function deflatePayload(gzip: Buffer): Buffer {
   return gzip.subarray(start, trailer)
 }
 
-async function decompressText(gzip: Buffer, signal?: AbortSignal): Promise<string> {
+async function decompressText(
+  gzip: Buffer,
+  maxJsonBytes: number,
+  signal?: AbortSignal,
+): Promise<{ text: string; jsonBytes: number }> {
   const deflate = deflatePayload(gzip)
   const inflate = createInflateRaw()
   const decoder = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true })
@@ -127,8 +132,7 @@ async function decompressText(gzip: Buffer, signal?: AbortSignal): Promise<strin
     for await (const chunk of inflate as AsyncIterable<Buffer>) {
       signal?.throwIfAborted()
       length += chunk.byteLength
-      if (length > MAX_PINTA_CAUSAL_DOCUMENT_BYTES)
-        throw new Error('Arquivo descomprimido grande demais')
+      if (length > maxJsonBytes) throw new Error('Arquivo descomprimido grande demais')
       crc = crc32(chunk, crc)
       parts.push(decoder.decode(chunk, { stream: true }))
     }
@@ -139,28 +143,46 @@ async function decompressText(gzip: Buffer, signal?: AbortSignal): Promise<strin
     )
       throw new Error('O arquivo gzip tem dados extras ou checksum incorreto')
     parts.push(decoder.decode())
-    return parts.join('')
+    return { text: parts.join(''), jsonBytes: length }
   } finally {
     inflate.destroy()
   }
 }
 
-/** Shared bounded reader for a gzip that will be attested and sealed without reencoding. */
-export async function readVerifiedPintaGzip(
+/** Capture exact gzip bytes, validate a single stream and account for every expanded byte. */
+export async function readVerifiedCreationGzip(
+  blob: R2PrivateObject,
+  expected: Pick<PintaCausalBlobExpectation, 'bytes' | 'sha256'>,
+  limits: { compressedBytes: number; jsonBytes: number },
+  signal?: AbortSignal,
+): Promise<{ gzip: Buffer; sha256: string; text: string; jsonBytes: number }> {
+  const { gzip, sha256 } = await readGzip(blob, expected, limits.compressedBytes, signal)
+  try {
+    const text = await decompressText(gzip, limits.jsonBytes, signal)
+    signal?.throwIfAborted()
+    return { gzip, sha256, ...text }
+  } catch (cause) {
+    signal?.throwIfAborted()
+    throw new PintaCausalUnverifiedContent('O arquivo comprimido não pode ser conferido.', {
+      cause,
+    })
+  }
+}
+
+export function readVerifiedPintaGzip(
   blob: R2PrivateObject,
   expected: Pick<PintaCausalBlobExpectation, 'bytes' | 'sha256'>,
   signal?: AbortSignal,
-): Promise<{ gzip: Buffer; sha256: string; text: string }> {
-  const { gzip, sha256 } = await readGzip(blob, expected, signal)
-  let text: string
-  try {
-    text = await decompressText(gzip, signal)
-  } catch (cause) {
-    signal?.throwIfAborted()
-    throw new PintaCausalUnverifiedContent('O arquivo do Pinta não pode ser conferido.', { cause })
-  }
-  signal?.throwIfAborted()
-  return { gzip, sha256, text }
+) {
+  return readVerifiedCreationGzip(
+    blob,
+    expected,
+    {
+      compressedBytes: PINTA_CAUSAL_LIMITS.itemBytes,
+      jsonBytes: MAX_PINTA_CAUSAL_DOCUMENT_BYTES,
+    },
+    signal,
+  )
 }
 
 /** Validates the stored gzip and retains those exact bytes when the caller needs to seal a copy. */

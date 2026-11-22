@@ -24,9 +24,33 @@ export function pintaCausalRoutes(transforms: Route['transforms']): Route[] {
     ['palette/commit', SMALL_BODY_BYTES],
     ['palette/delete', SMALL_BODY_BYTES],
   ] as const
+  return verifiedStorageRoutes('pinta', 'pinta-causal', paths, transforms)
+}
+
+export function studioSealedRoutes(transforms: Route['transforms']): Route[] {
+  return verifiedStorageRoutes(
+    'studio',
+    'studio-sealed',
+    [
+      ['seal/head', SMALL_BODY_BYTES],
+      ['seal/reserve', PAGE_OR_ATTESTATION_BYTES],
+      ['seal/ticket', SMALL_BODY_BYTES],
+      ['seal/commit', PAGE_OR_ATTESTATION_BYTES],
+      ['seal/delete', SMALL_BODY_BYTES],
+    ],
+    transforms,
+  )
+}
+
+function verifiedStorageRoutes(
+  tool: 'pinta' | 'studio',
+  namespace: string,
+  paths: readonly (readonly [string, number])[],
+  transforms: Route['transforms'],
+): Route[] {
   return paths.map(([path, maxBodyBytes]) => ({
-    id: `members-pinta-causal-${path.replace('/', '-')}`,
-    pathPattern: `/members/internal/creations/pinta/${path}`,
+    id: `members-${namespace}-${path.replace('/', '-')}`,
+    pathPattern: `/members/internal/creations/${tool}/${path}`,
     methods: ['POST'],
     service: 'members',
     auth: { required: true, mode: 'any', strategies: ['hmac'], allowedConsumers: ['member-shell'] },

@@ -1219,6 +1219,20 @@
       "when": 1795386993274,
       "tag": "0173_studio_sealed_readers",
       "breakpoints": true
+    },
+    {
+      "idx": 174,
+      "version": "7",
+      "when": 1795388161697,
+      "tag": "0174_studio_sealed_writer",
+      "breakpoints": true
+    },
+    {
+      "idx": 175,
+      "version": "7",
+      "when": 1795388165761,
+      "tag": "0175_studio_sealed_writer_fence",
+      "breakpoints": true
     }
   ]
 }

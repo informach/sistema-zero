@@ -124,6 +124,9 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
       '0170_pinta_causal_writer_fence',
       '0171_pinta_palette_write_authority',
       '0172_pinta_palette_write_fence',
+      '0173_studio_sealed_readers',
+      '0174_studio_sealed_writer',
+      '0175_studio_sealed_writer_fence',
     ]) {
       const migration = await Bun.file(
         new URL(

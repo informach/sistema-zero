@@ -22,6 +22,7 @@
     "./creations/pinta-causal": "./src/creations/pinta-causal.ts",
     "./creations/pinta-palette-writer": "./src/creations/pinta-palette-writer.ts",
     "./creations/studio-sealed-storage": "./src/creations/studio-sealed-storage.ts",
+    "./creations/studio-sealed-writer": "./src/creations/studio-sealed-writer.ts",
     "./security": "./src/security/index.ts",
     "./logging": "./src/logging/index.ts",
     "./errors": "./src/errors/index.ts",

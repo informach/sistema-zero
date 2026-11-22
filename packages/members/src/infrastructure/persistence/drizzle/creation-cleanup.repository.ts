@@ -8,6 +8,7 @@ import type { Database } from './db'
 import { DrizzleGalleryCopyRepository } from './gallery-copy.repository'
 import { DrizzlePintaRetirementRepository } from './pinta-causal-retirement'
 import { creationCleanupJobs, pensaDeletionJobs } from './schema'
+import { DrizzleStudioSealedRetirementRepository } from './studio-sealed-retirement'
 
 export class DrizzleCreationCleanupRepository implements CreationCleanupRepository {
   constructor(private readonly db: Database) {}
@@ -97,8 +98,15 @@ export class DrizzleCreationCleanupRepository implements CreationCleanupReposito
       )
       if (gallery) return gallery
     }
-    return scopes.includes('pinta')
-      ? new DrizzlePintaRetirementRepository(this.db).claim(now, leaseExpiredBefore)
+    if (scopes.includes('pinta')) {
+      const pinta = await new DrizzlePintaRetirementRepository(this.db).claim(
+        now,
+        leaseExpiredBefore,
+      )
+      if (pinta) return pinta
+    }
+    return scopes.includes('studio-seal')
+      ? new DrizzleStudioSealedRetirementRepository(this.db).claim(now, leaseExpiredBefore)
       : null
   }
 
@@ -117,7 +125,8 @@ export class DrizzleCreationCleanupRepository implements CreationCleanupReposito
     return (
       plans.length === 1 ||
       (await new DrizzleGalleryCopyRepository(this.db).complete(id, now)) ||
-      new DrizzlePintaRetirementRepository(this.db).complete(id)
+      (await new DrizzlePintaRetirementRepository(this.db).complete(id)) ||
+      new DrizzleStudioSealedRetirementRepository(this.db).complete(id)
     )
   }
 
@@ -136,7 +145,8 @@ export class DrizzleCreationCleanupRepository implements CreationCleanupReposito
     return (
       plans.length === 1 ||
       (await new DrizzleGalleryCopyRepository(this.db).fail(id, error, now, retryAt)) ||
-      new DrizzlePintaRetirementRepository(this.db).fail(id, retryAt)
+      (await new DrizzlePintaRetirementRepository(this.db).fail(id, retryAt)) ||
+      new DrizzleStudioSealedRetirementRepository(this.db).fail(id, retryAt)
     )
   }
 }

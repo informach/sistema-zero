@@ -14,7 +14,14 @@ import {
   canReadStudioSealedStorage,
   resolveCreationPartKey,
   type StudioSealedReceipt,
+  studioSealedBlobKey,
 } from '@sistemazero/core/creations/studio-sealed-storage'
+import type {
+  StudioSealedBase,
+  StudioSealedCommitProof,
+  StudioSealedHead,
+  StudioSealedTicket,
+} from '@sistemazero/core/creations/studio-sealed-writer'
 import {
   STUDIO_PROJECT_FORMAT_VERSION,
   STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION,
@@ -57,7 +64,11 @@ import {
 } from '../../domain/creations/creation.errors'
 import { classifyPintaPaletteLibraryCreation } from '../../domain/creations/palette-library'
 import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
-import type { CreationsRepository } from '../../domain/ports/creations-repository.port'
+import type {
+  CreationsRepository,
+  CreationUploadInput,
+  StudioSealedCommitResult,
+} from '../../domain/ports/creations-repository.port'
 import { ValidationError } from '../../domain/shared/errors'
 import type { AccessCheckService } from '../access-check/access-check.service'
 import type { AdultJourneyService } from '../adult-journey/adult-journey.service'
@@ -86,6 +97,7 @@ export interface CreationUploadTicket {
   /** Só as partes que o item ainda não tem (cada uma ganha um PUT assinado). */
   parts: CreationPartTicket[]
   paletteTicket?: PintaPaletteTicket
+  studioSealTicket?: StudioSealedTicket
 }
 
 /**
@@ -100,6 +112,7 @@ export interface CreationCommitOutcome {
   previousStorageKey: string | null
   releasedStorageKeys: string[]
   paletteHead?: PintaPaletteHead
+  studioSeal?: StudioSealedCommitResult
 }
 
 export interface CreationDownloadTicket {
@@ -263,8 +276,9 @@ export class ReserveCreationUploadService {
     formatVersion?: number
     maxReadFormatVersion?: number
     paletteWrite?: PintaPaletteBase
+    studioSeal?: CreationUploadInput['studioSeal']
     /** Partes referenciadas (hash de conteúdo; `bytes` só para as que o item não tem). */
-    parts?: ReadonlyArray<{ hash: string; bytes?: number }>
+    parts?: CreationUploadInput['parts']
     /** Impressão digital do conteúdo (`v1:<sha256>`), opaca aqui. */
     fingerprint?: string | null
   }): Promise<CreationUploadTicket> {
@@ -379,6 +393,7 @@ export class ReserveCreationUploadService {
       formatVersion,
       maxReadFormatVersion: reader,
       ...(input.paletteWrite ? { paletteWrite: input.paletteWrite } : {}),
+      ...(input.studioSeal ? { studioSeal: input.studioSeal } : {}),
       thumb,
       ...(input.baseRevision !== undefined ? { baseRevision: input.baseRevision } : {}),
       ...(parts.length > 0 ? { parts } : {}),
@@ -417,30 +432,34 @@ export class ReserveCreationUploadService {
           : undefined,
       )
     }
+    const studioTicket = reservation.studioSealTicket
     return {
       revision: reservation.revision,
+      ...(studioTicket ? { studioSealTicket: studioTicket } : {}),
       ...(reservation.paletteTicket ? { paletteTicket: reservation.paletteTicket } : {}),
       ...(reservation.inventoryFloor === undefined
         ? {}
         : { inventoryFloor: reservation.inventoryFloor }),
       formatVersion,
       ...(reader === undefined ? {} : { maxReadFormatVersion: reader }),
-      storageKey: reservation.paletteTicket
-        ? pintaPaletteBlobKey(
-            {
-              userId: input.userId,
-              audience: this.creations.audience ?? 'kids',
-            },
-            reservation.paletteTicket,
-            'upload',
-          )
-        : creationStorageKey(
-            input.userId,
-            input.tool,
-            input.itemId,
-            reservation.revision,
-            this.creations.audience ?? 'kids',
-          ),
+      storageKey: studioTicket
+        ? studioSealedBlobKey(studioTicket.scope, studioTicket.nonce, 'upload')
+        : reservation.paletteTicket
+          ? pintaPaletteBlobKey(
+              {
+                userId: input.userId,
+                audience: this.creations.audience ?? 'kids',
+              },
+              reservation.paletteTicket,
+              'upload',
+            )
+          : creationStorageKey(
+              input.userId,
+              input.tool,
+              input.itemId,
+              reservation.revision,
+              this.creations.audience ?? 'kids',
+            ),
       bytes: input.bytes,
       parts: reservation.missingParts.map((part) => ({
         ...part,
@@ -478,6 +497,7 @@ export class CommitCreationUploadService {
     verifiedPartHashes?: readonly string[]
     verifiedFormatVersion?: number
     paletteProof?: PintaPaletteCommitProof & { accountId: string }
+    studioProof?: StudioSealedCommitProof
   }): Promise<CreationCommitOutcome> {
     if (!Number.isInteger(input.revision) || input.revision <= 0) {
       throw new ValidationError('Revisão inválida')
@@ -485,6 +505,7 @@ export class CommitCreationUploadService {
     const uploadedParts = input.uploadedParts ?? []
     if (
       isStudioFormatTool(input.tool) &&
+      !input.studioProof &&
       (!input.verifiedPartHashes || input.verifiedFormatVersion === undefined)
     )
       throw new ValidationError(
@@ -521,6 +542,7 @@ export class CommitCreationUploadService {
         ? { verifiedFormatVersion: input.verifiedFormatVersion }
         : {}),
       ...(input.paletteProof ? { paletteProof: input.paletteProof } : {}),
+      ...(input.studioProof ? { studioProof: input.studioProof } : {}),
       now: this.clock(),
       limits: {
         maxItemBytes: CREATION_LIMITS.maxItemBytes,
@@ -547,10 +569,11 @@ export class CommitCreationUploadService {
       }
       throw new CreationRevisionMismatchError()
     }
-    const record = result.paletteItem
+    const confirmed = result.studioSeal?.item ?? result.paletteItem
+    const record = confirmed
       ? null
       : await this.creations.get(input.userId, input.tool, input.itemId)
-    const item = result.paletteItem ?? (record && toCreationSummary(record))
+    const item = confirmed ?? (record && toCreationSummary(record))
     if (!item) throw new CreationNotFoundError()
     const releasedStorageKeys = [
       ...(result.previousStorageRef ? [result.previousStorageRef] : []),
@@ -571,6 +594,7 @@ export class CommitCreationUploadService {
       previousStorageKey: result.previousStorageRef,
       releasedStorageKeys,
       ...(result.paletteHead ? { paletteHead: result.paletteHead } : {}),
+      ...(result.studioSeal ? { studioSeal: result.studioSeal } : {}),
     }
   }
 }
@@ -629,6 +653,7 @@ export class DeleteCreationService {
     baseRevision: number,
     maxFormatVersion = 1,
     paletteWrite?: PintaPaletteBase & { accountId: string },
+    studioSeal?: StudioSealedBase & { accountId: string },
   ): Promise<{
     deleted: boolean
     storageKey: string | null
@@ -636,6 +661,7 @@ export class DeleteCreationService {
     storageKeys: string[]
     revision: number
     paletteHead?: PintaPaletteHead
+    studioHead?: StudioSealedHead
   }> {
     if (!Number.isInteger(baseRevision) || baseRevision < 0) {
       throw new ValidationError('Revisão-base inválida')
@@ -651,6 +677,7 @@ export class DeleteCreationService {
       this.clock(),
       maxFormatVersion,
       paletteWrite,
+      studioSeal,
     )
     if (!result.ok && result.reason === 'client-outdated') {
       throw new CreationClientOutdatedError(result.requiredVersion)
@@ -670,6 +697,7 @@ export class DeleteCreationService {
       ],
       revision: result.revision,
       ...(result.paletteHead ? { paletteHead: result.paletteHead } : {}),
+      ...(result.studioHead ? { studioHead: result.studioHead } : {}),
     }
   }
 }

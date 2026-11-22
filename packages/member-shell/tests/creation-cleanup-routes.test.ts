@@ -244,7 +244,7 @@ test.each([
   }).creationCleanupWorker
   expect((await route.POST(request())).status).toBe(200)
   expect(claimBodies[0]).toEqual({
-    scopes: enabled ? ['pensa', 'gallery', 'pinta'] : ['pensa', 'gallery'],
+    scopes: ['pensa', 'gallery', ...(enabled ? ['pinta'] : []), 'studio-seal'],
   })
   expect(deleted).toEqual(enabled ? [keys] : [])
   expect(paths.includes('/members/internal/creation-cleanups/pinta-unit/complete')).toBe(enabled)

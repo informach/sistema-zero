@@ -43,6 +43,18 @@ export interface CreationsRoutesDeps {
     clock: () => Date
     qaProfiles: readonly PintaCausalViewer[]
   }
+  studioSeal?: {
+    repository: Record<
+      'kids' | 'adult',
+      import('../../../infrastructure/persistence/drizzle/creations.repository').DrizzleCreationsRepository
+    >
+    clock: () => Date
+    qaProfiles: readonly PintaCausalViewer[]
+    authoring: Pick<
+      import('../../../application/studio/free-studio-access.service').FreeStudioAccessService,
+      'execute'
+    >
+  }
   list: ListCreationsService
   reserveUpload: ReserveCreationUploadService
   commitUpload: CommitCreationUploadService

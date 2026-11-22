@@ -6,7 +6,7 @@ import type { GatewayModule } from '../server/gateway'
 import { r2DeleteObjectsUgc, r2DeleteUgcPrefixes } from '../server/r2'
 
 interface CleanupJob {
-  scope?: 'pensa' | 'gallery' | 'pinta'
+  scope?: 'pensa' | 'gallery' | 'pinta' | 'studio-seal'
   id: string
   accountId: string
   userIds: string[]
@@ -17,6 +17,9 @@ interface CleanupJob {
 
 const pintaObjectKey =
   /^creations\/(?:adult\/)?[0-9a-f-]{36}\/pinta\/[A-Za-z0-9_-]{1,64}\/(?:[1-9]\d*\.json\.gz|units\/[0-9a-f-]{36}\/[1-9]\d*\.(?:upload|sealed)\.gz)$/
+
+const studioObjectKey =
+  /^creations\/(?:adult\/)?[0-9a-f-]{36}\/studio\/[A-Za-z0-9_-]{1,64}\/(?:[1-9]\d*\.json\.gz|parts\/[a-f0-9]{64}\.[1-9]\d*\.gz|seals\/[0-9a-f-]{36}\/(?:upload|sealed)\/(?:project|parts\/[a-f0-9]{64})\.gz)$/
 
 function authorized(request: Request, expected: string): boolean {
   const value = request.headers.get('authorization')
@@ -54,7 +57,7 @@ export function createCreationCleanupWorkerRoutes(deps: {
         const pintaEnabled =
           deps.pintaCausalEnabled?.() ??
           (env.PINTA_CAUSAL_CANDIDATE === '1' || env.PINTA_PALETTE_WRITE_CANDIDATE === '1')
-        const scopes = pintaEnabled ? ['pensa', 'gallery', 'pinta'] : ['pensa', 'gallery']
+        const scopes = ['pensa', 'gallery', ...(pintaEnabled ? ['pinta'] : []), 'studio-seal']
         let rewardsFailed = false
         try {
           const drained = await deps.gateway.gatewayFetchHmac(
@@ -84,15 +87,16 @@ export function createCreationCleanupWorkerRoutes(deps: {
             )
           }
           try {
-            if (job.scope === 'pinta') {
+            if (job.scope === 'pinta' || job.scope === 'studio-seal') {
+              const keyShape = job.scope === 'pinta' ? pintaObjectKey : studioObjectKey
               if (
-                !pintaEnabled ||
+                (job.scope === 'pinta' && !pintaEnabled) ||
                 job.prefixes.length !== 0 ||
                 job.userIds.length !== 0 ||
                 !Array.isArray(job.objectKeys) ||
-                job.objectKeys.some((key) => typeof key !== 'string' || !pintaObjectKey.test(key))
+                job.objectKeys.some((key) => typeof key !== 'string' || !keyShape.test(key))
               )
-                throw new Error('Job de limpeza do Pinta inválido')
+                throw new Error('Job de limpeza de objetos inválido')
               await (deps.deleteObjects ?? r2DeleteObjectsUgc)(job.objectKeys)
             } else {
               await (deps.deletePrefixes ?? r2DeleteUgcPrefixes)(job.prefixes)

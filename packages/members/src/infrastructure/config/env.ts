@@ -148,6 +148,8 @@ const EnvSchema = z
     PINTA_CAUSAL_CANDIDATE: optionalBool(false).optional(),
     PINTA_PALETTE_WRITE_CANDIDATE: optionalBool(false).optional(),
     PINTA_CAUSAL_QA_PROFILES: z.string().optional().transform(parsePintaCausalQaProfiles),
+    STUDIO_SEALED_PARTS_CANDIDATE: optionalBool(false).optional(),
+    STUDIO_SEALED_QA_PROFILES: z.string().optional().transform(parsePintaCausalQaProfiles),
     // Dedicated Auth→Members admission credential; missing always denies this private route.
     MEMBERS_PROFILE_ADMISSION_TOKEN: z.string().min(16).optional(),
 
@@ -499,6 +501,14 @@ export function pintaPaletteWriteCandidateConfigured(env: Env): boolean {
     env.PINTA_PALETTE_WRITE_CANDIDATE &&
     env.INTERNAL_API_TOKEN &&
     env.PINTA_CAUSAL_QA_PROFILES.length
+  )
+}
+
+export function studioSealedCandidateConfigured(env: Env): boolean {
+  return !!(
+    env.STUDIO_SEALED_PARTS_CANDIDATE &&
+    env.INTERNAL_API_TOKEN &&
+    env.STUDIO_SEALED_QA_PROFILES.length
   )
 }
 

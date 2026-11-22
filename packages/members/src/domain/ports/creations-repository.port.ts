@@ -4,6 +4,16 @@ import type {
   PintaPaletteHead,
   PintaPaletteTicket,
 } from '@sistemazero/core/creations/pinta-palette-writer'
+import type {
+  StudioSealedReceipt,
+  StudioSealedRequirements,
+} from '@sistemazero/core/creations/studio-sealed-storage'
+import type {
+  StudioSealedBase,
+  StudioSealedCommitProof,
+  StudioSealedHead,
+  StudioSealedTicket,
+} from '@sistemazero/core/creations/studio-sealed-writer'
 import type { CourseAudience } from '../course/course'
 import type {
   CreationDraftState,
@@ -29,7 +39,7 @@ export interface CreationUploadInput {
    * PARTES que a revisão referencia (hash de conteúdo; `bytes` só precisa vir para as que o
    * item ainda não tem). Ausente/vazio = blob único (Pinta, clientes antigos).
    */
-  parts?: ReadonlyArray<{ hash: string; bytes?: number }>
+  parts?: ReadonlyArray<{ hash: string; bytes?: number; upload?: true }>
   /**
    * A revisão da nuvem que o APARELHO conhece para este item (0 = nunca viu / item novo).
    * Quando vem, a reserva só passa se for a revisão CORRENTE: um aparelho atrasado não
@@ -42,6 +52,7 @@ export interface CreationUploadInput {
   maxReadFormatVersion?: number
   /** Private writer negotiation, derived by the authenticated palette route. */
   paletteWrite?: PintaPaletteBase
+  studioSeal?: StudioSealedBase & { requirements: StudioSealedRequirements }
   /** Impressão digital do conteúdo (`v1:<sha256>`), promovida no commit. */
   contentFingerprint?: string | null
   now: Date
@@ -63,6 +74,7 @@ export type CreationUploadReservation =
       missingParts: CreationPartRef[]
       inventoryFloor?: number
       paletteTicket?: PintaPaletteTicket
+      studioSealTicket?: StudioSealedTicket
     }
   /** Partes faltantes vieram sem `bytes`: nada reservado; o cliente volta com eles. */
   | { ok: false; reason: 'parts-need-bytes'; hashes: string[] }
@@ -108,6 +120,7 @@ export type CreationCommitResult =
       releasedPartRefs: CreationPartRef[]
       paletteHead?: PintaPaletteHead
       paletteItem?: CreationSummary
+      studioSeal?: StudioSealedCommitResult
     }
   /** A revisão pedida JÁ é a corrente (retry de um 200 perdido): idempotente. */
   | {
@@ -117,6 +130,7 @@ export type CreationCommitResult =
       releasedPartRefs: []
       paletteHead?: PintaPaletteHead
       paletteItem?: CreationSummary
+      studioSeal?: StudioSealedCommitResult
     }
   /** Não é a revisão reservada (upload velho, outro navegador reservou depois, nada reservado). */
   | {
@@ -135,8 +149,15 @@ export type CreationDeleteResult =
       partRefs: CreationPartRef[]
       revision: number
       paletteHead?: PintaPaletteHead
+      studioHead?: StudioSealedHead
     }
   | { ok: false; reason: 'stale-base'; currentRevision: number }
+
+export interface StudioSealedCommitResult {
+  studioHead: StudioSealedHead
+  item: CreationSummary
+  studioSealReceipt: StudioSealedReceipt
+}
 
 export interface CreationsRepository {
   readonly audience?: CourseAudience
@@ -195,6 +216,7 @@ export interface CreationsRepository {
     verifiedPartHashes?: readonly string[]
     verifiedFormatVersion?: number
     paletteProof?: PintaPaletteCommitProof & { accountId: string }
+    studioProof?: StudioSealedCommitProof
     now: Date
     /** Revalidados no commit, depois do PUT, sob lock por perfil. */
     limits: CreationUploadInput['limits']
@@ -214,5 +236,6 @@ export interface CreationsRepository {
     now: Date,
     maxFormatVersion?: number,
     paletteWrite?: PintaPaletteBase & { accountId: string },
+    studioSeal?: StudioSealedBase & { accountId: string },
   ): Promise<CreationDeleteResult>
 }

@@ -25,6 +25,7 @@ import type {
   CreationStoragePartRef,
   StudioSealedReceipt,
 } from '@sistemazero/core/creations/studio-sealed-storage'
+import type { StudioSealedTicket } from '@sistemazero/core/creations/studio-sealed-writer'
 import type { HelpTutorialDocument } from '@sistemazero/core/help'
 import type {
   AdultCreatorCapability,
@@ -2284,6 +2285,8 @@ export const creations = members.table(
     pendingPaletteWrite: jsonb('pending_palette_write').$type<PintaPaletteTicket>(),
     paletteWriteReceipt: jsonb('palette_write_receipt').$type<PintaPaletteCommitProof>(),
     studioSealReceipt: jsonb('studio_seal_receipt').$type<StudioSealedReceipt>(),
+    pendingStudioSeal: jsonb('pending_studio_seal').$type<StudioSealedTicket>(),
+    studioSealProofSha256: varchar('studio_seal_proof_sha256', { length: 64 }),
     /** Bytes reservados (o BFF assina exatamente esse Content-Length; o commit promove). */
     pendingBytes: integer('pending_bytes'),
     /** Nome/kind/updatedAt/thumb que o commit vai promover — a lista NÃO vê. */
@@ -2332,6 +2335,47 @@ export const creations = members.table(
 )
 
 /** Survives tombstones and abandoned reservations. Scoped to the inventory where IDs resolve. */
+/** Durable per-item write authority survives physical compaction of a Studio tombstone. */
+export const studioSealedHeads = members.table(
+  'studio_sealed_heads',
+  {
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    audience: text('audience').$type<CourseAudience>().notNull(),
+    itemId: varchar('item_id', { length: 64 }).notNull(),
+    generation: uuid('generation').notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.audience, t.itemId] }),
+    index('studio_sealed_heads_account_idx').on(t.accountId),
+    check('studio_sealed_heads_audience_check', sql`${t.audience} in ('adult', 'kids')`),
+  ],
+)
+
+/** Exact staged/immutable addresses, registered before a presign may exist. */
+export const studioSealedObjects = members.table(
+  'studio_sealed_objects',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    audience: text('audience').$type<CourseAudience>().notNull(),
+    itemId: varchar('item_id', { length: 64 }).notNull(),
+    objectKey: text('object_key').notNull(),
+    partNonce: uuid('part_nonce'),
+    partHash: varchar('part_hash', { length: 64 }),
+    notBefore: timestamp('not_before', { withTimezone: true }).notNull(),
+    lockedAt: timestamp('locked_at', { withTimezone: true }),
+    attempts: integer('attempts').notNull().default(0),
+  },
+  (t) => [
+    uniqueIndex('studio_sealed_objects_key_uq').on(t.objectKey),
+    index('studio_sealed_objects_due_idx').on(t.notBefore),
+    index('studio_sealed_objects_account_idx').on(t.accountId),
+    check('studio_sealed_objects_audience_check', sql`${t.audience} in ('adult', 'kids')`),
+  ],
+)
+
 export const creationInventoryFloors = members.table(
   'creation_inventory_floors',
   {

@@ -157,6 +157,7 @@ import {
   type Env,
   pintaCausalCandidateConfigured,
   pintaPaletteWriteCandidateConfigured,
+  studioSealedCandidateConfigured,
 } from './infrastructure/config/env'
 import { loadStudioAuthoringPolicy } from './infrastructure/config/studio-authoring-policy'
 import { createAdminPublicationMediaClient } from './infrastructure/course-publication/admin-media.client'
@@ -1520,6 +1521,16 @@ export async function createApplication(env: Env): Promise<Application> {
       internalToken: env.INTERNAL_API_TOKEN,
     },
     creations: {
+      ...(studioSealedCandidateConfigured(env)
+        ? {
+            studioSeal: {
+              repository: { kids: creationsRepo, adult: adultCreationsRepo },
+              clock,
+              qaProfiles: env.STUDIO_SEALED_QA_PROFILES,
+              authoring: freeStudioAccess,
+            },
+          }
+        : {}),
       ...(pintaPaletteWriteCandidateConfigured(env)
         ? {
             palette: {

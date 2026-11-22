@@ -8,9 +8,12 @@ import {
   type StudioSealedReceipt,
   studioSealedBlobKey,
 } from '@sistemazero/core/creations/studio-sealed-storage'
+import { sql } from 'drizzle-orm'
 import { createApplication } from '../../src/composition-root'
 import { loadEnv } from '../../src/infrastructure/config/env'
+import type { Database } from '../../src/infrastructure/persistence/drizzle/db'
 import { creations } from '../../src/infrastructure/persistence/drizzle/schema'
+import { authorizeStudioTransaction } from '../../src/infrastructure/persistence/drizzle/studio-sealed-write-state'
 import { kidsJourneyTestTarget, openKidsJourneyTestDatabase } from './kids-journey-database'
 import { nativePensa } from './pensa-native-fixture'
 
@@ -47,6 +50,13 @@ describe.skipIf(!target)('Studio reader against real Members and PostgreSQL', ()
     await db?.close()
   })
 
+  function fixtureWrite<T>(change: (tx: Pick<Database, 'execute' | 'insert'>) => Promise<T>) {
+    return db.db.transaction(async (tx) => {
+      await authorizeStudioTransaction(tx)
+      return change(tx)
+    })
+  }
+
   async function seed(audience: 'kids' | 'adult') {
     const userId = randomUUID()
     const owner = {
@@ -72,23 +82,25 @@ describe.skipIf(!target)('Studio reader against real Members and PostgreSQL', ()
     }
     const storageRef = studioSealedBlobKey(owner, receipt.nonce, 'sealed')
     const now = new Date()
-    await db.db.insert(creations).values({
-      ...owner,
-      id: randomUUID(),
-      tool: 'studio',
-      kind: 'classic',
-      name: 'Jogo selado',
-      itemUpdatedAt: now,
-      syncedAt: now,
-      createdAt: now,
-      formatVersion: 2,
-      revision: 4,
-      lastReservedRevision: 4,
-      bytes: 150,
-      storageRef,
-      studioSealReceipt: receipt,
-      parts: [part],
-    })
+    await fixtureWrite(async (tx) =>
+      tx.insert(creations).values({
+        ...owner,
+        id: randomUUID(),
+        tool: 'studio',
+        kind: 'classic',
+        name: 'Jogo selado',
+        itemUpdatedAt: now,
+        syncedAt: now,
+        createdAt: now,
+        formatVersion: 2,
+        revision: 4,
+        lastReservedRevision: 4,
+        bytes: 150,
+        storageRef,
+        studioSealReceipt: receipt,
+        parts: [part],
+      }),
+    )
     const request = (suffix: string, method = 'GET', body?: unknown, accountId = owner.accountId) =>
       fetch(
         `${origin}/members/creations/studio/${itemId}${suffix}${suffix.includes('?') ? '&' : '?'}audience=${audience}`,
@@ -169,9 +181,11 @@ describe.skipIf(!target)('Studio reader against real Members and PostgreSQL', ()
     ).toBe(409)
     expect((await request('', 'DELETE', { baseRevision: 4, maxFormatVersion: 3 })).status).toBe(409)
 
-    await db.sql`update members.creations
+    await fixtureWrite(async (tx) =>
+      tx.execute(sql`update members.creations
       set studio_seal_receipt = jsonb_set(studio_seal_receipt, '{requirements,envelopeVersion}', '3'::jsonb)
-      where user_id = ${owner.userId} and tool = 'studio' and item_id = ${itemId}`
+      where user_id = ${owner.userId} and tool = 'studio' and item_id = ${itemId}`),
+    )
     expect((await request(`/download?studioReader=${STUDIO_SEALED_STORAGE_READER}`)).status).toBe(
       409,
     )
@@ -185,8 +199,10 @@ describe.skipIf(!target)('Studio reader against real Members and PostgreSQL', ()
       deleted_at: null,
     })
 
-    await db.sql`update members.creations set studio_seal_receipt = null, parts = '[]'::jsonb
-      where user_id = ${owner.userId} and tool = 'studio' and item_id = ${itemId}`
+    await fixtureWrite(async (tx) =>
+      tx.execute(sql`update members.creations set studio_seal_receipt = null, parts = '[]'::jsonb
+      where user_id = ${owner.userId} and tool = 'studio' and item_id = ${itemId}`),
+    )
     expect((await request(`/download?studioReader=${STUDIO_SEALED_STORAGE_READER}`)).status).toBe(
       409,
     )
@@ -242,9 +258,11 @@ describe.skipIf(!target)('Studio reader against real Members and PostgreSQL', ()
       jsonSha256: 'b'.repeat(64),
       manifestBytes: 100,
     }
-    await db.sql`update members.creations set storage_ref = ${storageRef}, studio_seal_receipt = ${JSON.stringify(receipt)}::jsonb,
+    await fixtureWrite(async (tx) =>
+      tx.execute(sql`update members.creations set storage_ref = ${storageRef}, studio_seal_receipt = ${JSON.stringify(receipt)}::jsonb,
       revision = 2, last_reserved_revision = 2, bytes = 100, format_version = 2
-      where user_id = ${fixture.actor.profileId} and tool = 'studio' and item_id = ${game.creationId}`
+      where user_id = ${fixture.actor.profileId} and tool = 'studio' and item_id = ${game.creationId}`),
+    )
 
     expect(
       await rejectedProtection({

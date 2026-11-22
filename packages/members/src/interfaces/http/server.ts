@@ -20,7 +20,11 @@ import type { AuthorizeLiveRuntimeService } from '../../application/studio/autho
 import type { AuthorizePublicRuntimeService } from '../../application/studio/authorize-public-runtime.service'
 import type { AuthorizePythonAnalysisService } from '../../application/studio/authorize-python-analysis.service'
 import type { LiveBenefitsPort } from '../../domain/ports/live-benefits.port'
-import { type Env, pintaCausalCandidateConfigured } from '../../infrastructure/config/env'
+import {
+  type Env,
+  pintaCausalCandidateConfigured,
+  studioSealedCandidateConfigured,
+} from '../../infrastructure/config/env'
 import type { CloudflareSfuMediaProvider } from '../../infrastructure/live/cloudflare-sfu.provider'
 import { liveMediaRoutes } from '../../infrastructure/live/live-media.routes'
 import { liveRecordingRoutes } from '../../infrastructure/live/live-recording.routes'
@@ -66,6 +70,7 @@ import { studioAiUsageRoutes } from './routes/studio-ai-usage.routes'
 import { studioBuilderRoutes } from './routes/studio-builder.routes'
 import { studioPublicRuntimeRoutes } from './routes/studio-public-runtime.routes'
 import { studioPythonAnalysisRoutes } from './routes/studio-python-analysis.routes'
+import { studioSealedWriteRoutes } from './routes/studio-sealed-writes.routes'
 import { type WebhooksRoutesDeps, webhooksRoutes } from './routes/webhooks.routes'
 
 export interface HttpDeps {
@@ -141,13 +146,17 @@ const CENARIOS_DOCUMENTO_BODY_BYTES = 8 * 1024 * 1024 + 64 * 1024
 // tasks): o teto padrão de 64 KB barraria payloads legítimos. Teto FIXO de 1 MB
 // (o gateway já capa em 512 KB na borda — este é o backstop interno, mesmo
 // racional do MAX_STUDIO_BODY_BYTES).
-const PINTA_CAUSAL_PROOF_BODY_BYTES = 2 * 1024 * 1024
+const CREATION_PROOF_BODY_BYTES = 2 * 1024 * 1024
 const PINTA_CAUSAL_PROOF_PATH =
   /^\/members\/internal\/creations\/pinta\/(?:units\/(?:reserve|attest)|backfill\/attest)$/
+const STUDIO_SEALED_PROOF_PATH =
+  /^\/members\/internal\/creations\/studio\/seal\/(?:reserve|commit)$/
 
 function bodyLimitForPath(pathname: string, env: Env): number {
   if (pintaCausalCandidateConfigured(env) && PINTA_CAUSAL_PROOF_PATH.test(pathname))
-    return PINTA_CAUSAL_PROOF_BODY_BYTES
+    return CREATION_PROOF_BODY_BYTES
+  if (studioSealedCandidateConfigured(env) && STUDIO_SEALED_PROOF_PATH.test(pathname))
+    return CREATION_PROOF_BODY_BYTES
   // O resumo do pacote (inventário + procedência); o manifesto em si nunca vem no corpo.
   if (pathname === '/members/internal/cenarios/publicacoes/confirmar')
     return MAX_BYTES_DO_RESUMO_DE_PUBLICACAO
@@ -212,7 +221,9 @@ export function createServer(deps: HttpDeps) {
     CENARIOS_DOCUMENTO_BODY_BYTES,
     deps.env.MAX_REQUEST_BODY_BYTES,
     deps.env.MAX_STUDIO_BODY_BYTES,
-    pintaCausalCandidateConfigured(deps.env) ? PINTA_CAUSAL_PROOF_BODY_BYTES : 0,
+    pintaCausalCandidateConfigured(deps.env) || studioSealedCandidateConfigured(deps.env)
+      ? CREATION_PROOF_BODY_BYTES
+      : 0,
     1024 * 1024,
   )
   const app = new Elysia({
@@ -340,6 +351,7 @@ export function createServer(deps: HttpDeps) {
     .use(creationsRoutes(deps.creations))
     .use(pintaCausalRoutes(deps.creations))
     .use(pintaPaletteWriteRoutes(deps.creations))
+    .use(studioSealedWriteRoutes(deps.creations))
     .use(cenariosRoutes(deps.cenarios))
     .use(cenariosPublicacoesRoutes(deps.cenarios))
     .use(deps.adultProfiles ? adultProfileRoutes(deps.adultProfiles) : new Elysia())

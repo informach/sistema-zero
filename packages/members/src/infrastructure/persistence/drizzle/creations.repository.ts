@@ -1,5 +1,9 @@
-import { randomUUID } from 'node:crypto'
-import { PINTA_INVENTORY_READER_VERSION, pintaInventoryFloor } from '@sistemazero/core/creations'
+import { createHash, randomUUID } from 'node:crypto'
+import {
+  canonicalJson,
+  PINTA_INVENTORY_READER_VERSION,
+  pintaInventoryFloor,
+} from '@sistemazero/core/creations'
 import type { PintaCausalViewer } from '@sistemazero/core/creations/pinta-causal'
 import {
   type PintaPaletteBase,
@@ -12,6 +16,12 @@ import {
   StudioSealedReceiptSchema,
   studioSealedBlobKey,
 } from '@sistemazero/core/creations/studio-sealed-storage'
+import {
+  type StudioSealedBase,
+  type StudioSealedCommitProof,
+  type StudioSealedPlannedPart,
+  StudioSealedTicketSchema,
+} from '@sistemazero/core/creations/studio-sealed-writer'
 import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
 import { and, desc, eq, inArray, isNotNull, isNull, lt, or, sql } from 'drizzle-orm'
 import type { CourseAudience } from '../../../domain/course/course'
@@ -36,6 +46,7 @@ import {
 } from '../../../domain/creations/palette-library'
 import { PintaCausalError } from '../../../domain/creations/pinta-causal-graph'
 import { PintaPaletteWriteError } from '../../../domain/creations/pinta-palette-write'
+import { StudioSealedWriteError } from '../../../domain/creations/studio-sealed-write'
 import type {
   CreationCommitResult,
   CreationListPage,
@@ -59,6 +70,20 @@ import {
   requireLegacyPaletteWriter,
 } from './pinta-palette-write-state'
 import { accountDeletionFences, creationInventoryFloors, creations } from './schema'
+import { retireStudioRevision, trackStudioSeal } from './studio-sealed-retirement'
+import {
+  activeStudioTicket,
+  authorizeStudioTransaction,
+  checkStudioBase,
+  ensureStudioAccount,
+  newStudioTicket,
+  proveStudioSealedParts,
+  publishStudioGeneration,
+  requireLegacyStudioWriter,
+  type StudioSealOwner,
+  studioGeneration,
+  studioHead,
+} from './studio-sealed-write-state'
 
 async function inventoryFloor(
   db: Pick<Database, 'select'>,
@@ -202,7 +227,20 @@ const toRecord = (row: Row): CreationRecord => ({
 
 const sealedParts = StudioSealedPartRefSchema.array().max(128)
 
-function confirmedParts(row: Row): Pick<CreationRecord, 'parts' | 'studioSealReceipt'> {
+function confirmedParts(
+  row: Pick<
+    Row,
+    | 'studioSealReceipt'
+    | 'storageRef'
+    | 'parts'
+    | 'tool'
+    | 'userId'
+    | 'itemId'
+    | 'audience'
+    | 'formatVersion'
+    | 'bytes'
+  >,
+): Pick<CreationRecord, 'parts' | 'studioSealReceipt'> {
   if (!hasStudioSealedStorage(row)) return { parts: sanitizeParts(row.parts) }
   const receipt = StudioSealedReceiptSchema.safeParse(row.studioSealReceipt)
   const parts = sealedParts.safeParse(row.parts)
@@ -219,6 +257,18 @@ function confirmedParts(row: Row): Pick<CreationRecord, 'parts' | 'studioSealRec
     throw new StudioStorageProtocolError()
   }
   return { studioSealReceipt: receipt.data, parts: parts.data }
+}
+
+function planStudioParts(
+  parts: readonly CreationPartRef[],
+  missing: readonly CreationPartRef[],
+): StudioSealedPlannedPart[] {
+  const uploaded = new Set(missing.map((part) => part.hash))
+  return parts.map((part) => {
+    if (uploaded.has(part.hash)) return { source: 'upload', hash: part.hash, bytes: part.bytes }
+    if ('rev' in part) return { source: 'legacy', ...part }
+    return { source: 'sealed', ...part }
+  })
 }
 
 /**
@@ -366,6 +416,10 @@ export class DrizzleCreationsRepository implements CreationsRepository {
               isNull(creations.pendingPaletteWrite),
               sql`(${creations.pendingPaletteWrite}->>'expiresAt')::timestamptz <= clock_timestamp()`,
             ),
+            or(
+              isNull(creations.pendingStudioSeal),
+              sql`(${creations.pendingStudioSeal}->>'expiresAt')::timestamptz <= clock_timestamp()`,
+            ),
             lt(creations.deletedAt, cutoff),
           ),
         )
@@ -426,6 +480,67 @@ export class DrizzleCreationsRepository implements CreationsRepository {
             }
           : null
       return { paletteHead: head, download }
+    })
+  }
+
+  private readStudioState<T>(
+    owner: StudioSealOwner,
+    read: (row: Row | undefined, generation: string | null) => T,
+  ): Promise<T> {
+    if (owner.audience !== this.audience) throw new StudioSealedWriteError('ticket-invalid')
+    return this.db.transaction(async (tx) => {
+      await tx.execute(
+        sql`select pg_advisory_xact_lock(hashtextextended(${`creation-quota:${owner.userId}`}, 0))`,
+      )
+      await ensureStudioAccount(tx, owner.accountId)
+      const [row] = await tx
+        .select()
+        .from(creations)
+        .where(whereItem(owner.userId, 'studio', owner.itemId, owner.audience))
+        .limit(1)
+      if (row && row.accountId !== owner.accountId)
+        throw new StudioSealedWriteError('ticket-invalid')
+      return read(row, await studioGeneration(tx, owner))
+    })
+  }
+
+  getStudioSealHead(owner: StudioSealOwner) {
+    return this.readStudioState(owner, (row, generation) => ({
+      studioHead: studioHead(row, generation),
+    }))
+  }
+
+  getStudioSealTicket(owner: StudioSealOwner, nonce: string, revision: number, now: Date) {
+    return this.readStudioState(owner, (row, generation) => {
+      if (!row) throw new StudioSealedWriteError('ticket-invalid')
+      const head = studioHead(row, generation)
+      if (
+        head.adopted &&
+        head.exists &&
+        head.revision === revision &&
+        row.studioSealReceipt?.nonce === nonce
+      ) {
+        const receipt = confirmedParts(row).studioSealReceipt
+        if (!receipt) throw new StudioSealedWriteError('ticket-invalid')
+        return {
+          committed: true as const,
+          studioHead: head,
+          item: toSummary(row),
+          studioSealReceipt: receipt,
+        }
+      }
+      const pending = StudioSealedTicketSchema.safeParse(row.pendingStudioSeal)
+      if (
+        !pending.success ||
+        pending.data.nonce !== nonce ||
+        pending.data.revision !== revision ||
+        row.pendingRevision !== revision ||
+        canonicalJson(pending.data.scope) !== canonicalJson(owner) ||
+        !activeStudioTicket(pending.data, now)
+      )
+        throw new StudioSealedWriteError('ticket-invalid')
+      checkStudioBase(head, pending.data.baseRevision, pending.data.baseGeneration)
+      return { committed: false as const, ticket: pending.data }
     })
   }
 
@@ -540,15 +655,34 @@ export class DrizzleCreationsRepository implements CreationsRepository {
           parts: creations.parts,
           deletedAt: creations.deletedAt,
           studioSealReceipt: creations.studioSealReceipt,
+          pendingStudioSeal: creations.pendingStudioSeal,
         })
         .from(creations)
         .where(whereItem(input.userId, input.tool, input.itemId, this.audience))
         .limit(1)
         .for('update')
 
-      if (existing && hasStudioSealedStorage(existing)) throw new StudioStorageProtocolError()
-
       const actor = { userId: input.userId, accountId: input.accountId, audience: this.audience }
+      const studioOwner = { ...actor, itemId: input.itemId }
+      const studioAuthority =
+        input.tool === 'studio' ? await studioGeneration(tx, studioOwner) : null
+      const observedStudio =
+        input.tool === 'studio' ? studioHead(existing, studioAuthority) : undefined
+      if (input.studioSeal) {
+        if (
+          !observedStudio ||
+          (existing && existing.accountId !== input.accountId) ||
+          input.studioSeal.requirements.projectFormat !== input.formatVersion ||
+          input.studioSeal.requirements.materials !== 'legacy' ||
+          (existing && hasStudioSealedStorage(existing) && !observedStudio.adopted)
+        )
+          throw new StudioSealedWriteError('ticket-invalid')
+        checkStudioBase(observedStudio, input.baseRevision, input.studioSeal.baseGeneration)
+      } else {
+        if (observedStudio)
+          requireLegacyStudioWriter(observedStudio, existing?.pendingStudioSeal, input.now)
+        if (existing && hasStudioSealedStorage(existing)) throw new StudioStorageProtocolError()
+      }
       const reservedPalette =
         input.tool === PALETTE_LIBRARY_TOOL && input.itemId === PALETTE_LIBRARY_ITEM_ID
       const authority = reservedPalette ? await paletteGeneration(tx, actor) : null
@@ -610,16 +744,20 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       // o cliente volta com eles — nada reservado até lá).
       const committedParts = new Map<string, CreationPartRef>(
         alive && existing.storageRef
-          ? sanitizeParts(existing.parts).map((part) => [part.hash, part] as const)
+          ? confirmedParts({ ...existing, ...studioOwner, tool: input.tool }).parts.map(
+              (part) => [part.hash, part] as const,
+            )
           : [],
       )
+      if (input.studioSeal)
+        for (const part of input.parts ?? []) if (part.upload) committedParts.delete(part.hash)
       // A revisão desta reserva (1 para linha nova; o contador NUNCA volta): é a chave no R2
       // do manifesto e das partes que subirem agora.
       const lastRevision = existing?.lastReservedRevision ?? 0
       // Uma reserva de paletas deve ultrapassar a revisão publicada e a pendente,
       // inclusive em linhas históricas com contador desalinhado.
       const revision =
-        (reservedPalette
+        (reservedPalette || input.studioSeal
           ? Math.max(lastRevision, existing?.revision ?? 0, existing?.pendingRevision ?? 0)
           : lastRevision) + 1
       const paletteTicket =
@@ -664,6 +802,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       const currentRevision = existing?.revision ?? 0
       if (
         !paletteTicket &&
+        !input.studioSeal &&
         input.baseRevision !== undefined &&
         input.baseRevision !== currentRevision
       ) {
@@ -672,13 +811,28 @@ export class DrizzleCreationsRepository implements CreationsRepository {
 
       const nextFloor = pintaInventoryFloor(input.tool, input.kind, formatVersion)
       if (nextFloor > floor) await raiseInventoryFloor(tx, input, this.audience, nextFloor)
+      const studioSealTicket =
+        input.studioSeal && observedStudio
+          ? newStudioTicket(
+              studioOwner,
+              observedStudio,
+              { ...input, revision },
+              input.studioSeal.requirements,
+              planStudioParts(resolved.all, resolved.missing),
+            )
+          : undefined
       const receipt = {
         ...(Math.max(floor, nextFloor) > 1 ? { inventoryFloor: Math.max(floor, nextFloor) } : {}),
         ...(paletteTicket ? { paletteTicket } : {}),
+        ...(studioSealTicket ? { studioSealTicket } : {}),
       }
       if (paletteTicket) {
         await authorizePaletteTransaction(tx)
         await trackPaletteTicket(tx, actor, paletteTicket)
+      }
+      if (studioSealTicket) {
+        await authorizeStudioTransaction(tx)
+        await trackStudioSeal(tx, studioSealTicket)
       }
       const pending = {
         pendingRevision: 0,
@@ -688,12 +842,13 @@ export class DrizzleCreationsRepository implements CreationsRepository {
             : { revision, version: input.maxReadFormatVersion },
         pendingFormatVersion: formatVersion,
         pendingPaletteWrite: paletteTicket ?? null,
+        pendingStudioSeal: studioSealTicket ?? null,
         pendingBytes: totalBytes,
         pendingName: input.name,
         pendingKind: input.kind,
         pendingItemUpdatedAt: input.itemUpdatedAt,
         pendingThumb: input.thumb,
-        pendingParts: resolved.all,
+        pendingParts: studioSealTicket ? null : resolved.all,
         pendingContentFingerprint: input.contentFingerprint ?? null,
       }
       if (!existing) {
@@ -721,7 +876,12 @@ export class DrizzleCreationsRepository implements CreationsRepository {
           createdAt: input.now,
           syncedAt: input.now,
         })
-        return { ok: true, revision: 1, missingParts: resolved.missing, ...receipt }
+        return {
+          ok: true,
+          revision: 1,
+          missingParts: studioSealTicket ? [] : resolved.missing,
+          ...receipt,
+        }
       }
       // Contador que NUNCA volta: mesmo com uma reserva em voo (ou depois de apagar e
       // ressuscitar), a próxima ganha número — e chave no R2 — novos.
@@ -729,7 +889,12 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         .update(creations)
         .set({ ...pending, pendingRevision: revision, lastReservedRevision: revision })
         .where(whereItem(input.userId, input.tool, input.itemId, this.audience))
-      return { ok: true, revision, missingParts: resolved.missing, ...receipt }
+      return {
+        ok: true,
+        revision,
+        missingParts: studioSealTicket ? [] : resolved.missing,
+        ...receipt,
+      }
     })
   }
 
@@ -743,6 +908,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
     verifiedPartHashes?: readonly string[]
     verifiedFormatVersion?: number
     paletteProof?: PintaPaletteCommitProof & { accountId: string }
+    studioProof?: StudioSealedCommitProof
     now: Date
     limits: CreationUploadInput['limits']
   }): Promise<CreationCommitResult> {
@@ -763,6 +929,64 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       const reservedPalette =
         input.tool === PALETTE_LIBRARY_TOOL && input.itemId === PALETTE_LIBRARY_ITEM_ID
       const owner = { userId: input.userId, audience: this.audience } as const
+      const studioProof = input.studioProof
+      const studioScope = { ...owner, itemId: input.itemId }
+      const studioOwner = studioProof
+        ? { ...studioScope, accountId: studioProof.ticket.scope.accountId }
+        : undefined
+      const studioAuthority =
+        input.tool === 'studio' ? await studioGeneration(tx, studioOwner ?? studioScope) : null
+      const observedStudio = input.tool === 'studio' ? studioHead(row, studioAuthority) : undefined
+      const studioProofSha256 = studioProof
+        ? createHash('sha256').update(canonicalJson(studioProof)).digest('hex')
+        : undefined
+      if (studioProof && studioOwner) {
+        if (
+          !row ||
+          !observedStudio ||
+          canonicalJson(studioProof.ticket.scope) !== canonicalJson(studioOwner) ||
+          row.accountId !== studioOwner.accountId ||
+          studioProof.ticket.revision !== input.revision ||
+          studioProof.ticket.requirements.materials !== 'legacy'
+        )
+          throw new StudioSealedWriteError('ticket-invalid')
+        await ensureStudioAccount(tx, studioOwner.accountId)
+        if (
+          observedStudio.exists &&
+          observedStudio.adopted &&
+          row.revision === input.revision &&
+          row.studioSealProofSha256 === studioProofSha256 &&
+          row.studioSealReceipt?.nonce === studioProof.ticket.nonce
+        ) {
+          const studioSealReceipt = confirmedParts(row).studioSealReceipt
+          if (!studioSealReceipt) throw new StudioSealedWriteError('ticket-invalid')
+          return {
+            ok: true,
+            alreadyCommitted: true,
+            previousStorageRef: null,
+            releasedPartRefs: [],
+            studioSeal: { studioHead: observedStudio, item: toSummary(row), studioSealReceipt },
+          }
+        }
+        if (
+          !row.pendingStudioSeal ||
+          canonicalJson(row.pendingStudioSeal) !== canonicalJson(studioProof.ticket) ||
+          !activeStudioTicket(row.pendingStudioSeal, input.now) ||
+          row.pendingRevision !== input.revision ||
+          row.pendingBytes !==
+            studioProof.ticket.bytes +
+              studioProof.ticket.parts.reduce((sum, part) => sum + part.bytes, 0)
+        )
+          throw new StudioSealedWriteError('ticket-invalid')
+        checkStudioBase(
+          observedStudio,
+          studioProof.ticket.baseRevision,
+          studioProof.ticket.baseGeneration,
+        )
+        await authorizeStudioTransaction(tx)
+      } else if (observedStudio) {
+        requireLegacyStudioWriter(observedStudio, row?.pendingStudioSeal, input.now, input.revision)
+      }
       const authority = reservedPalette ? await paletteGeneration(tx, owner) : null
       const observedPalette = reservedPalette ? paletteHead(row, authority) : undefined
       const proof = input.paletteProof
@@ -812,7 +1036,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       }
       if (row?.pendingUnit) throw new PintaCausalError('operation-conflict', input.itemId)
       if (!row) return { ok: false }
-      if (hasStudioSealedStorage(row)) throw new StudioStorageProtocolError()
+      if (!studioProof && hasStudioSealedStorage(row)) throw new StudioStorageProtocolError()
       // Retry de um 200 perdido: a revisão pedida JÁ é a corrente. Idempotente — MESMO com
       // outra reserva em voo (`pending_revision` de outra aba): dizer 409 aqui faria o BFF
       // tratar a revisão corrente como "recusada" e apagar o blob VIVO do R2.
@@ -836,7 +1060,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       if (!proof && (reservedReader(row) ?? row.pendingFormatVersion ?? 1) < floor) {
         await tx
           .update(creations)
-          .set(clearPending())
+          .set({ ...clearPending(), pendingStudioSeal: null })
           .where(whereItem(input.userId, input.tool, input.itemId, this.audience))
         return { ok: false, reason: 'client-outdated', requiredVersion: floor }
       }
@@ -858,7 +1082,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       if (invalidIdentity) {
         await tx
           .update(creations)
-          .set(clearPending())
+          .set({ ...clearPending(), pendingStudioSeal: null })
           .where(whereItem(input.userId, input.tool, input.itemId, this.audience))
         return { ok: false, reason: 'palette-library-identity' }
       }
@@ -873,7 +1097,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         // inexistente. Limpa o pendente — o cliente reserva de novo (revisão nova).
         await tx
           .update(creations)
-          .set(clearPending())
+          .set({ ...clearPending(), pendingStudioSeal: null })
           .where(whereItem(input.userId, input.tool, input.itemId, this.audience))
         return { ok: false, reason: overBytes ? 'total-bytes' : 'items-per-tool' }
       }
@@ -881,7 +1105,11 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       // (o cliente confirma em `uploadedParts`; o BFF confere no R2 best-effort). A reserva
       // NÃO morre: um retry honesto pode passar.
       const formatVersion = row.pendingFormatVersion ?? 1
-      if (isStudioFormatTool(input.tool) && input.verifiedFormatVersion !== formatVersion)
+      if (
+        isStudioFormatTool(input.tool) &&
+        (studioProof?.receipt.requirements.projectFormat ?? input.verifiedFormatVersion) !==
+          formatVersion
+      )
         return { ok: false, reason: 'manifest-mismatch' }
       // Defesa contra reservas legadas de um deploy misto; o corpo do commit não escolhe formato.
       const requiredVersion = Math.max(
@@ -891,13 +1119,15 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       if (formatVersion < requiredVersion) {
         await tx
           .update(creations)
-          .set(clearPending())
+          .set({ ...clearPending(), pendingStudioSeal: null })
           .where(whereItem(input.userId, input.tool, input.itemId, this.audience))
         return { ok: false, reason: 'client-outdated', requiredVersion }
       }
-      const committed = row.deletedAt === null && row.storageRef ? sanitizeParts(row.parts) : []
+      const committed = row.deletedAt === null && row.storageRef ? confirmedParts(row).parts : []
       const committedSet = new Set(committed.map((part) => part.hash))
-      const pendingParts = sanitizeParts(row.pendingParts)
+      const pendingParts = studioProof
+        ? proveStudioSealedParts(studioProof)
+        : sanitizeParts(row.pendingParts)
       if (
         input.verifiedPartHashes &&
         (input.verifiedPartHashes.length !== pendingParts.length ||
@@ -908,9 +1138,14 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       const missing = pendingParts
         .filter((part) => !committedSet.has(part.hash) && !uploaded.has(part.hash))
         .map((part) => part.hash)
-      if (missing.length > 0) return { ok: false, reason: 'parts-missing', hashes: missing }
+      if (!studioProof && missing.length > 0)
+        return { ok: false, reason: 'parts-missing', hashes: missing }
       const storageRef =
-        proof && actor ? pintaPaletteBlobKey(actor, proof.ticket, 'sealed') : input.storageRef
+        studioProof && studioOwner
+          ? studioSealedBlobKey(studioOwner, studioProof.ticket.nonce, 'sealed')
+          : proof && actor
+            ? pintaPaletteBlobKey(actor, proof.ticket, 'sealed')
+            : input.storageRef
       const publish = tx
         .update(creations)
         .set({
@@ -922,6 +1157,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
           formatVersion,
           storageRef,
           ...(proof ? { paletteWriteReceipt: { ticket: proof.ticket, sha256: proof.sha256 } } : {}),
+          ...(studioProof ? { studioSealReceipt: studioProof.receipt, studioSealProofSha256 } : {}),
           bytes: row.pendingBytes,
           name: row.pendingName,
           kind: row.pendingKind,
@@ -930,12 +1166,37 @@ export class DrizzleCreationsRepository implements CreationsRepository {
           parts: pendingParts,
           contentFingerprint: row.pendingContentFingerprint,
           ...clearPending(),
+          pendingStudioSeal: null,
           // Item na lixeira que voltou a ser editado ressuscita — AGORA, com o blob no lugar.
           deletedAt: null,
           syncedAt: input.now,
         })
         .where(whereItem(input.userId, input.tool, input.itemId, this.audience))
       const previous = row.storageRef && row.storageRef !== storageRef ? row.storageRef : null
+      if (studioProof && studioOwner) {
+        const generation = studioAuthority ?? randomUUID()
+        await publishStudioGeneration(tx, studioOwner, generation)
+        const [published] = await publish.returning()
+        if (!published) throw new StudioSealedWriteError('ticket-invalid')
+        await retireStudioRevision(
+          tx,
+          studioOwner,
+          { storageRef: previous, revision: row.revision, parts: committed },
+          pendingParts,
+          input.now,
+        )
+        return {
+          ok: true,
+          alreadyCommitted: false,
+          previousStorageRef: null,
+          releasedPartRefs: [],
+          studioSeal: {
+            studioHead: studioHead(published, generation),
+            item: toSummary(published),
+            studioSealReceipt: studioProof.receipt,
+          },
+        }
+      }
       if (actor) {
         const generation = authority ?? randomUUID()
         await publishPaletteGeneration(tx, actor, generation)
@@ -972,9 +1233,10 @@ export class DrizzleCreationsRepository implements CreationsRepository {
     now: Date,
     maxFormatVersion = 1,
     paletteWrite?: PintaPaletteBase & { accountId: string },
+    studioSeal?: StudioSealedBase & { accountId: string },
   ): ReturnType<CreationsRepository['softDelete']> {
     return this.db.transaction(async (tx) => {
-      if (tool === 'pinta')
+      if (tool === 'pinta' || tool === 'studio')
         await tx.execute(
           sql`select pg_advisory_xact_lock(hashtextextended(${`creation-quota:${userId}`}, 0))`,
         )
@@ -994,14 +1256,46 @@ export class DrizzleCreationsRepository implements CreationsRepository {
           pendingRevision: creations.pendingRevision,
           pendingPaletteWrite: creations.pendingPaletteWrite,
           studioSealReceipt: creations.studioSealReceipt,
+          pendingStudioSeal: creations.pendingStudioSeal,
+          bytes: creations.bytes,
         })
         .from(creations)
         .where(whereItem(userId, tool, itemId, this.audience))
         .limit(1)
         .for('update')
-      if (row && hasStudioSealedStorage(row)) throw new StudioStorageProtocolError()
       const reservedPalette = tool === PALETTE_LIBRARY_TOOL && itemId === PALETTE_LIBRARY_ITEM_ID
       const owner = { userId, audience: this.audience } as const
+      const studioScope = { ...owner, itemId }
+      const studioOwner = studioSeal
+        ? { ...studioScope, accountId: studioSeal.accountId }
+        : undefined
+      const studioAuthority =
+        tool === 'studio' ? await studioGeneration(tx, studioOwner ?? studioScope) : null
+      const observedStudio = tool === 'studio' ? studioHead(row, studioAuthority) : undefined
+      if (studioSeal && studioOwner) {
+        if (
+          !observedStudio ||
+          (row && row.accountId !== studioOwner.accountId) ||
+          (row && hasStudioSealedStorage(row) && !observedStudio.adopted)
+        )
+          throw new StudioSealedWriteError('ticket-invalid')
+        await ensureStudioAccount(tx, studioOwner.accountId)
+        checkStudioBase(observedStudio, baseRevision, studioSeal.baseGeneration)
+        if (!row || (!observedStudio.exists && row.pendingRevision === null)) {
+          return {
+            ok: true,
+            deleted: false,
+            storageRef: null,
+            partRefs: [],
+            revision: 0,
+            studioHead: observedStudio,
+          }
+        }
+        await authorizeStudioTransaction(tx)
+      } else {
+        if (observedStudio) requireLegacyStudioWriter(observedStudio, row?.pendingStudioSeal, now)
+        if (row && hasStudioSealedStorage(row)) throw new StudioStorageProtocolError()
+      }
       const authority = reservedPalette ? await paletteGeneration(tx, owner) : null
       const observed = reservedPalette ? paletteHead(row, authority) : undefined
       const actor = paletteWrite ? { ...owner, accountId: paletteWrite.accountId } : undefined
@@ -1040,7 +1334,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         row.pendingFormatVersion = null
         row.pendingRevision = null
       }
-      if (!actor && baseRevision !== row.revision) {
+      if (!actor && !studioOwner && baseRevision !== row.revision) {
         return { ok: false, reason: 'stale-base', currentRevision: row.revision }
       }
       const requiredVersion = Math.max(floor, row.formatVersion, row.pendingFormatVersion ?? 1)
@@ -1049,6 +1343,14 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       }
       if (row.deletedAt !== null && row.pendingRevision === null) {
         return { ok: true, deleted: false, storageRef: null, partRefs: [], revision: row.revision }
+      }
+      const confirmedStudio =
+        studioOwner && row.storageRef ? confirmedParts({ ...row, ...studioOwner, tool }) : undefined
+      if (
+        confirmedStudio?.studioSealReceipt &&
+        confirmedStudio.studioSealReceipt.requirements.materials !== 'legacy'
+      ) {
+        throw new StudioStorageProtocolError()
       }
       await tx
         .update(creations)
@@ -1059,8 +1361,10 @@ export class DrizzleCreationsRepository implements CreationsRepository {
           layoutRevision: null,
           backfillTicket: null,
           ...(actor ? { paletteWriteReceipt: null } : {}),
+          ...(studioOwner ? { studioSealReceipt: null, studioSealProofSha256: null } : {}),
           // Cancela a reserva em voo (o commit dela cai em 409); o contador NÃO volta.
           ...clearPending(),
+          pendingStudioSeal: null,
           // O blob (e as partes) saem da linha — e do R2, pelo BFF: apagado não ocupa espaço
           // fora da quota.
           storageRef: null,
@@ -1070,6 +1374,25 @@ export class DrizzleCreationsRepository implements CreationsRepository {
           syncedAt: now,
         })
         .where(whereItem(userId, tool, itemId, this.audience))
+      if (studioOwner) {
+        const generation = randomUUID()
+        await publishStudioGeneration(tx, studioOwner, generation)
+        await retireStudioRevision(
+          tx,
+          studioOwner,
+          { ...row, parts: confirmedStudio?.parts ?? [] },
+          [],
+          now,
+        )
+        return {
+          ok: true,
+          deleted: row.deletedAt === null && row.storageRef !== null,
+          storageRef: null,
+          partRefs: [],
+          revision: 0,
+          studioHead: studioHead(undefined, generation),
+        }
+      }
       if (actor) {
         const generation = randomUUID()
         await publishPaletteGeneration(tx, actor, generation)
@@ -1114,7 +1437,7 @@ export function resolveParts(
     const known = committed.get(part.hash)
     if (known !== undefined) {
       // Conhecida: bytes e CHAVE (rev) são os do servidor — o declarado é ignorado.
-      all.push({ hash: part.hash, bytes: known.bytes, rev: known.rev })
+      all.push({ ...known })
       continue
     }
     if (part.bytes === undefined) {

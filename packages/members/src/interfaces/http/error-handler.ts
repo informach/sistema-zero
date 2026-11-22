@@ -28,6 +28,7 @@ import {
 } from '../../domain/creations/creation.errors'
 import { PintaCausalError } from '../../domain/creations/pinta-causal-graph'
 import { PintaPaletteWriteError } from '../../domain/creations/pinta-palette-write'
+import { StudioSealedWriteError } from '../../domain/creations/studio-sealed-write'
 import { HelpTutorialConflictError, HelpTutorialInvalidError } from '../../domain/help/help.errors'
 
 export type { ErrorEnvelope }
@@ -274,6 +275,16 @@ export function buildErrorResponse(input: {
         ...envelope('PINTA_CAUSAL_CONFLICT', error.reason),
         reason: error.reason,
         ...(error.itemId ? { itemId: error.itemId } : {}),
+      },
+    }
+  }
+  if (error instanceof StudioSealedWriteError) {
+    return {
+      status: 409,
+      body: {
+        ...envelope(error.code, error.message),
+        reason: error.reason,
+        ...(error.head ? { studioHead: error.head } : {}),
       },
     }
   }

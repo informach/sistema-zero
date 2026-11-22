@@ -60,6 +60,8 @@ import {
   studioBuilderJobs,
   studioBuilderProjectDeletions,
   studioLessonBindings,
+  studioSealedHeads,
+  studioSealedObjects,
   studioSubmissions,
   teacherBroadcastRecipients,
   teacherThreads,
@@ -520,6 +522,22 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
         .delete(pintaCausalUnits)
         .where(
           or(inArray(pintaCausalUnits.userId, userIds), eq(pintaCausalUnits.accountId, accountId)),
+        )
+      await tx
+        .delete(studioSealedObjects)
+        .where(
+          or(
+            inArray(studioSealedObjects.userId, userIds),
+            eq(studioSealedObjects.accountId, accountId),
+          ),
+        )
+      await tx
+        .delete(studioSealedHeads)
+        .where(
+          or(
+            inArray(studioSealedHeads.userId, userIds),
+            eq(studioSealedHeads.accountId, accountId),
+          ),
         )
       await tx
         .delete(creationInventoryFloors)
