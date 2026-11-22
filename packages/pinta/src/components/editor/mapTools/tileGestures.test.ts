@@ -1,7 +1,7 @@
 import { expect, it } from 'bun:test'
 import type { PointerEvent } from 'react'
 import { createTilemapAsset, createTilesetAsset, type TilemapAsset } from '../../../core/project'
-import { createEditorStore } from '../../../state/editorStore'
+import { createEditorStore, type PintaEditorStoreOptions } from '../../../state/editorStore'
 import { createSessionStore } from '../../../state/sessionStore'
 import { tileLayerAt } from '../../../testing/fixtures'
 import { addMapObject, createMapObject } from '../../../tiles/mapObjects'
@@ -12,7 +12,7 @@ import { createTileGestures, type TileGestureDeps } from './tileGestures'
 function prepare(
   map: TilemapAsset,
   recovery?: TilemapAsset,
-  acceptEdit?: Parameters<typeof createEditorStore>[0]['acceptEdit'],
+  acceptEdit?: PintaEditorStoreOptions['acceptEdit'],
 ) {
   const editor = createEditorStore({
     asset: map,

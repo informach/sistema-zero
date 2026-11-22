@@ -98,6 +98,13 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    ao texto de uma exceção de QA, resolvido pelo remoto; conteúdos 3D recebidos
    preservados. Provas em `qa/integracao-staging-f5b1ceca8-2026-11-21/`.
    Prosseguir à admissão e persistência regional; a etapa macro 1 segue aberta.
+   Admissão global de metadados implementada no store existente e no leitor de
+   conjuntos, com cache fraco por identidade imutável e recusa antes de host,
+   histórico/autosave e decodificação. Provas em
+   `qa/admissao-de-metadados-2026-11-21/`: suíte 2.650 e 55 testes focados.
+   O padrão público continua `PintaAsset`; a parametrização interna não ativa
+   oficina/IO 8. Seguir ao orçamento JSON com encoder efetivo, backup/transporte,
+   físico 3 e adaptadores antes de fechar este item ou promover os formatos.
 
 Na promoção do store, conferir também os orçamentos globais de metadados e JSON
 antes do histórico/autosave. A soma de objetos/propriedades em várias camadas

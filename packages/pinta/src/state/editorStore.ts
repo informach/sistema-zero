@@ -8,6 +8,7 @@
 import { createStore, type StoreApi } from 'zustand/vanilla'
 import { type PintaMemoryAsset, retainedAssetBytes, sharedAssetParts } from '../core/assetMemory'
 import { createHistory, type SharedPart } from '../core/history'
+import { RegionMetadataBudgetCache, regionDocumentMetadata } from '../core/mapDocumentBoundary'
 import type { PintaAsset } from '../core/project'
 
 export { assetBytes } from '../core/assetMemory'
@@ -16,12 +17,12 @@ export type PintaSaveState = 'saved' | 'pending' | 'saving' | 'error'
 
 export type PintaSaveResult = { ok: true } | { ok: false; error: string }
 
-export interface PintaEditorState {
-  asset: PintaAsset
+export interface PintaEditorState<Asset extends PintaMemoryAsset = PintaAsset> {
+  asset: Asset
   /** Último snapshot efetivamente confirmado pela persistência. */
-  savedAsset: PintaAsset
+  savedAsset: Asset
   /** Assets ligados ao estado vivo do editor; `null` até o primeiro remapeamento. */
-  linkedAssets: readonly PintaAsset[] | null
+  linkedAssets: readonly Asset[] | null
   /** Há uma revisão local que ainda não foi confirmada pela persistência. */
   dirty: boolean
   saveState: PintaSaveState
@@ -30,7 +31,7 @@ export interface PintaEditorState {
   canRedo: boolean
 
   /** Aplica a edição, grava história e agenda autosave. False se o host/linhagem recusar. */
-  commit(next: PintaAsset): boolean
+  commit(next: Asset): boolean
   /**
    * Como `commit`, mas a edição TAMBÉM remapeia ASSETS LIGADOS (ex.: editar uma
    * peça do tileset remapeia as células dos mapas dependentes). Os mapas entram
@@ -38,24 +39,26 @@ export interface PintaEditorState {
    * juntos. `before` = mapas antes; `after` = mapas remapeados (já com
    * updatedAt). A galeria só recebe o conjunto depois da persistência confirmar.
    */
-  commitLinked(next: PintaAsset, linked: { before: PintaAsset[]; after: PintaAsset[] }): boolean
+  commitLinked(next: Asset, linked: { before: Asset[]; after: Asset[] }): boolean
   /** Substitui SEM entrada de undo (ex.: rename vindo da galeria). */
-  replace(next: PintaAsset): void
+  replace(next: Asset): void
   /** Conditional gesture write; returns its surviving snapshot, or null if superseded/refused. */
-  replaceIfCurrent(expected: PintaAsset, next: PintaAsset): PintaAsset | null
+  replaceIfCurrent(expected: Asset, next: Asset): Asset | null
   /**
    * Fecha um gesto de VÁRIOS passos aplicados via `replace` (ex.: arrastar
    * pintando células do tilemap): grava o snapshot INICIAL do gesto no undo —
    * desfazer volta ao antes do arrasto inteiro, não célula a célula.
    */
-  commitGesture(base: PintaAsset): void
+  commitGesture(base: Asset): void
   undo(): void
   redo(): void
   /** Salva imediatamente tudo que estiver pendente e informa se confirmou. */
   flush(): Promise<PintaSaveResult>
 }
 
-export type PintaEditorStore = StoreApi<PintaEditorState>
+export type PintaEditorStore<Asset extends PintaMemoryAsset = PintaAsset> = StoreApi<
+  PintaEditorState<Asset>
+>
 
 /**
  * Snapshot de undo. Além do asset editado, carrega os ASSETS LIGADOS remapeados
@@ -63,23 +66,23 @@ export type PintaEditorStore = StoreApi<PintaEditorState>
  * juntos. `linkedMaps` só é não-nulo depois de um `commitLinked`; edições comuns
  * (pincel etc.) carregam o `linkedMaps` corrente adiante (mapas não mudaram).
  */
-interface EditorSnapshot {
-  asset: PintaAsset
-  linkedMaps: PintaAsset[] | null
+interface EditorSnapshot<Asset extends PintaMemoryAsset> {
+  asset: Asset
+  linkedMaps: Asset[] | null
 }
 
 /** Mescla revisões ligadas por id, preservando assets tocados em commits anteriores. */
-function mergeLinkedAssets(
-  current: readonly PintaAsset[] | null,
-  changed: readonly PintaAsset[],
-): PintaAsset[] {
+function mergeLinkedAssets<Asset extends PintaMemoryAsset>(
+  current: readonly Asset[] | null,
+  changed: readonly Asset[],
+): Asset[] {
   const merged = new Map((current ?? []).map((asset) => [asset.id, asset]))
   for (const asset of changed) merged.set(asset.id, asset)
   return [...merged.values()]
 }
 
 /** Bytes do snapshot de undo = o asset + os mapas ligados (se houver). */
-function snapshotBytes(snapshot: EditorSnapshot): number {
+function snapshotBytes(snapshot: EditorSnapshot<PintaMemoryAsset>): number {
   let bytes = retainedAssetBytes(snapshot.asset, false)
   if (snapshot.linkedMaps)
     for (const map of snapshot.linkedMaps) bytes += retainedAssetBytes(map, false)
@@ -99,23 +102,31 @@ export function* snapshotShared(snapshot: {
   for (const asset of maps) yield* sharedAssetParts(asset)
 }
 
-export function createEditorStore(options: {
-  asset: PintaAsset
-  persist: (asset: PintaAsset, linkedAssets: readonly PintaAsset[]) => Promise<void>
-  onSaved?: (asset: PintaAsset, linkedAssets: readonly PintaAsset[]) => void
+export interface PintaEditorStoreOptions<Asset extends PintaMemoryAsset = PintaAsset> {
+  asset: Asset
+  persist: (asset: Asset, linkedAssets: readonly Asset[]) => Promise<void>
+  onSaved?: (asset: Asset, linkedAssets: readonly Asset[]) => void
   /** Delay por instância; produção usa 1s, testes podem injetar um valor curto. */
   autosaveDelayMs?: number
   /** Traduz erros de persistência para o badge sem acoplar o store à UI. */
   persistErrorMessage?: (error: unknown) => string
   /** Orçamento do host (ex.: entrega de aula). Recusa antes do histórico e do autosave. */
-  acceptEdit?: (asset: PintaAsset) => boolean
+  acceptEdit?: (asset: Asset) => boolean
   /** A persistência confirmou a edição num fork; adota esse documento, sem alterar o original. */
-  recoverPersisted?: (
-    error: unknown,
-    sourceId: string,
-  ) => { asset: PintaAsset; linked: PintaAsset[] } | null
-}): PintaEditorStore {
-  const history = createHistory<EditorSnapshot>({
+  recoverPersisted?: (error: unknown, sourceId: string) => { asset: Asset; linked: Asset[] } | null
+}
+
+export function createEditorStore<Asset extends PintaMemoryAsset = PintaAsset>(
+  options: NoInfer<PintaEditorStoreOptions<Asset>>,
+): PintaEditorStore<Asset> {
+  const metadataBudget = new RegionMetadataBudgetCache()
+  function admits(asset: Asset): boolean {
+    if ((asset.kind !== 'tilemap' && asset.kind !== 'map-set') || asset.schema !== 8) return true
+    const metadata = regionDocumentMetadata(asset)
+    return metadata !== null && metadataBudget.accepts(metadata)
+  }
+  if (!admits(options.asset)) throw new RangeError('O cenário excede o orçamento de metadados.')
+  const history = createHistory<EditorSnapshot<Asset>>({
     sizeOf: snapshotBytes,
     sharedOf: snapshotShared,
   })
@@ -123,9 +134,9 @@ export function createEditorStore(options: {
   let saving: Promise<PintaSaveResult> | null = null
   let dirty = false
   // Mapas ligados ao ESTADO CORRENTE do asset (null até o 1º commitLinked).
-  let currentLinked: PintaAsset[] | null = null
+  let currentLinked: Asset[] | null = null
 
-  const store = createStore<PintaEditorState>((set, get) => {
+  const store = createStore<PintaEditorState<Asset>>((set, get) => {
     async function saveNow(): Promise<PintaSaveResult> {
       // Drena revisões criadas durante uma gravação antes de confirmar o flush.
       // Em erro, para imediatamente e conserva `dirty=true` para o retry.
@@ -159,7 +170,7 @@ export function createEditorStore(options: {
             return { ok: true }
           } catch (error) {
             const recovered = !dirty ? options.recoverPersisted?.(error, snapshot.id) : null
-            if (recovered) {
+            if (recovered && admits(recovered.asset) && recovered.linked.every(admits)) {
               history.clear()
               currentLinked = recovered.linked
               options.onSaved?.(recovered.asset, recovered.linked)
@@ -201,14 +212,20 @@ export function createEditorStore(options: {
     }
 
     function apply(
-      next: PintaAsset,
+      next: Asset,
       recordHistory: boolean,
-      linked?: { before: PintaAsset[]; after: PintaAsset[] },
-    ): PintaAsset | null {
+      linked?: { before: Asset[]; after: Asset[] },
+    ): Asset | null {
       const current = get().asset
       // A controller from a gesture that began before conflict recovery may still finish.
       // It must never put the old document back into the adopted copy or its history.
       if (next.id !== current.id) return null
+      if (
+        !admits(next) ||
+        linked?.before.some((asset) => !admits(asset)) ||
+        linked?.after.some((asset) => !admits(asset))
+      )
+        return null
       const acceptEdit = options.acceptEdit
       if (acceptEdit && (!acceptEdit(next) || linked?.after.some((asset) => !acceptEdit(asset))))
         return null
@@ -222,7 +239,7 @@ export function createEditorStore(options: {
         history.record({ asset: current, linkedMaps: previousLinked })
       }
       if (linked) currentLinked = mergeLinkedAssets(previousLinked, linked.after)
-      const applied = { ...next, updatedAt: Date.now() } as PintaAsset
+      const applied = { ...next, updatedAt: Date.now() }
       set({
         asset: applied,
         linkedAssets: currentLinked,
@@ -260,7 +277,7 @@ export function createEditorStore(options: {
       },
 
       commitGesture(base) {
-        if (base.id !== get().asset.id || base === get().asset) return
+        if (base.id !== get().asset.id || base === get().asset || !admits(base)) return
         history.record({ asset: base, linkedMaps: currentLinked })
         set({ canUndo: history.canUndo(), canRedo: history.canRedo() })
         scheduleAutosave()

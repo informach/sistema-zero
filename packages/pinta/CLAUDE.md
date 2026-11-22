@@ -202,6 +202,15 @@ Chromium e oficina real em `qa/tamanho-por-regioes-2026-11-21/`. Não promove fo
 
 ## Formatos 4/5/6/7, tetos em dois níveis e carimbo na gravação (19/11/2026)
 
+**Admissão interna 8:** o store existente é genérico, com `PintaAsset` como padrão
+público. Consumidores internos explícitos podem usar `PintaMemoryAsset`; não usar
+casts para simular suporte da oficina. Metadados de candidatos/lotes ligados são
+conferidos antes de host, histórico e autosave. O cache fraco por instância exige
+revisões imutáveis; não reutilizar seus resumos para wire mutável. O conjunto e
+seu mapa compartilham o orçamento antes de decodificar chunks. Isso não ativa
+backup/transporte 8, físico 3, cena 4 ou PNG 5; o orçamento JSON com encoder
+efetivo ainda precisa ser integrado. Provas em `qa/admissao-de-metadados-2026-11-21/`.
+
 **Referências nos conjuntos (21/11):** `core/mapClone.ts` é a operação comum de
 clonagem/remapeamento usada por importação e conjuntos. IDs de camadas e objetos
 possuem escopos separados. Um fragmento só troca o ID de uma versão incorporada

@@ -7,10 +7,14 @@ import {
   type PintaAsset,
 } from '../core/project'
 import { addLayer } from '../tiles/tilemapOps'
-import { assetBytes, createEditorStore as createEditorStoreBase } from './editorStore'
+import {
+  assetBytes,
+  createEditorStore as createEditorStoreBase,
+  type PintaEditorStoreOptions,
+} from './editorStore'
 
 const waitForAutosave = () => Bun.sleep(60)
-type EditorStoreOptions = Parameters<typeof createEditorStoreBase>[0]
+type EditorStoreOptions = PintaEditorStoreOptions
 const createEditorStore = (options: EditorStoreOptions) =>
   createEditorStoreBase({ ...options, autosaveDelayMs: 10 })
 

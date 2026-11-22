@@ -13,6 +13,12 @@ conserva os trabalhos recebidos e registra 2.641 testes do Pinta sem omissões,
 de regiões foram preparados e revisados no núcleo; store, IO e adaptadores
 continuam condicionando sua exposição pública.
 
+A [admissão global de metadados](missao-completa-2026-11-18/qa/admissao-de-metadados-2026-11-21/README.md)
+recusa documentos regionais excessivos antes de histórico, autosave e chamadas
+ao host; conjuntos somam seus dados ao mapa antes de decodificar chunks.
+Suíte de 2.650 testes e 18 percursos de navegador. O formato 8 continua interno;
+orçamento JSON, persistência regional e adaptadores permanecem no plano.
+
 O gravador de nuvem 6 teve seu ciclo autenticado e rollback publicado B → A → B
 homologados em staging. A edição feita durante o rollback foi conservada e sincronizada
 intacta após a restauração. Serviço temporário removido e publicações compartilhadas

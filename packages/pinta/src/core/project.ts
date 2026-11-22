@@ -22,7 +22,7 @@ import { retainedAssetBytes } from './assetMemory'
 import { normalizeHex } from './color'
 import { COPY } from './copy'
 import { newId } from './id'
-import { sameMapDocumentMetadata } from './mapDocumentBoundary'
+import { regionDocumentMetadata, sameMapDocumentMetadata } from './mapDocumentBoundary'
 import { sanitizeMapResourceVersions } from './mapResourceVersions'
 import {
   DEFAULT_PALETTE_ID,
@@ -1700,7 +1700,9 @@ function sanitizeTilemapObjectsFor(raw: unknown, regions: boolean): TilemapObjec
 }
 
 /** Internal native-8 reader. Public persistence stays on formats 0–7 until all consumers exist. */
-export function sanitizeRegionTilemapAsset(raw: unknown): RegionTilemapAsset | null {
+function prepareRegionTilemapMetadata(
+  raw: unknown,
+): { map: RegionTilemapAsset; rawCells: unknown[] } | null {
   try {
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null
     const record = raw as Record<string, unknown>
@@ -1792,23 +1794,18 @@ export function sanitizeRegionTilemapAsset(raw: unknown): RegionTilemapAsset | n
       layers: sanitizeLayerTree(layers),
       ...(record.resources !== undefined ? { resources } : {}),
     }
-    // Check authorial fields before allocating decoded chunks; every normalization must
-    // be lossless. Cells have their own stricter, globally budgeted Core contract.
-    const metadata = (value: Record<string, unknown>) => ({
-      ...value,
-      layers: (value.layers as Record<string, unknown>[]).map((layer) => {
-        if (layer.kind !== undefined && layer.kind !== 'tiles') return layer
-        const { cells: _cells, ...rest } = layer
-        return rest
-      }),
-    })
-    if (
-      !sameMapDocumentMetadata(
-        metadata(record),
-        metadata(map as unknown as Record<string, unknown>),
-      )
-    )
-      return null
+    return { map, rawCells }
+  } catch {
+    return null
+  }
+}
+
+function decodePreparedRegionMap(prepared: {
+  map: RegionTilemapAsset
+  rawCells: unknown[]
+}): RegionTilemapAsset | null {
+  try {
+    const { map, rawCells } = prepared
     const grids = parsePintaRegionLayers(rawCells, {
       ...map.origin,
       cols: map.cols,
@@ -1830,6 +1827,16 @@ export function sanitizeRegionTilemapAsset(raw: unknown): RegionTilemapAsset | n
   }
 }
 
+/** Compare the entire document before allocating any decoded cell chunks. */
+export function sanitizeRegionTilemapAsset(raw: unknown): RegionTilemapAsset | null {
+  const prepared = prepareRegionTilemapMetadata(raw)
+  if (!prepared) return null
+  const original = regionDocumentMetadata(raw),
+    validated = regionDocumentMetadata(prepared.map)
+  if (!original || !validated || !sameMapDocumentMetadata(original, validated)) return null
+  return decodePreparedRegionMap(prepared)
+}
+
 /** A region template keeps the same strict map contract and cannot contain live nested sets. */
 export function sanitizeRegionMapSetAsset(raw: unknown): RegionMapSetAsset | null {
   try {
@@ -1844,17 +1851,20 @@ export function sanitizeRegionMapSetAsset(raw: unknown): RegionMapSetAsset | nul
       record.name.length <= PINTA_LIMITS.maxNameChars
     )
       base.name = record.name
-    const { map: rawMap, ...metadata } = record
-    if (!sameMapDocumentMetadata(metadata, { ...base, kind: 'map-set', schema: 8 })) return null
-    const map = sanitizeRegionTilemapAsset(rawMap)
+    const prepared = prepareRegionTilemapMetadata(record.map)
     if (
-      !map ||
-      map.layers.some(
+      !prepared ||
+      prepared.map.layers.some(
         (l) => isObjectLayer(l) && l.objects.some((o) => o.setId || o.shape === 'set'),
       )
     )
       return null
-    return { ...base, kind: 'map-set', schema: 8, map }
+    const candidate: RegionMapSetAsset = { ...base, kind: 'map-set', schema: 8, map: prepared.map }
+    const original = regionDocumentMetadata(record),
+      validated = regionDocumentMetadata(candidate)
+    if (!original || !validated || !sameMapDocumentMetadata(original, validated)) return null
+    const map = decodePreparedRegionMap(prepared)
+    return map ? { ...candidate, map } : null
   } catch {
     return null
   }
