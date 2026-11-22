@@ -1151,3 +1151,114 @@ test('a real PNG 5 keeps Vila artwork and structured scene 4 when reopened in an
     pixelsEqual: true,
   })
 })
+
+test('regional geometry queries reopen a signed Vila PNG without a world-sized collision grid', async ({
+  page,
+  context,
+}, info) => {
+  const exported = await page.evaluate(async () => {
+    const p = window.pintaPhysicalRegions,
+      { map, assets } = p.vilaEFloresta()
+    const dense = await p.exportPintaScene(
+      map,
+      (id) => assets.find((asset) => asset.id === id) ?? null,
+    )
+    const converted = p.prepareMapRegions(map)
+    if (!converted.ok) throw Error(converted.reason)
+    const expanded = p.expandRegionMap(converted.map, {
+      col: -64,
+      row: -64,
+      cols: 10000,
+      rows: 10000,
+    })
+    if (!expanded.ok) throw Error(expanded.reason)
+    const floor = expanded.map.layers.find((layer) => 'cells' in layer)
+    if (!floor) throw Error('Camada de peças ausente')
+    const edited = p.setCell(expanded.map, floor.id, -32, -32, 17)
+    if (edited === expanded.map) throw Error('A preparação não pintou a peça de teste')
+    const regional = await p.exportPintaRegionScene(
+      edited,
+      (id) => assets.find((asset) => asset.id === id) ?? null,
+    )
+    const cover = await p.scenePng(regional.scene, 1, 512)
+    if (!cover) throw Error('Capa ausente')
+    const image = await p.embedPintaRegionImage(
+      Uint8Array.from(atob(cover.dataUrl.split(',')[1]!), (char) => char.charCodeAt(0)),
+      regional.json,
+    )
+    let binary = ''
+    for (const byte of image.png) binary += String.fromCharCode(byte)
+    return { png: btoa(binary), dense }
+  })
+  await page.close()
+  const reopened = await context.newPage()
+  if (info.project.name === 'cpu-4x')
+    await (await context.newCDPSession(reopened)).send('Emulation.setCPUThrottlingRate', {
+      rate: 4,
+    })
+  await proof(reopened)
+  const result = await reopened.evaluate(({ png, dense }) => {
+    const p = window.pintaPhysicalRegions,
+      bytes = Uint8Array.from(atob(png), (char) => char.charCodeAt(0))
+    const view = new DataView(bytes.buffer),
+      length = view.getUint32(33)
+    const data = p.readPintaRegionImageData(
+      new TextDecoder().decode(p.unzlibSync(bytes.subarray(51, 41 + length))),
+    )
+    if (!data) throw Error('Dados não reabriram')
+    const query = p.createRegionSceneQueries(data.scene)
+    const portable = new Function(
+      `${p.sceneObjectTransformSource};return {query:sceneIntersectsBox,move:sceneMoveBox};`,
+    )() as {
+      query: typeof p.sceneIntersectsBox
+      move: typeof p.sceneMoveBox
+    }
+    let comparisons = 0,
+      mismatches = 0
+    for (let y = 0; y < dense.rows * 16 - 8; y += 11)
+      for (let x = 0; x < dense.cols * 16 - 8; x += 13) {
+        const box = { x, y, width: 8, height: 8 }
+        if (query.solidAt(x, y) !== p.sceneSolidAt(dense, x, y)) mismatches++
+        if (query.intersectsBox(box) !== p.sceneIntersectsBox(dense, box)) mismatches++
+        if (portable.query(query.context, box) !== query.intersectsBox(box)) mismatches++
+        comparisons += 3
+      }
+    const body = { x: -508, y: -540, width: 8, height: 8 },
+      moved = query.moveBox(body, 0, 100)
+    return {
+      comparisons,
+      mismatches,
+      origin: data.scene.origin,
+      extent: [data.scene.cols, data.scene.rows],
+      physics: data.scene.physics,
+      occupied: query.solidAt(-504, -504),
+      empty: query.solidAt(-8, -8),
+      body: query.intersectsBox({ x: -508, y: -508, width: 4, height: 4 }),
+      landingY: Math.round(moved.y * 1e6) / 1e6,
+      portableMoveEqual:
+        JSON.stringify(moved) === JSON.stringify(portable.move(query.context, body, 0, 100)),
+      objectsEqual: JSON.stringify(query.objects()) === JSON.stringify(p.sceneObjects(dense)),
+      spawnEqual: JSON.stringify(query.spawn()) === JSON.stringify(p.sceneSpawn(dense)),
+      publicReaderRefused: p.readPintaScene(data.scene) === null,
+    }
+  }, exported)
+  expect(result.comparisons).toBeGreaterThan(3000)
+  expect(result).toMatchObject({
+    mismatches: 0,
+    origin: { col: -64, row: -64 },
+    extent: [10000, 10000],
+    physics: 'legacy',
+    occupied: true,
+    empty: false,
+    body: true,
+    landingY: -520,
+    portableMoveEqual: true,
+    objectsEqual: true,
+    spawnEqual: true,
+    publicReaderRefused: true,
+  })
+  await test.info().attach('consultas-vila-regional.json', {
+    body: Buffer.from(JSON.stringify(result, null, 2)),
+    contentType: 'application/json',
+  })
+})

@@ -5,6 +5,14 @@ export { createStore } from 'idb-keyval'
 export { readPintaRegionImageData } from '../../core/src/studio/pinta-region-image'
 export { readPintaRegionScene } from '../../core/src/studio/pinta-region-scene'
 export { readPintaScene } from '../../core/src/studio/pinta-scene'
+export {
+  sceneIntersectsBox,
+  sceneMoveBox,
+  scenePlatformLanding,
+} from '../../core/src/studio/pinta-scene-geometry'
+export { createRegionSceneQueries } from '../../core/src/studio/pinta-scene-query'
+export { sceneObjects, sceneSolidAt, sceneSpawn } from '../../core/src/studio/pinta-scene-runtime'
+export { sceneObjectTransformSource } from '../../core/src/studio/pinta-scene-transform.generated'
 export { scene4BudgetFixture, scene4Fixture } from '../../core/tests/fixtures/pinta-region-scene'
 export { recordPintaLocalOrigin } from '../src/core/localAssetOrigin'
 export { createTilemapAsset, sanitizeRegionTilemapAsset } from '../src/core/project'

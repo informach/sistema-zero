@@ -1,4 +1,5 @@
-import type { PintaScene, PintaSceneObject } from './pinta-scene'
+import type { PintaSceneObject } from './pinta-scene'
+import type { PintaSceneQuery } from './pinta-scene-query'
 import { sceneLayerState, transformSceneSetObject } from './pinta-scene-runtime'
 
 export interface SceneBox {
@@ -130,7 +131,7 @@ export function sceneObjectIntersectsBox(object: PintaSceneObject, box: SceneBox
  * Returning true stops the traversal. No collider copy of the map is retained.
  */
 export function sceneVisitColliders(
-  scene: PintaScene,
+  scene: PintaSceneQuery,
   box: SceneBox,
   kind: 'solid' | 'platform',
   visit: (object: PintaSceneObject) => boolean,
@@ -143,9 +144,10 @@ export function sceneVisitColliders(
     return false
   const tileSize = scene.tileSize
   const queryLayers = (
-    layers: PintaScene['layers'],
+    layers: PintaSceneQuery['layers'],
     cols: number,
     rows: number,
+    origin: { col: number; row: number },
     parent?: PintaSceneObject,
   ): boolean => {
     const local = (x: number, y: number) => {
@@ -157,7 +159,10 @@ export function sceneVisitColliders(
         py = dx * Math.sin(angle) + dy * Math.cos(angle)
       if (parent.flipX) px = parent.width - px
       if (parent.flipY) py = parent.height - py
-      return { x: (px / parent.width) * cols * tileSize, y: (py / parent.height) * rows * tileSize }
+      return {
+        x: (px / parent.width) * cols * tileSize + origin.col * tileSize,
+        y: (py / parent.height) * rows * tileSize + origin.row * tileSize,
+      }
     }
     const corners = [
       local(box.x, box.y),
@@ -175,7 +180,11 @@ export function sceneVisitColliders(
       if (layer.kind === 'objects' && kind === 'solid') {
         for (const object of layer.objects) {
           if (!object.collision) continue
-          const placed = { ...object, x: object.x + state.offsetX, y: object.y + state.offsetY }
+          const placed = {
+            ...object,
+            x: object.x + state.offsetX - (parent ? origin.col * tileSize : 0),
+            y: object.y + state.offsetY - (parent ? origin.row * tileSize : 0),
+          }
           if (
             visit(
               parent
@@ -196,40 +205,59 @@ export function sceneVisitColliders(
       )
         continue
       // Include touching cells; the narrow phase decides penetration versus support.
-      const x0 = Math.max(0, Math.floor((left - state.offsetX - 1e-7) / tileSize)),
-        x1 = Math.min(cols, Math.ceil((right - state.offsetX + 1e-7) / tileSize))
-      const y0 = Math.max(0, Math.floor((top - state.offsetY - 1e-7) / tileSize)),
-        y1 = Math.min(rows, Math.ceil((bottom - state.offsetY + 1e-7) / tileSize))
-      for (let row = y0; row < y1; row++)
-        for (let col = x0; col < x1; col++) {
-          const cell = layer.cells[row * cols + col] ?? -1
-          if (cell < 0) continue
-          const solid = !!layer.collision || tileset.solid.includes(cell & 4095)
-          if (kind === 'solid' ? !solid : solid || !tileset.platform.includes(cell & 4095)) continue
-          const tile: PintaSceneObject = {
-            id: '',
-            name: '',
-            type: '',
-            x: col * tileSize + state.offsetX,
-            y: row * tileSize + state.offsetY,
-            width: tileSize,
-            height: tileSize,
-            properties: {},
-            shape: 'rect',
-          }
-          if (
-            visit(
-              parent
-                ? transformSceneSetObject(parent, tile, cols * tileSize, rows * tileSize, [])
-                : tile,
-            )
-          )
-            return true
+      const x0 = Math.max(origin.col, Math.floor((left - state.offsetX - 1e-7) / tileSize)),
+        x1 = Math.min(origin.col + cols, Math.ceil((right - state.offsetX + 1e-7) / tileSize))
+      const y0 = Math.max(origin.row, Math.floor((top - state.offsetY - 1e-7) / tileSize)),
+        y1 = Math.min(origin.row + rows, Math.ceil((bottom - state.offsetY + 1e-7) / tileSize))
+      const cellCollider = (cell: number, col: number, row: number): boolean => {
+        if (cell < 0) return false
+        const solid = !!layer.collision || tileset.solid.includes(cell & 4095)
+        if (kind === 'solid' ? !solid : solid || !tileset.platform.includes(cell & 4095))
+          return false
+        const tile: PintaSceneObject = {
+          id: '',
+          name: '',
+          type: '',
+          x: col * tileSize + state.offsetX - (parent ? origin.col * tileSize : 0),
+          y: row * tileSize + state.offsetY - (parent ? origin.row * tileSize : 0),
+          width: tileSize,
+          height: tileSize,
+          properties: {},
+          shape: 'rect',
         }
+        return visit(
+          parent
+            ? transformSceneSetObject(parent, tile, cols * tileSize, rows * tileSize, [])
+            : tile,
+        )
+      }
+      if (Array.isArray(layer.cells)) {
+        for (let row = y0; row < y1; row++)
+          for (let col = x0; col < x1; col++)
+            if (cellCollider(layer.cells[row * cols + col] ?? -1, col, row)) return true
+      } else if (scene.version === 4) {
+        let hit = false
+        scene.regionCells(layer.cells).visitOccupied(
+          { col: x0, row: y0, cols: x1 - x0, rows: y1 - y0 },
+          (cell, col, row) => {
+            if (!hit) hit = cellCollider(cell, col, row)
+          },
+          'row-major',
+        )
+        if (hit) return true
+      }
     }
     return false
   }
-  if (queryLayers(scene.layers, scene.cols, scene.rows)) return true
+  if (
+    queryLayers(
+      scene.layers,
+      scene.cols,
+      scene.rows,
+      scene.version === 4 ? scene.origin : { col: 0, row: 0 },
+    )
+  )
+    return true
   for (const layer of scene.layers) {
     if (layer.kind !== 'objects') continue
     const state = sceneLayerState(scene.layers, layer)
@@ -247,7 +275,16 @@ export function sceneVisitColliders(
       }
       // Child layers may extend beyond the nominal set through offsets. The cell
       // ranges below supply the broad phase without clipping those authored tiles.
-      if (queryLayers(set.layers, set.cols, set.rows, parent)) return true
+      if (
+        queryLayers(
+          set.layers,
+          set.cols,
+          set.rows,
+          'origin' in set ? set.origin : { col: 0, row: 0 },
+          parent,
+        )
+      )
+        return true
     }
   }
   return false
@@ -255,18 +292,19 @@ export function sceneVisitColliders(
 
 /** Continuous full-body solid query. Existing scene 1/2 game players retain their
  * previous interpretation; the editor and scene 3 use this authored geometry. */
-export function sceneIntersectsBox(scene: PintaScene, box: SceneBox): boolean {
+export function sceneIntersectsBox(scene: PintaSceneQuery, box: SceneBox): boolean {
   if (
     ![box.x, box.y, box.width, box.height].every(Number.isFinite) ||
     box.width <= 0 ||
     box.height <= 0
   )
     return false
+  const origin = scene.version === 4 ? scene.origin : { col: 0, row: 0 }
   if (
-    box.x < 0 ||
-    box.y < 0 ||
-    box.x + box.width > scene.cols * scene.tileSize ||
-    box.y + box.height > scene.rows * scene.tileSize
+    box.x < origin.col * scene.tileSize ||
+    box.y < origin.row * scene.tileSize ||
+    box.x + box.width > (origin.col + scene.cols) * scene.tileSize ||
+    box.y + box.height > (origin.row + scene.rows) * scene.tileSize
   )
     return true
   return sceneVisitColliders(scene, box, 'solid', (object) => sceneObjectIntersectsBox(object, box))
@@ -279,7 +317,7 @@ export function sceneIntersectsBox(scene: PintaScene, box: SceneBox): boolean {
  * Gravity zero is a top-down game, with no one-way support.
  */
 export function scenePlatformLanding(
-  scene: PintaScene,
+  scene: PintaSceneQuery,
   previous: SceneBox,
   desired: SceneBox,
   gravity = 1,
@@ -384,7 +422,12 @@ export function scenePlatformLanding(
  * needs at most 40 queries, independently of velocity or the thinnest obstacle.
  * A body initially overlapping may leave the obstacle; authoring never teleports it.
  */
-export function sceneMoveBox(scene: PintaScene, box: SceneBox, dx: number, dy: number): SceneBox {
+export function sceneMoveBox(
+  scene: PintaSceneQuery,
+  box: SceneBox,
+  dx: number,
+  dy: number,
+): SceneBox {
   const result = { ...box }
   if (
     ![box.x, box.y, box.width, box.height, dx, dy].every(Number.isFinite) ||

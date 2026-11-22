@@ -1,5 +1,27 @@
 # CLAUDE.md — @sistemazero/core
 
+## Contexto de consultas regionais (22/11/2026)
+
+`studio/pinta-scene-query.ts` cria uma visão em memória de cena 4 admitida e
+imutável. Cada contexto possui índices fracos por grade e reutiliza o leitor
+compartilhado. As funções de objetos, início, consulta pontual, geometria e
+movimento continuam nos núcleos existentes; conjuntos descontam sua origem
+antes da transformação e a broad phase visita somente células armazenadas.
+Criar outro contexto quando o snapshot mudar. A visão contém funções e não é
+DTO/JSON. Não passar uma cena 4 bruta às funções geométricas que pedem essa visão.
+
+O início padrão conserva a casa zero se ela ainda estiver dentro do mundo;
+somente o fallback sem marcador é limitado aos bounds assinados. Métodos de
+geometria não escolhem física: o player deve respeitar `physics` explicitamente.
+O player público segue aceitando cenas 1–3; isto não resolve seu raster legado
+de colisões, host, loader PNG 5 ou capacidades de nuvem.
+
+O gerador de geometria captura as funções antes do build e encurta somente
+identificadores locais numa closure controlada, mantendo aliases da API. Rodar
+`gen-pinta-scene-transform.ts --check` e os testes dos tetos dos dois motores;
+não aumentar o orçamento para acomodar fontes não compactadas. Provas em
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/consultas-de-cena-regional-2026-11-22/`.
+
 ## Leitura de células regionais compartilhada (22/11/2026)
 
 `creations/pinta-region-reader.ts` recebe o leitor anterior do Pinta: consulta

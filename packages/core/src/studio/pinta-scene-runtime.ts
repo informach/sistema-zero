@@ -1,4 +1,5 @@
 import type { PintaScene, PintaSceneLayer, PintaSceneObject } from './pinta-scene'
+import type { PintaSceneDocument, PintaSceneQuery } from './pinta-scene-query'
 
 export { sceneObjectTransformSource } from './pinta-scene-transform.generated'
 /** Source crop shared by the editor and JavaScript players. Self-contained for portable builds. */
@@ -180,37 +181,62 @@ export function transformSceneSetObject(
     flipY: child.flipY,
   }
 }
-export function sceneObjects(scene: PintaScene): PintaSceneObject[] {
-  const direct = scene.layers.flatMap((l) => {
-    if (l.kind !== 'objects') return []
-    const e = sceneLayerState(scene.layers, l)
-    return e.visible ? l.objects.map((o) => ({ ...o, x: o.x + e.offsetX, y: o.y + e.offsetY })) : []
-  })
-  return direct.flatMap((o) => {
+export function sceneObjects(scene: PintaSceneDocument): PintaSceneObject[] {
+  const direct = (layers: PintaSceneDocument['layers']) =>
+    layers.flatMap((l) => {
+      if (l.kind !== 'objects') return []
+      const e = sceneLayerState(layers, l)
+      return e.visible
+        ? l.objects.map((o) => ({ ...o, x: o.x + e.offsetX, y: o.y + e.offsetY }))
+        : []
+    })
+  return direct(scene.layers).flatMap((o) => {
     const set = scene.sets?.find((s) => s.id === o.setId)
     if (!set) return [o]
-    const nested = sceneObjects({
-      ...scene,
-      cols: set.cols,
-      rows: set.rows,
-      layers: set.layers,
-      sets: [],
-    })
+    const nested = direct(set.layers)
     const ids = set.layers.flatMap((l) => (l.kind === 'objects' ? l.objects.map((o) => o.id) : []))
     return [
       o,
       ...nested.map((n) =>
-        transformSceneSetObject(o, n, set.cols * scene.tileSize, set.rows * scene.tileSize, ids),
+        transformSceneSetObject(
+          o,
+          scene.version === 4 && 'origin' in set
+            ? {
+                ...n,
+                x: n.x - set.origin.col * scene.tileSize,
+                y: n.y - set.origin.row * scene.tileSize,
+              }
+            : n,
+          set.cols * scene.tileSize,
+          set.rows * scene.tileSize,
+          ids,
+        ),
       ),
     ]
   })
 }
-export function sceneSpawn(scene: PintaScene): { x: number; y: number } {
+export function sceneSpawn(scene: PintaSceneDocument): { x: number; y: number } {
   const start = sceneObjects(scene).find((o) => o.role === 'start' || o.type === 'inicio')
-  return start ? { x: start.x, y: start.y } : { x: scene.tileSize / 2, y: scene.tileSize / 2 }
+  if (start) return { x: start.x, y: start.y }
+  if (scene.version === 4)
+    return {
+      x:
+        (Math.max(scene.origin.col, Math.min(0, scene.origin.col + scene.cols - 1)) + 0.5) *
+        scene.tileSize,
+      y:
+        (Math.max(scene.origin.row, Math.min(0, scene.origin.row + scene.rows - 1)) + 0.5) *
+        scene.tileSize,
+    }
+  return { x: scene.tileSize / 2, y: scene.tileSize / 2 }
 }
-export function sceneSolidAt(scene: PintaScene, x: number, y: number): boolean {
-  if (x < 0 || y < 0 || x >= scene.cols * scene.tileSize || y >= scene.rows * scene.tileSize)
+export function sceneSolidAt(scene: PintaSceneQuery, x: number, y: number): boolean {
+  const origin = scene.version === 4 ? scene.origin : { col: 0, row: 0 }
+  if (
+    x < origin.col * scene.tileSize ||
+    y < origin.row * scene.tileSize ||
+    x >= (origin.col + scene.cols) * scene.tileSize ||
+    y >= (origin.row + scene.rows) * scene.tileSize
+  )
     return true
   return scene.layers.some((l) => {
     if (l.kind === 'objects') {
@@ -228,10 +254,25 @@ export function sceneSolidAt(scene: PintaScene, x: number, y: number): boolean {
           if (o.flipX) px = o.width - px
           if (o.flipY) py = o.height - py
           if (px < 0 || py < 0 || px >= o.width || py >= o.height) return false
-          return sceneSolidAt(
-            { ...scene, cols: set.cols, rows: set.rows, layers: set.layers, sets: [] },
-            (px / o.width) * set.cols * scene.tileSize,
-            (py / o.height) * set.rows * scene.tileSize,
+          if (scene.version === 4) {
+            const regional = scene.sets?.find((s) => s.id === o.setId)
+            if (!regional) return false
+            return sceneSolidAt(
+              { ...scene, ...regional, sets: [] },
+              (px / o.width) * regional.cols * scene.tileSize +
+                regional.origin.col * scene.tileSize,
+              (py / o.height) * regional.rows * scene.tileSize +
+                regional.origin.row * scene.tileSize,
+            )
+          }
+          const dense = scene.sets?.find((s) => s.id === o.setId)
+          return (
+            !!dense &&
+            sceneSolidAt(
+              { ...scene, cols: dense.cols, rows: dense.rows, layers: dense.layers, sets: [] },
+              (px / o.width) * dense.cols * scene.tileSize,
+              (py / o.height) * dense.rows * scene.tileSize,
+            )
           )
         })
       )
@@ -241,8 +282,18 @@ export function sceneSolidAt(scene: PintaScene, x: number, y: number): boolean {
     if (!e.visible) return false
     const col = Math.floor((x - e.offsetX) / scene.tileSize),
       row = Math.floor((y - e.offsetY) / scene.tileSize)
-    if (col < 0 || row < 0 || col >= scene.cols || row >= scene.rows) return false
-    const cell = l.cells[row * scene.cols + col] ?? -1
+    if (
+      col < origin.col ||
+      row < origin.row ||
+      col >= origin.col + scene.cols ||
+      row >= origin.row + scene.rows
+    )
+      return false
+    const cell = Array.isArray(l.cells)
+      ? (l.cells[row * scene.cols + col] ?? -1)
+      : scene.version === 4
+        ? scene.regionCells(l.cells).at(col, row)
+        : -1
     return (
       cell >= 0 &&
       (l.collision === true ||
@@ -251,7 +302,7 @@ export function sceneSolidAt(scene: PintaScene, x: number, y: number): boolean {
   })
 }
 export function moveSceneCharacter(
-  scene: PintaScene,
+  scene: PintaSceneQuery,
   position: { x: number; y: number },
   dx: number,
   dy: number,

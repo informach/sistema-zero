@@ -244,6 +244,18 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    Blockly validadas com 157 testes, 36 ensaios de navegador e tipos completos
    Estúdio/member-shell. Nenhuma fonte Pinta/Core/3D alterada. Prosseguir às
    consultas/geometria regionais, sem promover contratos por esta integração.
+   Consultas de cena 4 verificadas em
+   `qa/consultas-de-cena-regional-2026-11-22/`: contexto por snapshot com o
+   leitor comum, origem de conjuntos e bounds assinados nos núcleos existentes.
+   O fallback de início mantém a casa zero válida. Probe anterior corrigido,
+   sem alterar o recibo histórico: cinco lacunas privadas passam a conferir.
+   Suítes 3.241 Core/2.748 Pinta, 50 focados, 44 dos motores, 18.560 comparações
+   históricas e 85 ensaios de navegador. Tipos e gerados aprovados; compactação
+   controlada mantém os tetos existentes. Seguir aos players/adaptadores e ao
+   loader de mundo 5; geometria em memória não seleciona física ou ativa o host.
+   Python/Pygame e suas extensões continuam obrigatórios também para regiões,
+   atualização sem perda de programação e homologação externa, antes de fechar
+   a missão. Não reduzir a entrega a JavaScript ou aos formatos anteriores.
 
 Na promoção do store, conferir também os orçamentos globais de metadados e JSON
 antes do histórico/autosave. A soma de objetos/propriedades em várias camadas
