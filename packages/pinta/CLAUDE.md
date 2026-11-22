@@ -4128,3 +4128,10 @@ após conservar a leitura binary64. O documento decodificado contém contextos d
 células, não é JSON/wire. PNG, mundos, imagens e gameplay ainda exigem seus
 loaders/adaptadores. Não ativar receitas por esse leitor. Provas:
 `docs/pinta-cenarios/missao-completa-2026-11-18/qa/admissao-python-de-cenas-regionais-2026-11-22/`.
+
+`pythonPngText.ts` captura bytes imutáveis, confere o perfil PNG estático/CRC e
+extrai iTXt com zlib limitado. Entrada/saída em janelas de até 16 KiB; fim exato,
+UTF-8 estrito e somente o BOM inicial removido. Não usar `flush` como teto nem
+repassar uma grande sobra comprimida a cada janela de saída. Não interpreta
+JSON, IDAT/pixels ou mundos. Provas e comparação com o leitor JavaScript em
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-png-python-compartilhado-2026-11-22/`.

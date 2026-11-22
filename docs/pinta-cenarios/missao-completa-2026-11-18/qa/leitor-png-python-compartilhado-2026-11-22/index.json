@@ -1,0 +1,83 @@
+{
+  "baseline": "d64fe70471f7eaed7e40a617c3ba799dc71d9e24",
+  "records": [
+    {
+      "file": "pinta-full.log.gz",
+      "bytes": 84762,
+      "sha256": "3bf2dafc88a614a310d4995d0a9999aacb1e2993b239313de7e8617f068dc18b",
+      "rawSha256": "66ddf495ae6e827e018943f71a120088d70029c40e84deb65d28eab3ac416ed6"
+    },
+    {
+      "file": "focused.log.gz",
+      "bytes": 862,
+      "sha256": "7d80bd23f98f70dae115f88ddc731626f37ff98fcd32c2f0050378ec1edf17ac",
+      "rawSha256": "1617fb6cde3aa5c436bb570cc5784b5f2a811058088a16348abd21ae3f538695"
+    },
+    {
+      "file": "pinta-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "biome.log.gz",
+      "bytes": 64,
+      "sha256": "435c37c369909501a435cd591bea357a991147365c30797528e60c4141753a9a",
+      "rawSha256": "4ec91d8380c0a5ccd17f6a449f012f5600f1c3c8b51dd6682403caed32948eba"
+    },
+    {
+      "file": "python-generated.log.gz",
+      "bytes": 86,
+      "sha256": "2c247188b932109b89c108de8ded9ebb3998c3aa13151afd9f91dc9d33ad4d55",
+      "rawSha256": "126e0ae087e7e32875119228fea400f8f8b3e2dfee3ced6d589d74c020b72a55"
+    },
+    {
+      "file": "js-generated.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "browser.log.gz",
+      "bytes": 777,
+      "sha256": "76fc278c9d7872755989932d1cc32472c5bb57a0900e67805a20c5b8e586fac6",
+      "rawSha256": "bc7a40e22600c6b4a54009a79f2c726629378dce6d7953969595b9c568d00ae6"
+    },
+    {
+      "file": "physical-report.json.gz",
+      "bytes": 2494,
+      "sha256": "7e5447557e0adfca0b89fedaae2d8e84c1bc0f9a32ead732e0bb6523cb4f69c3",
+      "rawSha256": "55493422c26f062050e4bd9d54b7fa48a376c22c5058bde4cc4746f9bd19288b"
+    },
+    {
+      "file": "environment.json.gz",
+      "bytes": 143,
+      "sha256": "45d5ebb7bfbfc529b3808b095d62651720b6599377d478cbde01cc16eb95da8c",
+      "rawSha256": "d1fa78049abff31f9a51739fc5334240edbae80152a1788e9d027ed26cfb34bd"
+    },
+    {
+      "file": "diff.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "archive-python-png.cjs.gz",
+      "bytes": 798,
+      "sha256": "5a51957a353da19903aeba04307f1d2d5faa5a21a572384c356b8cb26dfbaf42",
+      "rawSha256": "aac32d349bd9774d74e53ebd254fceab97f8f23030542e70a8bea9f7d8afd077"
+    }
+  ],
+  "sources": [
+    {
+      "file": "packages/pinta/src/export/pythonPngText.ts",
+      "bytes": 6520,
+      "sha256": "31e89b393ea535a78fc640280c81d97bfa692a2c2a1243cc307d8f22ae8a8896"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonPngText.test.ts",
+      "bytes": 12079,
+      "sha256": "3ad487742d1f6080988f6db3d5c23857a59d4da7d46e7decced590884564cfa5"
+    }
+  ]
+}

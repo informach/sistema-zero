@@ -327,6 +327,18 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    binary64 e entrega inteiros nativos após a admissão. Recusa tardia não muda
    outro snapshot. A guarda oficial reprova tabela adulterada e passa após
    restaurar os mesmos bytes. Seguir ao PNG/mundo Python e aos três adaptadores.
+   Lote verificado: captura/CRC e texto PNG no Python comum. Mesmo perfil
+   estrutural estático e limites do leitor JavaScript existente; capturar bytes
+   imutáveis, recusar duplicata antes de descomprimir, limitar janelas de entrada
+   e saída a 16 KiB e exigir fim exato/checksum/UTF-8. Conferir BOM, caps exatos,
+   corrupção, URLs inline canônicas e recusa antes da cópia de entrada acima do
+   teto. Ainda não admite JSON autoral, mundos, pixels ou superfícies de motor.
+   Provas em `qa/leitor-png-python-compartilhado-2026-11-22/`: Pinta 2.790,
+   17 focados, quatro controles de navegador, tipos Pinta, lint e gerados.
+   BOM/UTF-8, checksum, sobra, fronteira exata de janela e orçamento conferem
+   com JavaScript. Expansão limitada e entrada acima do teto recusam antes da
+   alocação ampliada. Sem promoção de formato ou catálogo; seguir ao registro
+   completo de mundos no Python, com admissão agregada antes de devolver dados.
 
 Na promoção do store, conferir também os orçamentos globais de metadados e JSON
 antes do histórico/autosave. A soma de objetos/propriedades em várias camadas
