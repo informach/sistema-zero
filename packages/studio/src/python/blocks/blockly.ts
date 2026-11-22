@@ -7,7 +7,7 @@ import {
   appendToPythonAreaFrame,
   ensurePythonAreaFrame,
   executablePythonAreaFrames,
-  isPythonAreaFrame,
+  isLegacyPythonRoots,
   PYTHON_AREA_INPUT,
   pythonAreaFrames,
   registerPythonAreaFrames,
@@ -21,10 +21,16 @@ import {
   type PythonBlockRole,
   type PythonBlockShape,
 } from './contract'
+import { nodes } from './nodes'
 import { pythonShadowState } from './paletteBlocks'
 import { pythonCategoryColour } from './paletteGroups'
 import { pythonPlaceholderNode as placeholder } from './placeholders'
-import type { PythonBlockProjection, PythonVisualNode, PythonVisualOrigin } from './projection'
+import {
+  type PythonBlockProjection,
+  type PythonVisualNode,
+  type PythonVisualOrigin,
+  pythonVisualToAST,
+} from './projection'
 import { type PythonWorkspaceOrigins, withoutPythonOrigins } from './provenance'
 import { pythonDecodeContextFromExtra } from './resolverOptions'
 import { samePythonValue } from './semantic'
@@ -548,14 +554,8 @@ export function pythonVisualToWorkspace(
   return [first.id]
 }
 
-/** Blockly→visual→AST. Missing inputs are errors, never silently replaced by default values. */
-export function pythonWorkspaceToVisual(
-  workspace: Blockly.Workspace,
-  rootIds: readonly string[],
-  typeIgnores: PythonNode[] = [],
-  codecs: readonly PythonBlockCodec[] = PYTHON_PROGRAMMING_CODECS,
-  origins?: PythonWorkspaceOrigins,
-): PythonBlockProjection {
+/** Reads blocks into visual nodes; `visited` lets the caller find blocks it never reached. */
+function pythonBlockReader(codecs: readonly PythonBlockCodec[], origins?: PythonWorkspaceOrigins) {
   const registry = new Map(codecs.map((codec) => [codec.id, codec]))
   const visited = new Set<string>()
   function read(block: Blockly.Block, role: PythonBlockRole, depth = 0): PythonVisualNode {
@@ -618,9 +618,20 @@ export function pythonWorkspaceToVisual(
     }
     return result
   }
+  return { read, readChain, visited }
+}
+
+/** Blockly→visual→AST. Missing inputs are errors, never silently replaced by default values. */
+export function pythonWorkspaceToVisual(
+  workspace: Blockly.Workspace,
+  rootIds: readonly string[],
+  typeIgnores: PythonNode[] = [],
+  codecs: readonly PythonBlockCodec[] = PYTHON_PROGRAMMING_CODECS,
+  origins?: PythonWorkspaceOrigins,
+): PythonBlockProjection {
+  const { readChain, visited } = pythonBlockReader(codecs, origins)
   const frames = pythonAreaFrames(workspace)
-  const rootsAreFrames = rootIds.every((id) => isPythonAreaFrame(workspace.getBlockById(id)))
-  if (frames.size || !rootIds.length || rootsAreFrames) {
+  if (!isLegacyPythonRoots(workspace, rootIds)) {
     // Áreas do projeto: lê as áreas com linhas na ordem do arquivo; fora delas é rascunho.
     const executable = executablePythonAreaFrames(workspace)
     if (
@@ -648,4 +659,21 @@ export function pythonWorkspaceToVisual(
   if (workspace.getAllBlocks(false).some((block) => !visited.has(block.id)))
     throw new Error('Há blocos soltos. Conecte ou remova esses blocos antes de gerar Python.')
   return { body, typeIgnores }
+}
+
+/**
+ * Um bloco de comando sozinho (sem os de baixo) como nó Python, para as regras do arraste.
+ * Bloco incompleto (entrada vazia) ou fora do catálogo: undefined.
+ */
+export function pythonBlockStatement(
+  block: Blockly.Block,
+  codecs: readonly PythonBlockCodec[] = PYTHON_PROGRAMMING_CODECS,
+): PythonNode | undefined {
+  try {
+    const visual = pythonBlockReader(codecs).read(block, 'statement')
+    const module = pythonVisualToAST({ body: [visual], typeIgnores: [] }, codecs)
+    return nodes(module.fields.body) ? module.fields.body[0] : undefined
+  } catch {
+    return undefined
+  }
 }

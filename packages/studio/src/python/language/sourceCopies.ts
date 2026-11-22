@@ -98,7 +98,7 @@ export function isDroppedAreaMarker(
   return (
     token.kind === 'COMMENT' &&
     !!dropped?.has(token.range.start) &&
-    PYTHON_AREA_MARKERS.has(token.text)
+    PYTHON_AREA_MARKERS.has(token.text.trimEnd())
   )
 }
 

@@ -164,6 +164,9 @@ def main():
     request = json.loads(sys.stdin.buffer.read().decode("utf8"))
     if request["op"] == "parse":
         result = parse(request["sources"])
+    elif request["op"] == "service":
+        # Um pedido cru ao analisador do Estúdio (parse/render), para a prova do caminho do editor.
+        result = json.loads(load_service().request(json.dumps(request["request"])))
     else:
         result = run(request["cases"])
     sys.stdout.buffer.write(json.dumps(result, ensure_ascii=False).encode("utf8"))

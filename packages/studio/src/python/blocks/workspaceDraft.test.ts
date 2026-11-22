@@ -29,6 +29,17 @@ test('Python stores a single current collection envelope even for one editable f
   expect(readPythonWorkspaceDraft({ ...project, blocksState: draft })).toBeUndefined()
 })
 
+test('um rascunho salvo com a área única "Programa" conta como ausente (não reabre mais)', async () => {
+  const { project } = await pythonEnvironmentFixture('classic')
+  if (project.kind !== 'classic') throw new Error('Fixture')
+  const workspace = {
+    blocks: { languageVersion: 0, blocks: [{ type: 'sz_py_program', id: 'programa' }] },
+  }
+  const draft = createPythonWorkspaceDraft(project, 'main.py', workspace, ['programa'])
+  const blocksState = updatePythonWorkspaceDraft(project, 'main.py', draft)
+  expect(readPythonWorkspaceDraft({ ...project, blocksState }, 'main.py')).toBeUndefined()
+})
+
 test('an interrupted visual edit remains recoverable and cannot silently execute/export/promote old source', async () => {
   const { project } = await pythonEnvironmentFixture('classic')
   if (project.kind !== 'classic') throw new Error('Fixture')

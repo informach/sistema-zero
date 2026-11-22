@@ -46,7 +46,7 @@ export function createPythonProgramNavigation(
     try {
       frames = orderedPythonAreaFrames(workspace)
     } catch {
-      // Área repetida durante um arraste: a guarda do editor junta; a lista espera.
+      // Área repetida (colada por fora da paleta): a guarda do editor deixa uma só; a lista espera.
     }
     const entries: PythonProgramEntry[] = []
     // Input/next traversal follows the actual Python order, including nested definitions.

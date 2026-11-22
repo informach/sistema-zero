@@ -272,6 +272,32 @@ def falar():
     print('original')
 falar()
 `,
+  // Revisão dos lotes 1 a 3: linhas que pareciam "só criar nomes" mas podem dar erro.
+  'import de um nome que não existe': `
+print("Bem-vindo")
+from random import randit
+print("fim")
+`,
+  'import de submódulo que não existe': `
+print("Bem-vindo")
+import os.caminho
+`,
+  'classe com ordem de bases impossível': `
+class Animal:
+    pass
+class Cachorro(Animal):
+    pass
+print("antes")
+class Filhote(Animal, Cachorro):
+    pass
+`,
+  'classe cuja base é uma função': `
+def Personagem():
+    pass
+print("antes")
+class Heroi(Personagem):
+    pass
+`,
   'registro com função que ainda não existe': `
 import turtle
 turtle.onkey(pular, 'a')
@@ -303,7 +329,16 @@ const PIECES: readonly ((pick: <T>(items: readonly T[]) => T) => string)[] = [
   () => "class C:\n    def __init_subclass__(cls):\n        print('sub', cls.__name__)",
   () => "class C:\n    def __add__(self, o):\n        print('soma')\n        return 0",
   () => 'x = C() + C()',
-  (p) => p(['import math', 'import turtle', 'from math import pi']),
+  (p) =>
+    p([
+      'import math',
+      'import turtle',
+      'from math import pi',
+      'from random import randit',
+      'import os.caminho',
+    ]),
+  () => `class F(D, C):
+    pass`,
   (p) => p(['f()', 'g()', 'print(f())']),
   (p) => `turtle.onkey(${p(['f', 'g'])}, '${p(['a', 'b'])}')`,
   (p) => p(['turtle.listen()', 'turtle.clearscreen()', 'turtle.ontimer(f, 10)']),

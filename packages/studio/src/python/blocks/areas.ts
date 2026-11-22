@@ -314,6 +314,10 @@ const PGZERO_IMPORT_NAMES = [
   'tone',
 ]
 const SAFE_DECORATORS = new Set(['staticmethod', 'classmethod', 'property'])
+/** Submódulos que existem com certeza (`import os.path`). */
+const KNOWN_SUBMODULES = new Set(['os.path'])
+/** Classes de fábrica que servem de base sem erro. */
+const SAFE_BASE_CLASSES = new Set(['object', 'Exception'])
 /** Métodos especiais que não rodam sozinhos em operadores ou leitura de atributo. */
 const PLAIN_DUNDERS = new Set(['__init__', '__repr__', '__str__'])
 const SETTINGS_NAME = /^[A-Z][A-Z0-9_]*$/
@@ -1574,6 +1578,7 @@ function pureStatement(
   user: UserCode,
   context: PythonAreaContext,
   bound: ReadonlySet<string>,
+  imported: ReadonlySet<string>,
 ) {
   switch (statement.kind) {
     case 'Pass':
@@ -1598,12 +1603,23 @@ function pureStatement(
         list(statement, 'type_params').length
       )
         return false
-      const basesOk = list(statement, 'bases').every((base) => {
+      // Criar a classe não pode dar erro: uma base só (com duas, a ordem das bases pode ser
+      // impossível) e que seja classe com certeza: da criança, criada antes e nunca trocada, ou
+      // vinda de uma biblioteca importada (Actor, pygame.sprite.Sprite).
+      const bases = list(statement, 'bases')
+      if (bases.length > 1 || user.magic) return false
+      const basesOk = bases.every((base) => {
         if (!isNamePath(base)) return false
         let root: PythonNode | undefined = base
         while (root?.kind === 'Attribute') root = child(root, 'value')
         const id = root?.kind === 'Name' ? (str(root.fields.id) ?? '') : ''
-        return bound.has(id) && !user.hookedClasses.has(id) && !user.magic
+        if (!bound.has(id) && !SAFE_BASE_CLASSES.has(id)) return false
+        if (user.hookedClasses.has(id) || user.moduleVars.has(id) || user.callableVars.has(id))
+          return false
+        if (base.kind === 'Name' && user.classes.has(id)) return !user.functions.has(id)
+        if (base.kind === 'Name' && SAFE_BASE_CLASSES.has(id))
+          return !user.functions.has(id) && !user.classes.has(id) && !bound.has(id)
+        return imported.has(id)
       })
       if (!basesOk) return false
       return list(statement, 'body').every((member) => {
@@ -1636,15 +1652,23 @@ function pureStatement(
         'literal' in level &&
         level.value !== '0'
       if (relative) return false
-      const modules =
-        statement.kind === 'Import'
-          ? list(statement, 'names').map((alias) => (str(alias.fields.name) ?? '').split('.')[0]!)
-          : [(str(statement.fields.module) ?? '').split('.')[0]!]
-      return modules.every(
-        (name) =>
-          !context.projectModules?.has(name) &&
-          (PURE_IMPORT_MODULES.has(name) || PGZERO_MODULES.has(name)),
-      )
+      const known = (name: string) =>
+        !context.projectModules?.has(name) &&
+        (PURE_IMPORT_MODULES.has(name) || PGZERO_MODULES.has(name))
+      if (statement.kind === 'Import')
+        return list(statement, 'names').every((alias) => {
+          const full = str(alias.fields.name) ?? ''
+          // `import os.caminho` dá erro: submódulo só o que se sabe que existe.
+          return full.includes('.') ? KNOWN_SUBMODULES.has(full) : known(full)
+        })
+      // `from random import randit` dá erro: o nome importado precisa estar na lista do módulo.
+      const module = str(statement.fields.module) ?? ''
+      const exported = context.starExports?.get(module)
+      if (!known(module.split('.')[0]!) || !exported) return false
+      return list(statement, 'names').every((alias) => {
+        const id = str(alias.fields.name) ?? ''
+        return id === '*' || exported.includes(id)
+      })
     }
     default:
       return false
@@ -1730,6 +1754,7 @@ export function analyzePythonModuleAreas(
   const deleted = deletedNames(module)
   // Os nomes que já existem com certeza antes de cada linha (para saber se ler não dá erro).
   const bound = new Set<string>()
+  const imported = new Set<string>()
   // Configurações: nome criado uma vez só no módulo e nunca trocado por `global` numa função.
   const bindCount = new Map<string, number>()
   for (const walk of walks)
@@ -1767,8 +1792,12 @@ export function analyzePythonModuleAreas(
         : settingsValues(statement, settings)
       : undefined
     if (values) for (const [id, value] of values) settings.set(id, value)
-    const pure = !!values || pureStatement(statement, user, context, bound)
-    for (const id of surelyBoundBy(statement, walk)) if (!deleted.has(id)) bound.add(id)
+    const pure = !!values || pureStatement(statement, user, context, bound, imported)
+    for (const id of surelyBoundBy(statement, walk))
+      if (!deleted.has(id)) {
+        bound.add(id)
+        if (statement.kind === 'Import' || statement.kind === 'ImportFrom') imported.add(id)
+      }
     const effects: PythonStatementEffects = {
       binds: new Set(walk.binds),
       reads: new Set(walk.reads),
@@ -2149,6 +2178,14 @@ export function pythonStatementFitsArea(
 /** Os blocos que ligam ou desligam o jogo (nada encaixa embaixo deles). */
 export function isPythonTerminalStatement(statement: PythonNode, codecId?: string) {
   return isTerminalKind(statement, codecId, true)
+}
+
+/**
+ * O bloco que LIGA ou DESLIGA o jogo (`pgzrun.go`, `mainloop`, `close_window`, `pygame.quit`…),
+ * sem os de limpeza (`unload_*`): nada encaixa embaixo dele e ele mora no fim da última área.
+ */
+export function isPythonGameSwitchStatement(statement: PythonNode, codecId?: string) {
+  return isTerminalKind(statement, codecId, false)
 }
 
 /** A área "natural" de um bloco da paleta (a que o faz aparecer em Áreas do projeto). */

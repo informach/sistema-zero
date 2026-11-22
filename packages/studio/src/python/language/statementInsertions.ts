@@ -1,4 +1,4 @@
-import type { PythonSourceLines } from './sourceLines'
+import { type PythonSourceLines, pythonModuleHeaderEnd } from './sourceLines'
 import { pythonStatementLines } from './statementMoves'
 import type { PythonNode, PythonParsedDocument } from './types'
 
@@ -61,7 +61,7 @@ export function planPythonStatementInsertions(
           const previous = index >= 2 ? originals[index - 2] : undefined
           const above = previous && pythonStatementLines(document, previous, lines)
           if (previous && !above) return
-          offset = above ? above.end : moduleHeaderEnd(document.source, lines)
+          offset = above ? above.end : pythonModuleHeaderEnd(document.source, lines)
         }
         insertions.push({
           offset,
@@ -89,15 +89,4 @@ export function planPythonStatementInsertions(
     })
   }
   return { retained, insertions }
-}
-
-/** Linhas 1 e 2 com shebang ou declaração de codificação ficam sempre no topo. */
-function moduleHeaderEnd(source: string, lines: PythonSourceLines) {
-  let offset = 0
-  for (let line = 0; line < 2 && offset < source.length; line++) {
-    const { end, next } = lines.lineAt(offset)
-    if (!/^#!|^[\t \f]*#.*?coding[:=]/.test(source.slice(offset, end))) break
-    offset = next
-  }
-  return offset
 }

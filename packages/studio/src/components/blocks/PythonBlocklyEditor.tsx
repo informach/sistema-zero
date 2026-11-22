@@ -25,15 +25,23 @@ import { SearchAwareHorizontalFlyout } from '../../blockly/searchHorizontalFlyou
 import { szGridColourFor, szThemeFor } from '../../blockly/theme'
 import { isPythonProject } from '../../core/editableProject'
 import {
+  clearPythonAreaRules,
+  PYTHON_AREA_CHECKER,
+  registerPythonAreaChecker,
+  setPythonAreaRules,
+} from '../../python/blocks/areaConnectionChecker'
+import {
   layoutPythonAreaFrames,
   pythonAreaFrames,
   pythonAreaPositions,
   pythonScratchRoots,
   registerPythonAreaFrames,
 } from '../../python/blocks/areaFrames'
+import { attachPythonAreaGuards } from '../../python/blocks/areaGuards'
 import {
   analyzePythonModuleAreas,
   PYTHON_AREA_BY_KIND,
+  PYTHON_AREA_FRAME_TYPES,
   type PythonAreaKind,
   pythonDisplayAreas,
   pythonOfferedAreas,
@@ -371,6 +379,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
     Blockly.setLocale(PtBr as unknown as Record<string, string>)
     registerPythonBlocks(props.codecs)
     registerPythonAreaFrames()
+    registerPythonAreaChecker()
     // "Procurar um bloco" é a categoria de busca do Estúdio, com o resolvedor do Python.
     registerPtSearchCategory()
     registerMoreBlocksItem()
@@ -390,7 +399,11 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
       renderer: 'zelos',
       horizontalLayout: horizontal,
       toolboxPosition: 'start',
-      plugins: { flyoutsHorizontalToolbox: SearchAwareHorizontalFlyout },
+      // A regra das áreas do projeto vale no arraste (carga e menus não passam por ela).
+      plugins: {
+        flyoutsHorizontalToolbox: SearchAwareHorizontalFlyout,
+        connectionChecker: PYTHON_AREA_CHECKER,
+      },
       sounds: false,
       collapse: false,
       // Execution is described by Python source, never by an invisible workspace flag.
@@ -411,7 +424,12 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
       },
       move: { scrollbars: true, drag: true, wheel: true },
       trashcan: !observer,
+      // Uma área de cada tipo: a paleta, o duplicar e o colar respeitam (a guarda cobre o resto).
+      maxInstances: Object.fromEntries([...PYTHON_AREA_FRAME_TYPES].map((type) => [type, 1])),
     })
+    setPythonAreaRules(workspace, props.codecs)
+    // Uma área de cada tipo e o "ligar o jogo" no fim (só depois de gestos da criança).
+    const detachAreaGuards = observer ? () => {} : attachPythonAreaGuards(workspace)
     ;(workspace as unknown as SearchResolverWorkspace).__szSearchItems = (search) =>
       pythonSearchItems(callbacks.current.palette, search, callbacks.current.codecs)
     ;(workspace as unknown as MoreBlocksWorkspace).__szOpenExtensions = () =>
@@ -558,10 +576,17 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
       const restored = draft
         ? preparePythonWorkspaceRestore(draft, document, props.codecs)
         : undefined
-      const restoreScratch = preparePythonScratchRestore(
-        readPythonScratchWorkspace(currentProject()!, props.path),
-        props.codecs,
-      )
+      // Rascunho que não reabre (salvo por uma versão com defeito) não pode travar o arquivo nos
+      // blocos: o código abre sem ele (full review das áreas, 22/11/2026).
+      let restoreScratch: ReturnType<typeof preparePythonScratchRestore>
+      try {
+        restoreScratch = preparePythonScratchRestore(
+          readPythonScratchWorkspace(currentProject()!, props.path),
+          props.codecs,
+        )
+      } catch (error) {
+        console.warn('[python-blocos] rascunhos que não reabrem foram deixados de lado', error)
+      }
       applying = true
       loadedSource = undefined
       // A arrumação das áreas que a criança fez sobrevive à volta do código (Ponte, desfazer).
@@ -1110,6 +1135,8 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
       detachLiteralTint()
       parser.dispose()
       navigation.dispose()
+      detachAreaGuards()
+      clearPythonAreaRules(workspace)
       // Sob a cerca: a exclusão segura das áreas não resgata filhos de um workspace que some.
       withWorkspaceLoad(() => workspace.dispose())
       if (classicCapture.current === capture) classicCapture.current = null

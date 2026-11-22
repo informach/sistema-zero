@@ -123,6 +123,24 @@ test('área repetida é recusada na validação; área vazia volta com os rascun
   }
 })
 
+test('rascunho salvo com a mesma área vazia duas vezes reabre com uma só', () => {
+  const other = new Blockly.Workspace()
+  const ws = new Blockly.Workspace()
+  try {
+    ensurePythonAreaFrame(other, 'events')
+    const saved = savePythonWorkspace(other, new Map()) as {
+      blocks: { blocks: Record<string, unknown>[] }
+    }
+    saved.blocks.blocks.push({ ...saved.blocks.blocks[0]!, id: 'outra-area' })
+    const restore = preparePythonScratchRestore(saved)!
+    restore(ws)
+    expect(ws.getBlocksByType('sz_py_area_events', false)).toHaveLength(1)
+  } finally {
+    other.dispose()
+    ws.dispose()
+  }
+})
+
 test('rascunho com área cheia de linhas é recusado', () => {
   const { ws } = project([expression(integer('7'))], ['start'])
   try {
@@ -147,6 +165,26 @@ test('excluir uma área manda as linhas para Rascunhos, e desfazer devolve', asy
     ws.undo(false)
     const restored = pythonAreaFrames(ws).get('start')
     expect(restored?.getInputTargetBlock(PYTHON_AREA_INPUT)?.id).toBe(first.id)
+  } finally {
+    ws.dispose()
+  }
+})
+
+test('excluir a última área com linhas deixa o programa vazio: os rascunhos continuam rascunhos', () => {
+  const { ws, rootIds } = project([expression(integer('7'))], ['start'])
+  try {
+    const scratch = ws.newBlock('sz_py_assign')
+    const frame = pythonAreaFrames(ws).get('start')!
+    frame.dispose()
+    // As raízes de antes apontam para a área que sumiu: o modo antigo (pilhas soltas = programa)
+    // não pode voltar por causa disso.
+    const roots = orderPythonWorkspaceRoots(ws, new Map(), rootIds)
+    expect(roots).toEqual([])
+    expect(pythonWorkspaceToVisual(ws, roots).body).toEqual([])
+    expect(() => pythonWorkspaceToVisual(ws, rootIds)).toThrow('atualizada')
+    expect(pythonScratchRoots(ws).map((block) => block.id)).toContain(scratch.id)
+    const { program } = splitPythonWorkspace(savePythonWorkspace(ws, new Map()))
+    expect((program.blocks as { blocks: unknown[] }).blocks).toEqual([])
   } finally {
     ws.dispose()
   }

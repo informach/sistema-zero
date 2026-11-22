@@ -44,8 +44,22 @@ export function registerPythonAreaFrames() {
 export const isPythonAreaFrame = (block: Blockly.Block | null | undefined) =>
   !!block && PYTHON_AREA_FRAME_TYPES.has(block.type)
 
-export function pythonAreaKindOf(block: Blockly.Block): PythonAreaKind | undefined {
-  return PYTHON_AREA_BY_FRAME.get(block.type)?.kind
+export function pythonAreaKindOf(
+  block: Blockly.Block | null | undefined,
+): PythonAreaKind | undefined {
+  return block ? PYTHON_AREA_BY_FRAME.get(block.type)?.kind : undefined
+}
+
+/**
+ * Raízes do modo antigo, sem áreas (testes e scripts que montam o workspace sem elas): todas
+ * existem e nenhuma é área. A raiz que SUMIU (a área excluída) não volta a esse modo.
+ */
+export function isLegacyPythonRoots(workspace: Blockly.Workspace, roots: readonly string[]) {
+  if (!roots.length || workspace.getTopBlocks(false).some(isPythonAreaFrame)) return false
+  return roots.every((id) => {
+    const block = workspace.getBlockById(id)
+    return !!block && !isPythonAreaFrame(block)
+  })
 }
 
 /** As áreas do workspace, por tipo. Lança se houver área repetida ou dentro de outro bloco. */

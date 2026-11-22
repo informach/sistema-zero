@@ -10,7 +10,11 @@
 import { PYTHON_AREA_BY_KIND, PYTHON_AREA_MARKERS, type PythonAreaKind } from '../blocks/areas'
 import { nodes } from '../blocks/nodes'
 import type { PythonSourceEdit } from './sourceEdits'
-import { indexPythonSourceLines, type PythonSourceLines } from './sourceLines'
+import {
+  indexPythonSourceLines,
+  type PythonSourceLines,
+  pythonModuleHeaderEnd,
+} from './sourceLines'
 import { pythonStatementLines } from './statementMoves'
 import type { PythonParsedDocument, PythonToken } from './types'
 
@@ -22,9 +26,9 @@ export interface PythonAreaMarkerPlan {
 
 const NONE: PythonAreaMarkerPlan = { edits: [], dropped: new Set() }
 
-/** Comentário de área: linha inteira, coluna 0, texto exato. */
+/** Comentário de área: linha inteira, coluna 0, texto exato (espaço no fim não conta). */
 export function isPythonAreaMarkerToken(token: PythonToken, lines: PythonSourceLines): boolean {
-  if (token.kind !== 'COMMENT' || !PYTHON_AREA_MARKERS.has(token.text)) return false
+  if (token.kind !== 'COMMENT' || !PYTHON_AREA_MARKERS.has(token.text.trimEnd())) return false
   const line = lines.lineAt(token.range.start)
   return line.start === token.range.start && line.end === token.range.end
 }
@@ -37,18 +41,6 @@ export function pythonAreaMarkerOffsets(document: PythonParsedDocument): Set<num
       .filter((token) => isPythonAreaMarkerToken(token, lines))
       .map((token) => token.range.start),
   )
-}
-
-/** Linhas 1 e 2 com shebang ou declaração de codificação: nada entra acima delas. */
-function headerEnd(source: string, lines: PythonSourceLines) {
-  let offset = 0
-  for (let line = 0; line < 2 && offset < source.length; line++) {
-    const { end, next } = lines.lineAt(offset)
-    const text = source.slice(offset, end)
-    if (!/^#!|^[\t \f]*#.*?coding[:=]/.test(text)) break
-    offset = next
-  }
-  return offset
 }
 
 /**
@@ -68,7 +60,7 @@ export function planPythonAreaMarkers(
   if (ranges.some((range) => !range)) return NONE
   const newline = /\r\n|\r|\n/.exec(source)?.[0] ?? '\n'
   const markers = document.tokens.filter((token) => isPythonAreaMarkerToken(token, lines))
-  const header = headerEnd(source, lines)
+  const header = pythonModuleHeaderEnd(source, lines)
   const removals: { start: number; end: number; token: number }[] = []
   const insertions: { offset: number; text: string }[] = []
   const markersIn = (start: number, end: number) =>
