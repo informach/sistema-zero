@@ -45,6 +45,10 @@ export default defineConfig({
     // enxerga essas URLs no HTML; uma descoberta tardia pode recarregar a página em uso.
     entries: [
       'index.html',
+      // O gerador do jogo E importa este módulo por `import('/qa-jogo-e.ts')`; sem ele aqui, o
+      // exportador GLTF do three era descoberto tarde e, num servidor sem cache (o CI), o Vite
+      // respondia 504 ao import dinâmico.
+      'qa-jogo-e.ts',
       '../../../molda-cenarios-core/src/compilar/index.ts',
       '../../../molda-cenarios-motor/src/compilar/index.ts',
       '../../../molda-cenarios-motor/src/teste/colisoes.ts',
