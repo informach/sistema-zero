@@ -26,6 +26,11 @@ export function isPintaHexCell(cell: number): boolean {
   )
 }
 
+/** Read the local tile index of an already admitted cell. */
+export function pintaHexCellTile(cell: number): number {
+  return cell === PINTA_HEX_EMPTY_CELL ? -1 : cell & PINTA_HEX_TILE_MASK
+}
+
 export function makePintaHexCell(tile: number, transform: Transform = {}): number | null {
   if (!Number.isInteger(tile) || tile < 0 || tile > PINTA_HEX_TILE_MASK) return null
   const rotation = transform.rotation ?? 0
@@ -50,7 +55,7 @@ export function makePintaHexCell(tile: number, transform: Transform = {}): numbe
 export function unpackPintaHexCell(cell: number) {
   if (!isPintaHexCell(cell) || cell === PINTA_HEX_EMPTY_CELL) return null
   return {
-    tile: cell & PINTA_HEX_TILE_MASK,
+    tile: pintaHexCellTile(cell),
     flipX: (cell & PINTA_HEX_CELL_FLAGS.flipX) !== 0,
     flipY: (cell & PINTA_HEX_CELL_FLAGS.flipY) !== 0,
     rotation:

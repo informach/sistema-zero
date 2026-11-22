@@ -61,6 +61,8 @@ const CONFERIDOS: Record<string, string> = {
   'templates/art.ts': 'monta células a partir de índices de peça da arte em texto',
   'core/project.ts':
     'valida cada célula por isValidCell + cellTile ao ler, e procura peça acima do teto antigo no valor cru (bits de giro também passam do teto, de propósito)',
+  'core/projectedDocument.ts':
+    'confere referências por cellTile ou pintaHexCellTile depois de admitir a grade. A codificação mantém células e flags inteiros',
   'tiles/cellCodec.ts': 'compacta corridas de células inteiras',
   'export/tiled/export.ts':
     'percorre células inteiras; o gid sai de cellTile e cellFlags (cellToGid) e o giro de cellMatrix',
