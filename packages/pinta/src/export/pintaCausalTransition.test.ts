@@ -105,8 +105,8 @@ test('vector duplicate allows only fresh identities for the duplicated artwork',
     type: 'rect',
     x: 1,
     y: 2,
-    width: 3,
-    height: 4,
+    w: 3,
+    h: 4,
     fill: '#112233',
   })
   const operation = {
@@ -115,6 +115,7 @@ test('vector duplicate allows only fresh identities for the duplicated artwork',
     count: 3,
   } as const satisfies PintaCausalOperation
   const candidate = duplicateTile(before, 0)
+  expect(candidate.tiles[1]?.[0]).toMatchObject({ type: 'rect', x: 1, y: 2, w: 3, h: 4 })
   expect(provePintaCausalMutation(before, candidate, operation)).toBe(true)
   const alias = { ...candidate, tiles: [before.tiles[0]!, before.tiles[0]!, before.tiles[1]!] }
   expect(provePintaCausalMutation(before, alias, operation)).toBe(false)
