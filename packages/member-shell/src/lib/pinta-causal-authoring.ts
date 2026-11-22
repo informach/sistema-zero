@@ -290,6 +290,7 @@ function sheetOperation(
 /** Uses the displayed revision stamps and carries every overlapped queued member forward. */
 export async function stagePintaCausalWrite(options: {
   local: PintaCausalLocalPort
+  signal: AbortSignal
   catalog: readonly PintaAsset[]
   assets?: readonly PintaAsset[]
   deletion?: { id: string; before?: PintaAsset }
@@ -505,7 +506,9 @@ export async function stagePintaCausalWrite(options: {
     const right = `${b.consumerId}\u0000${b.targetId}`
     return left < right ? -1 : left > right ? 1 : 0
   })
+  const shadow = await local.encodeCandidates([...output.values()], options.signal)
   const pending = await local.stage({
+    shadow,
     opId: replaces[0]?.opId ?? crypto.randomUUID(),
     baseEpoch: epoch,
     transitions,

@@ -711,6 +711,7 @@ test.each([
       itemId === sheet.id ? (epoch === '4' ? newerSheet : published[0]!).gzip : published[1]!.gzip,
     upload: async (candidate) => {
       if (offline) throw Error('sem rede')
+      if (!sealedId || !sealedHash) throw Error('Selo local ausente')
       expect(candidate.intent.opId).toBe(sealedId)
       expect(candidate.intentHash).toBe(sealedHash)
       throw new PintaCausalRequestError(
@@ -719,6 +720,7 @@ test.each([
       )
     },
     settle: async ({ intent, intentHash }) => {
+      if (!sealedId || !sealedHash) throw Error('Selo local ausente')
       expect(intent.opId).toBe(sealedId)
       expect(intentHash).toBe(sealedHash)
       return { state: terminal }
@@ -886,6 +888,7 @@ test('o commit que vence o abort confirma o recibo exato sem criar cópia', asyn
       const [put] = intent.members
       if (put?.action !== 'put') throw Error('Unidade ausente')
       expect(intent.opId).toBe(opId)
+      if (!archived.entry.sha256) throw Error('Hash confirmado ausente')
       expect(put.sha256).toBe(archived.entry.sha256)
       epoch = '2'
       return {
@@ -1820,4 +1823,137 @@ test.each([
   } finally {
     wrapper.dispose?.()
   }
+})
+
+test.each([
+  'expired',
+  'aborted',
+  'unknown',
+  'successor',
+  'removed',
+  'unbased',
+] as const)('recupera separadamente a revisão retida e a edição de outra instalação: %s', async (mode) => {
+  const namespace = `recovery-${mode}`
+  const local = createPintaCausalPersistence({ namespace })
+  const old = createPintaPersistence({ namespace })
+  const sheet = createTilesetAsset({ name: 'pedras', tileSize: 8, now: 1000 })
+  const map = createTilemapAsset({ name: 'vila-original', cols: 2, rows: 2, tilesetId: sheet.id })
+  function pixel(base: typeof sheet, value: number): typeof sheet {
+    const tiles = base.tiles.map((tile) => ({ ...tile, data: tile.data.slice() }))
+    tiles[0]!.data[0] = value
+    return { ...base, tiles, updatedAt: 1000 + value }
+  }
+  const before = await cloudAsset(sheet, 1, '1')
+  const cloudSeven = await cloudAsset(pixel(sheet, 7), 2, '7')
+  if (mode === 'unbased') await old.persistAsset(sheet)
+  else
+    await local.causal.applyPull(
+      {
+        fromEpoch: null,
+        epoch: '1',
+        transitions: [
+          { id: sheet.id, before: null, beforeRevision: null, after: sheet, remote: before.entry },
+        ],
+      },
+      () => true,
+    )
+  const { cloud, queued } = fakeCloud(map, 0)
+  let offline = true
+  let epoch = '1'
+  const transport: PintaCausalCloud = {
+    snapshot: async () => {
+      if (offline) throw Error('sem rede')
+      return { epoch, requiredFormat: 6, entries: [cloudSeven.entry] }
+    },
+    verifyEpoch: async (expected) => {
+      expect(expected).toBe(epoch)
+    },
+    download: async () => cloudSeven.gzip,
+    backfill: async () => {
+      throw Error('backfill inesperado')
+    },
+    upload: async () => {
+      if (offline) throw Error('sem rede')
+      throw new PintaCausalRequestError(409, 'epoch-changed')
+    },
+    settle: async () => ({
+      state: mode === 'expired' || mode === 'unknown' ? mode : 'aborted',
+    }),
+  }
+  const wrapper = createCloudMirroredPintaPersistence({
+    local,
+    cloud: { ...cloud, pintaCausal: transport },
+    viewerId: namespace,
+    causal: {
+      local: local.causal,
+      holdOpen: async () => () => {},
+      withClosed: (_, apply) => apply(),
+    },
+  })
+  const work = {
+    local: local.causal,
+    cloud: transport,
+    reader: 6,
+    signal: new AbortController().signal,
+  }
+  try {
+    const base = await local.loadAssetById(sheet.id)
+    if (base?.kind !== 'tileset') throw Error('Folha ausente')
+    await wrapper.persistAsset(pixel(base, mode === 'unbased' ? 4 : 3), { resources: [] })
+    if (mode !== 'unbased') {
+      await expect(flushPintaCausalOutbox(work)).rejects.toThrow('sem rede')
+      if (mode === 'successor') {
+        const loaded = await local.loadAssetById(sheet.id)
+        if (loaded?.kind !== 'tileset') throw Error('Sucessor ausente')
+        await wrapper.persistAsset(pixel(loaded, 4), { resources: [] })
+      }
+    }
+  } finally {
+    wrapper.dispose?.()
+  }
+  const fromOld = await old.loadAssetById(sheet.id)
+  if (fromOld?.kind !== 'tileset') throw Error('Versão da outra instalação ausente')
+  if (mode === 'removed') await old.deleteAsset(sheet.id, fromOld)
+  else await old.persistAsset(pixel(fromOld, 5))
+  const reopened = createPintaCausalPersistence({ namespace })
+  const prior = await reopened.causal.inspect()
+  const head = prior.unbased ?? prior.pending.at(-1)
+  if (head) {
+    const ret = await reopened.causal.retained(head.opId)
+    if (!ret) throw Error('Sombra offline ausente')
+    const blob = ret.blobs.get(sheet.id)
+    if (!blob) throw Error('Gzip offline ausente')
+    const json = await new Response(
+      blob.stream().pipeThrough(new DecompressionStream('gzip')),
+    ).text()
+    const asset = assetFromJson(json).asset
+    if (asset?.kind !== 'tileset') throw Error('Gzip inválido')
+    expect(asset.tiles[0]?.data[0]).toBe(4)
+  }
+  offline = false
+  epoch = '2'
+  await expect(
+    syncPintaCausalAccount({
+      ...work,
+      local: reopened.causal,
+      canContinue: () => true,
+      isOpen: () => false,
+      withClosed: (_, apply) => apply(),
+    }),
+  ).resolves.toMatchObject({ mode: 'causal', applied: true })
+  const official = await reopened.loadAssetById(sheet.id)
+  if (official?.kind !== 'tileset') throw Error('Folha oficial ausente')
+  expect(official.tiles[0]?.data[0]).toBe(7)
+  const copies = (await reopened.listAllAssets()).filter((item) => item.id !== sheet.id)
+  expect(
+    copies.map((asset) => (asset.kind === 'tileset' ? asset.tiles[0]?.data[0] : -1)).sort(),
+  ).toEqual(mode === 'removed' ? [3] : mode === 'successor' || mode === 'unbased' ? [4, 5] : [3, 5])
+  const settled = await reopened.causal.inspect()
+  expect(settled.sealed).toBeNull()
+  expect(settled.pending).toEqual([])
+  expect(settled.unbased).toBeUndefined()
+  expect(settled.shadows?.size ?? 0).toBe(0)
+  expect(settled.recovered?.size).toBe(copies.length)
+  expect(settled.confirmed.get(sheet.id)?.opId).toBeUndefined()
+  expect(queued).toEqual([])
 })

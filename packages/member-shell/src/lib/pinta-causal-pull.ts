@@ -6,6 +6,7 @@ import {
   type PintaCausalCloud,
   PintaCausalRequestError,
   type PintaCloudSnapshot,
+  pintaCausalGzipHash,
 } from './pinta-causal-cloud'
 
 /** A 404 is a compatibility signal only before the account has used the new protocol. */
@@ -27,6 +28,8 @@ export async function discoverPintaCausalSnapshot(options: {
   await local.rememberProtocol()
   return snapshot
 }
+
+export class PintaCausalRecoveryNeedsFilesError extends Error {}
 
 export async function readPintaCausalJson(
   bytes: Uint8Array<ArrayBuffer>,
@@ -52,10 +55,88 @@ export async function readPintaCausalJson(
   }
 }
 
+type LocalPull = Parameters<PintaCausalLocalPort['applyPull']>[0]
+type QueueState = Awaited<ReturnType<PintaCausalLocalPort['inspect']>>
+type Capture = Awaited<ReturnType<PintaCausalLocalPort['capture']>>[number]
+type RetainedPort = Partial<Pick<PintaCausalLocalPort, 'retained' | 'inFlight' | 'decodeCandidate'>>
+
+async function readRetainedCandidates(
+  local: RetainedPort,
+  state: QueueState,
+  bases: ReadonlyMap<string, Capture>,
+  recovery: LocalPull['recoverUnit'],
+  budget: { remaining: number },
+  signal: AbortSignal,
+): Promise<NonNullable<LocalPull['archived']>> {
+  const sealed = recovery ? state.sealed : null
+  const groups = [
+    ...(sealed
+      ? [sealed.local, ...state.pending].map(({ opId, members }) => ({
+          opId,
+          members: members.map(({ itemId, localRevision, action }) => ({
+            itemId,
+            localRevision,
+            deleted: action === 'delete',
+          })),
+        }))
+      : []),
+    ...(!recovery && state.unbased ? [state.unbased] : []),
+  ]
+  const latest = new Map(
+    groups.flatMap(({ members }) => members.map((part) => [part.itemId, part] as const)),
+  )
+  if (
+    ![...latest.values()].some(
+      ({ itemId, localRevision, deleted }) =>
+        !deleted && bases.get(itemId)?.beforeRevision !== localRevision,
+    )
+  )
+    return []
+  const archived: NonNullable<LocalPull['archived']>[number][] = []
+  for (const group of groups) {
+    const isSeal = group.opId === sealed?.intent.opId
+    const sent = isSeal ? await local.inFlight?.() : null
+    const retained = isSeal ? null : await local.retained?.(group.opId)
+    const puts =
+      sent && sent.sealed.intentHash === recovery?.intentHash
+        ? sent.sealed.intent.members.filter((member) => member.action === 'put')
+        : retained?.puts
+    if (!puts) continue
+    const members = new Map(group.members.map((member) => [member.itemId, member]))
+    for (const put of puts) {
+      const member = members.get(put.itemId)
+      const blob = (sent?.blobs ?? retained?.blobs)?.get(put.itemId)
+      if (!member || member.deleted || !blob || blob.size !== put.bytes)
+        throw Error('Não consegui conferir os arquivos guardados neste aparelho.')
+      signal.throwIfAborted()
+      const data = new Uint8Array(await blob.arrayBuffer())
+      if ((await pintaCausalGzipHash(data.buffer)) !== put.sha256)
+        throw Error('Não consegui conferir os arquivos guardados neste aparelho.')
+      const asset = local.decodeCandidate?.(await readPintaCausalJson(data, signal, budget))
+      if (
+        !asset ||
+        asset.id !== put.itemId ||
+        asset.kind !== put.kind ||
+        asset.name !== put.name ||
+        new Date(asset.updatedAt).toISOString() !== put.itemUpdatedAt
+      )
+        throw Error('Não consegui abrir os arquivos guardados neste aparelho.')
+      archived.push({
+        opId: group.opId,
+        localRevision: member.localRevision,
+        sha256: put.sha256,
+        asset,
+      })
+    }
+  }
+  return archived
+}
+
 /** The input represents every visible ID at the same server epoch. */
 export async function pullPintaCausalSnapshot(options: {
   snapshot: PintaCloudSnapshot
-  local: Pick<PintaCausalLocalPort, 'inspect' | 'capture' | 'pullImpact' | 'applyPull'>
+  local: Pick<PintaCausalLocalPort, 'inspect' | 'capture' | 'pullImpact' | 'applyPull'> &
+    RetainedPort
   cloud: Pick<PintaCausalCloud, 'download' | 'verifyEpoch'>
   signal: AbortSignal
   isOpen(id: string): boolean
@@ -95,6 +176,8 @@ export async function pullPintaCausalSnapshot(options: {
       .filter((entry) => recoverDiverged || differentRemote(entry))
       .map(({ itemId }) => itemId),
     ...removed,
+    ...owned,
+    ...(state.unbased?.members.map(({ itemId }) => itemId) ?? []),
   ]
   const bases = new Map((await local.capture(captureIds)).map((base) => [base.id, base]))
   const changed = snapshot.entries.filter(
@@ -133,7 +216,9 @@ export async function pullPintaCausalSnapshot(options: {
       remote: visible.get(id) ?? null,
     }
   })
+  const archived = await readRetainedCandidates(local, state, bases, recovery, budget, signal)
   const pull = {
+    ...(archived.length ? { archived } : {}),
     fromEpoch: state.epoch,
     epoch: snapshot.epoch,
     transitions,
@@ -142,6 +227,7 @@ export async function pullPintaCausalSnapshot(options: {
     ...(recovery ? { recoverUnit: recovery } : {}),
   }
   const impact = await local.pullImpact(pull)
+  if (impact.needsArchive) throw new PintaCausalRecoveryNeedsFilesError()
   if (impact.blocked || impact.ids.some(options.isOpen)) return false
   await cloud.verifyEpoch(snapshot.epoch, signal)
   return options.withClosed(impact.ids, () =>

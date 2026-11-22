@@ -123,34 +123,25 @@ function restoreDoorTargets(
   }
 }
 
-export function recoverLocalAssets<Asset extends PintaMemoryAsset>(
-  ids: readonly string[],
-  pull: PintaCausalLocalPull<Asset>,
-  snapshot: LocalSnapshot<Asset>,
-  official: ReadonlyMap<string, Asset>,
-): { writes: LocalAssetTransition<Asset>[]; copies: Asset[] } | null {
-  const selected = ids
-    .flatMap((id) => {
-      const original = snapshot.assets.get(id)
-      return original ? [original] : []
-    })
-    .sort((a, b) => Number(isTilesetKind(b)) - Number(isTilesetKind(a)))
-  if (selected.length !== ids.length) return null
-  const written = new Set(pull.transitions.map(({ id }) => id))
+export function projectRecoveryCopies<Asset extends PintaMemoryAsset>(
+  selected: readonly Asset[],
+  originals: ReadonlyMap<string, Asset>,
+  destination: ReadonlyMap<string, Asset>,
+): { copies: Asset[]; catalog: Map<string, Asset> } | null {
   const names = new Set([
-    ...[...snapshot.assets.values()]
-      .filter((asset) => !official.has(asset.id))
-      .map(({ name }) => name),
-    ...[...official.values()].map(({ name }) => name),
-    ...snapshot.assets.keys(),
-    ...official.keys(),
+    ...[...destination.values()].map(({ name }) => name),
+    ...originals.keys(),
+    ...destination.keys(),
   ])
-  for (const asset of [...snapshot.assets.values(), ...official.values()]) {
-    for (const { selector } of pintaDoorBindings(asset, snapshot.assets))
-      if (typeof selector === 'string') names.add(selector)
-  }
+  for (const [assets, catalog] of [
+    [originals, originals],
+    [destination, destination],
+  ] as const)
+    for (const asset of assets.values())
+      for (const { selector } of pintaDoorBindings(asset, catalog))
+        if (typeof selector === 'string') names.add(selector)
   const imported = planImport(
-    selected,
+    [...selected],
     new Set(selected.filter(isTilesetKind).map(({ id }) => id)),
     names,
     ({ name }) => `${name.slice(0, 42).replace(/-+$/, '')}-copia`,
@@ -160,53 +151,86 @@ export function recoverLocalAssets<Asset extends PintaMemoryAsset>(
     const original = selected[index]!
     const copy = { ...restored, createdAt: original.createdAt }
     if (copy.kind === 'tilemap' && original.kind === 'tilemap')
-      restoreDoorTargets(original, copy, snapshot.assets, imported.idMap)
+      restoreDoorTargets(original, copy, originals, imported.idMap)
     if (copy.kind === 'map-set' && original.kind === 'map-set')
-      restoreDoorTargets(original.map, copy.map, snapshot.assets, imported.idMap)
+      restoreDoorTargets(original.map, copy.map, originals, imported.idMap)
     return copy
   })
-  const projected = new Map(snapshot.assets)
-  for (const original of selected) projected.delete(original.id)
-  for (const id of written) projected.delete(id)
-  for (const [id, after] of official) projected.set(id, after)
+  const catalog = new Map(destination)
   for (const copy of copies) {
-    if (projected.has(copy.id)) return null
-    projected.set(copy.id, copy)
+    if (catalog.has(copy.id)) return null
+    catalog.set(copy.id, copy)
   }
+  for (const asset of destination.values())
+    if (!pintaValuesEqual(pintaDoorBindings(asset, destination), pintaDoorBindings(asset, catalog)))
+      return null
+  for (const [i, copy] of copies.entries()) {
+    const original = selected[i]!
+    const expected = pintaDoorBindings(original, originals).map(({ binding }) =>
+      binding.type === 'target'
+        ? { ...binding, id: imported.idMap.get(binding.id) ?? binding.id }
+        : binding,
+    )
+    const actual = pintaDoorBindings(copy, catalog).map(({ binding }) => binding)
+    if (!pintaValuesEqual(expected, actual)) return null
+  }
+  return { copies, catalog }
+}
+
+export function recoverLocalAssets<Asset extends PintaMemoryAsset>(
+  ids: readonly string[],
+  pull: PintaCausalLocalPull<Asset>,
+  snapshot: LocalSnapshot<Asset>,
+  official: ReadonlyMap<string, Asset>,
+  alreadyRestored: ReadonlySet<string> = new Set(),
+): { writes: LocalAssetTransition<Asset>[]; copies: Asset[]; catalog: Map<string, Asset> } | null {
+  const selected = ids
+    .flatMap((id) => {
+      const original = snapshot.assets.get(id)
+      return original ? [original] : []
+    })
+    .sort((a, b) => Number(isTilesetKind(b)) - Number(isTilesetKind(a)))
+  if (selected.length !== ids.length) return null
+  const written = new Set(pull.transitions.map(({ id }) => id))
+  const destination = new Map(snapshot.assets)
+  for (const id of alreadyRestored) destination.delete(id)
+  for (const original of selected) destination.delete(original.id)
+  for (const id of written) destination.delete(id)
+  for (const [id, after] of official) destination.set(id, after)
   for (const asset of snapshot.assets.values()) {
-    if (written.has(asset.id) || imported.idMap.has(asset.id) || official.has(asset.id)) continue
+    if (written.has(asset.id) || !destination.has(asset.id) || official.has(asset.id)) continue
     if (
       !pintaValuesEqual(
         pintaDoorBindings(asset, snapshot.assets),
-        pintaDoorBindings(asset, projected),
+        pintaDoorBindings(asset, destination),
       )
     )
       return null
   }
   for (const asset of official.values())
-    if (!pintaValuesEqual(pintaDoorBindings(asset, official), pintaDoorBindings(asset, projected)))
-      return null
-  for (const [i, copy] of copies.entries()) {
-    const original = selected[i]!
-    const expected = pintaDoorBindings(original, snapshot.assets).map(({ binding }) =>
-      binding.type === 'target'
-        ? { ...binding, id: imported.idMap.get(binding.id) ?? binding.id }
-        : binding,
+    if (
+      !pintaValuesEqual(pintaDoorBindings(asset, official), pintaDoorBindings(asset, destination))
     )
-    const actual = pintaDoorBindings(copy, projected).map(({ binding }) => binding)
-    if (!pintaValuesEqual(expected, actual)) return null
-  }
-  const writes: LocalAssetTransition<Asset>[] = copies.map((after) => ({
+      return null
+  const recovered = projectRecoveryCopies(selected, snapshot.assets, destination)
+  if (!recovered) return null
+  const writes: LocalAssetTransition<Asset>[] = recovered.copies.map((after) => ({
     id: after.id,
     before: null,
     beforeRevision: null,
     after,
   }))
-  for (const original of selected) {
+  for (const original of [
+    ...selected,
+    ...[...alreadyRestored].flatMap((id) => {
+      const before = snapshot.assets.get(id)
+      return before ? [before] : []
+    }),
+  ]) {
     if (official.has(original.id) || written.has(original.id)) continue
     const beforeRevision = snapshot.documents.get(original.id)?.revision
     if (!beforeRevision) return null
     writes.push({ id: original.id, before: original, beforeRevision, after: null })
   }
-  return { writes, copies }
+  return { writes, ...recovered }
 }

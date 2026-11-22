@@ -301,7 +301,7 @@ describe('authority of the causal gallery', () => {
       stableTilesets: [sheet.id],
     })
     const before = await local.causal.inspect()
-    expect(before.version).toBe(2)
+    expect(before.version).toBe(3)
     expect(before.unbased?.readSet[0]?.localRevision).toBe(
       before.unbased?.members.find(({ itemId }) => itemId === sheet.id)?.localRevision,
     )
@@ -432,7 +432,7 @@ describe('authority of the causal gallery', () => {
     expect(disk.get('pinta:sync:causal')).toEqual(malformed)
   })
 
-  it('reads the previous local queue schema and fences its next commit as version 2', async () => {
+  it('reads the previous local queue schema and fences its next commit as version 3', async () => {
     const namespace = 'causal-disk-fence'
     const local = createPintaCausalPersistence({ namespace })
     await local.causal.rememberProtocol()
@@ -449,7 +449,7 @@ describe('authority of the causal gallery', () => {
         () => true,
       ),
     ).toBe(true)
-    expect(disk.get('pinta:sync:causal')).toMatchObject({ version: 2, epoch: '1' })
+    expect(disk.get('pinta:sync:causal')).toMatchObject({ version: 3, epoch: '1' })
   })
 })
 

@@ -1,24 +1,11 @@
 import {
-  PintaClientOutdatedError,
-  pintaCanWriteNativeSchema,
-  pintaWriteFormatVersion,
-} from '@sistemazero/core/creations'
-import {
   type PintaCausalIntent,
   type PintaCausalMember,
   type PintaCausalRead,
   pintaCausalIntentHash,
 } from '@sistemazero/core/creations/pinta-causal'
 import type { PintaCausalLocalPort } from '@sistemazero/pinta'
-import { assetToJson, MAX_BACKUP_FILE_BYTES, pintaAssetSchema } from '@sistemazero/pinta/assets'
-import {
-  type PintaCausalCloud,
-  PintaCausalRequestError,
-  pintaCausalGzipHash,
-} from './pinta-causal-cloud'
-
-type LocalCandidate = NonNullable<Awaited<ReturnType<PintaCausalLocalPort['prepare']>>>
-type FrozenCandidate = NonNullable<Awaited<ReturnType<PintaCausalLocalPort['prepared']>>>
+import { type PintaCausalCloud, PintaCausalRequestError } from './pinta-causal-cloud'
 
 /** Carry the attempted seal across awaits so recovery cannot abort a different tab's upload. */
 export class PintaCausalUploadError extends PintaCausalRequestError {
@@ -32,55 +19,32 @@ export class PintaCausalUploadError extends PintaCausalRequestError {
   }
 }
 
-async function encodeCandidate(
-  { assets }: LocalCandidate,
-  signal: AbortSignal,
-): Promise<FrozenCandidate> {
-  const blobs = new Map<string, Blob>()
-  const puts: FrozenCandidate['puts'][number][] = []
-  let bytes = 0
-  for (const asset of assets) {
-    signal.throwIfAborted()
-    const formatVersion = pintaWriteFormatVersion(asset.kind)
-    if (!pintaCanWriteNativeSchema(pintaAssetSchema(asset), formatVersion))
-      throw new PintaClientOutdatedError()
-    const source = new Blob([assetToJson(asset)])
-    const gzip = await new Response(
-      source.stream().pipeThrough(new CompressionStream('gzip')),
-    ).blob()
-    bytes += gzip.size
-    if (bytes > MAX_BACKUP_FILE_BYTES)
-      throw new Error('Estas mudanças juntas ultrapassam o espaço para sincronizar.')
-    const sha256 = await pintaCausalGzipHash(await gzip.arrayBuffer())
-    blobs.set(asset.id, gzip)
-    puts.push({
-      itemId: asset.id,
-      name: asset.name,
-      kind: asset.kind,
-      itemUpdatedAt: new Date(asset.updatedAt).toISOString(),
-      formatVersion,
-      bytes: gzip.size,
-      sha256,
-    })
-  }
-  signal.throwIfAborted()
-  return { puts, blobs }
-}
-
 export async function freezePintaCausalPending(
-  local: Pick<PintaCausalLocalPort, 'prepare' | 'freeze'>,
+  local: Pick<
+    PintaCausalLocalPort,
+    'prepare' | 'freeze' | 'retained' | 'inspect' | 'encodeCandidates'
+  >,
   opId: string,
   signal: AbortSignal,
 ): Promise<boolean> {
+  signal.throwIfAborted()
+  const group = (await local.inspect()).pending.find((item) => item.opId === opId)
+  if (!group) return false
+  const saved = await local.retained(opId)
+  signal.throwIfAborted()
+  if (saved) return local.freeze(opId, group.preparation, saved.puts, saved.blobs)
   const draft = await local.prepare(opId)
   if (!draft) return false
-  const frozen = await encodeCandidate(draft, signal)
+  const frozen = await local.encodeCandidates(draft.assets, signal)
   return local.freeze(opId, draft.pending.preparation, frozen.puts, frozen.blobs)
 }
 
 export async function flushPintaCausalOutbox(options: {
-  local: Pick<PintaCausalLocalPort, 'inspect' | 'inFlight' | 'prepare' | 'seal' | 'acknowledge'> &
-    Partial<Pick<PintaCausalLocalPort, 'renew' | 'prepared'>>
+  local: Pick<
+    PintaCausalLocalPort,
+    'inspect' | 'inFlight' | 'prepare' | 'seal' | 'acknowledge' | 'encodeCandidates'
+  > &
+    Partial<Pick<PintaCausalLocalPort, 'renew' | 'prepared' | 'retained'>>
   cloud: Pick<PintaCausalCloud, 'upload'> &
     Partial<Pick<PintaCausalCloud, 'snapshot' | 'verifyEpoch'>>
   reader: number
@@ -145,13 +109,13 @@ export async function flushPintaCausalOutbox(options: {
     const first = queue.pending[0]
     if (!first) return
     if (first.follows) throw new PintaCausalRequestError(409, 'unresolved-predecessor')
-    let candidate = await local.prepared?.(first.opId)
+    let candidate = await (local.retained ?? local.prepared)?.(first.opId)
     let pending = first
     if (!candidate) {
       const draft = await local.prepare(first.opId)
       if (!draft) return
       pending = draft.pending
-      candidate = await encodeCandidate(draft, signal)
+      candidate = await local.encodeCandidates(draft.assets, signal)
     }
     if (pending.follows) return
     const readSet = pending.readSet.filter(

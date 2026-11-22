@@ -15,7 +15,9 @@ import { galleryBackupByteLength, MAX_BACKUP_FILE_BYTES } from '../export/projec
 import { RegionBackupSizeCache } from '../export/regionBackupSize'
 import { createLocalAssetAuthority } from './localAssetAuthority'
 
-function regional(asset: PintaMemoryAsset): asset is RegionTilemapAsset | RegionMapSetAsset {
+export function isLocalRegionAsset(
+  asset: PintaMemoryAsset,
+): asset is RegionTilemapAsset | RegionMapSetAsset {
   return (
     (asset.kind === 'tilemap' && 'origin' in asset) ||
     (asset.kind === 'map-set' && 'origin' in asset.map)
@@ -41,7 +43,7 @@ export function sanitizeLocalRegionAsset(raw: unknown): PintaMemoryAsset | null 
 }
 
 export function stampLocalRegionAsset(asset: PintaMemoryAsset): PintaMemoryAsset {
-  if (!regional(asset)) return withPintaSchemaStamp(asset)
+  if (!isLocalRegionAsset(asset)) return withPintaSchemaStamp(asset)
   if (!sanitizeLocalRegionAsset(asset))
     throw new PintaLocalStorageError(
       'Não consegui conferir o cenário completo. Seus dados foram mantidos.',
@@ -56,9 +58,9 @@ export function createLocalRegionAssetAuthority() {
     maxSchema: 8,
     sanitize: sanitizeLocalRegionAsset,
     stamp: stampLocalRegionAsset,
-    schema: (asset) => (regional(asset) ? 8 : pintaAssetSchema(asset)),
+    schema: (asset) => (isLocalRegionAsset(asset) ? 8 : pintaAssetSchema(asset)),
     mirror(asset, revision) {
-      return regional(asset)
+      return isLocalRegionAsset(asset)
         ? { kind: 'pinta-local-mirror', version: 1, capability: 8, id: asset.id, revision }
         : asset
     },
@@ -75,7 +77,7 @@ export function createLocalRegionAssetAuthority() {
           !('revision' in raw) ||
           raw.revision !== doc?.revision ||
           !doc?.asset ||
-          !regional(doc.asset)
+          !isLocalRegionAsset(doc.asset)
         )
           throw new PintaLocalStorageError(
             'Não consegui conferir a referência do cenário guardado. Seus dados foram mantidos.',
@@ -90,7 +92,7 @@ export function createLocalRegionAssetAuthority() {
       // Numerical identity summaries are shared within this transaction, never across writes.
       const sizing = new RegionBackupSizeCache()
       const size = (assets: readonly PintaMemoryAsset[]) =>
-        assets.some(regional)
+        assets.some(isLocalRegionAsset)
           ? sizing.byteLength(assets)
           : galleryBackupByteLength(assets.filter((asset): asset is PintaAsset => !regional(asset)))
       const projected = size(after) + (bytes?.after ?? 0)

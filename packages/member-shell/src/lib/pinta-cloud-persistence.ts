@@ -594,7 +594,28 @@ export function createCloudMirroredPintaPersistence(options: {
           localRevision: observations.get(ref.id) ?? (structure ? ref.localRevision : null),
         })),
       )
+      const migrating =
+        state.unbased && !state.shadows?.has(state.unbased.opId)
+          ? state.unbased.members.filter(({ itemId, deleted }) => !deleted && !ids.includes(itemId))
+          : []
+      const retained = await causalLocal.capture(migrating.map(({ itemId }) => itemId))
+      const retainedAssets = retained.map(({ id, before, beforeRevision }) => {
+        if (
+          !before ||
+          !migrating.some(
+            ({ itemId, localRevision }) => itemId === id && localRevision === beforeRevision,
+          )
+        )
+          throw Error('Uma mudança guardada foi atualizada em outra janela.')
+        return before
+      })
+      const shadow = await causalLocal.encodeCandidates(
+        [...retainedAssets, ...assets],
+        causalSession.signal,
+      )
       await causalLocal.stageUnbased({
+        shadow,
+        migrations: migrating,
         transitions: changes,
         readSet,
         requireKnownInventory: structure,
@@ -608,6 +629,7 @@ export function createCloudMirroredPintaPersistence(options: {
     }
     const staged = await stagePintaCausalWrite({
       local: causalLocal,
+      signal: causalSession.signal,
       catalog: await local.listAllAssets(),
       assets,
       context,

@@ -2,6 +2,7 @@ import { expect, it } from 'bun:test'
 import { PintaCausalIntentSchema } from '@sistemazero/core/creations/pinta-causal'
 import type { PintaCausalLocalPort } from '@sistemazero/pinta'
 import { createPixelSpriteAsset } from '../../pinta/src/core/project'
+import { createPintaCausalPersistence } from '../../pinta/src/state/persistence'
 import { flushPintaCausalOutbox } from '../src/lib/pinta-causal-queue'
 
 it('the worker seals the exact preparation before network and keeps its bytes on failure', async () => {
@@ -35,6 +36,8 @@ it('the worker seals the exact preparation before network and keeps its bytes on
       confirmed: new Map(),
     }),
     inFlight: async () => stored,
+    encodeCandidates: createPintaCausalPersistence({ namespace: 'queue-test-codec' }).causal
+      .encodeCandidates,
     prepare: async () => ({ pending, assets: [asset] }),
     seal: async (preparation, intent, intentHash, blobs) => {
       expect(preparation).toBe(pending.preparation)

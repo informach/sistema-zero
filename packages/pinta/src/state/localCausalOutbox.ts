@@ -22,6 +22,7 @@ import { isTilesetKind, pintaAssetDependencyIds } from '../core/project'
 import { pintaDoorBindings } from '../core/sceneMapClosure'
 import { PINTA_CAUSAL_OUTBOX_KEY } from './assetAuthorityKeys'
 import type { LocalAssetTransition, LocalSnapshot } from './localAssetAuthority'
+import { copyArchivedRecovery, planArchivedRecovery } from './localCausalArchive'
 import { localRecoveryClosure, localRecoverySeeds, recoverLocalAssets } from './localCausalRecovery'
 
 export { PINTA_CAUSAL_OUTBOX_KEY } from './assetAuthorityKeys'
@@ -55,6 +56,7 @@ export interface PintaCausalLocalDraft<Asset extends PintaMemoryAsset> {
   replaces?: readonly { opId: string; preparation: string }[]
   requireKnownInventory?: boolean
   independent?: true
+  shadow?: PintaCandidateBytes
 }
 
 interface PintaLocalUnbasedRead {
@@ -69,6 +71,8 @@ export interface PintaLocalUnbasedDraft<Asset extends PintaMemoryAsset> {
   requireKnownInventory?: boolean
   /** These puts retain the observed tile identities even though their artwork changed. */
   stableTilesets?: readonly string[]
+  migrations?: readonly { itemId: string; localRevision: string }[]
+  shadow?: PintaCandidateBytes
 }
 
 interface PintaLocalUnbased {
@@ -105,6 +109,11 @@ export interface PintaCausalPrepared {
   bytes: number
 }
 
+export interface PintaCandidateBytes {
+  puts: readonly PintaPreparedPut[]
+  blobs: ReadonlyMap<string, Blob>
+}
+
 export function localPreparedKey(opId: string): string {
   return `pinta:sync:prepared:${opId}`
 }
@@ -132,6 +141,7 @@ export interface PintaCausalLocalPull<Asset extends PintaMemoryAsset> {
   coveredIds?: readonly string[]
   recoverInitial?: true
   recoverDiverged?: true
+  archived?: readonly { opId: string; localRevision: string; sha256: string; asset: Asset }[]
   recoverUnit?: {
     opId: string
     intentHash: string
@@ -146,7 +156,7 @@ export interface PintaCausalLocalPull<Asset extends PintaMemoryAsset> {
 export class PintaCausalPullDeferred extends Error {}
 
 export interface LocalCausalState {
-  version: 1 | 2
+  version: 1 | 2 | 3
   protocolKnown: boolean
   epoch: string | null
   /** A complete read epoch followed by this device's consecutive confirmed writes. */
@@ -155,6 +165,7 @@ export interface LocalCausalState {
   /** Exact revisions of recovery copies that still live only in this gallery. */
   recovered?: Map<string, string>
   prepared?: Map<string, PintaCausalPrepared>
+  shadows?: Map<string, PintaCausalPrepared>
   pending: PintaCausalPending[]
   sealed: PintaCausalSealed | null
   confirmed: Map<string, PintaCausalConfirmed>
@@ -353,25 +364,61 @@ function preparedState(
   if (!(value instanceof Map) || value.size > groups.length) return false
   for (const [index, group] of groups.entries()) {
     if (!value.has(group.opId)) return index === value.size
-    const candidate: unknown = value.get(group.opId)
-    if (!object(candidate) || !Array.isArray(candidate.puts)) return false
     const putIds = new Set(
       group.members.filter((member) => member.action === 'put').map(({ itemId }) => itemId),
     )
-    let sum = 0
-    for (const put of candidate.puts) {
-      if (!object(put)) return false
-      const wire = PintaCausalMemberSchema.safeParse({
-        ...put,
-        action: 'put',
-        operation: { type: 'update' },
-        baseRevision: 1,
-      })
-      if (!wire.success || wire.data.action !== 'put' || !putIds.delete(wire.data.itemId))
+    if (!candidateState(value.get(group.opId), putIds)) return false
+  }
+  return true
+}
+
+function candidateState(candidate: unknown, putIds: Set<string>): candidate is PintaCausalPrepared {
+  if (!object(candidate) || !Array.isArray(candidate.puts)) return false
+  let sum = 0
+  for (const put of candidate.puts) {
+    if (!object(put)) return false
+    const wire = PintaCausalMemberSchema.safeParse({
+      ...put,
+      action: 'put',
+      operation: { type: 'update' },
+      baseRevision: 1,
+    })
+    if (!wire.success || wire.data.action !== 'put' || !putIds.delete(wire.data.itemId))
+      return false
+    sum += wire.data.bytes
+  }
+  return putIds.size === 0 && candidate.bytes === sum
+}
+
+function shadowState(
+  raw: unknown,
+  groups: readonly PintaCausalPending[],
+  prepared: ReadonlyMap<string, PintaCausalPrepared> | undefined,
+  unbased: PintaLocalUnbased | undefined,
+): raw is Map<string, PintaCausalPrepared> {
+  if (!(raw instanceof Map)) return false
+  for (const [opId, source] of raw) {
+    if (prepared?.has(opId)) return false
+    const group = groups.find((item) => item.opId === opId)
+    if (group) {
+      if (
+        !candidateState(
+          source,
+          new Set(
+            group.members.filter(({ action }) => action === 'put').map(({ itemId }) => itemId),
+          ),
+        )
+      )
         return false
-      sum += wire.data.bytes
-    }
-    if (putIds.size || candidate.bytes !== sum) return false
+    } else if (
+      !unbased ||
+      unbased.opId !== opId ||
+      !candidateState(
+        source,
+        new Set(unbased.members.filter(({ deleted }) => !deleted).map(({ itemId }) => itemId)),
+      )
+    )
+      return false
   }
   return true
 }
@@ -380,7 +427,7 @@ export function readLocalCausalState(records: ReadonlyMap<string, unknown>): Loc
   const value = records.get(PINTA_CAUSAL_OUTBOX_KEY)
   if (value === undefined)
     return {
-      version: 2,
+      version: 3,
       protocolKnown: false,
       epoch: null,
       pending: [],
@@ -389,7 +436,7 @@ export function readLocalCausalState(records: ReadonlyMap<string, unknown>): Loc
     }
   if (
     !object(value) ||
-    (value.version !== 1 && value.version !== 2) ||
+    (value.version !== 1 && value.version !== 2 && value.version !== 3) ||
     (value.protocolKnown !== undefined && typeof value.protocolKnown !== 'boolean') ||
     (value.epoch != null && !pintaCausalEpochSchema.safeParse(value.epoch).success) ||
     (value.writeEpoch !== undefined &&
@@ -400,6 +447,9 @@ export function readLocalCausalState(records: ReadonlyMap<string, unknown>): Loc
     value.pending.length > PINTA_CAUSAL_LIMITS.members ||
     !value.pending.every(pendingState) ||
     (value.prepared !== undefined && !preparedState(value.prepared, value.pending)) ||
+    (value.shadows !== undefined &&
+      (value.version !== 3 ||
+        !shadowState(value.shadows, value.pending, value.prepared, value.unbased))) ||
     (value.sealed !== null && !sealedState(value.sealed)) ||
     !confirmedState(value.confirmed)
   )
@@ -424,6 +474,9 @@ export function readLocalCausalState(records: ReadonlyMap<string, unknown>): Loc
     ...(unbasedState(value.unbased) ? { unbased: value.unbased } : {}),
     ...(recoveryState(value.recovered) ? { recovered: value.recovered } : {}),
     ...(preparedState(value.prepared, value.pending) ? { prepared: value.prepared } : {}),
+    ...(shadowState(value.shadows, value.pending, value.prepared, value.unbased)
+      ? { shadows: value.shadows }
+      : {}),
     pending: value.pending,
     sealed: value.sealed,
     confirmed: value.confirmed,
@@ -456,6 +509,17 @@ export function stageLocalUnbasedDraft<Asset extends PintaMemoryAsset>(
     invalid()
   const snapshot = write()
   const updated = new Set(draft.transitions.map(({ id }) => id))
+  for (const { itemId, localRevision } of draft.migrations ?? []) {
+    if (
+      !state.unbased?.members.some(
+        (member) =>
+          member.itemId === itemId && member.localRevision === localRevision && !member.deleted,
+      ) ||
+      snapshot.documents.get(itemId)?.revision !== localRevision ||
+      updated.has(itemId)
+    )
+      invalid()
+  }
   const stable = new Map<string, { before: string; after: string }>()
   for (const id of draft.stableTilesets ?? []) {
     const change = draft.transitions.find((transition) => transition.id === id)
@@ -504,7 +568,28 @@ export function stageLocalUnbasedDraft<Asset extends PintaMemoryAsset>(
     ],
   }
   if (!unbasedState(unbased)) invalid()
-  saveState(records, { ...state, unbased })
+  const shadows = new Map(state.shadows)
+  if (shadows.has(unbased.opId) && !draft.shadow) invalid()
+  if (draft.shadow) {
+    const before = readLocalCausalRetained(records, unbased.opId)
+    const puts = [
+      ...(before?.puts.filter(({ itemId }) => !updated.has(itemId)) ?? []),
+      ...draft.shadow.puts,
+    ]
+    const blobs = new Map(before?.blobs)
+    for (const id of updated) blobs.delete(id)
+    for (const [id, blob] of draft.shadow.blobs) blobs.set(id, blob)
+    shadows.set(
+      unbased.opId,
+      storeCandidate(
+        records,
+        unbased.opId,
+        { puts, blobs },
+        unbased.members.filter(({ deleted }) => !deleted).map(({ itemId }) => itemId),
+      ),
+    )
+  }
+  saveState(records, { ...state, unbased, ...(draft.shadow ? { shadows } : {}) })
   return snapshot
 }
 
@@ -516,16 +601,20 @@ export function localCausalBytes(records: ReadonlyMap<string, unknown>): number 
     confirmed: [...state.confirmed],
     ...(state.recovered ? { recovered: [...state.recovered] } : {}),
     ...(state.prepared ? { prepared: [...state.prepared] } : {}),
+    ...(state.shadows ? { shadows: [...state.shadows] } : {}),
   })
   return (
     new TextEncoder().encode(metadata).length +
     (state.sealed?.bytes ?? 0) +
-    [...(state.prepared?.values() ?? [])].reduce((total, entry) => total + entry.bytes, 0)
+    [...(state.prepared?.values() ?? []), ...(state.shadows?.values() ?? [])].reduce(
+      (total, entry) => total + entry.bytes,
+      0,
+    )
   )
 }
 
 function saveState(records: Map<string, unknown>, state: LocalCausalState): void {
-  records.set(PINTA_CAUSAL_OUTBOX_KEY, { ...state, version: 2 })
+  records.set(PINTA_CAUSAL_OUTBOX_KEY, { ...state, version: 3 })
 }
 
 export function rememberLocalCausalProtocol(records: Map<string, unknown>): void {
@@ -582,12 +671,13 @@ export function localCausalPullImpact<Asset extends PintaMemoryAsset>(
   pull: PintaCausalLocalPull<Asset>,
   state: LocalCausalState,
   snapshot: LocalSnapshot<Asset>,
-): { ids: string[]; blocked: boolean; recover?: string[] } {
+): { ids: string[]; blocked: boolean; recover?: string[]; needsArchive?: true } {
   const written = new Set(pull.transitions.map(({ id }) => id))
   const changedLayout = new Set<string>()
   let hasSelectorChange = false
   const projected = new Map(snapshot.assets)
   const terminal = terminalLocalMembers(pull, state)
+  const archived = planArchivedRecovery(pull, state, snapshot)
   for (const { id, before, after, remote } of pull.transitions) {
     if (after) projected.set(id, after)
     else projected.delete(id)
@@ -625,13 +715,16 @@ export function localCausalPullImpact<Asset extends PintaMemoryAsset>(
       : new Set<string>()
   let blocked =
     ((hasSelectorChange || changedLayout.size > 0) && snapshot.issues.length > 0) ||
-    (pull.recoverUnit !== undefined && !terminal)
-  const affected = new Set(written)
+    (pull.recoverUnit !== undefined && !terminal) ||
+    archived.incomplete
+  const affected = new Set([...written, ...archived.ids])
+  for (const id of archived.diverged) if (snapshot.assets.has(id)) seeds.add(id)
   for (const member of terminal?.values() ?? []) {
     affected.add(member.itemId)
     if (member.action !== 'put') continue
-    if (snapshot.assets.has(member.itemId)) seeds.add(member.itemId)
-    else blocked = true
+    if (snapshot.assets.has(member.itemId)) {
+      if (!archived.restoredCurrent.has(member.itemId)) seeds.add(member.itemId)
+    } else if (!archived.diverged.has(member.itemId)) blocked = true
   }
   if (state.epoch !== null && official === null) blocked = true
   if (!mayRecover && state.epoch !== null && official) {
@@ -644,8 +737,9 @@ export function localCausalPullImpact<Asset extends PintaMemoryAsset>(
       }
     }
   }
+  const archiveIssue = archived.incomplete ? { needsArchive: true as const } : {}
   if (!hasSelectorChange && !changedLayout.size && !seeds.size)
-    return { ids: [...affected], blocked }
+    return { ids: [...affected], blocked, ...archiveIssue }
   for (const asset of snapshot.assets.values()) {
     if (written.has(asset.id)) continue
     const usesChangedLayout = pintaAssetDependencyIds(asset).some((id) => changedLayout.has(id))
@@ -674,9 +768,10 @@ export function localCausalPullImpact<Asset extends PintaMemoryAsset>(
       ids: [...affected],
       blocked: blocked || closure.incomplete || snapshot.issues.length > 0,
       recover: closure.ids,
+      ...archiveIssue,
     }
   }
-  return { ids: [...affected], blocked }
+  return { ids: [...affected], blocked, ...archiveIssue }
 }
 
 /** A removal made before observing the account cannot delete its now-certified document. */
@@ -702,7 +797,7 @@ export function localRemovalsReturnedByPull<Asset extends PintaMemoryAsset>(
         confirmed &&
         !confirmed.deleted &&
         confirmed.localRevision !== beforeRevision) ||
-      terminal?.get(id)?.action === 'delete'
+      terminal?.has(id)
       ? [{ id, name: after.name }]
       : []
   })
@@ -728,7 +823,8 @@ export function installLocalCausalPull<Asset extends PintaMemoryAsset>(
   if (pull.recoverUnit && !terminal) return null
   if (terminal) {
     if (!readLocalCausalUpload(records)) invalid()
-    for (const opId of state.prepared?.keys() ?? []) readLocalCausalPrepared(records, opId)
+    for (const opId of [...(state.prepared?.keys() ?? []), ...(state.shadows?.keys() ?? [])])
+      readLocalCausalRetained(records, opId)
   }
   const returned = new Set(localRemovalsReturnedByPull(state, pull).map(({ id }) => id))
   let copies: Asset[] = []
@@ -755,13 +851,24 @@ export function installLocalCausalPull<Asset extends PintaMemoryAsset>(
           throw new PintaCausalPullDeferred()
       } else if (!change.remote && !mark) throw new PintaCausalPullDeferred()
     }
+    const archive = planArchivedRecovery(pull, state, before)
+    for (const id of archive.diverged) moved.add(id)
+    for (const id of archive.restoredCurrent) moved.add(id)
     if (!moved.size) return []
     const official = officialProjection(pull, state, before)
     if (!official) throw new PintaCausalPullDeferred()
-    const recovery = recoverLocalAssets([...moved], pull, before, official)
+    const recovery = recoverLocalAssets(
+      [...moved].filter((id) => before.assets.has(id) && !archive.restoredCurrent.has(id)),
+      pull,
+      before,
+      official,
+      archive.restoredCurrent,
+    )
     if (!recovery) throw new PintaCausalPullDeferred()
-    copies = recovery.copies
-    return recovery.writes
+    const retained = copyArchivedRecovery(archive, recovery.catalog)
+    if (!retained) throw new PintaCausalPullDeferred()
+    copies = [...recovery.copies, ...retained.copies]
+    return [...recovery.writes, ...retained.writes]
   })
   const confirmed = new Map(state.confirmed)
   for (const change of pull.transitions) {
@@ -809,8 +916,28 @@ export function installLocalCausalPull<Asset extends PintaMemoryAsset>(
       else recovered.set(id, doc.revision)
     }
   }
+  const shadows = new Map(state.shadows)
+  if (unbased && shadows.has(unbased.opId)) {
+    const candidate = readLocalCausalRetained(records, unbased.opId)
+    if (!candidate) invalid()
+    if (local?.members.length)
+      shadows.set(
+        unbased.opId,
+        keepCandidatePuts(
+          records,
+          unbased.opId,
+          candidate,
+          local.members.filter(({ action }) => action === 'put').map(({ itemId }) => itemId),
+        ),
+      )
+    else {
+      shadows.delete(unbased.opId)
+      records.delete(localPreparedKey(unbased.opId))
+    }
+  }
   saveState(records, {
     ...account,
+    ...(state.shadows ? { shadows: terminal ? new Map() : shadows } : {}),
     protocolKnown: true,
     epoch: pull.epoch,
     writeEpoch: pull.epoch,
@@ -821,7 +948,8 @@ export function installLocalCausalPull<Asset extends PintaMemoryAsset>(
   })
   if (terminal) {
     records.delete(PINTA_CAUSAL_BLOBS_KEY)
-    for (const id of state.prepared?.keys() ?? []) records.delete(localPreparedKey(id))
+    for (const id of [...(state.prepared?.keys() ?? []), ...(state.shadows?.keys() ?? [])])
+      records.delete(localPreparedKey(id))
   }
   return snapshot
 }
@@ -983,12 +1111,28 @@ export function stageLocalCausalDraft<Asset extends PintaMemoryAsset>(
     members,
   }
   if (!pendingState(pending)) invalid()
+  const shadows = new Map(state.shadows)
+  if (replacing.some((group) => shadows.has(group.opId)) && !draft.shadow) invalid()
+  for (const group of replacing)
+    if (shadows.delete(group.opId) && group.opId !== pending.opId)
+      records.delete(localPreparedKey(group.opId))
+  if (draft.shadow)
+    shadows.set(
+      pending.opId,
+      storeCandidate(
+        records,
+        pending.opId,
+        draft.shadow,
+        members.filter(({ action }) => action === 'put').map(({ itemId }) => itemId),
+      ),
+    )
   const recovered = new Map(state.recovered)
   for (const id of items) recovered.delete(id)
   saveState(records, {
     ...state,
     protocolKnown: true,
     ...(state.recovered ? { recovered } : {}),
+    ...(draft.shadow ? { shadows } : {}),
     pending: [...state.pending.filter((unit) => !expected.has(unit.opId)), pending],
   })
   return { snapshot, pending }
@@ -1050,7 +1194,32 @@ export function discardLocalCausalCreation<Asset extends PintaMemoryAsset>(
         ]
       : []
   })
-  saveState(records, { ...state, pending, ...(state.recovered ? { recovered } : {}) })
+  const shadows = new Map(state.shadows)
+  if (queued && shadows.has(queued.opId)) {
+    const candidate = readLocalCausalRetained(records, queued.opId)
+    if (!candidate) invalid()
+    const surviving = pending.find(({ opId }) => opId === queued.opId)
+    if (surviving)
+      shadows.set(
+        queued.opId,
+        keepCandidatePuts(
+          records,
+          queued.opId,
+          candidate,
+          surviving.members.filter(({ action }) => action === 'put').map(({ itemId }) => itemId),
+        ),
+      )
+    else {
+      shadows.delete(queued.opId)
+      records.delete(localPreparedKey(queued.opId))
+    }
+  }
+  saveState(records, {
+    ...state,
+    pending,
+    ...(state.recovered ? { recovered } : {}),
+    ...(state.shadows ? { shadows } : {}),
+  })
   return snapshot
 }
 
@@ -1064,21 +1233,65 @@ export function freezeLocalCausalDraft(
 ): boolean {
   const state = readLocalCausalState(records)
   const prepared = new Map(state.prepared)
+  const shadows = new Map(state.shadows)
+  const retained = readLocalCausalRetained(records, opId)
   const head = state.pending[prepared.size]
   if (
     !head ||
     head.opId !== opId ||
     head.preparation !== preparation ||
-    !head.members.every(matchesRevision)
+    (!retained && !head.members.every(matchesRevision))
   )
     return false
-  const bytes = puts.reduce((sum, member) => sum + member.bytes, 0)
-  prepared.set(opId, { puts, bytes })
+  if (retained && !pintaValuesEqual(retained.puts, puts)) return false
+  prepared.set(
+    opId,
+    shadows.get(opId) ??
+      storeCandidate(
+        records,
+        opId,
+        { puts, blobs },
+        head.members.filter(({ action }) => action === 'put').map(({ itemId }) => itemId),
+      ),
+  )
   if (!preparedState(prepared, state.pending)) invalid()
-  readCandidateBlobs(blobs, puts, bytes)
-  records.set(localPreparedKey(opId), new Map(blobs))
-  saveState(records, { ...state, prepared })
+  shadows.delete(opId)
+  saveState(records, { ...state, prepared, ...(state.shadows ? { shadows } : {}) })
   return true
+}
+
+function storeCandidate(
+  records: Map<string, unknown>,
+  opId: string,
+  bytes: PintaCandidateBytes,
+  ids: readonly string[],
+): PintaCausalPrepared {
+  const candidate = {
+    puts: bytes.puts,
+    bytes: bytes.puts.reduce((sum, member) => sum + member.bytes, 0),
+  }
+  if (!candidateState(candidate, new Set(ids))) invalid()
+  readCandidateBlobs(bytes.blobs, candidate.puts, candidate.bytes)
+  records.set(localPreparedKey(opId), new Map(bytes.blobs))
+  return candidate
+}
+
+function keepCandidatePuts(
+  records: Map<string, unknown>,
+  opId: string,
+  candidate: PintaCandidateBytes,
+  ids: readonly string[],
+): PintaCausalPrepared {
+  const keep = new Set(ids)
+  return storeCandidate(
+    records,
+    opId,
+    {
+      puts: candidate.puts.filter(({ itemId }) => keep.has(itemId)),
+      blobs: new Map([...candidate.blobs].filter(([id]) => keep.has(id))),
+    },
+    ids,
+  )
 }
 
 function readCandidateBlobs(
@@ -1103,7 +1316,17 @@ export function readLocalCausalPrepared(
   records: ReadonlyMap<string, unknown>,
   opId: string,
 ): { puts: readonly PintaPreparedPut[]; blobs: ReadonlyMap<string, Blob> } | null {
-  const candidate = readLocalCausalState(records).prepared?.get(opId)
+  return readLocalCausalRetained(records, opId, false)
+}
+
+export function readLocalCausalRetained(
+  records: ReadonlyMap<string, unknown>,
+  opId: string,
+  includeShadow = true,
+): PintaCandidateBytes | null {
+  const state = readLocalCausalState(records)
+  const candidate =
+    state.prepared?.get(opId) ?? (includeShadow ? state.shadows?.get(opId) : undefined)
   if (!candidate) return null
   return {
     puts: candidate.puts,
@@ -1126,7 +1349,9 @@ export function sealLocalCausalDraft(
   if (local.follows) return false
   if (!PintaCausalIntentSchema.safeParse(intent).success) invalid()
   if (
-    (!state.prepared?.has(local.opId) && !local.members.every(matchesRevision)) ||
+    (!state.prepared?.has(local.opId) &&
+      !state.shadows?.has(local.opId) &&
+      !local.members.every(matchesRevision)) ||
     intent.baseEpoch !== local.baseEpoch ||
     intent.inverseOf !== local.inverseOf ||
     intent.members.length !== local.members.length ||
@@ -1136,7 +1361,7 @@ export function sealLocalCausalDraft(
   let bytes = 0
   const members = new Map(local.members.map((member) => [member.itemId, member]))
   let blobCount = 0
-  const frozen = readLocalCausalPrepared(records, local.opId)
+  const frozen = readLocalCausalRetained(records, local.opId)
   const frozenPuts = new Map(frozen?.puts.map((put) => [put.itemId, put]))
   for (const member of intent.members) {
     const current = members.get(member.itemId)
@@ -1160,10 +1385,13 @@ export function sealLocalCausalDraft(
   }
   if (blobs.size !== blobCount || members.size !== 0) invalid()
   const prepared = new Map(state.prepared)
-  if (prepared.delete(local.opId)) records.delete(localPreparedKey(local.opId))
+  const shadows = new Map(state.shadows)
+  if (prepared.delete(local.opId) || shadows.delete(local.opId))
+    records.delete(localPreparedKey(local.opId))
   saveState(records, {
     ...state,
     ...(state.prepared ? { prepared } : {}),
+    ...(state.shadows ? { shadows } : {}),
     pending: state.pending.filter((pending) => pending !== local),
     sealed: { local, intent, intentHash, bytes },
   })

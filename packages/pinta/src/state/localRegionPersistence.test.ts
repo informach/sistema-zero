@@ -271,3 +271,33 @@ test('the factory budgets the entire regional gallery and leaves all documents u
   await expect(local.persistAsset(maps[5]!)).resolves.toBeUndefined()
   expect(await local.listAllAssets()).toHaveLength(5)
 }, 10000)
+
+test('the native 8 policy keeps a signed sparse map in the durable causal shadow after reopening', async () => {
+  const namespace = 'native8-candidate'
+  const local = createRegionPintaPersistence({ namespace })
+  const source = map()
+  const signal = new AbortController().signal
+  const shadow = await local.causal.encodeCandidates([source], signal)
+  await local.causal.stageUnbased({
+    transitions: [{ id: source.id, before: null, beforeRevision: null, after: source }],
+    readSet: [],
+    shadow,
+  })
+  expect(await local.loadAssetById(source.id)).toEqual(source)
+  const reopened = createRegionPintaPersistence({ namespace })
+  const { version, unbased } = await reopened.causal.inspect()
+  expect(version).toBe(3)
+  if (!unbased) throw Error('Missing local unit')
+  const candidate = await reopened.causal.retained(unbased.opId)
+  const blob = candidate?.blobs.get(source.id)
+  if (!blob) throw Error('Missing shadow')
+  expect(blob.size).toBeLessThan(8192)
+  const json = await new Response(blob.stream().pipeThrough(new DecompressionStream('gzip'))).text()
+  const decoded = reopened.causal.decodeCandidate(json)
+  expect(decoded).toEqual(structuredClone(source))
+  if (decoded?.kind !== 'tilemap' || !('origin' in decoded)) throw Error('Lost signed origin')
+  expect(decoded.origin).toEqual({ col: -64, row: -64 })
+  expect(cellAt(decoded, decoded.layers[0]!.id, -64, -64)).toBe(4)
+  const publicLocal = createPintaPersistence({ namespace })
+  expect(await publicLocal.loadAssetById(source.id)).toBeNull()
+})
