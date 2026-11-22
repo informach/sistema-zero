@@ -36,7 +36,7 @@ export function Regioes({
     nomeDe = (id: string) => todas.find((q) => q.id === id)?.nome ?? id
   if (!r)
     return (
-      <section className="mcn-grupo mcn-regioes" aria-label="Regiões">
+      <section className="mcn-painel-corpo mcn-regioes" aria-label="Regiões">
         <h3>Regiões</h3>
         <p className="text-sm text-mld-muted">
           Divida o cenário em lugares com nome (Vila, Floresta, Caverna). No Estúdio, o jogo carrega
@@ -53,33 +53,36 @@ export function Regioes({
             {t.mensagem}
           </p>
         ) : null}
-        <button
-          type="button"
-          className="sz-tool-btn"
-          aria-pressed={t.criando}
-          disabled={indisponivel || todas.length >= LIMITES_REGIOES.max}
-          onClick={() => {
-            if (t.criando) t.cancelar()
-            else {
-              t.iniciarCriacao()
-              aoCapturar()
-            }
-          }}
-        >
-          <LayoutGrid aria-hidden="true" />
-          Nova região
-        </button>
+        <div className="mcn-caminho-acoes">
+          <button
+            type="button"
+            className="sz-tool-btn"
+            aria-pressed={t.criando}
+            disabled={indisponivel || todas.length >= LIMITES_REGIOES.max}
+            onClick={() => {
+              if (t.criando) t.cancelar()
+              else {
+                t.iniciarCriacao()
+                aoCapturar()
+              }
+            }}
+          >
+            <LayoutGrid aria-hidden="true" />
+            Nova região
+          </button>
+        </div>
         {t.criando ? (
           <p role="status" className="text-sm text-mld-muted">
             Toque em dois cantos opostos da região no chão.
           </p>
         ) : null}
         {todas.length ? (
-          <ul className="mcn-regioes-lista">
+          <details className="mcn-grupo" open>
+            <summary>Regiões do cenário · {todas.length}</summary>
             {todas.map((q) => {
               const m = medidasDaRegiao(q)
               return (
-                <li key={q.id} className="mcn-caminho-item">
+                <div key={q.id} className="mcn-caminho-item">
                   <button
                     type="button"
                     className="sz-tool-btn"
@@ -92,10 +95,10 @@ export function Regioes({
                     {m.largura} m por {m.comprimento} m
                     {q.vizinhas.length ? ` · vizinha de ${q.vizinhas.map(nomeDe).join(', ')}` : ''}
                   </small>
-                </li>
+                </div>
               )
             })}
-          </ul>
+          </details>
         ) : (
           <p className="text-sm text-mld-muted">Nenhuma região ainda.</p>
         )}
@@ -108,7 +111,7 @@ export function Regioes({
     outras = todas.filter((q) => q.id !== r.id),
     existe = todas.some((q) => q.id === r.id)
   return (
-    <section className="mcn-grupo mcn-regioes" aria-label="Editar região">
+    <section className="mcn-painel-corpo mcn-regioes" aria-label="Editar região">
       <h3>{existe ? 'Editar região' : 'Nova região'}</h3>
       {t.erro ? (
         <p role="alert" className="mcn-recusa">

@@ -91,6 +91,15 @@
     justify-content: flex-start;
     text-align: start;
   }
+  /* Regiões (lote 7 da conclusão): o nome em cima e as medidas e vizinhas embaixo, na largura toda. */
+  .mcn-regioes .mcn-caminho-item {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+  .mcn-regioes .mcn-caminho-item > button {
+    justify-content: flex-start;
+    text-align: start;
+  }
   .mcn-caminho-molde {
     display: grid;
     gap: 10px;
