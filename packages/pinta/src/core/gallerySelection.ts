@@ -1,4 +1,5 @@
-import { isTilesetKind, type PintaAsset, pintaAssetDependencyIds } from './project'
+import type {PintaMemoryAsset} from './assetMemory'
+import { isTilesetKind, pintaAssetDependencyIds } from './project'
 
 /**
  * Expande a seleção do PACK com as dependências visuais e propriedades tipadas, inclusive as
@@ -11,13 +12,13 @@ import { isTilesetKind, type PintaAsset, pintaAssetDependencyIds } from './proje
  * o "Baixar tudo", que também não o filtra (o restauro avisa e pula o mapa).
  */
 export interface ExpandedSelection {
-  assets: PintaAsset[]
+  assets: PintaMemoryAsset[]
   /** Tilesets incluídos SEM estarem na seleção (a UI avisa por toast). */
   autoIncludedTilesetIds: string[]
 }
 
 export function expandSelection(
-  assets: readonly PintaAsset[],
+  assets: readonly PintaMemoryAsset[],
   selectedIds: ReadonlySet<string>,
 ): ExpandedSelection {
   const wanted = new Set<string>()

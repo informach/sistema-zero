@@ -1,3 +1,4 @@
+import type {PintaMemoryAsset} from './assetMemory'
 /**
  * Busca e filtros da galeria (18/08/2026). Sem teto de quantidade de desenhos, são eles
  * que mantêm a galeria navegável.
@@ -15,7 +16,6 @@ import { COPY } from './copy'
 import {
   assetRole,
   assetStyle,
-  type PintaAsset,
   type PintaAssetRole,
   type PintaAssetStyle,
 } from './project'
@@ -55,10 +55,10 @@ export function searchTerms(query: string): string[] {
 }
 
 /** Texto pesquisável memoizado POR ASSET (os assets são imutáveis: um `updatedAt` novo é um objeto novo). */
-const searchableTextCache = new WeakMap<PintaAsset, string>()
+const searchableTextCache = new WeakMap<PintaMemoryAsset, string>()
 
 /** O que a busca enxerga de um desenho: nome, tipo e jogo, já normalizados. */
-export function searchableText(asset: PintaAsset): string {
+export function searchableText(asset: PintaMemoryAsset): string {
   const cached = searchableTextCache.get(asset)
   if (cached !== undefined) return cached
   const kind = COPY.kinds[asset.kind]
@@ -69,12 +69,12 @@ export function searchableText(asset: PintaAsset): string {
 }
 
 /** Todos os termos da busca aparecem em algum campo do desenho? Busca vazia casa tudo. */
-export function matchesGallerySearch(asset: PintaAsset, query: string): boolean {
+export function matchesGallerySearch(asset: PintaMemoryAsset, query: string): boolean {
   return matchesSearchTerms(asset, searchTerms(query))
 }
 
 /** A mesma decisão com os termos JÁ calculados (uma vez por tecla, não por asset). */
-export function matchesSearchTerms(asset: PintaAsset, terms: readonly string[]): boolean {
+export function matchesSearchTerms(asset: PintaMemoryAsset, terms: readonly string[]): boolean {
   if (terms.length === 0) return true
   const haystack = searchableText(asset)
   return terms.every((term) => haystack.includes(term))
@@ -85,10 +85,10 @@ export function matchesSearchTerms(asset: PintaAsset, terms: readonly string[]):
  * e o texto de cada desenho vindo do cache. Equivale a `assets.filter(a =>
  * matchesGalleryFilters(a, filters))`, só mais barato com centenas de desenhos.
  */
-export function filterGalleryAssets(
-  assets: readonly PintaAsset[],
+export function filterGalleryAssets<Asset extends PintaMemoryAsset>(
+  assets: readonly Asset[],
   filters: GalleryFilters,
-): PintaAsset[] {
+): Asset[] {
   const terms = searchTerms(filters.query)
   return assets.filter(
     (asset) =>
@@ -99,18 +99,18 @@ export function filterGalleryAssets(
 }
 
 /** Passa no estilo escolhido? O mapa não tem estilo próprio: aparece em pixel E em vetor. */
-export function matchesStyleFilter(asset: PintaAsset, style: GalleryStyleFilter): boolean {
+export function matchesStyleFilter(asset: PintaMemoryAsset, style: GalleryStyleFilter): boolean {
   if (style === 'all') return true
   const own = assetStyle(asset.kind)
   return own === null || own === style
 }
 
-export function matchesRoleFilter(asset: PintaAsset, role: GalleryRoleFilter): boolean {
+export function matchesRoleFilter(asset: PintaMemoryAsset, role: GalleryRoleFilter): boolean {
   return role === 'all' || assetRole(asset.kind) === role
 }
 
 /** Busca + estilo + tipo, combinados (E). */
-export function matchesGalleryFilters(asset: PintaAsset, filters: GalleryFilters): boolean {
+export function matchesGalleryFilters(asset: PintaMemoryAsset, filters: GalleryFilters): boolean {
   return (
     matchesStyleFilter(asset, filters.style) &&
     matchesRoleFilter(asset, filters.role) &&

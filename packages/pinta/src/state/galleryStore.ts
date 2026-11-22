@@ -5,6 +5,10 @@
  * mensagem gentil no estado (a UI oferece retry) — nunca lançam.
  */
 import { createStore, type StoreApi } from 'zustand/vanilla'
+import type {PintaMemoryAsset} from '../core/assetMemory'
+import {pintaWorkshopBody,attachWorkshopBook} from '../export/workshopDocument'
+import {rebindCopiedAutomapBook} from '../tiles/automapping/native'
+import {isPintaAuthoredMap} from '../tiles/automapping/model'
 import { COPY } from '../core/copy'
 import type { PintaResourceObservation } from '../core/localAssetOrigin'
 import { embeddedTilesetOf } from '../core/mapResourceVersions'
@@ -34,7 +38,7 @@ import {
 export type { NewAssetInput }
 
 export interface PintaGalleryState {
-  assets: PintaAsset[]
+  assets: PintaMemoryAsset[]
   loaded: boolean
   loading: boolean
   /**
@@ -85,12 +89,12 @@ export interface PintaGalleryState {
    */
   createPrepared(asset: PintaAsset): Promise<PintaAsset | null>
   rename(id: string, name: string): Promise<boolean>
-  duplicate(id: string): Promise<PintaAsset | null>
+  duplicate(id: string): Promise<PintaMemoryAsset | null>
   remove(id: string): Promise<boolean>
   /** Absorve um asset atualizado pelo editor (autosave) sem reler o disco. */
-  absorb(asset: PintaAsset): void
+  absorb(asset: PintaMemoryAsset): void
   /** Publica uma transação confirmada do editor em uma única atualização. */
-  absorbMany(assets: readonly PintaAsset[]): void
+  absorbMany(assets: readonly PintaMemoryAsset[]): void
   /**
    * Restaura assets de um backup `.pinta.json`: ids NOVOS + nome com sufixo em
    * colisão (import nunca sobrescreve o que existe); respeita o orçamento de bytes
@@ -98,7 +102,7 @@ export interface PintaGalleryState {
    * quantos ficaram de fora.
    */
   importAssets(
-    assets: PintaAsset[],
+    assets: PintaMemoryAsset[],
     options?: { atomic?: boolean },
   ): Promise<{ added: number; skipped: number }>
   clearMutateError(): void
@@ -106,7 +110,7 @@ export interface PintaGalleryState {
 
 export type PintaGalleryStore = StoreApi<PintaGalleryState>
 
-function upsertSorted(assets: PintaAsset[], asset: PintaAsset): PintaAsset[] {
+function upsertSorted(assets: PintaMemoryAsset[], asset: PintaMemoryAsset): PintaMemoryAsset[] {
   const next = assets.filter((a) => a.id !== asset.id)
   next.unshift(asset)
   next.sort((a, b) => b.updatedAt - a.updatedAt)
@@ -126,9 +130,9 @@ function persistenceErrorMessage(error: unknown): string {
 const CHANGED_RELOAD_DELAY_MS = 250
 
 export function createGalleryStore(
-  persistence: PintaPersistence = createPintaPersistence(),
+  persistence: PintaPersistence<PintaMemoryAsset> = createPintaPersistence(),
 ): PintaGalleryStore {
-  function contextFor(assets: readonly PintaAsset[]) {
+  function contextFor(assets: readonly PintaMemoryAsset[]) {
     const catalog = [...store.getState().assets, ...assets]
     const resources = new Map<string, PintaResourceObservation>()
     for (const asset of assets)
@@ -136,11 +140,11 @@ export function createGalleryStore(
         resources.set(observed.id, observed)
     return { resources: [...resources.values()] }
   }
-  const persistOne = (asset: PintaAsset) =>
+  const persistOne = (asset: PintaMemoryAsset) =>
     persistence.observesReferences
       ? persistence.persistAsset(asset, contextFor([asset]))
       : persistence.persistAsset(asset)
-  const persistMany = (assets: readonly PintaAsset[]) =>
+  const persistMany = (assets: readonly PintaMemoryAsset[]) =>
     persistence.observesReferences
       ? persistence.persistAssets(assets, contextFor(assets))
       : persistence.persistAssets(assets)
@@ -300,7 +304,7 @@ export function createGalleryStore(
         set({ mutateError: COPY.newAsset.nameTaken })
         return false
       }
-      const renamed = { ...asset, name: normalized, updatedAt: Date.now() } as PintaAsset
+      const renamed = { ...asset, name: normalized, updatedAt: Date.now() }
       try {
         await persistOne(renamed)
         set((state) => ({ assets: upsertSorted(state.assets, renamed), mutateError: null }))
@@ -321,8 +325,15 @@ export function createGalleryStore(
         set({ mutateError: COPY.newAsset.nameTaken })
         return null
       }
-      const copy = cloneWithNewIds(asset, name)
       try {
+        let copy:PintaMemoryAsset=cloneWithNewIds(pintaWorkshopBody(asset),name)
+        if(isPintaAuthoredMap(asset)){
+          if(copy.kind!=='tilemap')throw Error(COPY.editor.saveError)
+          const book=await rebindCopiedAutomapBook(pintaWorkshopBody(asset),copy,asset.automapping,assets,[...assets,copy])
+          const bound=book&&attachWorkshopBook(copy,book)
+          if(!bound)throw Error(COPY.editor.saveError)
+          copy=bound
+        }
         await persistOne(copy)
         set((state) => ({ assets: upsertSorted(state.assets, copy), mutateError: null }))
         return copy
@@ -372,7 +383,7 @@ export function createGalleryStore(
       const ordered = [...incoming].sort(
         (a, b) => (a.kind === 'tilemap' ? 1 : 0) - (b.kind === 'tilemap' ? 1 : 0),
       )
-      const eligible: PintaAsset[] = []
+      const eligible: PintaMemoryAsset[] = []
       for (const asset of ordered) {
         if (
           asset.kind === 'tilemap' &&
@@ -396,7 +407,7 @@ export function createGalleryStore(
       // arquivo segue apontando para o id de antes: a camada volta sem aparência,
       // o mapa não se perde).
       const plan = planImport(
-        eligible,
+        eligible.map(pintaWorkshopBody),
         incomingTilesetIds,
         new Set(current.map((asset) => asset.name)),
       )
@@ -410,7 +421,27 @@ export function createGalleryStore(
 
       const restoredPairs = plan.pairs
       const restored = restoredPairs.map(({ restored: asset }) => asset)
-      if (options.atomic) {
+      const authored=eligible.filter(isPintaAuthoredMap)
+      if(authored.length){
+        try{
+          if(skipped)throw Error(COPY.editor.saveError)
+          const byId=new Map(restored.map((asset,i)=>[asset.id,i]))
+          for(const asset of authored){
+            const id=idMap.get(asset.id),i=id===undefined?undefined:byId.get(id)
+            if(i===undefined)throw Error(COPY.editor.saveError)
+            const copy=restored[i]
+            if(copy?.kind!=='tilemap')throw Error(COPY.editor.saveError)
+            const book=await rebindCopiedAutomapBook(pintaWorkshopBody(asset),copy,asset.automapping,[...current,...eligible],[...current,...restored])
+            const bound=book&&attachWorkshopBook(copy,book)
+            if(!bound)throw Error(COPY.editor.saveError)
+            restored[i]=bound
+          }
+        }catch{
+          set({mutateError:COPY.editor.saveError})
+          return {added:0,skipped:incoming.length}
+        }
+      }
+      if (options.atomic||authored.length) {
         try {
           await persistMany(restored)
           set((state) => ({

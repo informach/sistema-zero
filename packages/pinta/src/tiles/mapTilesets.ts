@@ -1,3 +1,4 @@
+import type {PintaMemoryAsset} from '../core/assetMemory'
 /**
  * As PEÇAS de um mapa com várias peças: o tileset padrão do mapa + os que as
  * camadas escolheram. Os renderizadores recebem `MapTilesets` — UM tileset (o
@@ -14,7 +15,6 @@ import {
   type AnyTilesetAsset,
   isCompatibleMapTileset,
   isTilesetKind,
-  type PintaAsset,
   type TilemapAsset,
   type TilemapCells,
   tilemapTilesetIds,
@@ -103,7 +103,7 @@ export function drawableIn(tilesets: ReadonlyMap<string, AnyTilesetAsset>): Draw
  */
 export function collectMapTilesets(
   tilemap: TilemapAsset<TilemapCells>,
-  findAsset: (id: string) => PintaAsset | null | undefined,
+  findAsset: (id: string) => PintaMemoryAsset | null | undefined,
 ): AnyTilesetAsset[] {
   const find = withMapResourceVersions(tilemap, (id) => findAsset(id) ?? null)
   return collectTilesetsByIds(tilemapTilesetIds(tilemap), find)
@@ -115,7 +115,7 @@ export function collectMapTilesets(
  */
 export function collectTilesetsByIds(
   ids: readonly string[],
-  findAsset: (id: string) => PintaAsset | null | undefined,
+  findAsset: (id: string) => PintaMemoryAsset | null | undefined,
 ): AnyTilesetAsset[] {
   const [primaryId, ...others] = ids
   const primary = primaryId ? findAsset(primaryId) : null
@@ -131,7 +131,7 @@ export function collectTilesetsByIds(
 /** `collectMapTilesets` sobre uma lista de assets (galeria, backup, pacote). */
 export function collectMapTilesetsFrom(
   tilemap: TilemapAsset<TilemapCells>,
-  assets: readonly PintaAsset[],
+  assets: readonly PintaMemoryAsset[],
 ): AnyTilesetAsset[] {
   const byId = new Map(assets.map((asset) => [asset.id, asset]))
   return collectMapTilesets(tilemap, (id) => byId.get(id))

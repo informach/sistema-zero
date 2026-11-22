@@ -33,7 +33,7 @@ export interface PintaAppContextValue {
    * tileset + mapas ligados numa transação) e antes ele chamava o `persistAssets` de MÓDULO —
    * que vai direto ao IndexedDB do perfil e ignoraria qualquer armazenamento injetado.
    */
-  persistence: PintaPersistence
+  persistence: PintaPersistence<import('../core/assetMemory').PintaMemoryAsset>
   /**
    * Área de transferência do APLICATIVO (copiar num desenho, colar em outro). Vive
    * aqui, e não na sessão do editor, porque a sessão morre ao voltar à galeria.

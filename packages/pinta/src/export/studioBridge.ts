@@ -1,3 +1,4 @@
+import {readPintaRegionSceneWire} from '@sistemazero/core/studio/pinta-region-scene'
 import { PINTA_STUDIO_LEGACY_LIMITS } from '@sistemazero/core/studio/pinta-limits'
 import { sceneFitsStudio } from '@sistemazero/core/studio/pinta-scene'
 import { tilemapNeedsV3 } from '../core/project'
@@ -34,7 +35,7 @@ import { tilemapToStudioGrid } from './studioGrid'
 import { packVectorSpritesheet, vectorSheetPngDataUrl, vectorSheetPortableSvg } from './vectorSheet'
 
 export interface StudioPayload {
-  scene?: import('@sistemazero/core/studio/pinta-scene').PintaScene
+  scene?: import('@sistemazero/core/studio/pinta-region-scene').PintaSceneWire
   dataUrl: string
   width: number
   height: number
@@ -151,7 +152,7 @@ export function validateStudioPayloadSize(
   payload: StudioPayload,
 ): 'ok' | 'asset-too-big' | 'sheet-too-big' {
   if (payload.dataUrl.length > STUDIO_MAX_ASSET_CHARS) return 'asset-too-big'
-  if (payload.scene && !sceneFitsStudio(payload.scene)) return 'asset-too-big'
+  if(payload.scene && (payload.scene.version===4?!readPintaRegionSceneWire(payload.scene):!sceneFitsStudio(payload.scene))) return 'asset-too-big'
   if (payload.tilemap && payload.tilemap.tileset.dataUrl.length > STUDIO_MAX_TILEMAP_SHEET_CHARS) {
     return 'sheet-too-big'
   }

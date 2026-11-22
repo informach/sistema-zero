@@ -143,7 +143,7 @@ export function PintaApp({
   adapter?: PintaHostAdapter
   onCompletionControlChange?: (control: PintaCompletionControl | null) => void
   /** Ausente = IndexedDB do perfil. O bloco de aula injeta o armazenamento dele. */
-  persistence?: PintaPersistence
+  persistence?: PintaPersistence<import('../core/assetMemory').PintaMemoryAsset>
   /** Informa ao host quando o editor ocupa toda a área, sem acoplar o Pinta ao menu externo. */
   onWorkspaceChange?: (active: boolean) => void
 }): JSX.Element {

@@ -1,3 +1,4 @@
+import type {PintaMemoryAsset} from '../../core/assetMemory'
 /**
  * Tela inicial: a galeria de desenhos do perfil. CRUD completo (criar em 3
  * passos, renomear, duplicar, apagar com confirmação) + estados de
@@ -31,7 +32,7 @@ import {
 } from '../../core/gallerySearch'
 import { expandSelection } from '../../core/gallerySelection'
 import { perfMeasure } from '../../core/perf'
-import { isTilesetKind, type PintaAsset, tilemapUsesTileset } from '../../core/project'
+import { isTilesetKind, tilemapUsesTileset } from '../../core/project'
 import type { PintaHostChromeStatus, PintaInitialIntent } from '../../core/types'
 import { isTilemapBundle } from '../../export/assetJson'
 import { type PintaBackupReadFailure, readPintaBackupFile } from '../../export/backupFile'
@@ -255,8 +256,8 @@ export function GalleryScreen(): JSX.Element {
   // recente (a lista já vem por updatedAt desc; o Map preserva a inserção).
   // A busca filtra ANTES do agrupamento: uma seção some quando nada nela casa.
   const { projectSections, looseAssets } = useMemo(() => {
-    const byProject = new Map<string, { name: string; assets: PintaAsset[] }>()
-    const loose: PintaAsset[] = []
+    const byProject = new Map<string, { name: string; assets: PintaMemoryAsset[] }>()
+    const loose: PintaMemoryAsset[] = []
     for (const asset of visibleAssets) {
       const ref = asset.projectRef
       if (!ref) {
@@ -297,7 +298,7 @@ export function GalleryScreen(): JSX.Element {
   )
   const onRemoveCard = useCallback((id: string) => setRemoveId(id), [])
 
-  const renderCard = (asset: PintaAsset): JSX.Element => (
+  const renderCard = (asset: PintaMemoryAsset): JSX.Element => (
     <AssetCard
       key={asset.id}
       asset={asset}
@@ -418,7 +419,7 @@ export function GalleryScreen(): JSX.Element {
         showToast(messages[read.reason])
         return
       }
-      const { assets: restored, warnings } = importPintaJson(read.text)
+      const { assets: restored, warnings } = persistence.workshopReader?await (await import('../../export/workshopDocument')).readPintaWorkshopBackup(read.text):importPintaJson(read.text)
       if (restored.length === 0) {
         showToast(warnings[0] ?? COPY.gallery.restoreError)
         return

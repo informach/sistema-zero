@@ -99,7 +99,7 @@ function workshopPolicy(): LocalPersistenceFormat<PintaMemoryAsset> {
 export function createWorkshopPintaPersistence(
   options: { namespace?: string; guardCausalWrites?: boolean } = {},
 ) {
-  return createLocalPintaPersistence(options, workshopPolicy())
+  return {...createLocalPintaPersistence(options, workshopPolicy()),workshopReader:true as const}
 }
 export function captureWorkshopPintaAssetForImage(id: string, options: PintaCaptureOptions = {}) {
   return captureLocalPintaAssetForImage(

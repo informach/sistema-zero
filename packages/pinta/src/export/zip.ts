@@ -15,7 +15,6 @@
 import {
   type AnyTilesetAsset,
   isTilesetKind,
-  type PintaAsset,
   resolveAssetPalette,
 } from '../core/project'
 import { flattenCels } from '../pixel/layers'
@@ -28,6 +27,7 @@ import { vectorToPortableSvg } from '../vector/portableSvg'
 import { vectorPngDataUrl } from '../vector/rasterize'
 import { PINTA_GALLERY_ZIP_ENTRY } from './backupFormat'
 import { bitmapToPngDataUrl, composeSheetPngDataUrl, dataUrlToBlob } from './png'
+import {isLegacyWorkshopAsset} from './workshopDocument'
 import { galleryToPintaJson } from './projectJson'
 import { packSpritesheet, spritesheetMetadata, spritesheetRecipe } from './spritesheet'
 import { tilemapExportJson, tilemapRecipe, tilemapToStudioGrid } from './studioGrid'
@@ -74,7 +74,7 @@ function safeFileName(name: string, index: number, taken: Set<string>): string {
  * arquivo tem só os escolhidos e volta pelo "Trazer de volta".
  */
 export async function buildGalleryFileMap(
-  assets: PintaAsset[],
+  assets: readonly import('../core/assetMemory').PintaMemoryAsset[],
   variant: 'gallery' | 'pack' = 'gallery',
 ): Promise<{
   files: FileMap
@@ -151,6 +151,18 @@ export async function buildGalleryFileMap(
         break
       }
       case 'tilemap': {
+        if('origin' in asset){
+          const {pintaWorkshopBody}=await import('./workshopDocument')
+          const {exportPintaRegionScene}=await import('./regionScene')
+          const map=pintaWorkshopBody(asset)
+          const catalog=new Map(assets.map(item=>[item.id,pintaWorkshopBody(item)]))
+          if(map.kind==='tilemap'&&'origin' in map){
+            // Source remains recoverable even when an external image is currently unavailable.
+            try{files[`mapas/${asset.name}.pinta-scene.json`]=(await exportPintaRegionScene(map,id=>catalog.get(id)??null)).json}
+            catch{readme.push(`• O mapa "${asset.name}" está no arquivo da galeria.`)}
+          }
+          break
+        }
         // Todas as peças do mapa (a padrão primeiro): cada camada sai com as dela.
         const mapTilesets = collectMapTilesets(asset, (id) => tilesetsById.get(id))
         const tileset = mapTilesets[0]
@@ -198,7 +210,9 @@ export async function buildGalleryFileMap(
     }
   }
 
-  files[PINTA_GALLERY_ZIP_ENTRY] = galleryToPintaJson(assets)
+  const backup=assets.every(isLegacyWorkshopAsset)?galleryToPintaJson(assets):await (await import('./workshopDocument')).pintaWorkshopBackup(assets)
+  if(!backup)throw new Error('Não consegui montar o backup completo da galeria.')
+  files[PINTA_GALLERY_ZIP_ENTRY] = backup
   return { files, readme }
 }
 
@@ -217,7 +231,7 @@ export async function zipRetainedRecoveryFiles(files: ReadonlyMap<string, Blob>)
 
 /** Zipa o mapa (fflate sob demanda; chaves com `/` viram pastas). */
 export async function zipGallery(
-  assets: PintaAsset[],
+  assets: readonly import('../core/assetMemory').PintaMemoryAsset[],
   variant: 'gallery' | 'pack' = 'gallery',
 ): Promise<Uint8Array> {
   const { files, readme } = await buildGalleryFileMap(assets, variant)

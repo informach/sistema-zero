@@ -106,7 +106,7 @@ export function collectAssetBundle<Asset extends PintaMemoryAsset>(
  * O arquivo é um cenário conectado completo? Inclui mundos com portas e ciclos.
  * A galeria restaura o pacote de forma ATÔMICA (ou volta tudo, ou nada).
  */
-export function isTilemapBundle(assets: readonly PintaAsset[]): boolean {
+export function isTilemapBundle(assets: readonly PintaMemoryAsset[]): boolean {
   if (assets.length < 2 || assets.length > PINTA_DEPENDENCY_ASSET_LIMIT) return false
   if (!assets.some((asset) => asset.kind === 'tilemap')) return false
   const byId = new Map(assets.map((asset) => [asset.id, asset]))

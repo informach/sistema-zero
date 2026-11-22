@@ -106,7 +106,7 @@ export function fitZoomFor(width: number, height: number, levels: readonly numbe
 
 /** O desenho desta tela que já existe na galeria (mesmo nome, cenário de pixel do mesmo tamanho). */
 export function findInitialCanvasAsset(
-  assets: readonly PintaAsset[],
+  assets: readonly import('./assetMemory').PintaMemoryAsset[],
   canvas: PintaInitialCanvas,
 ): PintaAsset | null {
   // O nome com sufixo também conta (`molde-geladeira-2`): quando o nome puro já era de outro
@@ -115,7 +115,7 @@ export function findInitialCanvasAsset(
     name === canvas.name ||
     (name.startsWith(`${canvas.name}-`) && /^\d+$/.test(name.slice(canvas.name.length + 1)))
   return (
-    assets.find((asset) => {
+    assets.find((asset):asset is Extract<PintaAsset,{kind:'pixel-background'}> => {
       if (!doMolde(asset.name) || asset.kind !== 'pixel-background') return false
       const cel = asset.cels[0]
       return cel?.width === canvas.width && cel.height === canvas.height

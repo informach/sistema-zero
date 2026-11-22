@@ -1,3 +1,4 @@
+import type {PintaMemoryAsset} from '../../core/assetMemory'
 /**
  * Card de um desenho na galeria: miniatura REAL do desenho (canvas 1:1
  * esticado por CSS pixelated para pixel; SVG inline para vetor; minimapa de
@@ -19,7 +20,6 @@ import { COPY } from '../../core/copy'
 import { perfSpan } from '../../core/perf'
 import {
   assetStyle,
-  type PintaAsset,
   type PintaBitmap,
   resolveAssetPalette,
 } from '../../core/project'
@@ -34,7 +34,7 @@ import { Check, Copy, Pencil, Trash2 } from '../ui/icons'
 export { thumbnailBitmap, thumbnailShapes }
 
 /** Cor do chip por PAPEL (a mesma nos dois estilos — é como a criança pensa). */
-const KIND_CHIP_CLASSES: Record<PintaAsset['kind'], string> = {
+const KIND_CHIP_CLASSES: Record<PintaMemoryAsset['kind'], string> = {
   'map-set': 'bg-pin-kind-tilemap',
   'pixel-sprite': 'bg-pin-kind-sprite',
   'pixel-background': 'bg-pin-kind-background',
@@ -134,7 +134,7 @@ function PixelThumb({
   bitmap,
   paint,
 }: {
-  asset: PintaAsset
+  asset: PintaMemoryAsset
   bitmap: PintaBitmap
   /** Pinta o canvas (false = ainda longe da janela; fica no emoji de fundo). */
   paint: boolean
@@ -164,8 +164,8 @@ function TilemapThumb({
   asset,
   findAsset,
 }: {
-  asset: Extract<PintaAsset, { kind: 'tilemap' }>
-  findAsset?: (id: string) => PintaAsset | null
+  asset: Extract<PintaMemoryAsset, { kind: 'tilemap' }>
+  findAsset?: (id: string) => PintaMemoryAsset | null
 }): JSX.Element | null {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   // Todas as peças do mapa: cada célula pinta com a cor da camada que venceu nela.
@@ -216,8 +216,8 @@ export function AssetThumb({
   paint = true,
   surface = 'checker',
 }: {
-  asset: PintaAsset
-  findAsset?: (id: string) => PintaAsset | null
+  asset: PintaMemoryAsset
+  findAsset?: (id: string) => PintaMemoryAsset | null
   /** `false` = o canvas do pixel ainda não é pintado (card longe da janela). */
   paint?: boolean
   /** O fundo por trás do desenho (ver `THUMB_SURFACE_CLASSES`). */
@@ -265,10 +265,10 @@ export const AssetCard = memo(function AssetCard({
   selected = false,
   onToggleSelect,
 }: {
-  asset: PintaAsset
+  asset: PintaMemoryAsset
   justCreated?: boolean
   /** Resolve outros assets do perfil (o tilemap precisa das peças p/ a thumb). */
-  findAsset?: (id: string) => PintaAsset | null
+  findAsset?: (id: string) => PintaMemoryAsset | null
   onOpen: (id: string) => void
   onRename: (id: string) => void
   onDuplicate: (id: string) => Promise<void> | void

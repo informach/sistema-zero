@@ -429,6 +429,7 @@ export function runSerializedWrite<Result>(
  * do disco mudou (a galeria relê, coalescido).
  */
 export interface PintaPersistence<Asset extends PintaMemoryAsset = PintaAsset> {
+  readonly workshopReader?:true
   persistAsset(asset: Asset, context?: PintaEditorWriteContext): Promise<void>
   persistAssets(assets: readonly Asset[], context?: PintaEditorWriteContext): Promise<void>
   persistRevision?(

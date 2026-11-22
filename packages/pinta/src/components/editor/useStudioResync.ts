@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { dependentTilemaps } from '../../core/dependentTilemaps'
-import type { PintaAsset } from '../../core/project'
+import type { PintaMemoryAsset } from '../../core/assetMemory'
 import type { PintaHostAdapter, PintaStudioResyncResult } from '../../core/types'
 import { buildStudioMapBundle } from '../../export/studioMapBundle'
 import type { PintaGalleryStore } from '../../state/galleryStore'
@@ -11,7 +11,7 @@ const RESYNC_IDLE_MS = 1500
 type ResyncToStudio = NonNullable<PintaHostAdapter['resyncToStudio']>
 
 interface ResyncJob {
-  asset: PintaAsset
+  asset: PintaMemoryAsset
   animationId: string | null
   frameIndex: number
   gallery: PintaGalleryStore
@@ -48,7 +48,7 @@ async function sendResync(job: ResyncJob): Promise<PintaStudioResyncResult> {
 }
 
 export function useStudioResync(options: {
-  asset: PintaAsset
+  asset: PintaMemoryAsset
   animationId: string | null
   frameIndex: number
   gallery: PintaGalleryStore
