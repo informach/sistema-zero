@@ -2,14 +2,16 @@ import type {
   PintaPaletteHead,
   PintaPaletteUploadCapability,
 } from '@sistemazero/core/creations/pinta-palette-writer'
-import type { PaletteLibrary } from './paletteLibrary'
+import type { PaletteLibrary, RemovedPaletteMark } from './paletteLibrary'
 
 export interface PaletteSubmission {
   ticket: PintaPaletteUploadCapability
   revision: number
   sent: PaletteLibrary
+  removals?: RemovedPaletteMark[]
 }
 export interface PaletteAccountToken {
+  removals?: RemovedPaletteMark[]
   head?: PintaPaletteHead
   minimum: number
   generation: string
@@ -26,7 +28,11 @@ export interface PaletteAccountSnapshot extends PaletteAccountToken {
 }
 
 export interface PaletteAccount {
-  inspect(minimum?: number, ready?: () => boolean): Promise<PaletteAccountSnapshot>
+  inspect(
+    minimum?: number,
+    ready?: () => boolean,
+    producing?: boolean,
+  ): Promise<PaletteAccountSnapshot>
   observeConflict(
     expected: PaletteAccountToken,
     minimum: number,

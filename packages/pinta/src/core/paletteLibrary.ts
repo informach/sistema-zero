@@ -90,6 +90,7 @@ export function emptyPaletteLibrary(): PaletteLibrary {
 function applyTombstones(
   palettes: SavedPalette[],
   removed: RemovedPaletteMark[],
+  maximum = MAX_REMOVED_MARKS,
 ): { palettes: SavedPalette[]; removed: RemovedPaletteMark[] } {
   const marks = new Map(removed.map((mark) => [mark.id, mark]))
   const alive: SavedPalette[] = []
@@ -100,9 +101,7 @@ function applyTombstones(
     if (mark) marks.delete(mark.id)
     alive.push(palette)
   }
-  const keptMarks = [...marks.values()]
-    .sort((a, b) => b.removedAt - a.removedAt)
-    .slice(0, MAX_REMOVED_MARKS)
+  const keptMarks = [...marks.values()].sort((a, b) => b.removedAt - a.removedAt).slice(0, maximum)
   return { palettes: alive, removed: keptMarks }
 }
 
@@ -113,6 +112,10 @@ function applyTombstones(
  * `null` só quando o registro nem tem a forma; biblioteca VAZIA é válida.
  */
 export function sanitizePaletteLibrary(raw: unknown): PaletteLibrary | null {
+  return sanitizeLibrary(raw, MAX_REMOVED_MARKS)
+}
+
+function sanitizeLibrary(raw: unknown, maximum: number): PaletteLibrary | null {
   if (!raw || typeof raw !== 'object') return null
   const r = raw as Record<string, unknown>
   if (!Array.isArray(r.palettes)) return null
@@ -143,7 +146,11 @@ export function sanitizePaletteLibrary(raw: unknown): PaletteLibrary | null {
       }
     }
   }
-  const applied = applyTombstones([...byId.values()].sort(compareId), [...seenMarks.values()])
+  const applied = applyTombstones(
+    [...byId.values()].sort(compareId),
+    [...seenMarks.values()],
+    maximum,
+  )
   const declaredUpdatedAt =
     typeof r.updatedAt === 'number' && Number.isFinite(r.updatedAt) ? r.updatedAt : 0
   const updatedAt = Math.max(
@@ -205,7 +212,16 @@ export function paletteLibraryContentKey(library: PaletteLibrary): string {
 
 /** The shared account item must round-trip without dropping fields, entries or versions. */
 export function readAccountPaletteLibrary(raw: unknown): PaletteLibrary | null {
-  const library = sanitizePaletteLibrary(raw)
+  return readLibrary(raw, MAX_REMOVED_MARKS)
+}
+
+/** A gesture may append a deletion to a full v1 document before the transaction compacts it. */
+export function readAuthoredPaletteLibrary(raw: unknown): PaletteLibrary | null {
+  return readLibrary(raw, Infinity)
+}
+
+function readLibrary(raw: unknown, maximum: number): PaletteLibrary | null {
+  const library = sanitizeLibrary(raw, maximum)
   if (
     !library ||
     !raw ||

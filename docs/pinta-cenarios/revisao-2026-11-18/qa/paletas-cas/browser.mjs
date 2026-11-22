@@ -178,10 +178,53 @@ try {
     pending: false,
     current: 'Gesto posterior',
   })
+  const retained = await resumed.evaluate(async () => {
+    const local = window.api.createPintaPersistence({ namespace: 'paleta-negociada' })
+    const auth = local.paletteAccount
+    for (let index = 0; index <= 48; index++) {
+      const id = index === 0 ? 'paleta' : 'temporaria-' + index
+      const removedAt = 100 + index
+      await local.savePaletteLibrary({
+        version: 1,
+        updatedAt: removedAt,
+        palettes: [],
+        removed: [{ id, removedAt }],
+      })
+    }
+    const result = await auth.inspect()
+    return { marks: result.removals, file: result.candidate }
+  })
+  assert.deepEqual(retained.marks, [{ id: 'paleta', removedAt: 100 }])
+  assert.equal(retained.file.removed.length, 48)
+  const v2 = await page('negociado')
+  await assert.rejects(
+    v2.evaluate(async () =>
+      window.api
+        .createPintaPersistence({ namespace: 'paleta-negociada' })
+        .savePaletteLibrary(window.doc('antiga', 200)),
+    ),
+    /versão mais nova/,
+  )
+  await v2.close()
+  const reopened = await page()
+  assert.deepEqual(
+    await reopened.evaluate(async () => {
+      const p = window.api.createPintaPersistence({ namespace: 'paleta-negociada' }).paletteAccount
+      const seen = await p.inspect()
+      return { marks: seen.removals, file: seen.candidate }
+    }),
+    retained,
+  )
+  await reopened.close()
   await resumed.close()
   console.log(
     JSON.stringify({
       chrome: browser.version(),
+      disk3: {
+        predecessor: '45024acaaa66ccf8c4dc56de0d0d92ecae119cd2',
+        refusedWrite: true,
+        removals: retained.marks.length,
+      },
       disk2: {
         historicalWriter: '14fcee965333172f8d101e5445b165d4ace817b1',
         refusedWrite: true,

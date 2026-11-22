@@ -1404,6 +1404,14 @@ export function createCloudMirroredPintaPersistence(options: {
           throw Error(
             'A conta não aceitou esta biblioteca. As paletas continuam neste aparelho. Edite a paleta antes de tentar novamente.',
           )
+        read = await account.inspect(0, () => !causalSession.signal.aborted, true)
+        if (
+          read.submission ||
+          read.needsHead ||
+          read.rejected ||
+          !!read.head !== !!cloud.readPalette
+        )
+          throw Error('A biblioteca de paletas mudou enquanto o envio era preparado.')
         produced = read
         if (!read.dirty || !read.candidate || read.minimum > (read.revision ?? 0)) return null
         return {

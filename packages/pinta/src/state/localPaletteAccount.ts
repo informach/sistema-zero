@@ -15,17 +15,23 @@ import {
   mergePaletteLibraries,
   type PaletteLibrary,
   paletteLibraryContentKey,
+  type RemovedPaletteMark,
   readAccountPaletteLibrary,
+  readAuthoredPaletteLibrary,
   type SavedPalette,
   sanitizePaletteLibrary,
 } from '../core/paletteLibrary'
 import { PINTA_LIMITS } from '../core/project'
 
+import { captureRemovals, retainCompactedRemovals, settleRemovals } from './localPaletteRemovals'
+
 export const PALETTE_LIBRARY_KEY = 'pinta:palettes'
 export const PALETTE_ACCOUNT_KEY = 'pinta:sync:palette-account'
 
 interface PaletteRecord extends PaletteAccountToken {
-  version: 1 | 2
+  version: 1 | 2 | 3
+  introduced?: string[]
+  priorRemovals?: RemovedPaletteMark[]
   submission?: PaletteSubmission
   rejected?: true
   priorSubmission?: PaletteLibrary
@@ -89,6 +95,7 @@ function snapshot(record: PaletteRecord): PaletteAccountSnapshot {
           submission: record.submission,
         }
       : {}),
+    ...(record.removals ? { removals: captureRemovals(record.removals) } : {}),
     generation: record.generation,
     revision: record.revision,
     minimum: record.minimum,
@@ -125,7 +132,7 @@ function addCopies(
 
 function supportedRecord(record: PaletteRecord): boolean {
   if (
-    (record?.version !== 1 && record?.version !== 2) ||
+    (record?.version !== 1 && record?.version !== 2 && record?.version !== 3) ||
     typeof record.generation !== 'string' ||
     !record.generation ||
     !Number.isSafeInteger(record.minimum) ||
@@ -146,7 +153,20 @@ function supportedRecord(record: PaletteRecord): boolean {
     'retired',
     'lastLegacyWrite',
   ])
-  if (record.version === 2) {
+  if (record.version === 3) {
+    allowed.add('removals')
+    allowed.add('priorRemovals')
+    allowed.add('introduced')
+    captureRemovals(record.removals)
+    captureRemovals(record.priorRemovals)
+    if (
+      record.introduced !== undefined &&
+      (!Array.isArray(record.introduced) ||
+        record.introduced.some((id) => typeof id !== 'string' || !id.length || id.length > 64))
+    )
+      return false
+  }
+  if (record.version === 2 || (record.version === 3 && record.head)) {
     allowed.add('head')
     allowed.add('priorEdits')
     allowed.add('recheck')
@@ -161,7 +181,9 @@ function supportedRecord(record: PaletteRecord): boolean {
       record.submission !== undefined &&
       (!record.submission ||
         Object.keys(record.submission).some(
-          (key) => !['ticket', 'revision', 'sent'].includes(key),
+          (key) =>
+            !['ticket', 'revision', 'sent'].includes(key) &&
+            !(record.version === 3 && key === 'removals'),
         ) ||
         !PintaPaletteUploadCapabilitySchema.safeParse(record.submission.ticket).success ||
         record.submission.ticket.baseGeneration !== record.head?.generation ||
@@ -170,6 +192,7 @@ function supportedRecord(record: PaletteRecord): boolean {
         !readAccountPaletteLibrary(record.submission.sent))
     )
       return false
+    if (record.submission) captureRemovals(record.submission.removals)
     if (record.recheck !== undefined && record.recheck !== true) return false
     const parsed = PintaPaletteHeadSchema.safeParse(record.head)
     if (
@@ -219,6 +242,7 @@ function captureToken(token: PaletteAccountToken): PaletteAccountToken {
     generation,
     revision,
     minimum,
+    ...(token.removals ? { removals: captureRemovals(token.removals) } : {}),
     ...(token.head ? { head: PintaPaletteHeadSchema.parse(token.head) } : {}),
   }
 }
@@ -233,6 +257,9 @@ function captureLibrary(input: PaletteLibrary): PaletteLibrary {
 function archivePriorEdits(record: PaletteRecord, remote: PaletteLibrary | null) {
   const local = withoutCopies(record) ?? emptyPaletteLibrary()
   const edits = delta(local, record.confirmed)
+  if (record.removals) record.priorRemovals = record.removals
+  delete record.removals
+  delete record.introduced
   record.priorEdits = edits
   addCopies(record, edits, remote)
   const copyIds = new Set(record.recoveries.map((copy) => copy.id))
@@ -248,6 +275,19 @@ function archivePriorEdits(record: PaletteRecord, remote: PaletteLibrary | null)
   record.migrationSource = null
   record.revision = null
   record.minimum = 0
+}
+
+function setRemovals(record: PaletteRecord, removals: RemovedPaletteMark[]) {
+  if (removals.length) {
+    record.version = 3
+    record.removals = removals
+  } else delete record.removals
+}
+
+function withRemovals(changes: PaletteLibrary, record: PaletteRecord) {
+  return record.removals
+    ? { ...changes, removed: [...changes.removed, ...record.removals] }
+    : changes
 }
 
 function checkReady(ready?: () => boolean) {
@@ -293,11 +333,30 @@ export function createLocalPaletteAccount(transaction: Transaction, notify: () =
   }
 
   const account: PaletteAccount = {
-    async inspect(minimum = 0, ready) {
+    async inspect(minimum = 0, ready, producing = false) {
       validRevision(minimum, 0)
       return access((record) => {
         record.minimum = Math.max(record.minimum, minimum)
-        return snapshot(record)
+        const seen = snapshot(record)
+        if (
+          producing &&
+          seen.dirty &&
+          seen.candidate &&
+          !seen.rejected &&
+          !seen.needsHead &&
+          !seen.submission &&
+          seen.minimum <= (seen.revision ?? 0)
+        ) {
+          const confirmed = new Set(record.confirmed?.palettes.map((p) => p.id))
+          const introduced = seen.candidate.palettes
+            .filter((p) => !confirmed.has(p.id))
+            .map((p) => p.id)
+          if (introduced.length) {
+            record.version = 3
+            record.introduced = [...new Set([...(record.introduced ?? []), ...introduced])]
+          }
+        }
+        return seen
       }, ready)
     },
     async observeConflict(origin, minimum, ready) {
@@ -346,7 +405,8 @@ export function createLocalPaletteAccount(transaction: Transaction, notify: () =
             record.submission.revision === revision &&
             sameLibrary(record.submission.sent, sent)
           )
-        record.submission = { ticket, revision, sent }
+        const removals = replaces ? record.submission?.removals : expected.removals
+        record.submission = { ticket, revision, sent, ...(removals?.length ? { removals } : {}) }
         return true
       }, ready)
     },
@@ -417,7 +477,7 @@ export function createLocalPaletteAccount(transaction: Transaction, notify: () =
           if (!rotate && !remote && record.head?.exists) return null
           if (rotate) archivePriorEdits(record, remote?.library ?? null)
           if (rotate || bind) record.generation = newId()
-          record.version = 2
+          if (record.version === 1) record.version = 2
           record.head = head
           delete record.recheck
         }
@@ -432,6 +492,11 @@ export function createLocalPaletteAccount(transaction: Transaction, notify: () =
                 record.retired ?? emptyPaletteLibrary(),
                 previous,
               )
+            delete record.introduced
+            if (record.removals) {
+              record.priorRemovals = record.removals
+              delete record.removals
+            }
             record.confirmed = null
             record.revision = 0
             record.minimum = 0
@@ -454,7 +519,18 @@ export function createLocalPaletteAccount(transaction: Transaction, notify: () =
         }
         const copyIds = new Set(record.recoveries.map((copy) => copy.id))
         const copies = record.library?.palettes.filter((p) => copyIds.has(p.id)) ?? []
-        const merged = mergePaletteLibraries(remote.library, changes)
+        const merged = mergePaletteLibraries(remote.library, withRemovals(changes, record))
+        const kept = retainCompactedRemovals(
+          record.removals,
+          source,
+          changes,
+          merged,
+          remote.library,
+          record.confirmed ?? undefined,
+          record.introduced,
+        )
+        setRemovals(record, settleRemovals(kept, expected.removals, remote.library))
+        if (remote.revision !== (record.revision ?? 0)) delete record.introduced
         const activeIds = new Set([...merged.palettes, ...merged.removed].map((entry) => entry.id))
         if (record.retired)
           record.retired = {
@@ -495,6 +571,7 @@ export function createLocalPaletteAccount(transaction: Transaction, notify: () =
           revision < record.minimum
         )
           return null
+        const observed = record.submission ? record.submission.removals : expected.removals
         if (record.head || head) {
           if (
             !record.submission ||
@@ -518,6 +595,11 @@ export function createLocalPaletteAccount(transaction: Transaction, notify: () =
           delete record.submission
           delete record.rejected
         }
+        setRemovals(
+          record,
+          settleRemovals(record.removals, [...(observed ?? []), ...sent.removed], sent),
+        )
+        delete record.introduced
         record.confirmed = sent
         record.revision = revision
         record.minimum = revision
@@ -531,7 +613,7 @@ export function createLocalPaletteAccount(transaction: Transaction, notify: () =
     account,
     load: () => access((record) => record.library),
     async save(library: PaletteLibrary, ready?: () => boolean, observed?: PaletteLibrary) {
-      const incoming = readAccountPaletteLibrary(library)
+      const incoming = readAuthoredPaletteLibrary(library)
       if (!incoming && library && typeof library === 'object' && 'palettes' in library)
         throw Error('Não consegui conferir o conteúdo da biblioteca de paletas.')
       const previous = observed ? sanitizePaletteLibrary(observed) : null
@@ -545,7 +627,23 @@ export function createLocalPaletteAccount(transaction: Transaction, notify: () =
         const changedCopies = new Set(changes.palettes.map((p) => p.id))
         if (observed)
           record.recoveries = record.recoveries.filter((copy) => !changedCopies.has(copy.id))
-        record.library = mergePaletteLibraries(record.library ?? emptyPaletteLibrary(), changes)
+        const merged = mergePaletteLibraries(
+          record.library ?? emptyPaletteLibrary(),
+          withRemovals(changes, record),
+        )
+        setRemovals(
+          record,
+          retainCompactedRemovals(
+            record.removals,
+            record.library,
+            changes,
+            merged,
+            record.confirmed,
+            record.submission?.sent,
+            record.introduced,
+          ),
+        )
+        record.library = merged
         return record.library
       }, ready)
       notify()
