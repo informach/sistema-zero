@@ -18,6 +18,11 @@ são TRECHOS do arquivo na ordem em que ele roda. Proposta aprovada e desenho t�
   efeitos de `areas.ts`? Rode `areas.differential.test.ts` com Python 3.13+ no PATH (sem ele a
   prova é PULADA com aviso, e verde não diz nada; o `analyzer.py` recusa tudo num 3.12). O 1º
   modelo mudava programas reais (revisão de 22/11, M1 a M12) e passou em todos os testes de tabela.
+- **🎛️ são as constantes, ⚙️ as variáveis** (decisão dela, 22/11/2026): lista, dicionário e
+  conjunto em MAIÚSCULAS com valores fixos vão para Configurações só se nada no arquivo os muda
+  (`fixedValue` + `changedInPlace` em `areas.ts`; o `reach` diz a quantos `[…]` há algo que muda).
+  Na dúvida (entregue a uma função qualquer, guardado noutro nome) fica no Ao iniciar. A troca de
+  lugar é segura de qualquer jeito: a conferência só decide a área.
 - **Todo programa cabe**: o ⚙️ Ao iniciar aceita qualquer bloco; a linha que não pode ir para a
   área dela fica onde está, com a nota `python-area` e "Levar para <área>". O bloco que liga ou
   desliga o jogo fica no fim, e tudo depois do laço do jogo é terminal.

@@ -85,6 +85,29 @@ function expectSame(results: ReturnType<typeof organizeAndCompare>) {
 
 // Os casos da revisão de 22/11/2026 (M1 a M12): cada um mudava o programa no modelo antigo.
 const REVIEW_CASES: Record<string, string> = {
+  // Lista, dicionário e conjunto que ficam iguais sobem para as Configurações (22/11/2026).
+  'lista fixa sobe para as Configurações': `
+print('oi')
+def primeira():
+    return CORES[0] + str(TAMANHOS['g'])
+CORES = ['r', 'g']
+TAMANHOS = {'p': 1, 'g': 3}
+VAZIOS = {(0, 0), (1, 2)}
+print(primeira(), len(VAZIOS))
+`,
+  'lista que muda fica onde está': `
+print('x')
+PONTOS = [1]
+PONTOS.append(2)
+print(PONTOS)
+`,
+  'lista entregue a quem embaralha fica onde está': `
+import random
+random.seed(1)
+CARTAS = [1, 2, 3, 4]
+random.shuffle(CARTAS)
+print(CARTAS)
+`,
   'M1 configuração que depende de lista mudada': `
 CORES = ['r', 'b']
 CORES.append('g')
@@ -424,6 +447,74 @@ function fuzzSources(count: number, seed: number) {
   }
   return out
 }
+
+/** A área da linha `line` (0 = a primeira) de um programa analisado pelo Python de verdade. */
+function areaOf(source: string, line: number) {
+  const [tree] = driver<(PythonNode | null)[]>({ op: 'parse', sources: [source] })
+  if (!tree) throw new Error(`não analisou:\n${source}`)
+  const body = (tree.fields.body as PythonNode[]) ?? []
+  const info = analyzePythonModuleAreas(
+    tree,
+    body.map(() => undefined),
+  ).statements[line]!
+  return info.role === 'area' ? info.area : info.role
+}
+
+describe.skipIf(!PYTHON)('lista, dicionário e conjunto em MAIÚSCULAS', () => {
+  // Pedido dela (22/11/2026): Configurações são as constantes; a lista que o jogo muda é variável.
+  test('ficam iguais enquanto o jogo roda: Configurações', () => {
+    const constants: [string, number][] = [
+      [
+        'import random\nCORES = ["#f00", "#0f0"]\nprint(CORES[0], len(CORES), random.choice(CORES))\nfor cor in CORES:\n    print(cor, CORES.index(cor))\n',
+        1,
+      ],
+      ['MAPA = ["#.#", "..."]\nprint(MAPA[1][2], "#" in MAPA[0], [*MAPA])\n', 0],
+      [
+        'TECLAS = {"Left": (-1, 0), "Right": (1, 0)}\nprint(TECLAS.get("Left"), TECLAS["Right"])\n',
+        0,
+      ],
+      ['VAZIOS = {(0, 0), (1, 2)}\nprint((0, 0) in VAZIOS)\n', 0],
+      ['DIRECOES = [(1, 0), (0, 1)]\nfor dx, dy in DIRECOES + [(0, 0)]:\n    print(dx)\n', 0],
+      ['GRADE = [[0, 0], [1, 1]]\nprint(GRADE[0][1], len(GRADE))\n', 0],
+      ['A, B = [1], (2, 3)\nprint(A[0], B)\n', 0],
+      // Dicionário de listas de textos: o `for` tira textos da lista de dentro.
+      [
+        'ABERTURAS = {"I": ["cima", "baixo"]}\nfor lado in ABERTURAS["I"]:\n    print(lado)\nprint("cima" in ABERTURAS.get("I", []))\n',
+        0,
+      ],
+      // Dicionário de dicionários: o `for` no dicionário entrega as chaves.
+      [
+        'MONSTROS = {"a": {"vida": 3}}\nfor nome in MONSTROS:\n    print(MONSTROS[nome]["vida"], MONSTROS[nome]["vida"].bit_length())\n',
+        0,
+      ],
+    ]
+    for (const [source, line] of constants)
+      expect([source, areaOf(source, line)]).toEqual([source, 'settings'])
+  })
+
+  test('o programa muda, ou entrega a quem pode mudar: Ao iniciar', () => {
+    const variables: [string, number][] = [
+      ['FILA = []\nFILA.append(1)\n', 0],
+      ['PONTOS = [0]\ndef somar():\n    PONTOS[0] += 1\n', 0],
+      ['MAPA = ["#"]\ndef apagar():\n    del MAPA[0]\n', 0],
+      ['import random\nCARTAS = [1, 2]\nrandom.shuffle(CARTAS)\n', 1],
+      ['CORES = ["a"]\nlista = CORES\n', 0],
+      ['CORES = ["a"]\ndef pintar(cores):\n    cores.append("b")\npintar(CORES)\n', 0],
+      ['GRADE = [[0, 0]]\nfor linha in GRADE:\n    linha[0] = 1\n', 0],
+      ['GRADE = [[0, 0]]\nprimeira = GRADE[0]\n', 0],
+      // Um dicionário de dentro guardado noutro nome pode ser mudado por ele.
+      ['GOLPES = {"a": {"dano": 1}}\ngolpe = GOLPES["a"]\n', 0],
+      ['LISTAS = [[1], [2]]\nimport random\nprint(random.choice(LISTAS))\n', 0],
+      ['TECLAS = {"a": 1}\nTECLAS.update(b=2)\n', 0],
+      ['cores = ["a"]\n', 0],
+      ['CHAVES = {(1, [2]): 3}\n', 0],
+      ['BASE = {"a": 1}\nTUDO = {**BASE}\n', 1],
+      ['CORES = ["a"]\nCORES = ["b"]\n', 0],
+    ]
+    for (const [source, line] of variables)
+      expect([source, areaOf(source, line)]).toEqual([source, 'start'])
+  })
+})
 
 describe.skipIf(!PYTHON)('organizar com o Python de verdade', () => {
   test('os casos da revisão continuam fazendo a mesma coisa', () => {

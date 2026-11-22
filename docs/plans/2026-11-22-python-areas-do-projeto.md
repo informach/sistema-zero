@@ -30,7 +30,10 @@ na ordem em que o Python o lê**:
   no Ao iniciar (ou na área de uma linha anterior que não pode descer), com uma nota dizendo por
   quê e "Levar para <área>" no menu.
 - 🎛️ = `guardar` com nome em MAIÚSCULAS e valor fixo, atribuído uma vez (e WIDTH/HEIGHT/TITLE do
-  Pygame Zero). ⚡ = `on_*` do Pygame Zero e registros de tecla/clique do Turtle. 🔁 = `update`,
+  Pygame Zero). Lista, dicionário e conjunto de valores fixos também, se ficam iguais enquanto o
+  jogo roda: Configurações são as constantes; a lista que o programa muda é variável e mora no ⚙️
+  Ao iniciar (decisão dela, 22/11/2026). ⚡ = `on_*` do Pygame Zero e registros de tecla/clique do
+  Turtle. 🔁 = `update`,
   `draw` e `clock.schedule_interval` do Pygame Zero, o bloco novo do Turtle "🔁 repetir … a
   cada … milissegundos", o laço da janela do Raylib e o `while` do jogo no Pygame-ce.
 - O bloco que liga ou desliga o jogo (`pgzrun.go`, `mainloop`, `close_window`, `pygame.quit`) mora
@@ -57,6 +60,15 @@ A regra de segurança (refeita depois da revisão de 22/11, achados M1 a M12):
   de biblioteca conhecida (o `from x import nome` só quando o nome está na lista do módulo),
   configuração com valor que se calcula sem erro, atribuição de constante ou de nome que JÁ existe
   numa linha de cima.
+- Configuração com lista, dicionário ou conjunto (`fixedValue`): criar um valor escrito no código
+  não roda nada, então trocar de lugar é sempre seguro; o que decide a área é se ele fica igual.
+  `changedInPlace` percorre o arquivo inteiro: método que muda (`append`, `update`…), item trocado
+  ou apagado, e o valor (ou um pedaço dele que pode mudar) guardado noutro nome, devolvido ou
+  entregue a uma função que não seja das que só leem (`len`, `print`, `random.choice`…) fazem dele
+  variável. O `reach` do valor diz a quantos `[…]` há algo que muda (`MAPA[l][c]` num mapa de
+  textos não entrega nada mutável; o `for` num dicionário entrega as chaves). Medido em 22/11: 98
+  tabelas dos exemplos de Pygame Zero, Raylib e Pygame-ce e 24 do Turtle sobem; ficam 9, todas
+  com valor que não é fixo ou com um pedaço entregue adiante (`self.golpes = MONSTROS[n]["golpes"]`).
 - O registro de tecla/clique do Turtle e o `clock.schedule*` só guardam a função: trocam com o
   que não mexe nos registros (`clear*`, `reset*`, `bye`, `mainloop`, `on*`, `listen`…).
 - Conflito de nomes: o que uma linha cria contra o que a outra lê ou cria. Uma chamada de função

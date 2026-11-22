@@ -483,13 +483,42 @@ const isFutureImport = (statement: PythonNode) =>
 
 // ─── Configurações: valor que se calcula com segurança ─────────────────────────────────────
 
-/** O que se sabe de um valor de configuração (imutável, calculado sem erro). */
+/** O que se sabe de um valor de configuração (calculado sem erro). */
 interface SafeValue {
-  kind: 'int' | 'float' | 'bool' | 'str' | 'none' | 'tuple'
+  kind: 'int' | 'float' | 'bool' | 'str' | 'none' | 'tuple' | 'list' | 'dict' | 'set'
   /** Número conhecido (só inteiros pequenos), para repetição e expoente. */
   exact?: number
   /** Certeza de que não é zero (pode dividir por ele). */
   nonzero?: boolean
+  /**
+   * Até quantos `[…]` de distância há algo que muda no lugar: 0 numa lista de textos (ela mesma),
+   * 1 numa lista de listas ou num dicionário de listas. Sem o campo, nada nele muda.
+   */
+  reach?: number
+  /** O mesmo para o que um `for` entrega dele: os itens (num dicionário, as chaves). */
+  yields?: number
+}
+
+/** Pode ser chave de dicionário ou item de conjunto sem dar erro. */
+const hashable = (value: SafeValue) => value.reach === undefined
+/** Ficar igual depende de ninguém mexer nele (nele ou em algo dentro dele). */
+const changeable = (value: SafeValue) => value.reach !== undefined
+/** O mais longe, entre as partes, em que há algo que muda (-1: nada). */
+const farthest = (parts: readonly SafeValue[]) =>
+  parts.reduce((most, part) => Math.max(most, part.reach ?? -1), -1)
+/** Só o alcance do que muda (para repetir ou juntar tuplas sem perder o que elas guardam). */
+const depth = (value: SafeValue) => ({
+  ...(value.reach !== undefined ? { reach: value.reach } : {}),
+  ...(value.yields !== undefined ? { yields: value.yields } : {}),
+})
+/** Tupla: imutável, mas o que ela guarda pode mudar um `[…]` adiante. */
+const tupleOf = (parts: readonly SafeValue[]): SafeValue => {
+  const inner = farthest(parts)
+  return {
+    kind: 'tuple',
+    nonzero: parts.length > 0,
+    ...(inner >= 0 ? { reach: inner + 1, yields: inner } : {}),
+  }
 }
 
 const numeric = (value: SafeValue) =>
@@ -514,7 +543,11 @@ function literalValue(value: PythonValue | undefined): SafeValue | undefined {
   return undefined
 }
 
-/** Avalia o valor de uma configuração sem rodar nada: undefined se pode dar erro ou é mutável. */
+/**
+ * Avalia o valor de uma configuração sem rodar nada: undefined se pode dar erro. Só calcula com
+ * valores imutáveis; uma lista (dicionário, conjunto) só chega aqui pelo nome de uma configuração
+ * já conhecida, e aí só pode entrar numa tupla.
+ */
 function safeEvaluate(
   value: PythonNode | undefined,
   known: ReadonlyMap<string, SafeValue>,
@@ -527,7 +560,7 @@ function safeEvaluate(
       return known.get(str(value.fields.id) ?? '')
     case 'Tuple': {
       const items = list(value, 'elts').map((item) => safeEvaluate(item, known))
-      return items.every(Boolean) ? { kind: 'tuple', nonzero: items.length > 0 } : undefined
+      return items.every(Boolean) ? tupleOf(items as SafeValue[]) : undefined
     }
     case 'UnaryOp': {
       const operand = safeEvaluate(child(value, 'operand'), known)
@@ -551,12 +584,12 @@ function safeEvaluate(
       const right = safeEvaluate(child(value, 'right'), known)
       const op = child(value, 'op')?.kind
       if (!left || !right) return undefined
-      const repeat = (sequence: SafeValue, count: SafeValue) =>
+      const repeat = (sequence: SafeValue, count: SafeValue): SafeValue | undefined =>
         (sequence.kind === 'str' || sequence.kind === 'tuple') &&
         (count.kind === 'int' || count.kind === 'bool') &&
         count.exact !== undefined &&
         Math.abs(count.exact) <= 10_000
-          ? { kind: sequence.kind }
+          ? { kind: sequence.kind, ...depth(sequence) }
           : undefined
       if (numeric(left) && numeric(right)) {
         const floating = left.kind === 'float' || right.kind === 'float'
@@ -578,7 +611,10 @@ function safeEvaluate(
         left.kind === right.kind &&
         (left.kind === 'str' || left.kind === 'tuple')
       )
-        return { kind: left.kind }
+        return {
+          kind: left.kind,
+          ...depth((left.reach ?? -1) >= (right.reach ?? -1) ? left : right),
+        }
       if (op === 'Mult') return repeat(left, right) ?? repeat(right, left)
       return undefined
     }
@@ -624,7 +660,7 @@ function settingsValues(
   if (names.length === 1) {
     const target = statement.kind === 'Assign' ? list(statement, 'targets')[0] : undefined
     if (target && target.kind !== 'Name') return undefined
-    const evaluated = safeEvaluate(value, known)
+    const evaluated = fixedValue(value, known)
     return evaluated ? new Map([[names[0]!, evaluated]]) : undefined
   }
   // `A, B = 1, 2`: a mesma quantidade dos dois lados, um valor seguro por nome.
@@ -635,7 +671,7 @@ function settingsValues(
   if (values.length !== names.length) return undefined
   const out = new Map<string, SafeValue>()
   for (let index = 0; index < names.length; index++) {
-    const evaluated = safeEvaluate(values[index], known)
+    const evaluated = fixedValue(values[index], known)
     if (!evaluated) return undefined
     out.set(names[index]!, evaluated)
   }
@@ -643,15 +679,216 @@ function settingsValues(
 }
 
 /**
+ * Valor fixo escrito no código: o que `safeEvaluate` calcula, ou uma lista, um dicionário ou um
+ * conjunto feito só de valores fixos (`CORES = ["#f00", "#0f0"]`, `MAPA = ["#..#", "...."]`).
+ * Criar um desses não roda nada nem dá erro; se ele fica igual enquanto o jogo roda, quem decide
+ * é o resto do arquivo (`changedInPlace`).
+ */
+function fixedValue(
+  value: PythonNode | undefined,
+  known: ReadonlyMap<string, SafeValue>,
+): SafeValue | undefined {
+  if (!value) return undefined
+  const items = (field: string) => {
+    const raw = value.fields[field]
+    if (!Array.isArray(raw)) return undefined
+    // `{**outro}` e `[*outra]` não são valores escritos: chave nula ou item espalhado recusam.
+    if (raw.some((item) => !isNode(item) || item.kind === 'Starred')) return undefined
+    const evaluated = (raw as PythonNode[]).map((item) => fixedValue(item, known))
+    return evaluated.every(Boolean) ? (evaluated as SafeValue[]) : undefined
+  }
+  switch (value.kind) {
+    case 'List': {
+      const parts = items('elts')
+      if (!parts) return undefined
+      const inner = farthest(parts)
+      return {
+        kind: 'list',
+        nonzero: parts.length > 0,
+        reach: inner + 1,
+        ...(inner >= 0 ? { yields: inner } : {}),
+      }
+    }
+    case 'Set': {
+      const parts = items('elts')
+      // Item de conjunto precisa de hash: uma lista ali dá TypeError na hora.
+      return parts?.every(hashable) ? { kind: 'set', nonzero: true, reach: 0 } : undefined
+    }
+    case 'Dict': {
+      const keys = items('keys')
+      const values = items('values')
+      if (!keys || !values || keys.length !== values.length || !keys.every(hashable))
+        return undefined
+      // O `for` num dicionário entrega as chaves, que não mudam.
+      return { kind: 'dict', nonzero: keys.length > 0, reach: farthest(values) + 1 }
+    }
+    case 'Tuple': {
+      const parts = items('elts')
+      return parts && tupleOf(parts)
+    }
+    default:
+      return safeEvaluate(value, known)
+  }
+}
+
+/**
  * A regra de "Configurações" de uma linha só, sem olhar o resto do módulo (é a do arraste):
- * nome(s) em MAIÚSCULAS e valor imutável que se calcula sem erro.
+ * nome(s) em MAIÚSCULAS e valor fixo que se calcula sem erro.
  */
 export function isPythonSettingsStatement(statement: PythonNode, codecId?: string): boolean {
   if (codecId && PYTHON_SETTINGS_CODECS.has(codecId)) {
     const names = assignedNames(statement)
-    return !!names && names.length === 1 && !!safeEvaluate(child(statement, 'value'), new Map())
+    return !!names && names.length === 1 && !!fixedValue(child(statement, 'value'), new Map())
   }
   return !!settingsValues(statement, new Map())
+}
+
+/** Métodos de lista, dicionário e conjunto que só leem. */
+const READ_METHODS = new Set([
+  'index',
+  'count',
+  'copy',
+  'get',
+  'keys',
+  'values',
+  'items',
+  'union',
+  'intersection',
+  'difference',
+  'symmetric_difference',
+  'issubset',
+  'issuperset',
+  'isdisjoint',
+])
+/** Funções que só olham o que recebem e não devolvem nenhum pedaço dele. */
+const READER_CALLS = new Set(['len', 'print', 'str', 'repr', 'bool', 'any', 'all'])
+/** As que percorrem o que recebem e devolvem itens dele (ou cópias rasas). */
+const ITEM_CALLS = new Set([
+  'min',
+  'max',
+  'sum',
+  'sorted',
+  'enumerate',
+  'zip',
+  'reversed',
+  'iter',
+  'list',
+  'tuple',
+  'set',
+  'frozenset',
+])
+const RANDOM_ITEM_CALLS = new Set(['choice', 'choices', 'sample'])
+
+/** O que a chamada faz com o argumento: só olha, entrega itens dele, ou não se sabe. */
+function readerCall(call: PythonNode): 'reads' | 'items' | undefined {
+  const func = child(call, 'func')
+  if (func?.kind === 'Name') {
+    const id = str(func.fields.id) ?? ''
+    return READER_CALLS.has(id) ? 'reads' : ITEM_CALLS.has(id) ? 'items' : undefined
+  }
+  const owner = func?.kind === 'Attribute' ? child(func, 'value') : undefined
+  return owner?.kind === 'Name' &&
+    owner.fields.id === 'random' &&
+    RANDOM_ITEM_CALLS.has(str(func!.fields.attr) ?? '')
+    ? 'items'
+    : undefined
+}
+
+/**
+ * Este uso do nome deixa o valor igual? Sobe pelos acessos (`MAPA[l][c]`, `CORES.index(c)`) e olha
+ * aonde vai o que sobrou: um pedaço que pode mudar (pelo `reach` do valor) guardado noutro nome,
+ * devolvido ou entregue a uma função pode ser mudado por lá.
+ */
+function onlyReads(name: PythonNode, parents: readonly PythonNode[], value: SafeValue): boolean {
+  const reach = value.reach ?? -1
+  let current = name
+  let index = parents.length - 1
+  let steps = 0
+  for (;;) {
+    const parent = parents[index]
+    if (parent?.kind === 'Subscript' && parent.fields.value === current) {
+      // `CORES[0] = …`, `del CORES[0]`, `MAPA[l][c] += 1`: troca um item.
+      if (child(parent, 'ctx')?.kind !== 'Load') return false
+      current = parent
+      steps++
+      index--
+      continue
+    }
+    if (parent?.kind === 'Attribute' && parent.fields.value === current) {
+      const call = parents[index - 1]
+      const called = call?.kind === 'Call' && call.fields.func === parent
+      // Método de algo que não muda (um texto: `MAPA[0].count("#")`) não muda nada.
+      if (steps > reach) return called
+      return called && READ_METHODS.has(str(parent.fields.attr) ?? '')
+    }
+    break
+  }
+  // Pode mudar o próprio pedaço? E os itens que um `for` (ou uma cópia rasa) tira dele?
+  const itself = steps <= reach
+  const items = steps === 0 ? (value.yields ?? -1) >= 0 : steps + 1 <= reach
+  const parent = parents[index]
+  if (!parent) return true
+  switch (parent.kind) {
+    case 'Expr':
+    case 'Compare':
+    case 'If':
+    case 'While':
+    case 'Assert':
+    case 'FormattedValue':
+    case 'JoinedStr':
+      return true
+    case 'UnaryOp':
+      return child(parent, 'op')?.kind === 'Not' || !itself
+    case 'BinOp':
+      // `DIRECOES + [(0, 0)]` faz outra lista, com os mesmos itens dentro.
+      return steps + 1 > reach
+    case 'Starred':
+      return !items
+    case 'For':
+    case 'AsyncFor':
+    case 'comprehension':
+      return parent.fields.iter === current ? !items : !itself
+    case 'Call': {
+      if (parent.fields.func === current) return true
+      const kind = readerCall(parent)
+      return kind === 'reads' || (kind === 'items' && !items) || !itself
+    }
+    case 'keyword': {
+      const call = parents[index - 1]
+      const kind = call?.kind === 'Call' ? readerCall(call) : undefined
+      return kind === 'reads' || (kind === 'items' && !items) || !itself
+    }
+    default:
+      // Guardado noutro nome, devolvido, entregue a uma função: só não importa se não muda.
+      return !itself
+  }
+}
+
+/**
+ * Os nomes (dos que podem mudar no lugar) que o programa muda ou entrega a quem pode mudar, em
+ * qualquer lugar do arquivo. Um nome igual que é de uma função (parâmetro, variável dela) também
+ * conta: na dúvida, a lista fica no Ao iniciar.
+ */
+function changedInPlace(module: PythonNode, watched: ReadonlyMap<string, SafeValue>) {
+  const changed = new Set<string>()
+  if (!watched.size) return changed
+  const parents: PythonNode[] = []
+  const visit = (node: PythonNode) => {
+    if (node.kind === 'Name') {
+      const id = str(node.fields.id) ?? ''
+      const value = watched.get(id)
+      if (value && child(node, 'ctx')?.kind === 'Load' && !onlyReads(node, parents, value))
+        changed.add(id)
+    }
+    parents.push(node)
+    for (const field of Object.values(node.fields)) {
+      if (isNode(field)) visit(field)
+      else if (Array.isArray(field)) for (const item of field) if (isNode(item)) visit(item)
+    }
+    parents.pop()
+  }
+  visit(module)
+  return changed
 }
 
 // ─── Efeitos ───────────────────────────────────────────────────────────────────────────────
@@ -1796,6 +2033,34 @@ export function analyzePythonModuleAreas(
     if (!afterLoop && !isTerminalKind(body[index]!, codecIds[index], false)) break
     terminal.add(index)
   }
+  // Configuração: MAIÚSCULAS, valor fixo, criada uma vez, sem `global`. Lista, dicionário e
+  // conjunto só se ficam iguais enquanto o jogo roda (nada no arquivo os muda); senão são
+  // variáveis, e moram no Ao iniciar.
+  const settingsOf = (
+    statement: PythonNode,
+    codecId: string | undefined,
+    known: ReadonlyMap<string, SafeValue>,
+  ) => {
+    const names = assignedNames(statement)
+    const once =
+      !!names?.length &&
+      names.every((id) => (bindCount.get(id) ?? 0) === 1 && !user.globalsWritten.has(id))
+    if (!once) return undefined
+    if (codecId && PYTHON_SETTINGS_CODECS.has(codecId)) {
+      const evaluated = fixedValue(child(statement, 'value'), known)
+      return evaluated && names!.length === 1 ? new Map([[names![0]!, evaluated]]) : undefined
+    }
+    return settingsValues(statement, known)
+  }
+  const candidates = new Map<string, SafeValue>()
+  body.forEach((statement, index) => {
+    for (const [id, value] of settingsOf(statement, codecIds[index], candidates) ?? [])
+      candidates.set(id, value)
+  })
+  const changed = changedInPlace(
+    module,
+    new Map([...candidates].filter(([, value]) => changeable(value))),
+  )
   const settings = new Map<string, SafeValue>()
   const statements = body.map((statement, index): PythonStatementAreaInfo => {
     const walk = walks[index]!
@@ -1805,19 +2070,11 @@ export function analyzePythonModuleAreas(
       user.magic || ![...walk.reads].every((id) => bound.has(id) || SAFE_BUILTIN_NAMES.has(id))
         ? undefined
         : registrationKind(statement, user)
-    // Configuração: MAIÚSCULAS, valor seguro, criada uma vez, sem `global`.
-    const names = assignedNames(statement)
-    const once =
-      !!names?.length &&
-      names.every((id) => (bindCount.get(id) ?? 0) === 1 && !user.globalsWritten.has(id))
-    const values = once
-      ? codecId && PYTHON_SETTINGS_CODECS.has(codecId)
-        ? (() => {
-            const evaluated = safeEvaluate(child(statement, 'value'), settings)
-            return evaluated && names!.length === 1 ? new Map([[names![0]!, evaluated]]) : undefined
-          })()
-        : settingsValues(statement, settings)
-      : undefined
+    const found = settingsOf(statement, codecId, settings)
+    const values =
+      found && ![...found].some(([id, value]) => changeable(value) && changed.has(id))
+        ? found
+        : undefined
     if (values) for (const [id, value] of values) settings.set(id, value)
     const pure = !!values || pureStatement(statement, user, context, bound, imported)
     for (const id of surelyBoundBy(statement, walk))

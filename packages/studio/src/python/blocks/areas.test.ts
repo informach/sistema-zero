@@ -229,6 +229,24 @@ describe('a área de cada linha', () => {
     expect(isPythonSettingsStatement(assign('VIDAS', integer('3')))).toBe(true)
     expect(isPythonSettingsStatement(assign('vidas', integer('3')))).toBe(false)
     expect(isPythonSettingsStatement(assign('CHAO', call(name('carregar'))))).toBe(false)
+    // Lista, dicionário e conjunto de valores fixos (se o resto do arquivo os muda, quem diz é a
+    // análise do módulo: áreas.differential.test.ts).
+    const listOf = (...elts: PythonNode[]) => node('List', { elts, ctx: node('Load') })
+    expect(isPythonSettingsStatement(assign('CORES', listOf(text('#f00'), text('#0f0'))))).toBe(
+      true,
+    )
+    expect(isPythonSettingsStatement(assign('CORES', listOf(call(name('cor')))))).toBe(false)
+    expect(
+      isPythonSettingsStatement(
+        assign(
+          'TECLAS',
+          node('Dict', { keys: [text('a'), null], values: [integer('1'), name('B')] }),
+        ),
+      ),
+    ).toBe(false)
+    expect(
+      isPythonSettingsStatement(assign('USADAS', node('Set', { elts: [listOf(integer('1'))] }))),
+    ).toBe(false)
     expect(
       roles([line(assign('VIDAS', integer('3'))), line(assign('VIDAS', integer('5')))]),
     ).toEqual(['start', 'start'])
