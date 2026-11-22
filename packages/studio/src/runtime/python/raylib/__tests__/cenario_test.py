@@ -1,6 +1,8 @@
 """Contrato do cenário compilado com o motor Python real do Estúdio, sem janela nativa."""
+import contextlib
 import copy
 import hashlib
+import io
 import json
 import math
 import os
@@ -73,6 +75,62 @@ def fixture(folder):
     }
 
 
+def static_glb():
+    """Um GLB estático mínimo (um triângulo, sem esqueleto nem animação)."""
+    data = {'asset': {'version': '2.0'}, 'buffers': [{'byteLength': 36}],
+            'bufferViews': [{'buffer': 0, 'byteOffset': 0, 'byteLength': 36}],
+            'accessors': [{'bufferView': 0, 'componentType': 5126, 'count': 3,
+                           'type': 'VEC3', 'min': [0, 0, 0], 'max': [1, 1, 0]}],
+            'meshes': [{'primitives': [{'attributes': {'POSITION': 0}}]}],
+            'nodes': [{'mesh': 0}], 'scenes': [{'nodes': [0]}], 'scene': 0}
+    body = json.dumps(data).encode()
+    body += b' ' * (-len(body) % 4)
+    vertices = struct.pack('<9f', 0, 0, 0, 1, 0, 0, 0, 1, 0)
+    return (struct.pack('<5I', 0x46546c67, 2, 28 + len(body) + len(vertices), len(body), 0x4e4f534a)
+            + body + struct.pack('<2I', len(vertices), 0x004e4942) + vertices)
+
+
+CASOS = json.loads((Path(__file__).resolve().parent / 'regioes-casos.json').read_text(encoding='utf-8'))
+
+
+def caixa(x0, x1):
+    return {'min': {'x': x0, 'y': 0, 'z': -5}, 'max': {'x': x1, 'y': 2, 'z': 5}}
+
+
+def com_regioes(data, folder, malhas=None):
+    """Três regiões em fila no piso de 300 x 100 m (Vila, Floresta e Caverna, vizinhas em par),
+    com peças estáticas: duas na Vila e uma na Floresta (o mesmo arquivo) e uma na Caverna (outro
+    arquivo, com uma colisão). O morador animado continua sendo de todas."""
+    malhas = malhas or {}
+    b = static_glb()
+    for nome in ('a', 'c'):
+        (folder / f'models/{nome}.glb').write_bytes(b)
+        data['arquivos'].append({'caminho': f'models/{nome}.glb', 'bytes': len(b),
+                                 'digest': hashlib.sha256(b).hexdigest(),
+                                 'mime': 'model/gltf-binary', 'papel': 'modelo',
+                                 **({'malhas': malhas[nome]} if nome in malhas else {})})
+    if 'pessoa' in malhas:
+        data['arquivos'][0]['malhas'] = malhas['pessoa']
+    data['plano'].update(largura=300, comprimento=100)
+    data['marcadores'][0]['posicao'] = {'x': -100, 'y': 0, 'z': 0}
+    for ident, arquivo, x0, x1 in [('a1', 'a', -110, -90), ('a2', 'a', -80, -70),
+                                   ('b1', 'a', -10, 10), ('c1', 'c', 90, 110)]:
+        data['nos'].append({'id': ident, 'entidade': None, 'arquivo': f'models/{arquivo}.glb',
+                            'matriz': IDENTITY[:], 'volume': caixa(x0, x1)})
+    data['colisoes'].append({'id': 'pedra-c', 'entidade': None, 'tipo': 'caixa',
+                             'arquivo': 'models/c.glb', 'matriz': IDENTITY[:],
+                             'volume': caixa(95, 105)})
+    data['regioes'] = [
+        {'id': 'a', 'nome': 'Vila', 'caixa': {'x0': -150, 'z0': -50, 'x1': -50, 'z1': 50},
+         'vizinhas': ['b'], 'nos': ['a1', 'a2'], 'colisoes': [], 'aguas': []},
+        {'id': 'b', 'nome': 'Floresta', 'caixa': {'x0': -50, 'z0': -50, 'x1': 50, 'z1': 50},
+         'vizinhas': ['a', 'c'], 'nos': ['b1'], 'colisoes': [], 'aguas': []},
+        {'id': 'c', 'nome': 'Caverna', 'caixa': {'x0': 50, 'z0': -50, 'x1': 150, 'z1': 50},
+         'vizinhas': ['b'], 'nos': ['c1'], 'colisoes': ['pedra-c'], 'aguas': []},
+    ]
+    return data
+
+
 class CenarioTest(unittest.TestCase):
     def setUp(self):
         self.folder = ROOT / f'caso-{len(list(ROOT.iterdir()))}'
@@ -108,8 +166,8 @@ class CenarioTest(unittest.TestCase):
             s.desenhar()
 
     def test_scene_with_regions_loads_and_draws_everything(self):
-        # Regiões na cena compilada (lote 5 da conclusão, 22/11/2026): o leitor de hoje aceita o
-        # campo e desenha a cena inteira; a carga por regiões no Python é o lote 7b.
+        # Regiões na cena compilada (lote 5 da conclusão, 22/11/2026): aqui o morador e a parede
+        # são de todas (listas vazias), então a cena inteira carrega e desenha.
         self.data['regioes'] = [
             {'id': 'vila', 'nome': 'Vila', 'caixa': {'x0': -10, 'z0': -15, 'x1': 0, 'z1': 15},
              'vizinhas': ['praia'], 'nos': [], 'colisoes': [], 'aguas': []},
@@ -125,6 +183,175 @@ class CenarioTest(unittest.TestCase):
             P.end_drawing()
         finally:
             s.descartar()
+
+    def test_region_rules_match_the_typescript_core(self):
+        # Lote 7b: a pertença e o plano da carga do Python dão o mesmo que o núcleo TypeScript
+        # nos casos que ele gravou (`cenario-regioes.test.ts` confere o arquivo do lado de lá).
+        p = CASOS['pertenca']
+        itens = p['itens']
+        listas = cenario._pertenca(p['regioes'], {**itens, 'plano': itens.get('plano')})
+        self.assertEqual([{'id': r['id'], **listas[i]} for i, r in enumerate(p['regioes'])],
+                         p['esperado'])
+        for caso in CASOS['plano']:
+            plano = cenario._PlanoDaCarga(caso['regioes'])
+            ordem = [r['id'] for r in caso['regioes']]
+            for passo in caso['passos']:
+                camera = tuple(passo['camera']) if passo.get('camera') else None
+                e = plano.atualizar(passo['foco'][0], passo['foco'][1], passo['agora'], camera)
+                obtido = {'atual': e['atual'], 'segura': e['segura'],
+                          'obrigatorias': [i for i in ordem if i in e['obrigatorias']],
+                          'carregadas': [i for i in ordem if i in e['carregadas']],
+                          'entradas': e['entradas']}
+                self.assertEqual(obtido, passo['esperado'], passo)
+
+    def test_regions_load_by_focus_share_models_and_release_far_ones(self):
+        s = cenario.Cenario(self.folder, com_regioes(self.data, self.folder))
+        try:
+            # Começa na Vila (o início): Vila e a vizinha Floresta; a Caverna fica fora.
+            self.assertEqual(s.estado_das_regioes()['carregadas'], ['Vila', 'Floresta'])
+            self.assertEqual(list(s._nos), ['pessoa', 'a1', 'a2', 'b1'])
+            self.assertEqual(len(s._modelos), 2)  # o morador e o estático dividido
+            self.assertFalse(s.colide_caixa((96, 0, -1), (104, 1, 1)))
+            self.assertEqual(s.altura(100, 0), 0)  # o chão vale onde a região não carregou
+            P.begin_drawing()
+            s.desenhar()
+            P.end_drawing()
+            # A entrada inicial conta uma vez, no primeiro atualizar.
+            s.atualizar(-100, 0, agora=0)
+            self.assertTrue(s.entrou_na_regiao('Vila'))
+            self.assertFalse(s.entrou_na_regiao('Vila'))
+            s.atualizar(-100, 0, agora=0.5)
+            self.assertFalse(s.entrou_na_regiao('Vila'))
+            # Na Floresta, a Caverna é vizinha: carrega com o modelo dela e a colisão passa a valer.
+            s.atualizar(0, 0, agora=1)
+            self.assertTrue(s.entrou_na_regiao('Floresta'))
+            self.assertEqual(s.estado_das_regioes()['carregadas'], ['Vila', 'Floresta', 'Caverna'])
+            self.assertEqual(list(s._nos), ['pessoa', 'a1', 'a2', 'b1', 'c1'])
+            self.assertEqual(len(s._modelos), 3)
+            self.assertTrue(s.colide_caixa((96, 0, -1), (104, 1, 1)))
+            self.assertEqual(s.regiao(100, 0), 'Caverna')
+            self.assertIsNone(s.regiao(100, 80))
+            # De volta à Vila, a Caverna (150 m) só sai depois de 2 s longe.
+            s.atualizar(-100, 0, agora=2)
+            s.atualizar(-100, 0, agora=3.9)
+            self.assertIn('Caverna', s.estado_das_regioes()['carregadas'])
+            antes = len(_rt.pending_free)
+            s.atualizar(-100, 0, agora=4.1)
+            self.assertEqual(s.estado_das_regioes()['carregadas'], ['Vila', 'Floresta'])
+            self.assertEqual(list(s._nos), ['pessoa', 'a1', 'a2', 'b1'])
+            self.assertEqual(len(s._modelos), 2)
+            self.assertGreater(len(_rt.pending_free), antes)
+            self.assertFalse(s.colide_caixa((96, 0, -1), (104, 1, 1)))
+            # Dez idas e voltas terminam com os mesmos modelos.
+            tempo = 5.0
+            for _ in range(10):
+                for x in (0, 100, 0, -100):
+                    tempo += 3
+                    s.atualizar(x, 0, agora=tempo)
+                tempo += 3
+                s.atualizar(-100, 0, agora=tempo)
+            self.assertEqual(len(s._modelos), 2)
+            # NaN mantém a carga; fora de toda região a atual é nenhuma, e voltar entra de novo.
+            s.atualizar(math.nan, 0, agora=tempo + 1)
+            s.atualizar(-100, 0, agora=tempo + 1)
+            s.entrou_na_regiao('Vila')
+            s.atualizar(-100, 200, agora=tempo + 2)
+            self.assertIsNone(s.estado_das_regioes()['atual'])
+            s.atualizar(-100, 0, agora=tempo + 3)
+            self.assertTrue(s.entrou_na_regiao('Vila'))
+        finally:
+            s.descartar()
+        self.assertEqual(s._modelos, {})
+
+    def test_window_budget_and_unknown_region_name(self):
+        # 48 malhas por janela: a Caverna, opcional (a câmera longe a alcança), não entra se passar.
+        data = com_regioes(self.data, self.folder, {'pessoa': 5, 'a': 10, 'c': 30})
+        s = cenario.Cenario(self.folder, data)
+        try:
+            s.atualizar(-100, 0, camera=(-100, -300), agora=0)
+            self.assertEqual(s.estado_das_regioes()['carregadas'], ['Vila', 'Floresta'])
+            saida = io.StringIO()
+            with contextlib.redirect_stdout(saida):
+                self.assertFalse(s.entrou_na_regiao('Lua'))
+                self.assertFalse(s.entrou_na_regiao('Lua'))
+            self.assertEqual(saida.getvalue().count('não tem a região "Lua"'), 1)
+        finally:
+            s.descartar()
+        self.setUp()
+        data = com_regioes(self.data, self.folder, {'pessoa': 5, 'a': 10, 'c': 3})
+        s = cenario.Cenario(self.folder, data)
+        try:
+            s.atualizar(-100, 0, camera=(-100, -300), agora=0)
+            self.assertEqual(s.estado_das_regioes()['carregadas'], ['Vila', 'Floresta', 'Caverna'])
+        finally:
+            s.descartar()
+
+    def test_stale_or_invalid_region_lists_fail_before_gpu(self):
+        base = com_regioes(self.data, self.folder)
+        casos = [
+            (lambda d: d['regioes'][2].update(nos=[]), 'peças da região Caverna'),
+            (lambda d: d['regioes'][2].update(colisoes=[]), 'colisões da região Caverna'),
+            (lambda d: d['regioes'][0].update(vizinhas=[]), 'mas Vila não tem Floresta'),
+            (lambda d: d['regioes'][1]['caixa'].update(x0=-60), 'se sobrepõem'),
+            (lambda d: d['regioes'][2]['caixa'].update(x1=160), 'sai da base'),
+            (lambda d: d['regioes'][0].update(cor='azul'), 'fora do formato'),
+        ]
+        for mudar, recado in casos:
+            data = copy.deepcopy(base)
+            mudar(data)
+            antes = _rt.next_id
+            with self.assertRaises(ValueError) as erro:
+                cenario.Cenario(self.folder, data)
+            self.assertIn(recado, str(erro.exception))
+            self.assertEqual(_rt.next_id, antes, recado)
+
+    def test_failed_region_keeps_the_previous_load_and_retries(self):
+        s = cenario.Cenario(self.folder, com_regioes(self.data, self.folder))
+        original, chamadas = cenario._p.load_model, []
+
+        def quebrado(caminho):
+            chamadas.append(caminho)
+            raise ValueError('arquivo quebrado')
+
+        try:
+            cenario._p.load_model = quebrado
+            saida = io.StringIO()
+            with contextlib.redirect_stdout(saida):
+                s.atualizar(0, 0, agora=10)
+                s.atualizar(0, 0, agora=10.5)
+                s.atualizar(0, 0, agora=11.2)
+            estado = s.estado_das_regioes()
+            self.assertEqual(estado['carregadas'], ['Vila', 'Floresta'])
+            self.assertEqual(estado['falhas'], ['Caverna'])
+            self.assertEqual(len(chamadas), 2)  # a primeira e a nova tentativa depois de 1 s
+            self.assertEqual(saida.getvalue().count('Vou tentar de novo'), 1)
+            self.assertEqual(list(s._nos), ['pessoa', 'a1', 'a2', 'b1'])
+            cenario._p.load_model = original
+            s.atualizar(0, 0, agora=14)  # a próxima tentativa é 4 s depois
+            self.assertEqual(s.estado_das_regioes()['falhas'], ['Caverna'])
+            s.atualizar(0, 0, agora=15.3)
+            self.assertEqual(s.estado_das_regioes()['falhas'], [])
+            self.assertIn('Caverna', s.estado_das_regioes()['carregadas'])
+        finally:
+            cenario._p.load_model = original
+            s.descartar()
+
+    def test_load_from_the_generated_scene_module(self):
+        # O bloco "Carregar o cenário" escreve cenario.carregar(cenario_vila): o módulo que a
+        # importação do Molda gera já sabe o manifesto e o mapa dos arquivos (lote 7b).
+        import types
+        caminho = self.guardar()
+        modulo = types.ModuleType('cenario_vila')
+        modulo.carregar = lambda: cenario.carregar(caminho)
+        s = cenario.carregar(modulo)
+        try:
+            self.assertIsInstance(s, cenario.Cenario)
+            self.assertEqual(list(s._nos), ['pessoa'])
+        finally:
+            s.descartar()
+        with self.assertRaises(ValueError) as erro:
+            cenario.carregar(types.ModuleType('outro'))
+        self.assertIn('módulo do cenário', str(erro.exception))
 
     def test_triangular_heights_holes_missing_pieces_and_cutouts(self):
         self.data.pop('plano')

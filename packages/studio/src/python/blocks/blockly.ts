@@ -1,5 +1,6 @@
 import * as Blockly from 'blockly/core'
 import { withMutation } from '../../blockly/blocks/mutatorEvents'
+import { FieldSceneRegionPicker } from '../../blockly/fields/FieldSceneRegionPicker'
 import { readPythonNode } from '../language/readNode'
 import type { PythonNode } from '../language/types'
 import { pythonAreaContextMenu } from './areaContextMenu'
@@ -252,6 +253,8 @@ function applyLayout(block: PythonBlocklyBlock, state: VisualState, codec: Pytho
         new Blockly.FieldDropdown(field.options.map(([label, value]) => [label, value])),
         field.name,
       )
+    else if (field.picker === 'scene-region')
+      header.appendField(new FieldSceneRegionPicker(field.value), field.name)
     else header.appendField(new Blockly.FieldTextInput(field.value), field.name)
     block.setFieldValue(field.value, field.name)
   }

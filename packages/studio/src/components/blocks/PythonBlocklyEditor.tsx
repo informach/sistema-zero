@@ -449,6 +449,10 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
       pythonSearchItems(callbacks.current.palette, search, callbacks.current.codecs)
     ;(workspace as unknown as MoreBlocksWorkspace).__szOpenExtensions = () =>
       openExtensions.current(true)
+    // Os materiais do projeto POR INSTÂNCIA, como no JavaScript: o seletor de regiões do bloco
+    // "Entrou na região" (Raylib 3D) lê os cenários do Molda trazidos para o projeto (lote 7b).
+    ;(workspace as unknown as { __szAssets?: () => unknown }).__szAssets = () =>
+      store.getState().project?.assets ?? []
     // Lixeira e zoom mais para cima, como no JavaScript (ver `cornerSpacer.ts`).
     installCornerSpacer(workspace)
     // A cor dos valores dentro de bloco de extensão (ver `literalTint.ts`): o dono de cada tipo.

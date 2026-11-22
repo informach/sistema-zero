@@ -2,13 +2,20 @@
 
     import cenario
     lugar = cenario.carregar('cenario.json')  # depois de init_window
+    # a cada quadro: lugar.atualizar(x, z) com a posição do personagem
     # dentro de begin_mode_3d: lugar.desenhar()
     # lugar.altura(x, z) retorna None onde não há chão
     # lugar.colide_caixa(minimo, maximo) consulta aproximações AABB
+    # lugar.entrou_na_regiao('Vila') é verdadeiro uma vez por entrada
     lugar.descartar()                        # antes de close_window
 
 Não inicia loop, câmera ou física. Água é estática; ambiente e regras continuam
 disponíveis nos dados para o programa. As malhas já vieram do compilador.
+
+Com regiões (desenhadas no Molda Cenários, na aba Jogo), o cenário carrega só a
+região do personagem, as vizinhas e as que estão perto, com as mesmas regras do
+Estúdio em JavaScript; ``altura`` usa o relevo inteiro sempre, então ninguém cai
+onde a região ainda não carregou. Sem regiões, carrega tudo, como sempre.
 """
 import hashlib
 import json
@@ -17,6 +24,7 @@ import os
 from pathlib import Path
 import re
 import struct
+import types
 
 import pyray as _p
 
@@ -178,6 +186,257 @@ def _conferir(raiz, d, remapeamento=None):
     return arquivos, animaveis
 
 
+# As regiões (lote 7b da conclusão do plano do Estúdio, 22/11/2026): as mesmas regras do núcleo
+# TypeScript (`schema-regioes.ts`, `regioes.ts` e `carga-das-regioes.ts` do molda-cenarios-core),
+# conferidas contra os mesmos casos (`__tests__/regioes-casos.json`).
+_FOLGA = 1e-6
+_TOLERANCIA = 0.5
+_PRE_CARGA = 40.0
+_FOLGA_DO_DESCARTE = 20.0
+_ATRASO_DO_DESCARTE = 2.0
+_MALHAS_POR_JANELA = 48
+_MAX_VIZINHAS = 8
+_NOVAS_TENTATIVAS = (1, 4, 15)
+_CHAVES_DA_REGIAO = {'id', 'nome', 'caixa', 'vizinhas', 'nos', 'colisoes', 'aguas'}
+
+
+def _identificador(v):
+    return (isinstance(v, str) and 1 <= len(v) <= 240
+            and all(c.isalnum() or c in '_.:/-' for c in v))
+
+
+def _eixo_toca(lo, hi, inicio, fim):
+    sobreposto = min(hi, fim) - max(lo, inicio)
+    if sobreposto < -_FOLGA:
+        return False
+    # Com largura, precisa entrar na região; sem largura (um plano em cima da borda), basta tocar.
+    return hi - lo <= _FOLGA or sobreposto > _FOLGA
+
+
+def _toca(volumes, caixa):
+    x0, x1 = sorted((caixa['x0'], caixa['x1']))
+    z0, z1 = sorted((caixa['z0'], caixa['z1']))
+    return any(_eixo_toca(v['min']['x'], v['max']['x'], x0, x1)
+               and _eixo_toca(v['min']['z'], v['max']['z'], z0, z1) for v in volumes)
+
+
+def _pertenca(regioes, d):
+    """As listas de cada região (nós, colisões e águas), pela régua do compilador.
+
+    Um item vai a cada região que a pegada dele no chão toca; o que não toca nenhuma, o ator
+    animado, o objeto com propriedades, o relevo, o piso plano e o mar são de todas. A água vale
+    pela pegada inteira.
+    """
+    com_propriedades = {e.get('id') for e in d['entidades']
+                        if isinstance(e, dict) and isinstance(e.get('propriedades'), dict)
+                        and e['propriedades']}
+    mares = {a['id'] for a in d['aguas'] if a.get('tipo') == 'mar'}
+    aguas = {a['id'] for a in d['aguas']}
+    pegada = {}
+    for item in d['nos'] + d['colisoes']:
+        e = item.get('entidade')
+        if e is not None and e in aguas:
+            pegada.setdefault(e, []).append(item['volume'])
+
+    def de_todas(e):
+        return e is not None and (e in com_propriedades or e in mares)
+
+    memo = {}
+
+    def toca_pela_pegada(e, volume, r):
+        if e is None or e not in aguas:
+            return _toca([volume], r['caixa'])
+        chave = (e, r['id'])
+        if chave not in memo:
+            memo[chave] = _toca(pegada.get(e) or [volume], r['caixa'])
+        return memo[chave]
+
+    plano = (d.get('plano') or {}).get('colisao')
+    return [{
+        'nos': [n['id'] for n in d['nos']
+                if not n.get('preservarHierarquia') and not de_todas(n.get('entidade'))
+                and not any(de_todas(f.get('entidade'))
+                            for f in n.get('faixas') or [] if isinstance(f, dict))
+                and toca_pela_pegada(n.get('entidade'), n['volume'], r)],
+        'colisoes': [c['id'] for c in d['colisoes']
+                     if c['id'] != plano and c['tipo'] != 'terreno'
+                     and not de_todas(c.get('entidade'))
+                     and toca_pela_pegada(c.get('entidade'), c['volume'], r)],
+        'aguas': [a['id'] for a in d['aguas']
+                  if a['id'] not in mares and a['id'] in pegada
+                  and toca_pela_pegada(a['id'], None, r)],
+    } for r in regioes]
+
+
+def _erros_das_regioes(regioes, limite):
+    """A régua das regiões do documento, com os mesmos recados do núcleo."""
+    erros, por_id, nomes = [], {}, set()
+    for r in regioes:
+        if r['id'] in por_id:
+            erros.append(f"Região duplicada: {r['id']}")
+        por_id[r['id']] = r
+        nome = r['nome'].strip().lower()
+        if not nome:
+            erros.append('Uma região está sem nome. Escreva um nome para ela.')
+        elif nome in nomes:
+            erros.append(f"Já existe uma região chamada {r['nome'].strip()}.")
+        nomes.add(nome)
+        c = r['caixa']
+        if not (c['x1'] - c['x0'] > _FOLGA and c['z1'] - c['z0'] > _FOLGA):
+            erros.append(f"A região {r['nome']} precisa ter largura e comprimento.")
+        elif limite and not (c['x0'] >= limite['x0'] - _FOLGA and c['z0'] >= limite['z0'] - _FOLGA
+                             and c['x1'] <= limite['x1'] + _FOLGA
+                             and c['z1'] <= limite['z1'] + _FOLGA):
+            erros.append(f"A região {r['nome']} sai da base do cenário.")
+    for r in regioes:
+        if len(r['vizinhas']) > _MAX_VIZINHAS:
+            erros.append(f"A região {r['nome']} tem {len(r['vizinhas'])} vizinhas. "
+                         f"Uma região pode ter até {_MAX_VIZINHAS}.")
+        vistas = set()
+        for v in r['vizinhas']:
+            if v == r['id']:
+                erros.append(f"A região {r['nome']} não pode ser vizinha dela mesma.")
+                continue
+            outra = por_id.get(v)
+            if v in vistas:
+                erros.append(f"A região {r['nome']} repete a vizinha {outra['nome'] if outra else v}.")
+            vistas.add(v)
+            if outra is None:
+                erros.append(f"A região {r['nome']} cita uma vizinha que não existe mais.")
+            elif r['id'] not in outra['vizinhas']:
+                erros.append(f"A região {r['nome']} tem {outra['nome']} como vizinha, "
+                             f"mas {outra['nome']} não tem {r['nome']}.")
+    for i, a in enumerate(regioes):
+        for b in regioes[i + 1:]:
+            ca, cb = a['caixa'], b['caixa']
+            if (min(ca['x1'], cb['x1']) - max(ca['x0'], cb['x0']) > _FOLGA
+                    and min(ca['z1'], cb['z1']) - max(ca['z0'], cb['z0']) > _FOLGA):
+                erros.append(f"As regiões {a['nome']} e {b['nome']} se sobrepõem. "
+                             'Elas podem encostar pela borda.')
+    return erros
+
+
+def _limite_do_chao(d):
+    p, t = d.get('plano'), d.get('terreno')
+    if p:
+        return {'x0': -p['largura'] / 2, 'z0': -p['comprimento'] / 2,
+                'x1': p['largura'] / 2, 'z1': p['comprimento'] / 2}
+    if t:
+        o = t['origem']
+        return {'x0': o['x'], 'z0': o['z'],
+                'x1': o['x'] + t['colunas'] * t['passo'], 'z1': o['z'] + t['linhas'] * t['passo']}
+    return None
+
+
+def _conferir_regioes(d):
+    """As regiões da cena, conferidas antes de qualquer modelo carregar: lista velha, incompleta ou
+    com item que não existe é recusada (as listas precisam ser as que a pertença calcula)."""
+    regioes = d.get('regioes')
+    if regioes is None:
+        return []
+    if not isinstance(regioes, list) or not 1 <= len(regioes) <= 64:
+        raise ValueError('As regiões do cenário são inválidas.')
+    for r in regioes:
+        if (not isinstance(r, dict) or set(r) != _CHAVES_DA_REGIAO or not _identificador(r['id'])
+                or not isinstance(r['nome'], str) or not 1 <= len(r['nome']) <= 60
+                or not isinstance(r['caixa'], dict) or set(r['caixa']) != {'x0', 'z0', 'x1', 'z1'}
+                or not isinstance(r['vizinhas'], list) or len(r['vizinhas']) > _MAX_VIZINHAS
+                or any(not _identificador(v) for v in r['vizinhas'])):
+            raise ValueError('Uma região do cenário está incompleta ou fora do formato.')
+        for k in ('x0', 'z0', 'x1', 'z1'):
+            _numero(r['caixa'][k])
+        for lista, limite in (('nos', 32768), ('colisoes', 32768), ('aguas', 4096)):
+            if (not isinstance(r[lista], list) or len(r[lista]) > limite
+                    or any(not _identificador(v) for v in r[lista])):
+                raise ValueError('Uma região do cenário está incompleta ou fora do formato.')
+    for nome in ('colisoes', 'aguas', 'entidades'):
+        if any(not isinstance(item, dict) or not isinstance(item.get('id'), str) for item in d[nome]):
+            raise ValueError('O cenário com regiões precisa de identidade em cada item.')
+    erros = _erros_das_regioes(regioes, _limite_do_chao(d))
+    for r, esperada in zip(regioes, _pertenca(regioes, d)):
+        for lista, nome in (('nos', 'peças'), ('colisoes', 'colisões'), ('aguas', 'águas')):
+            if r[lista] != esperada[lista]:
+                erros.append(f"A lista de {nome} da região {r['nome']} não corresponde à cena.")
+    if erros:
+        raise ValueError(f'As regiões do cenário não conferem: {erros[0]}')
+    return regioes
+
+
+def _distancia_ate_caixa(x, z, c):
+    x0, x1 = sorted((c['x0'], c['x1']))
+    z0, z1 = sorted((c['z0'], c['z1']))
+    return math.hypot(max(x0 - x, 0, x - x1), max(z0 - z, 0, z - z1))
+
+
+def _regiao_do_ponto(regioes, x, z, anterior=None):
+    """A região de um ponto: quem estava em ``anterior`` continua nela até passar meio metro além
+    da caixa; senão, a que contém o ponto (a borda é das duas: vale a primeira); fora, ``None``."""
+    if anterior is not None:
+        for r in regioes:
+            if r['id'] == anterior:
+                if _distancia_ate_caixa(x, z, r['caixa']) <= _TOLERANCIA:
+                    return anterior
+                break
+    for r in regioes:
+        if _distancia_ate_caixa(x, z, r['caixa']) == 0:
+            return r['id']
+    return None
+
+
+class _PlanoDaCarga:
+    """Que regiões ficam carregadas enquanto o foco anda (``criarPlanoDaCarga`` do núcleo).
+
+    A região segura (a atual; fora de todas, a última; começando fora, a mais perto) e as vizinhas
+    dela sempre ficam; as outras entram a até ``max(40 m, distância da câmera)`` e só saem 20 m além
+    disso, depois de 2 s seguidos longe. Cada mudança da atual para uma região é uma entrada.
+    """
+
+    def __init__(self, regioes):
+        self._regioes = regioes
+        self._por_id = {r['id']: r for r in regioes}
+        self._atual = None
+        self._segura = None
+        self._longe_desde = {}
+        self._carregadas = set()
+
+    def atualizar(self, x, z, agora, camera=None):
+        antes = self._atual
+        self._atual = _regiao_do_ponto(self._regioes, x, z, self._atual)
+        if self._atual is not None:
+            self._segura = self._atual
+        elif self._segura is None:
+            self._segura = min(self._regioes, key=lambda r: _distancia_ate_caixa(x, z, r['caixa']))['id']
+        # Começar dentro também é entrar: a atual nasce nenhuma.
+        entradas = ([self._por_id[self._atual]['nome']]
+                    if self._atual is not None and self._atual != antes else [])
+        s = self._por_id[self._segura]
+        obrigatorias = {s['id'], *(v for v in s['vizinhas'] if v in self._por_id)}
+        raio = max(_PRE_CARGA, math.hypot(camera[0] - x, camera[1] - z) if camera else 0)
+        for r in self._regioes:
+            d = _distancia_ate_caixa(x, z, r['caixa'])
+            if r['id'] in obrigatorias or d <= raio:
+                self._carregadas.add(r['id'])
+                self._longe_desde.pop(r['id'], None)
+                continue
+            if r['id'] not in self._carregadas:
+                continue
+            if d <= raio + _FOLGA_DO_DESCARTE:
+                self._longe_desde.pop(r['id'], None)
+                continue
+            desde = self._longe_desde.get(r['id'])
+            if desde is None:
+                self._longe_desde[r['id']] = agora
+            elif agora - desde >= _ATRASO_DO_DESCARTE:
+                self._carregadas.discard(r['id'])
+                self._longe_desde.pop(r['id'], None)
+        return {'atual': self._atual, 'segura': self._segura, 'obrigatorias': obrigatorias,
+                'carregadas': set(self._carregadas), 'entradas': entradas}
+
+    def reiniciar(self):
+        """A primeira entrada volta a contar (inclusive a de quem começa dentro)."""
+        self._atual = None
+
+
 def _dentro(x, z, contorno):
     dentro = False
     a = contorno[-1]
@@ -199,35 +458,57 @@ class Cenario:
 
     ``arquivos`` pode resolver cada caminho lógico para um arquivo físico local,
     sem reescrever o manifesto. Atores animados não compartilham poses mutáveis.
+    Com regiões, só a janela de onde a cena começa carrega na abertura; depois,
+    ``atualizar(x, z)`` leva a carga junto com o personagem.
     """
     def __init__(self, raiz, dados, *, arquivos=None):
         self.dados = dados
         self._fechado = False
         self._modelos = {}
+        self._usos = {}
         self._texturas = {}
+        self._texturas_do_modelo = {}
         self._textura_padrao = None
         self._animacoes = {}
         self._nos = {}
         self._alturas = None
         self._buracos = None
         self._pecas = set()
-        self._arquivos, animaveis = _conferir(Path(os.fspath(raiz)).resolve(), dados, arquivos)
+        self._plano = None
+        self._carregadas = set()
+        self._atual = None
+        self._entradas = set()
+        self._falhas = {}
+        self._avisou_falha = False
+        self._avisadas = set()
+        self._arquivos, self._animaveis = _conferir(Path(os.fspath(raiz)).resolve(), dados, arquivos)
         self._preparar_terreno()
+        self._regioes = _conferir_regioes(dados)
+        self._no_por_id = {no['id']: no for no in dados['nos']}
+        self._regioes_do_no, self._regioes_da_colisao = {}, {}
+        for r in self._regioes:
+            for n in r['nos']:
+                self._regioes_do_no.setdefault(n, set()).add(r['id'])
+            for c in r['colisoes']:
+                self._regioes_da_colisao.setdefault(c, set()).add(r['id'])
+        self._malhas = {a['caminho']: a['malhas'] if type(a.get('malhas')) is int and a['malhas'] >= 0 else 0
+                        for a in dados['arquivos']}
+        self._malhas_de_todas = sum(self._malhas.get(no['arquivo'], 0) for no in dados['nos']
+                                    if no['id'] not in self._regioes_do_no)
         try:
-            for no in dados['nos']:
-                chave = ('no', no['id']) if no['arquivo'] in animaveis else ('arquivo', self._arquivos[no['arquivo']][0])
-                if chave not in self._modelos:
-                    modelo = _p.load_model(str(self._arquivos[no['arquivo']][0]))
-                    self._modelos[chave] = modelo
-                    self._registrar_texturas(modelo)
-                    if not _p.is_model_valid(modelo):
-                        raise ValueError(f'Não foi possível carregar o modelo de {no["id"]}.')
-                self._nos[no['id']] = (no, self._modelos[chave])
+            if self._regioes:
+                self._plano = _PlanoDaCarga(self._regioes)
+                x, z = self._inicio()
+                self._carregar(self._dentro_do_orcamento(self._plano.atualizar(x, z, 0.0), x, z))
+                # A primeira chamada de atualizar (com o personagem) conta a entrada inicial.
+                self._plano.reiniciar()
+            else:
+                self._carregar(None)
         except BaseException:
             self.descartar()
             raise
 
-    def _registrar_texturas(self, modelo):
+    def _registrar_texturas(self, chave, modelo):
         # UnloadModel não possui as texturas no Raylib 6; o cenário que as
         # carregou deve soltá-las. Copiar os structs antes de liberar os mapas.
         if self._textura_padrao is None:
@@ -236,11 +517,226 @@ class Cenario:
                 self._textura_padrao = material.maps[_p.MATERIAL_MAP_ALBEDO].texture.id
             finally:
                 _p.unload_material(material)
+        proprias = self._texturas_do_modelo.setdefault(chave, [])
         for j in range(modelo.materialCount):
             for i in range(12):  # MAX_MATERIAL_MAPS do contrato Raylib 6.0
                 t = modelo.materials[j].maps[i].texture
                 if t.id and t.id != self._textura_padrao and t.id not in self._texturas:
                     self._texturas[t.id] = _p.Texture(t.id, t.width, t.height, t.mipmaps, t.format)
+                    proprias.append(t.id)
+
+    def _chave(self, no):
+        # Modelos estáticos são divididos pelo arquivo físico; os animados são um por nó.
+        if no['arquivo'] in self._animaveis:
+            return ('no', no['id'])
+        return ('arquivo', self._arquivos[no['arquivo']][0])
+
+    def _usar_no(self, no):
+        chave = self._chave(no)
+        if chave not in self._modelos:
+            modelo = _p.load_model(str(self._arquivos[no['arquivo']][0]))
+            self._modelos[chave] = modelo
+            self._usos[chave] = 0
+            self._registrar_texturas(chave, modelo)
+            if not _p.is_model_valid(modelo):
+                self._liberar_modelo(chave)
+                raise ValueError(f'Não foi possível carregar o modelo de {no["id"]}.')
+        self._usos[chave] += 1
+        self._nos[no['id']] = (no, self._modelos[chave])
+
+    def _soltar_no(self, ident):
+        no, _ = self._nos.pop(ident)
+        clips = self._animacoes.pop(ident, None)
+        if clips is not None:
+            _p.unload_model_animations(*clips)
+        chave = self._chave(no)
+        self._usos[chave] -= 1
+        if self._usos[chave] <= 0:
+            self._liberar_modelo(chave)
+
+    def _liberar_modelo(self, chave):
+        modelo = self._modelos.pop(chave)
+        self._usos.pop(chave, None)
+        try:
+            _p.unload_model(modelo)
+        finally:
+            for ident in self._texturas_do_modelo.pop(chave, ()):
+                textura = self._texturas.pop(ident, None)
+                if textura is not None:
+                    _p.unload_texture(textura)
+
+    def _carregar(self, alvo):
+        """Leva os modelos ao conjunto de regiões ``alvo`` (``None``: a cena inteira). Uma falha
+        devolve o que esta chamada carregou e deixa a carga de antes intacta."""
+        querer = [no for no in self.dados['nos']
+                  if alvo is None or no['id'] not in self._regioes_do_no
+                  or self._regioes_do_no[no['id']] & alvo]
+        novos = []
+        try:
+            for no in querer:
+                if no['id'] not in self._nos:
+                    self._usar_no(no)
+                    novos.append(no['id'])
+        except BaseException:
+            for ident in novos:
+                self._soltar_no(ident)
+            raise
+        ficam = {no['id'] for no in querer}
+        for ident in [i for i in self._nos if i not in ficam]:
+            self._soltar_no(ident)
+        # O desenho segue a ordem da cena, como sempre.
+        self._nos = {no['id']: self._nos[no['id']] for no in self.dados['nos'] if no['id'] in self._nos}
+        self._carregadas = set(alvo or ())
+
+    def _inicio(self):
+        # A janela inicial é a de onde a cena começa: o início principal, outro início ou o meio.
+        inicios = [m for m in self.dados['marcadores'] if isinstance(m, dict)
+                   and isinstance(m.get('configuracao'), dict)
+                   and m['configuracao'].get('tipo') == 'inicio']
+        m = next((m for m in inicios if m['configuracao'].get('principal')), None)
+        if m is None and inicios:
+            m = inicios[0]
+        if m is not None:
+            x, _, z = _ponto(m.get('posicao'))
+            return x, z
+        if self.dados['nos']:
+            volumes = [_volume(no['volume']) for no in self.dados['nos']]
+            return ((min(lo[0] for lo, _ in volumes) + max(hi[0] for _, hi in volumes)) / 2,
+                    (min(lo[2] for lo, _ in volumes) + max(hi[2] for _, hi in volumes)) / 2)
+        return 0.0, 0.0
+
+    def _malhas_do_conjunto(self, ids):
+        nos = set()
+        for r in self._regioes:
+            if r['id'] in ids:
+                nos.update(r['nos'])
+        return self._malhas_de_todas + sum(self._malhas.get(self._no_por_id[n]['arquivo'], 0) for n in nos)
+
+    def _dentro_do_orcamento(self, estado, x, z):
+        # A janela obrigatória sempre carrega; as outras só enquanto tudo cabe em 48 malhas.
+        conjunto = set(estado['obrigatorias'])
+        opcionais = sorted((r for r in self._regioes
+                            if r['id'] in estado['carregadas'] and r['id'] not in conjunto),
+                           key=lambda r: _distancia_ate_caixa(x, z, r['caixa']))
+        for r in opcionais:
+            if self._malhas_do_conjunto(conjunto | {r['id']}) <= _MALHAS_POR_JANELA:
+                conjunto.add(r['id'])
+        return conjunto
+
+    def _aplicar(self, alvo, agora):
+        try:
+            self._carregar(alvo)
+            for ident in alvo:
+                self._falhas.pop(ident, None)
+            return
+        except Exception as erro:
+            primeira = erro
+        # A falha mantém as regiões de antes (quem está na que falhou pisa no relevo). As novas
+        # são tentadas uma por uma: a que quebrou não segura as outras.
+        novas = [r['id'] for r in self._regioes if r['id'] in alvo and r['id'] not in self._carregadas]
+        if len(novas) <= 1:
+            for ident in novas:
+                self._falhou(ident, agora, primeira)
+            return
+        conjunto = {r for r in alvo if r in self._carregadas}
+        for ident in novas:
+            try:
+                self._carregar(conjunto | {ident})
+                conjunto.add(ident)
+                self._falhas.pop(ident, None)
+            except Exception as erro:
+                self._falhou(ident, agora, erro)
+
+    def _falhou(self, ident, agora, erro):
+        tentativa = self._falhas.get(ident, (0, 0))[0]
+        self._falhas[ident] = (tentativa + 1, agora + _NOVAS_TENTATIVAS[min(tentativa, 2)])
+        if not self._avisou_falha:
+            self._avisou_falha = True
+            print(f'Não consegui carregar uma parte do cenário ({erro}). Vou tentar de novo.')
+
+    @staticmethod
+    def _ponto_da_camera(camera):
+        if camera is None:
+            return None
+        posicao = getattr(camera, 'position', None)
+        if posicao is not None:
+            x, z = posicao.x, posicao.z
+        else:
+            try:
+                x, z = camera
+            except (TypeError, ValueError):
+                raise ValueError('A câmera das regiões precisa ser a câmera 3D ou um par (x, z).') from None
+        if (type(x) not in (int, float) or type(z) not in (int, float)
+                or not (math.isfinite(x) and math.isfinite(z))):
+            return None
+        return (x, z)
+
+    def atualizar(self, x, z, *, camera=None, agora=None):
+        """A cada quadro, com a posição (x, z) do personagem: carrega a região dele, as vizinhas e
+        as que estão perto, e solta as que ficaram longe. Num cenário sem regiões, não faz nada.
+
+        ``camera`` (opcional) é a câmera 3D ou um par (x, z): com ela longe do personagem, a
+        pré-carga alcança mais longe. ``agora`` é o tempo em segundos (padrão: ``get_time``).
+        Uma posição que não é um número finito mantém a carga como está.
+        """
+        self._ativo()
+        self._entradas = set()
+        if self._plano is None:
+            return
+        if type(x) not in (int, float) or type(z) not in (int, float):
+            raise ValueError('A posição das regiões precisa de dois números (x e z).')
+        if not (math.isfinite(x) and math.isfinite(z)):
+            return
+        agora = float(_p.get_time()) if agora is None else _numero(agora)
+        estado = self._plano.atualizar(x, z, agora, self._ponto_da_camera(camera))
+        self._atual = estado['atual']
+        self._entradas = set(estado['entradas'])
+        # A região que falhou espera a vez dela de tentar de novo (1, 4 e 15 s).
+        alvo = {ident for ident in self._dentro_do_orcamento(estado, x, z)
+                if ident in self._carregadas or self._falhas.get(ident, (0, -math.inf))[1] <= agora}
+        if alvo != self._carregadas:
+            self._aplicar(alvo, agora)
+
+    def regiao(self, x, z):
+        """O nome da região onde está o ponto (x, z), ou ``None`` fora de todas (ou sem regiões).
+        Na borda entre duas, vale a primeira da lista."""
+        self._ativo()
+        if type(x) not in (int, float) or type(z) not in (int, float):
+            raise ValueError('A região de um ponto precisa de dois números (x e z).')
+        if not self._regioes or not (math.isfinite(x) and math.isfinite(z)):
+            return None
+        ident = _regiao_do_ponto(self._regioes, x, z)
+        return None if ident is None else next(r['nome'] for r in self._regioes if r['id'] == ident)
+
+    def entrou_na_regiao(self, nome):
+        """Verdadeiro uma vez por entrada do personagem na região ``nome``, contada pelo último
+        ``atualizar`` (inclusive quando ele já começa dentro). Um nome que o cenário não tem é
+        avisado uma vez."""
+        self._ativo()
+        if not any(r['nome'] == nome for r in self._regioes):
+            if nome not in self._avisadas:
+                self._avisadas.add(nome)
+                print(f'O cenário não tem a região "{nome}". '
+                      'Desenhe as regiões no Molda Cenários, na aba Jogo.')
+            return False
+        if nome in self._entradas:
+            self._entradas.discard(nome)
+            return True
+        return False
+
+    def estado_das_regioes(self):
+        """``None`` sem regiões; com elas, a região atual, as carregadas e as que falharam (pelos
+        nomes) e quantos modelos estão na memória."""
+        self._ativo()
+        if self._plano is None:
+            return None
+
+        def nomes(ids):
+            return [r['nome'] for r in self._regioes if r['id'] in ids]
+
+        return {'atual': nomes({self._atual})[0] if self._atual is not None else None,
+                'carregadas': nomes(self._carregadas), 'falhas': nomes(self._falhas),
+                'modelos': len(self._modelos)}
 
     def _preparar_terreno(self):
         t = self.dados.get('terreno')
@@ -360,6 +856,10 @@ class Cenario:
         for c in self.dados['colisoes']:
             if c['tipo'] not in tipos or c.get('entidade') in ignorar:
                 continue
+            # A colisão de uma região que não está carregada não conta (ali vale o relevo).
+            regioes = self._regioes_da_colisao.get(c.get('id'))
+            if regioes is not None and not regioes & self._carregadas:
+                continue
             a, b = _volume(c['volume'])
             if all(lo[i] <= b[i] and hi[i] >= a[i] for i in range(3)):
                 return True
@@ -370,6 +870,8 @@ class Cenario:
         self._ativo()
         entrada = self._nos.get(no)
         if entrada is None:
+            if no in self._no_por_id:
+                raise ValueError('Este nó está numa região que não está carregada agora.')
             raise ValueError('O nó não existe neste cenário.')
         if no not in self._animacoes:
             contador = _p.ffi.new('int *', 0)
@@ -403,14 +905,27 @@ class Cenario:
         finally:
             self._animacoes.clear()
             self._modelos.clear()
+            self._usos.clear()
             self._texturas.clear()
+            self._texturas_do_modelo.clear()
             self._nos.clear()
+            self._carregadas = set()
             self._arquivos.clear()
             self._alturas = self._buracos = None
 
 
 def carregar(caminho='cenario.json', *, arquivos=None):
-    """Abre manifesto local. O mapa opcional resolve os recursos dentro da mesma raiz."""
+    """Abre manifesto local. O mapa opcional resolve os recursos dentro da mesma raiz.
+
+    ``caminho`` também pode ser o módulo que a importação do Molda cria no projeto
+    (``import cenario_vila`` e depois ``cenario.carregar(cenario_vila)``): ele já sabe
+    o manifesto e o mapa dos arquivos. É o que o bloco "Carregar o cenário" escreve.
+    """
+    if isinstance(caminho, types.ModuleType):
+        abrir = getattr(caminho, 'carregar', None)
+        if not callable(abrir) or arquivos is not None:
+            raise ValueError('Use aqui o módulo do cenário (cenario_…), que o Estúdio cria ao trazer o cenário do Molda.')
+        return abrir()
     p = Path(os.fspath(caminho)).resolve()
     if p.stat().st_size > _MAX_MANIFESTO:
         raise ValueError('O manifesto do cenário ultrapassa 16 MiB.')
