@@ -74,6 +74,62 @@ def _overlaps(quad, box):
     return min(xs) < box.right and max(xs) > box.left and min(ys) < box.bottom and max(ys) > box.top
 
 
+class _SceneBounds:
+    """A conservative definition-space envelope. Uncertain arithmetic cannot cull it."""
+
+    __slots__ = ('edges', 'magnitude', 'uncertain')
+
+    def __init__(self, magnitude):
+        self.edges = None
+        self.magnitude = magnitude
+        self.uncertain = False
+
+    def include(self, edges, magnitude):
+        if not all(math.isfinite(v) for v in (*edges, magnitude)):
+            self.uncertain = True
+            return
+        left, top, right, bottom = edges
+        if self.edges is not None:
+            x0, y0, x1, y1 = self.edges
+            left, top = min(left, x0), min(top, y0)
+            right, bottom = max(right, x1), max(bottom, y1)
+        self.edges = left, top, right, bottom
+        self.magnitude = max(self.magnitude, magnitude, *(abs(v) for v in edges))
+
+    def include_quad(self, quad, magnitude):
+        if not all(math.isfinite(v) for point in quad for v in point):
+            self.uncertain = True
+            return
+        xs, ys = zip(*quad)
+        self.include((min(xs), min(ys), max(xs), max(ys)), magnitude)
+
+    def might_intersect(self, matrix, box, reach=0, placement=0):
+        if self.uncertain:
+            return True
+        if self.edges is None:
+            return False
+        left, top, right, bottom = self.edges
+        a, b, c, d, e, f = matrix
+        stretch = math.hypot(a, b) + math.hypot(c, d)
+        # Broad-phase only. Bound the rounding of offset, rotation, scaling and
+        # corners relative to their operands, including cancellation in offsets.
+        magnitude = max(1, abs(e), abs(f), stretch * self.magnitude, placement)
+        pad = stretch * reach + 32 * math.ulp(magnitude)
+        quad = _quad(matrix, left, top, right - left, bottom - top)
+        if not math.isfinite(pad) or not all(math.isfinite(v) for point in quad for v in point):
+            return True
+        xs, ys = zip(*quad)
+        return (
+            min(xs) - pad < box.right and max(xs) + pad > box.left
+            and min(ys) - pad < box.bottom and max(ys) + pad > box.top
+        )
+
+
+def _tile_query_layer(layer, sheet, platforms):
+    forced = layer.get('collision', False)
+    return not forced and bool(sheet['platform']) if platforms else forced or bool(sheet['solid'])
+
+
 def _cell_window(matrix, box, document, size):
     # Tile layers have orthogonal axes (one level of authored set placement).
     # Normalize each axis independently: a very small determinant can underflow.
@@ -128,4 +184,63 @@ class _SceneLayers:
             if layer['kind'] == 'objects':
                 for obj in layer['objects']:
                     yield dict(obj, x=obj['x'] + x, y=obj['y'] + y)
+
+
+class _SceneSetLayers(_SceneLayers):
+    """One summary per definition and pass. Stored cells stay in the common reader."""
+
+    def __init__(self, document, size, sheets, precise):
+        super().__init__(document)
+        col, row = document['origin']['col'], document['origin']['row']
+        end_col, end_row = col + document['cols'], row + document['rows']
+        origin = max(abs(col), abs(row)) * size
+        self.draw_bounds = _SceneBounds(origin), _SceneBounds(origin)
+        self.solid_tiles = _SceneBounds(origin)
+        self.platform_tiles = _SceneBounds(origin)
+        self.outlines = _SceneBounds(origin)
+        self.outline_reach = 0
+        for layer, alpha, x, y, _, _ in self.visible:
+            offset = max(abs(x), abs(y))
+            if layer['kind'] == 'tiles':
+                chunks = layer['cells'].chunk_bounds
+                if chunks is None:
+                    continue
+                left, top = max(col, chunks[0]), max(row, chunks[1])
+                right, bottom = min(end_col, chunks[2]), min(end_row, chunks[3])
+                edges = left * size + x, top * size + y, right * size + x, bottom * size + y
+                magnitude = max(offset, max(abs(left), abs(top), abs(right), abs(bottom)) * size)
+                if alpha > 0 and not layer.get('collision'):
+                    self.draw_bounds[bool(layer.get('front'))].include(edges, magnitude)
+                sheet = sheets[layer['tilesetId']]
+                if _tile_query_layer(layer, sheet, False):
+                    self.solid_tiles.include(edges, magnitude)
+                if _tile_query_layer(layer, sheet, True):
+                    self.platform_tiles.include(edges, magnitude)
+                continue
+            for obj in layer['objects']:
+                width, height = obj['width'], obj['height']
+                magnitude = max(offset, abs(obj['x']), abs(obj['y']), width, height)
+                if alpha > 0 and obj.get('art') and width > 0 and height > 0:
+                    # Every animation crop fills this same authored rectangle.
+                    matrix = _placed((1, 0, 0, 1, x, y), obj, 1, 1)
+                    self.draw_bounds[False].include_quad(_quad(matrix, 0, 0, 1, 1), magnitude)
+                if precise and obj.get('collision'):
+                    ox, oy = obj['x'] + x, obj['y'] + y
+                    self.outlines.include((ox, oy, ox, oy), magnitude)
+                    point_reach = max(
+                        (abs(p['x']) + abs(p['y']) for p in obj.get('points', ())), default=0
+                    )
+                    # Reconstructing a reflected shape can move its anchor by a
+                    # height and measure its points from the opposite edge. An
+                    # anchor plus reach stays conservative through that step,
+                    # including the ellipse/near-orthogonal shape conversion.
+                    reach = max(width + height, point_reach) + 2 * height
+                    self.outline_reach = max(self.outline_reach, reach)
+
+    def might_collide(self, matrix, query, platforms, placement):
+        if platforms:
+            return self.platform_tiles.might_intersect(matrix, query)
+        return self.solid_tiles.might_intersect(matrix, query) or self.outlines.might_intersect(
+            matrix, query, self.outline_reach, placement
+        )
 `

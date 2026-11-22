@@ -54,8 +54,11 @@ class CenaRegional(_ScenePhysics):
             scene['rows'] * self.tamanho_peca,
         )
         self._root = _SceneLayers(scene)
-        self._sets = {s['id']: _SceneLayers(s) for s in scene.get('sets', ())}
         self._sheets = {s['id']: s for s in scene['tilesets']}
+        self._sets = {
+            s['id']: _SceneSetLayers(s, self._size, self._sheets, self.fisica == 'precise')
+            for s in scene.get('sets', ())
+        }
         self._art = {a['id']: a for a in scene.get('art', ())}
         self._world_matrix = (self._scale, 0, 0, self._scale, 0, 0)
 
@@ -104,7 +107,9 @@ class CenaRegional(_ScenePhysics):
                         continue
                     definition = self._sets.get(obj.get('setId'))
                     if definition:
-                        paint(definition, self._set_matrix(m, obj, definition), alpha, (0, 0))
+                        placed = self._set_matrix(m, obj, definition)
+                        if definition.draw_bounds[bool(frente)].might_intersect(placed, box):
+                            paint(definition, placed, alpha, (0, 0))
                     elif not frente and obj.get('art'):
                         ref = obj['art']
                         sheet = self._sheets.get(ref['assetId'])

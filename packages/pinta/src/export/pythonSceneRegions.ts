@@ -32,11 +32,24 @@ def _region_fields(value, fields):
 
 class CelulasRegionais:
     """Owns decoded i16 arrays; callers receive values, never mutable cell buffers."""
-    __slots__ = ('_ordered', '_index')
+    __slots__ = ('_ordered', '_index', '_chunk_bounds')
 
     def __init__(self, chunks):
         self._ordered = tuple(sorted(chunks, key=lambda chunk: (chunk[1], chunk[0])))
         self._index = {(col, row): cells for col, row, cells in self._ordered}
+        self._chunk_bounds = None
+        if self._ordered:
+            self._chunk_bounds = (
+                min(chunk[0] for chunk in self._ordered) * _REGION_SIDE,
+                self._ordered[0][1] * _REGION_SIDE,
+                (max(chunk[0] for chunk in self._ordered) + 1) * _REGION_SIDE,
+                (self._ordered[-1][1] + 1) * _REGION_SIDE,
+            )
+
+    @property
+    def chunk_bounds(self):
+        """Half-open cell bounds from stored chunk headers, without reading values."""
+        return self._chunk_bounds
 
     def at(self, col, row):
         if not _region_integer(col) or not _region_integer(row):

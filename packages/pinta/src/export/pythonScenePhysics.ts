@@ -39,16 +39,19 @@ def _platform_surface(points, body, direction):
 
 
 class _ScenePhysics:
-    def _contexts(self):
+    def _contexts(self, query, platforms):
         yield self._root, self._world_matrix, None
         for obj in self._root.objects():
             definition = self._sets.get(obj.get('setId'))
             if definition and obj['width'] > 0 and obj['height'] > 0:
-                yield definition, self._set_matrix(self._world_matrix, obj, definition), obj
+                matrix = self._set_matrix(self._world_matrix, obj, definition)
+                placement = max(abs(obj['x']), abs(obj['y'])) * self._scale
+                if definition.might_collide(matrix, query, platforms, placement):
+                    yield definition, matrix, obj
 
     def _colliders(self, query, platforms=False):
         size = self._size
-        for layers, matrix, parent in self._contexts():
+        for layers, matrix, parent in self._contexts(query, platforms):
             for layer, alpha, x, y, px, py in layers.visible:
                 if layer['kind'] == 'objects':
                     if not platforms and self.fisica == 'precise':
@@ -60,15 +63,9 @@ class _ScenePhysics:
                                 yield self._scaled_object(placed), None
                     continue
                 sheet = self._sheets[layer['tilesetId']]
-                forced = layer.get('collision', False)
-                if (
-                    platforms
-                    and (forced or not sheet['platform'])
-                    or not platforms
-                    and not forced
-                    and not sheet['solid']
-                ):
+                if not _tile_query_layer(layer, sheet, platforms):
                     continue
+                forced = layer.get('collision', False)
                 m = _offset(matrix, x, y)
                 window = _cell_window(m, query, layers.document, size)
                 if window:
