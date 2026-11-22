@@ -553,7 +553,7 @@ function LessonSectionsContent({
     void apiSend(
       `/api/members/lessons/${encodeURIComponent(lesson.id)}/navigation`,
       'POST',
-      { sectionId: selected },
+      { sectionId: selected, opening: true },
       { 'x-sz-viewer': player?.viewerId ?? '' },
       { keepalive: true },
     ).catch(() => {})

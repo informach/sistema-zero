@@ -190,7 +190,7 @@ export class LearningService {
       },
     }
   }
-  async navigation(actor: LearningActor, lessonId: string, sectionId: string) {
+  async navigation(actor: LearningActor, lessonId: string, sectionId: string, opening = false) {
     const lesson = await this.requireLesson(actor, lessonId)
     // Avançar é o momento em que as partes "envio em dia" ANTES do destino são gravadas (o player
     // manda o rascunho para a conta logo antes). Ver `SectionSettle`.
@@ -200,7 +200,7 @@ export class LearningService {
     const structure = playbackLessonStructure(lesson, await this.structure(lesson))
     if (!structure.sections.some((s) => s.id === sectionId))
       throw new LessonNotFoundError('Seção não encontrada')
-    await this.repository.saveNavigation(actor, lessonId, sectionId)
+    await this.repository.saveNavigation(actor, lessonId, sectionId, { opening })
     return { ok: true }
   }
   /**
