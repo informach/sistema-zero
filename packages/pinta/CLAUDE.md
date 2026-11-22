@@ -221,6 +221,15 @@ heap de 32 MiB. O escritor/importador públicos continuam em 7; medição antes 
 histórico, IO 3 e adaptadores seguem pendentes. Provas em
 `qa/backup-regional-interno-2026-11-21/`.
 
+**JSON antes do histórico:** `RegionBackupSizeCache` mede a representação real
+por objetos autorais imutáveis, com números em chaves fracas; não reencodar o
+mapa completo a cada gesto. Core confere descritores/buffer antes de `cellTile`.
+Store admite o snapshot inteiro ligado, incluindo timestamp, antes do host e
+do histórico/autosave. Lotes só legados conservam sua política. Não confundir
+esse limite com a quota de itens da galeria fora do lote, responsabilidade de
+inventário/host/persistência. Físico 3, transporte público e adaptadores seguem
+pendentes. Provas em `qa/admissao-json-2026-11-21/`.
+
 **Referências nos conjuntos (21/11):** `core/mapClone.ts` é a operação comum de
 clonagem/remapeamento usada por importação e conjuntos. IDs de camadas e objetos
 possuem escopos separados. Um fragmento só troca o ID de uma versão incorporada

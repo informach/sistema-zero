@@ -71,3 +71,22 @@ test('JSON byte admission refuses unsupported, cyclic or accessor data without r
     expect(cache.byteLength(value)).toBe(Infinity)
   expect(calls).toBe(0)
 })
+
+test('a pure boundary serializer retains numerical summaries on original object identities', () => {
+  const source = new Uint8Array([1, 2, 3])
+  let calls = 0
+  const cache = new JsonByteSizeCache(66, (value) => {
+    if (value !== source) return value
+    calls++
+    return { encoded: 'AQID' }
+  })
+  const actual = { data: { encoded: 'AQID' }, again: [{ encoded: 'AQID' }] }
+  const value = { data: source, again: [source] }
+  expect(cache.byteLength(value)).toBe(
+    new TextEncoder().encode(JSON.stringify(actual, null, 2)).byteLength,
+  )
+  expect(cache.byteLength({ wrapper: value })).toBe(
+    new TextEncoder().encode(JSON.stringify({ wrapper: actual }, null, 2)).byteLength,
+  )
+  expect(calls).toBe(1)
+})

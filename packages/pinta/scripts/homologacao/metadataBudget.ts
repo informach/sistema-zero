@@ -107,3 +107,31 @@ export function metadataBudgetFixture() {
   if (!fixture) fixture = build()
   return fixture
 }
+
+let escaped: RegionTilemapAsset | undefined
+/** Same authorial text units, but JSON escaping exceeds the portable file budget. */
+export function escapedMetadataFixture(): RegionTilemapAsset {
+  if (!escaped) {
+    const { source } = metadataBudgetFixture()
+    escaped = {
+      ...source,
+      layers: source.layers.map((layer) =>
+        !isObjectLayer(layer)
+          ? layer
+          : {
+              ...layer,
+              objects: layer.objects.map((object) => ({
+                ...object,
+                properties: Object.fromEntries(
+                  Object.entries(object.properties).map(([key, value]) => [
+                    key,
+                    typeof value === 'string' ? '\0'.repeat(value.length) : value,
+                  ]),
+                ),
+              })),
+            },
+      ),
+    }
+  }
+  return escaped
+}

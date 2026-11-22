@@ -22,15 +22,20 @@ import {
   pintaEncodedBackupByteLength,
 } from './projectJson'
 
-const VERSION = 8
+export const REGION_BACKUP_VERSION = 8
+const VERSION = REGION_BACKUP_VERSION
 /** Separate from encoded file size: bound buffers allocated by a single native-8 restore. */
 export const MAX_REGION_BACKUP_DECODED_BYTES = 32 * 1024 * 1024
 
-function admitsDecodedBuffers(assets: readonly unknown[]): boolean {
+/** Shared preflight; canonical authoring may supply its bitmap header reader. */
+export function admitsRegionBackupBuffers(
+  assets: readonly unknown[],
+  bitmapLength: (raw: unknown) => number | null = decodedBitmapByteLength,
+): boolean {
   const pending = assets.map((asset) => ({ asset, depth: 0 }))
   let bytes = 0
   function bitmap(raw: unknown): boolean {
-    const size = decodedBitmapByteLength(raw)
+    const size = bitmapLength(raw)
     if (size === null) return false
     bytes += size
     return bytes <= MAX_REGION_BACKUP_DECODED_BYTES
@@ -151,7 +156,7 @@ export function encodeRegionGalleryBackup(
     if (!value) return null
     encoded.push(value)
   }
-  if (!admitsDecodedBuffers(encoded)) return null
+  if (!admitsRegionBackupBuffers(encoded)) return null
   const bytes = pintaEncodedBackupByteLength(encoded, VERSION)
   if (bytes > MAX_BACKUP_FILE_BYTES) return null
   return { text: pintaBackupFromEncoded(encoded, VERSION), bytes }
@@ -177,7 +182,7 @@ export function decodeRegionGalleryBackup(text: string): {
       Object.keys(record).length !== 3
     )
       return refuse('A versão ou o cabeçalho do backup regional não é compatível.')
-    if (!admitsDecodedBuffers(record.assets))
+    if (!admitsRegionBackupBuffers(record.assets))
       return refuse(
         'O backup excede o orçamento de 32 MiB de buffers decodificados ou contém cabeçalhos inválidos. O arquivo foi mantido.',
       )

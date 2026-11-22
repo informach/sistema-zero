@@ -429,9 +429,14 @@ export function pintaBackupFromEncoded(assets: readonly unknown[], version: numb
 /** Measure each encoded asset before assembling a potentially oversized gallery string. */
 export function pintaEncodedBackupByteLength(assets: readonly unknown[], version: number): number {
   return new JsonByteSizeCache(REGION_METADATA_BUDGET.maxDepth + 2).byteLength(
-    { format: FORMAT, version, assets },
+    pintaBackupContainer(assets, version),
     MAX_BACKUP_FILE_BYTES,
   )
+}
+
+/** Shared logical envelope for the formatter and its incremental boundary-size adapters. */
+export function pintaBackupContainer(assets: readonly unknown[], version: number) {
+  return { format: FORMAT, version, assets }
 }
 
 // Internal building blocks for new containers; the public writer/reader still admits 0–7.

@@ -115,6 +115,14 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    por quantidade. Suíte 2.665 e 46 testes focados. Ainda falta ligar o medidor
    antes de histórico/autosave sem reencodar o mapa por gesto, integrar o backup
    público/transporte, físico 3 e adaptadores. O item 4 e a etapa macro 1 seguem abertos.
+   Admissão JSON do documento/lote ligada ao store em
+   `qa/admissao-json-2026-11-21/`: resumos numéricos por identidade autoral,
+   acordo com o encoder real, timestamp incluído e recusa antes de host,
+   histórico/autosave. Uma célula nova recodifica um chunk entre 2.048, sem
+   guardar as strings codificadas. Suíte 2.678, 48 focados e 48 ensaios de
+   navegador; formatos públicos preservados. A quota da galeria fora do lote
+   continua no inventário/host e precisa da integração regional. Seguir ao
+   físico 3, proteção dos dependentes, transporte e adaptadores; manter o item aberto.
 
 Na promoção do store, conferir também os orçamentos globais de metadados e JSON
 antes do histórico/autosave. A soma de objetos/propriedades em várias camadas

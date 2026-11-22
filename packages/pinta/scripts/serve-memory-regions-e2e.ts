@@ -10,55 +10,64 @@ if (
   probe !== 'layers' &&
   probe !== 'queries' &&
   probe !== 'metadata' &&
-  probe !== 'backup'
+  probe !== 'backup' &&
+  probe !== 'json'
 )
   throw Error('Laboratório inválido')
 const selected =
-  probe === 'backup'
+  probe === 'json'
     ? {
-        baseline: '45bee622ecfac73da7bbfd47cfdcff0a94e1cb35',
-        entry: 'backup-legacy-probe',
-        fn: 'runLegacyBackupProbe',
-        global: 'backupLegacy',
-        files: ['src/export/projectJson.ts'],
+        baseline: 'af40b707c371decd2eb8ac95b671f8987fe4f9e0',
+        entry: 'json-admission-probe',
+        fn: 'runJsonAdmissionProbe',
+        global: 'jsonAdmission',
+        files: ['src/state/editorStore.ts'],
       }
-    : probe === 'metadata'
+    : probe === 'backup'
       ? {
-          baseline: '36c3ab7a826d8f5150ed73e41120e859613548af',
-          entry: 'metadata-regions-probe',
-          fn: 'runMetadataRegionsProbe',
-          global: 'metadata',
-          files: ['src/core/project.ts', 'src/state/editorStore.ts'],
+          baseline: '45bee622ecfac73da7bbfd47cfdcff0a94e1cb35',
+          entry: 'backup-legacy-probe',
+          fn: 'runLegacyBackupProbe',
+          global: 'backupLegacy',
+          files: ['src/export/projectJson.ts'],
         }
-      : probe === 'queries'
+      : probe === 'metadata'
         ? {
-            baseline: 'dd34e6f99b00a7e219c67e63e4535312d0a2a2da',
-            entry: 'queries-regions-probe',
-            fn: 'runQueriesRegionsProbe',
-            global: 'queries',
-            files: ['src/tiles/tilemapOps.ts'],
+            baseline: '36c3ab7a826d8f5150ed73e41120e859613548af',
+            entry: 'metadata-regions-probe',
+            fn: 'runMetadataRegionsProbe',
+            global: 'metadata',
+            files: ['src/core/project.ts', 'src/state/editorStore.ts'],
           }
-        : probe === 'layers'
+        : probe === 'queries'
           ? {
-              baseline: 'ed3b3a24bb8a225ed7aafafc3f7dca232706fc28',
-              entry: 'layers-regions-probe',
-              fn: 'runLayerRegionsProbe',
-              global: 'layers',
-              files: ['src/core/project.ts', 'src/tiles/layerTree.ts', 'src/tiles/tilemapOps.ts'],
+              baseline: 'dd34e6f99b00a7e219c67e63e4535312d0a2a2da',
+              entry: 'queries-regions-probe',
+              fn: 'runQueriesRegionsProbe',
+              global: 'queries',
+              files: ['src/tiles/tilemapOps.ts'],
             }
-          : {
-              baseline: '52ca47bbd345fb0968bd882aec904da59b735270',
-              entry: 'memory-regions-probe',
-              fn: 'runMemoryRegionsProbe',
-              global: 'memory',
-              files: [
-                'src/core/assetMemory.ts',
-                'src/core/mapResourceVersions.ts',
-                'src/core/project.ts',
-                'src/state/editorStore.ts',
-                'src/tiles/resourceVersions.ts',
-              ],
-            }
+          : probe === 'layers'
+            ? {
+                baseline: 'ed3b3a24bb8a225ed7aafafc3f7dca232706fc28',
+                entry: 'layers-regions-probe',
+                fn: 'runLayerRegionsProbe',
+                global: 'layers',
+                files: ['src/core/project.ts', 'src/tiles/layerTree.ts', 'src/tiles/tilemapOps.ts'],
+              }
+            : {
+                baseline: '52ca47bbd345fb0968bd882aec904da59b735270',
+                entry: 'memory-regions-probe',
+                fn: 'runMemoryRegionsProbe',
+                global: 'memory',
+                files: [
+                  'src/core/assetMemory.ts',
+                  'src/core/mapResourceVersions.ts',
+                  'src/core/project.ts',
+                  'src/state/editorStore.ts',
+                  'src/tiles/resourceVersions.ts',
+                ],
+              }
 const baseline = selected.baseline,
   previousFiles = new Set(selected.files)
 const historical: Bun.BunPlugin = {

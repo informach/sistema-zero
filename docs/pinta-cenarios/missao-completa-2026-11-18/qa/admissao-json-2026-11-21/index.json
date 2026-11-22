@@ -1,0 +1,676 @@
+{
+  "baseline": "af40b707c371decd2eb8ac95b671f8987fe4f9e0",
+  "records": [
+    {
+      "file": "json-before-history-red.log.gz",
+      "bytes": 638,
+      "sha256": "ce41734529dcd7295e1a57f7be4f188b512ff6e80ceba58126274e1402a93fff",
+      "rawBytes": 1148,
+      "rawSha256": "b4594c7f91736851bd9248e5e36bac7b96c2029c6e4f2203158da7c6e2ce43bc"
+    },
+    {
+      "file": "json-admission-red.log.gz",
+      "bytes": 957,
+      "sha256": "7de37bf14e4099a54a4f871c63e508ac346cb08bb410a172c36b50306bf53798",
+      "rawBytes": 2826,
+      "rawSha256": "5028e9e32ed7752ea7e222308d7a99968183fdf4953b998a8ca3ddaebe49df61"
+    },
+    {
+      "file": "json-size-header-red.log.gz",
+      "bytes": 592,
+      "sha256": "2dd1a5e8074bbb37b2602c4bde23f1227d29b8855e1ccf451b98b099fd9965c5",
+      "rawBytes": 1037,
+      "rawSha256": "770de8e2e53e19f504195ff41fcc23bcc52f9a850e2c4163baa405281cff1534"
+    },
+    {
+      "file": "json-admission-focused.log.gz",
+      "bytes": 2118,
+      "sha256": "d34de116aaac42ee02b51906846514cab86bbb2f501f993d8925c65e4d0f5c10",
+      "rawBytes": 5554,
+      "rawSha256": "d823222c5a70e710dad2853e2d79012542bea33366ad1a0106a9c3278147139a"
+    },
+    {
+      "file": "json-admission-full-first.log.gz",
+      "bytes": 80754,
+      "sha256": "15759f11cbf13bebcfcd2640310cf1f257c2e0fe137e422ab9762d7713c5e43e",
+      "rawBytes": 298081,
+      "rawSha256": "b92a918abf27cd970672a2592dfcbde220103d0278ffbe0d3ddfb614f7ba034f"
+    },
+    {
+      "file": "json-admission-full.log.gz",
+      "bytes": 80106,
+      "sha256": "0e562996641cfca19851c8838724387d7379befdb5ef0afa25fb626b1923eef3",
+      "rawBytes": 297099,
+      "rawSha256": "b072e0fa2922f7d5ad3664b6f5f8433e32d3d306e647c43b53d31e3985380744"
+    },
+    {
+      "file": "json-admission-pinta-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "json-admission-studio-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "json-admission-browser.log.gz",
+      "bytes": 346,
+      "sha256": "688e8cc5dba8bc437889defe3ee17d618591c5f14fde5da0293e47dd4acaf71f",
+      "rawBytes": 1012,
+      "rawSha256": "18babebcb9e0425cc32169039c80dd86e950715ea1b12a2d6dd89943f62ef27b"
+    },
+    {
+      "file": "json-admission-workshop-browser.log.gz",
+      "bytes": 1328,
+      "sha256": "bc48908d7e70708785bf42a1999f19c5dc6563bee3ee22e28c699122931babf2",
+      "rawBytes": 6316,
+      "rawSha256": "de0d325a3093977a310259a9e8c31acb9e610cc3d82c42cf3d5ee7d8132f748e"
+    },
+    {
+      "file": "json-admission-integration-browser.log.gz",
+      "bytes": 2106,
+      "sha256": "ee58d0746eb50745274184d1c0790d4d29440c70ad5de71237aab7d9c1fffe50",
+      "rawBytes": 7990,
+      "rawSha256": "d504e78ad788959efa3dafe33f0926cc91cc87954dc81f19656d53819314b3ad"
+    },
+    {
+      "file": "json-admission-biome.log.gz",
+      "bytes": 65,
+      "sha256": "0a03127cdb5949117cca2f870c2b87ca75514d0ee870b377e77a37dea697be32",
+      "rawBytes": 45,
+      "rawSha256": "e6cd42eacba6a957e2d3582f4fc6a182ca94477d3bd4e5a72287b503e1ea8220"
+    },
+    {
+      "file": "json-admission-diff.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "prove-json-before-history.ts.gz",
+      "bytes": 684,
+      "sha256": "f5b4d19ec2d122b6d2f77332e876ede12ca102e6adfdd93d4696bb59dc7bbb81",
+      "rawBytes": 1488,
+      "rawSha256": "6ecd072437de9f607faf92783df7a76a63fd455f1130aa97f2a45f595315d5d0"
+    },
+    {
+      "file": "playwright-0-report.json.gz",
+      "bytes": 2417,
+      "sha256": "b551c6c1401697abf9177afefcd31c55c4979d85b2f6340117582b0cb2104c77",
+      "rawBytes": 16447,
+      "rawSha256": "c2cac5e1d0794086476dff14cff3910bb711602d091ee9fe2e67bb227a3cd4d5"
+    },
+    {
+      "file": "playwright-1-report.json.gz",
+      "bytes": 3000760,
+      "sha256": "8d3ee817b6a866a4f8d91c75fecdfa83ea6bdbea7a8ee75439cdba70243a6c3a",
+      "rawBytes": 4433497,
+      "rawSha256": "3378ac324d17e53404a8b57d0d6a4605b7b3020b0be3ad579ac95228c658aec7"
+    },
+    {
+      "file": "playwright-2-report.json.gz",
+      "bytes": 928366,
+      "sha256": "74de116c7793c6f210f0e24ee912f5531684828d2eb263274f95deed8b41bd9f",
+      "rawBytes": 1286598,
+      "rawSha256": "1a7b976e98272461bdc227583a5377570a658c25090bf4b8d7f690f97e01bae3"
+    },
+    {
+      "file": "archive-json-admission.cjs.gz",
+      "bytes": 1706,
+      "sha256": "2e5f53cdb51aa83dc4b8b29c2deb1ba8d4a53607e77bfa7c9df937db6262d703",
+      "rawBytes": 4110,
+      "rawSha256": "a07dc704825f599fdefdd0206a2cad399459d2f322e3582ef2a0e3c730b28d7e"
+    }
+  ],
+  "sources": [
+    {
+      "file": "packages/pinta/scripts/homologacao/metadataBudget.ts",
+      "sha256": "0b58f8b06f3052c82cbdb9bf3bbb35756f241f7d5e64c88b7fb765bd15be4b47",
+      "previousSha256": "017a6518efadb3e9d99237a77d7a9db8586e2f28664f14ae41e8b30b82691cf7"
+    },
+    {
+      "file": "packages/pinta/scripts/serve-memory-regions-e2e.ts",
+      "sha256": "b119704f0b7452ddd767c1fa988c2a60d5982acd0d44f8aa15bcbadf5b37787f",
+      "previousSha256": "db05e8385ec98f29ee75e55603af858ec941a3a0898dfe86077aab392f7121c1"
+    },
+    {
+      "file": "packages/pinta/src/core/jsonBytes.test.ts",
+      "sha256": "f6ddc242f56d78f34e12c10aa16b36c2b9b7912d5cd546d873dade13860b0ebb",
+      "previousSha256": "ebc06272537ae08ed6035ec5a1199d3ffefb6a3a29e4eb1c209472d1cbd465e9"
+    },
+    {
+      "file": "packages/pinta/src/core/jsonBytes.ts",
+      "sha256": "b23bc0795df1d0d6e92306ef5e5c0db0a38313b400a405f882ec8490218adf0b",
+      "previousSha256": "db0446188d9356d6c60bea714cab9aa11ad6e4d7ebbda8828e0c31e39b1d98d1"
+    },
+    {
+      "file": "packages/pinta/src/export/projectJson.ts",
+      "sha256": "30372e14bd3e04d2c7a6bd7c15602c19f864360ebd0c4269d058e293a2659652",
+      "previousSha256": "2aebcf653991117a048af74857df6177bea2341b52b4f3ea759392b07c562949"
+    },
+    {
+      "file": "packages/pinta/src/export/regionBackup.ts",
+      "sha256": "7b4aacf54c7977c1fd8819e577c0f2134d4ec727f1643ba73885a4990c024218",
+      "previousSha256": "b2715135dd6d76f19ee46f240097399d253315a0c9df9ce7a65ab86db819fc7c"
+    },
+    {
+      "file": "packages/pinta/src/state/editorStore.ts",
+      "sha256": "9826fbc3183b8bbefdda60f78f86a41c430512326ffdf5f1ca8a21215b0b7ae9",
+      "previousSha256": "34281d55197924c714e73497e83c8d5795b3f1e049af6209625e0bc7d0f5137d"
+    },
+    {
+      "file": "packages/pinta/src/tiles/cellAccess.test.ts",
+      "sha256": "9cb237d865835f95d57b36d50eb2bb3a467c34ebd3d8e39c4f9d9d4341266d3e",
+      "previousSha256": "ed40169e4e1f06ffb2d5cbe0ff71d06a5603390dfa0cbf4aa7c9524ddeca4d57"
+    },
+    {
+      "file": "packages/pinta/scripts/homologacao/jsonBudget.ts",
+      "sha256": "c563ee30803744c8df53a5774dc53ebfc71d32d5004f2f1cec144bca6154b285"
+    },
+    {
+      "file": "packages/pinta/scripts/json-admission-probe.ts",
+      "sha256": "5228bd3200250e5f7ba3be307fc30619e9b2f7210e56a7ae16700cdfd2f3fb66"
+    },
+    {
+      "file": "packages/pinta/src/export/regionBackupSize.test.ts",
+      "sha256": "624ac81e1b3d243b243ac893deff56b95df8bd2947ed6e5f29f771e86214f81e"
+    },
+    {
+      "file": "packages/pinta/src/export/regionBackupSize.ts",
+      "sha256": "6d2a2539deeb07c956be2fca9ef8e4db9eafaa3c715e9715521e101b16d1f1be"
+    },
+    {
+      "file": "packages/pinta/src/state/editorJsonAdmission.test.ts",
+      "sha256": "4124238484fc3c45bf7e1621c312ad7ea9a149c93bdace1108fe26923343ad26"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-json-admission.flow.ts",
+      "sha256": "a9b443dea5514930383d0f43ffeb55b77fd22ad589c5f4d13b9f37848b6bff45"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-json-admission.config.ts",
+      "sha256": "4c5e6d6db5c811ad0c712dbb3cb10a2d83741ca8d81e759aae2c7fc6c96ae36f"
+    }
+  ],
+  "profiles": [
+    {
+      "profile": "desktop",
+      "cpu": 1,
+      "before": {
+        "json": {
+          "accepted": true,
+          "unchanged": false,
+          "undo": true,
+          "dirty": true,
+          "hostCalls": 1,
+          "writes": 1
+        },
+        "linked": {
+          "accepted": true,
+          "unchanged": false,
+          "undo": true,
+          "dirty": true,
+          "hostCalls": 5,
+          "writes": 1
+        },
+        "buffers": {
+          "accepted": true,
+          "unchanged": false,
+          "undo": true,
+          "dirty": true,
+          "hostCalls": 130,
+          "writes": 1
+        },
+        "timestamp": {
+          "accepted": true,
+          "unchanged": false,
+          "undo": true,
+          "dirty": true,
+          "hostCalls": 1,
+          "writes": 1
+        },
+        "positive": {
+          "good": true,
+          "undoToSource": true,
+          "writes": 1,
+          "restorable": true
+        },
+        "kernel": null,
+        "public8": false
+      },
+      "after": {
+        "json": {
+          "accepted": false,
+          "unchanged": true,
+          "undo": false,
+          "dirty": false,
+          "hostCalls": 0,
+          "writes": 0
+        },
+        "linked": {
+          "accepted": false,
+          "unchanged": true,
+          "undo": false,
+          "dirty": false,
+          "hostCalls": 0,
+          "writes": 0
+        },
+        "buffers": {
+          "accepted": false,
+          "unchanged": true,
+          "undo": false,
+          "dirty": false,
+          "hostCalls": 0,
+          "writes": 0
+        },
+        "timestamp": {
+          "accepted": false,
+          "unchanged": true,
+          "undo": false,
+          "dirty": false,
+          "hostCalls": 0,
+          "writes": 0
+        },
+        "positive": {
+          "good": true,
+          "undoToSource": true,
+          "writes": 1,
+          "restorable": true
+        },
+        "kernel": {
+          "changedChunkEncodes": 1,
+          "sizes": [
+            6483,
+            6486,
+            6485,
+            6486,
+            6483,
+            6486,
+            6485,
+            6486,
+            6483,
+            6486,
+            6486,
+            6487,
+            6484,
+            6487,
+            6486,
+            6487,
+            6484,
+            6487,
+            6486,
+            6487,
+            6484,
+            6487,
+            6486,
+            6487,
+            6484,
+            6487,
+            6486,
+            6487,
+            6484,
+            6487,
+            6486,
+            6487,
+            6483,
+            6486,
+            6485,
+            6486,
+            6483,
+            6486,
+            6485,
+            6486,
+            6483,
+            6486,
+            6485,
+            6486,
+            6483,
+            6486,
+            6485,
+            6486,
+            6483,
+            6486,
+            6485,
+            6486,
+            6483,
+            6486,
+            6485,
+            6486,
+            6483,
+            6486,
+            6485,
+            6486,
+            6483,
+            6486,
+            6485,
+            6486
+          ]
+        },
+        "public8": false
+      }
+    },
+    {
+      "profile": "touch",
+      "cpu": 1,
+      "before": {
+        "json": {
+          "accepted": true,
+          "unchanged": false,
+          "undo": true,
+          "dirty": true,
+          "hostCalls": 1,
+          "writes": 1
+        },
+        "linked": {
+          "accepted": true,
+          "unchanged": false,
+          "undo": true,
+          "dirty": true,
+          "hostCalls": 5,
+          "writes": 1
+        },
+        "buffers": {
+          "accepted": true,
+          "unchanged": false,
+          "undo": true,
+          "dirty": true,
+          "hostCalls": 130,
+          "writes": 1
+        },
+        "timestamp": {
+          "accepted": true,
+          "unchanged": false,
+          "undo": true,
+          "dirty": true,
+          "hostCalls": 1,
+          "writes": 1
+        },
+        "positive": {
+          "good": true,
+          "undoToSource": true,
+          "writes": 1,
+          "restorable": true
+        },
+        "kernel": null,
+        "public8": false
+      },
+      "after": {
+        "json": {
+          "accepted": false,
+          "unchanged": true,
+          "undo": false,
+          "dirty": false,
+          "hostCalls": 0,
+          "writes": 0
+        },
+        "linked": {
+          "accepted": false,
+          "unchanged": true,
+          "undo": false,
+          "dirty": false,
+          "hostCalls": 0,
+          "writes": 0
+        },
+        "buffers": {
+          "accepted": false,
+          "unchanged": true,
+          "undo": false,
+          "dirty": false,
+          "hostCalls": 0,
+          "writes": 0
+        },
+        "timestamp": {
+          "accepted": false,
+          "unchanged": true,
+          "undo": false,
+          "dirty": false,
+          "hostCalls": 0,
+          "writes": 0
+        },
+        "positive": {
+          "good": true,
+          "undoToSource": true,
+          "writes": 1,
+          "restorable": true
+        },
+        "kernel": {
+          "changedChunkEncodes": 1,
+          "sizes": [
+            6483,
+            6486,
+            6485,
+            6486,
+            6483,
+            6486,
+            6485,
+            6486,
+            6483,
+            6486,
+            6486,
+            6487,
+            6484,
+            6487,
+            6486,
+            6487,
+            6484,
+            6487,
+            6486,
+            6487,
+            6484,
+            6487,
+            6486,
+            6487,
+            6484,
+            6487,
+            6486,
+            6487,
+            6484,
+            6487,
+            6486,
+            6487,
+            6483,
+            6486,
+            6485,
+            6486,
+            6483,
+            6486,
+            6485,
+            6486,
+            6483,
+            6486,
+            6485,
+            6486,
+            6483,
+            6486,
+            6485,
+            6486,
+            6483,
+            6486,
+            6485,
+            6486,
+            6483,
+            6486,
+            6485,
+            6486,
+            6483,
+            6486,
+            6485,
+            6486,
+            6483,
+            6486,
+            6485,
+            6486
+          ]
+        },
+        "public8": false
+      }
+    },
+    {
+      "profile": "cpu-4x",
+      "cpu": 4,
+      "before": {
+        "json": {
+          "accepted": true,
+          "unchanged": false,
+          "undo": true,
+          "dirty": true,
+          "hostCalls": 1,
+          "writes": 1
+        },
+        "linked": {
+          "accepted": true,
+          "unchanged": false,
+          "undo": true,
+          "dirty": true,
+          "hostCalls": 5,
+          "writes": 1
+        },
+        "buffers": {
+          "accepted": true,
+          "unchanged": false,
+          "undo": true,
+          "dirty": true,
+          "hostCalls": 130,
+          "writes": 1
+        },
+        "timestamp": {
+          "accepted": true,
+          "unchanged": false,
+          "undo": true,
+          "dirty": true,
+          "hostCalls": 1,
+          "writes": 1
+        },
+        "positive": {
+          "good": true,
+          "undoToSource": true,
+          "writes": 1,
+          "restorable": true
+        },
+        "kernel": null,
+        "public8": false
+      },
+      "after": {
+        "json": {
+          "accepted": false,
+          "unchanged": true,
+          "undo": false,
+          "dirty": false,
+          "hostCalls": 0,
+          "writes": 0
+        },
+        "linked": {
+          "accepted": false,
+          "unchanged": true,
+          "undo": false,
+          "dirty": false,
+          "hostCalls": 0,
+          "writes": 0
+        },
+        "buffers": {
+          "accepted": false,
+          "unchanged": true,
+          "undo": false,
+          "dirty": false,
+          "hostCalls": 0,
+          "writes": 0
+        },
+        "timestamp": {
+          "accepted": false,
+          "unchanged": true,
+          "undo": false,
+          "dirty": false,
+          "hostCalls": 0,
+          "writes": 0
+        },
+        "positive": {
+          "good": true,
+          "undoToSource": true,
+          "writes": 1,
+          "restorable": true
+        },
+        "kernel": {
+          "changedChunkEncodes": 1,
+          "sizes": [
+            6483,
+            6486,
+            6485,
+            6486,
+            6483,
+            6486,
+            6485,
+            6486,
+            6483,
+            6486,
+            6486,
+            6487,
+            6484,
+            6487,
+            6486,
+            6487,
+            6484,
+            6487,
+            6486,
+            6487,
+            6484,
+            6487,
+            6486,
+            6487,
+            6484,
+            6487,
+            6486,
+            6487,
+            6484,
+            6487,
+            6486,
+            6487,
+            6483,
+            6486,
+            6485,
+            6486,
+            6483,
+            6486,
+            6485,
+            6486,
+            6483,
+            6486,
+            6485,
+            6486,
+            6483,
+            6486,
+            6485,
+            6486,
+            6483,
+            6486,
+            6485,
+            6486,
+            6483,
+            6486,
+            6485,
+            6486,
+            6483,
+            6486,
+            6485,
+            6486,
+            6483,
+            6486,
+            6485,
+            6486
+          ]
+        },
+        "public8": false
+      }
+    }
+  ],
+  "browserTests": 48,
+  "retries": 0,
+  "publicNative8": false,
+  "physicalIO3": false,
+  "storeJsonAdmission": "canonical regional document and complete linked persistence batch; gallery-wide inventory remains in persistence/host integration"
+}

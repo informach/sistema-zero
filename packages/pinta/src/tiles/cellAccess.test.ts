@@ -39,6 +39,8 @@ const CONFERIDOS: Record<string, string> = {
     'valida o orçamento e referências pelo helper de cell.ts; copia e compara células densas inteiras e delega regiões ao escritor atômico, preservando flags',
   'core/assetResize.ts': 'copia células inteiras para a grade nova',
   'export/studioGrid.ts': 'lê o achatado, que já é índice de peça',
+  'export/regionBackupSize.ts':
+    'Core confere descritores e o buffer fixo antes do payload; o medidor lê índices por cellTile e delega a codificação integral dos chunks ao Core, preservando flags e reusando resumos numéricos por identidade',
   'export/portableImageRender.ts': 'lê o índice por cellTile',
   'templates/art.ts': 'monta células a partir de índices de peça da arte em texto',
   'core/project.ts':
@@ -132,6 +134,7 @@ describe('acesso cru às células do mapa', () => {
       'tiles/tilemapOps.ts',
       'tiles/tilesetOps.ts',
       'export/portableImageRender.ts',
+      'export/regionBackupSize.ts',
       'export/sceneDrawing.ts',
       'export/tiled/import.ts',
       'export/pygameProject.ts',

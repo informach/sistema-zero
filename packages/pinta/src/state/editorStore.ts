@@ -10,6 +10,7 @@ import { type PintaMemoryAsset, retainedAssetBytes, sharedAssetParts } from '../
 import { createHistory, type SharedPart } from '../core/history'
 import { RegionMetadataBudgetCache, regionDocumentMetadata } from '../core/mapDocumentBoundary'
 import type { PintaAsset } from '../core/project'
+import { RegionBackupSizeCache } from '../export/regionBackupSize'
 
 export { assetBytes } from '../core/assetMemory'
 
@@ -120,12 +121,25 @@ export function createEditorStore<Asset extends PintaMemoryAsset = PintaAsset>(
   options: NoInfer<PintaEditorStoreOptions<Asset>>,
 ): PintaEditorStore<Asset> {
   const metadataBudget = new RegionMetadataBudgetCache()
-  function admits(asset: Asset): boolean {
+  let backupSizes: RegionBackupSizeCache | null = null
+  function admitsMetadata(asset: Asset): boolean {
     if ((asset.kind !== 'tilemap' && asset.kind !== 'map-set') || asset.schema !== 8) return true
     const metadata = regionDocumentMetadata(asset)
     return metadata !== null && metadataBudget.accepts(metadata)
   }
-  if (!admits(options.asset)) throw new RangeError('O cenário excede o orçamento de metadados.')
+  function admitsSnapshot(asset: Asset, linked: readonly Asset[] = []): boolean {
+    const assets = [asset, ...linked]
+    if (!assets.every(admitsMetadata)) return false
+    if (
+      !assets.some(
+        (item) => (item.kind === 'tilemap' || item.kind === 'map-set') && item.schema === 8,
+      )
+    )
+      return true
+    if (!backupSizes) backupSizes = new RegionBackupSizeCache()
+    return Number.isFinite(backupSizes.byteLength(assets))
+  }
+  if (!admitsSnapshot(options.asset)) throw new RangeError('O cenário excede o orçamento de dados.')
   const history = createHistory<EditorSnapshot<Asset>>({
     sizeOf: snapshotBytes,
     sharedOf: snapshotShared,
@@ -170,7 +184,7 @@ export function createEditorStore<Asset extends PintaMemoryAsset = PintaAsset>(
             return { ok: true }
           } catch (error) {
             const recovered = !dirty ? options.recoverPersisted?.(error, snapshot.id) : null
-            if (recovered && admits(recovered.asset) && recovered.linked.every(admits)) {
+            if (recovered && admitsSnapshot(recovered.asset, recovered.linked)) {
               history.clear()
               currentLinked = recovered.linked
               options.onSaved?.(recovered.asset, recovered.linked)
@@ -220,26 +234,29 @@ export function createEditorStore<Asset extends PintaMemoryAsset = PintaAsset>(
       // A controller from a gesture that began before conflict recovery may still finish.
       // It must never put the old document back into the adopted copy or its history.
       if (next.id !== current.id) return null
+      // Size exactly the timestamped snapshot that would survive this operation.
+      const applied = { ...next, updatedAt: Date.now() }
+      const previousLinked = linked
+        ? mergeLinkedAssets(currentLinked, linked.before)
+        : currentLinked
+      const proposedLinked = linked
+        ? mergeLinkedAssets(previousLinked, linked.after)
+        : currentLinked
       if (
-        !admits(next) ||
-        linked?.before.some((asset) => !admits(asset)) ||
-        linked?.after.some((asset) => !admits(asset))
+        !admitsSnapshot(applied, proposedLinked ?? []) ||
+        (linked && !admitsSnapshot(current, previousLinked ?? []))
       )
         return null
       const acceptEdit = options.acceptEdit
       if (acceptEdit && (!acceptEdit(next) || linked?.after.some((asset) => !acceptEdit(asset))))
         return null
       if (get().asset !== current) return null
-      const previousLinked = linked
-        ? mergeLinkedAssets(currentLinked, linked.before)
-        : currentLinked
       if (recordHistory) {
         // O snapshot restaurado por undo carrega o ESTADO ANTERIOR: para uma
         // edição com remap, os mapas ANTES; senão, o `currentLinked` corrente.
         history.record({ asset: current, linkedMaps: previousLinked })
       }
-      if (linked) currentLinked = mergeLinkedAssets(previousLinked, linked.after)
-      const applied = { ...next, updatedAt: Date.now() }
+      if (linked) currentLinked = proposedLinked
       set({
         asset: applied,
         linkedAssets: currentLinked,
@@ -277,7 +294,12 @@ export function createEditorStore<Asset extends PintaMemoryAsset = PintaAsset>(
       },
 
       commitGesture(base) {
-        if (base.id !== get().asset.id || base === get().asset || !admits(base)) return
+        if (
+          base.id !== get().asset.id ||
+          base === get().asset ||
+          !admitsSnapshot(base, currentLinked ?? [])
+        )
+          return
         history.record({ asset: base, linkedMaps: currentLinked })
         set({ canUndo: history.canUndo(), canRedo: history.canRedo() })
         scheduleAutosave()

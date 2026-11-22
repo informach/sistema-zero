@@ -1,5 +1,6 @@
 /** Exact UTF-8 size of JSON with two-space indentation, without building its text.
- * Inputs are immutable JSON values; accessors, cycles and non-JSON objects refuse.
+ * Inputs are immutable JSON values unless an explicit boundary serializer is provided.
+ * Accessors, cycles and non-JSON objects in the representation refuse.
  * A cache retains numerical summaries only, by weak identity.
  */
 type Size = { bytes: number; lines: number; depth: number }
@@ -48,7 +49,13 @@ function stringBytes(text: string): number {
 export class JsonByteSizeCache {
   private readonly sizes = new WeakMap<object, Size>()
 
-  constructor(private readonly maxDepth: number) {}
+  /** Optional boundary serializer must be pure for each immutable object identity.
+   * Encoded objects are transient; only their numerical sizes are retained.
+   */
+  constructor(
+    private readonly maxDepth: number,
+    private readonly serializeObject?: (value: object) => object,
+  ) {}
 
   /** Infinity means unsupported or above the caller's byte budget. */
   byteLength(value: unknown, maxBytes = Number.MAX_SAFE_INTEGER): number {
@@ -73,16 +80,17 @@ export class JsonByteSizeCache {
         const cached = this.sizes.get(input)
         if (cached)
           return cached.depth + level <= this.maxDepth && cached.bytes <= maxBytes ? cached : null
-        const array = Array.isArray(input)
-        const prototype = Object.getPrototypeOf(input)
+        const encoded = this.serializeObject?.(input) ?? input
+        const array = Array.isArray(encoded)
+        const prototype = Object.getPrototypeOf(encoded)
         if (!array && prototype !== null && prototype !== Object.prototype) return null
         ancestors.add(input)
         let count = 0
-        const length = array ? input.length : 0
-        const keys = array ? null : Object.keys(input)
+        const length = array ? encoded.length : 0
+        const keys = array ? null : Object.keys(encoded)
         for (let i = 0; i < (keys ? keys.length : length); i++) {
           const key = keys ? keys[i]! : String(i)
-          const descriptor = Object.getOwnPropertyDescriptor(input, key)
+          const descriptor = Object.getOwnPropertyDescriptor(encoded, key)
           if (!descriptor || !('value' in descriptor)) return null
           if (keys && descriptor.value === undefined) continue
           const child = measure(descriptor.value, level + 1)

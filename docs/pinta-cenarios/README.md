@@ -26,6 +26,12 @@ expansão excessiva de buffers antes de decodificar. Suíte de 2.665 testes e
 O contêiner 8 ainda precisa ser integrado à admissão do editor e aos demais
 consumidores antes de aparecer na oficina.
 
+A [admissão JSON no editor](missao-completa-2026-11-18/qa/admissao-json-2026-11-21/README.md)
+agora recusa o documento/lote excessivo antes do histórico e do autosave,
+reutilizando resumos numéricos das partes imutáveis. Suíte de 2.678 testes e
+48 ensaios de navegador. Persistência regional, adaptadores e rollout ainda
+condicionam a exposição pública do formato 8.
+
 O gravador de nuvem 6 teve seu ciclo autenticado e rollback publicado B → A → B
 homologados em staging. A edição feita durante o rollback foi conservada e sincronizada
 intacta após a restauração. Serviço temporário removido e publicações compartilhadas
