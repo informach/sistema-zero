@@ -204,6 +204,14 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    ainda faltam conversão do Pinta/cena 4, PNG 5, motores, host/galeria e
    proteção de inventário parcial da nuvem. Não promover constantes ou fechar
    o item 4 a partir desse contrato isolado.
+   Emissor privado cena 4 integrado ao preparo comum de recursos do exportador:
+   admissão global de cabeçalhos/índices e metadados antes de payloads/imagens,
+   JSON final de até 8 MiB UTF-8 pelo codec nativo compartilhado. Modo de física
+   explícito conserva a escolha autoral; armazenamento não ativa colisão precisa.
+   Comparação com o commit anterior conserva exatamente 98 exportações 1–3.
+   A Vila usa imagens reais e reabre em outro contexto desktop/CPU 4×. Provas em
+   `qa/emissor-de-cena-regional-2026-11-22/`. Continuar para composição/PNG 5,
+   leitores dos motores e consumidores públicos; não fecha o item 4 ou a missão.
 
 Na promoção do store, conferir também os orçamentos globais de metadados e JSON
 antes do histórico/autosave. A soma de objetos/propriedades em várias camadas

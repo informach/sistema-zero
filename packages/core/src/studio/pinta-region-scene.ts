@@ -45,6 +45,7 @@ const header = z.strictObject({
   cols: mapFields.cols,
   rows: mapFields.rows,
   origin,
+  physics: z.enum(['legacy', 'precise']).optional(),
   tilesets: PintaSceneBaseSchema.shape.tilesets,
   layers: mapFields.layers,
   sets: z.array(mapHeader).max(64).optional(),
@@ -119,6 +120,15 @@ export function readPintaRegionScene(text: string): PintaRegionScene | null {
       layers: root.layers,
       ...(sourceSets ? { sets } : {}),
     }
+    if (
+      scene.physics === 'legacy' &&
+      [scene.layers, ...(scene.sets ?? []).map((set) => set.layers)].some((layers) =>
+        layers.some(
+          (layer) => layer.kind === 'objects' && layer.objects.some((object) => object.collision),
+        ),
+      )
+    )
+      return null
     let valid = true
     validatePintaSceneCells(
       scene,

@@ -864,7 +864,9 @@ export function tilemapNeedsV6(tilemap: TilemapAsset): boolean {
   )
 }
 
-export function tilemapNeedsV7(tilemap: TilemapAsset): boolean {
+export function tilemapNeedsV7(
+  tilemap: Pick<TilemapAsset<TilemapCells>, 'physics' | 'layers'>,
+): boolean {
   return (
     tilemap.physics === 'precise' ||
     tilemap.layers.some(

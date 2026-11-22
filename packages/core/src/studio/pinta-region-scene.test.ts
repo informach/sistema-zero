@@ -249,3 +249,25 @@ test('the JSON boundary counts UTF-8 and refuses oversized text before parsing',
   expect(readPintaRegionScene(' '.repeat(PINTA_REGION_SCENE_MAX_JSON_BYTES + 1))).toBeNull()
   expect(readPintaRegionScene('{')).toBeNull()
 })
+
+test('collision mode is independent of sparse storage and keeps earlier scene-4 documents readable', () => {
+  const source = fixture()
+  expect(readPintaRegionScene(JSON.stringify(source))?.physics).toBeUndefined()
+  expect(readPintaRegionScene(JSON.stringify({ ...source, physics: 'precise' }))?.physics).toBe(
+    'precise',
+  )
+  expect(readPintaRegionScene(JSON.stringify({ ...source, physics: 'legacy' }))).toBeNull()
+  const noCollision = {
+    ...source,
+    layers: source.layers.map((layer) =>
+      'objects' in layer && layer.objects
+        ? {
+            ...layer,
+            objects: layer.objects.map(({ collision: _collision, ...object }) => object),
+          }
+        : layer,
+    ),
+    physics: 'legacy',
+  }
+  expect(readPintaRegionScene(JSON.stringify(noCollision))?.physics).toBe('legacy')
+})

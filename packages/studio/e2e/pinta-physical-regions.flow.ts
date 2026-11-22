@@ -911,3 +911,82 @@ test('scene-4 browser admission rejects a late malformed definition without deco
     }),
   ).toEqual({ refused: true, decodes: 0 })
 })
+
+test('the real Pinta producer exports Vila scene 4 with real art images and reopens its JSON in another realm', async ({
+  page,
+  context,
+}, info) => {
+  const exported = await page.evaluate(async () => {
+    const p = window.pintaPhysicalRegions,
+      { map, assets } = p.regionVila(),
+      result = await p.exportPintaRegionScene(
+        map,
+        (id) => assets.find((asset) => asset.id === id) ?? null,
+      )
+    const sizes = await Promise.all(
+      [...result.scene.tilesets, ...(result.scene.art ?? [])].map(async (art) => {
+        const image = new Image()
+        await new Promise<void>((resolve, reject) => {
+          image.onload = () => resolve()
+          image.onerror = () => reject(Error('PNG inválido'))
+          image.src = art.image
+        })
+        return { width: image.naturalWidth, height: image.naturalHeight }
+      }),
+    )
+    return { json: result.json, bytes: result.bytes, sizes, id: map.id }
+  })
+  expect(exported.sizes.length).toBeGreaterThanOrEqual(3)
+  expect(exported.sizes.every((size) => size.width > 0 && size.height > 0)).toBe(true)
+  await test.info().attach('vila-scene4.json', {
+    body: Buffer.from(exported.json),
+    contentType: 'application/json',
+  })
+  await page.close()
+  const reopened = await context.newPage()
+  if (info.project.name === 'cpu-4x') {
+    const cdp = await context.newCDPSession(reopened)
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
+  }
+  await proof(reopened)
+  expect(
+    await reopened.evaluate(({ json, bytes, id }) => {
+      const p = window.pintaPhysicalRegions,
+        scene = p.readPintaRegionScene(json)
+      if (!scene) throw Error('Cena não reabriu')
+      let chunks = 0,
+        indexBytes = 0
+      for (const layer of scene.layers)
+        if (layer.kind === 'tiles')
+          for (const chunk of layer.cells.chunks) {
+            chunks++
+            indexBytes += chunk.cells.byteLength
+          }
+      return {
+        id: scene.id,
+        expectedId: id,
+        version: scene.version,
+        physics: scene.physics,
+        layers: scene.layers.length,
+        sheets: scene.tilesets.length,
+        sets: scene.sets?.length,
+        origin: scene.origin,
+        exactBytes: new TextEncoder().encode(json).byteLength === bytes,
+        bounded: chunks < 2048 && indexBytes < 4194304,
+        publicRefused: p.readPintaScene(JSON.parse(json)) === null,
+      }
+    }, exported),
+  ).toEqual({
+    id: exported.id,
+    expectedId: exported.id,
+    version: 4,
+    physics: 'legacy',
+    layers: 18,
+    sheets: 2,
+    sets: 1,
+    origin: { col: -64, row: -64 },
+    exactBytes: true,
+    bounded: true,
+    publicRefused: true,
+  })
+})

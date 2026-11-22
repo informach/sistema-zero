@@ -20,6 +20,15 @@ para anunciar suporte de oficina antes de completar seus consumidores.
 Plano aprovado: `docs/superpowers/plans/2026-11-21-pinta-missao-retomada.md`.
 Autorregras serão visuais e próprias do Pinta, por exemplos multicamadas.
 
+`export/regionScene.ts` é emissor privado de cena 4. Compartilha metadados e
+recursos/imagens com o conversor legado, admite todos os cabeçalhos e orçamento
+agregado antes dos payloads, mede o JSON UTF-8 completo e usa o codec do Core.
+Retorna `json` para transporte e `scene` para memória; nunca serializar os
+`Int16Array` da segunda como DTO. `physics` conserva o modo autoral, independente
+da versão de armazenamento. Imagens reais e reabertura da Vila em outro contexto
+estão em `qa/emissor-de-cena-regional-2026-11-22/`. Não é suporte no host,
+PNG 5, runtime ou exportadores externos regionais; constantes públicas inalteradas.
+
 `state/localRegionChunkStorage.ts` prepara o físico 3 como política opt-in do
 IO transacional existente. `parsePintaRegionLayerLocations` confere cabeçalhos
 antes das requisições de buffers; limites globais, IDs e dono das chaves são

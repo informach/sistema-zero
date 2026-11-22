@@ -2,6 +2,13 @@
 
 ## Leitor interno de cenas regionais (22/11/2026)
 
+O emissor privado do Pinta agora declara `physics: 'legacy' | 'precise'` na
+cena 4: formato de armazenamento não decide o modo de colisão. O leitor mantém
+o campo opcional para os primeiros documentos privados, recusando física legada
+explícita com colisões autorais de objetos. Os consumidores futuros devem honrar
+esse modo sem mudar os jogos de cenas 1–3. Recibos do emissor em
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/emissor-de-cena-regional-2026-11-22/`.
+
 `studio/pinta-region-scene.ts` prepara leitura de cena 4, sem incluí-la na API
 ativa `readPintaScene` (1–3). JSON de até 8 MiB UTF-8; origem/chunks do codec
 compartilhado, cabeçalhos de todas as definições antes de qualquer decodificação.
