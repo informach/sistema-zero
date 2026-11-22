@@ -165,6 +165,14 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    promover 8 ou resolver o inventário parcial da nuvem. Próximo: incorporar
    a staging observada `69ced6cb3`, revisar seus pontos do Estúdio e prosseguir
    à fábrica/host, transporte e adaptadores.
+   Integração de `69ced6cb3` verificada em 22/11, sem conflitos e com os 16
+   conteúdos recebidos idênticos ao remoto. Revisados carga antiga de blocos,
+   janela de projeto e recuperação ao esconder/sair da página. Passaram 89
+   testes do Estúdio, 12 percursos Pinta–Estúdio e quatro de carga/recarga,
+   tipos completos e lint. Fontes Pinta/Core inalteradas; a suíte 2.713 é a do
+   pai, não uma nova execução. Recibos em
+   `qa/integracao-staging-69ced6cb3-2026-11-22/`. Sem promoção de formatos ou
+   merge da feature em staging. Prosseguir à fábrica regional existente.
 
 Na promoção do store, conferir também os orçamentos globais de metadados e JSON
 antes do histórico/autosave. A soma de objetos/propriedades em várias camadas

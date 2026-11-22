@@ -111,6 +111,23 @@ três defeitos, consertados com teste e implantados em `1750d5881`:
 - "Mostrar o bloco" abria todas as funções recolhidas acima do alvo e mudava o projeto salvo; no
   Reino Zero Ultra a aba do Chrome conectado travou por cerca de três minutos (`1750d5881`).
 
+O fecho do plano (noite de 21/11) consertou mais três coisas, cada uma com teste que reprova sem o
+conserto, implantadas em `4eddccb1b` (community, community-kids e admin):
+- "Erro ao salvar" num projeto de 7 mil blocos com a aba escondida: o registro de recuperação passa
+  do teto da cópia síncrona, e agora a cópia nativa confirmada basta enquanto a página segue viva
+  (`ed9412f96`);
+- o intermitente do `ProjectList.creationScope`: a janela de projeto novo escolhia a linguagem num
+  efeito, e o primeiro quadro mostrava a escolha errada (`ff230c579`);
+- o intermitente do `css-learning.spec.ts`, que era perda de código: trocando da Ponte para os
+  Blocos no meio da tradução, a carga velha dos blocos podia regenerar os arquivos por cima do código
+  digitado (`4eddccb1b`, com o e2e `bridge-blocks-race.spec.ts`).
+
+Conferido de novo no staging (mesmo relatório): a busca no Reino Zero Ultra abre só a função que
+envolve o alvo, o Pro convertido abre sem problemas, "Ver mudanças" conta o arquivo novo vazio e a
+aba escondida (simulada) não mostra mais "Erro ao salvar". O gesto da busca ainda trava o Chrome
+conectado por minutos; medido, o texto em SVG é cerca de 90 vezes mais lento naquele navegador que
+no mesmo Chrome 157 noutra máquina, e o mesmo gesto no playground tem tarefa máxima de 522 ms.
+
 ## Pendências
 
 | Pendência | Por que ficou | O que destrava |
@@ -128,7 +145,7 @@ três defeitos, consertados com teste e implantados em `1750d5881`:
 | A textura de biblioteca e a carga no Three do cenário completo do Molda; a memória da prova 2D em ciclos | não feitos no navegador | um lote de integração |
 | Relatório consolidado de p50 e p95 por máquina e fixture; custos medidos dos dez runtimes | os números estão espalhados pelos documentos | um lote de medição |
 | G: Raylib e os custos do Python medidos à parte; H: três falhas sem prova no navegador | não feitos | um lote de homologação |
-| Dois testes intermitentes na homologação: `css-learning.spec.ts` (shard 1 do Chromium) e um caso do `ProjectList.creationScope` (a opção "Com código" da janela de projeto novo na abertura) | passam localmente e em outras rodadas; a causa não foi investigada | uma investigação de cada um |
+| A lentidão do Chrome conectado com projetos de milhares de blocos (o gesto da busca no Reino Zero Ultra leva minutos ali) | o texto em SVG é cerca de 90 vezes mais lento naquele navegador; a causa dentro dele não foi achada, e o Estúdio no playground leva 522 ms | conferir o mesmo gesto num computador de família, ou num Chrome sem extensões |
 | Aparelhos físicos | decisão da dona: só emulação no CI | nada: decisão dela |
 | Produção | decisão da dona: só staging | a dona pedir a release |
 

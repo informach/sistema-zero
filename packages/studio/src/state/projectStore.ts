@@ -2204,7 +2204,15 @@ export function createLocalPersistenceAdapter(
     },
     save: (project) => persistProject(project, {}, scope),
     flushOnExit: (project, options) =>
-      persistProject(project, { exit: true, incompleteBlocks: options?.incompleteBlocks }, scope),
+      persistProject(
+        project,
+        {
+          exit: true,
+          incompleteBlocks: options?.incompleteBlocks,
+          ...(options?.pageAlive ? { pageAlive: true } : {}),
+        },
+        scope,
+      ),
     localScope: scope,
     exitRecoveryStatus: projectExitRecoveryStatus,
     // Cada `save` pede a sua transação na hora, e o IndexedDB as executa na ordem em que
