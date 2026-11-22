@@ -1,0 +1,1016 @@
+{
+  "head": "02b3f94d5ad58360ccc83c4becd5167ae3fcbf41",
+  "stagingIntegrated": "208c8571a4164f1418788b1cee592ba83bec5e32",
+  "fullPintaRepeated": false,
+  "authenticatedCandidateRollout": false,
+  "knownTerminalRecoveryDefect": "5cf30e282009fa0586341f51868ccc73688e72c2",
+  "records": [
+    {
+      "file": "core-full-before-staging208.log.gz",
+      "sha256": "79afba4b80c74fdc3f03ec89e65024421144c1bffbfd071ad0f6e90d36e2c365",
+      "rawSha256": "dbedca8cca5fac0424f2fc7104cb1b43a28a79e94c89d3670cc27a447dfde07b",
+      "bytes": 72303
+    },
+    {
+      "file": "core-types.log.gz",
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 20
+    },
+    {
+      "file": "pinta-types.log.gz",
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 20
+    },
+    {
+      "file": "member-shell-types-fixture-red.log.gz",
+      "sha256": "a200d1b0600420d3581258de6a2a8bce0164665d72e5201c95770fc255a9e782",
+      "rawSha256": "359fa1716cb849d51c541cf0bf675c9dc49025368ada503e198d22c1ab164b30",
+      "bytes": 250
+    },
+    {
+      "file": "client-authority-before-terminal.log.gz",
+      "sha256": "646427f9fc8ae0191d8092f7e599ce9d145cc6571aa8a1d7d82757e93a82076c",
+      "rawSha256": "dec89106c57897ca55cc61bd2ddfd619f7cc331be05f846e62e7e5a5885f5133",
+      "bytes": 1208
+    },
+    {
+      "file": "terminal-focused.log.gz",
+      "sha256": "6db63adb332452d6ab234e4c9a1fddbc9e71f91b46f1462c359050d51ca12a38",
+      "rawSha256": "d796fae8cbeb5cade489d2b7b7064fa80483d92d56a369af189c9576957e104a",
+      "bytes": 528
+    },
+    {
+      "file": "terminal-browser.log.gz",
+      "sha256": "b8c57307f70f398c13906a092955fe24f90869ad03c3e1ee6b45ea9b07bd6ee6",
+      "rawSha256": "3e15f361660adb907d92cb72068a3746f48952c319f024413cc10cfa1fae7241",
+      "bytes": 885
+    },
+    {
+      "file": "auth-focused.log.gz",
+      "sha256": "2c06aa2196e3570852ff4857384c4f3b935a42996233c6cceeb5493ab53b0fae",
+      "rawSha256": "269cc5ca317033dac9971e4ddffcacbf65f844cf7346932fce3221601f940540",
+      "bytes": 1439
+    },
+    {
+      "file": "pinta-focused.log.gz",
+      "sha256": "c8280f4928caad37475df60b8135a522b8fb7e5a8280c77ed5a53f5307415e22",
+      "rawSha256": "c90b42e6c54686e9fb423074284ab5fa9a40d0deae76a3a91532d2074f205508",
+      "bytes": 2164
+    },
+    {
+      "file": "causal-postgres.log.gz",
+      "sha256": "81d86fc0e2e480c7e491593cd190160f0ccaac5e17e7beab7085d1858faf5478",
+      "rawSha256": "aaec2bea62aa2228e12ca55bf1424c84f19a7565667d98449fb076516dbd8822",
+      "bytes": 1396
+    },
+    {
+      "file": "causal-http.log.gz",
+      "sha256": "4bcb0e19d0c8f84c803442a24b7172d3537cf39d420ff115efac3e80c95750c3",
+      "rawSha256": "cd0c8bb252ffd87798e8685cd238c7ecc421b585d89059531dcd07c6a5951762",
+      "bytes": 576
+    },
+    {
+      "file": "minio-formatted.log.gz",
+      "sha256": "28dc66cbc981a954302386ad4c588e7054a8eba2795dcd5aa5c9fea963731271",
+      "rawSha256": "b1dc805f31aa5d552ca4f27af7be8a4eadba00b71c1337d6defda92858b5a715",
+      "bytes": 431
+    },
+    {
+      "file": "lint.log.gz",
+      "sha256": "38fc2e05258dc1748b8168a3f19294e09bb301aae2085c077f2710afd171a28f",
+      "rawSha256": "4fc3f66600d543bffbc2b550267b09bc46e4a505abd057570ccda87db89d2cc9",
+      "bytes": 551
+    },
+    {
+      "file": "cloud-status.log.gz",
+      "sha256": "9c23df083dc78337757bb6e9ac089ad35f7c1b1b2dffef4035667bf867ac8b03",
+      "rawSha256": "b4019230719137afdc65df4dd1adfa8b06c1cfdb1ac0ed1505cb265df49dc147",
+      "bytes": 467
+    },
+    {
+      "file": "build-flag.log.gz",
+      "sha256": "06da988c336fd9294c39513d64f06ba27280ad313c736d091fc6db979ba4bc81",
+      "rawSha256": "a3d7b67af7034457f0b5501674e652d391b2fe320c3c795f378fe949b2428ff2",
+      "bytes": 200
+    },
+    {
+      "file": "staging208-install.log.gz",
+      "sha256": "d5f346e9a66a5f39cb83657f9e7a52ec511d07d864903a4858c7136707a007c2",
+      "rawSha256": "aa2cf9a6963091cd6bcc535f217813df2f564bfc08c757e66f641aec3e2116df",
+      "bytes": 152
+    },
+    {
+      "file": "staging208-region-test.log.gz",
+      "sha256": "895160eb6b14d9dd710bd2ee3e14b680269225287ac7716701db311e8a15a95e",
+      "rawSha256": "e9e6e975c3735aa8502b03486cc7b0df01b5939e11e8335cbc5142420632dd89",
+      "bytes": 368
+    },
+    {
+      "file": "runtime-build.json.gz",
+      "sha256": "69776b9bfdc71092541288c0ad228e303d20128de822bf2b504c301d0c540bf7",
+      "rawSha256": "c78f6525546015445fa561dcc831e13c73e49e7f7ec4ec6f82340f652e2e1cd3",
+      "bytes": 311
+    },
+    {
+      "file": "runtime-build.log.gz",
+      "sha256": "2d10051d2cea8c70d393ad0a6e45b324d62202db8329f7b3207790e2bc4d7d8d",
+      "rawSha256": "ac5f1a484d76fb7a7962c8bf20ffd2014fa70b5df46fcd68f3a02fe87a6fcdb0",
+      "bytes": 647
+    },
+    {
+      "file": "ce-browser.log.gz",
+      "sha256": "671b1d3c1e2da2474f3b4906ac022ad7e39cc638e5372a2b6b4df83e80daf62a",
+      "rawSha256": "c8f7e056a19b7d24ef5ebf80982df20d4c199454f45096ac1d2aad4fe9d7b859",
+      "bytes": 337
+    },
+    {
+      "file": "python-2d-browser.log.gz",
+      "sha256": "26ab4667df32fbc81446309f4a05fab9dd0141793be2bb9cbc04cf92b6bd2873",
+      "rawSha256": "58019c5acf9f2e6fcca9f54823b80a2efc060d480be49680f0bd6405f71167d6",
+      "bytes": 466
+    },
+    {
+      "file": "legacy-python-browser.log.gz",
+      "sha256": "aafa7b1468241c30a6ea9055fe7d620a2780b3ee82f99ef194f1829f8398eaf8",
+      "rawSha256": "5ba54cf339a63b9e8afcd25ce943c23727eb1515fb9b2f14213f6423af4b359f",
+      "bytes": 743
+    },
+    {
+      "file": "core-generator.log.gz",
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 20
+    },
+    {
+      "file": "python-generator.log.gz",
+      "sha256": "2c247188b932109b89c108de8ded9ebb3998c3aa13151afd9f91dc9d33ad4d55",
+      "rawSha256": "126e0ae087e7e32875119228fea400f8f8b3e2dfee3ced6d589d74c020b72a55",
+      "bytes": 86
+    },
+    {
+      "file": "js-generator.log.gz",
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 20
+    }
+  ],
+  "sources": [
+    {
+      "file": "packages/api-gateway/gateway.config.ts",
+      "bytes": 222390,
+      "gitBlobSha256": "06f32f94380ef4b7bb17250ee5772f56047a27dfd517c8a933fcbfcbe22efd28"
+    },
+    {
+      "file": "packages/api-gateway/src/infrastructure/config/pinta-causal-routes.ts",
+      "bytes": 1291,
+      "gitBlobSha256": "394044171d36b395eb0c450e5bba33bacf2db1e139c570ff47c29543480d7900"
+    },
+    {
+      "file": "packages/api-gateway/tests/integration/pinta-causal-provenance.test.ts",
+      "bytes": 3981,
+      "gitBlobSha256": "2521a077d276fba5a5d20960771e30fa810017a4927165b16166a3d6e4b8dfb5"
+    },
+    {
+      "file": "packages/arquipelago/playground/arquipelago-macro.tsx",
+      "bytes": 25908,
+      "gitBlobSha256": "02340ee96020e1910877a7a1560a4811836d7d5ea19f327ea77963a8f4a9473e"
+    },
+    {
+      "file": "packages/arquipelago/src/mundo/cenario-publicado.tsx",
+      "bytes": 8356,
+      "gitBlobSha256": "0e811bdd862d50f5c23e4f2ab09405763e3ad84307e6be5b6ede3e7c8f0a80fd"
+    },
+    {
+      "file": "packages/arquipelago/src/mundo/preparar-cenario-publicado.ts",
+      "bytes": 6803,
+      "gitBlobSha256": "4d5897fd65728a3b4c4995fcaa12b8d41cfdf232a4cd6339179ce987b7c570c9"
+    },
+    {
+      "file": "packages/arquipelago/src/mundo/use-cenario-publicado.ts",
+      "bytes": 8502,
+      "gitBlobSha256": "bcda3da5fa74dc3f3d0056064f1e3454591fc1f8ec001b8eb1280d7b05042be8"
+    },
+    {
+      "file": "packages/community-kids/src/app/api/pinta/causal/archive/items/[itemId]/route.ts",
+      "bytes": 99,
+      "gitBlobSha256": "529500d9dfcba7ccd980b243566ea984d2791aaa8b2da94723b067e3ef34ae2f"
+    },
+    {
+      "file": "packages/community-kids/src/app/api/pinta/causal/archive/route.ts",
+      "bytes": 95,
+      "gitBlobSha256": "e2287860530345b59bb432608512c4db5dfedf8bcd369f602f8b7877c4311d81"
+    },
+    {
+      "file": "packages/community-kids/src/app/api/pinta/causal/backfill/route.ts",
+      "bytes": 97,
+      "gitBlobSha256": "52a53c855fadd9f838708b0648b11f88bc1df8b53f5ad81be492338e54cdce6e"
+    },
+    {
+      "file": "packages/community-kids/src/app/api/pinta/causal/graph/items/[itemId]/route.ts",
+      "bytes": 97,
+      "gitBlobSha256": "62fbeb4c2075655e385c10ab5b938f9c8181499697e5a6da36daaeabcbae4128"
+    },
+    {
+      "file": "packages/community-kids/src/app/api/pinta/causal/graph/route.ts",
+      "bytes": 93,
+      "gitBlobSha256": "6fa10a71aac309256cabe3295be284f7d82feb13d64302f80947549c2057ca79"
+    },
+    {
+      "file": "packages/community-kids/src/app/api/pinta/causal/units/[opId]/abort/route.ts",
+      "bytes": 94,
+      "gitBlobSha256": "b48e41ea6bd71147c1f80bc5102c71b584a63ec8700555439f9ffc16a9a65bfd"
+    },
+    {
+      "file": "packages/community-kids/src/app/api/pinta/causal/units/[opId]/commit/route.ts",
+      "bytes": 95,
+      "gitBlobSha256": "216bcb7961687762359919213c7c768050eb3e3001c39e3e112253c7eff88a39"
+    },
+    {
+      "file": "packages/community-kids/src/app/api/pinta/causal/units/[opId]/route.ts",
+      "bytes": 94,
+      "gitBlobSha256": "b72bcaff90e3b07c0e8ee57cc8f0647cee2b66fe853da1739baf2e567ac6bc94"
+    },
+    {
+      "file": "packages/community-kids/src/app/api/pinta/causal/units/[opId]/verify/route.ts",
+      "bytes": 95,
+      "gitBlobSha256": "9208ff64c991d3ed656e1e77e93bdf5635843192d6c2df8dfa87238d470a11a7"
+    },
+    {
+      "file": "packages/community-kids/src/app/api/pinta/causal/units/reserve/route.ts",
+      "bytes": 96,
+      "gitBlobSha256": "a98bb02ba7687a6aa75d4086fb05d7bd13894c461796df13a17d01c5d4770dc0"
+    },
+    {
+      "file": "packages/community-kids/tests/cloud-status.test.ts",
+      "bytes": 4578,
+      "gitBlobSha256": "8e2cb2b31752d2bce66601485112c4fd7f9e00bb8798033714279d38829f5ede"
+    },
+    {
+      "file": "packages/community/src/app/api/pinta/causal/archive/items/[itemId]/route.ts",
+      "bytes": 99,
+      "gitBlobSha256": "529500d9dfcba7ccd980b243566ea984d2791aaa8b2da94723b067e3ef34ae2f"
+    },
+    {
+      "file": "packages/community/src/app/api/pinta/causal/archive/route.ts",
+      "bytes": 95,
+      "gitBlobSha256": "e2287860530345b59bb432608512c4db5dfedf8bcd369f602f8b7877c4311d81"
+    },
+    {
+      "file": "packages/community/src/app/api/pinta/causal/backfill/route.ts",
+      "bytes": 97,
+      "gitBlobSha256": "52a53c855fadd9f838708b0648b11f88bc1df8b53f5ad81be492338e54cdce6e"
+    },
+    {
+      "file": "packages/community/src/app/api/pinta/causal/graph/items/[itemId]/route.ts",
+      "bytes": 97,
+      "gitBlobSha256": "62fbeb4c2075655e385c10ab5b938f9c8181499697e5a6da36daaeabcbae4128"
+    },
+    {
+      "file": "packages/community/src/app/api/pinta/causal/graph/route.ts",
+      "bytes": 93,
+      "gitBlobSha256": "6fa10a71aac309256cabe3295be284f7d82feb13d64302f80947549c2057ca79"
+    },
+    {
+      "file": "packages/community/src/app/api/pinta/causal/units/[opId]/abort/route.ts",
+      "bytes": 94,
+      "gitBlobSha256": "b48e41ea6bd71147c1f80bc5102c71b584a63ec8700555439f9ffc16a9a65bfd"
+    },
+    {
+      "file": "packages/community/src/app/api/pinta/causal/units/[opId]/commit/route.ts",
+      "bytes": 95,
+      "gitBlobSha256": "216bcb7961687762359919213c7c768050eb3e3001c39e3e112253c7eff88a39"
+    },
+    {
+      "file": "packages/community/src/app/api/pinta/causal/units/[opId]/route.ts",
+      "bytes": 94,
+      "gitBlobSha256": "b72bcaff90e3b07c0e8ee57cc8f0647cee2b66fe853da1739baf2e567ac6bc94"
+    },
+    {
+      "file": "packages/community/src/app/api/pinta/causal/units/[opId]/verify/route.ts",
+      "bytes": 95,
+      "gitBlobSha256": "9208ff64c991d3ed656e1e77e93bdf5635843192d6c2df8dfa87238d470a11a7"
+    },
+    {
+      "file": "packages/community/src/app/api/pinta/causal/units/reserve/route.ts",
+      "bytes": 96,
+      "gitBlobSha256": "a98bb02ba7687a6aa75d4086fb05d7bd13894c461796df13a17d01c5d4770dc0"
+    },
+    {
+      "file": "packages/core/package.json",
+      "bytes": 2386,
+      "gitBlobSha256": "2f94e3be17b299e167afa6dbbdd716a3bbf03f9447ed640a22ea077e7d3340b7"
+    },
+    {
+      "file": "packages/core/src/creations/pinta-causal.test.ts",
+      "bytes": 5835,
+      "gitBlobSha256": "eaafc04dab6c4f7f3ac3a46e9d889cccc506f3e7b647890f8c28cb41c231fa93"
+    },
+    {
+      "file": "packages/core/src/creations/pinta-causal.ts",
+      "bytes": 14419,
+      "gitBlobSha256": "4aeb95e0acec9629d60578175059cef1774fbd5afc73da0266a0f6085a1e7e29"
+    },
+    {
+      "file": "packages/core/src/studio/python-runtime-features.ts",
+      "bytes": 1733,
+      "gitBlobSha256": "ed2356c15433ee2ff920e2420b9acb07e2b2d97240c7b2c93a9bb9d047749b2c"
+    },
+    {
+      "file": "packages/member-shell/qa/pinta-causal-r2-entry.ts",
+      "bytes": 733,
+      "gitBlobSha256": "b7a162c32eaac806bb0e6f3482a2d285363f2549f4733b01580ab82451c1d0f7"
+    },
+    {
+      "file": "packages/member-shell/qa/pinta-causal-r2-staging.mjs",
+      "bytes": 12770,
+      "gitBlobSha256": "6c64cdabe260ecbf0eeeaaf30132e8d11e9c1df84ad43be7e336b8e8087edb80"
+    },
+    {
+      "file": "packages/member-shell/src/components/creator/pinta-client.tsx",
+      "bytes": 17765,
+      "gitBlobSha256": "ca99bba4268627f9fe095515568ca142128eadea95c5015dc639ff6d88a9131b"
+    },
+    {
+      "file": "packages/member-shell/src/index.ts",
+      "bytes": 6350,
+      "gitBlobSha256": "af8930101a9cae93227106cbc9d125706021305fa883c2231fce84c34e0b0bb9"
+    },
+    {
+      "file": "packages/member-shell/src/lib/cloud-status.ts",
+      "bytes": 3271,
+      "gitBlobSha256": "36712f1b53d2dfb011d0dcdc00302ee87821304d4c5924bec54788337c493312"
+    },
+    {
+      "file": "packages/member-shell/src/lib/creations-cloud.ts",
+      "bytes": 56303,
+      "gitBlobSha256": "4959386d58eba035e735a942cd2422d5de937bb007dd651abeb69e5b6f543be0"
+    },
+    {
+      "file": "packages/member-shell/src/lib/env.ts",
+      "bytes": 9567,
+      "gitBlobSha256": "e4627fbdf36fdb7ab19e28ccf36937f6b7efafcee92a225ecedbbd3558d03081"
+    },
+    {
+      "file": "packages/member-shell/src/lib/pinta-causal-authoring.ts",
+      "bytes": 21145,
+      "gitBlobSha256": "4128594853610d966c19a0af60408be034898752280a1502262eb657a5155d50"
+    },
+    {
+      "file": "packages/member-shell/src/lib/pinta-causal-cloud.ts",
+      "bytes": 14180,
+      "gitBlobSha256": "db879d26437c445d1bd48327b26d722e51a3a3ed8abe9e23268e665c351c4539"
+    },
+    {
+      "file": "packages/member-shell/src/lib/pinta-causal-pull.ts",
+      "bytes": 5878,
+      "gitBlobSha256": "5f387eb518431ec1ba6e5c19232ec034838e87292f5a627fabe579ebe9b3f50d"
+    },
+    {
+      "file": "packages/member-shell/src/lib/pinta-causal-queue.ts",
+      "bytes": 6957,
+      "gitBlobSha256": "8e6b5aa3a967775918e922b51dc1d7f930196794a7c40cc3357002ac64b96b5d"
+    },
+    {
+      "file": "packages/member-shell/src/lib/pinta-causal-sync.ts",
+      "bytes": 3478,
+      "gitBlobSha256": "0ea6116f2d7d9b51ea584703118456867a06f9592b9e7303680e7648296e6392"
+    },
+    {
+      "file": "packages/member-shell/src/lib/pinta-cloud-persistence.ts",
+      "bytes": 75374,
+      "gitBlobSha256": "55c54ab8c7432b3475f258f188a949792ee775e4d5310301ceaf57b3a1eadb1d"
+    },
+    {
+      "file": "packages/member-shell/src/routes/creation-cleanup.ts",
+      "bytes": 5997,
+      "gitBlobSha256": "8ab76e10ed62548daafd64a69cd6a148f9ebde7558e658b51f18e46a8bd22804"
+    },
+    {
+      "file": "packages/member-shell/src/routes/pinta-causal.ts",
+      "bytes": 17708,
+      "gitBlobSha256": "2acfb9ad7b2cf9d43cf258752e9924a7478c24b1f2abbd71b4af6bde6974a331"
+    },
+    {
+      "file": "packages/member-shell/src/server/gateway.ts",
+      "bytes": 17592,
+      "gitBlobSha256": "135e3774486c8bbe60661b4f6bf579267a482233620063c2d1c5c340e7ed1744"
+    },
+    {
+      "file": "packages/member-shell/src/server/pinta-causal-content.ts",
+      "bytes": 6087,
+      "gitBlobSha256": "0aed36b31e7310dc7d36ea867f24aef6b2dba6d073fe5fce0cbfd7797737c88e"
+    },
+    {
+      "file": "packages/member-shell/src/server/pinta-causal-proof.ts",
+      "bytes": 9181,
+      "gitBlobSha256": "44ecab78a15cad6629fbf2db086eade772ebfc1c3f6df36c0bf2efd051fd6837"
+    },
+    {
+      "file": "packages/member-shell/src/server/pinta-causal-protocol.ts",
+      "bytes": 3516,
+      "gitBlobSha256": "fa038d6aa93a70966e111ecb0c512cd8b693ee181c28bfb3315b888ddec89123"
+    },
+    {
+      "file": "packages/member-shell/src/server/r2.ts",
+      "bytes": 25790,
+      "gitBlobSha256": "c76a41ac2afd62abdc33aa99313dcf20b636e916d912610e98b7a89d90c77367"
+    },
+    {
+      "file": "packages/member-shell/tests/creation-cleanup-routes.test.ts",
+      "bytes": 8586,
+      "gitBlobSha256": "95ed28e52a21eb293fd35edd32195eab0ed2fd2966170b50cd34d5f6d6466aef"
+    },
+    {
+      "file": "packages/member-shell/tests/fixtures/pinta-local-authority.fixture.ts",
+      "bytes": 63417,
+      "gitBlobSha256": "b15f9b06136aa22c481c5c2242a220c9166b01e46381f21096ab4ddf07d89437"
+    },
+    {
+      "file": "packages/member-shell/tests/fixtures/pinta-studio-bridge.fixture.tsx",
+      "bytes": 8231,
+      "gitBlobSha256": "9207a50d4811096636cb508422ee67bb2ffdb8200cceb7b4e056a48af30a2e51"
+    },
+    {
+      "file": "packages/member-shell/tests/pinta-causal-cloud.test.ts",
+      "bytes": 7180,
+      "gitBlobSha256": "3e7a25d9ce2a87dee75973683c92f06653de8935218c7f2a108088899f1ed204"
+    },
+    {
+      "file": "packages/member-shell/tests/pinta-causal-content.test.ts",
+      "bytes": 6322,
+      "gitBlobSha256": "797df0deca3138ba283b75f2ce447aeb07c7d36e2dd5b1729a10ce5b5a1854c6"
+    },
+    {
+      "file": "packages/member-shell/tests/pinta-causal-pull.test.ts",
+      "bytes": 3141,
+      "gitBlobSha256": "9a533c5339fa2d822fbcff2150e6a6fbfb2dc34f1bc0829f44a8b31264805249"
+    },
+    {
+      "file": "packages/member-shell/tests/pinta-causal-queue.test.ts",
+      "bytes": 3043,
+      "gitBlobSha256": "d9e21e296d76356ca6ffb347f2a9adf67d14cdb88ea20664b443fb6cf8133e9b"
+    },
+    {
+      "file": "packages/member-shell/tests/pinta-causal-routes.test.ts",
+      "bytes": 27979,
+      "gitBlobSha256": "13e429717e9194b58686fe5936f4dcc76ec885698840d847a03bb2d5a73ad895"
+    },
+    {
+      "file": "packages/member-shell/tests/pinta-local-authority.test.ts",
+      "bytes": 870,
+      "gitBlobSha256": "03c9bb09ae194a72c4c8d009b86d77e0b16f2953456b32eff3b2e6c73d769414"
+    },
+    {
+      "file": "packages/member-shell/tests/pinta-studio-bridge.test.ts",
+      "bytes": 894,
+      "gitBlobSha256": "1dd6961f9236a12f066a1cb5f90e623b49a15e3e1680eb69ca3a07dc5f3216cd"
+    },
+    {
+      "file": "packages/member-shell/tests/r2-presign.test.ts",
+      "bytes": 1297,
+      "gitBlobSha256": "b1dac41639cac2bcc38645404dd0afa50d3730d53c429e7b0331fa7b2272d6a3"
+    },
+    {
+      "file": "packages/members/src/application/creations/creations.service.ts",
+      "bytes": 23078,
+      "gitBlobSha256": "da3f4051d2e7930876caf21cf7d36d490bb20faa565eb450a67e5ff3f13550d3"
+    },
+    {
+      "file": "packages/members/src/composition-root.ts",
+      "bytes": 79098,
+      "gitBlobSha256": "f8b7c12a1c255a311cfe739df4e1de3b75f31110917604d9324765ec57bae28c"
+    },
+    {
+      "file": "packages/members/src/domain/creations/pinta-causal-graph.ts",
+      "bytes": 9748,
+      "gitBlobSha256": "ca16a06e710b7d62fa6beb31d76db2c6d7638f23fcd7a305e5ee62b30fc4319c"
+    },
+    {
+      "file": "packages/members/src/domain/ports/creation-cleanup-repository.port.ts",
+      "bytes": 1131,
+      "gitBlobSha256": "44a2b0e2ff6d5d01035852f1a380482aa24b5504c455f20250c0871ccaaca329"
+    },
+    {
+      "file": "packages/members/src/infrastructure/config/env.ts",
+      "bytes": 23800,
+      "gitBlobSha256": "e24ff949c4647157a86cceaca05175b4ae8510117d0d03eeb66ad75cc1716f54"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/creation-cleanup.repository.ts",
+      "bytes": 5788,
+      "gitBlobSha256": "56e3de239f75145f71b1539eeaf3a23b0ef26b6279f69ce561c99c8e57fade6a"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/creations.repository.ts",
+      "bytes": 34034,
+      "gitBlobSha256": "07e329785cc3248b77b8ff13a842145a01970702d51acf100e6288d106e01144"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/migrations/0168_pinta_causal_units.sql",
+      "bytes": 1608,
+      "gitBlobSha256": "807fed01b4971f8d9c74b1802351b1266268d1c0d6e46065bb0c956168d1b05f"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/migrations/0169_pinta_causal_object_retirement.sql",
+      "bytes": 661,
+      "gitBlobSha256": "790edce8e1f272b6b28e88b5a4a7d1a60e8c92932d6c9d132582ed76afdd7f38"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/migrations/0170_pinta_causal_writer_fence.sql",
+      "bytes": 4596,
+      "gitBlobSha256": "5ffd334905cb8fe4cb2bd5b340d4d1cb7340133e487927d51841724bb16a0a3c"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/migrations/meta/0168_snapshot.json",
+      "bytes": 429732,
+      "gitBlobSha256": "13701a233d78787432258cd455adcb7dd3fba053ff76c70a961ac860c896ad9e"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/migrations/meta/0169_snapshot.json",
+      "bytes": 432440,
+      "gitBlobSha256": "c001d215fdc348fb678bd1325ab1c5feffcc292255cb7cf058799d9f1f98b715"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/migrations/meta/0170_snapshot.json",
+      "bytes": 432440,
+      "gitBlobSha256": "388ec47e001d97900e91973b2187f3250e10c4cf75513f0b78c8597ee2494fab"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/migrations/meta/_journal.json",
+      "bytes": 25369,
+      "gitBlobSha256": "24a656a1314c0d56561a73caf756d9018b2cb4ac151b32f7c7f175f9e2b90962"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/pinta-causal-leases.ts",
+      "bytes": 1835,
+      "gitBlobSha256": "b3f0f2a9580bfefefa13e8460ea02b43f21edd1b8da8093a2e7cdea5e4f72557"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/pinta-causal-retirement.ts",
+      "bytes": 6660,
+      "gitBlobSha256": "4927f8d4957f793fd3758e8ae67006261f9873b8cab1e9bfb0d2cc790925ee3b"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/pinta-causal-scope.ts",
+      "bytes": 2221,
+      "gitBlobSha256": "48173784f66669cb16bb8bd293c313d4293b02967515efec29dbe58251982da4"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/pinta-causal-store.ts",
+      "bytes": 9654,
+      "gitBlobSha256": "75a3382199d33d37c08620d27e6b195c5201170fda01c717f197d9217e38a831"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/pinta-causal-units.repository.ts",
+      "bytes": 25363,
+      "gitBlobSha256": "3db02668ddf38c09c2442ff6e923fee890a49c44f4425e398f7b07d522ac38ad"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/schema.ts",
+      "bytes": 176476,
+      "gitBlobSha256": "89f2a3a4f95b58fb0bd749b35cd19c4cb76e0fa48444679c80932eb67f3e3e28"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/user-data-purge.repository.ts",
+      "bytes": 21529,
+      "gitBlobSha256": "58468c7d87513709e70bd250fbe4a7bf560221d8fc35fcfe0219fad010d47e45"
+    },
+    {
+      "file": "packages/members/src/interfaces/http/error-handler.ts",
+      "bytes": 11963,
+      "gitBlobSha256": "4495b4652e9e8d4b4a2d508d568f4366a6df6a797a028d4b41c5f20fe3580724"
+    },
+    {
+      "file": "packages/members/src/interfaces/http/routes/creations.routes.ts",
+      "bytes": 6091,
+      "gitBlobSha256": "150049a49e5396c5fdf9cc4600168f27c4603df67750f5730b689fecc367f1c1"
+    },
+    {
+      "file": "packages/members/src/interfaces/http/routes/pinta-causal.routes.ts",
+      "bytes": 4658,
+      "gitBlobSha256": "d21c39d9a08815a256e0437ff4d4dc317fae1070a484060c910a2b2f89901d97"
+    },
+    {
+      "file": "packages/members/src/interfaces/http/server.ts",
+      "bytes": 19407,
+      "gitBlobSha256": "eb05a45069c83f6161517961cb3b48f21f3afa8d3c5a999d78587d64fc091494"
+    },
+    {
+      "file": "packages/members/tests/db/creations.repository.test.ts",
+      "bytes": 47445,
+      "gitBlobSha256": "96a216253e254164b0d1bfc8312dcb7da4954d10bd9b14692af637654e61080f"
+    },
+    {
+      "file": "packages/members/tests/db/pinta-causal-http.test.ts",
+      "bytes": 9441,
+      "gitBlobSha256": "be421cd264d3a6ce78e2f286261fab6799e45a48d6e9ad38c08a3f94900034ed"
+    },
+    {
+      "file": "packages/members/tests/db/pinta-causal.test.ts",
+      "bytes": 45455,
+      "gitBlobSha256": "8e34b26be083eefa2b01304f761a0ce78447d3bf43faea97851d9ead4e5d9418"
+    },
+    {
+      "file": "packages/members/tests/db/user-data-purge.test.ts",
+      "bytes": 16183,
+      "gitBlobSha256": "0c6ffd677e4496eaf682861449dec34628c6b23c8aaa2dc1c3cf7593de52c694"
+    },
+    {
+      "file": "packages/molda-cenarios-agente/src/oficina/intencoes.ts",
+      "bytes": 34918,
+      "gitBlobSha256": "d849f4bbefcd45dec030b2af1fa89a5e05c8061b037583e5db6ffadf85b42902"
+    },
+    {
+      "file": "packages/molda-cenarios-agente/tests/regioes.test.ts",
+      "bytes": 4171,
+      "gitBlobSha256": "5e6c081517b8979a982dbb5e91fd0d3c98451b8dfd1471cb5300296856005855"
+    },
+    {
+      "file": "packages/molda-cenarios-core/src/v2/regioes.ts",
+      "bytes": 8436,
+      "gitBlobSha256": "987da219f2c30db1bff65cf484993a0fe25205afeca9fe00d78a091136946fc2"
+    },
+    {
+      "file": "packages/molda-cenarios-core/tests/regioes-documento.test.ts",
+      "bytes": 7054,
+      "gitBlobSha256": "0ef0377ca490f69f694438342c8fd3b857571d55bc67f725ee13a4cc20f70151"
+    },
+    {
+      "file": "packages/molda-cenarios/package.json",
+      "bytes": 1585,
+      "gitBlobSha256": "e1c52dd3b2e5bc1698dfb011634b7772ea1f8f79704edba960aa341d2a1a9ff6"
+    },
+    {
+      "file": "packages/molda-cenarios/playground/jogo-e/preparar-cenario.mjs",
+      "bytes": 2152,
+      "gitBlobSha256": "9c13252987238d926b54eec55c424a613da62f61627cf037bc49283ad9512313"
+    },
+    {
+      "file": "packages/molda-cenarios/playground/oficina/qa-jogo-e.ts",
+      "bytes": 10639,
+      "gitBlobSha256": "2bf20232983d36b9ee114eeadf39755f04fb0e6fa55e38a112982b97f40ccadd"
+    },
+    {
+      "file": "packages/molda-cenarios/playground/oficina/verificar-regioes.mjs",
+      "bytes": 7329,
+      "gitBlobSha256": "d5f64ad47ea6c73c45bce2427c96aa5d0012a72055c5d33b16a8991b095ccfe4"
+    },
+    {
+      "file": "packages/molda-cenarios/playground/oficina/vite.config.ts",
+      "bytes": 2647,
+      "gitBlobSha256": "4f3d80c8280a09b3d62a331b105d3299c38c1f3efade6e790861de7a04a9b57f"
+    },
+    {
+      "file": "packages/molda-cenarios/src/exportar/runtime-three.generated.ts",
+      "bytes": 1184146,
+      "gitBlobSha256": "eac41ad1c49b2f15953f12fa6046b47471f64e920bf25adb3f9f00e74c3cba7b"
+    },
+    {
+      "file": "packages/molda-cenarios/src/oficina/regioes-formulario.ts",
+      "bytes": 7874,
+      "gitBlobSha256": "8b44d1221aa69f38ae96f7440d430001506ae0e2963460a0d09bcb5a94e9932f"
+    },
+    {
+      "file": "packages/molda-cenarios/src/oficina/telas/Oficina.tsx",
+      "bytes": 102703,
+      "gitBlobSha256": "d8764b5ea1c87df1504f5677352de4c01b37560d93c7604bc838362b6581b019"
+    },
+    {
+      "file": "packages/molda-cenarios/src/oficina/useRegioes.ts",
+      "bytes": 5819,
+      "gitBlobSha256": "3aeb28da0bc76855f35cb21c2a9b62b509eaac0173ee022786a3fecf4a91cc5d"
+    },
+    {
+      "file": "packages/molda-cenarios/tests/regioes-formulario.test.ts",
+      "bytes": 6956,
+      "gitBlobSha256": "5f28beda5da8d3722ca23fccc2887e702c956fc128860080d9473b0fa4bd5f48"
+    },
+    {
+      "file": "packages/palco-gravacao/src/lib/verbos.ts",
+      "bytes": 56028,
+      "gitBlobSha256": "c601748b6b0dcc66c650e01ea5ccd51fd4139075ab09697e11b2daabd374d848"
+    },
+    {
+      "file": "packages/palco-gravacao/tests/palco.test.ts",
+      "bytes": 52571,
+      "gitBlobSha256": "89bb5925af770680b7b1554118f3910f363ea6a7c9c75676fbfb566ad86bcae4"
+    },
+    {
+      "file": "packages/pinta/package.json",
+      "bytes": 1922,
+      "gitBlobSha256": "acc7bd157c61a57144123a79351b13451b4adb08b144dc3a5f222b098d46f8fd"
+    },
+    {
+      "file": "packages/pinta/scripts/physical-region-proof.ts",
+      "bytes": 2340,
+      "gitBlobSha256": "fd8ed9736a0557ca57eb41715f978958619b30c7407a88ebb8fafff01a9f2bc2"
+    },
+    {
+      "file": "packages/pinta/src/assets/causal.ts",
+      "bytes": 564,
+      "gitBlobSha256": "21113f8937c33fc5409cee3165f68f26b5b0c7df6910cc6b928b9aaa85adcfa7"
+    },
+    {
+      "file": "packages/pinta/src/assets/index.ts",
+      "bytes": 3373,
+      "gitBlobSha256": "9bcf899af8e0e132af96a41a304dfcc7e78529d6c7c37f9b82799e7caf7911fa"
+    },
+    {
+      "file": "packages/pinta/src/assets/purity.test.ts",
+      "bytes": 4672,
+      "gitBlobSha256": "7a785a99a2917d27f57dc1b65e550024d52871d52e50792f53ba2dace72bd4dd"
+    },
+    {
+      "file": "packages/pinta/src/components/PintaApp.test.tsx",
+      "bytes": 41207,
+      "gitBlobSha256": "5082f9997f8b0d7b9e687254c3e607e760630a0f32895862f2ff8b2a12ac2db7"
+    },
+    {
+      "file": "packages/pinta/src/components/PintaApp.tsx",
+      "bytes": 16389,
+      "gitBlobSha256": "b66f77f7ba753d88e924c4afec370d0ade5cb15c9dc26e840cde384631c8905f"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/EditorScreen.tsx",
+      "bytes": 34122,
+      "gitBlobSha256": "2627c4adac824deb20f3f3f14fbd97c22635251119248c780b0f035200554b77"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/TileStrip.tsx",
+      "bytes": 10203,
+      "gitBlobSha256": "66a9d3f56a64fb7c18bf2fc7a4beb1a72584147252ed4e87035bd6e5c6154425"
+    },
+    {
+      "file": "packages/pinta/src/core/copy.ts",
+      "bytes": 67123,
+      "gitBlobSha256": "5ef003c08c9e701ce7dd04946aba5fe22396cb46169083b856dd893351a5e250"
+    },
+    {
+      "file": "packages/pinta/src/core/localAssetOrigin.ts",
+      "bytes": 2506,
+      "gitBlobSha256": "eb833492f4283de24d3e939d508f542b9d0f31c4ad95b93933fa7f98731b74ca"
+    },
+    {
+      "file": "packages/pinta/src/core/project.ts",
+      "bytes": 84824,
+      "gitBlobSha256": "7aab9ddfc7ccf7df200d94090c2a35392b34cead4b12ae2fb58bae787a32d7ea"
+    },
+    {
+      "file": "packages/pinta/src/core/sceneMapClosure.test.ts",
+      "bytes": 3282,
+      "gitBlobSha256": "b47dd495d382575ef79afa9ebdedaf28007e70e307cd99fc67b32edce998ce13"
+    },
+    {
+      "file": "packages/pinta/src/core/sceneMapClosure.ts",
+      "bytes": 5713,
+      "gitBlobSha256": "c3d37d05d712380814677ab24be2af4e7e5867f8902634c34e180f85e445287e"
+    },
+    {
+      "file": "packages/pinta/src/export/pintaCausalDetach.ts",
+      "bytes": 3507,
+      "gitBlobSha256": "4ece13775a71121d7a7d17620d2a9163d23068a2b6528d0b22525b50b002f745"
+    },
+    {
+      "file": "packages/pinta/src/export/pintaCausalManifest.test.ts",
+      "bytes": 8170,
+      "gitBlobSha256": "662f6554725d959c5554ef6de7a15a5ce0e6ef48ab96cc645eb24de50ced6df0"
+    },
+    {
+      "file": "packages/pinta/src/export/pintaCausalManifest.ts",
+      "bytes": 12071,
+      "gitBlobSha256": "aa554051ee05077b0480d0a64f107499c3750bf4de0f1cf3bcdeeee7179884e1"
+    },
+    {
+      "file": "packages/pinta/src/export/pintaCausalTransition.test.ts",
+      "bytes": 18609,
+      "gitBlobSha256": "0307e5e0fbcd4021a9da52e0d6e3aec450ec87e06f1e41f529a648a7ed43cd02"
+    },
+    {
+      "file": "packages/pinta/src/export/pintaCausalTransition.ts",
+      "bytes": 14615,
+      "gitBlobSha256": "d011719a19cb2cb99a5496ade238ebd64cfc6856cf009ab205fe6600c6692cdb"
+    },
+    {
+      "file": "packages/pinta/src/export/projectJson.ts",
+      "bytes": 22104,
+      "gitBlobSha256": "0dfad3e11f2d742af56f9bde7c2c6334a1dee9310e2736b4841cf1f247b93424"
+    },
+    {
+      "file": "packages/pinta/src/index.ts",
+      "bytes": 2307,
+      "gitBlobSha256": "d251f6860639a995f408c69738e9d364e84bc3760bf77bc856690bd2e2b69d84"
+    },
+    {
+      "file": "packages/pinta/src/state/assetAuthorityDb.ts",
+      "bytes": 3953,
+      "gitBlobSha256": "fddc29d4b8ecae4804a46bf846c478d130c33de89888aa852e8913b6858274a4"
+    },
+    {
+      "file": "packages/pinta/src/state/assetAuthorityKeys.ts",
+      "bytes": 401,
+      "gitBlobSha256": "c7827f00fb4d585b3a443aaaa9d27edb4b75dd3fffbdc86766a9b9a556c5fc9f"
+    },
+    {
+      "file": "packages/pinta/src/state/causalEditorLocks.ts",
+      "bytes": 1338,
+      "gitBlobSha256": "a4bbc62ed565b7f67f82ebe02a9d8b27ea486bc7536a172ada9071850e0d88e8"
+    },
+    {
+      "file": "packages/pinta/src/state/editorStore.test.ts",
+      "bytes": 19833,
+      "gitBlobSha256": "5d2354c80f49b19ea3962e547fa80b2617a6ffcb92f440f5bec5dec27babdf3c"
+    },
+    {
+      "file": "packages/pinta/src/state/editorStore.ts",
+      "bytes": 17295,
+      "gitBlobSha256": "0a65168a24c65847ade6580e812b75937120eeb37b9b6c9e3fbcf379f84ed3ef"
+    },
+    {
+      "file": "packages/pinta/src/state/galleryStore.ts",
+      "bytes": 20864,
+      "gitBlobSha256": "8bb2e0f325db9b1fff68faaab1ff6d053bdb249fd2b45228e9ab3cb1dfb53f21"
+    },
+    {
+      "file": "packages/pinta/src/state/localAssetAuthority.ts",
+      "bytes": 18543,
+      "gitBlobSha256": "2c592203151a72872a4be1a2396504fe337e1dd7d721a7a5da13d4c487869d00"
+    },
+    {
+      "file": "packages/pinta/src/state/localCausalOutbox.ts",
+      "bytes": 49927,
+      "gitBlobSha256": "7e6d0c8fa7bae0b0e6df4ffb0f800dda51462068ac456936c9cc5ed884f96ee5"
+    },
+    {
+      "file": "packages/pinta/src/state/localCausalRecovery.ts",
+      "bytes": 8367,
+      "gitBlobSha256": "200d6583a3f9527c81e2d5f7724011cc801e4a58d06e3876962183009b81304e"
+    },
+    {
+      "file": "packages/pinta/src/state/localRegionAssetAuthority.ts",
+      "bytes": 4486,
+      "gitBlobSha256": "02474ce39ee7c1e9e6483bc3d880d07b001dbebd916d127792e5d4f952bdce4d"
+    },
+    {
+      "file": "packages/pinta/src/state/persistence.test.ts",
+      "bytes": 28210,
+      "gitBlobSha256": "268b23e9da1d7c23dbc15c4a3a5fa2742891559cd9e5112fb189163e32a94c38"
+    },
+    {
+      "file": "packages/pinta/src/state/persistence.ts",
+      "bytes": 50185,
+      "gitBlobSha256": "4e6a889a10358861f685f370d00c72bc4f456e6e6a636d8d87120f85ab074fa6"
+    },
+    {
+      "file": "packages/pinta/src/testing/idbMock.ts",
+      "bytes": 5862,
+      "gitBlobSha256": "d20d794e38c392091a0a357adf5f0eefae64743f45fdb08d5591dfdfe4c5a1b2"
+    },
+    {
+      "file": "packages/pinta/src/tiles/resourceVersions.ts",
+      "bytes": 10404,
+      "gitBlobSha256": "fbba7d0a562e6b98cf08e06a7f28f7c015ee6e5dbda16bd0444c7a006e68a1e2"
+    },
+    {
+      "file": "packages/pinta/src/tiles/tilesetMetadata.test.ts",
+      "bytes": 12470,
+      "gitBlobSha256": "79de93ecf59bb6e815e41b2204e36a7bce7f09cf8d750437c1b5802699d26795"
+    },
+    {
+      "file": "packages/pinta/src/tiles/tilesetOps.ts",
+      "bytes": 16380,
+      "gitBlobSha256": "a07fc487df4cef78bd920cb861bc3b256f80685a723b78597cf4675bcb8e3694"
+    },
+    {
+      "file": "packages/studio-runtime/runtime/python-playtest.generated.mjs",
+      "bytes": 320218,
+      "gitBlobSha256": "bf2dfdac8f1ea23155f10f0397a7a46a7be4d355aeb298f1a132e608a0172cf6"
+    },
+    {
+      "file": "packages/studio-runtime/runtime/scene3d-pro.generated.mjs",
+      "bytes": 562359,
+      "gitBlobSha256": "eb17c8ca9cc8a98c35afbfd04b8ec0d5811d635e8085c184192ce0a58740902e"
+    },
+    {
+      "file": "packages/studio-runtime/runtime/validation-profile.json",
+      "bytes": 118,
+      "gitBlobSha256": "2ecdd12f15542c6d306f5fb941644d35a5fb662951362b870c9294c493f22873"
+    },
+    {
+      "file": "packages/studio/e2e/engine-regions.spec.ts",
+      "bytes": 14483,
+      "gitBlobSha256": "30a4868da18e7fb92dffccd8d1cbe5308a9eddd5e37115638636e095fb054d32"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-causal-local.flow.ts",
+      "bytes": 24085,
+      "gitBlobSha256": "0c53b1602eddcc195c21b4bce30846d18e14388a7f0bcdcc44410be59eb7d0fd"
+    },
+    {
+      "file": "packages/studio/playground/cenarios-integration/preparar-jogo-e.ts",
+      "bytes": 8126,
+      "gitBlobSha256": "1d1827bdb90ee58e914743c5d583e1d2e5195cbe17d78a28719cdb849cc64f16"
+    },
+    {
+      "file": "packages/studio/playwright.config.ts",
+      "bytes": 5000,
+      "gitBlobSha256": "174f296ebe5929ad05b0f442d1ea9a5a30d77c50b495dc49dbe07b64c949f9c9"
+    },
+    {
+      "file": "packages/studio/playwright.engines.config.ts",
+      "bytes": 1581,
+      "gitBlobSha256": "8502066091f015f8157fcf1ba5037c32bd525fa720d391febe3b81acf2c63e89"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-physical-regions.config.ts",
+      "bytes": 1027,
+      "gitBlobSha256": "cf5dba033b7d55716271490b09180f4bd9dc4abfaf2958deeccc4e5e41a62a10"
+    },
+    {
+      "file": "packages/studio/scripts/build-python-runtime.ts",
+      "bytes": 13759,
+      "gitBlobSha256": "911be85571733854a394becbd3cbf5ff9beeaa4d078207cdfe0de9d6adf05fc1"
+    },
+    {
+      "file": "packages/studio/scripts/gen-raylib-region-cases.ts",
+      "bytes": 6021,
+      "gitBlobSha256": "9fab4797a542d62e83ea3763c0641582ac7ef97f4f2bc904371bcb7ca183ce68"
+    },
+    {
+      "file": "packages/studio/src/components/blocks/PythonBlocklyEditor.tsx",
+      "bytes": 57031,
+      "gitBlobSha256": "2628d4cdb9c045180e7bfb56c97f40d810d8735e89df5edf22f3021efba39898"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/game3dRules/__tests__/regionBlock.test.ts",
+      "bytes": 5325,
+      "gitBlobSha256": "3f52404fb5f8b6630777c2201f5cd785802b3eb99733123742eea04ed244208d"
+    },
+    {
+      "file": "packages/studio/src/python/blocks/blockly.ts",
+      "bytes": 28571,
+      "gitBlobSha256": "39327a47e0347b87c7d5723abe57cbb2799830aebe5e44ade606f14d25d0d840"
+    },
+    {
+      "file": "packages/studio/src/python/blocks/contract.ts",
+      "bytes": 5961,
+      "gitBlobSha256": "333489bab0c495242a5a0e1b9ec01c18934dbb00b361a9cff58eb9e2e8a4fd23"
+    },
+    {
+      "file": "packages/studio/src/python/blocks/paletteGroups.ts",
+      "bytes": 5635,
+      "gitBlobSha256": "7f6c61d1f0263d5f5ef33076a97ba86c3e508d9561d2f8358f4cf9170d474ce2"
+    },
+    {
+      "file": "packages/studio/src/python/extensions/raylib3d/catalog.ts",
+      "bytes": 37967,
+      "gitBlobSha256": "8be7b11bc3418af54a4e7528f4e9f79631a55ddf12c940e807cb7fd806c1a510"
+    },
+    {
+      "file": "packages/studio/src/python/extensions/raylib3d/sceneBlocks.test.ts",
+      "bytes": 7202,
+      "gitBlobSha256": "afa6ff0171fa1634f3a867b6162b790d83239daf749cdbcfd353282d2becafa2"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/raylib/__tests__/cenario_test.py",
+      "bytes": 31078,
+      "gitBlobSha256": "ab2452d30051d1d1dfdf3fc871126774a3e39df645270aa7005908a24f4520fb"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/raylib/__tests__/regioes-casos.json",
+      "bytes": 12847,
+      "gitBlobSha256": "ac7a5de41314964548318f60a9bb39f657ef7657e2c0482a247ad4b88304be74"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/raylib/cenario-regioes.test.ts",
+      "bytes": 1403,
+      "gitBlobSha256": "87fe490a5b2a76d0ef1778bc4b2eb751f69aac8b1ff35e8e54cd2b7a1c3e86c9"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/raylib/cenarioSources.generated.ts",
+      "bytes": 44766,
+      "gitBlobSha256": "6cf82fa3cd8c5717aaec091c007121135b62b64a9156ed62ac7b3a0cbdd7b604"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/raylib/py/cenario.py",
+      "bytes": 43406,
+      "gitBlobSha256": "74739af038721c30d395605c1f80f7f79480fe69bd00c4e2cbc5a0b0cdfa64c3"
+    },
+    {
+      "file": "packages/studio/src/three/scene3dProRuntime.generated.ts",
+      "bytes": 567454,
+      "gitBlobSha256": "4f37a899b44d91882c3b0730b5ea8065dee8f67c52ba131e7275b6a83e3b7e22"
+    },
+    {
+      "file": "packages/studio/src/three/scene3dRuntime.generated.ts",
+      "bytes": 567210,
+      "gitBlobSha256": "ece4d458cfa16aa4e541a958856ed7a4e3fec52a5f197cbf75e2b7b14d604dbc"
+    },
+    {
+      "file": "scripts/ci/pinta-causal-build-flag.test.ts",
+      "bytes": 933,
+      "gitBlobSha256": "250929b1ed3e6b43da872a40d1e663917e1ad70aa7779046b52f0fecad8de39f"
+    }
+  ]
+}

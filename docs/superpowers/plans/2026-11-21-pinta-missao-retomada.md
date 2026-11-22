@@ -796,3 +796,35 @@ outbox no mesmo commit local e recuperação de formatos opacos separada do sync
 Revisão intermediária exige remapeamentos compostos, desfazer já sincronizado,
 proteção dos consumidores locais offline e orçamento agregado da outbox. Esses
 critérios precedem a promoção regional; as etapas macro 1–9 continuam abertas.
+
+### Revisão da persistência causal — 22/11, em andamento
+
+A branch isolada incorporou a staging `208c8571a`, conservando os arquivos
+funcionais 3D do remoto. O conflito entre duas correções equivalentes de um teste
+3D ficou com a versão remota; cinco testes e a instalação com lockfile congelado
+passaram. O candidato Python foi reconstruído: 126 arquivos verificados, hash
+`e685d5c2731e5c5e5c221431979894e8c02ea6d50b63518e7b924c3610eb4298`.
+Quatro ensaios regionais CE, oito de Pygame Zero/Raylib 2D e 32 de jogos legados
+passaram novamente em Chrome/Chromium, incluindo PyDew Valley. Recibos desta
+rodada em `qa/causal-integrado-2026-11-22/`.
+
+O servidor causal passou na revisão local com PostgreSQL real: 21 casos/132
+asserções e um percurso HTTP/30 asserções. O armazenamento condicional foi
+repetido em MinIO real (um caso/19 asserções); a prova anterior com R2 de staging
+continua separada. Cinco ensaios de IndexedDB real passaram no candidato terminal
+`5ef94cc85`, incluindo abort no último write e bloqueio por outra aba.
+
+A revisão independente desse candidato encontrou uma perda que os cinco ensaios
+não cobriam: um escritor causal anterior pode substituir a revisão local de um
+PUT já selado ou da ponta mutável da fila. A recuperação não pode descartar os
+bytes retidos nem confundir a revisão posterior com a enviada. Os negativos estão
+versionados em `docs/pinta-cenarios/revisao-2026-11-18/qa/nuvem-causal-cliente/`.
+Está em implementação uma sombra durável da ponta pendente, substituída na
+coalescência, no mesmo CAS e orçamento dos documentos. Deve cobrir também a
+primeira gravação offline, anterior ao epoch da conta. Não ativar a candidata
+antes do replay verde, da revisão e dos gates integrados.
+
+A homologação autenticada nova exige entrada limitada ao perfil de QA, tanto no
+BFF quanto no Members. A flag pública precisa entrar no build Next das duas
+comunidades; o padrão permanece desligado. Nenhum destes testes ativa formatos
+regionais, catálogos, versão de motor, release ou rollout público.
