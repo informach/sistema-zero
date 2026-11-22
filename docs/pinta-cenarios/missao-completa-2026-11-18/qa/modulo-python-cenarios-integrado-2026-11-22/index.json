@@ -1,0 +1,66 @@
+{
+  "verifiedRuntime": {
+    "at": "2026-11-22T21:11:20.263Z",
+    "builder": "1.4.3",
+    "head": "d5bf4f2158eff3e23576bdf7e7214f3d34b5fb97",
+    "hash": "842f92c7b82db61441765d963f6d7a4b5d436438e27e54ec1e507ac90cf38d0e",
+    "files": 129,
+    "totalBytes": 24197612,
+    "allFilesRehashed": true,
+    "activated": false
+  },
+  "coreContractsHead": "d829adcf8e62a804ac6202ac17f87e4da1f20e46",
+  "typecheckPassed": false,
+  "typecheckErrors": 3,
+  "unchangedTypeSource": {
+    "file": "packages/molda-cenarios-motor/src/compilar/imagens.ts",
+    "staging": "c4c7d15e937ddc71b06e02e0ee4ed4f447fdf0de",
+    "gitSha256": "e1c5b001a6113c08807017f1467305b1e23d3612ee659b23a4c514788c33f452"
+  },
+  "receipts": [
+    {
+      "file": "ce-browser.log.gz",
+      "sha256": "6b779f669aad8a2e99a1a6a0174a590cfec106a8e5d4d7d8ff34ff73a82ecb09",
+      "rawSha256": "421e5002b22f06bfa0f61c7796944a75e5aabb68757fe0b763417c44a0b00dc1",
+      "bytes": 369
+    },
+    {
+      "file": "pgzero-raylib-browser.log.gz",
+      "sha256": "89302d757004338b59f1544182231fc70b4bfd94fbaa4a8b956b0862e4c95c20",
+      "rawSha256": "7e1582617f3cd477de34c914f6793dc8f25ffa901e9001ed3fb66d857e7fe0bb",
+      "bytes": 409
+    },
+    {
+      "file": "legacy-browser.log.gz",
+      "sha256": "fad15fc5b2322be8f59d0c4313fb444098b79759b0cc8112cd3cad21ab26416f",
+      "rawSha256": "b9673137c6deb586dec79195729be735a37b1f6f3aa0cfcfcd2e978a45c414d9",
+      "bytes": 768
+    },
+    {
+      "file": "studio-native-focused.log.gz",
+      "sha256": "c42dc2bce371d0723fe9e991eba5cd4654b1bf8e92262d26747e00de542669b8",
+      "rawSha256": "98f1e5bb15a5c80f68e1b597f07a4704b7fcaba116f384d2e613f7f1251116dd",
+      "bytes": 2671
+    },
+    {
+      "file": "core-release-contracts.log.gz",
+      "sha256": "e7ff2e84d78ff9e6db08d026cce3c8b5ce782f32e52b32d60a3c1dfa07f1f497",
+      "rawSha256": "763629560841d0a4ce4a09aaea34882ea799ec71ae62698096a900d1134b922f",
+      "bytes": 819
+    },
+    {
+      "file": "studio-types-red.log.gz",
+      "sha256": "dee41196e5a741f92081296e571a8ab3ed98f543a7aad701856ccbcf5c1b334e",
+      "rawSha256": "26b3e1b661f8ad86b30bcd227ae69159cc0ec94d4b5e0736880be4a684ceaf1b",
+      "bytes": 217
+    },
+    {
+      "file": "build.log.gz",
+      "sha256": "747ee4a799dacad762d60a79d7017c6cb884af5e85a34d47020dfa82e9cdbf72",
+      "rawSha256": "0ea536725f7431e422e2225859bf84a9ce6bb85267383536ca1c73495a94b117",
+      "bytes": 650
+    }
+  ],
+  "activated": false,
+  "physicalMachines": 1
+}

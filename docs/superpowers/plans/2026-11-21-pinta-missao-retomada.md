@@ -862,3 +862,22 @@ O acesso autenticado de staging foi conferido para o adulto autorizado e um
 O perfil sintético deverá ser arquivado e seu pareamento revogado após a
 homologação, preservando os perfis e criações preexistentes. Nenhuma etapa macro
 1–9 é encerrada por este corte intermediário.
+
+### Módulo Python fornecido — repetição integrada de 22/11
+
+`pinta.carregar_cenario` agora é fornecido pela distribuição candidata às três
+extensões 2D, sem colocar o motor no programa do projeto. A seleção usa a extensão
+de versão exata e a capacidade da release; o arquivo autoral homônimo continua
+com precedência. O compositor compartilhado admite PNG 1–5, preservando os
+leitores anteriores. O hash do módulo é conferido antes de montar o projeto;
+uma adulteração do mesmo tamanho foi recusada no navegador.
+
+O build integrado `d5bf4f215` reproduziu os 129 artefatos do manifesto candidato
+`842f92c7…`. Passaram 39 ensaios Chrome/Chromium, incluindo os três backends,
+PyDew Valley, mundos, física e controles anteriores, além de 84 testes focados do
+Studio e 16 de contratos no Core. Recibos em
+`qa/modulo-python-cenarios-integrado-2026-11-22/`. O novo typecheck completo do
+Studio encontrou três erros em `molda-cenarios-motor/src/compilar/imagens.ts`,
+arquivo ainda idêntico ao remoto; não é um gate aprovado. Os 27 blocos candidatos
+e a ponte real de materiais para execução Clássico/Pro seguem em revisão.
+Nenhuma versão de motor, lista pública de blocos, formato ou flag foi promovida.
