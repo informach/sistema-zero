@@ -159,7 +159,7 @@ export const PYTHON_LOOP_CODECS: ReadonlySet<string> = new Set([
   'sz_py_rl3d_window_loop',
 ])
 /** Blocos que só servem dentro do laço do Pygame-ce: oferecê-los também oferece a área do laço. */
-const PYTHON_LOOP_OFFER_CODECS: ReadonlySet<string> = new Set([
+export const PYTHON_LOOP_OFFER_CODECS: ReadonlySet<string> = new Set([
   ...PYTHON_LOOP_CODECS,
   'sz_py_pygame_flip',
   'sz_py_pygame_update',
@@ -181,7 +181,7 @@ export const PYTHON_TERMINAL_CODECS: ReadonlySet<string> = new Set([
   'sz_py_rl3d_close_audio_device',
   'sz_py_pygame_quit',
 ])
-const PYTHON_TERMINAL_AFTER_LOOP_CODECS: ReadonlySet<string> = new Set([
+export const PYTHON_TERMINAL_AFTER_LOOP_CODECS: ReadonlySet<string> = new Set([
   'sz_py_rl2d_unload_texture',
   'sz_py_rl2d_unload_sound',
   'sz_py_rl2d_unload_music_stream',
@@ -191,13 +191,13 @@ const PYTHON_TERMINAL_AFTER_LOOP_CODECS: ReadonlySet<string> = new Set([
   'sz_py_rl3d_unload_music_stream',
   'sz_py_rl3d_unload_image',
 ])
-const IMPORT_CODECS: ReadonlySet<string> = new Set([
+export const PYTHON_IMPORT_CODECS: ReadonlySet<string> = new Set([
   'sz_py_import_one',
   'sz_py_import_all',
   'sz_py_import',
   'sz_py_import_from',
 ])
-const DEFINITION_CODECS: ReadonlySet<string> = new Set([
+export const PYTHON_DEFINITION_CODECS: ReadonlySet<string> = new Set([
   'sz_py_def',
   'sz_py_function',
   'sz_py_class',
@@ -1813,7 +1813,7 @@ export function analyzePythonModuleAreas(
     if (
       statement.kind === 'Import' ||
       statement.kind === 'ImportFrom' ||
-      (codecId && IMPORT_CODECS.has(codecId))
+      (codecId && PYTHON_IMPORT_CODECS.has(codecId))
     )
       return info('area', 'libraries')
     if (values) return info('area', 'settings')
@@ -1845,7 +1845,7 @@ export function analyzePythonModuleAreas(
       statement.kind === 'FunctionDef' ||
       statement.kind === 'AsyncFunctionDef' ||
       statement.kind === 'ClassDef' ||
-      (codecId && DEFINITION_CODECS.has(codecId))
+      (codecId && PYTHON_DEFINITION_CODECS.has(codecId))
     )
       return info('area', 'molds')
     return info('area', 'start')
@@ -2153,9 +2153,9 @@ export function isPythonTerminalStatement(statement: PythonNode, codecId?: strin
 
 /** A área "natural" de um bloco da paleta (a que o faz aparecer em Áreas do projeto). */
 export function canonicalPythonArea(codecId: string): PythonAreaKind | undefined {
-  if (IMPORT_CODECS.has(codecId)) return 'libraries'
+  if (PYTHON_IMPORT_CODECS.has(codecId)) return 'libraries'
   if (PYTHON_SETTINGS_CODECS.has(codecId) || codecId === 'sz_py_assign') return 'settings'
-  if (DEFINITION_CODECS.has(codecId)) return 'molds'
+  if (PYTHON_DEFINITION_CODECS.has(codecId)) return 'molds'
   if (PYTHON_EVENT_CODECS.has(codecId)) return 'events'
   if (PYTHON_LOOP_OFFER_CODECS.has(codecId)) return 'loops'
   return undefined
