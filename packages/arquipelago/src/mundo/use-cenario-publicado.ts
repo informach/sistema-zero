@@ -76,7 +76,7 @@ export function useCenarioPublicado(
           // A vizinha carregada antes da hora (ela ainda está na outra ilha) não puxa a criança
           // para a posição guardada dela: a retomada só vale com ela dentro desta publicação.
           if (
-            novo.regiao.contem(rastro.x, rastro.z) &&
+            novo.regiaoDaIlha.contem(rastro.x, rastro.z) &&
             !retomadasUsadas.has(chaveDaRetomada(novo.publicacao))
           )
             try {
@@ -89,7 +89,7 @@ export function useCenarioPublicado(
             }
           const candidato = guardada ?? rastro,
             noTerreno =
-              novo.regiao.contem(candidato.x, candidato.z) &&
+              novo.regiaoDaIlha.contem(candidato.x, candidato.z) &&
               (novo.alturas?.(candidato.x, candidato.z) ?? 1) > 0
           if (guardada || noTerreno) {
             const chegada = novo.chegada({ ...candidato, y: candidato.y - CORPO.doCentroAoPe })
@@ -169,7 +169,7 @@ export function useCenarioPublicado(
     if (!p || pedidos.teleporte || movimento.modo !== 'chao' || !movimento.noChao) return
     const { x, z } = rastro,
       pe = rastro.y - CORPO.doCentroAoPe
-    if (!p.regiao.contem(x, z) || p.alturas?.temChao?.({ x, z }) === false) return
+    if (!p.regiaoDaIlha.contem(x, z) || p.alturas?.temChao?.({ x, z }) === false) return
     const relevo = p.alturas ? p.alturas(x, z) : pe
     if (relevo <= 0 || pe < relevo - 0.5 || pe > relevo + 0.6) return
     if ((p.agua.nivel(x, z)?.nivel ?? Number.NEGATIVE_INFINITY) > pe) return

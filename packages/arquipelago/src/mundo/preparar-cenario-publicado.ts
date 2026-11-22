@@ -129,7 +129,9 @@ export async function prepararCenarioPublicado(
     return {
       ...vista,
       perfil,
-      regiao,
+      // Não `regiao`: o motor já tem `regiao(alvo)` (a região do Molda Cenários onde está um alvo),
+      // e o cenário publicado continua sendo uma `CenaNoThree` para o instalador.
+      regiaoDaIlha: regiao,
       fisica,
       personagens,
       get colisao() {
