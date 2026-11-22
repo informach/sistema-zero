@@ -10,15 +10,13 @@ import {
 } from '@sistemazero/core/creations/pinta-causal'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { isReadonlyImpersonation } from '../lib/act'
-import { isPrivilegedRole } from '../lib/studio-tier'
 import { CREATION_BLOB_CONTENT_TYPE, CREATION_GET_TTL_SECONDS } from '../server/creation-download'
 import type { GatewayModule } from '../server/gateway'
+import { authorizePintaActor } from '../server/pinta-actor-authorization'
 import { PintaCausalUnverifiedContent } from '../server/pinta-causal-content'
 import {
   pintaCausalCandidateReady,
   pintaCausalProfileAllowed,
-  pintaCausalViewer,
 } from '../server/pinta-causal-eligibility'
 import {
   attestPintaBackfill,
@@ -35,7 +33,6 @@ import {
   PinnedPintaEntry,
   PintaBackfillPlan,
   type PintaCausalActor,
-  PintaCausalActorSchema,
   PintaCausalStatusReply,
   PintaMemberPlan,
 } from '../server/pinta-causal-protocol'
@@ -173,48 +170,9 @@ export function createPintaCausalRoutes({
   ): Promise<NextResponse> {
     if (!enabled()) return error(404, 'not-found')
     try {
-      // HMAC authenticates Member Shell, so the user token needs strict verification here.
-      const [access, refresh] = await Promise.all([
-        session.getAccessToken(),
-        session.getRefreshToken(),
-      ])
-      if (!access || !refresh) return error(401, 'unauthenticated')
-      let verified = await session.verifyAccessToken(access)
-      if (!verified.ok && verified.expired) {
-        const renewed = await gateway.refreshSession()
-        if (renewed.state === 'unavailable') return error(503, 'unavailable')
-        if (renewed.state === 'renewed')
-          verified = await session.verifyAccessToken(renewed.accessToken)
-      }
-      if (!verified.ok)
-        return verified.unavailable ? error(503, 'unavailable') : error(401, 'unauthenticated')
-      const user = verified.user
-      if (user.status !== 'active' || user.kids?.kind === 'parent') return error(403, 'forbidden')
-      const actor = PintaCausalActorSchema.safeParse({
-        ...pintaCausalViewer(user, session.audience),
-        ...(isPrivilegedRole(user.role) ? { privileged: true } : {}),
-      })
-      if (!actor.success) return error(401, 'unauthenticated')
-      if (actor.data.audience === 'adult' && actor.data.accountId !== actor.data.userId)
-        return error(403, 'forbidden')
-      if (!profileAllowed(actor.data)) return error(404, 'not-found')
-      const claimed = req.headers.get('x-sz-viewer')
-      const claimedAudience = req.headers.get('x-sz-viewer-audience')
-      if (
-        (claimed && claimed !== user.id) ||
-        (claimedAudience && claimedAudience !== session.audience)
-      )
-        return error(409, 'viewer-mismatch')
-      const documentSession = req.headers.get('x-sz-session')
-      if (
-        user.kids &&
-        ((documentSession && documentSession !== user.kids.sessionId) ||
-          (write && documentSession !== user.kids.sessionId))
-      )
-        return error(409, 'viewer-mismatch')
-      const readOnly = isReadonlyImpersonation(user)
-      if (write && readOnly) return error(403, 'impersonation-readonly')
-      return await operation(actor.data, readOnly)
+      const auth = await authorizePintaActor(req, write, { gateway, session, profileAllowed })
+      if ('status' in auth) return error(auth.status, auth.reason)
+      return await operation(auth.actor, auth.readOnly)
     } catch (failure) {
       if (failure instanceof UpstreamFailure) return failure.response
       if (failure instanceof PintaCausalUnverifiedContent) return error(409, 'unverified-content')

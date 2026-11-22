@@ -51,7 +51,9 @@ export function createCreationCleanupWorkerRoutes(deps: {
           )
         }
 
-        const pintaEnabled = deps.pintaCausalEnabled?.() ?? env.PINTA_CAUSAL_CANDIDATE === '1'
+        const pintaEnabled =
+          deps.pintaCausalEnabled?.() ??
+          (env.PINTA_CAUSAL_CANDIDATE === '1' || env.PINTA_PALETTE_WRITE_CANDIDATE === '1')
         const scopes = pintaEnabled ? ['pensa', 'gallery', 'pinta'] : ['pensa', 'gallery']
         let rewardsFailed = false
         try {

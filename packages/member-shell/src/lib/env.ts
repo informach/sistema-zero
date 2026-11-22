@@ -78,6 +78,7 @@ export const EnvSchema = z
     // só assina (acesso checado pelo hub). Sem URL pública. Ausente → anexos 503.
     R2_UGC_BUCKET: z.string().optional(),
     PINTA_CAUSAL_CANDIDATE: z.enum(['0', '1']).optional(),
+    PINTA_PALETTE_WRITE_CANDIDATE: z.enum(['0', '1']).optional(),
     PINTA_CAUSAL_QA_PROFILES: z.string().optional().transform(parsePintaCausalQaProfiles),
     // OpenRouter (descrição do projeto no "Compartilhar" do Estúdio) — chave NO
     // SERVIDOR. OPCIONAL: ausente → a descrição da IA cai no fallback (a criança

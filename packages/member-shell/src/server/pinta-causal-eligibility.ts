@@ -9,8 +9,16 @@ import type { SessionUser } from '../lib/types'
 
 export function pintaCausalCandidateReady(): boolean {
   const env = getEnv()
+  return env.PINTA_CAUSAL_CANDIDATE === '1' && pintaPrivateStorageReady(env)
+}
+
+export function pintaPaletteWriteCandidateReady(): boolean {
+  const env = getEnv()
+  return env.PINTA_PALETTE_WRITE_CANDIDATE === '1' && pintaPrivateStorageReady(env)
+}
+
+function pintaPrivateStorageReady(env: ReturnType<typeof getEnv>): boolean {
   return (
-    env.PINTA_CAUSAL_CANDIDATE === '1' &&
     env.PINTA_CAUSAL_QA_PROFILES.length > 0 &&
     Boolean(
       env.MEMBER_SHELL_HMAC_SECRET &&

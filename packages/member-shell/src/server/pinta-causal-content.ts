@@ -30,7 +30,7 @@ export interface VerifiedPintaCausalBlob extends Pick<PintaCausalDocument, 'asse
 
 async function readGzip(
   blob: R2PrivateObject,
-  expected: PintaCausalBlobExpectation,
+  expected: Pick<PintaCausalBlobExpectation, 'bytes' | 'sha256'>,
   signal?: AbortSignal,
 ): Promise<{ gzip: Buffer; sha256: string }> {
   const reader = blob.body.getReader()
@@ -145,12 +145,12 @@ async function decompressText(gzip: Buffer, signal?: AbortSignal): Promise<strin
   }
 }
 
-/** Validates the stored gzip and retains those exact bytes when the caller needs to seal a copy. */
-export async function readPintaCausalBlob(
+/** Shared bounded reader for a gzip that will be attested and sealed without reencoding. */
+export async function readVerifiedPintaGzip(
   blob: R2PrivateObject,
-  expected: PintaCausalBlobExpectation,
+  expected: Pick<PintaCausalBlobExpectation, 'bytes' | 'sha256'>,
   signal?: AbortSignal,
-): Promise<VerifiedPintaCausalBlob> {
+): Promise<{ gzip: Buffer; sha256: string; text: string }> {
   const { gzip, sha256 } = await readGzip(blob, expected, signal)
   let text: string
   try {
@@ -160,6 +160,16 @@ export async function readPintaCausalBlob(
     throw new PintaCausalUnverifiedContent('O arquivo do Pinta não pode ser conferido.', { cause })
   }
   signal?.throwIfAborted()
+  return { gzip, sha256, text }
+}
+
+/** Validates the stored gzip and retains those exact bytes when the caller needs to seal a copy. */
+export async function readPintaCausalBlob(
+  blob: R2PrivateObject,
+  expected: PintaCausalBlobExpectation,
+  signal?: AbortSignal,
+): Promise<VerifiedPintaCausalBlob> {
+  const { gzip, sha256, text } = await readVerifiedPintaGzip(blob, expected, signal)
   const document = inspectPintaCausalDocument(text, expected)
   if (!document)
     throw new PintaCausalUnverifiedContent('A revisão do desenho não pode ser conferida.')
