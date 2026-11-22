@@ -145,6 +145,7 @@ test('every Ubuntu job prepares signed sources before its first apt or Playwrigh
     'community-kids-e2e',
     'studio-e2e-chromium',
     'studio-e2e-firefox',
+    'molda-cenarios-e2e',
   ])
   expect(workflow).not.toContain('sudo sed -i')
   expect(workflow).toContain('sudo apt-get install -y --no-install-recommends ffmpeg')

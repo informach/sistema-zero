@@ -11,6 +11,9 @@ import {
   type ReferralGiftOfferView,
 } from '@sistemazero/core/referrals'
 
+/** Qual texto o formulário usa: o do Cadê, o do curso para pais, o do guia para pais ou outro curso. */
+export type VarianteResgate = 'cade' | 'pais' | 'guia' | 'curso'
+
 /** A continuidade adulta: para onde vai quem já resgatou e quer seguir. */
 export const CONTINUAR_ADULTO_PATH = '/pro/comunidade-dos-criadores/oferta/continuar'
 
@@ -306,13 +309,16 @@ export function cursoParaPaisHref(communityUrl: string, courseSlug: string): str
  * - curso para pais (`learner: 'parents'`, só no Kids: a área dos pais é do app Kids): os dados
  *   são do pai ou da mãe, sem perfil do filho e sem Mural, e o próximo passo é abrir o curso em
  *   Cursos para pais; no adulto a variante `pais` vale como `curso`;
+ * - guia (`/kids/vilao-em-aliado`, 21/11/2026): o curso para pais apresentado como "guia
+ *   gratuito para pais"; é a variante `pais` com "guia" no lugar de "curso", sem chamar o guia de
+ *   presente (nessa página, presente é a surpresa da última aula);
  * - outro curso: o nome e o prazo da oferta no lugar do Cadê.
  * A frase do Mural na confirmação só fala da "mesma data" com prazo, e da aula 2 no Cadê Kids.
  */
 export function resgateCopy(
   audience: GiftAudience,
   gift?: ReferralGiftOfferView,
-  variante: 'cade' | 'pais' | 'curso' = 'cade',
+  variante: VarianteResgate = 'cade',
 ): ResgateCopy {
   const base = RESGATE_COPY[audience]
   if (!gift) return base
@@ -359,8 +365,8 @@ export function resgateCopy(
       }),
     },
   }
-  if (variante !== 'pais' || adulto) return copy
-  return {
+  if ((variante !== 'pais' && variante !== 'guia') || adulto) return copy
+  const pais: ResgateCopy = {
     ...copy,
     aviso: {
       destaque: 'Estes dados são seus',
@@ -393,6 +399,34 @@ export function resgateCopy(
       ...copy.jaResgatado,
       texto:
         'Este e-mail já recebeu este curso. Entre com ele e abra o curso em Cursos para pais, na área dos pais.',
+    },
+  }
+  if (variante !== 'guia') return pais
+  const fica = `O guia fica na sua conta do Sistema Zero Kids${dias ? ` por ${dias}` : ', sem prazo'}.`
+  return {
+    ...pais,
+    aviso: {
+      destaque: 'Estes dados são seus',
+      texto:
+        ' (mãe, pai ou responsável). Para assistir, você não precisa criar o perfil do seu filho.',
+    },
+    botao: 'Liberar o meu guia',
+    rodape: fica,
+    rodapeCampanha: fica,
+    concluido: {
+      ...pais.concluido,
+      titulo: 'O seu guia está liberado',
+      proximo:
+        'Entre na área dos pais e abra o guia em Cursos para pais. Se a conta é nova, crie a senha primeiro pelo link do e-mail.',
+      entrar: 'Abrir o guia',
+      nota: dias
+        ? 'O prazo conta do cadastro e não reinicia ao trocar a senha. O guia não gera cobrança.'
+        : 'O guia fica na sua conta sem prazo e não gera cobrança.',
+    },
+    jaResgatado: {
+      ...pais.jaResgatado,
+      titulo: 'Este e-mail já tem o guia',
+      texto: 'Entre com ele e abra o guia em Cursos para pais, na área dos pais.',
     },
   }
 }

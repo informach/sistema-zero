@@ -207,3 +207,22 @@ describe('ProjectCard preservado (migração pendente)', () => {
     expect(screen.getByText('Preservado — peça ajuda para abrir')).toBeTruthy()
   })
 })
+
+// Proposta aprovada em 21/11/2026: o Pro que veio de "Virar profissional" diz de onde veio.
+describe('a origem do Pro no cartão', () => {
+  it('com a cópia em blocos na lista, a linha aparece abaixo do nome', () => {
+    render(
+      <ProjectCard
+        summary={{ ...SUMMARY, kind: 'pro', originProjectId: 'blocos' }}
+        originName="A Chave do Farol (Blocos)"
+        onChanged={() => undefined}
+        onOpen={() => undefined}
+      />,
+    )
+    expect(screen.getByText('Feito a partir de A Chave do Farol (Blocos)')).toBeTruthy()
+  })
+  it('sem o nome da cópia (apagada), nenhuma linha', () => {
+    renderCard()
+    expect(screen.queryByText(/Feito a partir de/)).toBeNull()
+  })
+})

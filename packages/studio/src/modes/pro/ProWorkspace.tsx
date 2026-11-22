@@ -11,7 +11,11 @@ import type { ProExample } from '../../core/proExamples'
 import { proFileDescriptions } from '../../core/proLearningGuides'
 import type { MonacoHighlight, MonacoTabsProps } from '../../monaco/MonacoTabs'
 import { getMonacoModelPath } from '../../monaco/modelPaths'
-import type { ProAnalysisState, ProEditorDiagnostic } from '../../monaco/pro/session'
+import type {
+  ProAnalysisState,
+  ProEditorDiagnostic,
+  ProLanguageSession,
+} from '../../monaco/pro/session'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useProRunApi } from '../../state/proRun'
 import { useStudioConfig } from '../../studio/config'
@@ -35,12 +39,13 @@ import { ProOperationReview } from './workspace/ProOperationReview'
 import { ProQuickOpen } from './workspace/ProQuickOpen'
 import { ProWorkspaceLayout } from './workspace/ProWorkspaceLayout'
 import { proSourcePosition } from './workspace/search'
+import { useProHistory } from './workspace/useProHistory'
 import { useProOperations } from './workspace/useProOperations'
 import { useProWorkspace } from './workspace/useProWorkspace'
 
 const EMPTY_TREE: ProjectTree = {}
 export type ProWorkspaceEditorProps = Omit<MonacoTabsProps, 'onProLanguageReady'> & {
-  onProLanguageReady?: (session: ProWorkspaceLanguage | null) => void
+  onProLanguageReady?: (session: ProWorkspaceLanguage | ProLanguageSession | null) => void
 }
 
 /** Shared file operations, navigation and history; language-specific editors own their services. */
@@ -92,6 +97,45 @@ export function ProWorkspace({
   const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null)
   const [readyEditor, setReadyEditor] = useState<Monaco.editor.IStandaloneCodeEditor | null>(null)
   const [languageSession, setLanguageSession] = useState<ProWorkspaceLanguage | null>(null)
+  // Python entrega só as operações do projeto; a sessão do TypeScript também consulta modelos.
+  const proSessionRef = useRef<ProWorkspaceLanguage | ProLanguageSession | null>(null)
+  // Organizar as importações do arquivo aberto (lote 6 da missão, seção 7.2): o serviço do
+  // TypeScript calcula as mudanças e o editor as aplica como UM passo de desfazer. A contribuição de
+  // code actions do Monaco não é carregada no Estúdio, então a ação dele não existiria aqui.
+  const organizeImports = async () => {
+    const editor = editorRef.current
+    const model = editor?.getModel()
+    const session = proSessionRef.current
+    if (!editor || !model || !session || !('query' in session)) return
+    const version = model.getVersionId()
+    const edits = await session.query('organizeImports', model).catch(() => null)
+    if (!edits) {
+      // A análise caiu no meio: a criança vê o aviso, e nada muda no código (revisão do lote 6).
+      setEditError('Não consegui organizar as importações agora. Tente de novo daqui a pouco.')
+      return
+    }
+    if (!edits.length || model.isDisposed() || editor.getModel() !== model) return
+    // A criança digitou enquanto o serviço calculava: as posições já não valem.
+    if (model.getVersionId() !== version) return
+    editor.pushUndoStop()
+    editor.executeEdits(
+      'organizar-importacoes',
+      edits.map((edit) => {
+        const from = model.getPositionAt(edit.span.start)
+        const to = model.getPositionAt(edit.span.start + edit.span.length)
+        return {
+          range: {
+            startLineNumber: from.lineNumber,
+            startColumn: from.column,
+            endLineNumber: to.lineNumber,
+            endColumn: to.column,
+          },
+          text: edit.newText,
+        }
+      }),
+    )
+    editor.pushUndoStop()
+  }
   const [quickOpen, setQuickOpen] = useState<{ query: string } | null>(null)
   const formatRef = useRef<(() => void) | null>(null)
   // As janelas do `ProCodeTools`, abertas pela faixa do editor (redesenho de 11/2026).
@@ -126,6 +170,8 @@ export function ProWorkspace({
         : [...previous.slice(-39), location]
     })
   }, [])
+  // O Histórico do projeto (proposta aprovada em 21/11/2026): as versões guardadas neste computador.
+  const history = useProHistory(projectId)
   const operations = useProOperations(projectId, (next, pathMap) => {
     changeWorkspace((previous) => {
       const mapped = reconcileWorkspace(remapWorkspace(previous, pathMap), next)
@@ -343,7 +389,7 @@ export function ProWorkspace({
         }
       }}
     >
-      <ProOperationReview operations={operations} />
+      <ProOperationReview operations={operations} history={history} />
       {editError && (
         <p role="alert" className="px-3 py-2 text-sm">
           {editError}
@@ -355,6 +401,8 @@ export function ProWorkspace({
         search={() => setQuickOpen({ query: '' })}
         searchProject={() => setSearchRequest((previous) => previous + 1)}
         format={() => formatRef.current?.()}
+        // Só no JavaScript e no TypeScript: o Python Pro não tem o serviço que organiza.
+        organizeImports={python ? undefined : () => void organizeImports()}
         onToolsReady={setTools}
         mapContainer={mapSlot}
         path={activeFile}
@@ -454,6 +502,7 @@ export function ProWorkspace({
                   // celular, abre a aba do jogo.
                   onShowStage={() => proRun.getState().revealStage?.()}
                   onReveal={revealActiveFile}
+                  onHistory={() => operations.setHistoryOpen(true)}
                   onQuickOpen={() => setQuickOpen({ query: '' })}
                   onCloseOthers={() =>
                     changeWorkspace((previous) =>
@@ -477,6 +526,7 @@ export function ProWorkspace({
               }}
               onProLanguageReady={(session) => {
                 operations.language.current = session
+                proSessionRef.current = session
                 setLanguageSession(session)
                 if (!session) setDiagnostics(null)
               }}

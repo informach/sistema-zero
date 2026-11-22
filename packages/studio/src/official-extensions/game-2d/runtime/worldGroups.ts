@@ -7,7 +7,7 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
   // O teto de um grupo (lote 4 da missão, seção 8.4): quem passa dele não entra, e a criança fica
   // sabendo, uma vez por partida, em vez de o jogo ficar incompleto em silêncio.
   function _warnGroupFull() {
-    warnOnce('grupo-cheio', 'um grupo (ou tipo de inimigo) chegou a 400 sprites e o novo não entrou. Use "Tirar do grupo quem sair da tela" ou "Destruir o sprite" para abrir vaga.');
+    warnOnce('grupo-cheio', 'um grupo (ou tipo de inimigo) só guarda até 400 sprites, e o que passou disso ficou de fora. Use "Tirar do grupo quem sair da tela" ou "Destruir o sprite" para abrir vaga.');
   }
   // Um sprite pode pertencer a mais de um grupo no modo Código. O redraw de uma
   // imagem pendente pertence ao SPRITE, não a um vínculo isolado: só o liberamos
@@ -209,7 +209,7 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
   }
   /**
    * Cria um sprite (colorido OU com imagem, conforme opts) e o coloca no grupo.
-   * Devolve o sprite. Acima do teto, descarta silenciosamente (nunca lança).
+   * Devolve o sprite. Acima do teto, não entra e avisa uma vez por partida (nunca lança).
    */
   function spawn(group, options) {
     if (!group || !group.items) return null;

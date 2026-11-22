@@ -1,7 +1,9 @@
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { basename, posix, resolve } from 'node:path'
+import { prepararPonteFaisca } from '../packages/arquipelago/scripts/acabamento-ponte-faisca'
 import { medirVolumeGlb } from '../packages/arquipelago/scripts/medir-volume-glb'
+import { ARTE_DA_FAISCA } from '../packages/arquipelago/src/mundo/faisca/arte.generated'
 import { catalogoInicialDaFaisca } from '../packages/arquipelago/src/sistemas/cenario-inicial'
 import { type ModeloDeCatalogo, ModeloDeCatalogoSchema } from '../packages/molda-cenarios-core/src'
 import { validarArteCenario } from './molda-cenarios-arte'
@@ -27,9 +29,39 @@ const caminhos = git(
   .toString()
   .split('\n')
   .filter((p) => p.endsWith('/catalogo.json') && !/\/(avatar|pagina)\//.test(p))
-const modelos: ModeloDeCatalogo[] = catalogoInicialDaFaisca(),
-  conhecidos = new Set(modelos.map((m) => m.digest)),
+const modelos: ModeloDeCatalogo[] = [],
+  conhecidos = new Set<string>(),
   dependencias: { caminho: string; motivo: string }[] = []
+// Esses modelos já entram no catálogo antes da varredura e a deduplicação os pula. Num
+// checkout novo, materialize também seus GLBs, pela procedência fixada de cada peça.
+for (const modelo of catalogoInicialDaFaisca()) {
+  try {
+    const peca = Object.values(ARTE_DA_FAISCA.pecas).find((p) => p.arquivo === modelo.arquivo)
+    // A Morada incorpora imagens e acabamentos no exportador aprovado. Seu caminho de
+    // catálogo não é um GLB cru do Git; nunca passe essas peças pelo acabamento da ponte.
+    let bytes: Uint8Array
+    if (peca && 'sourcePiece' in peca) {
+      const preparado = Bun.file(resolve('output/faisca-arte', modelo.arquivo))
+      if (!(await preparado.exists()))
+        throw Error('Prepare a arte da Faísca/Morada antes de incluir esta peça no acervo')
+      bytes = new Uint8Array(await preparado.arrayBuffer())
+    } else {
+      const fonte = git('show', `${modelo.commit}:${modelo.caminho}`)
+      bytes = peca?.acabamento ? await prepararPonteFaisca(fonte) : fonte
+    }
+    validarArteCenario(`${modelo.digest}.glb`, bytes)
+    if (bytes.length !== modelo.bytes) throw Error(`Tamanho divergente: ${modelo.arquivo}`)
+    await Bun.write(resolve(destino, modelo.arquivo), bytes)
+    modelos.push(modelo)
+    conhecidos.add(modelo.digest)
+  } catch (e) {
+    // Como na varredura abaixo: uma dependência ausente é relatada, não um modelo fantasma.
+    dependencias.push({
+      caminho: modelo.caminho,
+      motivo: e instanceof Error ? e.message : String(e),
+    })
+  }
+}
 const cacheArquivo = Bun.file(resolve(destino, 'catalogo.json'))
 const cache = new Map<string, ModeloDeCatalogo>(
   ((await cacheArquivo.exists()) ? (await cacheArquivo.json()).modelos : []).map(

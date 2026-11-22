@@ -11,6 +11,7 @@ import {
   type ResgateCopy,
   resgateCopy,
   resgateHref,
+  type VarianteResgate,
 } from '../content/presente-resgate'
 import { ApiError, apiPost } from '../lib/api-fetch'
 
@@ -36,11 +37,11 @@ export interface BolsaResgateProps {
   retryOnly?: boolean
   /**
    * O que a oferta do presente entrega (leitura pública). Ausente = a copy do Cadê de sempre.
-   * Com `variante: 'pais'` no Kids, o "Abrir o curso" leva à página do curso na área dos pais (que
-   * só existe no app Kids; no adulto, `pais` vale como `curso`).
+   * Com `variante: 'pais'` ou `'guia'` no Kids, o "Abrir o curso" leva à página do curso na área
+   * dos pais (que só existe no app Kids; no adulto, as duas valem como `curso`).
    */
   gift?: ReferralGiftOfferView
-  variante?: 'cade' | 'pais' | 'curso'
+  variante?: VarianteResgate
 }
 
 type Phase = 'form' | 'processing' | 'done'
@@ -63,7 +64,7 @@ export default function BolsaResgate({
   // Curso para pais (Kids): depois do resgate, a página do curso na área dos pais. Conta nova cria
   // a senha antes (o "Criar ou recuperar a senha"); o login do responsável cai na área dos pais.
   const entrarHref =
-    variante === 'pais' && audience !== 'adult' && gift?.courseSlug
+    (variante === 'pais' || variante === 'guia') && audience !== 'adult' && gift?.courseSlug
       ? cursoParaPaisHref(communityUrl, gift.courseSlug)
       : resgateHref('login', communityUrl)
   const [phase, setPhase] = useState<Phase>('form')

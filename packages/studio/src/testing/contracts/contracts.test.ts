@@ -46,7 +46,7 @@ function open(assets: unknown[]): ProjectAsset[] {
     { ...createEmptyProject('contrato', 'Contrato'), assets },
     'contrato',
   )
-  if (!project?.assets) throw new Error('A abertura recusou o projeto ou perdeu os materiais.')
+  if (!project?.assets) throw new Error('A abertura recusou o projeto ou perdeu seus materiais.')
   return project.assets
 }
 

@@ -129,6 +129,126 @@ export interface StudioTutorProjectContext {
     templateId?: string
     decisions?: { version: 1; summary: string }
   }
+  /** O que a aba Investigar mostra agora; só vai quando a criança ligou a aba (seção 15). */
+  investigation?: StudioTutorInvestigation
+  /** O que a aba Desempenho mediu nos últimos segundos; só com a aba ligada (seção 15). */
+  performance?: StudioTutorPerformance
+  /**
+   * Quais das duas abas a criança ligou. Aba ligada sem o campo dela = ainda sem leitura (o jogo
+   * não está rodando, acabou de começar ou a medida não vale para este programa): o Zappy pede
+   * para rodar, não para ligar o que já está ligado (revisão do lote 5).
+   */
+  observing?: StudioTutorObservedTabs
+}
+
+/** As abas que a criança ligou na gaveta. */
+export interface StudioTutorObservedTabs {
+  investigate: boolean
+  performance: boolean
+}
+
+/** Um valor do jogo como a aba Investigar mostra: o nome e o valor em texto. */
+export interface StudioTutorObservedValue {
+  name: string
+  text: string
+}
+
+/**
+ * Lote 5 da missão (seção 15, 21/11/2026): o Zappy explica a execução com os valores REAIS que a
+ * aba Investigar mostra, em vez de adivinhar. Vai só quando a criança ligou a aba (sob demanda) e
+ * nunca a cada tecla: é lido no momento da pergunta.
+ */
+export interface StudioTutorInvestigation {
+  frame: number | null
+  paused: boolean
+  values: StudioTutorObservedValue[]
+  /** O jogo parou com erro: o quadro e os valores daquele momento. */
+  stopped?: { frame: number | null; values: StudioTutorObservedValue[] }
+}
+
+/** O resumo da aba Desempenho (os mesmos números que a criança vê nos cartões). */
+export interface StudioTutorPerformance {
+  /** Quantos segundos a medida cobre. */
+  seconds: number
+  fpsNow: number
+  fpsMin: number
+  /** Quantas vezes o jogo ficou abaixo de 30 quadros por segundo. */
+  slowEpisodes: number
+  /** O maior intervalo entre dois quadros na janela, em ms. */
+  slowestFrameMs: number
+  sprites: number | null
+  objects: number | null
+  draws: number | null
+}
+
+export const STUDIO_TUTOR_OBSERVED_VALUES_MAX = 20
+const OBSERVED_NAME_MAX = 60
+const OBSERVED_TEXT_MAX = 160
+// Os tetos do esquema do member-shell (`routes/studio-zappy.ts`): um valor fora deles recusaria a
+// pergunta inteira, e uma fatia forjada pelo próprio jogo consegue passar deles (revisão do lote 5).
+const OBSERVED_FRAME_MAX = 1_000_000_000
+const OBSERVED_FPS_MAX = 1000
+const OBSERVED_EPISODES_MAX = 1000
+const OBSERVED_FRAME_MS_MAX = 600_000
+const OBSERVED_COUNT_MAX = 10_000_000
+
+function boundedObservedValues(
+  values: readonly StudioTutorObservedValue[],
+): StudioTutorObservedValue[] {
+  return values
+    .filter((value) => value.name.length > 0)
+    .slice(0, STUDIO_TUTOR_OBSERVED_VALUES_MAX)
+    .map((value) => ({
+      name: value.name.slice(0, OBSERVED_NAME_MAX),
+      // O valor pode ser um texto que a criança digitou no jogo: passa pela mesma limpeza do erro.
+      text: redactStudioTutorSecrets(value.text).text.slice(0, OBSERVED_TEXT_MAX),
+    }))
+}
+
+const boundedFrame = (frame: number | null) =>
+  frame === null || !Number.isFinite(frame)
+    ? null
+    : Math.min(OBSERVED_FRAME_MAX, Math.max(0, Math.round(frame)))
+
+function boundedInvestigation(
+  investigation: StudioTutorInvestigation | undefined,
+): StudioTutorInvestigation | undefined {
+  if (!investigation) return undefined
+  const values = boundedObservedValues(investigation.values)
+  const stopped = investigation.stopped
+    ? {
+        frame: boundedFrame(investigation.stopped.frame),
+        values: boundedObservedValues(investigation.stopped.values),
+      }
+    : undefined
+  if (values.length === 0 && !stopped) return undefined
+  return {
+    frame: boundedFrame(investigation.frame),
+    paused: investigation.paused,
+    values,
+    ...(stopped ? { stopped } : {}),
+  }
+}
+
+const finiteOrZero = (value: number) => (Number.isFinite(value) ? Math.max(0, value) : 0)
+const roundedUpTo = (value: number, max: number) => Math.min(max, Math.round(finiteOrZero(value)))
+const countOrNull = (value: number | null) =>
+  value === null || !Number.isFinite(value) ? null : roundedUpTo(value, OBSERVED_COUNT_MAX)
+
+function boundedPerformance(
+  performance: StudioTutorPerformance | undefined,
+): StudioTutorPerformance | undefined {
+  if (!performance || !(performance.seconds > 0)) return undefined
+  return {
+    seconds: Math.min(120, finiteOrZero(performance.seconds)),
+    fpsNow: roundedUpTo(performance.fpsNow, OBSERVED_FPS_MAX),
+    fpsMin: roundedUpTo(performance.fpsMin, OBSERVED_FPS_MAX),
+    slowEpisodes: roundedUpTo(performance.slowEpisodes, OBSERVED_EPISODES_MAX),
+    slowestFrameMs: roundedUpTo(performance.slowestFrameMs, OBSERVED_FRAME_MS_MAX),
+    sprites: countOrNull(performance.sprites),
+    objects: countOrNull(performance.objects),
+    draws: countOrNull(performance.draws),
+  }
 }
 
 export interface StudioTutorBlockReference {
@@ -509,6 +629,10 @@ export function buildStudioTutorContext(input: {
   /** Diagnósticos que o editor já calculou (pilhas soltas, problemas da IR). */
   draftBlockIds?: readonly string[]
   semanticIssues?: readonly { blockId?: string; message: string }[]
+  /** As abas Investigar e Desempenho, quando a criança as ligou (`readZappyObservation`). */
+  investigation?: StudioTutorInvestigation
+  performance?: StudioTutorPerformance
+  observing?: StudioTutorObservedTabs
 }): StudioTutorProjectContext {
   const { project } = input
   const python = isPythonProject(project)
@@ -572,6 +696,8 @@ export function buildStudioTutorContext(input: {
     : isStudioProTemplateId(project.proMeta?.templateId)
       ? project.proMeta.templateId
       : undefined
+  const investigation = boundedInvestigation(input.investigation)
+  const performance = boundedPerformance(input.performance)
   const blocks = includeCode
     ? []
     : compactBlocks(
@@ -614,6 +740,16 @@ export function buildStudioTutorContext(input: {
         }
       : {}),
     ...(behavior?.length ? { behavior } : {}),
+    ...(investigation ? { investigation } : {}),
+    ...(performance ? { performance } : {}),
+    ...(input.observing && (input.observing.investigate || input.observing.performance)
+      ? {
+          observing: {
+            investigate: input.observing.investigate,
+            performance: input.observing.performance,
+          },
+        }
+      : {}),
     ...(!includeCode && !python && input.draftBlockIds?.length
       ? { draftBlockIds: [...input.draftBlockIds].slice(0, 40) }
       : {}),

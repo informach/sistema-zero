@@ -419,13 +419,15 @@ describe('presente pela oferta do catálogo', () => {
     )
   })
 
-  test('a variante pais só vale no Kids: no adulto o formulário é o do curso genérico', async () => {
-    expect(resgateCopy('adult', OFERTA_PAIS, 'pais')).toEqual(
-      resgateCopy('adult', OFERTA_PAIS, 'curso'),
-    )
-    expect(resgateCopy('adult', OFERTA_PAIS, 'pais').aviso).toBeNull()
+  test('as variantes pais e guia só valem no Kids: no adulto o formulário é o do curso genérico', async () => {
+    for (const variante of ['pais', 'guia'] as const) {
+      expect(resgateCopy('adult', OFERTA_PAIS, variante)).toEqual(
+        resgateCopy('adult', OFERTA_PAIS, 'curso'),
+      )
+      expect(resgateCopy('adult', OFERTA_PAIS, variante).aviso).toBeNull()
+    }
     expect(await src('islands/BolsaResgate.tsx')).toContain(
-      "variante === 'pais' && audience !== 'adult' && gift?.courseSlug",
+      "(variante === 'pais' || variante === 'guia') && audience !== 'adult' && gift?.courseSlug",
     )
   })
 

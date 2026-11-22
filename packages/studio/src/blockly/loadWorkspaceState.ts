@@ -10,7 +10,10 @@ import * as Blockly from 'blockly/core'
  * trás. O próximo projeto aberto na mesma página ficava sem "Desfazer", com os eventos num grupo
  * velho. O erro segue para quem chamou: quem decide o que mostrar é o painel.
  */
-export function loadWorkspaceState(state: Record<string, unknown>, workspace: Blockly.Workspace) {
+export function loadWorkspaceState(
+  state: Parameters<typeof Blockly.serialization.workspaces.load>[0],
+  workspace: Blockly.Workspace,
+) {
   const recordUndo = Blockly.Events.getRecordUndo()
   const group = Blockly.Events.getGroup()
   try {

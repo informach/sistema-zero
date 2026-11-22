@@ -14,6 +14,7 @@ export const ptBR: Record<string, string> = {
   'pro.pinTab': 'Deixar esta aba aberta',
   'pro.closeOtherTabs': 'Fechar as outras abas',
   'pro.organizeCode': 'Arrumar código',
+  'pro.organizeImports': 'Organizar as importações',
   'pro.quickOpen': 'Ir para um arquivo',
   'pro.quickOpenHint':
     '↑ ↓ para escolher · Enter para abrir · Esc para voltar. Até 100 arquivos; digite parte do caminho para filtrar.',
@@ -174,7 +175,7 @@ export const ptBR: Record<string, string> = {
   'pro.showWhitespace': 'Mostrar espaços',
   'pro.back': 'Voltar para onde eu estava',
   'pro.materialsCommand': 'Trazer materiais',
-  'pro.recoverCommand': 'Recuperar arquivos e materiais',
+  'pro.recoverCommand': 'Histórico do projeto',
   'pro.insertExample': 'Inserir exemplo: {label}',
   'pro.backToCode': 'Voltar ao código',
   'pro.cancel': 'Cancelar',

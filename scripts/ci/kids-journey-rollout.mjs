@@ -481,23 +481,32 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
     )
       throw new Error('Primeira implantação do Arquipélago exige revisão do histórico')
   }
-  const single = async (service, deadline) => {
+  const single = async (service, deadline, baseline = false) => {
     const rows = await active(service, deadline)
+    // A CLI pode ter publicado o artefato anterior de staging por upload, sem metadados Git.
+    // Só o preflight readonly aceita essa origem explícita, provando o contexto pela API e
+    // pelo SSH. verify/remote e todo artefato novo continuam exigindo o commit versionado.
+    const uploadedBaseline =
+      baseline &&
+      targetName === 'staging' &&
+      rows[0]?.meta?.reason === 'deploy' &&
+      rows[0].meta.commitHash == null
     if (
       rows.length !== 1 ||
       rows[0].status !== 'SUCCESS' ||
       !uuidPattern.test(rows[0].id) ||
-      !/^[a-f0-9]{40}$/.test(rows[0].meta?.commitHash ?? '')
+      (!uploadedBaseline && !/^[a-f0-9]{40}$/.test(rows[0].meta?.commitHash ?? ''))
     )
       throw new Error(`Deployment ${service} ativo não é único/saudável/versionado`)
-    if (targetName === 'production') {
+    if (targetName === 'production' || uploadedBaseline) {
       const current = await deployment(rows[0].id, deadline)
       if (
         !matchesContext(current, service, rows[0].id) ||
         current.status !== 'SUCCESS' ||
-        current.meta?.commitHash !== rows[0].meta.commitHash
+        current.meta?.commitHash !== rows[0].meta.commitHash ||
+        (uploadedBaseline && current.meta?.reason !== 'deploy')
       )
-        throw new Error('Identidade do deployment de produção divergente')
+        throw new Error('Identidade do deployment divergente')
     }
     return rows[0]
   }
@@ -515,7 +524,7 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
       '--',
       ...args,
     ])
-  const probe = (service, current, requireAdmission = false) => {
+  const probeOnce = (service, current, requireAdmission = false) => {
     const nonce = randomBytes(16).toString('hex')
     const required = !requireAdmission
       ? []
@@ -557,7 +566,14 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
               ? 'ssh-auth-rejected'
               : /no ssh keys found|ssh key.*not registered/i.test(diagnostic)
                 ? 'ssh-key-unavailable'
-                : /timed out|connection refused|could not connect/i.test(diagnostic)
+                : /timed out|connection refused|could not connect/i.test(diagnostic) ||
+                    [
+                      'ETIMEDOUT',
+                      'ECONNRESET',
+                      'ECONNREFUSED',
+                      'EHOSTUNREACH',
+                      'ENETUNREACH',
+                    ].includes(error?.code)
                   ? 'ssh-connection-failed'
                   : 'ssh-command-failed'
       const failure = new Error('Preflight SSH não executou no artefato esperado')
@@ -598,6 +614,23 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
       const failure = new Error('Preflight SSH encontrou identidade ou configuração divergente')
       probeFailureReasons.set(failure, `${check}-check-failed`)
       throw failure
+    }
+  }
+  const probe = async (service, current, requireAdmission, deadline) => {
+    for (let attempt = 0; ; attempt++) {
+      checkTime(deadline)
+      try {
+        probeOnce(service, current, requireAdmission)
+        checkTime(deadline)
+        return
+      } catch (error) {
+        const reason = probeFailureReasons.get(error)
+        if (reason !== 'ssh-connection-failed' || attempt >= 2) throw error
+        checkTime(deadline)
+        log({ stage: 'ssh-readonly-retry', service, attempt: attempt + 2, reason })
+        // Só o bun -e acima é readonly. Bootstrap, migrations e disparos nunca passam aqui.
+        await sleep(Math.min(1000 * 2 ** attempt, deadline - now()))
+      }
     }
   }
   return {
@@ -672,11 +705,11 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
         for (const service of ['members', 'auth']) {
           checkTime(deadline)
           step = `${service}-inventory`
-          const current = await single(service, deadline)
+          const current = await single(service, deadline, true)
           checkTime(deadline)
           before.set(service, [current.id])
           step = `${service}-probe`
-          probe(service, current)
+          await probe(service, current, false, deadline)
           checkTime(deadline)
         }
       } catch (error) {
@@ -844,7 +877,8 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
                 checkRetirementTime()
               }
               step = `${label}-admission-probe`
-              if (['members', 'auth'].includes(service)) probe(service, current, true)
+              if (['members', 'auth'].includes(service))
+                await probe(service, current, true, deadline)
               checkRetirementTime()
               return
             }

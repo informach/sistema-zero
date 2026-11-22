@@ -1,0 +1,1321 @@
+{
+  "parents": {
+    "ours": "dffe8608329d0b1038ec2e05f97fd82cb0132699",
+    "upstream": "f5b1ceca8e542580f6285bcd0a95ae1310c600af",
+    "ancestor": "33cd419d8592fc2d2ba19c32e82d7912f932a8ef"
+  },
+  "testedSourceTree": "5fbb29ffc71f0c6e2cf214f93b65b0233aced508",
+  "records": [
+    {
+      "file": "pinta-suite.log.gz",
+      "bytes": 78783,
+      "sha256": "959a5ed2ccd27da08ce7d0af597d51852274d0ebb04ac8c0d4d770b0f0d570c5",
+      "rawBytes": 293150,
+      "rawSha256": "e588381d891c5dc304f821d210e95c23eaa5dd7160312e74106cac160caf837f"
+    },
+    {
+      "file": "fronteiras.log.gz",
+      "bytes": 6782,
+      "sha256": "e4ba93567540648582f4a173e79ce13a86f93df5ee83c8af9a4d613c45a000c1",
+      "rawBytes": 22046,
+      "rawSha256": "9c6f3820d3d03a594eec12a0764c79fd6a49d7b42c90c10e25a300f38da7de83"
+    },
+    {
+      "file": "pinta-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "studio-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "browser.log.gz",
+      "bytes": 2114,
+      "sha256": "fe6abeeb49b4a9cc1be030da956d3c162470b7c277511d7951b9e1cc5e42c457",
+      "rawBytes": 7990,
+      "rawSha256": "d03d92b6efe2a5386f59e45c3baf7c9f557716e72d7bf493fe45a295a0f05296"
+    },
+    {
+      "file": "phaser.log.gz",
+      "bytes": 800,
+      "sha256": "5dae7cc1444f3a1d18c72f6148547a8ca6284830096a2ba389bc452694e8d3f3",
+      "rawBytes": 2447,
+      "rawSha256": "2359abd5c049db89c7d29b2c1bffaac4e59ab738007b1af650dbe20dd40d3389"
+    },
+    {
+      "file": "3d-exato.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "diff.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "biome.log.gz",
+      "bytes": 65,
+      "sha256": "4695fa67307e49e28bc2942b27e53b89724d25310e04f92d52229d21a96051e3",
+      "rawBytes": 45,
+      "rawSha256": "0c5498755dcce5de0c268b161f80b30c89f53fb30a09861574b0034082f17b70"
+    },
+    {
+      "file": "runtime.json.gz",
+      "bytes": 352,
+      "sha256": "934bd8036a9cef072b675cd6df688902172b99e19d1f20e60ae6a9030cb0b33d",
+      "rawBytes": 1160,
+      "rawSha256": "3790f0543386c79b78feef59c2be518a29997040a146ef50839ef34dfb2bf346"
+    },
+    {
+      "file": "python.json.gz",
+      "bytes": 99,
+      "sha256": "567f2cab9454f8a5e7a33aa11347cdbcecd4f926bad1dcd360c9fc436c0e9d62",
+      "rawBytes": 86,
+      "rawSha256": "79dfb71e9fcc22015e1e284a0770a534ee50d26c0ad7735c333b8540504cc88e"
+    },
+    {
+      "file": "playwright-0-report.json.gz",
+      "bytes": 928930,
+      "sha256": "93b885e7dd21d4b7167457ea2a7bef4094888582c516f0664ec2b23348a8620c",
+      "rawBytes": 1287430,
+      "rawSha256": "50eac155c80088e36a6f374ed0061e7111724051244dee9b3b844788c784be71"
+    },
+    {
+      "file": "playwright-1-report.json.gz",
+      "bytes": 195110,
+      "sha256": "6b8762de98858651020d6c4aa7f066deb3e98eaf1815b9639efc4f2785a0a1f5",
+      "rawBytes": 338703,
+      "rawSha256": "1dc7487124fead9999556555ade4f2916a8a5e4c3b5d040a729bc445b211daae"
+    },
+    {
+      "file": "archive-integration-f5.cjs.gz",
+      "bytes": 2102,
+      "sha256": "118bac3be0432ccff853ae96ca5d1a01c5e77983ee6f20cc4ef972e2875b38da",
+      "rawBytes": 5408,
+      "rawSha256": "06d9b1af46770ece2e361eee023f39bd67c40f7a35ddc9fe4ee559eefe68efed"
+    }
+  ],
+  "sources": [
+    {
+      "file": "packages/core/src/studio/pinta-scene-player.ts",
+      "sha256": "63fa9cb8233a9dee5fe88765b11fdbc00b79c7ee34e3fd3d3b051323f92b304e"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/map-2d/bootstrap.ts",
+      "sha256": "45a6543f38d70f1e991737d428673a0b4c1d4c8315b4df32362b0c8c9f7ce515"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/map-2d/runtime.test.ts",
+      "sha256": "e05aa6352300a21de1ed5cf663bd3518b0c66149844e0b9c5d5a62085491863f"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/map-2d/__tests__/hostVariant.test.ts",
+      "sha256": "756c3a89f243bba922db3a9f7a936e968e565f73e903d59832652d16eb03e644"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/runtimeSource.ts",
+      "sha256": "f3aa9e33f8bd71a5a5879e7c820f672efc96183f660516fa047483bf9509ff3d"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/runtimeSource.test.ts",
+      "sha256": "3ac18eca209d8a389f89d194a4d8740dbb6d4c9ee8900ef1c57553443cc5c21d"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/runtimePayloadBudget.test.ts",
+      "sha256": "56c0dd557d67dc3141421e98ba17536c5283bab34fd5f80eea36bec01d9375ad"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/game-2d/runtime/worldGroups.ts",
+      "sha256": "3214f784fa22dbdfb78c6569757547115cc0e9ac537ae4273b60c2aa043e14fa"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/game-2d/__tests__/limitWarnings.test.ts",
+      "sha256": "da11a4ecd3b0fbd53156ec783b6cc69f60bb2c90903ff604109ce2877a41bbca"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/game-2d/__tests__/bundle.test.ts",
+      "sha256": "af86624dd5f1b59d93a9c8bbfa981b63a9e65c36f280ffd0fd691693766eeef5"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/game-2d-advanced/runtime/shell.ts",
+      "sha256": "516d17f8dea6da21188b3bd9d9968089b421707fdcee68a0cf8574bad29c1e03"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/game-2d-advanced/runtime/visualEffects.ts",
+      "sha256": "6748ff8c01d50d13274fe7ffc19776b657ab97b98e381e35475763af7293608d"
+    },
+    {
+      "file": "packages/studio/src/testing/contracts/contracts.test.ts",
+      "sha256": "984e15bcb853fadc75d4b17d3a30ef37944b491dcd3b66cbaa57a9a3b2456a36"
+    }
+  ],
+  "incoming": [
+    {
+      "file": ".audits/molda-cenarios-full-review-2026-11-21/README.md",
+      "upstreamGitBlob": "e22c018178cba2f1fc8555e46c4a01b2680438a3",
+      "mergedGitBlob": "e22c018178cba2f1fc8555e46c4a01b2680438a3"
+    },
+    {
+      "file": ".audits/molda-cenarios-full-review-2026-11-21/qa/issues/BUG-001.md",
+      "upstreamGitBlob": "7b92948985f003e78d07fa87c77b485f35ccac35",
+      "mergedGitBlob": "7b92948985f003e78d07fa87c77b485f35ccac35"
+    },
+    {
+      "file": ".audits/molda-cenarios-full-review-2026-11-21/qa/issues/BUG-002.md",
+      "upstreamGitBlob": "c88c895c365ac8f2a87413f7292d7b01fd660ecb",
+      "mergedGitBlob": "c88c895c365ac8f2a87413f7292d7b01fd660ecb"
+    },
+    {
+      "file": ".audits/molda-cenarios-full-review-2026-11-21/qa/issues/BUG-003.md",
+      "upstreamGitBlob": "65c7c31001e6ab55443cdc30e1ab1c90a3b5225b",
+      "mergedGitBlob": "65c7c31001e6ab55443cdc30e1ab1c90a3b5225b"
+    },
+    {
+      "file": ".audits/molda-cenarios-full-review-2026-11-21/qa/issues/BUG-004.md",
+      "upstreamGitBlob": "ac433f67c64cb60f22ef532b2b4d15a95bea4bdb",
+      "mergedGitBlob": "ac433f67c64cb60f22ef532b2b4d15a95bea4bdb"
+    },
+    {
+      "file": ".audits/molda-cenarios-full-review-2026-11-21/qa/issues/BUG-005.md",
+      "upstreamGitBlob": "e6f94845d6472790fe88982c4ae9e40c7c7582b9",
+      "mergedGitBlob": "e6f94845d6472790fe88982c4ae9e40c7c7582b9"
+    },
+    {
+      "file": ".audits/molda-cenarios-full-review-2026-11-21/qa/issues/BUG-006.md",
+      "upstreamGitBlob": "f402bfbe0843495fbd024d55c67a3f050e97ce9a",
+      "mergedGitBlob": "f402bfbe0843495fbd024d55c67a3f050e97ce9a"
+    },
+    {
+      "file": ".audits/molda-cenarios-full-review-2026-11-21/qa/issues/BUG-007.md",
+      "upstreamGitBlob": "0e9f37888c5941c646c268f2bf5c9c50b2c7fece",
+      "mergedGitBlob": "0e9f37888c5941c646c268f2bf5c9c50b2c7fece"
+    },
+    {
+      "file": ".audits/molda-cenarios-full-review-2026-11-21/qa/issues/BUG-008.md",
+      "upstreamGitBlob": "2b3234d1f41c4cbf9df6058a030fbc64b8e2bd50",
+      "mergedGitBlob": "2b3234d1f41c4cbf9df6058a030fbc64b8e2bd50"
+    },
+    {
+      "file": ".audits/molda-cenarios-full-review-2026-11-21/qa/issues/BUG-009.md",
+      "upstreamGitBlob": "461f4e41cdd14b637b004bc8961f231ef8774466",
+      "mergedGitBlob": "461f4e41cdd14b637b004bc8961f231ef8774466"
+    },
+    {
+      "file": ".audits/molda-cenarios-full-review-2026-11-21/qa/issues/BUG-010.md",
+      "upstreamGitBlob": "ac78a00cf0da747812743fd36fafc6b5a36ff955",
+      "mergedGitBlob": "ac78a00cf0da747812743fd36fafc6b5a36ff955"
+    },
+    {
+      "file": ".audits/molda-cenarios-full-review-2026-11-21/qa/issues/BUG-011.md",
+      "upstreamGitBlob": "611458bc072369cb94e8d4c1e1ae1058e3fd888b",
+      "mergedGitBlob": "611458bc072369cb94e8d4c1e1ae1058e3fd888b"
+    },
+    {
+      "file": ".audits/molda-cenarios-full-review-2026-11-21/qa/issues/BUG-012.md",
+      "upstreamGitBlob": "df779767d2a5cbedb333929b9b3bdecbbb38ebe3",
+      "mergedGitBlob": "df779767d2a5cbedb333929b9b3bdecbbb38ebe3"
+    },
+    {
+      "file": ".audits/molda-cenarios-full-review-2026-11-21/qa/issues/BUG-013.md",
+      "upstreamGitBlob": "c8e5b85c8edefb5a5bedde407e344ddaedd19e31",
+      "mergedGitBlob": "c8e5b85c8edefb5a5bedde407e344ddaedd19e31"
+    },
+    {
+      "file": ".audits/molda-cenarios-full-review-2026-11-21/qa/issues/BUG-014.md",
+      "upstreamGitBlob": "27480ed4261ff1217a33c48b4b0d27ad244e05f1",
+      "mergedGitBlob": "27480ed4261ff1217a33c48b4b0d27ad244e05f1"
+    },
+    {
+      "file": ".audits/molda-cenarios-full-review-2026-11-21/qa/verification-report.md",
+      "upstreamGitBlob": "3f192d9018abb9a15a6e9fb279d735d9717ce6ce",
+      "mergedGitBlob": "3f192d9018abb9a15a6e9fb279d735d9717ce6ce"
+    },
+    {
+      "file": ".github/workflows/ci.yml",
+      "upstreamGitBlob": "c46450e4197e3864e4b2dd81d1d48bf44db1cdc8",
+      "mergedGitBlob": "c46450e4197e3864e4b2dd81d1d48bf44db1cdc8"
+    },
+    {
+      "file": ".github/workflows/studio-engines.yml",
+      "upstreamGitBlob": "5f228f59ebd1aa818c0450a2f4f77d14e86aef4e",
+      "mergedGitBlob": "5f228f59ebd1aa818c0450a2f4f77d14e86aef4e"
+    },
+    {
+      "file": ".github/workflows/studio-export.yml",
+      "upstreamGitBlob": "703347421b390c6df6f8b7abfe8ba7bcdfbadab3",
+      "mergedGitBlob": "703347421b390c6df6f8b7abfe8ba7bcdfbadab3"
+    },
+    {
+      "file": "docs/estudio-evolucao/README.md",
+      "upstreamGitBlob": "d6e1bc2c7197f7015ff07a3fc355644beabd0c8f",
+      "mergedGitBlob": "d6e1bc2c7197f7015ff07a3fc355644beabd0c8f"
+    },
+    {
+      "file": "docs/estudio-evolucao/entrega-final.md",
+      "upstreamGitBlob": "7e905d833d13afe1b06ba8bab8a44ea79ef69957",
+      "mergedGitBlob": "7e905d833d13afe1b06ba8bab8a44ea79ef69957"
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/a3-depois-2026-11-21-ci/cade-todo-mundo-aula-1/primeiro-achado.objetivos.json",
+      "upstreamGitBlob": "98f3e89b1fe02d37cb31f833249c6432dd48b2d6",
+      "mergedGitBlob": "98f3e89b1fe02d37cb31f833249c6432dd48b2d6"
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/a3-depois-2026-11-21-ci/cade-todo-mundo-aula-1/primeiro-achado.png",
+      "upstreamGitBlob": "8061abbc02e5c0b065e195a66e5620c8e125d4ce",
+      "mergedGitBlob": "8061abbc02e5c0b065e195a66e5620c8e125d4ce"
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/a3-depois-2026-11-21-ci/cade-todo-mundo-aula-2/contar-achados.objetivos.json",
+      "upstreamGitBlob": "072f964a5cfca59ddea81a1a7e77439637bdd640",
+      "mergedGitBlob": "072f964a5cfca59ddea81a1a7e77439637bdd640"
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/a3-depois-2026-11-21-ci/cade-todo-mundo-aula-2/contar-achados.png",
+      "upstreamGitBlob": "48d9726096ef1625688544652f8036be3f3cea44",
+      "mergedGitBlob": "48d9726096ef1625688544652f8036be3f3cea44"
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/a3-depois-2026-11-21-ci/cade-todo-mundo-aula-2/personalizar.objetivos.json",
+      "upstreamGitBlob": "fe51488c7066f6687ef680d6bfaa4f7768ef205c",
+      "mergedGitBlob": "fe51488c7066f6687ef680d6bfaa4f7768ef205c"
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/a3-depois-2026-11-21-ci/cade-todo-mundo-aula-2/personalizar.png",
+      "upstreamGitBlob": "95ad100a015f8df37c95c915246b96aeed553237",
+      "mergedGitBlob": "95ad100a015f8df37c95c915246b96aeed553237"
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/a3-depois-2026-11-21-ci/desafio-dia-1/andar.objetivos.json",
+      "upstreamGitBlob": "449317893823fe7a824ecc8d0c2279fc4a124ddd",
+      "mergedGitBlob": "449317893823fe7a824ecc8d0c2279fc4a124ddd"
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/a3-depois-2026-11-21-ci/desafio-dia-1/andar.png",
+      "upstreamGitBlob": "3af66bd393326416399da03c380d4c026eb67169",
+      "mergedGitBlob": "3af66bd393326416399da03c380d4c026eb67169"
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/a3-depois-2026-11-21-ci/desafio-dia-1/borda.objetivos.json",
+      "upstreamGitBlob": "807c331a7a4242d46316bb36075c34229fe62b4d",
+      "mergedGitBlob": "807c331a7a4242d46316bb36075c34229fe62b4d"
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/a3-depois-2026-11-21-ci/desafio-dia-1/borda.png",
+      "upstreamGitBlob": "5dc3dc3d808d33f069e40500678fde44b3c9ac18",
+      "mergedGitBlob": "5dc3dc3d808d33f069e40500678fde44b3c9ac18"
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/a3-depois-2026-11-21-ci/desafio-dia-2/guardar.objetivos.json",
+      "upstreamGitBlob": "147fde35c9f2453d0a5c554bdc31d9fb4166155d",
+      "mergedGitBlob": "147fde35c9f2453d0a5c554bdc31d9fb4166155d"
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/a3-depois-2026-11-21-ci/desafio-dia-2/guardar.png",
+      "upstreamGitBlob": "6b2bac23a3ccece011978eb7fa92ab707da8a3b9",
+      "mergedGitBlob": "6b2bac23a3ccece011978eb7fa92ab707da8a3b9"
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/a3-depois-2026-11-21-ci/desafio-dia-2/programar-chave.objetivos.json",
+      "upstreamGitBlob": "8bf547cd73c0884eaca001c3c18e7e27a2d54940",
+      "mergedGitBlob": "8bf547cd73c0884eaca001c3c18e7e27a2d54940"
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/a3-depois-2026-11-21-ci/desafio-dia-2/programar-chave.png",
+      "upstreamGitBlob": "ec76b7e4daef69d207e127a1c721ace7c89dab6e",
+      "mergedGitBlob": "ec76b7e4daef69d207e127a1c721ace7c89dab6e"
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/a3-depois-2026-11-21-ci/desafio-dia-2/recolher.objetivos.json",
+      "upstreamGitBlob": "3cf926a5d7f29c18b7cf09b27952d0a5e7a99e8e",
+      "mergedGitBlob": "3cf926a5d7f29c18b7cf09b27952d0a5e7a99e8e"
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/a3-depois-2026-11-21-ci/desafio-dia-2/recolher.png",
+      "upstreamGitBlob": "993351298e564e169e654f98da61255507924ad2",
+      "mergedGitBlob": "993351298e564e169e654f98da61255507924ad2"
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/a3-depois-2026-11-21-ci/desafio-dia-3/decisao.objetivos.json",
+      "upstreamGitBlob": "099da0120b5f6d262170205e6542a7362309bdaa",
+      "mergedGitBlob": "099da0120b5f6d262170205e6542a7362309bdaa"
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/a3-depois-2026-11-21-ci/desafio-dia-3/decisao.png",
+      "upstreamGitBlob": "50744e52fab09cbd9dcf086a7d17afef12b7d2b4",
+      "mergedGitBlob": "50744e52fab09cbd9dcf086a7d17afef12b7d2b4"
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/a3-depois-2026-11-21-ci/desafio-dia-3/farol-mensagens.objetivos.json",
+      "upstreamGitBlob": "fe51488c7066f6687ef680d6bfaa4f7768ef205c",
+      "mergedGitBlob": "fe51488c7066f6687ef680d6bfaa4f7768ef205c"
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/a3-depois-2026-11-21-ci/desafio-dia-3/farol-mensagens.png",
+      "upstreamGitBlob": "457f2971a58857773214de1732992e9ce1b8e2cc",
+      "mergedGitBlob": "457f2971a58857773214de1732992e9ce1b8e2cc"
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/a3-depois-2026-11-21-ci/desafio-dia-3/personalizar.objetivos.json",
+      "upstreamGitBlob": "b595c72332f775d565ea7be7f0c4bb6e9e227118",
+      "mergedGitBlob": "b595c72332f775d565ea7be7f0c4bb6e9e227118"
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/a3-depois-2026-11-21-ci/desafio-dia-3/personalizar.png",
+      "upstreamGitBlob": "d4643dd2bd7f285ff3f7e49f0baf35f223e4c1db",
+      "mergedGitBlob": "d4643dd2bd7f285ff3f7e49f0baf35f223e4c1db"
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/a3-depois-2026-11-21-ci/desafio-dia-3/posicionar-chave.objetivos.json",
+      "upstreamGitBlob": "fe51488c7066f6687ef680d6bfaa4f7768ef205c",
+      "mergedGitBlob": "fe51488c7066f6687ef680d6bfaa4f7768ef205c"
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/a3-depois-2026-11-21-ci/desafio-dia-3/posicionar-chave.png",
+      "upstreamGitBlob": "b6f6ed9174f4a9e0357205ad01332eb5e06fa403",
+      "mergedGitBlob": "b6f6ed9174f4a9e0357205ad01332eb5e06fa403"
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/a3-depois-2026-11-21-ci/desafio-dia-3/sem-chave.objetivos.json",
+      "upstreamGitBlob": "174e63fc358c085a3fe7e307f93b2f803e37db01",
+      "mergedGitBlob": "174e63fc358c085a3fe7e307f93b2f803e37db01"
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/a3-depois-2026-11-21-ci/desafio-dia-3/sem-chave.png",
+      "upstreamGitBlob": "a65965cf6f1600264ca6ba180be1b94f5f5f4220",
+      "mergedGitBlob": "a65965cf6f1600264ca6ba180be1b94f5f5f4220"
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/a3-depois-2026-11-21-ci/manifesto.json",
+      "upstreamGitBlob": "dd54bf1d552f2dba8b6796e1061d8b6bf1aaf955",
+      "mergedGitBlob": "dd54bf1d552f2dba8b6796e1061d8b6bf1aaf955"
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/exportacao-2026-11-21/windows-local.json",
+      "upstreamGitBlob": "c1b8295cadbf3f0449e47c4c1989deb1acc41f03",
+      "mergedGitBlob": "c1b8295cadbf3f0449e47c4c1989deb1acc41f03"
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/motores-gpu-2026-11-21/sprites-fora-do-palco-windows.json",
+      "upstreamGitBlob": "0ec1293fb440556733a54fba3adbe67f782ae2dd",
+      "mergedGitBlob": "0ec1293fb440556733a54fba3adbe67f782ae2dd"
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/motores-gpu-2026-11-21/windows-local.json",
+      "upstreamGitBlob": "daad73acbbadd4542a831d31def6d6a637f62bab",
+      "mergedGitBlob": "daad73acbbadd4542a831d31def6d6a637f62bab"
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/pro-operacoes-2026-11-21/windows-local.json",
+      "upstreamGitBlob": "d70fb44d0096dc5704d1e0bf33d98b47cb68af87",
+      "mergedGitBlob": "d70fb44d0096dc5704d1e0bf33d98b47cb68af87"
+    },
+    {
+      "file": "docs/estudio-evolucao/exportacao.md",
+      "upstreamGitBlob": "f4b5a3103c5c89f47c67b3c74a7ed476609f508b",
+      "mergedGitBlob": "f4b5a3103c5c89f47c67b3c74a7ed476609f508b"
+    },
+    {
+      "file": "docs/estudio-evolucao/git-no-pro-avaliacao.md",
+      "upstreamGitBlob": "8e8bf8f2c8b89e41af4f76c1bbee3d02a12afc67",
+      "mergedGitBlob": "8e8bf8f2c8b89e41af4f76c1bbee3d02a12afc67"
+    },
+    {
+      "file": "docs/estudio-evolucao/guia-desempenho-e-depuracao.md",
+      "upstreamGitBlob": "290f2dbdd30656e095ab157cde53f48a83f2dab6",
+      "mergedGitBlob": "290f2dbdd30656e095ab157cde53f48a83f2dab6"
+    },
+    {
+      "file": "docs/estudio-evolucao/historico-do-projeto.md",
+      "upstreamGitBlob": "222d7cbffb774e91e45f8d100afcc56a4838ffc0",
+      "mergedGitBlob": "222d7cbffb774e91e45f8d100afcc56a4838ffc0"
+    },
+    {
+      "file": "docs/estudio-evolucao/homologacao-a-h.md",
+      "upstreamGitBlob": "cec438b30a326ee280c6b73a8f6c5ef493215307",
+      "mergedGitBlob": "cec438b30a326ee280c6b73a8f6c5ef493215307"
+    },
+    {
+      "file": "docs/estudio-evolucao/manual-classico.md",
+      "upstreamGitBlob": "af7546585d500e65ae4d4dd4f82bd9506d64c282",
+      "mergedGitBlob": "af7546585d500e65ae4d4dd4f82bd9506d64c282"
+    },
+    {
+      "file": "docs/estudio-evolucao/manual-pro.md",
+      "upstreamGitBlob": "e33cb0827a89bba2a47f7b5ea9d5623464353556",
+      "mergedGitBlob": "e33cb0827a89bba2a47f7b5ea9d5623464353556"
+    },
+    {
+      "file": "docs/estudio-evolucao/mapa-da-missao.md",
+      "upstreamGitBlob": "b2223ffbebf8f09eb565720f0dba88b5be53b426",
+      "mergedGitBlob": "b2223ffbebf8f09eb565720f0dba88b5be53b426"
+    },
+    {
+      "file": "docs/estudio-evolucao/motores-inventario.md",
+      "upstreamGitBlob": "a680335768590f0ac3aecec3b27143aab7f2f57c",
+      "mergedGitBlob": "a680335768590f0ac3aecec3b27143aab7f2f57c"
+    },
+    {
+      "file": "docs/estudio-evolucao/persistencia-matriz.md",
+      "upstreamGitBlob": "333db07cb5252416ccbb3f88e3ac997c64cab3c8",
+      "mergedGitBlob": "333db07cb5252416ccbb3f88e3ac997c64cab3c8"
+    },
+    {
+      "file": "docs/estudio-evolucao/pro-em-escala.md",
+      "upstreamGitBlob": "fb4bdc6f06032e22a07e81044dcc5f9a1c1dc7a2",
+      "mergedGitBlob": "fb4bdc6f06032e22a07e81044dcc5f9a1c1dc7a2"
+    },
+    {
+      "file": "docs/estudio-evolucao/regioes-3d-especificacao.md",
+      "upstreamGitBlob": "953019b0c1b5dfd174e8c4c20f54c98c8cdff26a",
+      "mergedGitBlob": "953019b0c1b5dfd174e8c4c20f54c98c8cdff26a"
+    },
+    {
+      "file": "docs/estudio-evolucao/revisao-2026-11-20.md",
+      "upstreamGitBlob": "bd0d9c70842eea32a41bb1a40d3dff62fb187b52",
+      "mergedGitBlob": "bd0d9c70842eea32a41bb1a40d3dff62fb187b52"
+    },
+    {
+      "file": "docs/estudio-evolucao/zappy-e-as-abas.md",
+      "upstreamGitBlob": "6b4a7d86232353a1cec37353fe6c5dfa1cb5d626",
+      "mergedGitBlob": "6b4a7d86232353a1cec37353fe6c5dfa1cb5d626"
+    },
+    {
+      "file": "docs/operations/guia-pais-publicacao-2026-11-21.md",
+      "upstreamGitBlob": "772c65c4fa071828db890f146c097cba00819f68",
+      "mergedGitBlob": "772c65c4fa071828db890f146c097cba00819f68"
+    },
+    {
+      "file": "docs/qa/2026-11-21-studio-casca-staging.md",
+      "upstreamGitBlob": "c66562d579ae52f612f4f371b29ca225f1afba26",
+      "mergedGitBlob": "c66562d579ae52f612f4f371b29ca225f1afba26"
+    },
+    {
+      "file": "docs/qa/2026-11-21-studio-lote8-staging.md",
+      "upstreamGitBlob": "4c5beb3a0453e61935f61e15514bc3c4204fd72e",
+      "mergedGitBlob": "4c5beb3a0453e61935f61e15514bc3c4204fd72e"
+    },
+    {
+      "file": "packages/core/src/studio/pinta-scene-player.ts",
+      "upstreamGitBlob": "9efa466f81703d2fb7d5210e2360f7d4812b30d6",
+      "mergedGitBlob": "9efa466f81703d2fb7d5210e2360f7d4812b30d6"
+    },
+    {
+      "file": "packages/core/src/studio/pro-console.ts",
+      "upstreamGitBlob": "04ac7848ced6439d90b3240854a1515a96b389dc",
+      "mergedGitBlob": "04ac7848ced6439d90b3240854a1515a96b389dc"
+    },
+    {
+      "file": "packages/funnel/src/components/referrals/CursoPaisOferta.astro",
+      "upstreamGitBlob": "355759b5900eae30e2f259fff33be9ea28a399da",
+      "mergedGitBlob": "355759b5900eae30e2f259fff33be9ea28a399da"
+    },
+    {
+      "file": "packages/funnel/src/content/curso-pais-vilao.ts",
+      "upstreamGitBlob": "c2696534e30772457e0274812ec089705573ce0e",
+      "mergedGitBlob": "c2696534e30772457e0274812ec089705573ce0e"
+    },
+    {
+      "file": "packages/funnel/src/content/presente-resgate.ts",
+      "upstreamGitBlob": "6773e9fc33094afdf158f9833aa52268856e4f66",
+      "mergedGitBlob": "6773e9fc33094afdf158f9833aa52268856e4f66"
+    },
+    {
+      "file": "packages/funnel/src/islands/BolsaResgate.tsx",
+      "upstreamGitBlob": "6f4f9db6a958206537dc1467466eba5a76a4d746",
+      "mergedGitBlob": "6f4f9db6a958206537dc1467466eba5a76a4d746"
+    },
+    {
+      "file": "packages/funnel/src/pages/kids/vilao-em-aliado.astro",
+      "upstreamGitBlob": "fe331cb223662c3d1db358da4cc48a1499c9f00b",
+      "mergedGitBlob": "fe331cb223662c3d1db358da4cc48a1499c9f00b"
+    },
+    {
+      "file": "packages/funnel/src/styles/curso-pais.css",
+      "upstreamGitBlob": "0bd5d3124c37edf012a64cb8c3f4f55cf52ea84f",
+      "mergedGitBlob": "0bd5d3124c37edf012a64cb8c3f4f55cf52ea84f"
+    },
+    {
+      "file": "packages/funnel/tests/browser/curso-pais-vilao.ts",
+      "upstreamGitBlob": "ec1d89353ffc2ee3de638310ffc26b80765b76da",
+      "mergedGitBlob": "ec1d89353ffc2ee3de638310ffc26b80765b76da"
+    },
+    {
+      "file": "packages/funnel/tests/unit/curso-pais-vilao.test.tsx",
+      "upstreamGitBlob": "d3538d601e52b78d2ecda66d7a88ca641a4c42ff",
+      "mergedGitBlob": "d3538d601e52b78d2ecda66d7a88ca641a4c42ff"
+    },
+    {
+      "file": "packages/funnel/tests/unit/referral-gift-copy.test.tsx",
+      "upstreamGitBlob": "a37d7bc2efc94d6796323fcdec05b2982032627d",
+      "mergedGitBlob": "a37d7bc2efc94d6796323fcdec05b2982032627d"
+    },
+    {
+      "file": "packages/member-shell/src/components/creator/studio-full-client.tsx",
+      "upstreamGitBlob": "1670fc08a1b3a7c835b2df19587c9a5e174a8d9c",
+      "mergedGitBlob": "1670fc08a1b3a7c835b2df19587c9a5e174a8d9c"
+    },
+    {
+      "file": "packages/member-shell/src/components/creator/studio-full-editor.tsx",
+      "upstreamGitBlob": "82bdcaf4448b7c04b9d5f5e152e663b884df5e0e",
+      "mergedGitBlob": "82bdcaf4448b7c04b9d5f5e152e663b884df5e0e"
+    },
+    {
+      "file": "packages/member-shell/src/components/creator/studio-pro-client.tsx",
+      "upstreamGitBlob": "68dc0cd9bbaedabc1b1c1bd3edb074ac76457d33",
+      "mergedGitBlob": "68dc0cd9bbaedabc1b1c1bd3edb074ac76457d33"
+    },
+    {
+      "file": "packages/member-shell/src/components/studio/studio-pro-editor.tsx",
+      "upstreamGitBlob": "e43b86cc2f5aec0b2046eff7dfed2d428aa3ffc2",
+      "mergedGitBlob": "e43b86cc2f5aec0b2046eff7dfed2d428aa3ffc2"
+    },
+    {
+      "file": "packages/member-shell/src/routes/studio-zappy.ts",
+      "upstreamGitBlob": "3e30fdaf882bca8466d04b5896eef434c1316c93",
+      "mergedGitBlob": "3e30fdaf882bca8466d04b5896eef434c1316c93"
+    },
+    {
+      "file": "packages/member-shell/src/server/zappy-ai.ts",
+      "upstreamGitBlob": "1283d9cf1153fe5dbd43bbe79e55a5f009bcdd62",
+      "mergedGitBlob": "1283d9cf1153fe5dbd43bbe79e55a5f009bcdd62"
+    },
+    {
+      "file": "packages/member-shell/src/server/zappy-observation.ts",
+      "upstreamGitBlob": "6b5054c09d0286458d45d5e420885951ee98a99a",
+      "mergedGitBlob": "6b5054c09d0286458d45d5e420885951ee98a99a"
+    },
+    {
+      "file": "packages/member-shell/src/server/zappy-python.ts",
+      "upstreamGitBlob": "12ed9724127dca0b82990fce3e167f61462305de",
+      "mergedGitBlob": "12ed9724127dca0b82990fce3e167f61462305de"
+    },
+    {
+      "file": "packages/member-shell/tests/studio-zappy-python.test.ts",
+      "upstreamGitBlob": "911cb3be4edf1afefad337d2a28d9a80adef9f9f",
+      "mergedGitBlob": "911cb3be4edf1afefad337d2a28d9a80adef9f9f"
+    },
+    {
+      "file": "packages/member-shell/tests/studio-zappy.test.ts",
+      "upstreamGitBlob": "60042280c4d18f4dc156d84c705a097d8ada1716",
+      "mergedGitBlob": "60042280c4d18f4dc156d84c705a097d8ada1716"
+    },
+    {
+      "file": "packages/member-shell/tests/zappy-observation.test.ts",
+      "upstreamGitBlob": "95408db3e61b98a14a4b71290ac68732134f7653",
+      "mergedGitBlob": "95408db3e61b98a14a4b71290ac68732134f7653"
+    },
+    {
+      "file": "packages/members/tests/db/cenarios-publicacoes.test.ts",
+      "upstreamGitBlob": "64454635b6cad6e580aaa0b03bb9812bc230e457",
+      "mergedGitBlob": "64454635b6cad6e580aaa0b03bb9812bc230e457"
+    },
+    {
+      "file": "packages/molda-cenarios-motor/src/compilar/juncao.ts",
+      "upstreamGitBlob": "236ee8a058b51d761dbae3ab49ef858bda51560f",
+      "mergedGitBlob": "236ee8a058b51d761dbae3ab49ef858bda51560f"
+    },
+    {
+      "file": "packages/molda-cenarios/playground/oficina/qa-abertura.tsx",
+      "upstreamGitBlob": "b081d38d9ff06f5ef0308f354a86b932d8f44e03",
+      "mergedGitBlob": "b081d38d9ff06f5ef0308f354a86b932d8f44e03"
+    },
+    {
+      "file": "packages/molda-cenarios/playground/oficina/verificar-abertura.mjs",
+      "upstreamGitBlob": "a37b48a454138d0b172ee679f00d7abaca1a630e",
+      "mergedGitBlob": "a37b48a454138d0b172ee679f00d7abaca1a630e"
+    },
+    {
+      "file": "packages/molda-cenarios/playground/oficina/verificar-compilacao-glb.mjs",
+      "upstreamGitBlob": "4a4f3c47905e6de02a13e9a4cdf683f7946c7105",
+      "mergedGitBlob": "4a4f3c47905e6de02a13e9a4cdf683f7946c7105"
+    },
+    {
+      "file": "packages/molda-cenarios/playground/oficina/verificar-compilacao-integrada.mjs",
+      "upstreamGitBlob": "c3afe68091a32e28eb3738db6b69eecfbb346866",
+      "mergedGitBlob": "c3afe68091a32e28eb3738db6b69eecfbb346866"
+    },
+    {
+      "file": "packages/molda-cenarios/playground/oficina/vite.config.ts",
+      "upstreamGitBlob": "428fb13761295e636f80ca17dd1b287f17cc8025",
+      "mergedGitBlob": "428fb13761295e636f80ca17dd1b287f17cc8025"
+    },
+    {
+      "file": "packages/molda-cenarios/src/oficina/host-http.ts",
+      "upstreamGitBlob": "33f01cfa3706a3e361013bf6eabd84be6925d60b",
+      "mergedGitBlob": "33f01cfa3706a3e361013bf6eabd84be6925d60b"
+    },
+    {
+      "file": "packages/molda-cenarios/src/oficina/telas/Oficina.tsx",
+      "upstreamGitBlob": "8dcdba9ac6abe2990249bc29cd6bccd94b1626a7",
+      "mergedGitBlob": "8dcdba9ac6abe2990249bc29cd6bccd94b1626a7"
+    },
+    {
+      "file": "packages/molda-cenarios/tests/host-http.test.ts",
+      "upstreamGitBlob": "2006ba9213bd1d3b3f28ac40b5472ad1425838b8",
+      "mergedGitBlob": "2006ba9213bd1d3b3f28ac40b5472ad1425838b8"
+    },
+    {
+      "file": "packages/studio-runtime/runtime/validation-profile.json",
+      "upstreamGitBlob": "3d7c82f6398275880e3e5669de22a9f48468f87f",
+      "mergedGitBlob": "3d7c82f6398275880e3e5669de22a9f48468f87f"
+    },
+    {
+      "file": "packages/studio/e2e-pro-full/pro-full-preview.spec.ts",
+      "upstreamGitBlob": "ebf3ae03fe5ccd1163a57b16dcc9d1dd10902eba",
+      "mergedGitBlob": "ebf3ae03fe5ccd1163a57b16dcc9d1dd10902eba"
+    },
+    {
+      "file": "packages/studio/e2e/engine-2d-offscreen.spec.ts",
+      "upstreamGitBlob": "5bc79e13cd6465608ceeefafd3d6d410c4f034ab",
+      "mergedGitBlob": "5bc79e13cd6465608ceeefafd3d6d410c4f034ab"
+    },
+    {
+      "file": "packages/studio/e2e/engine-gpu-cycles.spec.ts",
+      "upstreamGitBlob": "781cc13a2b871cfffdbba735ef9e79ac3a6b10d4",
+      "mergedGitBlob": "781cc13a2b871cfffdbba735ef9e79ac3a6b10d4"
+    },
+    {
+      "file": "packages/studio/e2e/fixtures/pro-workspace/main.tsx",
+      "upstreamGitBlob": "ebd7d8baf38c0beb743703b312515f0fbfb866db",
+      "mergedGitBlob": "ebd7d8baf38c0beb743703b312515f0fbfb866db"
+    },
+    {
+      "file": "packages/studio/e2e/pro-workspace-performance.spec.ts",
+      "upstreamGitBlob": "2ea9997d89a84717ecb6b89c11975ca0a309117c",
+      "mergedGitBlob": "2ea9997d89a84717ecb6b89c11975ca0a309117c"
+    },
+    {
+      "file": "packages/studio/e2e/pro-workspace.spec.ts",
+      "upstreamGitBlob": "478a50cd13296ff88b9cdb67f3e1c1ccc21d90d8",
+      "mergedGitBlob": "478a50cd13296ff88b9cdb67f3e1c1ccc21d90d8"
+    },
+    {
+      "file": "packages/studio/package.json",
+      "upstreamGitBlob": "56a168e4bbe218ac8f36ce23e5cb5eaac282ccdf",
+      "mergedGitBlob": "56a168e4bbe218ac8f36ce23e5cb5eaac282ccdf"
+    },
+    {
+      "file": "packages/studio/playwright.config.ts",
+      "upstreamGitBlob": "2d0f21bd771301383a662f30a56a11ee98e0f575",
+      "mergedGitBlob": "2d0f21bd771301383a662f30a56a11ee98e0f575"
+    },
+    {
+      "file": "packages/studio/playwright.engines.config.ts",
+      "upstreamGitBlob": "5ba838b1a0d834f648057229e5980833e0296cc9",
+      "mergedGitBlob": "5ba838b1a0d834f648057229e5980833e0296cc9"
+    },
+    {
+      "file": "packages/studio/scripts/gen-pro-approved-lock.ts",
+      "upstreamGitBlob": "bc2341d7b52c73e5931a30261ddcba613e676137",
+      "mergedGitBlob": "bc2341d7b52c73e5931a30261ddcba613e676137"
+    },
+    {
+      "file": "packages/studio/scripts/verify-exports.ts",
+      "upstreamGitBlob": "5bd71966371005dd1cc245378e9a9efdcc1dccca",
+      "mergedGitBlob": "5bd71966371005dd1cc245378e9a9efdcc1dccca"
+    },
+    {
+      "file": "packages/studio/src/blockly/__tests__/revealBlock.test.ts",
+      "upstreamGitBlob": "4fe6035d0cc07716da16327e5bf3dea6d4ebee79",
+      "mergedGitBlob": "4fe6035d0cc07716da16327e5bf3dea6d4ebee79"
+    },
+    {
+      "file": "packages/studio/src/blockly/__tests__/workspaceSearch.test.ts",
+      "upstreamGitBlob": "32287fecac91b13f9bc206a1f39aa2176c39a7dd",
+      "mergedGitBlob": "32287fecac91b13f9bc206a1f39aa2176c39a7dd"
+    },
+    {
+      "file": "packages/studio/src/blockly/loadWorkspaceState.test.ts",
+      "upstreamGitBlob": "64893bd90ee0ac473e921315578534bcb19e2018",
+      "mergedGitBlob": "64893bd90ee0ac473e921315578534bcb19e2018"
+    },
+    {
+      "file": "packages/studio/src/blockly/loadWorkspaceState.ts",
+      "upstreamGitBlob": "3b4ebf7631ff260da573118b64c61ac43ac817bb",
+      "mergedGitBlob": "3b4ebf7631ff260da573118b64c61ac43ac817bb"
+    },
+    {
+      "file": "packages/studio/src/blockly/runtimeMark.ts",
+      "upstreamGitBlob": "eb5cb4f875d273af96ab7bc71220b91d6eb3ed74",
+      "mergedGitBlob": "eb5cb4f875d273af96ab7bc71220b91d6eb3ed74"
+    },
+    {
+      "file": "packages/studio/src/blockly/workspaceSearch.ts",
+      "upstreamGitBlob": "616d852509b999dbc4b92411032fac7a578243cb",
+      "mergedGitBlob": "616d852509b999dbc4b92411032fac7a578243cb"
+    },
+    {
+      "file": "packages/studio/src/capture/index.ts",
+      "upstreamGitBlob": "669c2ac57c03cda906f4111f7f8a9beaea064104",
+      "mergedGitBlob": "669c2ac57c03cda906f4111f7f8a9beaea064104"
+    },
+    {
+      "file": "packages/studio/src/components/assets/AssetsPanel.tsx",
+      "upstreamGitBlob": "380f513390b7870009c350e3efe2b7f6194bc3ab",
+      "mergedGitBlob": "380f513390b7870009c350e3efe2b7f6194bc3ab"
+    },
+    {
+      "file": "packages/studio/src/components/blocks/PythonBlocklyEditor.tsx",
+      "upstreamGitBlob": "a78b49468d62611a95d1c3d771ac97d933844952",
+      "mergedGitBlob": "a78b49468d62611a95d1c3d771ac97d933844952"
+    },
+    {
+      "file": "packages/studio/src/components/blocks/WorkspaceSearch.test.tsx",
+      "upstreamGitBlob": "7c88524e9f74228cc654985a3f83b2e008f0650a",
+      "mergedGitBlob": "7c88524e9f74228cc654985a3f83b2e008f0650a"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/ProInvestigatePanel.tsx",
+      "upstreamGitBlob": "b0e405e380b5e8b99d831d7cb627301daeec134d",
+      "mergedGitBlob": "b0e405e380b5e8b99d831d7cb627301daeec134d"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/useFreshInvestigationPerRun.test.tsx",
+      "upstreamGitBlob": "c4771d0ebe942e1271125067152599313ca909e0",
+      "mergedGitBlob": "c4771d0ebe942e1271125067152599313ca909e0"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/useFreshInvestigationPerRun.ts",
+      "upstreamGitBlob": "e6e2df2b7a6de8dcec3a9bea55e993a4feaf1515",
+      "mergedGitBlob": "e6e2df2b7a6de8dcec3a9bea55e993a4feaf1515"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/zappyObservation.test.ts",
+      "upstreamGitBlob": "e0910da31977130aca38b459f0ffffe37b8c41ed",
+      "mergedGitBlob": "e0910da31977130aca38b459f0ffffe37b8c41ed"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/zappyObservation.ts",
+      "upstreamGitBlob": "57a32cf383a4eb86930643a88857fe1518bea154",
+      "mergedGitBlob": "57a32cf383a4eb86930643a88857fe1518bea154"
+    },
+    {
+      "file": "packages/studio/src/components/layout/Topbar.blocksVersion.test.tsx",
+      "upstreamGitBlob": "380763e1e7097f0e567c8c5f24a230b4a731cf9d",
+      "mergedGitBlob": "380763e1e7097f0e567c8c5f24a230b4a731cf9d"
+    },
+    {
+      "file": "packages/studio/src/components/layout/Topbar.tsx",
+      "upstreamGitBlob": "fadb928b2e0a7c69185e4a06a9aae33c33106f3d",
+      "mergedGitBlob": "fadb928b2e0a7c69185e4a06a9aae33c33106f3d"
+    },
+    {
+      "file": "packages/studio/src/components/layout/__tests__/menuLayout.test.tsx",
+      "upstreamGitBlob": "eb848d7a46489ca2623827d90278a0b36a8e7199",
+      "mergedGitBlob": "eb848d7a46489ca2623827d90278a0b36a8e7199"
+    },
+    {
+      "file": "packages/studio/src/components/layout/topbar/blocksVersion.ts",
+      "upstreamGitBlob": "9c0b4146a40fe0315b4f2e49563ba95e66f33edc",
+      "mergedGitBlob": "9c0b4146a40fe0315b4f2e49563ba95e66f33edc"
+    },
+    {
+      "file": "packages/studio/src/components/layout/topbar/menuLayout.ts",
+      "upstreamGitBlob": "62f7e08a7fe9874dca5ffcd043cf126b850c16ee",
+      "mergedGitBlob": "62f7e08a7fe9874dca5ffcd043cf126b850c16ee"
+    },
+    {
+      "file": "packages/studio/src/components/preview/PythonEditorPreview.tsx",
+      "upstreamGitBlob": "a5358bbdc4cd83292e4c003efe34e67d72d296dd",
+      "mergedGitBlob": "a5358bbdc4cd83292e4c003efe34e67d72d296dd"
+    },
+    {
+      "file": "packages/studio/src/components/projects/ProjectCard.test.tsx",
+      "upstreamGitBlob": "d043ef7abfead9acec81e55fd3b6ed4d1647b845",
+      "mergedGitBlob": "d043ef7abfead9acec81e55fd3b6ed4d1647b845"
+    },
+    {
+      "file": "packages/studio/src/components/projects/ProjectCard.tsx",
+      "upstreamGitBlob": "1cf757b6fbc4ba8a7711b6606bbdd0e2986a5b67",
+      "mergedGitBlob": "1cf757b6fbc4ba8a7711b6606bbdd0e2986a5b67"
+    },
+    {
+      "file": "packages/studio/src/components/tutor/ZappyPanel.test.tsx",
+      "upstreamGitBlob": "5ee8a1c0ea083db282a26bc09dfed497d7e3fafe",
+      "mergedGitBlob": "5ee8a1c0ea083db282a26bc09dfed497d7e3fafe"
+    },
+    {
+      "file": "packages/studio/src/components/tutor/ZappyPanel.tsx",
+      "upstreamGitBlob": "0efd6d92ad80a04386457dd9b088107fc655b2b0",
+      "mergedGitBlob": "0efd6d92ad80a04386457dd9b088107fc655b2b0"
+    },
+    {
+      "file": "packages/studio/src/core/i18n/pro/en.ts",
+      "upstreamGitBlob": "f8c0134f272c36f7d10c8a1d31082138d8875f0f",
+      "mergedGitBlob": "f8c0134f272c36f7d10c8a1d31082138d8875f0f"
+    },
+    {
+      "file": "packages/studio/src/core/i18n/pro/pt-BR.ts",
+      "upstreamGitBlob": "8b99396b25905ae9b8727537936b790a97d663c8",
+      "mergedGitBlob": "8b99396b25905ae9b8727537936b790a97d663c8"
+    },
+    {
+      "file": "packages/studio/src/core/i18n/shared/en.ts",
+      "upstreamGitBlob": "1b5725d578b14d27d7eb186ec725c4a4bc7b06e2",
+      "mergedGitBlob": "1b5725d578b14d27d7eb186ec725c4a4bc7b06e2"
+    },
+    {
+      "file": "packages/studio/src/core/i18n/shared/pt-BR.ts",
+      "upstreamGitBlob": "47a20f69b63773b9df196d24abd2cba3f2d118d7",
+      "mergedGitBlob": "47a20f69b63773b9df196d24abd2cba3f2d118d7"
+    },
+    {
+      "file": "packages/studio/src/core/scene3d/__tests__/moldaFullScenario.contract.test.ts",
+      "upstreamGitBlob": "d42b32f2790e6714ff54d0c4a73360992a99f373",
+      "mergedGitBlob": "d42b32f2790e6714ff54d0c4a73360992a99f373"
+    },
+    {
+      "file": "packages/studio/src/export/__tests__/sourceExport.test.ts",
+      "upstreamGitBlob": "dde215822dbc8939d68089b2b1c3909addafcd88",
+      "mergedGitBlob": "dde215822dbc8939d68089b2b1c3909addafcd88"
+    },
+    {
+      "file": "packages/studio/src/export/approvedDependencyLock.generated.ts",
+      "upstreamGitBlob": "d8a18163b72d9585c0af5fc4df0d157b9a7bf26a",
+      "mergedGitBlob": "d8a18163b72d9585c0af5fc4df0d157b9a7bf26a"
+    },
+    {
+      "file": "packages/studio/src/export/approvedDependencyLock.test.ts",
+      "upstreamGitBlob": "5af53d53e23735ab54e9453c99a4b984424508d8",
+      "mergedGitBlob": "5af53d53e23735ab54e9453c99a4b984424508d8"
+    },
+    {
+      "file": "packages/studio/src/export/approvedDependencyLock.ts",
+      "upstreamGitBlob": "73395ec97e59410470a37a531edd228316d7cb88",
+      "mergedGitBlob": "73395ec97e59410470a37a531edd228316d7cb88"
+    },
+    {
+      "file": "packages/studio/src/export/fileMap.ts",
+      "upstreamGitBlob": "32890d217b474c91172cde544c8d6a05c3305e9c",
+      "mergedGitBlob": "32890d217b474c91172cde544c8d6a05c3305e9c"
+    },
+    {
+      "file": "packages/studio/src/modes/pro/ProCodeEditor.tsx",
+      "upstreamGitBlob": "1f6542f87ac76f870860a63f8bded236331e7cc2",
+      "mergedGitBlob": "1f6542f87ac76f870860a63f8bded236331e7cc2"
+    },
+    {
+      "file": "packages/studio/src/modes/pro/ProPreview.tsx",
+      "upstreamGitBlob": "d864b945a412294b6a817e6c26c510a70817ddc4",
+      "mergedGitBlob": "d864b945a412294b6a817e6c26c510a70817ddc4"
+    },
+    {
+      "file": "packages/studio/src/modes/pro/ProWorkspace.tsx",
+      "upstreamGitBlob": "eeb8a2a41f5a2e46b87edd0de6658b6ae854747d",
+      "mergedGitBlob": "eeb8a2a41f5a2e46b87edd0de6658b6ae854747d"
+    },
+    {
+      "file": "packages/studio/src/modes/pro/RemoteProPreview.tsx",
+      "upstreamGitBlob": "3c7280ed6ff328b2995be43564e07058fdfa149d",
+      "mergedGitBlob": "3c7280ed6ff328b2995be43564e07058fdfa149d"
+    },
+    {
+      "file": "packages/studio/src/modes/pro/dependencyDeclarations.test.ts",
+      "upstreamGitBlob": "8414a11f3ccb48981fabc7f4b61a39a685f311ab",
+      "mergedGitBlob": "8414a11f3ccb48981fabc7f4b61a39a685f311ab"
+    },
+    {
+      "file": "packages/studio/src/modes/pro/dependencyDeclarations.ts",
+      "upstreamGitBlob": "f1297fe7634388f7a9719d3da0e49af709be02c5",
+      "mergedGitBlob": "f1297fe7634388f7a9719d3da0e49af709be02c5"
+    },
+    {
+      "file": "packages/studio/src/modes/pro/proConsoleBridge.test.ts",
+      "upstreamGitBlob": "ee3469548adf6887f46464772663151014d3b423",
+      "mergedGitBlob": "ee3469548adf6887f46464772663151014d3b423"
+    },
+    {
+      "file": "packages/studio/src/modes/pro/proConsoleBridge.ts",
+      "upstreamGitBlob": "7cfc879336059dc0cd9c48e73f2732ff439861e1",
+      "mergedGitBlob": "7cfc879336059dc0cd9c48e73f2732ff439861e1"
+    },
+    {
+      "file": "packages/studio/src/modes/pro/workspace/ProCodeTools.tsx",
+      "upstreamGitBlob": "5622e45860fa603673b9f5c8114643161516ee63",
+      "mergedGitBlob": "5622e45860fa603673b9f5c8114643161516ee63"
+    },
+    {
+      "file": "packages/studio/src/modes/pro/workspace/ProDock.tsx",
+      "upstreamGitBlob": "58be285941156f9e1632562e67f8731044bc90a9",
+      "mergedGitBlob": "58be285941156f9e1632562e67f8731044bc90a9"
+    },
+    {
+      "file": "packages/studio/src/modes/pro/workspace/ProDock.view.test.tsx",
+      "upstreamGitBlob": "ec654a5fbed44547672f45b74aab884b9e5536a4",
+      "mergedGitBlob": "ec654a5fbed44547672f45b74aab884b9e5536a4"
+    },
+    {
+      "file": "packages/studio/src/modes/pro/workspace/ProEditorStrip.test.tsx",
+      "upstreamGitBlob": "fec0361807ba5ac956b5a853e52b7dd94f8c1e46",
+      "mergedGitBlob": "fec0361807ba5ac956b5a853e52b7dd94f8c1e46"
+    },
+    {
+      "file": "packages/studio/src/modes/pro/workspace/ProEditorStrip.tsx",
+      "upstreamGitBlob": "298d492a543553641b19c9f7d3423dba1d790d73",
+      "mergedGitBlob": "298d492a543553641b19c9f7d3423dba1d790d73"
+    },
+    {
+      "file": "packages/studio/src/modes/pro/workspace/ProOperationReview.tsx",
+      "upstreamGitBlob": "ee7f82af4a1c58402b1d1bf832bf8e5493906706",
+      "mergedGitBlob": "ee7f82af4a1c58402b1d1bf832bf8e5493906706"
+    },
+    {
+      "file": "packages/studio/src/modes/pro/workspace/treeChanges.test.ts",
+      "upstreamGitBlob": "1edf1922257aec9a97a6674de65c45dba0e82b71",
+      "mergedGitBlob": "1edf1922257aec9a97a6674de65c45dba0e82b71"
+    },
+    {
+      "file": "packages/studio/src/modes/pro/workspace/treeChanges.ts",
+      "upstreamGitBlob": "643b4f1ce4814d7b9d1bed0e632a38dc9807fd10",
+      "mergedGitBlob": "643b4f1ce4814d7b9d1bed0e632a38dc9807fd10"
+    },
+    {
+      "file": "packages/studio/src/modes/pro/workspace/useProHistory.ts",
+      "upstreamGitBlob": "2bdea54fe70c7a6a3d2ab73da74a4dace91576d1",
+      "mergedGitBlob": "2bdea54fe70c7a6a3d2ab73da74a4dace91576d1"
+    },
+    {
+      "file": "packages/studio/src/modes/pro/workspace/useProOperations.ts",
+      "upstreamGitBlob": "fa9780adfbdc4c253b12a189eebf2bc0c18d5cbd",
+      "mergedGitBlob": "fa9780adfbdc4c253b12a189eebf2bc0c18d5cbd"
+    },
+    {
+      "file": "packages/studio/src/monaco/pro/languageService.test.ts",
+      "upstreamGitBlob": "531b06645a7865ffa4b39dfeff84e8bba2619058",
+      "mergedGitBlob": "531b06645a7865ffa4b39dfeff84e8bba2619058"
+    },
+    {
+      "file": "packages/studio/src/monaco/pro/languageService.ts",
+      "upstreamGitBlob": "13f06163e51a0e73bd974e6ecf92999fbf33731c",
+      "mergedGitBlob": "13f06163e51a0e73bd974e6ecf92999fbf33731c"
+    },
+    {
+      "file": "packages/studio/src/monaco/pro/protocol.ts",
+      "upstreamGitBlob": "1bcb7ae476b97bd3aaac36f234cd4f0b8bcd9934",
+      "mergedGitBlob": "1bcb7ae476b97bd3aaac36f234cd4f0b8bcd9934"
+    },
+    {
+      "file": "packages/studio/src/monaco/workers/pro-language.worker.ts",
+      "upstreamGitBlob": "90af8e41a04ac4df5d65a553ec0f0ea0d19cfa6b",
+      "mergedGitBlob": "90af8e41a04ac4df5d65a553ec0f0ea0d19cfa6b"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/game-2d-advanced/__tests__/runtime.test.ts",
+      "upstreamGitBlob": "2e13e4045830c6d6fd61538f173e616234d2639e",
+      "mergedGitBlob": "2e13e4045830c6d6fd61538f173e616234d2639e"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/game-2d-advanced/runtime/shell.ts",
+      "upstreamGitBlob": "02e5381db7691460cb08fe161b01c27e33f77933",
+      "mergedGitBlob": "02e5381db7691460cb08fe161b01c27e33f77933"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/game-2d-advanced/runtime/visualEffects.ts",
+      "upstreamGitBlob": "9b9f5729a3d9afeef438fc1734cdb5799aa0f830",
+      "mergedGitBlob": "9b9f5729a3d9afeef438fc1734cdb5799aa0f830"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/game-2d/__tests__/bundle.test.ts",
+      "upstreamGitBlob": "fccffdd8e141fc420e59bdc2f9a42fb49a35eab8",
+      "mergedGitBlob": "fccffdd8e141fc420e59bdc2f9a42fb49a35eab8"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/game-2d/__tests__/limitWarnings.test.ts",
+      "upstreamGitBlob": "e87efbcb6f66b0c3c01b97dd351b8bcfa903d72a",
+      "mergedGitBlob": "e87efbcb6f66b0c3c01b97dd351b8bcfa903d72a"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/game-2d/runtime/worldGroups.ts",
+      "upstreamGitBlob": "8a8211e98dca3d74856d0830bd2ed9dbe86dd647",
+      "mergedGitBlob": "8a8211e98dca3d74856d0830bd2ed9dbe86dd647"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/game-3d-advanced/__tests__/kitHarness.ts",
+      "upstreamGitBlob": "6b984d8b8bb8a6963e42547983bf5996f6333bb3",
+      "mergedGitBlob": "6b984d8b8bb8a6963e42547983bf5996f6333bb3"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/game-3d-advanced/__tests__/runtime.test.ts",
+      "upstreamGitBlob": "dedb55537fbb8699a849d809dcfb99c42afecae5",
+      "mergedGitBlob": "dedb55537fbb8699a849d809dcfb99c42afecae5"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/game-3d-advanced/runtime.ts",
+      "upstreamGitBlob": "9456c2ae389ca8ffd6642afaa23656b3d8292d44",
+      "mergedGitBlob": "9456c2ae389ca8ffd6642afaa23656b3d8292d44"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/game-3d-advanced/runtimePhysics.ts",
+      "upstreamGitBlob": "67f4f4f54a50b47c249ccfa34e7a678d7ea86f9c",
+      "mergedGitBlob": "67f4f4f54a50b47c249ccfa34e7a678d7ea86f9c"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/game-3d-advanced/runtimeProject.ts",
+      "upstreamGitBlob": "a7496789dc4a8b0d9d78fe6e70b31629edab5ac4",
+      "mergedGitBlob": "a7496789dc4a8b0d9d78fe6e70b31629edab5ac4"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/map-2d/__tests__/hostVariant.test.ts",
+      "upstreamGitBlob": "96b925366cc26f4ec893b867876623b189a53bb2",
+      "mergedGitBlob": "96b925366cc26f4ec893b867876623b189a53bb2"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/map-2d/bootstrap.ts",
+      "upstreamGitBlob": "9277bf1065242be246b9fb904e86ab748e07e0d6",
+      "mergedGitBlob": "9277bf1065242be246b9fb904e86ab748e07e0d6"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/map-2d/runtime.test.ts",
+      "upstreamGitBlob": "5ca8c616906aa087b34f426bdc2dc9387655c744",
+      "mergedGitBlob": "5ca8c616906aa087b34f426bdc2dc9387655c744"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/runtimePayloadBudget.test.ts",
+      "upstreamGitBlob": "04f26cc2f4fce7abc4562fb9e7af7be6f24f5eb3",
+      "mergedGitBlob": "04f26cc2f4fce7abc4562fb9e7af7be6f24f5eb3"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/runtimeSource.test.ts",
+      "upstreamGitBlob": "be4af18e74a0d57bde91841c991bd81d2f4486a7",
+      "mergedGitBlob": "be4af18e74a0d57bde91841c991bd81d2f4486a7"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/runtimeSource.ts",
+      "upstreamGitBlob": "d88e6f3f502d0e700a8cba87509c8c3cba174a4d",
+      "mergedGitBlob": "d88e6f3f502d0e700a8cba87509c8c3cba174a4d"
+    },
+    {
+      "file": "packages/studio/src/projects/ProjectList.tsx",
+      "upstreamGitBlob": "f1a016f824b63e189004f6a3e96cc6cc81bd5bd1",
+      "mergedGitBlob": "f1a016f824b63e189004f6a3e96cc6cc81bd5bd1"
+    },
+    {
+      "file": "packages/studio/src/python/blocks/readWorkspaceState.ts",
+      "upstreamGitBlob": "d5520d2ff5d517c0c96abe37dc33f4022c15401b",
+      "mergedGitBlob": "d5520d2ff5d517c0c96abe37dc33f4022c15401b"
+    },
+    {
+      "file": "packages/studio/src/state/__tests__/extensionImportConsent.cases.ts",
+      "upstreamGitBlob": "179ca5241c589a288c7aa8b5f6ffb36809959476",
+      "mergedGitBlob": "179ca5241c589a288c7aa8b5f6ffb36809959476"
+    },
+    {
+      "file": "packages/studio/src/state/__tests__/proProjectHistory.cases.ts",
+      "upstreamGitBlob": "6a2423a3c32e097e8749b656f45ab35f5989585c",
+      "mergedGitBlob": "6a2423a3c32e097e8749b656f45ab35f5989585c"
+    },
+    {
+      "file": "packages/studio/src/state/convertToPro.test.ts",
+      "upstreamGitBlob": "2fff1af42f0aa64c0fd9e605349848beecbbc1ef",
+      "mergedGitBlob": "2fff1af42f0aa64c0fd9e605349848beecbbc1ef"
+    },
+    {
+      "file": "packages/studio/src/state/convertToPro.ts",
+      "upstreamGitBlob": "602e783afdcddef913c921810641c858a9f09695",
+      "mergedGitBlob": "602e783afdcddef913c921810641c858a9f09695"
+    },
+    {
+      "file": "packages/studio/src/state/logsStore.ts",
+      "upstreamGitBlob": "1afaf8402ced039e4ee4d1bd147e0581b03d2bf2",
+      "mergedGitBlob": "1afaf8402ced039e4ee4d1bd147e0581b03d2bf2"
+    },
+    {
+      "file": "packages/studio/src/state/persistence.ts",
+      "upstreamGitBlob": "be9851ef12f8616a74148f7d937453cb68bb5388",
+      "mergedGitBlob": "be9851ef12f8616a74148f7d937453cb68bb5388"
+    },
+    {
+      "file": "packages/studio/src/state/proHistoryRecorder.ts",
+      "upstreamGitBlob": "87f614af9b92a01b0b70d60e1235d434a88b266a",
+      "mergedGitBlob": "87f614af9b92a01b0b70d60e1235d434a88b266a"
+    },
+    {
+      "file": "packages/studio/src/state/proProjectHistory.test.ts",
+      "upstreamGitBlob": "9e829ea580e1c6779e501d435413bb7fb546f7e8",
+      "mergedGitBlob": "9e829ea580e1c6779e501d435413bb7fb546f7e8"
+    },
+    {
+      "file": "packages/studio/src/state/proProjectHistory.ts",
+      "upstreamGitBlob": "f11da452daf6318d6d903e2dc36bb90e578dcfe3",
+      "mergedGitBlob": "f11da452daf6318d6d903e2dc36bb90e578dcfe3"
+    },
+    {
+      "file": "packages/studio/src/state/proRevision.ts",
+      "upstreamGitBlob": "5847eb04d560924e90d9b5827fc64ed38f06539e",
+      "mergedGitBlob": "5847eb04d560924e90d9b5827fc64ed38f06539e"
+    },
+    {
+      "file": "packages/studio/src/state/proRun.ts",
+      "upstreamGitBlob": "200398fdb4c75713eebadc51c2eda66766bbcb34",
+      "mergedGitBlob": "200398fdb4c75713eebadc51c2eda66766bbcb34"
+    },
+    {
+      "file": "packages/studio/src/state/proWorkspaceOperations.ts",
+      "upstreamGitBlob": "a3a19c65a6dd09148f5c45eb87b7b282d329faa1",
+      "mergedGitBlob": "a3a19c65a6dd09148f5c45eb87b7b282d329faa1"
+    },
+    {
+      "file": "packages/studio/src/state/projectStore.ts",
+      "upstreamGitBlob": "896a60d649856332e877b517239f4c8f1ccc1a79",
+      "mergedGitBlob": "896a60d649856332e877b517239f4c8f1ccc1a79"
+    },
+    {
+      "file": "packages/studio/src/state/projectSummary.test.ts",
+      "upstreamGitBlob": "6d7731440c230c48ddad4610b635146cad47acf6",
+      "mergedGitBlob": "6d7731440c230c48ddad4610b635146cad47acf6"
+    },
+    {
+      "file": "packages/studio/src/state/projectSummary.ts",
+      "upstreamGitBlob": "1a280dec3f42bb507d408bbae64f79b1cd644afb",
+      "mergedGitBlob": "1a280dec3f42bb507d408bbae64f79b1cd644afb"
+    },
+    {
+      "file": "packages/studio/src/studio/StudioCore.tsx",
+      "upstreamGitBlob": "a7bd6b315a9b18b3dfab7065624859191159422e",
+      "mergedGitBlob": "a7bd6b315a9b18b3dfab7065624859191159422e"
+    },
+    {
+      "file": "packages/studio/src/studio/config.ts",
+      "upstreamGitBlob": "2699b1389b618049482a725e569e71319bb61f76",
+      "mergedGitBlob": "2699b1389b618049482a725e569e71319bb61f76"
+    },
+    {
+      "file": "packages/studio/src/studio/lessonFeatures.ts",
+      "upstreamGitBlob": "13d8a643b2faac0ae1ef8df7c236e1d9d688a55c",
+      "mergedGitBlob": "13d8a643b2faac0ae1ef8df7c236e1d9d688a55c"
+    },
+    {
+      "file": "packages/studio/src/studio/open-project.ts",
+      "upstreamGitBlob": "b1b01774fdb458182bc413ac9dad377e531498c8",
+      "mergedGitBlob": "b1b01774fdb458182bc413ac9dad377e531498c8"
+    },
+    {
+      "file": "packages/studio/src/studio/tutor.test.ts",
+      "upstreamGitBlob": "a130e16a7eec632c72341e3115e906c084f4ec34",
+      "mergedGitBlob": "a130e16a7eec632c72341e3115e906c084f4ec34"
+    },
+    {
+      "file": "packages/studio/src/studio/tutor.ts",
+      "upstreamGitBlob": "21b7644468eda3edda293e87a41d505e8811cb18",
+      "mergedGitBlob": "21b7644468eda3edda293e87a41d505e8811cb18"
+    },
+    {
+      "file": "packages/studio/src/studio/types.ts",
+      "upstreamGitBlob": "e6f858f4a83c4fddbe97e9ce588b6f9becb17816",
+      "mergedGitBlob": "e6f858f4a83c4fddbe97e9ce588b6f9becb17816"
+    },
+    {
+      "file": "packages/studio/src/testing/contracts/contracts.test.ts",
+      "upstreamGitBlob": "6a520c7ac943a7305a8587ae92b9c13ff3684e07",
+      "mergedGitBlob": "6a520c7ac943a7305a8587ae92b9c13ff3684e07"
+    },
+    {
+      "file": "packages/studio/src/testing/moldaFullScenarioFixture.ts",
+      "upstreamGitBlob": "a2cc2e375087f3d4edfecb6568ae0c0269b2095a",
+      "mergedGitBlob": "a2cc2e375087f3d4edfecb6568ae0c0269b2095a"
+    },
+    {
+      "file": "scripts/ci/configure-ubuntu-apt.test.ts",
+      "upstreamGitBlob": "815ae1a57103c0f21972bbd4e4e17180b0276769",
+      "mergedGitBlob": "815ae1a57103c0f21972bbd4e4e17180b0276769"
+    },
+    {
+      "file": "scripts/ci/kids-journey-railway.test.ts",
+      "upstreamGitBlob": "f9559d88f2be8d60b903fdeb5fa0ff554c17adfd",
+      "mergedGitBlob": "f9559d88f2be8d60b903fdeb5fa0ff554c17adfd"
+    },
+    {
+      "file": "scripts/ci/kids-journey-rollout.mjs",
+      "upstreamGitBlob": "6f0983dfe724e9a8cfcb41cace4b7820be422c18",
+      "mergedGitBlob": "6f0983dfe724e9a8cfcb41cace4b7820be422c18"
+    },
+    {
+      "file": "scripts/ci/runtime-browser-install.test.ts",
+      "upstreamGitBlob": "7e02d6c7a6eaf0feb94d80dafb68a7bc0ee0dd6e",
+      "mergedGitBlob": "7e02d6c7a6eaf0feb94d80dafb68a7bc0ee0dd6e"
+    },
+    {
+      "file": "scripts/ci/staging-deploy-workflow.test.ts",
+      "upstreamGitBlob": "bb5b7e63943346b46254fc41a069dbe335d96d57",
+      "mergedGitBlob": "bb5b7e63943346b46254fc41a069dbe335d96d57"
+    },
+    {
+      "file": "scripts/ci/staging-watch-paths.mjs",
+      "upstreamGitBlob": "59f9b18c668636b7867486095e379e05ddb319e6",
+      "mergedGitBlob": "59f9b18c668636b7867486095e379e05ddb319e6"
+    },
+    {
+      "file": "scripts/ci/staging-watch-paths.test.ts",
+      "upstreamGitBlob": "c8c6731109013312ca03683aced6b8452b9f58ef",
+      "mergedGitBlob": "c8c6731109013312ca03683aced6b8452b9f58ef"
+    },
+    {
+      "file": "scripts/molda-cenarios-acervo.ts",
+      "upstreamGitBlob": "58b962fc8a43993ef7a50d421fbdad4bbd640914",
+      "mergedGitBlob": "58b962fc8a43993ef7a50d421fbdad4bbd640914"
+    },
+    {
+      "file": "scripts/molda-cenarios-arte.test.ts",
+      "upstreamGitBlob": "32933256fe85e30d59fc9c9017ee538c26774bb9",
+      "mergedGitBlob": "32933256fe85e30d59fc9c9017ee538c26774bb9"
+    }
+  ],
+  "browserTests": 22,
+  "pintaTests": 2641,
+  "optionalNativeControlsExecuted": 3,
+  "boundaryTests": 184,
+  "python": {
+    "python": "3.12.10",
+    "pygame": "2.5.8",
+    "sdl": [
+      2,
+      32,
+      10
+    ],
+    "videoDriver": "dummy"
+  },
+  "runtimeSizes": [
+    {
+      "target": "g2d",
+      "scene": false,
+      "chars": 368067,
+      "utf8": 368619,
+      "gzip": 95238
+    },
+    {
+      "target": "g2d",
+      "scene": true,
+      "chars": 394538,
+      "utf8": 395092,
+      "gzip": 104084
+    },
+    {
+      "target": "gk",
+      "scene": false,
+      "chars": 409977,
+      "utf8": 411475,
+      "gzip": 122699
+    },
+    {
+      "target": "gk",
+      "scene": true,
+      "chars": 436444,
+      "utf8": 437944,
+      "gzip": 131622
+    }
+  ],
+  "publicNative8": false,
+  "physicalIO3": false,
+  "authenticatedRollout": false
+}

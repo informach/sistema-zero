@@ -34,6 +34,9 @@ self.onmessage = (event: MessageEvent<ProLanguageRequest>) => {
       case 'format':
         result = service.format(...message.args)
         break
+      case 'organizeImports':
+        result = service.organizeImports(...message.args)
+        break
       case 'symbols':
         result = service.symbols(...message.args)
         break

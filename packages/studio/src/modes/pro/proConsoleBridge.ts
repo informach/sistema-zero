@@ -42,4 +42,21 @@ export function isProConsoleMessage(value: unknown): value is ProConsoleMessage 
   return raw.parts.every((part) => typeof part === 'string')
 }
 
+/**
+ * A página do jogo começou (a ponte avisa logo depois de se instalar, com o relógio da página). Os
+ * erros de execução de uma página anterior não valem mais para a aba Problemas: sem isso, depois de
+ * o Vite recarregar o jogo consertado, a aba seguia dizendo "O jogo parou com um problema"
+ * (achado no ensaio do Pro com dependência, 21/11/2026). O horário é limitado ao de chegada: o
+ * código da criança não consegue esconder erros mandando um horário no futuro.
+ */
+export const PRO_PAGE_MESSAGE_SOURCE = 'sz-pro-page' as const
+
+export function proPageLoadedAt(value: unknown, receivedAt: number): number | null {
+  if (typeof value !== 'object' || value === null) return null
+  const raw = value as Record<string, unknown>
+  if (raw.source !== PRO_PAGE_MESSAGE_SOURCE) return null
+  if (typeof raw.at !== 'number' || !Number.isFinite(raw.at)) return null
+  return Math.min(raw.at, receivedAt)
+}
+
 export { buildProConsoleBridgeScript } from '@sistemazero/core/studio/pro-console'

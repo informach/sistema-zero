@@ -8,6 +8,7 @@ import { createStudioStores } from '../../../state/studioStores'
 import { StudioCloudSyncProvider } from '../../../studio/cloud-sync'
 import { STANDALONE_CONFIG, StudioConfigProvider } from '../../../studio/config'
 import { StudioLayoutProvider } from '../../../studio/layoutContext'
+import { StudioOpenProjectProvider } from '../../../studio/open-project'
 import { Topbar } from '../Topbar'
 import { STUDIO_MENU_LAYOUT, type StudioMenuItemId } from '../topbar/menuLayout'
 
@@ -67,7 +68,7 @@ describe('a árvore editorial do menu ⋯', () => {
   /** Monta a barra com TODAS as features do host ligadas e devolve os ids exibidos. */
   function idsExibidos(
     mode: 'blocks' | 'code',
-    opts: { with3D?: boolean; pro?: boolean } = {},
+    opts: { with3D?: boolean; pro?: boolean; origin?: boolean } = {},
     width = 390,
   ): StudioMenuItemId[] {
     // Limpa ANTES (e não depois): quem chama dois contextos seguidos teria duas
@@ -80,6 +81,16 @@ describe('a árvore editorial do menu ⋯', () => {
         ...project,
         mode,
         ...(opts.pro ? { kind: 'pro' as const } : {}),
+        // O Pro que veio de "Virar profissional" (proposta aprovada em 21/11/2026).
+        ...(opts.origin
+          ? {
+              proMeta: {
+                devScript: 'dev',
+                templateId: 'vanilla-vite',
+                origin: { projectId: '01J0000000000000000000BLOC', revision: 1 },
+              },
+            }
+          : {}),
         installedExtensions: opts.with3D
           ? [{ id: 'game-3d', version: '0.30.0', installedAt: 0 }]
           : project.installedExtensions,
@@ -91,9 +102,13 @@ describe('a árvore editorial do menu ⋯', () => {
       <StudioStoresContext.Provider value={stores}>
         <StudioConfigProvider value={{ ...STANDALONE_CONFIG, professional: true }}>
           <StudioCloudSyncProvider value={() => {}}>
-            <StudioLayoutProvider value={{ width, isNarrow: width < 1024, isCompact: width < 440 }}>
-              <Topbar onExit={() => {}} canToggleTheme />
-            </StudioLayoutProvider>
+            <StudioOpenProjectProvider value={() => {}}>
+              <StudioLayoutProvider
+                value={{ width, isNarrow: width < 1024, isCompact: width < 440 }}
+              >
+                <Topbar onExit={() => {}} canToggleTheme />
+              </StudioLayoutProvider>
+            </StudioOpenProjectProvider>
           </StudioCloudSyncProvider>
         </StudioConfigProvider>
       </StudioStoresContext.Provider>,
@@ -125,6 +140,7 @@ describe('a árvore editorial do menu ⋯', () => {
       ...idsExibidos('blocks', { with3D: true }),
       ...idsExibidos('code'),
       ...idsExibidos('code', { pro: true }),
+      ...idsExibidos('code', { pro: true, origin: true }),
     ])
     expect(itens.filter((id) => !cobertos.has(id))).toEqual([])
   })

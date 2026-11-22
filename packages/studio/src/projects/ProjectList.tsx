@@ -396,6 +396,11 @@ export function ProjectList({
   // biome-ignore lint/correctness/useExhaustiveDependencies: `namesKey` é a chave derivada de `projects`.
   const existingNames = useMemo(() => (projects ?? []).map((p) => p.name), [namesKey])
   const takenNames = useMemo(() => new Set(existingNames), [existingNames])
+  // O nome de cada projeto pelo id: o cartão do Pro convertido diz de qual cópia em blocos veio.
+  const nameById = useMemo(
+    () => new Map((projects ?? []).map((project) => [project.id, project.name])),
+    [projects],
+  )
 
   // Referência estável: inline, `listProTemplates()` novo a cada render entraria
   // nas deps do reset do modal e apagaria o nome enquanto a criança digita.
@@ -812,6 +817,11 @@ export function ProjectList({
                             key={summary.id}
                             summary={summary}
                             takenNames={takenNames}
+                            originName={
+                              summary.originProjectId
+                                ? nameById.get(summary.originProjectId)
+                                : undefined
+                            }
                             onChanged={refreshProject}
                             onOpen={onOpenProject}
                           />
@@ -844,6 +854,11 @@ export function ProjectList({
                               key={summary.id}
                               summary={summary}
                               takenNames={takenNames}
+                              originName={
+                                summary.originProjectId
+                                  ? nameById.get(summary.originProjectId)
+                                  : undefined
+                              }
                               onChanged={refreshProject}
                               onOpen={onOpenProject}
                             />

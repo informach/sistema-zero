@@ -16,6 +16,7 @@ import {
 import { buildProAssetBundle } from '../core/proAssets'
 import { digestProAssistance, getProAssistance } from '../core/proAssistance'
 import type { ProjectTree } from '../core/proProject'
+import { proHistoryRecorder } from './proHistoryRecorder'
 import { flushProjectOperations, projectPersistence } from './projectOperations'
 import { listProApplications, PRO_APPLICATION_LIMITS } from './projectStorageCoordinator'
 import {
@@ -293,6 +294,8 @@ function receiptFor(
 }
 interface ProDocumentApplication extends Omit<ProProposalApplication, 'jobId' | 'request'> {
   request?: StudioProAssistanceRequest
+  /** Voltar para uma versão do Histórico do projeto: a versão de antes leva este gatilho. */
+  history?: { trigger: 'restore'; restoredFrom: number }
   source: 'editor' | 'zappy'
   jobId?: string
   pathMap?: Record<string, string>
@@ -415,6 +418,20 @@ async function applyProDocument(
     ),
     (inverse, project, assetInverse) => {
       beforeCommit?.()
+      // O Histórico do projeto guarda a árvore de ANTES (proposta aprovada em 21/11/2026), só aqui,
+      // quando a aplicação passou pelas recusas e vai mesmo acontecer (revisão do lote 7). Só com a
+      // área de trabalho do Pro aberta há quem guarde; uma falha nunca impede a aplicação.
+      if (entryProject.kind === 'pro' && 'tree' in entryProject && entryProject.tree)
+        proHistoryRecorder(store)?.(
+          entryProject.tree,
+          input.history?.trigger ??
+            (input.undoOf ? 'undo' : input.source === 'zappy' ? 'zappy' : 'operation'),
+          {
+            projectId,
+            label: input.change.summary,
+            ...(input.history ? { restoredFrom: input.history.restoredFrom } : {}),
+          },
+        )
       const record: ProApplicationRecord = {
         version: 1,
         operationId: input.operationId,

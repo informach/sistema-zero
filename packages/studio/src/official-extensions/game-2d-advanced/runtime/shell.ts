@@ -296,6 +296,9 @@ export const gameKitShellRuntime = `
         secondTimers = Object.create(null); // sem protótipo: a chave vem da criança
   }
   function resetGameData() {
+    // Os tetos de faíscas avisam uma vez por PARTIDA (lote 4 da missão).
+    delete warnedOnce['particulas-1000'];
+    delete warnedOnce['rastro-1000'];
     _runRuntimeDomainHook('resetGame');
   }
   function runEnterStateHooks(n, prev, force) {

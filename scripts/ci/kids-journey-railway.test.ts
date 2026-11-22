@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { stagingJourney } from '../release/kids-journey-bootstrap.mjs'
+import { kidsJourneyTargets } from '../release/kids-journey-targets.mjs'
 import {
   createRailwayPorts,
   describeKidsJourneyRolloutFailure,
@@ -19,11 +20,15 @@ const adoption = { id: newId, commitSha: sha, imageDigest, previousIds: [oldId] 
 function transport(
   options: {
     relayOnly?: boolean
+    unversioned?: boolean
+    target?: 'staging' | 'production'
     retire?: boolean
     wrongSha?: boolean
     hideOldAfterProbe?: boolean
     failedProbeCheck?: 'environment' | 'service' | 'deployment' | 'commit' | 'required'
     probeStderr?: string
+    probeFailures?: number
+    probeErrorCode?: string
     pendingForMs?: number
     adoption?: typeof adoption
     failAt?: 'cli' | 'openssh' | 'inventory' | 'probe'
@@ -36,22 +41,34 @@ function transport(
   let deployed = !!options.adoption,
     polls = 0
   let activeReads = 0
+  let inventoryService = stagingJourney.members
   let elapsedMs = 0
+  let probeFailures = options.probeFailures ?? 0
   const ports = createRailwayPorts(
     sha,
-    { RAILWAY_TOKEN: 'local-test-only' },
+    {
+      RAILWAY_TOKEN: 'local-test-only',
+      ...(options.target === 'production'
+        ? {
+            RAILWAY_PROJECT_ID: kidsJourneyTargets.production.project,
+            RAILWAY_ENVIRONMENT_ID: kidsJourneyTargets.production.environment,
+          }
+        : {}),
+    },
     '/isolated/identity',
     {
+      ...(options.target ? { target: options.target } : {}),
       ...(options.adoption ? { adoptDeployments: { members: options.adoption } } : {}),
       exec(command: string, args: string[]) {
         commands.push([command, ...args])
         if (
           (options.failAt === 'cli' && args[0] === '--version') ||
           (options.failAt === 'openssh' && command === 'ssh') ||
-          (options.failAt === 'probe' && args[0] === 'ssh')
+          (args[0] === 'ssh' && (options.failAt === 'probe' || probeFailures-- > 0))
         )
           throw Object.assign(new Error('sensitive raw transport detail'), {
             stderr: options.probeStderr ?? 'sensitive raw transport detail',
+            code: options.probeErrorCode,
           })
         if (command === 'ssh') return ''
         if (args[0] === '--version') return 'railway 5.62.1\n'
@@ -73,6 +90,7 @@ function transport(
       },
       async fetch(_url: string, request: { body: string }) {
         const { query, variables } = JSON.parse(request.body)
+        if (query.includes('activeDeployments')) inventoryService = variables.s
         queries.push(query)
         const intercepted = options.reply?.(query, queries.length)
         if (intercepted) return intercepted
@@ -97,7 +115,10 @@ function transport(
                       {
                         id: deployed ? newId : oldId,
                         status: 'SUCCESS',
-                        meta: { commitHash: deployed ? sha : oldSha, imageDigest },
+                        meta:
+                          options.unversioned && !deployed
+                            ? { reason: 'deploy' }
+                            : { commitHash: deployed ? sha : oldSha, imageDigest },
                       },
                     ],
             },
@@ -108,7 +129,7 @@ function transport(
               id: variables.id,
               projectId: stagingJourney.project,
               environmentId: stagingJourney.environment,
-              serviceId: stagingJourney.members,
+              serviceId: options.unversioned ? inventoryService : stagingJourney.members,
               status:
                 variables.id === oldId
                   ? options.retire && (polls > 0 || options.adoption)
@@ -117,7 +138,10 @@ function transport(
                   : elapsedMs < (options.pendingForMs ?? 0)
                     ? 'BUILDING'
                     : 'SUCCESS',
-              meta: { commitHash: options.wrongSha ? oldSha : sha, imageDigest },
+              meta:
+                options.unversioned && !deployed
+                  ? { reason: 'deploy' }
+                  : { commitHash: options.wrongSha ? oldSha : sha, imageDigest },
             },
           }
         return { ok: true, json: async () => ({ data }) }
@@ -144,6 +168,103 @@ function transport(
 }
 
 describe('actual Railway boundary without remote I/O', () => {
+  test('a silent SSH process timeout retries only the readonly identity probe', async () => {
+    const f = transport({ probeFailures: 1, probeErrorCode: 'ETIMEDOUT' })
+    await f.ports.preflight(60_000)
+    expect(f.commands.filter((call) => call[1] === 'ssh')).toHaveLength(3)
+    expect(f.elapsed()).toBe(1000)
+    expect(f.logs).toContainEqual({
+      stage: 'ssh-readonly-retry',
+      service: 'members',
+      attempt: 2,
+      reason: 'ssh-connection-failed',
+    })
+    expect(f.queries.some((query) => query.startsWith('mutation'))).toBe(false)
+  })
+
+  test('SSH retries stay bounded and never retry an authentication refusal', async () => {
+    const stalled = transport({ failAt: 'probe', probeErrorCode: 'ETIMEDOUT' })
+    await expect(stalled.ports.preflight(60_000)).rejects.toThrow('não executou')
+    expect(stalled.commands.filter((call) => call[1] === 'ssh')).toHaveLength(3)
+    const denied = transport({
+      failAt: 'probe',
+      probeErrorCode: 'ETIMEDOUT',
+      probeStderr: 'Permission denied (publickey)',
+    })
+    await expect(denied.ports.preflight(60_000)).rejects.toThrow('não executou')
+    expect(denied.commands.filter((call) => call[1] === 'ssh')).toHaveLength(1)
+    expect(denied.elapsed()).toBe(0)
+    const expired = transport({ failAt: 'probe', probeErrorCode: 'ETIMEDOUT' })
+    await expect(expired.ports.preflight(500)).rejects.toThrow('limite')
+    expect(expired.commands.filter((call) => call[1] === 'ssh')).toHaveLength(1)
+    expect(expired.queries.some((query) => query.startsWith('mutation'))).toBe(false)
+  })
+  test('preflight can identify an uploaded staging baseline without authorizing its release', async () => {
+    const f = transport({ unversioned: true })
+    await f.ports.preflight()
+    expect(f.commands.filter((call) => call[1] === 'ssh')).toHaveLength(2)
+    expect(f.queries.filter((query) => query.includes('deployment(id:'))).toHaveLength(2)
+    expect(f.queries.some((query) => query.startsWith('mutation'))).toBe(false)
+    await expect(f.ports.remote('verify', 'active')).rejects.toThrow('versionado')
+    expect(await f.ports.deploy('members')).toBe(newId)
+  })
+
+  test('an uploaded production baseline still needs its commit identity', async () => {
+    const f = transport({ unversioned: true, target: 'production' })
+    await expect(f.ports.preflight()).rejects.toThrow('versionado')
+    expect(f.commands.some((call) => call[1] === 'ssh')).toBe(false)
+    expect(f.queries.some((query) => query.startsWith('mutation'))).toBe(false)
+  })
+
+  test('staging never treats malformed Git metadata as an uploaded baseline', async () => {
+    const f = transport({
+      reply(query) {
+        if (query.includes('activeDeployments'))
+          return Response.json({
+            data: {
+              serviceInstance: {
+                activeDeployments: [
+                  {
+                    id: oldId,
+                    status: 'SUCCESS',
+                    meta: { reason: 'deploy', commitHash: 'invalid' },
+                  },
+                ],
+              },
+            },
+          })
+      },
+    })
+    await expect(f.ports.preflight()).rejects.toThrow('versionado')
+    expect(f.commands.some((call) => call[1] === 'ssh')).toBe(false)
+  })
+
+  test('an uploaded baseline cannot bypass the deployment context or the SSH identity checks', async () => {
+    const wrongContext = transport({
+      unversioned: true,
+      reply(query) {
+        if (query.includes('deployment(id:'))
+          return Response.json({
+            data: {
+              deployment: {
+                id: oldId,
+                status: 'SUCCESS',
+                projectId: stagingJourney.project,
+                environmentId: stagingJourney.environment,
+                serviceId: 'another-service',
+                meta: { reason: 'deploy' },
+              },
+            },
+          })
+      },
+    })
+    await expect(wrongContext.ports.preflight()).rejects.toThrow('Identidade')
+    expect(wrongContext.commands.some((call) => call[1] === 'ssh')).toBe(false)
+    const wrongRemote = transport({ unversioned: true, failedProbeCheck: 'commit' })
+    await expect(wrongRemote.ports.preflight()).rejects.toThrow('divergente')
+    expect(wrongRemote.queries.some((query) => query.startsWith('mutation'))).toBe(false)
+  })
+
   test('preflight retries a rate-limited inventory read within its deadline', async () => {
     let limited = false
     const f = transport({

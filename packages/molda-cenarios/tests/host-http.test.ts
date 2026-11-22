@@ -93,6 +93,56 @@ async function modeloParaImportar(nome: string, bytes: number[]): Promise<Modelo
 }
 
 describe('a oficina falando com o app', () => {
+  test('cada transferência direta recebe prazo, mesmo sem cancelamento do chamador', async () => {
+    const sinais: (AbortSignal | null | undefined)[] = []
+    const m = await modeloParaImportar('Árvore', [1, 2, 3])
+    const host = criarHostHttp({
+      buscar: async (url) => {
+        if (url.endsWith('/bibliotecas')) return Response.json([bibliotecaDoServidor])
+        if (url.endsWith('/modelos/reservar'))
+          return Response.json({
+            espacoId: ESPACO,
+            enviar: [
+              { digest: m.digest, tipoDoConteudo: 'model/gltf-binary', url: 'https://r2/modelo' },
+            ],
+          })
+        if (url.includes('/arquivos/')) return Response.json({ url: 'https://r2/arquivo' })
+        return Response.json([])
+      },
+      enviar: async (_url, init) => {
+        sinais.push(init?.signal)
+        return new Response(new Uint8Array([1, 2, 3]))
+      },
+    })
+    await host.listarBibliotecas(ESPACO)
+    await host.importarModelos(BIBLIOTECA, [m])
+    await host.conteudoDoModelo({ biblioteca: BIBLIOTECA, digest: m.digest })
+    await host.conteudoDaTextura({ biblioteca: BIBLIOTECA, digest: digest('a') })
+    expect(sinais).toHaveLength(3)
+    for (const sinal of sinais) expect(sinal).toBeInstanceOf(AbortSignal)
+  })
+
+  test('o fallback de AbortSignal.any preserva um cancelamento anterior ao pedido', async () => {
+    const any = Object.getOwnPropertyDescriptor(AbortSignal, 'any')!
+    Object.defineProperty(AbortSignal, 'any', { ...any, value: undefined })
+    let sinalRecebido: AbortSignal | null | undefined
+    const host = criarHostHttp({
+      buscar: async (_url, init) => {
+        sinalRecebido = init?.signal
+        return Response.json({})
+      },
+    })
+    const controle = new AbortController()
+    controle.abort(new Error('Cancelado antes do pedido'))
+    try {
+      await expect(
+        host.guardarCapa(CENARIO, 0, new Blob(['png'], { type: 'image/png' }), controle.signal),
+      ).rejects.toThrow('Cancelado')
+      expect(sinalRecebido?.aborted).toBe(true)
+    } finally {
+      Object.defineProperty(AbortSignal, 'any', any)
+    }
+  })
   test('criação única envia a condição; 412 só continua quando o servidor pediu criação única', async () => {
     const m = await modeloParaImportar('Árvore', [1, 2, 3])
     m.miniatura = new Blob([new Uint8Array([9])], { type: 'image/png' })
@@ -217,8 +267,9 @@ describe('a oficina falando com o app', () => {
         })
       },
       enviar: async (_url, init) => {
-        expect(init?.signal).toBe(controle.signal)
+        expect(init?.signal).toBeInstanceOf(AbortSignal)
         controle.abort()
+        expect(init?.signal?.aborted).toBe(true)
         throw controle.signal.reason
       },
     })

@@ -69,6 +69,12 @@ export interface ProRunStore {
    */
   revealStage: (() => void) | null
   setRevealStage(reveal: (() => void) | null): void
+  /**
+   * Quando a página do jogo que está aberta começou (o aviso da ponte). A aba Problemas só conta
+   * os erros de execução de depois: os de uma página anterior não valem mais.
+   */
+  pageLoadedAt: number
+  markPageLoaded(at: number): void
 }
 
 export function createProRunStore(): StoreApi<ProRunStore> {
@@ -78,6 +84,8 @@ export function createProRunStore(): StoreApi<ProRunStore> {
     publish: (state, actions) => set({ state, actions }),
     revealStage: null,
     setRevealStage: (revealStage) => set({ revealStage }),
+    pageLoadedAt: 0,
+    markPageLoaded: (at) => set((state) => (at > state.pageLoadedAt ? { pageLoadedAt: at } : {})),
   }))
 }
 

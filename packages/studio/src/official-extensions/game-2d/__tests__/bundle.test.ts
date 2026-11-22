@@ -114,8 +114,9 @@ describe('bundle inicial do Jogo 2D', () => {
 // (decisão da dona, Poder Moedas no caminho). Medido: 421,1 mil chars / 116,8 mil gzip.
 // 21/11/2026 (lote 4 da missão): os comentários de bloco (`/** … */`) deixaram de ir ao jogo
 // (`stripBlockComments`, 54,7 KB a menos) e os tetos que cortavam em silêncio passaram a avisar
-// (+0,7 KB). Medido no Windows (Bun 1.3.11): 368.493 bytes / 95.233 bytes gzip. Antes: 423.180 /
-// 120.879 com os avisos, 422.457 / 120.628 sem eles. Os tetos desceram junto.
+// (+0,7 KB). Medido no Windows (Bun 1.3.11): 368.619 bytes / 95.238 bytes gzip (com os recados
+// da revisão do lote 4). Antes: 423.180 / 120.879 com os avisos, 422.457 / 120.628 sem eles. Os
+// tetos desceram junto.
 const RUNTIME_TETO_CRU = 369_500
 const RUNTIME_TETO_GZIP = 96_000
 

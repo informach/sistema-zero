@@ -10,4 +10,6 @@ export const LESSON_DEFAULT_FEATURES = {
   professional: false,
   export: false,
   download: false,
+  // O rascunho da aula nunca é apagado: as versões do Histórico do projeto ficariam para sempre.
+  projectHistory: false,
 } as const satisfies StudioFeatures

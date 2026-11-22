@@ -1,5 +1,6 @@
 import * as Blockly from 'blockly/core'
 import { registerExtensionBlocks } from '../blockly/blocks'
+import { loadWorkspaceState } from '../blockly/loadWorkspaceState'
 import { BLOCKLY_MEDIA_PATH } from '../blockly/media'
 import { renderWorkspaceImage } from '../blockly/screenshot'
 import { ensureBlocklyInitialized } from '../blockly/setup'
@@ -93,7 +94,7 @@ export async function captureBlocksImage(project: Project, container: HTMLElemen
       throw new Error('Este projeto não tem uma representação em blocos')
     const state = project.blocksState ?? (project.ir ? buildWorkspaceStateFromIR(project.ir) : null)
     if (!state) throw new Error('Blocos ausentes')
-    Blockly.serialization.workspaces.load(state, workspace)
+    loadWorkspaceState(state, workspace)
     Blockly.svgResize(workspace)
     workspace.render()
     return await renderWorkspaceImage(workspace)

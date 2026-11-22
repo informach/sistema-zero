@@ -53,3 +53,34 @@ describe('project summaries identify environments without granting execution', (
     expect(toProjectSummary('id', null)).toBeNull()
   })
 })
+
+// Proposta aprovada em 21/11/2026: o cartão do Pro convertido diz de qual cópia em blocos veio.
+describe('a origem do Pro convertido no resumo', () => {
+  const base = { name: 'Meu jogo', createdAt: 1, updatedAt: 2, mode: 'code', kind: 'pro' }
+  test('o Pro que veio de "Virar profissional" leva o id da cópia em blocos', () => {
+    expect(
+      toProjectSummary('pro', {
+        ...base,
+        proMeta: { devScript: 'dev', origin: { projectId: '01J0000000BLOCOS', revision: 3 } },
+      })?.originProjectId,
+    ).toBe('01J0000000BLOCOS')
+  })
+  test('sem origem, com id fora da forma ou num projeto clássico, nada', () => {
+    expect(toProjectSummary('pro', { ...base, proMeta: { devScript: 'dev' } })).not.toHaveProperty(
+      'originProjectId',
+    )
+    expect(
+      toProjectSummary('pro', {
+        ...base,
+        proMeta: { origin: { projectId: '../outro', revision: 1 } },
+      }),
+    ).not.toHaveProperty('originProjectId')
+    expect(
+      toProjectSummary('classico', {
+        ...base,
+        kind: 'classic',
+        proMeta: { origin: { projectId: '01J0000000BLOCOS', revision: 1 } },
+      }),
+    ).not.toHaveProperty('originProjectId')
+  })
+})

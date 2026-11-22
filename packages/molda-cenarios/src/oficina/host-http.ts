@@ -119,12 +119,17 @@ const PRAZO_DO_PEDIDO_MS = 120_000
 const ESPERAS_DO_ARQUIVO_SAINDO = [800, 1500, 3000, 5000] as const
 /** O sinal de quem pediu junto com o prazo; navegador antigo sem `AbortSignal.any` também. */
 function comPrazo(sinal?: AbortSignal): AbortSignal | undefined {
+  if (sinal?.aborted) return sinal
   if (typeof AbortSignal.timeout !== 'function') return sinal
   const prazo = AbortSignal.timeout(PRAZO_DO_PEDIDO_MS)
   if (!sinal) return prazo
   if (typeof AbortSignal.any === 'function') return AbortSignal.any([sinal, prazo])
   const juntos = new AbortController()
-  const parar = () => juntos.abort(sinal.aborted ? sinal.reason : prazo.reason)
+  const parar = () => {
+    sinal.removeEventListener('abort', parar)
+    prazo.removeEventListener('abort', parar)
+    juntos.abort(sinal.aborted ? sinal.reason : prazo.reason)
+  }
   sinal.addEventListener('abort', parar, { once: true })
   prazo.addEventListener('abort', parar, { once: true })
   return juntos.signal
@@ -292,7 +297,7 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
       try {
         resposta = await enviar(arquivo.url, {
           method: 'PUT',
-          signal: sinal,
+          signal: comPrazo(sinal),
           headers: {
             'content-type': arquivo.tipoDoConteudo,
             ...(arquivo.criarUmaVez ? { 'if-none-match': '*' } : {}),
@@ -555,7 +560,7 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
       )
       let resposta: Response
       try {
-        resposta = await enviar(url, { signal: sinal })
+        resposta = await enviar(url, { signal: comPrazo(sinal), credentials: 'omit' })
       } catch {
         sinal?.throwIfAborted()
         throw new ErroDaOficina('Sem conexão agora. Tente de novo.', 0, null, null)
@@ -594,7 +599,7 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
         undefined,
         sinal,
       )
-      const resposta = await enviar(url, { signal: sinal, credentials: 'omit' })
+      const resposta = await enviar(url, { signal: comPrazo(sinal), credentials: 'omit' })
       if (!resposta.ok)
         throw new ErroDaOficina('Não consegui carregar a textura', resposta.status, null, null)
       if (!resposta.body) throw new ErroDaOficina('A textura está vazia', 0, null, null)
@@ -747,7 +752,7 @@ export function criarHostHttp(opcoes: OpcoesDoHostHttp = {}): CenariosHost {
         undefined,
         sinal,
       )
-      const resposta = await enviar(url, { signal: sinal })
+      const resposta = await enviar(url, { signal: comPrazo(sinal), credentials: 'omit' })
       if (!resposta.ok)
         throw new ErroDaOficina('Não consegui carregar o relevo', resposta.status, null, null)
       if (!resposta.body) throw new ErroDaOficina('A peça de terreno está vazia', 0, null, null)

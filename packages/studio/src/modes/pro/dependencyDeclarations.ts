@@ -1,4 +1,29 @@
+import { fileSystemErrorCode } from '../../components/terminal/fileSystemError'
 import type { ProFileSystem } from './proFileSystem'
+
+/**
+ * Lote 6 da missão (21/11/2026): enquanto o `npm install` ainda não criou a pasta, ou com um
+ * pacote sendo trocado no meio da leitura, um diretório ou arquivo some. Isso é "nada instalado
+ * ainda" (a instalação terminada pede outra leitura), nunca um erro para a criança: antes, o
+ * "ENOENT: no such file or directory, scandir '…/node_modules'" aparecia cru no alto do editor.
+ */
+const vanished = (error: unknown) =>
+  ['ENOENT', 'ENOTDIR'].includes(fileSystemErrorCode(error) ?? '')
+
+/**
+ * A frase da faixa do editor quando a leitura falha. As recusas deste módulo (limites) já são
+ * frases; um erro do sistema de arquivos vira uma frase e o texto técnico fica no console.
+ */
+export function dependencyIndexIssue(error: unknown): string {
+  // Só um código do sistema de arquivos (`EACCES`, `EPERM`...); outro `code` qualquer não é dele.
+  if (/^E[A-Z]+$/.test(fileSystemErrorCode(error) ?? '')) {
+    console.warn('Leitura das bibliotecas instaladas:', error)
+    // A frase diz o que muda para a criança e não promete releitura: depois de a instalação
+    // terminar, uma permissão negada continuaria negada (revisão do lote 5).
+    return 'Não consegui ler as bibliotecas instaladas agora: o editor pode não reconhecer alguma delas.'
+  }
+  return error instanceof Error ? error.message : String(error)
+}
 
 /** Reads types and manifests, never evaluates package code or downloads arbitrary URLs. */
 export async function readDependencyDeclarations(
@@ -15,7 +40,13 @@ export async function readDependencyDeclarations(
     const batch = queue.splice(0, 12)
     const directories = await Promise.all(
       batch.map(async (directory) => {
-        const entries = await fs.readdir(directory, { withFileTypes: true })
+        let entries: Awaited<ReturnType<typeof fs.readdir>>
+        try {
+          entries = await fs.readdir(directory, { withFileTypes: true })
+        } catch (error) {
+          if (vanished(error)) return []
+          throw error
+        }
         const children: string[] = []
         for (const entry of entries) {
           if (entry.name.startsWith('.')) continue
@@ -44,7 +75,13 @@ export async function readDependencyDeclarations(
       while (index < paths.length) {
         if (!active()) throw new DOMException('Indexação cancelada.', 'AbortError')
         const path = paths[index++]!
-        const content = await fs.readFile(path, 'utf-8')
+        let content: string
+        try {
+          content = await fs.readFile(path, 'utf-8')
+        } catch (error) {
+          if (vanished(error)) continue
+          throw error
+        }
         total += content.length
         // Phaser 3.90 ships a single 6.21 MB declaration file. Keep a measured
         // per-file allowance without raising the total index memory budget.

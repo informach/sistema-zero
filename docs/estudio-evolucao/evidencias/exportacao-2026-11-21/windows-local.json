@@ -1,0 +1,208 @@
+{
+  "measuredAt": "2026-11-21T20:08:54.379Z",
+  "commit": "6c96234f2 (com as mudanças do lote 7 ainda fora do commit)",
+  "environment": {
+    "platform": "win32",
+    "node": "v24.15.0",
+    "npm": "11.12.1",
+    "cpu": "AMD Ryzen 5 5600G with Radeon Graphics         "
+  },
+  "method": "exportProjectSource (o mesmo do \"Baixar o código\") → pasta limpa → npm ci (com a trava) ou npm install → npm run build duas vezes, dist apagado entre elas, impressão SHA-256 de caminhos e bytes.",
+  "results": [
+    {
+      "project": "vanilla-js",
+      "sourceFiles": 9,
+      "lockfile": true,
+      "install": "npm ci",
+      "installMs": 970,
+      "buildMs": [980, 673],
+      "dist": {
+        "files": 4,
+        "sha256": "0d9802ac10450afcc139ad663bf892404ff1e25e5c3c6b20233d7b3c506bc49a"
+      },
+      "reproducibleBuild": true
+    },
+    {
+      "project": "vanilla-vite",
+      "sourceFiles": 10,
+      "lockfile": true,
+      "install": "npm ci",
+      "installMs": 1282,
+      "buildMs": [969, 627],
+      "dist": {
+        "files": 4,
+        "sha256": "9e630b95a3b6937ce065be3754da36fc4c52e51fc36c06784c4d5b7782a503d3"
+      },
+      "reproducibleBuild": true
+    },
+    {
+      "project": "react-ts",
+      "sourceFiles": 10,
+      "lockfile": true,
+      "install": "npm ci",
+      "installMs": 1700,
+      "buildMs": [964, 677],
+      "dist": {
+        "files": 3,
+        "sha256": "7faee1b23c43ca5260403ac9f592bc36ddbe4ef5867ca2398a5c72b46c354f04"
+      },
+      "reproducibleBuild": true
+    },
+    {
+      "project": "three-js",
+      "sourceFiles": 8,
+      "lockfile": true,
+      "install": "npm ci",
+      "installMs": 4273,
+      "buildMs": [958, 721],
+      "dist": {
+        "files": 3,
+        "sha256": "208d3d456d8c707121e20cd6dec40e4bf5baa60d501fa1c59493b7828cc2529b"
+      },
+      "reproducibleBuild": true
+    },
+    {
+      "project": "three-ts",
+      "sourceFiles": 9,
+      "lockfile": true,
+      "install": "npm ci",
+      "installMs": 16126,
+      "buildMs": [8929, 783],
+      "dist": {
+        "files": 3,
+        "sha256": "208d3d456d8c707121e20cd6dec40e4bf5baa60d501fa1c59493b7828cc2529b"
+      },
+      "reproducibleBuild": true
+    },
+    {
+      "project": "canvas-puzzle",
+      "sourceFiles": 24,
+      "lockfile": true,
+      "install": "npm ci",
+      "installMs": 1443,
+      "buildMs": [1030, 662],
+      "dist": {
+        "files": 4,
+        "sha256": "25583dcad45ba388861238ef374deab138c09dc66c8ab3629c8f5df47fc96b98"
+      },
+      "reproducibleBuild": true
+    },
+    {
+      "project": "canvas-survival",
+      "sourceFiles": 37,
+      "lockfile": true,
+      "install": "npm ci",
+      "installMs": 1130,
+      "buildMs": [1261, 616],
+      "dist": {
+        "files": 7,
+        "sha256": "d62e51bf227f5894012356557472efda3c7d04695d94799edee9e279053594bc"
+      },
+      "reproducibleBuild": true
+    },
+    {
+      "project": "phaser-arcade",
+      "sourceFiles": 23,
+      "lockfile": true,
+      "install": "npm ci",
+      "installMs": 6873,
+      "buildMs": [1563, 1298],
+      "dist": {
+        "files": 4,
+        "sha256": "bd912e76ffc66e64fb301b327c84ad70288ae93adb0ddd0cd5de1eacff4efb9a"
+      },
+      "reproducibleBuild": true
+    },
+    {
+      "project": "phaser-platformer",
+      "sourceFiles": 23,
+      "lockfile": true,
+      "install": "npm ci",
+      "installMs": 6561,
+      "buildMs": [1568, 1249],
+      "dist": {
+        "files": 4,
+        "sha256": "207a8633d966d0841ad1ea5584206203b0a79a9c22f131cfee4ba1e4a143092c"
+      },
+      "reproducibleBuild": true
+    },
+    {
+      "project": "three-exploration",
+      "sourceFiles": 24,
+      "lockfile": true,
+      "install": "npm ci",
+      "installMs": 3930,
+      "buildMs": [1113, 866],
+      "dist": {
+        "files": 4,
+        "sha256": "11b0c6c23930c954aa2cbbd289afce21f85c0a018ec4d553038691f122299e03"
+      },
+      "reproducibleBuild": true
+    },
+    {
+      "project": "canvas-grid-arena",
+      "sourceFiles": 26,
+      "lockfile": true,
+      "install": "npm ci",
+      "installMs": 1152,
+      "buildMs": [937, 727],
+      "dist": {
+        "files": 4,
+        "sha256": "0348c0f4bf53577b519f33c36f1c6236ba2422b4c721404fa46e9acf7bbfee28"
+      },
+      "reproducibleBuild": true
+    },
+    {
+      "project": "phaser-tactics",
+      "sourceFiles": 27,
+      "lockfile": true,
+      "install": "npm ci",
+      "installMs": 6043,
+      "buildMs": [1520, 1235],
+      "dist": {
+        "files": 4,
+        "sha256": "aaca9591e26a120ebdab70076f50e7893ba356c36a8e8db017abfcbc65968062"
+      },
+      "reproducibleBuild": true
+    },
+    {
+      "project": "three-tactics",
+      "sourceFiles": 27,
+      "lockfile": true,
+      "install": "npm ci",
+      "installMs": 3772,
+      "buildMs": [1036, 710],
+      "dist": {
+        "files": 4,
+        "sha256": "3404201378bc002ef0cde333f83d52233742349e51f640efb455e8b046b9e69d"
+      },
+      "reproducibleBuild": true
+    },
+    {
+      "project": "three-action",
+      "sourceFiles": 24,
+      "lockfile": true,
+      "install": "npm ci",
+      "installMs": 3973,
+      "buildMs": [1099, 772],
+      "dist": {
+        "files": 4,
+        "sha256": "5076ee69fae1ff8ead1b8839e75008347a94f2ad78d353fad5d7424bbbc0fed8"
+      },
+      "reproducibleBuild": true
+    },
+    {
+      "project": "vanilla-js + nanoid (fora do grafo aprovado)",
+      "sourceFiles": 8,
+      "lockfile": false,
+      "install": "npm install",
+      "installMs": 1578,
+      "buildMs": [926, 572],
+      "dist": {
+        "files": 4,
+        "sha256": "3cc14ad5ace72733632883c80485d812d560300487a94f86606bcf4b39e51ee4"
+      },
+      "reproducibleBuild": true
+    }
+  ]
+}

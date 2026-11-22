@@ -1,0 +1,143 @@
+{
+  "sourceCommit": "d2f238b620d62378a768855edc971d5cc89d8a46",
+  "run": "https://github.com/informach/sistema-zero/actions/runs/44949817617",
+  "job": "browsers (windows-2025, chromium, 1/1, windows-chromium)",
+  "browser": "Chromium 159 completo (Playwright chromium-1255), Windows Server 2025, sem tela",
+  "parts": 13,
+  "structureObjectives": 49,
+  "executionObjectives": 17,
+  "allObjectivesPassed": true,
+  "note": "Capturas de depois das mudanças de 20 e 21/11/2026, tiradas pela homologação integral (studio-mission.yml) no fim de cada parte refeita pelo robô das aulas.",
+  "files": [
+    {
+      "path": "cade-todo-mundo-aula-1/primeiro-achado.objetivos.json",
+      "bytes": 321,
+      "sha256": "bfdd8d501c81747e212f68be587bf1864ea2bcbb0ae5d6c5e3569d2080125a0f"
+    },
+    {
+      "path": "cade-todo-mundo-aula-1/primeiro-achado.png",
+      "bytes": 108736,
+      "sha256": "34d2d42b5fb9ed4cb267271fd711d210d18a4a32ae5978f736b59283fbfb2360"
+    },
+    {
+      "path": "cade-todo-mundo-aula-2/contar-achados.objetivos.json",
+      "bytes": 601,
+      "sha256": "2f17e85aa5a88ec6f368876b0ec0d6e09cb7dd3368034d6de6bb6fa5b2f30dc5"
+    },
+    {
+      "path": "cade-todo-mundo-aula-2/contar-achados.png",
+      "bytes": 113867,
+      "sha256": "c46ac32695ead948587d46ef84d1827c0c0b48fc473d24e1a6cda15bfb6b78b1"
+    },
+    {
+      "path": "cade-todo-mundo-aula-2/personalizar.objetivos.json",
+      "bytes": 3,
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "path": "cade-todo-mundo-aula-2/personalizar.png",
+      "bytes": 124546,
+      "sha256": "13da9931ebc67116e95394f5b72b181bf06e99aae5c8b59dc9d7762631150d9b"
+    },
+    {
+      "path": "desafio-dia-1/andar.objetivos.json",
+      "bytes": 913,
+      "sha256": "e55f47f2cef4ee12d693381d9b8d025176ec1c4f16cd3324ff9b114b9b9f3a95"
+    },
+    {
+      "path": "desafio-dia-1/andar.png",
+      "bytes": 127438,
+      "sha256": "39bba1f5d3439b38a9aca259ea5d40cac64d67aa00fb7c840a8e082077402f32"
+    },
+    {
+      "path": "desafio-dia-1/borda.objetivos.json",
+      "bytes": 537,
+      "sha256": "71ed7731d8ea6f00e41db2dd5ee6a24a82e068d676d0bd3a1cecacd31147b2da"
+    },
+    {
+      "path": "desafio-dia-1/borda.png",
+      "bytes": 128801,
+      "sha256": "16e66ad242d4a2a94e17e8f244c987230b9a745cb5ab677f9b70e17b00a9e618"
+    },
+    {
+      "path": "desafio-dia-2/guardar.objetivos.json",
+      "bytes": 1289,
+      "sha256": "62248f4d3ec956200594910e0b1489978280d0625ec96a5565009ccd52074240"
+    },
+    {
+      "path": "desafio-dia-2/guardar.png",
+      "bytes": 123851,
+      "sha256": "a3bfbb4270998549bd75bbb89828e5e91766a3a6d7436ccf628e6d65c82e07a1"
+    },
+    {
+      "path": "desafio-dia-2/programar-chave.objetivos.json",
+      "bytes": 1457,
+      "sha256": "ef5e537d439cef50a06928e6e928c6035880b18db4fd73a4d6e02ecffd7de791"
+    },
+    {
+      "path": "desafio-dia-2/programar-chave.png",
+      "bytes": 137629,
+      "sha256": "d28894923efccea91b074c9ba8143dc4d53d4fc0f9964f226d2a84f1c304a5f4"
+    },
+    {
+      "path": "desafio-dia-2/recolher.objetivos.json",
+      "bytes": 691,
+      "sha256": "f06bf0830408f62f463bb75f3c188503d1d4d83391d869ba4cccabcd1987d743"
+    },
+    {
+      "path": "desafio-dia-2/recolher.png",
+      "bytes": 153402,
+      "sha256": "7b7a82e516fb10214ea0a5faf441d1d417fb1d0d842904f35f7574c131c80224"
+    },
+    {
+      "path": "desafio-dia-3/decisao.objetivos.json",
+      "bytes": 2778,
+      "sha256": "fae7ffff514d6e45d8939906208f30efc0c67e152dc589416f9c4af50e4fba97"
+    },
+    {
+      "path": "desafio-dia-3/decisao.png",
+      "bytes": 168346,
+      "sha256": "c5b553a91748bbe2ea6d91407a678232b95dd6e37af9e8eb9efd4a1b3b51fa95"
+    },
+    {
+      "path": "desafio-dia-3/farol-mensagens.objetivos.json",
+      "bytes": 3,
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "path": "desafio-dia-3/farol-mensagens.png",
+      "bytes": 192852,
+      "sha256": "4152aadd61e091b0826bc4990ef61756ec51fa0d571ac81da47da34db97cc9ab"
+    },
+    {
+      "path": "desafio-dia-3/personalizar.objetivos.json",
+      "bytes": 187,
+      "sha256": "f15c13efdab6cce298f74f423007f941746194de7af5b7893f99c801dc83f4f3"
+    },
+    {
+      "path": "desafio-dia-3/personalizar.png",
+      "bytes": 170722,
+      "sha256": "832cf7395a78e94959157ad04dce1c434371906acd57dcc97582d0d418ffcbaf"
+    },
+    {
+      "path": "desafio-dia-3/posicionar-chave.objetivos.json",
+      "bytes": 3,
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "path": "desafio-dia-3/posicionar-chave.png",
+      "bytes": 209891,
+      "sha256": "19cf1f895989f245e869b953a588b03f85eaf4d7d7c1d4f44fdbe306291ad24a"
+    },
+    {
+      "path": "desafio-dia-3/sem-chave.objetivos.json",
+      "bytes": 1943,
+      "sha256": "54a0ce88bde4722099c46a38a0e0c8d9b2da852c3fb321c0247f7d814a2aa037"
+    },
+    {
+      "path": "desafio-dia-3/sem-chave.png",
+      "bytes": 188454,
+      "sha256": "6f578241362c22305b03a35c2703cc6276ce443c99f945aa2db2cffb0e7c9dbf"
+    }
+  ]
+}

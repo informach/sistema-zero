@@ -43,6 +43,28 @@ function fixture() {
     config: { services: { [id]: { build: before } } },
   }
 }
+
+test('reconcilia os caminhos do gateway e do Arquipélago na mesma fase sem deployment', () => {
+  const { plan } = fixture()
+  const consumers = [
+    ['api-gateway', '2b7748bc-d3e3-4aff-bd94-3f514b53c44f'],
+    ['arquipelago-api', 'ee19a264-7708-471a-adf9-c9db1cfdb9a2'],
+  ] as const
+  const config = { services: {} as Record<string, { build: typeof before }> }
+  const services: Record<string, { build: { watchPatterns: string[] } }> = {}
+  plan.changeSet.changes = consumers.map(([name, serviceId]) => {
+    const previous = { ...before, dockerfilePath: `packages/${name}/Dockerfile` }
+    config.services[serviceId] = { build: previous }
+    services[serviceId] = { build: { watchPatterns: after.watchPatterns } }
+    return {
+      ...plan.changeSet.changes[0]!,
+      address: `service.${name}`,
+      before: previous,
+      after: { ...previous, watchPatterns: after.watchPatterns },
+    }
+  })
+  expect(watchPathsPatch(plan, config, tree)).toEqual({ services })
+})
 test('reconcilia apenas os caminhos previstos sem iniciar deploy e confirma o estado', async () => {
   const { plan, config } = fixture()
   const calls: string[] = []

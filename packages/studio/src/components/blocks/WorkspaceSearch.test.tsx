@@ -108,11 +108,12 @@ describe('WorkspaceSearch', () => {
       fireEvent.change(campo(), { target: { value: 'pontos' } })
       await act(tick)
       expect(screen.getByText('2 blocos')).toBeTruthy()
-      await act(async () => {
+      act(() => {
         workspace.getBlockById('b2')?.dispose()
-        await tick()
       })
-      expect(screen.getByText('1 bloco')).toBeTruthy()
+      // O Blockly 12 entrega os eventos num requestAnimationFrame seguido de um setTimeout(0):
+      // esperar só um setTimeout(0) passava por sorte de tempo (reprovou no CI Linux em 21/11).
+      expect(await screen.findByText('1 bloco')).toBeTruthy()
       expect(screen.queryByText('pontos extra')).toBeNull()
     } finally {
       workspace.dispose()

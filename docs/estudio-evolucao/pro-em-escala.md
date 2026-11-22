@@ -132,7 +132,40 @@ quadros do jogo são medidos com o Zappy fechado.
 - apagar arquivo não é exercitado;
 - a memória é a da página do editor (o jogo roda em outro processo).
 
+## Operações do editor que atravessam os arquivos (lote 6, 21/11/2026)
+
+O mesmo caso "modular 60-file project" mede três operações, do clique até o resultado aparecer na
+tela e o quadro seguinte sair, dez vezes cada:
+
+| Medida | p50 | p95 | máximo | Teto (p95) |
+| --- | --- | --- | --- | --- |
+| "Onde isto é usado" em `points` (36 referências) | 30 ms | 56 ms | 56 ms | < 200 ms |
+| "Trocar nome em todo lugar" de `alive` até a revisão (21 arquivos) | 59 ms | 97 ms | 97 ms | < 200 ms |
+| "Arrumar código" no arquivo aberto | 50 ms | 87 ms | 87 ms | < 200 ms |
+
+Windows local, Chromium 159 da homologação, sem CPU desacelerada, código de `f3b11d15a` com o
+conserto abaixo ainda fora do commit; relatório inteiro em
+[`evidencias/pro-operacoes-2026-11-21/windows-local.json`](evidencias/pro-operacoes-2026-11-21/windows-local.json).
+O teto é o da primeira resposta da busca (seção 16 da missão). A troca de nome usa `alive` porque
+`points` aparece em 36 arquivos e o Pro recusa, de propósito, uma operação que mexe em mais de 24
+(a recuperação inteira precisa caber).
+
+**Defeito que a medida achou:** "Arrumar código" tirava os espaços em volta do `=` e dos operadores
+(`this.position=this.position.add(...)`). As opções do formatador iam incompletas, e no TypeScript
+a opção que falta conta como desligada. Hoje elas partem do padrão do próprio TypeScript
+(`PRO_FORMAT_SETTINGS` em `monaco/pro/languageService.ts`, usado também por "Organizar as
+importações"); o teste do serviço reprovava antes do conserto.
+
+## Ensaio com uma dependência de verdade (lote 6, 21/11/2026)
+
+`e2e-pro-full/pro-full-preview.spec.ts`, caso "Pro project with a real npm dependency" (sob
+demanda, `playwright.pro-full.config.ts`: WebContainer de verdade e rede para o npm): um projeto
+Pro novo, `npm install nanoid@5.0.9` digitado no terminal, o `package.json` que o npm reescreveu
+volta para o projeto (aparece na seção "Configuração" com a biblioteca), `src/main.js` importa a
+biblioteca e a prévia mostra o resultado, o editor lê as bibliotecas instaladas sem erro e não
+acusa a importação, `npm run build` passa e, depois de recarregar a página, a dependência continua
+no projeto e o jogo volta a rodar com ela. Verde no Windows local (Chrome do sistema), 21/11/2026.
+
 ## O que falta
 
-- O build hospedado com dependências reais e o WebContainer no mesmo ensaio. O WebContainer
-  precisa de rede para fora.
+- O build hospedado com dependências reais (o WebContainer com dependência já tem ensaio, acima).

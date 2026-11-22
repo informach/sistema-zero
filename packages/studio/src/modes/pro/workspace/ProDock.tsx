@@ -7,7 +7,8 @@ import { SectionErrorFallback } from '../../../components/layout/ErrorViews'
 import type { ProjectTree } from '../../../core/proProject'
 import type { ProAnalysisState, ProEditorDiagnostic } from '../../../monaco/pro/session'
 import { glossErrorMessage } from '../../../state/errorGloss'
-import { ERROR_LOG_KINDS, useLogsStore } from '../../../state/logsStore'
+import { isCurrentPageError, useLogsStore } from '../../../state/logsStore'
+import { useProRun } from '../../../state/proRun'
 import { StudioStoresContext } from '../../../state/storesContext'
 import { useUIStore, useUIStoreApi } from '../../../state/uiStore'
 import { useStudioConfig } from '../../../studio/config'
@@ -87,6 +88,9 @@ export function ProDock({
   const allowed = useVisibleBottomTabs()
   const config = useStudioConfig()
   const entries = useLogsStore((state) => state.entries)
+  // Só os erros de execução da página do jogo que está aberta: os de uma página anterior (antes de
+  // o Vite recarregar o jogo consertado) não valem mais.
+  const pageLoadedAt = useProRun((state) => state.pageLoadedAt)
   const problems = useMemo(
     () => currentProDiagnostics(diagnostics ?? [], tree),
     [diagnostics, tree],
@@ -96,11 +100,11 @@ export function ProDock({
       [
         ...new Map(
           entries
-            .filter((entry) => ERROR_LOG_KINDS.has(entry.kind))
+            .filter((entry) => isCurrentPageError(entry, pageLoadedAt))
             .map((entry) => [entry.text, entry]),
         ).values(),
       ].slice(-50),
-    [entries],
+    [entries, pageLoadedAt],
   )
   const count = problems.length + runtime.length
   const hasConsole = allowed.some((item) => item.id === 'console')

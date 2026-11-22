@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'bun:test'
 import { PREVIEW_MAX_LOG_PARTS } from '#preview'
-import { buildProConsoleBridgeScript, isProConsoleMessage } from './proConsoleBridge'
+import {
+  buildProConsoleBridgeScript,
+  isProConsoleMessage,
+  proPageLoadedAt,
+} from './proConsoleBridge'
 
 describe('proConsoleBridge — script injetado', () => {
   it('embute o targetOrigin do host via JSON (nunca interpolação crua) + marker + guard', () => {
@@ -37,5 +41,35 @@ describe('proConsoleBridge — isProConsoleMessage', () => {
     const cheio = Array.from({ length: PREVIEW_MAX_LOG_PARTS + 1 }, (_, i) => `p${i}`)
     expect(isProConsoleMessage({ ...valid, parts: cheio })).toBe(true)
     expect(isProConsoleMessage({ ...valid, parts: [...cheio, 'excedente'] })).toBe(false)
+  })
+})
+
+// Achado no ensaio do Pro com dependência (21/11/2026): o erro de uma página anterior seguia na aba
+// Problemas depois de o Vite recarregar o jogo consertado.
+describe('proConsoleBridge — o começo da página', () => {
+  it('a ponte avisa o começo da página ao host, com o relógio da página', () => {
+    const posted: Array<{ data: unknown; origin: string }> = []
+    const fakeWindow = {
+      parent: { postMessage: (data: unknown, origin: string) => posted.push({ data, origin }) },
+    }
+    const fakeConsole = { log() {}, info() {}, warn() {}, error() {}, debug() {} }
+    new Function('window', 'console', buildProConsoleBridgeScript('https://host.test'))(
+      fakeWindow,
+      fakeConsole,
+    )
+    const page = posted.find(
+      (entry) => (entry.data as { source?: string }).source === 'sz-pro-page',
+    )
+    expect(page?.origin).toBe('https://host.test')
+    expect(typeof (page?.data as { at?: unknown }).at).toBe('number')
+  })
+
+  it('o horário vale limitado ao de chegada, e outra forma não é aviso de começo', () => {
+    expect(proPageLoadedAt({ source: 'sz-pro-page', at: 1_000 }, 5_000)).toBe(1_000)
+    // Um horário no futuro (o código da criança forjando) não esconde os erros que chegarem.
+    expect(proPageLoadedAt({ source: 'sz-pro-page', at: 9_999_999 }, 5_000)).toBe(5_000)
+    expect(proPageLoadedAt({ source: 'sz-pro-console', at: 1_000 }, 5_000)).toBeNull()
+    expect(proPageLoadedAt({ source: 'sz-pro-page', at: 'agora' }, 5_000)).toBeNull()
+    expect(proPageLoadedAt(null, 5_000)).toBeNull()
   })
 })

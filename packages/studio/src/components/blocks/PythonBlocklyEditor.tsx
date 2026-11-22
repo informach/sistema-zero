@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { installCornerSpacer } from '../../blockly/cornerSpacer'
 import { blocklyPortalsInside } from '../../blockly/dialogPortals'
 import { jsonPlainCopy, jsonStringify } from '../../blockly/jsonPlainCopy'
+import { loadWorkspaceState } from '../../blockly/loadWorkspaceState'
 import { BLOCKLY_MEDIA_PATH } from '../../blockly/media'
 import {
   MORE_BLOCKS_KIND,
@@ -556,7 +557,10 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
         navigation.restore()
         workspace.clear()
         if (restored) {
-          Blockly.serialization.workspaces.load(restored.state, workspace)
+          // O carregador que devolve o estado global do Blockly se a carga lançar, o mesmo do
+          // editor JavaScript (full review final de 21/11/2026: aqui ficava o "Desfazer" desligado
+          // em todo editor da página depois de um rascunho que não carregava).
+          loadWorkspaceState(restored.state, workspace)
           rootIds = restored.rootIds
           origins = restored.origins
         } else {

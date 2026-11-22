@@ -56,6 +56,12 @@ export interface StudioFeatures {
    * da aula guiam ali; o balão roubaria a tela compartilhada).
    */
   firstStepsTour?: boolean
+  /**
+   * O Histórico do projeto do Pro (proposta aprovada em 21/11/2026): versões guardadas neste
+   * computador. Default: ligado; a aula desliga (`LESSON_DEFAULT_FEATURES`), porque o rascunho da
+   * aula nunca é apagado e as versões ocupariam espaço para sempre (revisão do lote 7).
+   */
+  projectHistory?: boolean
 }
 
 /** Timeout default de processos não-interativos do terminal/dev-server (ms). */
@@ -151,6 +157,8 @@ export interface ResolvedStudioConfig {
   professional: boolean
   /** O passeio de primeiros passos (ver `StudioFeatures.firstStepsTour`). */
   firstStepsTour: boolean
+  /** O Histórico do projeto do Pro (ver `StudioFeatures.projectHistory`). */
+  projectHistory: boolean
   aiConfig: { provider?: AIProvider; model?: string; allowUserKey: boolean }
   allowedModes: readonly IDEMode[]
   previewSecurity: PreviewSecurityPolicy
@@ -193,6 +201,7 @@ export function resolveStudioConfig(
     ai: ai !== false,
     professional,
     firstStepsTour: features?.firstStepsTour ?? false,
+    projectHistory: features?.projectHistory ?? true,
     aiConfig: {
       provider: aiObject.provider,
       model: aiObject.model,
@@ -214,6 +223,7 @@ export const STANDALONE_CONFIG: ResolvedStudioConfig = {
   ai: true,
   professional: false,
   firstStepsTour: false,
+  projectHistory: false,
   aiConfig: { allowUserKey: true },
   allowedModes: IDE_MODES,
   previewSecurity: DEFAULT_PREVIEW_SECURITY,

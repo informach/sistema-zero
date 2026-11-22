@@ -40,7 +40,7 @@ function withWarnings(run: (api: Api, warnings: () => string[]) => void) {
   }
 }
 
-const cheio = (lista: string[]) => lista.filter((texto) => texto.includes('chegou a 400 sprites'))
+const cheio = (lista: string[]) => lista.filter((texto) => texto.includes('até 400 sprites'))
 
 describe('os tetos do Jogo 2D avisam a criança', () => {
   it('o 401º sprite de um grupo não entra e avisa uma vez', () => {
@@ -55,6 +55,37 @@ describe('os tetos do Jogo 2D avisam a criança', () => {
       expect(cheio(warnings())).toHaveLength(1)
       expect(cheio(warnings())[0]).toContain('Tirar do grupo quem sair da tela')
     })
+  })
+
+  // Full review final (21/11/2026): no teste de cima o `spawn` avisa antes do `addToGroup`, e o
+  // aviso de uma vez por partida junta os dois; tirar o aviso de um caminho seguia verde. Aqui cada
+  // caminho enche o grupo sozinho, numa partida nova.
+  it('cada caminho que passaria do teto avisa sozinho', () => {
+    const caminhos: Array<[string, (api: Api, g: Group) => void]> = [
+      ['addToGroup', (api, g) => api.addToGroup(g, api.createSprite({ x: 0, y: 0, w: 4, h: 4 }))],
+      [
+        'posição nova na lista',
+        (api, g) => {
+          g.items[400] = api.createSprite({ x: 0, y: 0, w: 4, h: 4 })
+        },
+      ],
+      [
+        'lista trocada inteira',
+        (api, g) => {
+          g.items = Array.from({ length: 401 }, (_, i) =>
+            api.createSprite({ x: i, y: 0, w: 4, h: 4 }),
+          )
+        },
+      ],
+    ]
+    for (const [nome, encher] of caminhos)
+      withWarnings((api, warnings) => {
+        const g = api.createGroup()
+        for (let i = 0; i < 400; i++) api.spawn(g, { x: i, y: 0, w: 4, h: 4 })
+        encher(api, g)
+        expect(g.items.length, nome).toBe(400)
+        expect(cheio(warnings()), nome).toHaveLength(1)
+      })
   })
 
   it('pôr sprites direto na lista do grupo, no modo Código, também avisa', () => {

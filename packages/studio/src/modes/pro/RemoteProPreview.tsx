@@ -11,7 +11,7 @@ import { type ProRunActions, type ProRunState, useProRunApi } from '../../state/
 import { useT } from '../../studio/i18n'
 import type { StudioProRuntimeAdapter, StudioProRuntimeBuildResult } from '../../studio/pro-runtime'
 import { ProArtifactPreview } from './ProArtifactPreview'
-import { isProConsoleMessage } from './proConsoleBridge'
+import { isProConsoleMessage, proPageLoadedAt } from './proConsoleBridge'
 import { useProPreviewDevtools } from './proPreviewDevtools'
 import { useProGameStorage } from './useProGameStorage'
 
@@ -155,6 +155,8 @@ export function RemoteProPreview({
     const handler = (event: MessageEvent) => {
       if (event.source !== iframeRef.current?.contentWindow) return
       if (event.origin !== 'null') return
+      const loadedAt = proPageLoadedAt(event.data, Date.now())
+      if (loadedAt !== null) return proRun.getState().markPageLoaded(loadedAt)
       if (!isProConsoleMessage(event.data)) return
       pushLog({
         source: 'sz-preview',
@@ -165,7 +167,7 @@ export function RemoteProPreview({
     }
     window.addEventListener('message', handler)
     return () => window.removeEventListener('message', handler)
-  }, [pushLog, active])
+  }, [pushLog, active, proRun])
 
   const rebuild = useCallback(() => {
     const latest = latestProjectRef.current

@@ -176,7 +176,7 @@ export async function prepareProWorkspaceOperation(
         references.length
           ? `Referências ao ID ou caminho em: ${references.slice(0, 20).join(', ')}${references.length > 20 ? '…' : ''}.`
           : 'Nenhuma referência literal ao ID ou caminho foi encontrada nos arquivos do projeto.',
-        'Caminhos montados pelo código não entram nesta busca. A recuperação fica em Ferramentas → Recuperar arquivos e materiais; ela exige que o projeto ainda corresponda à revisão escolhida.',
+        'Caminhos montados pelo código não entram nesta busca. A recuperação fica no Histórico do projeto (menu Mais do editor); ela exige que o projeto ainda corresponda à revisão escolhida.',
       ],
       context: { project, scope, adapter },
     }

@@ -5,6 +5,7 @@ import { modesForKind } from '#core'
 import {
   ConfirmDialog,
   cn,
+  IconBlocks,
   IconBox,
   IconEye,
   IconEyeOff,
@@ -45,6 +46,7 @@ import { useStudioHostChrome } from '../../studio/host-chrome'
 import { useT } from '../../studio/i18n'
 import { useStudioLayout } from '../../studio/layoutContext'
 import { useStudioMoldaLibrary } from '../../studio/molda-library'
+import { useStudioOpenProject } from '../../studio/open-project'
 import { useStudioRuntimeEnvironment } from '../../studio/runtime-environment'
 import { useStudioShare, useStudioShareDisabledReason } from '../../studio/share'
 import { useStudioTheme } from '../../studio/theme'
@@ -62,6 +64,7 @@ import {
 } from './layoutBreakpoints'
 import { ShareDialog } from './ShareDialog'
 import { BackBrand } from './topbar/BackBrand'
+import { blocksVersionExists } from './topbar/blocksVersion'
 import { HostStatusSeal } from './topbar/HostStatusSeal'
 import { ModeSegment } from './topbar/ModeSegment'
 import { STUDIO_MENU_LAYOUT, type StudioMenuItemId } from './topbar/menuLayout'
@@ -88,6 +91,8 @@ interface MenuItemBehavior {
   label?: string
   active?: boolean
   disabled?: boolean
+  /** Sobrepõe a linha de apoio da árvore quando ela depende do estado (o motivo do desligado). */
+  hint?: string
 }
 
 export interface TopbarProps {
@@ -177,6 +182,28 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
   const stores = useContext(StudioStoresContext)
   // Desfazer/refazer do editor em uso (os blocos, o código ou, na Ponte, o último tocado).
   const undoRedo = useUndoRedo(projectMode)
+  // "Abrir a versão em blocos" (proposta aprovada em 21/11/2026): o Pro que veio de "Virar
+  // profissional" guarda o id da cópia em blocos. Só a string entra no seletor: a barra não
+  // re-renderiza a cada edição.
+  const onOpenProject = useStudioOpenProject()
+  const originProjectId = useProjectStore((s) =>
+    s.project?.kind === 'pro' && 'proMeta' in s.project
+      ? (s.project.proMeta?.origin?.projectId ?? null)
+      : null,
+  )
+  // A cópia ainda existe neste aparelho? `null` enquanto não se sabe (o item fica ligado).
+  const [originGone, setOriginGone] = useState<boolean | null>(null)
+  useEffect(() => {
+    setOriginGone(null)
+    if (!originProjectId || !onOpenProject) return
+    let active = true
+    void blocksVersionExists(originProjectId).then((exists) => {
+      if (active) setOriginGone(exists === null ? null : !exists)
+    })
+    return () => {
+      active = false
+    }
+  }, [originProjectId, onOpenProject])
 
   const [saving, setSaving] = useState(false)
   const [downloading, setDownloading] = useState(false)
@@ -239,6 +266,17 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
     // do host, o voltar do navegador) em vez de só este. Capturar nos dois
     // lugares bootaria o jogo escondido duas vezes por saída.
     onExit()
+  }
+
+  // Sai para a cópia em blocos como o "Meus projetos" sai: grava o que estiver pendente antes.
+  const openBlocksVersion = async (originId: string) => {
+    if (!onOpenProject) return
+    try {
+      await persistence.save()
+    } catch {
+      return
+    }
+    onOpenProject(originId)
   }
 
   const handleSave = async () => {
@@ -464,6 +502,13 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
   if (projectKind === 'pro' && projectMode === 'code')
     behaviors.shortcuts = { icon: <IconKeyboard />, onSelect: () => setShowShortcuts(true) }
   if (onExit) behaviors.projects = { icon: <IconGrid />, onSelect: () => void exitToProjects() }
+  if (originProjectId && onOpenProject)
+    behaviors.blocksVersion = {
+      icon: <IconBlocks />,
+      disabled: originGone === true,
+      hint: originGone === true ? t('topbar.hint.blocksVersionGone') : undefined,
+      onSelect: () => void openBlocksVersion(originProjectId),
+    }
 
   const sections: MenuSection[] = STUDIO_MENU_LAYOUT.map((group) => ({
     id: group.id,
@@ -475,7 +520,7 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
         {
           id: entry.id,
           label: behavior.label ?? t(entry.labelKey),
-          hint: 'hintKey' in entry ? t(entry.hintKey) : undefined,
+          hint: behavior.hint ?? ('hintKey' in entry ? t(entry.hintKey) : undefined),
           icon: behavior.icon,
           active: behavior.active,
           disabled: behavior.disabled,

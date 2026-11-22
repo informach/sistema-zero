@@ -115,3 +115,20 @@ describe('compactOfficialRuntimeSource com stripBlockComments (lote 4, 21/11/202
     expect(() => strip(['/* sem fim', 'var a = 1;'])).toThrow('sem fim')
   })
 })
+
+// Revisão do lote 4 (21/11/2026): os dois padrões que a primeira versão errava. Nenhum existe nas
+// fontes de hoje; os testes provam que, se aparecerem, o programa continua o mesmo.
+describe('stripBlockComments: os casos da revisão do lote 4', () => {
+  const strip = (lines: string[]) =>
+    compactOfficialRuntimeSource(lines.join('\n'), { stripBlockComments: true }).split('\n')
+
+  it('o modo cauteloso que termina numa linha que reabre um comentário continua cauteloso', () => {
+    const source = ['a(); /* c1', '*/ b(); /* c2', '/* x', '*/ c();']
+    expect(strip(source)).toEqual(source)
+  })
+
+  it('uma abertura "/*/" não conta o próprio fechamento sobreposto', () => {
+    const source = ['a(); /*/ abre', '/* y */ b();']
+    expect(strip(source)).toEqual(source)
+  })
+})

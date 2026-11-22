@@ -46,6 +46,19 @@ function matches(path: string, pattern: string): boolean {
   return new RegExp(`^${source}$`).test(path)
 }
 
+/**
+ * O jeito de arrumar o código do Pro. Parte do PADRÃO do TypeScript: opção que falta conta como
+ * desligada, e uma lista só com tamanho de recuo e ponto e vírgula tirava os espaços em volta do
+ * `=` e dos operadores (achado da medida do lote 6, 21/11/2026).
+ */
+const PRO_FORMAT_SETTINGS: ts.FormatCodeSettings = {
+  ...ts.getDefaultFormatCodeSettings('\n'),
+  tabSize: 2,
+  indentSize: 2,
+  convertTabsToSpaces: true,
+  semicolons: ts.SemicolonPreference.Remove,
+}
+
 /** Pure virtual filesystem + official TS service. Each instance has its own options and cache. */
 export function createProLanguageService(defaultLibraries: Record<string, string>) {
   const files = new Map<string, { text: string; version: number }>()
@@ -350,13 +363,26 @@ export function createProLanguageService(defaultLibraries: Record<string, string
     },
     format(path: string) {
       synchronize()
-      return service.getFormattingEditsForDocument(absolute(`/project/${path}`), {
-        tabSize: 2,
-        indentSize: 2,
-        convertTabsToSpaces: true,
-        newLineCharacter: '\n',
-        semicolons: ts.SemicolonPreference.Remove,
-      })
+      return service.getFormattingEditsForDocument(
+        absolute(`/project/${path}`),
+        PRO_FORMAT_SETTINGS,
+      )
+    },
+    /**
+     * Organizar as importações (lote 6 da missão, seção 7.2): o `organizeImports` do próprio
+     * serviço do TypeScript, só no arquivo pedido (tira o que não é usado e põe em ordem). Devolve
+     * as mudanças no formato do `format`, para o editor aplicar como uma edição só.
+     */
+    organizeImports(path: string) {
+      synchronize()
+      const fileName = absolute(`/project/${path}`)
+      // Fora do programa TypeScript (CSS, HTML, configuração) não há importação para organizar; o
+      // serviço lançaria "Could not find source file" (revisão do lote 6).
+      if (!service.getProgram()?.getSourceFile(fileName)) return []
+      return service
+        .organizeImports({ type: 'file', fileName }, PRO_FORMAT_SETTINGS, {})
+        .filter((change) => change.fileName === fileName)
+        .flatMap((change) => change.textChanges)
     },
     dispose() {
       service.dispose()

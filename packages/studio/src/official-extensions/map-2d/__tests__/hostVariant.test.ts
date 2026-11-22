@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test'
+import ts from 'typescript'
 import {
   extensionBootstrapContext,
   extensionBootstrapVariantsKey,
@@ -10,7 +11,12 @@ import { gameTwoDExtension } from '../../game-2d'
 import { gameTwoDRuntime } from '../../game-2d/runtime'
 import { gameKitExtension } from '../../game-2d-advanced'
 import { gameKitRuntime } from '../../game-2d-advanced/runtime'
-import { MAP_TWO_D_FRAGMENT_MAX_CHARS, MAP_TWO_D_FULL_BOOTSTRAP_MAX_CHARS } from '../bootstrap'
+import {
+  MAP_TWO_D_FRAGMENT_MAX_CHARS,
+  MAP_TWO_D_FULL_BOOTSTRAP_MAX_CHARS,
+  mapTwoDBootstrap,
+  mapTwoDComposedSourceForTests,
+} from '../bootstrap'
 
 /**
  * O caminho REAL do host, e não a função do fragmento chamada na mão: a prévia e a capa usam
@@ -102,5 +108,30 @@ describe('variante do cenário pelo caminho do host', () => {
     expect((medidas['gk com'] ?? 0) - (medidas['gk sem'] ?? 0)).toBeLessThan(
       MAP_TWO_D_FRAGMENT_MAX_CHARS,
     )
+  })
+})
+
+// Revisão do lote 4 (21/11/2026): a variante com cenário também sai sem os comentários de bloco, e
+// o programa tem de ser o mesmo da fonte composta (o mesmo teste do `game-2d/__tests__/bundle.test.ts`).
+describe('Jogo 2D com cenário: tirar os comentários de bloco não muda o programa', () => {
+  it('o programa impresso sem comentários é igual ao da fonte composta', async () => {
+    const imprimir = (source: string) => {
+      const arquivo = ts.createSourceFile(
+        'runtime.js',
+        source,
+        ts.ScriptTarget.ES2022,
+        false,
+        ts.ScriptKind.JS,
+      )
+      const erros = (arquivo as unknown as { parseDiagnostics: unknown[] }).parseDiagnostics
+      expect(erros).toHaveLength(0)
+      return ts.createPrinter({ removeComments: true }).printFile(arquivo)
+    }
+    const contexto = { code: 'const g=SZGame2D;g["createMapScene"]("mapa","vila");' }
+    const compactado = await mapTwoDBootstrap('g2d', contexto as never)
+    const fonte = await mapTwoDComposedSourceForTests()
+    expect(compactado).toContain('createMapScene:_map2d.createMapScene')
+    expect(compactado.length).toBeLessThan(fonte.length - 40_000)
+    expect(imprimir(compactado)).toBe(imprimir(fonte))
   })
 })

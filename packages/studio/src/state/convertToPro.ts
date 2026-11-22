@@ -8,6 +8,12 @@ import { identityMinifiers } from '../export/minify'
 import { THREE_VERSION } from '../three/threeRuntimeContract'
 
 const PUBLIC_PREFIX = 'public/'
+/** Os arquivos de apoio que a conversão escreve (`buildClassicFileMap`): não são código da criança. */
+export const PLATFORM_SUPPORT_FILES = [
+  'public/sz-input.js',
+  'public/sz-audio.js',
+  'public/sz-font.js',
+] as const
 
 /**
  * Converte um projeto BÁSICO (3 arquivos + extras + extensões) numa ÁRVORE Vite
@@ -85,6 +91,10 @@ export async function convertClassicToProTree(project: Project): Promise<Project
 
   // JavaScript and original typed extras share real npm resolution. Conversion
   // does not suppress diagnostics for dependencies or generated source.
+  // Os arquivos de APOIO da plataforma (teclas, som e fonte do jogo, escritos pela própria
+  // conversão) ficam de fora: a criança não os escreveu nem pode consertá-los, e um jogo em
+  // branco convertido abria com 42 problemas neles (full review final de 21/11/2026, conferido no
+  // staging). O código dela em `public/script.js` continua conferido.
   tree['tsconfig.json'] = {
     kind: 'file',
     content: `${JSON.stringify(
@@ -101,6 +111,7 @@ export async function convertClassicToProTree(project: Project): Promise<Project
           skipLibCheck: true,
         },
         include: ['src', 'public/**/*.js'],
+        exclude: [...PLATFORM_SUPPORT_FILES],
       },
       null,
       2,

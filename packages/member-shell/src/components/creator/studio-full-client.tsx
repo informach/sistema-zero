@@ -870,6 +870,8 @@ export function StudioFullClient({
               teamLibrary={teamLibrary}
               onCompletionControlChange={registerCompletionControl}
               onOpenEmbeddedPro={embeddedInArquipelago ? openEmbeddedPro : undefined}
+              // A versão em blocos de um Pro convertido abre como qualquer projeto da lista.
+              onOpenProject={embeddedInArquipelago ? undefined : openProject}
             />
           )}
         </mod.StudioHostChromeProvider>

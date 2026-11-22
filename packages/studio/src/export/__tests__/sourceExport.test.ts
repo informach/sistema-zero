@@ -80,7 +80,10 @@ describe('buildSourceFiles (fonte para o VSCode)', () => {
     expect(files['src/main.ts']).toBeDefined()
     expect(files['LEIA-ME.txt']).toBeDefined()
     expect(files.Dockerfile).toBeUndefined()
-    expect(String(files['LEIA-ME.txt'])).toContain('npm install')
+    // Lote 7 (21/11/2026): o modelo sai com a trava do grafo aprovado, então as instruções
+    // mandam instalar as versões registradas.
+    expect(files['package-lock.json']).toBeDefined()
+    expect(String(files['LEIA-ME.txt'])).toContain('npm ci')
     expect(String(files['LEIA-ME.txt'])).toContain('npm run dev')
     expect(String(files['LEIA-ME.txt'])).not.toContain('Open with Live Server')
   })

@@ -38,5 +38,8 @@ export function buildProConsoleBridgeScript(hostOrigin: string): string {
       if (original) original.apply(null, args);
     };
   });
+  try {
+    window.parent.postMessage({ source: 'sz-pro-page', at: Date.now() }, HOST);
+  } catch (e) {}
 })();`
 }

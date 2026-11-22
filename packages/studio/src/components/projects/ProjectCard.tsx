@@ -21,6 +21,11 @@ export interface ProjectCardProps {
   onOpen: (id: string) => void
   /** Nomes de TODOS os projetos da lista — renomear para um já usado é recusado. */
   takenNames?: ReadonlySet<string>
+  /**
+   * O nome da cópia em blocos de onde este Pro veio, quando ela está na lista (proposta aprovada
+   * em 21/11/2026). Sem ela, a linha não aparece: não há como dizer o nome do que foi apagado.
+   */
+  originName?: string
 }
 
 // Um formatador por módulo: `toLocaleString` com objeto de opções criava um `Intl.DateTimeFormat`
@@ -67,6 +72,7 @@ export const ProjectCard = memo(function ProjectCard({
   onChanged,
   onOpen,
   takenNames,
+  originName,
 }: ProjectCardProps): JSX.Element {
   const t = useSharedT()
   const [editing, setEditing] = useState(false)
@@ -441,6 +447,14 @@ export const ProjectCard = memo(function ProjectCard({
               )}
           </div>
         </div>
+
+        {/* De onde o Pro veio, logo abaixo do nome. `pointer-events-none`: o clique atravessa
+            até o botão de abrir, como na capa. */}
+        {originName && !editing ? (
+          <p className="pointer-events-none relative z-10 -mt-1 truncate text-sz-fg-soft text-xs">
+            {t('projects.card.madeFrom', { name: originName })}
+          </p>
+        ) : null}
 
         {!editing && (
           // Capa capturada ao sair do editor. `pointer-events-none` deixa o clique

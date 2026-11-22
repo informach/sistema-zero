@@ -27,13 +27,16 @@ export const mapTwoDBootstrapVariant = (context?: ExtensionBootstrapContext): st
  * recurso entrar sem alguém medir e decidir. O motor sem cenário segue nos tetos do
  * `bundle.test.ts` (369.500 no Jogo 2D desde 21/11) e 415.000 no Avançado.
  * 21/11/2026 (lote 4 da missão): o Jogo 2D com cenário também sai sem os comentários de bloco;
- * medido 394.352 caracteres (antes 447.878), e o teto desceu junto.
+ * medido 394.477 caracteres (antes 447.878), e o teto desceu junto.
  */
 export const MAP_TWO_D_FULL_BOOTSTRAP_MAX_CHARS = { g2d: 397_000, gk: 437_000 } as const
 // Medidos 26.410 / 26.406 caracteres sobre o legado. Folga inferior a 1%; motores
 // sem cenário e orçamento inicial da galeria permanecem nos mesmos tetos.
 // Reproduzir: bun packages/studio/scripts/measure-pinta-runtime.ts.
-export const MAP_TWO_D_FRAGMENT_MAX_CHARS = 26_600
+// 21/11/2026 (full review final): o recorte de objetos levou o fragmento a 26.598 / 26.594; as
+// buscas por id num ajudante só (com o conjunto fora do recorte e as imagens pedidas ao criar o
+// cenário) deixaram 26.471 / 26.467, e o teto desceu de 26.600.
+export const MAP_TWO_D_FRAGMENT_MAX_CHARS = 26_500
 function host(target: 'g2d' | 'gk'): string {
   const basic = target === 'g2d'
   return `
@@ -79,6 +82,17 @@ function withMapTwoD(source: string, target: 'g2d' | 'gk', fragment: string): st
       '// MAP_2D_API_SLOT',
       MAP_TWO_D_API_KEYS.map((key) => `${key}:_map2d.${key},`).join('\n'),
     )
+}
+/**
+ * O motor do Jogo 2D com cenário ANTES de compactar (revisão do lote 4, 21/11/2026): só para o
+ * teste que prova, com um parser de verdade, que a compactação sem os comentários de bloco não
+ * muda o programa desta variante (`__tests__/hostVariant.test.ts`).
+ */
+export async function mapTwoDComposedSourceForTests(): Promise<string> {
+  const fragment = (await import('./runtime')).mapTwoDSource
+  const runtime = await import('../game-2d/runtime')
+  const prefix = `${buildProjectRunContextRuntime()}\n`
+  return prefix + withMapTwoD(runtime.gameTwoDRuntimeSource.slice(prefix.length), 'g2d', fragment)
 }
 export async function mapTwoDBootstrap(
   target: 'g2d' | 'gk',

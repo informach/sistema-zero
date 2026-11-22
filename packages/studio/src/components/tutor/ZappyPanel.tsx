@@ -7,10 +7,12 @@ import { ProAssistanceSummaryTooLarge } from '../../core/proAssistance'
 import { useDiagnosticsStore } from '../../state/diagnosticsStore'
 import { glossErrorMessage } from '../../state/errorGloss'
 import { useHighlightStore } from '../../state/highlightStore'
-import { ERROR_LOG_KINDS, useLogsStore } from '../../state/logsStore'
+import { isCurrentPageError, useLogsStore } from '../../state/logsStore'
 import { flushProjectOperations } from '../../state/projectOperations'
 import { captureProjectStorageScope } from '../../state/projectStorageRuntime'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
+import { useProRun, useProRunApi } from '../../state/proRun'
+import { useUIStoreApi } from '../../state/uiStore'
 import { useStudioLayout } from '../../studio/layoutContext'
 import { useStudioRuntimeEnvironment } from '../../studio/runtime-environment'
 import {
@@ -132,10 +134,12 @@ export function ZappyPanel({ embedded = false }: { embedded?: boolean }): JSX.El
   // carregam o erro que a criança realmente vê, com stack. A régua canônica é a
   // mesma do Console. A dica em PT-BR vai junto: o gloss já existe e só era usado
   // na hora de pintar a linha.
+  // No Pro, o erro de antes de a página recomeçar já foi consertado (`isCurrentPageError`).
+  const pageLoadedAt = useProRun((s) => s.pageLoadedAt)
   const lastError = useLogsStore((s) => {
     for (let i = s.entries.length - 1; i >= 0; i -= 1) {
       const entry = s.entries[i]
-      if (!entry || !ERROR_LOG_KINDS.has(entry.kind)) continue
+      if (!entry || !isCurrentPageError(entry, pageLoadedAt)) continue
       const gloss = glossErrorMessage(entry.text)
       const local =
         entry.errorLine != null
@@ -148,6 +152,9 @@ export function ZappyPanel({ embedded = false }: { embedded?: boolean }): JSX.El
   // O editor já sabe o que nunca roda e o que está semanticamente errado.
   const draftBlockIds = useDiagnosticsStore((s) => s.draftBlockIds)
   const semanticIssues = useDiagnosticsStore((s) => s.semanticIssues)
+  // As abas Investigar e Desempenho desta instância (lidas só na hora da pergunta).
+  const uiStoreApi = useUIStoreApi()
+  const proRunApi = useProRunApi()
   const { isNarrow } = useStudioLayout()
   const [messages, setMessages] = useState<StudioTutorHistoryMessage[]>([])
   const [question, setQuestion] = useState('')
@@ -447,9 +454,34 @@ export function ZappyPanel({ embedded = false }: { embedded?: boolean }): JSX.El
           }
         }
         if (!valid()) return
+        // Lote 5 (seção 15): com a aba Investigar ou Desempenho ligada, o Zappy recebe o que ela
+        // mostra agora. O módulo das abas só baixa nesse caso (sob demanda).
+        const { measuring, investigating } = uiStoreApi.getState()
+        // A observação é opcional: se o pedaço dela não baixar (deploy novo, rede instável), a
+        // pergunta segue sem ela, em vez de travar o Zappy de quem ligou a aba (revisão do lote 5).
+        const observing =
+          measuring || investigating
+            ? await import('../devtools/zappyObservation').catch(() => null)
+            : null
+        // A fase é lida DEPOIS de o módulo chegar, junto com a janela da aba (full review final):
+        // lida antes, um Parar durante o download mandava os valores do jogo parado como "agora".
+        const runState = proRunApi.getState().state
+        const observation = observing
+          ? observing.readZappyObservation(
+              uiStoreApi,
+              { measuring, investigating },
+              {
+                phase: runState?.phase ?? null,
+                runtimeError: runState?.phase === 'error' && runState.errorKind === 'runtime',
+                python: isPythonProject(project),
+              },
+            )
+          : {}
+        if (!valid()) return
         const fresh = store.getState().project!
         const editor = proCapture.current?.() ?? proEditor.current
         const request = buildStudioTutorRequest({
+          ...observation,
           project: fresh,
           question: text,
           proEditor: editor

@@ -162,6 +162,7 @@ export async function juntarEstaticosDoPacote(
     >(),
     nos: CenaCompilada['nos'] = [],
     ids = new Set(cena.nos.map((n) => n.id)),
+    ordemDosNos = new Map(cena.nos.map((no, i) => [no.id, i])),
     metadados = new Map(cena.arquivos.map((a) => [a.caminho, a])),
     // O atlas de um kit, repetido nos arquivos, é decodificado e contado uma vez.
     imagens: CacheDeImagens = new Map(),
@@ -562,7 +563,12 @@ export async function juntarEstaticosDoPacote(
     const resultado = await conferirConteudoCompilado(
       {
         ...cena,
-        nos,
+        // Água sem peças suficientes para juntar volta ao fim do processamento. Conservar
+        // a ordem dos nós retidos evita mudar o manifesto ao juntar o mesmo pacote de novo.
+        nos: nos.sort(
+          (a, b) =>
+            (ordemDosNos.get(a.id) ?? cena.nos.length) - (ordemDosNos.get(b.id) ?? cena.nos.length),
+        ),
         arquivos: arquivos
           .descrever()
           .sort((a, b) => (a.caminho < b.caminho ? -1 : a.caminho > b.caminho ? 1 : 0)),

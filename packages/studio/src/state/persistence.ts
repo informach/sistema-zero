@@ -486,6 +486,15 @@ export async function deleteProject(
     // do id é o hash), sem ler o conteúdo: o prefixo sozinho também pegaria `id:outro`.
     const { localProjectBackupKeys } = await import('../project-migrations/localBackups')
     const backupKeys = await localProjectBackupKeys(id, scope)
+    // O Histórico do projeto do Pro (proposta aprovada em 21/11/2026) sai junto, na mesma transação.
+    // Só um projeto Pro tem histórico: os outros não pagam a leitura do índice.
+    // A gravação em voo termina e nenhuma nova começa antes de as chaves serem lidas.
+    let historyKeys: string[] = []
+    if (isRecord(meta) && meta.kind === 'pro') {
+      const history = await import('./proProjectHistory')
+      await history.quiesceProHistory(scope, id)
+      historyKeys = await history.proHistoryStorageKeys(scope, id)
+    }
     const done = conditionalWrite(
       scope.store,
       scope.identity,
@@ -533,6 +542,7 @@ export async function deleteProject(
               // Armazenamento do programa do aluno (blocos "guardar/ler") deste projeto.
               gameStorageKey(id),
               ...backupKeys,
+              ...historyKeys,
             ],
           },
         }

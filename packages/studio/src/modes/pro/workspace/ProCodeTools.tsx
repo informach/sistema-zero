@@ -50,6 +50,7 @@ export function ProCodeTools({
   search,
   searchProject = search,
   format,
+  organizeImports,
   help,
   examples = proCodeExamples,
   onToolsReady,
@@ -69,6 +70,8 @@ export function ProCodeTools({
   search: () => void
   searchProject?: () => void
   format: () => void
+  /** Organizar as importações do arquivo aberto (lote 6). */
+  organizeImports?: () => void
   help?: (intent: 'explain' | 'investigate' | 'change') => void
   examples?: (path: string) => ProExample[]
   /** As ações que a faixa do editor chama (`null` ao sair). */
@@ -304,6 +307,17 @@ export function ProCodeTools({
       enabled: Boolean(path) && author && !busy,
       run: format,
     },
+    ...(organizeImports
+      ? [
+          {
+            id: 'organizeImports',
+            label: t('pro.organizeImports'),
+            // Só arquivos de código JavaScript e TypeScript têm importações para organizar.
+            enabled: /\.[cm]?[jt]sx?$/.test(path ?? '') && author && !busy,
+            run: organizeImports,
+          } satisfies ProCommand,
+        ]
+      : []),
     {
       id: 'materials',
       label: t('pro.materialsCommand'),

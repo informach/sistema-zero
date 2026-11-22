@@ -5,7 +5,13 @@
 O [plano da retomada](../superpowers/plans/2026-11-21-pinta-missao-retomada.md) acompanha
 os lotes verificados e os critérios ainda pendentes. O trabalho segue em branch isolada,
 com [PR draft 276](https://github.com/informach/sistema-zero/pull/276) para revisão,
-sem merge automático. A missão integral continua em andamento.
+sem levar a feature à staging automaticamente. A missão integral continua em andamento.
+
+A [integração mais recente da staging](missao-completa-2026-11-18/qa/integracao-staging-f5b1ceca8-2026-11-21/README.md)
+conserva os trabalhos recebidos e registra 2.641 testes do Pinta sem omissões,
+184 controles de fronteira e 22 percursos de navegador/Phaser. Os novos comandos
+de regiões foram preparados e revisados no núcleo; store, IO e adaptadores
+continuam condicionando sua exposição pública.
 
 O gravador de nuvem 6 teve seu ciclo autenticado e rollback publicado B → A → B
 homologados em staging. A edição feita durante o rollback foi conservada e sincronizada

@@ -1,7 +1,8 @@
 import { type JSX, useMemo } from 'react'
 import { createDictionaryTranslator } from '../../core/i18n/translator'
 import type { ProjectTree } from '../../core/proProject'
-import { ERROR_LOG_KINDS, useLogsStore } from '../../state/logsStore'
+import { isCurrentPageError, useLogsStore } from '../../state/logsStore'
+import { useProRun } from '../../state/proRun'
 import { useT } from '../../studio/i18n'
 import { INVESTIGATE_COPY } from './investigateCopy'
 import { proErrorSteps, proLineText } from './proInvestigation'
@@ -25,9 +26,10 @@ export function ProInvestigatePanel({
     [base.locale],
   )
   const entries = useLogsStore((state) => state.entries)
+  const pageLoadedAt = useProRun((state) => state.pageLoadedAt)
   const error = useMemo(
-    () => [...entries].reverse().find((entry) => ERROR_LOG_KINDS.has(entry.kind)) ?? null,
-    [entries],
+    () => [...entries].reverse().find((entry) => isCurrentPageError(entry, pageLoadedAt)) ?? null,
+    [entries, pageLoadedAt],
   )
   const steps = useMemo(() => {
     if (!error?.errorStack) return []

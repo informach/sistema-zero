@@ -519,6 +519,22 @@ export interface CreateProjectStoreOptions {
 }
 
 /** O objeto capturado muda a cada troca de perfil, inclusive A → B → A. */
+/**
+ * A origem de um Pro importado (`proMeta.origin`, a cópia em blocos de "Virar profissional") só
+ * fica quando a cópia existe neste aparelho (full review final de 21/11/2026). Vinda de outra conta
+ * ou de outro computador, ela fazia o menu dizer "A versão em blocos foi apagada" de uma cópia que a
+ * criança nunca teve. Sem conseguir ler, fica: quem decide é a abertura.
+ */
+async function keepKnownProOrigin(project: Project, scope: ProjectStorageScope): Promise<Project> {
+  if (isPythonProject(project) || project.kind !== 'pro') return project
+  const meta = project.proMeta
+  if (!meta?.origin) return project
+  const exists = await loadProjectMetaById(meta.origin.projectId, scope).then(Boolean, () => true)
+  if (exists) return project
+  const { origin: _origin, ...proMeta } = meta
+  return { ...project, proMeta }
+}
+
 function assertProjectCreationScope(scope: ProjectStorageScope): void {
   if (scope !== captureProjectStorageScope()) {
     throw new Error('O perfil mudou durante a criação. Inicie novamente no perfil atual.')
@@ -818,9 +834,11 @@ export function createProjectStore(
         if (!result.project) throw new Error('Documento de projeto inválido.')
         assertCurrent()
         const { warnings } = result
+        const imported = await keepKnownProOrigin(withoutProjectPublication(result.project), scope)
+        assertCurrent()
         const now = Date.now()
         const project = {
-          ...withoutProjectPublication(result.project),
+          ...imported,
           id: ulid(),
           createdAt: now,
           updatedAt: now,

@@ -1,0 +1,65 @@
+name: Studio engines (GPU cycles and off-screen drawing)
+
+# Lote 4 da evolução do Estúdio (seção 8 da missão, 21/11/2026): as medidas dos motores fora da
+# suíte que barra o merge (esperas fixas sobre a GPU emulada). A GPU dos motores 3D em 10
+# recomeços no mesmo documento (`engine-gpu-cycles.spec.ts`, com critério que reprova vazamento e
+# recomeço que não recria nada) e o custo de desenhar sprites fora do palco no Jogo 2D
+# (`engine-2d-offscreen.spec.ts`). A evidência vai nos artefatos com o SHA.
+on:
+  push:
+    branches: ['staging']
+    paths:
+      - '.github/workflows/studio-engines.yml'
+      - 'packages/studio/playwright.engines.config.ts'
+      - 'packages/studio/e2e/engine-gpu-cycles.spec.ts'
+      - 'packages/studio/e2e/engine-2d-offscreen.spec.ts'
+      - 'packages/studio/src/official-extensions/game-2d/runtime/**'
+      - 'packages/studio/src/official-extensions/game-3d/**'
+      - 'packages/studio/src/official-extensions/world-3d/**'
+      - 'packages/studio/src/official-extensions/game-3d-advanced/**'
+      - 'packages/studio/src/official-extensions/three3dModelsRuntime.ts'
+      - 'packages/studio/src/official-extensions/threeRenderBudgetRuntime.ts'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: studio-engines-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  engines:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    defaults:
+      run:
+        shell: bash
+        working-directory: packages/studio
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Prepare signed Ubuntu sources
+        working-directory: .
+        run: sudo "$(command -v bun)" --no-env-file scripts/ci/configure-ubuntu-apt.mjs
+      - working-directory: .
+        run: bun install --frozen-lockfile
+      - run: bunx playwright install --with-deps chromium
+      - name: GPU in 10 restarts and off-screen sprites
+        timeout-minutes: 30
+        run: bunx playwright test --config playwright.engines.config.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: studio-engines
+          include-hidden-files: true
+          if-no-files-found: warn
+          path: |
+            packages/studio/.cache/mission/engine-gpu-cycles.json
+            packages/studio/.cache/mission/engine-2d-offscreen.json
+            packages/studio/.cache/engines-results

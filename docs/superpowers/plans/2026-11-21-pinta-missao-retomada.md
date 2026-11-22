@@ -92,6 +92,12 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    Preservar recuperação, conflitos, clientes anteriores e programação do Estúdio.
    Integrar primeiro a staging atualizada, revisar a fronteira/runtime afetados
    e repetir os controles correspondentes. Novos leitores precedem a escrita.
+   Staging `f5b1ceca8` integrada após revisão da fronteira: 2.641 testes do Pinta
+   com os controles reais de Pygame, 184 de contratos/runtimes, 12 percursos
+   Pinta–Estúdio e dez de Phaser real, tipos/lint aprovados. Conflito restrito
+   ao texto de uma exceção de QA, resolvido pelo remoto; conteúdos 3D recebidos
+   preservados. Provas em `qa/integracao-staging-f5b1ceca8-2026-11-21/`.
+   Prosseguir à admissão e persistência regional; a etapa macro 1 segue aberta.
 
 Na promoção do store, conferir também os orçamentos globais de metadados e JSON
 antes do histórico/autosave. A soma de objetos/propriedades em várias camadas

@@ -4,7 +4,9 @@
 [`missao-original.md`](missao-original.md), com as decisões posteriores da dona anotadas no topo.
 O plano vigente está em `~/.claude/plans/foi-feito-um-plano-transient-rabin.md`. O estado de cada
 seção, com a evidência e o que falta, fica versionado em [`mapa-da-missao.md`](mapa-da-missao.md),
-atualizado a cada lote.
+atualizado a cada lote. **Fecho do plano de 21/11 (lotes 1 a 8 e full review final):**
+[`entrega-final.md`](entrega-final.md), com os 17 entregáveis da seção 20, o que ficou concluído, o
+que ficou pendente e como retomar.
 
 **Retomada de 20/11/2026** (Claude Code, a pedido da dona: revisão completa e conclusão da missão).
 O plano vigente está em `~/.claude/plans/foi-feito-um-plano-transient-rabin.md` (etapas 1 a 11) e a
