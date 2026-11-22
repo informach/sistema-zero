@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 520
 HEIGHT = 600
 TITLE = 'Troca de Joias'
@@ -11,15 +13,8 @@ CORES = 6
 X0 = 52
 Y0 = 70
 
-tabuleiro = []
-linha_escolhida = 0
-coluna_escolhida = 0
-pontos = 0
-jogadas = 20
-esperando = False
-aviso = ''
 
-
+# 🧩 Meus moldes
 def sortear_sem_trio(linha, coluna):
     # Sorteia uma joia que não forma três iguais com as duas da esquerda nem as duas de cima.
     while True:
@@ -123,26 +118,20 @@ def cair():
                 tabuleiro[linha][coluna] = random.randint(0, CORES - 1)
     clock.schedule(tirar_trios, 0.25)
 
-
-def draw():
-    screen.blit('fundo', (0, 0))
-    for linha in range(LINHAS):
-        for coluna in range(COLUNAS):
-            cor = tabuleiro[linha][coluna]
-            if cor != -1:
-                screen.blit('joia' + str(cor), (X0 + coluna * TAMANHO, Y0 + linha * TAMANHO))
-    caixa = Rect((X0 + coluna_escolhida * TAMANHO, Y0 + linha_escolhida * TAMANHO), (TAMANHO * 2, TAMANHO))
-    screen.draw.rect(caixa, 'white')
-    screen.draw.rect(Rect((caixa.x - 2, caixa.y - 2), (caixa.width + 4, caixa.height + 4)), 'white')
-    screen.draw.text('Pontos: ' + str(pontos), topleft=(X0, 22), fontsize=32, color='white')
-    screen.draw.text('Jogadas: ' + str(jogadas), topright=(WIDTH - X0, 22), fontsize=32, color='white')
-    if aviso != '':
-        screen.draw.text(aviso, center=(WIDTH / 2, 54), fontsize=26, color='yellow')
-    if jogadas == 0 and not esperando:
-        screen.draw.text('Fim! ' + str(pontos) + ' pontos', center=(WIDTH / 2, HEIGHT / 2), fontsize=56, color='yellow', owidth=2, ocolor='black')
-        screen.draw.text('Espaço joga de novo', center=(WIDTH / 2, HEIGHT / 2 + 50), fontsize=32, color='white', owidth=1.5, ocolor='black')
+# ⚙️ Ao iniciar
+tabuleiro = []
+linha_escolhida = 0
+coluna_escolhida = 0
+pontos = 0
+jogadas = 20
+esperando = False
+aviso = ''
 
 
+montar_tabuleiro()
+
+
+# ⚡ Quando acontecer
 def on_key_down(key):
     global linha_escolhida, coluna_escolhida, jogadas, pontos, esperando
     if esperando:
@@ -173,5 +162,22 @@ def on_key_down(key):
             sounds.erro.play()
 
 
-montar_tabuleiro()
+# 🔁 Enquanto estiver rodando
+def draw():
+    screen.blit('fundo', (0, 0))
+    for linha in range(LINHAS):
+        for coluna in range(COLUNAS):
+            cor = tabuleiro[linha][coluna]
+            if cor != -1:
+                screen.blit('joia' + str(cor), (X0 + coluna * TAMANHO, Y0 + linha * TAMANHO))
+    caixa = Rect((X0 + coluna_escolhida * TAMANHO, Y0 + linha_escolhida * TAMANHO), (TAMANHO * 2, TAMANHO))
+    screen.draw.rect(caixa, 'white')
+    screen.draw.rect(Rect((caixa.x - 2, caixa.y - 2), (caixa.width + 4, caixa.height + 4)), 'white')
+    screen.draw.text('Pontos: ' + str(pontos), topleft=(X0, 22), fontsize=32, color='white')
+    screen.draw.text('Jogadas: ' + str(jogadas), topright=(WIDTH - X0, 22), fontsize=32, color='white')
+    if aviso != '':
+        screen.draw.text(aviso, center=(WIDTH / 2, 54), fontsize=26, color='yellow')
+    if jogadas == 0 and not esperando:
+        screen.draw.text('Fim! ' + str(pontos) + ' pontos', center=(WIDTH / 2, HEIGHT / 2), fontsize=56, color='yellow', owidth=2, ocolor='black')
+        screen.draw.text('Espaço joga de novo', center=(WIDTH / 2, HEIGHT / 2 + 50), fontsize=32, color='white', owidth=1.5, ocolor='black')
 pgzrun.go()

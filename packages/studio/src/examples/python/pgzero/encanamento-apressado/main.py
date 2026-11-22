@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Encanamento Apressado'
@@ -26,19 +28,8 @@ OPOSTO = {'cima': 'baixo', 'baixo': 'cima', 'esquerda': 'direita', 'direita': 'e
 PASSO = {'cima': (-1, 0), 'baixo': (1, 0), 'esquerda': (0, -1), 'direita': (0, 1)}
 PECAS = ['horizontal', 'vertical', 'cruz', 'cima_direita', 'cima_esquerda', 'baixo_direita', 'baixo_esquerda']
 
-grade = []
-cheios = []
-fila = []
-agua_linha = 3
-agua_coluna = 0
-entrou_por = 'esquerda'
-saindo_por = 'direita'
-quanto = 0
-contagem = 10
-canos = 0
-fim = ''
 
-
+# 🧩 Meus moldes
 def novo_jogo():
     global agua_linha, agua_coluna, entrou_por, saindo_por, quanto, contagem, canos, fim
     grade.clear()
@@ -117,7 +108,42 @@ def frente_da_agua():
     parte = quanto * 2 - 1
     return (centro_x + (x - centro_x) * parte, centro_y + (y - centro_y) * parte)
 
+# ⚙️ Ao iniciar
+grade = []
+cheios = []
+fila = []
+agua_linha = 3
+agua_coluna = 0
+entrou_por = 'esquerda'
+saindo_por = 'direita'
+quanto = 0
+contagem = 10
+canos = 0
+fim = ''
 
+
+novo_jogo()
+
+
+# ⚡ Quando acontecer
+def on_mouse_down(pos):
+    if fim != '':
+        novo_jogo()
+        return
+    coluna = int((pos[0] - X0) // TAMANHO)
+    linha = int((pos[1] - Y0) // TAMANHO)
+    if not (0 <= linha < LINHAS and 0 <= coluna < COLUNAS):
+        return
+    # Não dá para trocar o começo nem um cano por onde a água já passou ou está passando.
+    if grade[linha][coluna] == 'inicio' or cheios[linha][coluna] or (linha == agua_linha and coluna == agua_coluna):
+        sounds.nao.play()
+        return
+    grade[linha][coluna] = fila.pop(0)
+    fila.append(random.choice(PECAS))
+    sounds.encaixe.play()
+
+
+# 🔁 Enquanto estiver rodando
 def draw():
     screen.blit('fundo', (0, 0))
     for linha in range(LINHAS):
@@ -151,25 +177,5 @@ def update():
     quanto = quanto + 0.008
     if quanto >= 1:
         andar_a_agua()
-
-
-def on_mouse_down(pos):
-    if fim != '':
-        novo_jogo()
-        return
-    coluna = int((pos[0] - X0) // TAMANHO)
-    linha = int((pos[1] - Y0) // TAMANHO)
-    if not (0 <= linha < LINHAS and 0 <= coluna < COLUNAS):
-        return
-    # Não dá para trocar o começo nem um cano por onde a água já passou ou está passando.
-    if grade[linha][coluna] == 'inicio' or cheios[linha][coluna] or (linha == agua_linha and coluna == agua_coluna):
-        sounds.nao.play()
-        return
-    grade[linha][coluna] = fila.pop(0)
-    fila.append(random.choice(PECAS))
-    sounds.encaixe.play()
-
-
-novo_jogo()
 clock.schedule_interval(contar, 1)
 pgzrun.go()

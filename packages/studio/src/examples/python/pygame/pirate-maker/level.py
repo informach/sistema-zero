@@ -1,3 +1,4 @@
+# 📦 Bibliotecas
 import pygame, sys
 import pinta
 from pygame.math import Vector2 as vector
@@ -10,6 +11,7 @@ from sprites import Generic, Block, Animated, Particle, Coin, Player, Spikes, To
 
 from random import choice, randint
 
+# 🧩 Meus moldes
 class Level:
     def __init__(self, grid, switch, asset_dict, audio):
         self.display_surface = pygame.display.get_surface()

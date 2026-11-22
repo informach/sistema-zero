@@ -1,7 +1,9 @@
+# 📦 Bibliotecas
 from settings import * 
 from math import sin, cos, radians
 from random import randint
 
+# 🧩 Meus moldes
 class Sprite(pygame.sprite.Sprite):
 	def __init__(self, pos, surf = pygame.Surface((TILE_SIZE,TILE_SIZE)), groups = None, z = Z_LAYERS['main']):
 		super().__init__(groups)

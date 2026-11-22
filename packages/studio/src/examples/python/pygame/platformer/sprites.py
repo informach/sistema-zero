@@ -1,8 +1,10 @@
+# 📦 Bibliotecas
 from settings import *
 from timer import Timer
 from math import sin
 from random import randint
 
+# 🧩 Meus moldes
 class Sprite(pygame.sprite.Sprite):
     def __init__(self, pos, surf, groups):
         super().__init__(groups)

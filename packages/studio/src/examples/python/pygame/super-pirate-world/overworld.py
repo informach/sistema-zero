@@ -1,9 +1,11 @@
+# 📦 Bibliotecas
 from settings import * 
 from support import keyed
 from sprites import Sprite, AnimatedSprite, Node, Icon, PathSprite
 from groups import WorldSprites
 from random import randint
 
+# 🧩 Meus moldes
 class Overworld:
 	def __init__(self, tmx_map, data, overworld_frames, switch_stage):
 		self.display_surface = pygame.display.get_surface()

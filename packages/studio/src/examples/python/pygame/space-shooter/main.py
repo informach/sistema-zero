@@ -1,9 +1,14 @@
+# 📦 Bibliotecas
 import pygame
 import pinta
 from os.path import join
 
 from random import randint, uniform, choice
 
+# 🎛️ Configurações
+WINDOW_WIDTH, WINDOW_HEIGHT = 1280, 720
+
+# 🧩 Meus moldes
 class Player(pygame.sprite.Sprite):
     def __init__(self, groups):
         super().__init__(groups)
@@ -155,9 +160,9 @@ def reset_game():
     game_over = False
     start_time = pygame.time.get_ticks()
 
+# ⚙️ Ao iniciar
 # general setup
 pygame.init()
-WINDOW_WIDTH, WINDOW_HEIGHT = 1280, 720
 display_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption('Space shooter')
 running = True
@@ -199,6 +204,7 @@ final_score = 0
 meteor_event = pygame.event.custom_type()
 pygame.time.set_timer(meteor_event, 200)
 
+# 🔁 Enquanto estiver rodando
 while running:
     dt = clock.tick() / 1000
     # event loop

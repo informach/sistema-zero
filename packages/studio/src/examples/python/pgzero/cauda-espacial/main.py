@@ -1,32 +1,20 @@
+# 📦 Bibliotecas
 import math
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Cauda Espacial'
 # A cauda: cada gomo fica a SEGMENTO pixels do anterior; só o ângulo entre eles muda.
 GOMOS = 12
 SEGMENTO = 26
-ANGULO_BASE = math.radians(200)
 BALANCO = 0.55
 FASE = 0.45
 RAPIDEZ = 3.0
 
-monstro = Actor('monstro')
-monstro.pos = (660, 300)
-olho = Actor('olho_fechado')
-gomos = []
-for numero in range(GOMOS):
-    gomos.append(Actor('gomo'))
-gomos.append(Actor('ferrao'))
-nave = Actor('nave')
-tiros = []
-tempo = 0
-vida_do_monstro = 15
-vidas = 3
-protegida = 0
 
-
+# 🧩 Meus moldes
 def posicionar_cauda():
     # Começa embaixo do monstro e vai encadeando: cada gomo parte de onde o outro está.
     x = monstro.x - 40
@@ -58,7 +46,41 @@ def novo_jogo():
     tiros.clear()
     nave.pos = (100, 300)
 
+# ⚙️ Ao iniciar
+ANGULO_BASE = math.radians(200)
 
+monstro = Actor('monstro')
+monstro.pos = (660, 300)
+olho = Actor('olho_fechado')
+gomos = []
+for numero in range(GOMOS):
+    gomos.append(Actor('gomo'))
+gomos.append(Actor('ferrao'))
+nave = Actor('nave')
+tiros = []
+tempo = 0
+vida_do_monstro = 15
+vidas = 3
+protegida = 0
+
+
+novo_jogo()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    if key != keys.SPACE:
+        return
+    if vidas == 0 or vida_do_monstro == 0:
+        novo_jogo()
+    elif len(tiros) < 4:
+        tiro = Actor('tiro')
+        tiro.midleft = nave.midright
+        tiros.append(tiro)
+        sounds.tiro.play()
+
+
+# 🔁 Enquanto estiver rodando
 def draw():
     screen.blit('fundo', (0, 0))
     if vida_do_monstro > 0:
@@ -128,19 +150,4 @@ def update(dt):
         vidas = vidas - 1
         protegida = 90
         sounds.dano.play()
-
-
-def on_key_down(key):
-    if key != keys.SPACE:
-        return
-    if vidas == 0 or vida_do_monstro == 0:
-        novo_jogo()
-    elif len(tiros) < 4:
-        tiro = Actor('tiro')
-        tiro.midleft = nave.midright
-        tiros.append(tiro)
-        sounds.tiro.play()
-
-
-novo_jogo()
 pgzrun.go()

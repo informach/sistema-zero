@@ -1,11 +1,13 @@
-"""Ligue 4 educacional: queda das peças, vez e vitória em quatro direções visíveis em blocos."""
+# Ligue 4 educacional: queda das peças, vez e vitória em quatro direções visíveis em blocos.
 
+# 📦 Bibliotecas
 import turtle
 import time
 import math
 import sz_audio
 
 
+# 🎛️ Configurações
 CELULA = 80
 COLUNAS = 7
 LINHAS = 6
@@ -23,17 +25,9 @@ COR_CURSOR = "#38bdf8"
 COR_VITORIA = "#f8fafc"
 CORES = {"vermelho": COR_VERMELHO, "amarelo": COR_AMARELO}
 DIRECOES = [(1, 0), (0, 1), (1, 1), (1, -1)]
-estado = {"aberto": False, "timer_pendente": False}
-
-tela = turtle.Screen()
-cenario = turtle.Turtle(visible=False)
-pincel = turtle.Turtle(visible=False)
-destaque = turtle.Turtle(visible=False)
-queda = turtle.Turtle(visible=False)
-cursor = turtle.Turtle(visible=False)
-painel = turtle.Turtle(visible=False)
 
 
+# 🧩 Meus moldes
 def posicao(coluna, linha):
     return ((coluna - (COLUNAS - 1) / 2) * CELULA, (linha - (LINHAS - 1) / 2) * CELULA + CENTRO_Y)
 
@@ -153,6 +147,10 @@ def soltar(coluna):
     queda.showturtle()
 
 
+def soltar_no_cursor():
+    soltar(estado["cursor"])
+
+
 def pousar():
     cair = estado["queda"]
     estado["grade"][cair["coluna"]].append(estado["vez"])
@@ -179,8 +177,32 @@ def escolher(coluna):
     soltar(coluna)
 
 
-def tecla_coluna(coluna):
-    return lambda: escolher(coluna)
+def jogar_na_coluna_1():
+    escolher(0)
+
+
+def jogar_na_coluna_2():
+    escolher(1)
+
+
+def jogar_na_coluna_3():
+    escolher(2)
+
+
+def jogar_na_coluna_4():
+    escolher(3)
+
+
+def jogar_na_coluna_5():
+    escolher(4)
+
+
+def jogar_na_coluna_6():
+    escolher(5)
+
+
+def jogar_na_coluna_7():
+    escolher(6)
 
 
 def mover(dx):
@@ -188,6 +210,14 @@ def mover(dx):
     if 0 <= coluna < COLUNAS:
         estado["cursor"] = coluna
         mostrar_cursor()
+
+
+def cursor_para_direita():
+    mover(1)
+
+
+def cursor_para_esquerda():
+    mover(-1)
 
 
 def clicar(x, y):
@@ -220,25 +250,6 @@ def atualizar(tempo):
             queda.goto(cair["x"], cair["y"])
 
 
-def agendar():
-    if estado["aberto"] and not estado["timer_pendente"]:
-        estado["timer_pendente"] = True
-        tela.ontimer(quadro, INTERVALO)
-
-
-def quadro():
-    estado["timer_pendente"] = False
-    if not estado["aberto"]:
-        return
-    agora = time.monotonic()
-    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
-    estado["ultimo_tempo"] = agora
-    atualizar(tempo)
-    desenhar_painel()
-    tela.update()
-    agendar()
-
-
 def reiniciar_modelo():
     estado["grade"] = []
     for coluna in range(COLUNAS):
@@ -268,7 +279,6 @@ def reiniciar():
     desenhar_painel()
     estado["ultimo_tempo"] = time.monotonic()
     tela.update()
-    # Não agende aqui: o reinício reutiliza a cadeia existente.
 
 
 def fechar():
@@ -279,41 +289,71 @@ def fechar():
     tela.bye()
 
 
-def iniciar():
-    tela.setup(700, 720)
-    tela.title("Ligue 4 • Sistema Zero")
-    tela.bgcolor(COR_FUNDO)
-    tela.tracer(0)
-    tela.register_shape("seta", ((-18, 14), (18, 14), (0, -14)))
-    for desenho in [cenario, pincel, destaque, queda, cursor, painel]:
-        desenho.penup()
-        desenho.speed(0)
-    queda.shape("circle")
-    queda.shapesize(CELULA * 0.8 / 20)
-    cursor.shape("seta")
-    cursor.setheading(90)
-    cursor.color(COR_CURSOR)
-    cursor.showturtle()
-    desenhar_cenario()
-    for numero in range(1, COLUNAS + 1):
-        tela.onkey(tecla_coluna(numero - 1), str(numero))
-    tela.onkeypress(lambda: mover(1), "Right")
-    tela.onkeypress(lambda: mover(-1), "Left")
-    tela.onkey(lambda: soltar(estado["cursor"]), "Down")
-    tela.onkey(lambda: soltar(estado["cursor"]), "Return")
-    tela.onkey(lambda: soltar(estado["cursor"]), "space")
-    tela.onkey(reiniciar, "r")
-    tela.onkey(reiniciar, "R")
-    tela.onkey(fechar, "Escape")
-    tela.onscreenclick(clicar)
-    tela.listen()
-    estado["aberto"] = True
-    estado["placar"] = {"vermelho": 0, "amarelo": 0, "empates": 0}
-    reiniciar()
-    agendar()
-    if estado["aberto"]:
-        tela.mainloop()
+# ⚙️ Ao iniciar
+estado = {"aberto": True}
+
+tela = turtle.Screen()
+cenario = turtle.Turtle(visible=False)
+pincel = turtle.Turtle(visible=False)
+destaque = turtle.Turtle(visible=False)
+queda = turtle.Turtle(visible=False)
+cursor = turtle.Turtle(visible=False)
+painel = turtle.Turtle(visible=False)
+
+tela.setup(700, 720)
+tela.title("Ligue 4 • Sistema Zero")
+tela.bgcolor(COR_FUNDO)
+tela.tracer(0)
+tela.register_shape("seta", ((-18, 14), (18, 14), (0, -14)))
+for desenho in [cenario, pincel, destaque, queda, cursor, painel]:
+    desenho.penup()
+    desenho.speed(0)
+queda.shape("circle")
+queda.shapesize(CELULA * 0.8 / 20)
+cursor.shape("seta")
+cursor.setheading(90)
+cursor.color(COR_CURSOR)
+cursor.showturtle()
+desenhar_cenario()
+estado["placar"] = {"vermelho": 0, "amarelo": 0, "empates": 0}
+reiniciar()
 
 
-if __name__ == "__main__":
-    iniciar()
+# ⚡ Quando acontecer
+tela.onkey(jogar_na_coluna_1, "1")
+tela.onkey(jogar_na_coluna_2, "2")
+tela.onkey(jogar_na_coluna_3, "3")
+tela.onkey(jogar_na_coluna_4, "4")
+tela.onkey(jogar_na_coluna_5, "5")
+tela.onkey(jogar_na_coluna_6, "6")
+tela.onkey(jogar_na_coluna_7, "7")
+tela.onkeypress(cursor_para_direita, "Right")
+tela.onkeypress(cursor_para_esquerda, "Left")
+tela.onkey(soltar_no_cursor, "Down")
+tela.onkey(soltar_no_cursor, "Return")
+tela.onkey(soltar_no_cursor, "space")
+tela.onkey(reiniciar, "r")
+tela.onkey(reiniciar, "R")
+tela.onkey(fechar, "Escape")
+tela.onscreenclick(clicar)
+tela.listen()
+
+
+# 🔁 Enquanto estiver rodando
+def a_cada_quadro():
+    if not estado["aberto"]:
+        return
+    agora = time.monotonic()
+    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
+    estado["ultimo_tempo"] = agora
+    atualizar(tempo)
+    desenhar_painel()
+    tela.update()
+    # Se a janela fechou durante esta volta, o laço para aqui.
+    if not estado["aberto"]:
+        return
+    tela.ontimer(a_cada_quadro, INTERVALO)
+
+
+a_cada_quadro()
+tela.mainloop()

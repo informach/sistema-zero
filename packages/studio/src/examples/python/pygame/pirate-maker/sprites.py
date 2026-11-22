@@ -1,3 +1,4 @@
+# 📦 Bibliotecas
 import pygame
 from pygame.math import Vector2 as vector
 
@@ -6,6 +7,7 @@ from timer import Timer
 
 from random import choice, randint
 
+# 🧩 Meus moldes
 class Generic(pygame.sprite.Sprite):
     def __init__(self, pos, surf, group, z = LEVEL_LAYERS['main']):
         super().__init__(group)

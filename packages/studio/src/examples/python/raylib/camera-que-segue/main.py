@@ -1,12 +1,23 @@
+# 📦 Bibliotecas
 from pyray import *
 from random import randint, choice
 
+# 🎛️ Configurações
 LARGURA = 800
 ALTURA = 450
 MUNDO = 1200
 VELOCIDADE = 320
 RAIO = 22
 
+
+# 🧩 Meus moldes
+def espalhar_gemas():
+    gemas = []
+    for i in range(12):
+        gemas.append(Vector2(randint(-MUNDO + 50, MUNDO - 50), randint(-MUNDO + 50, MUNDO - 50)))
+    return gemas
+
+# ⚙️ Ao iniciar
 init_window(LARGURA, ALTURA, 'Câmera que Segue')
 set_target_fps(60)
 
@@ -21,13 +32,6 @@ for i in range(70):
     planetas.append([centro, randint(30, 110), cor])
 
 
-def espalhar_gemas():
-    gemas = []
-    for i in range(12):
-        gemas.append(Vector2(randint(-MUNDO + 50, MUNDO - 50), randint(-MUNDO + 50, MUNDO - 50)))
-    return gemas
-
-
 gemas = espalhar_gemas()
 
 # A câmera: offset é o ponto da TELA onde fica o alvo (o meio), target é o ponto do MUNDO.
@@ -37,6 +41,7 @@ camera.target = posicao
 camera.rotation = 0
 camera.zoom = 1
 
+# 🔁 Enquanto estiver rodando
 while not window_should_close():
     dt = get_frame_time()
 

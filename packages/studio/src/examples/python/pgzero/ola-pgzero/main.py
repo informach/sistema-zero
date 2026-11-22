@@ -1,13 +1,17 @@
+# 📦 Bibliotecas
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 640
 HEIGHT = 480
 TITLE = 'Olá, Pygame Zero'
 
+# ⚙️ Ao iniciar
 nave = Actor('nave')
 nave.pos = (WIDTH / 2, HEIGHT / 2)
 
 
+# 🔁 Enquanto estiver rodando
 def draw():
     screen.fill((20, 24, 60))
     screen.draw.text('Olá, Pygame Zero!', center=(WIDTH / 2, 60), fontsize=56, color='yellow')

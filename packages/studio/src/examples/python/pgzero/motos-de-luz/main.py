@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Motos de Luz'
@@ -14,18 +16,8 @@ VITORIAS_PARA_GANHAR = 3
 # Para cima, esquerda, baixo, direita: o ângulo do Actor é a posição na lista vezes 90.
 DIRECOES = [(0, -1), (-1, 0), (0, 1), (1, 0)]
 
-jogador = Actor('moto_azul')
-computador = Actor('moto_amarela')
-grade = []
-rastros = []
-quadros = 0
-pontos_jogador = 0
-pontos_computador = 0
-# 'correndo', 'fim_da_rodada' ou 'fim'
-estado = 'correndo'
-resultado = ''
 
-
+# 🧩 Meus moldes
 def nova_rodada():
     global quadros, estado
     grade.clear()
@@ -136,7 +128,45 @@ def fim_da_rodada():
     else:
         estado = 'fim_da_rodada'
 
+# ⚙️ Ao iniciar
+jogador = Actor('moto_azul')
+computador = Actor('moto_amarela')
+grade = []
+rastros = []
+quadros = 0
+pontos_jogador = 0
+pontos_computador = 0
+# 'correndo', 'fim_da_rodada' ou 'fim'
+estado = 'correndo'
+resultado = ''
 
+
+novo_jogo()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    if key == keys.SPACE:
+        if estado == 'fim_da_rodada':
+            nova_rodada()
+        elif estado == 'fim':
+            novo_jogo()
+        return
+    # A moto não dá meia-volta: só vira para os lados de onde ela está indo.
+    pedido = -1
+    if key == keys.UP:
+        pedido = 0
+    elif key == keys.LEFT:
+        pedido = 1
+    elif key == keys.DOWN:
+        pedido = 2
+    elif key == keys.RIGHT:
+        pedido = 3
+    if pedido != -1 and pedido != (jogador.direcao + 2) % 4:
+        jogador.pedido = pedido
+
+
+# 🔁 Enquanto estiver rodando
 def update():
     global quadros
     if estado != 'correndo':
@@ -180,28 +210,4 @@ def draw():
                 texto = 'O computador venceu a corrida'
         screen.draw.text(texto, center=(WIDTH / 2, 300), fontsize=52, color='white', owidth=1, ocolor='black')
         screen.draw.text('Espaço continua', center=(WIDTH / 2, 350), fontsize=34, color='yellow', owidth=1, ocolor='black')
-
-
-def on_key_down(key):
-    if key == keys.SPACE:
-        if estado == 'fim_da_rodada':
-            nova_rodada()
-        elif estado == 'fim':
-            novo_jogo()
-        return
-    # A moto não dá meia-volta: só vira para os lados de onde ela está indo.
-    pedido = -1
-    if key == keys.UP:
-        pedido = 0
-    elif key == keys.LEFT:
-        pedido = 1
-    elif key == keys.DOWN:
-        pedido = 2
-    elif key == keys.RIGHT:
-        pedido = 3
-    if pedido != -1 and pedido != (jogador.direcao + 2) % 4:
-        jogador.pedido = pedido
-
-
-novo_jogo()
 pgzrun.go()

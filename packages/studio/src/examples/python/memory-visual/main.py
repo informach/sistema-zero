@@ -1,5 +1,6 @@
-"""Jogo da Memória educacional: cartas, pares, espera e vitória visíveis em blocos."""
+# Jogo da Memória educacional: cartas, pares, espera e vitória visíveis em blocos.
 
+# 📦 Bibliotecas
 import turtle
 import random
 import time
@@ -7,6 +8,7 @@ import math
 import sz_audio
 
 
+# 🎛️ Configurações
 LADO = 4
 CELULA = 110
 CENTRO_Y = -10
@@ -22,15 +24,9 @@ COR_CURSOR = "#38bdf8"
 # Oito figuras desenhadas com polígonos: cada uma aparece em duas cartas.
 FIGURAS = [("circle", "#ef4444"), ("square", "#3b82f6"), ("triangle", "#16a34a"), ("estrela", "#eab308"),
            ("losango", "#a855f7"), ("hexagono", "#f97316"), ("cruz", "#db2777"), ("turtle", "#0d9488")]
-estado = {"aberto": False, "timer_pendente": False, "melhor": None}
-
-tela = turtle.Screen()
-pincel = turtle.Turtle(visible=False)
-simbolo = turtle.Turtle(visible=False)
-cursor = turtle.Turtle(visible=False)
-painel = turtle.Turtle(visible=False)
 
 
+# 🧩 Meus moldes
 class Carta:
     """Uma carta sabe a própria figura e se está virada ou já achada."""
 
@@ -169,6 +165,10 @@ def virar(casa):
     desenhar_cartas()
 
 
+def virar_a_carta_do_cursor():
+    virar(estado["cursor"])
+
+
 def desvirar():
     estado["cartas"][estado["primeira"]].virada = False
     estado["cartas"][estado["segunda"]].virada = False
@@ -183,6 +183,22 @@ def mover(dc, dl):
     if 0 <= coluna < LADO and 0 <= linha < LADO:
         estado["cursor"] = linha * LADO + coluna
         mostrar_cursor()
+
+
+def cursor_para_direita():
+    mover(1, 0)
+
+
+def cursor_para_esquerda():
+    mover(-1, 0)
+
+
+def cursor_para_cima():
+    mover(0, -1)
+
+
+def cursor_para_baixo():
+    mover(0, 1)
 
 
 def clicar(x, y):
@@ -218,26 +234,6 @@ def atualizar(tempo):
             desvirar()
 
 
-def agendar():
-    if estado["aberto"] and not estado["timer_pendente"]:
-        estado["timer_pendente"] = True
-        tela.ontimer(quadro, INTERVALO)
-
-
-def quadro():
-    estado["timer_pendente"] = False
-    if not estado["aberto"]:
-        return
-    agora = time.monotonic()
-    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
-    estado["ultimo_tempo"] = agora
-    if not estado["pausado"]:
-        atualizar(tempo)
-    desenhar_painel()
-    tela.update()
-    agendar()
-
-
 def pausar():
     if estado["fase"] == "jogando":
         estado["pausado"] = not estado["pausado"]
@@ -271,7 +267,6 @@ def reiniciar():
     desenhar_painel()
     estado["ultimo_tempo"] = time.monotonic()
     tela.update()
-    # Não agende aqui: o reinício reutiliza a cadeia existente.
 
 
 def fechar():
@@ -282,41 +277,65 @@ def fechar():
     tela.bye()
 
 
-def iniciar():
-    tela.setup(620, 700)
-    tela.title("Jogo da Memória • Sistema Zero")
-    tela.bgcolor(COR_FUNDO)
-    tela.tracer(0)
-    registrar_formas()
-    for desenho in [pincel, simbolo, cursor, painel]:
-        desenho.penup()
-        desenho.speed(0)
-    pincel.shape("square")
-    pincel.shapesize((CELULA - 16) / 20)
-    simbolo.setheading(90)
-    simbolo.shapesize(2.6)
-    cursor.shape("moldura")
-    cursor.color(COR_CURSOR)
-    cursor.showturtle()
-    tela.onkeypress(lambda: mover(1, 0), "Right")
-    tela.onkeypress(lambda: mover(-1, 0), "Left")
-    tela.onkeypress(lambda: mover(0, -1), "Up")
-    tela.onkeypress(lambda: mover(0, 1), "Down")
-    tela.onkey(lambda: virar(estado["cursor"]), "Return")
-    tela.onkey(lambda: virar(estado["cursor"]), "space")
-    tela.onkey(pausar, "p")
-    tela.onkey(pausar, "P")
-    tela.onkey(reiniciar, "r")
-    tela.onkey(reiniciar, "R")
-    tela.onkey(fechar, "Escape")
-    tela.onscreenclick(clicar)
-    tela.listen()
-    estado["aberto"] = True
-    reiniciar()
-    agendar()
-    if estado["aberto"]:
-        tela.mainloop()
+# ⚙️ Ao iniciar
+estado = {"aberto": True, "melhor": None}
+
+tela = turtle.Screen()
+pincel = turtle.Turtle(visible=False)
+simbolo = turtle.Turtle(visible=False)
+cursor = turtle.Turtle(visible=False)
+painel = turtle.Turtle(visible=False)
+
+tela.setup(620, 700)
+tela.title("Jogo da Memória • Sistema Zero")
+tela.bgcolor(COR_FUNDO)
+tela.tracer(0)
+registrar_formas()
+for desenho in [pincel, simbolo, cursor, painel]:
+    desenho.penup()
+    desenho.speed(0)
+pincel.shape("square")
+pincel.shapesize((CELULA - 16) / 20)
+simbolo.setheading(90)
+simbolo.shapesize(2.6)
+cursor.shape("moldura")
+cursor.color(COR_CURSOR)
+cursor.showturtle()
+reiniciar()
 
 
-if __name__ == "__main__":
-    iniciar()
+# ⚡ Quando acontecer
+tela.onkeypress(cursor_para_direita, "Right")
+tela.onkeypress(cursor_para_esquerda, "Left")
+tela.onkeypress(cursor_para_cima, "Up")
+tela.onkeypress(cursor_para_baixo, "Down")
+tela.onkey(virar_a_carta_do_cursor, "Return")
+tela.onkey(virar_a_carta_do_cursor, "space")
+tela.onkey(pausar, "p")
+tela.onkey(pausar, "P")
+tela.onkey(reiniciar, "r")
+tela.onkey(reiniciar, "R")
+tela.onkey(fechar, "Escape")
+tela.onscreenclick(clicar)
+tela.listen()
+
+
+# 🔁 Enquanto estiver rodando
+def a_cada_quadro():
+    if not estado["aberto"]:
+        return
+    agora = time.monotonic()
+    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
+    estado["ultimo_tempo"] = agora
+    if not estado["pausado"]:
+        atualizar(tempo)
+    desenhar_painel()
+    tela.update()
+    # Se a janela fechou durante esta volta, o laço para aqui.
+    if not estado["aberto"]:
+        return
+    tela.ontimer(a_cada_quadro, INTERVALO)
+
+
+a_cada_quadro()
+tela.mainloop()

@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Jardim Feliz'
@@ -9,17 +11,8 @@ TEMPO_DE_MURCHAR = 12
 LIMITE_MURCHA = 10
 MONSTRO_DEPOIS_DE = 25
 
-vaca = Actor('vaca')
-vaca.pos = (100, 500)
-flores = []
-prazos = []
-monstros = []
-velocidades = []
-tempo = 0.0
-fim_de_jogo = False
-regando = False
 
-
+# 🧩 Meus moldes
 def nova_flor():
     if fim_de_jogo:
         return
@@ -63,6 +56,41 @@ def regar():
             sounds.agua.play()
 
 
+def recomecar():
+    global tempo, fim_de_jogo
+    flores.clear()
+    prazos.clear()
+    monstros.clear()
+    velocidades.clear()
+    tempo = 0.0
+    fim_de_jogo = False
+    vaca.pos = (100, 500)
+    nova_flor()
+
+# ⚙️ Ao iniciar
+vaca = Actor('vaca')
+vaca.pos = (100, 500)
+flores = []
+prazos = []
+monstros = []
+velocidades = []
+tempo = 0.0
+fim_de_jogo = False
+regando = False
+
+
+nova_flor()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    if key == keys.SPACE and fim_de_jogo:
+        recomecar()
+    elif key == keys.SPACE and not regando:
+        regar()
+
+
+# 🔁 Enquanto estiver rodando
 def draw():
     screen.blit('jardim', (0, 0))
     for flor in flores:
@@ -108,28 +136,6 @@ def update(dt):
             fim_de_jogo = True
     if fim_de_jogo:
         sounds.fim.play()
-
-
-def recomecar():
-    global tempo, fim_de_jogo
-    flores.clear()
-    prazos.clear()
-    monstros.clear()
-    velocidades.clear()
-    tempo = 0.0
-    fim_de_jogo = False
-    vaca.pos = (100, 500)
-    nova_flor()
-
-
-def on_key_down(key):
-    if key == keys.SPACE and fim_de_jogo:
-        recomecar()
-    elif key == keys.SPACE and not regando:
-        regar()
-
-
-nova_flor()
 clock.schedule_interval(nova_flor, 4.0)
 clock.schedule_interval(novo_monstro, MONSTRO_DEPOIS_DE)
 pgzrun.go()

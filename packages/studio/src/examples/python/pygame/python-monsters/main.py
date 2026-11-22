@@ -1,3 +1,4 @@
+# 📦 Bibliotecas
 from settings import *
 from game_data import *
 from os.path import join
@@ -15,6 +16,7 @@ from evolution import Evolution
 from support import *
 from monster import Monster
 
+# 🧩 Meus moldes
 class Game:
     # general
     def __init__(self):
@@ -351,6 +353,7 @@ class Game:
             self.tint_screen(dt)
             pygame.display.update()
 
+# ⚙️ Ao iniciar
 if __name__ == '__main__':
     game = Game()
     game.run()

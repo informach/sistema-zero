@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 import pygame
 from os.path import join
 
+# 🎛️ Configurações
 WINDOW_WIDTH, WINDOW_HEIGHT = 1280, 720 
 SIZE = {'paddle': (40,100), 'ball': (30,30)}
 POS = {'player': (WINDOW_WIDTH - 50, WINDOW_HEIGHT / 2), 'opponent': (50, WINDOW_HEIGHT / 2)}

@@ -191,6 +191,9 @@ function readState(raw: unknown, codec: PythonBlockCodec): VisualState {
 }
 
 /** The inputs a layout drops; it refuses one that holds a block other than `pristine`. */
+/** Dummy inputs that only carry a codec's suffix text ("milissegundos"). */
+const SUFFIX = 'SUFFIX:'
+
 function removedInputs(
   block: PythonBlocklyBlock,
   state: VisualState,
@@ -198,7 +201,8 @@ function removedInputs(
 ) {
   const desired = new Set(state.layout.inputs.map((input) => input.name))
   const removed = block.inputList.filter(
-    (input) => input.name !== 'HEADER' && !desired.has(input.name),
+    (input) =>
+      input.name !== 'HEADER' && !input.name.startsWith(SUFFIX) && !desired.has(input.name),
   )
   // A default shadow goes away with its input; only a block the child placed holds it.
   for (const input of removed) {
@@ -241,6 +245,8 @@ function applyLayout(block: PythonBlocklyBlock, state: VisualState, codec: Pytho
   // Keep its current binding classification even while new inputs are incomplete.
   const title = block.getFieldValue('PYTHON_TITLE') ?? codec.title
   if (block.getInput('HEADER')) block.removeInput('HEADER')
+  for (const input of [...block.inputList])
+    if (input.name.startsWith(SUFFIX)) block.removeInput(input.name)
   block.pythonState = state
   const header = block
     .appendDummyInput('HEADER')
@@ -270,6 +276,15 @@ function applyLayout(block: PythonBlocklyBlock, state: VisualState, codec: Pytho
     // A socket just appended is already last: skipping the move keeps big blocks linear.
     if (block.inputList.at(-1)?.name !== input.name) block.moveInputBefore(input.name, null)
   }
+  // "a cada ⟨30⟩ milissegundos": the unit after the socket, before the next input.
+  state.layout.inputs.forEach((input, index) => {
+    const suffix = codec.suffixes?.[input.name]
+    if (!suffix || input.role === 'statement') return
+    const name = `${SUFFIX}${input.name}`
+    block.appendDummyInput(name).appendField(suffix)
+    const next = state.layout.inputs[index + 1]
+    if (next) block.moveInputBefore(name, next.name)
+  })
   // Short blocks read as one sentence: "andar para frente ⟨100⟩ passos".
   const values = state.layout.inputs.filter((input) => input.role !== 'statement').length
   block.setInputsInline(values <= 4)

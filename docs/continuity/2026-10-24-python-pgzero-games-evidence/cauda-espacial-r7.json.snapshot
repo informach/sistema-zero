@@ -1,0 +1,299 @@
+{
+  "kind": "python-visual-authoring",
+  "analyzer": {
+    "pythonVersion": "3.14.2",
+    "pyodideVersion": "314.0.7",
+    "distributionSha256": "1b9e2813e174008c0572c2233cd8f68f0f45d72f99902d25bbd769c23892291b",
+    "analyzerSha256": "030eee7115db46c8c19831372a0948f71bbda0a8ad751235d4da889ed68bdf9b"
+  },
+  "authoringRuntime": {
+    "profileId": "python-probe",
+    "releaseId": "probe-1",
+    "manifestSha256": "8e04b8116485b851bc2d280c4273d13e1524a3ecc1c2e7610e28de03fcb106c6"
+  },
+  "authoringRuntimeFeatures": [
+    "turtle-compound-shapes",
+    "project-missions-v1",
+    "pinta-map-world-v1",
+    "pinta-scene-physics-v1",
+    "molda-scene-assets-v1",
+    "python-background-focus-v1",
+    "molda-scene-regions-v1"
+  ],
+  "authoringLoader": "loadPythonAuthoring",
+  "extension": "python-pgzero",
+  "codecOrderSha256": "7dc0c6647e6c38a27d732f6c43dd50e7dccd2546f49c785edd557815eaa9cbf9",
+  "sourceSha256": "706771d326c0b5be09c92ba4dbe8f9009eb5099876798076395a7a390e4952cf",
+  "generatedSha256": "63382349ed7fec14c2a5e481abdbf89cfe512b2058c56ff06709c5c9c4cfa2b3",
+  "opaqueCount": 0,
+  "blockCount": 524,
+  "referencedBlocks": [
+    {
+      "id": "sz_py_and",
+      "count": 5
+    },
+    {
+      "id": "sz_py_arithmetic",
+      "count": 44
+    },
+    {
+      "id": "sz_py_assign",
+      "count": 45
+    },
+    {
+      "id": "sz_py_attribute",
+      "count": 6
+    },
+    {
+      "id": "sz_py_collection_remove",
+      "count": 2
+    },
+    {
+      "id": "sz_py_compare",
+      "count": 20
+    },
+    {
+      "id": "sz_py_def",
+      "count": 4
+    },
+    {
+      "id": "sz_py_float",
+      "count": 5
+    },
+    {
+      "id": "sz_py_for",
+      "count": 6
+    },
+    {
+      "id": "sz_py_global",
+      "count": 2
+    },
+    {
+      "id": "sz_py_if",
+      "count": 18
+    },
+    {
+      "id": "sz_py_import_one",
+      "count": 2
+    },
+    {
+      "id": "sz_py_integer",
+      "count": 84
+    },
+    {
+      "id": "sz_py_len",
+      "count": 2
+    },
+    {
+      "id": "sz_py_list",
+      "count": 2
+    },
+    {
+      "id": "sz_py_list_append",
+      "count": 3
+    },
+    {
+      "id": "sz_py_list_call",
+      "count": 1
+    },
+    {
+      "id": "sz_py_list_clear",
+      "count": 1
+    },
+    {
+      "id": "sz_py_math_cos",
+      "count": 1
+    },
+    {
+      "id": "sz_py_math_radians",
+      "count": 1
+    },
+    {
+      "id": "sz_py_math_sin",
+      "count": 3
+    },
+    {
+      "id": "sz_py_or",
+      "count": 3
+    },
+    {
+      "id": "sz_py_pgzero_actor",
+      "count": 6
+    },
+    {
+      "id": "sz_py_pgzero_actor_draw",
+      "count": 5
+    },
+    {
+      "id": "sz_py_pgzero_actor_property",
+      "count": 25
+    },
+    {
+      "id": "sz_py_pgzero_colliderect",
+      "count": 3
+    },
+    {
+      "id": "sz_py_pgzero_distance_to",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_draw",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_draw_filled_rect",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_draw_rect",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_draw_text",
+      "count": 4
+    },
+    {
+      "id": "sz_py_pgzero_go",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_height",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_keyboard",
+      "count": 4
+    },
+    {
+      "id": "sz_py_pgzero_keys",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_on_key_down",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_rect",
+      "count": 3
+    },
+    {
+      "id": "sz_py_pgzero_screen_blit",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_sound_play",
+      "count": 6
+    },
+    {
+      "id": "sz_py_pgzero_title",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_update",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_width",
+      "count": 1
+    },
+    {
+      "id": "sz_py_range",
+      "count": 2
+    },
+    {
+      "id": "sz_py_return",
+      "count": 7
+    },
+    {
+      "id": "sz_py_run",
+      "count": 3
+    },
+    {
+      "id": "sz_py_run_value",
+      "count": 4
+    },
+    {
+      "id": "sz_py_str",
+      "count": 1
+    },
+    {
+      "id": "sz_py_subscript",
+      "count": 1
+    },
+    {
+      "id": "sz_py_text",
+      "count": 19
+    },
+    {
+      "id": "sz_py_tuple",
+      "count": 16
+    },
+    {
+      "id": "sz_py_variable",
+      "count": 143
+    }
+  ],
+  "approvedBlockIdsSha256": "d447df688843ce29be5142e1aefe192a7099be67f72ce751ed1223af520ddae0",
+  "fullWorkspaceRoundtrip": true,
+  "initialWorkspaceSha256": "612d34e2df38fb4c8f9c751baa469630bcb4d08373e9351cf2aa3d6af686b121",
+  "editedWorkspaceSha256": "1df662c643360ff8a7ee3eacf8e79a11bc2c73902795d62a1058a4a925246f40",
+  "canonicalRenderReanalysis": true,
+  "runtimeCapabilitiesQualified": false,
+  "browserInteractionQualified": false,
+  "edits": [
+    {
+      "label": "width",
+      "path": {
+        "body": 2,
+        "inputs": [
+          {
+            "name": "value",
+            "index": 0
+          }
+        ]
+      },
+      "codecId": "sz_py_integer",
+      "field": "NUMBER",
+      "before": "800",
+      "after": "810",
+      "beforeSourceSha256": "bf4add27f47607df9e970632f9b2ee288adc714ddad95f5fa340680542db2f02",
+      "afterSourceSha256": "f5adb3cfbd96d7df47ad2af7a50d04c1877393eb359a92c2ba7f7b3ab6039a1f"
+    },
+    {
+      "label": "height",
+      "path": {
+        "body": 3,
+        "inputs": [
+          {
+            "name": "value",
+            "index": 0
+          }
+        ]
+      },
+      "codecId": "sz_py_integer",
+      "field": "NUMBER",
+      "before": "600",
+      "after": "610",
+      "beforeSourceSha256": "f5adb3cfbd96d7df47ad2af7a50d04c1877393eb359a92c2ba7f7b3ab6039a1f",
+      "afterSourceSha256": "b83d5660a94a829051565a64ca154f49943375ba77e22556b1ffd1d7e9a483ee"
+    },
+    {
+      "label": "title",
+      "path": {
+        "body": 4,
+        "inputs": [
+          {
+            "name": "value",
+            "index": 0
+          }
+        ]
+      },
+      "codecId": "sz_py_text",
+      "field": "TEXT",
+      "before": "Cauda Espacial",
+      "after": "Cauda Espacial!",
+      "beforeSourceSha256": "b83d5660a94a829051565a64ca154f49943375ba77e22556b1ffd1d7e9a483ee",
+      "afterSourceSha256": "63382349ed7fec14c2a5e481abdbf89cfe512b2058c56ff06709c5c9c4cfa2b3"
+    }
+  ]
+}

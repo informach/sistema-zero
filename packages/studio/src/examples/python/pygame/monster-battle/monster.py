@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 from settings import *
 from random import sample
 
+# 🧩 Meus moldes
 class Creature:
     def get_data(self, name):
         self.element = MONSTER_DATA[name]['element']

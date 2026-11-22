@@ -1,5 +1,7 @@
+# 📦 Bibliotecas
 from pygame.math import Vector2
 
+# 🎛️ Configurações
 # The window and the size of one square of the map.
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
@@ -17,14 +19,6 @@ LAYERS = {
     'main': 7,
     'fruit': 8,
     'rain drops': 9,
-}
-
-# Where the tool hits, measured from the middle of the farmer, for each side he faces.
-TOOL_REACH = {
-    'left': Vector2(-50, 40),
-    'right': Vector2(50, 40),
-    'up': Vector2(0, -10),
-    'down': Vector2(0, 50),
 }
 
 # What the farmer carries when the game starts.
@@ -81,3 +75,12 @@ HUD_POSITIONS = {'tool': (40, SCREEN_HEIGHT - 15), 'seed': (70, SCREEN_HEIGHT - 
 
 # The names the shop shows.
 ITEM_NAMES = {'wood': 'madeira', 'apple': 'maçã', 'corn': 'milho', 'tomato': 'tomate'}
+
+# ⚙️ Ao iniciar
+# Where the tool hits, measured from the middle of the farmer, for each side he faces.
+TOOL_REACH = {
+    'left': Vector2(-50, 40),
+    'right': Vector2(50, 40),
+    'up': Vector2(0, -10),
+    'down': Vector2(0, 50),
+}

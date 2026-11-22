@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 from pyray import *
 from random import randint
 
+# 🎛️ Configurações
 LARGURA = 800
 ALTURA = 450
 VELOCIDADE = 6
@@ -13,51 +15,13 @@ ALTURA_DO_CRISTAL = 0.9
 LADO_DO_CHAO = 2
 VELOCIDADE_DA_ANIMACAO = 30
 
-init_window(LARGURA, ALTURA, 'Corrida Infinita')
-init_audio_device()
-set_target_fps(60)
 
-# A câmera olha a pista de lado, um pouco à frente do corredor.
-camera = Camera3D(Vector3(10, 5, 5), Vector3(0, 1, 2), Vector3(0, 1, 0), 45, CAMERA_PERSPECTIVE)
-
-# O corredor e o robô foram feitos no Molda, com esqueleto e movimentos.
-# Cada movimento tem o nome que ele ganhou no Molda: é por esse nome que o jogo escolhe.
-corredor = load_model('models/corredor.glb')
-quantos_do_corredor = ffi.new('int *', 0)
-movimentos_do_corredor = load_model_animations('models/corredor.glb', quantos_do_corredor)
-robo = load_model('models/robo.glb')
-quantos_do_robo = ffi.new('int *', 0)
-movimentos_do_robo = load_model_animations('models/robo.glb', quantos_do_robo)
-cristal = load_model('models/cristal.glb')
-
-
+# 🧩 Meus moldes
 def movimento(movimentos, quantos, nome):
     for indice in range(quantos[0]):
         if ffi.string(movimentos[indice].name).decode('utf-8') == nome:
             return movimentos[indice]
     return movimentos[0]
-
-
-correr = movimento(movimentos_do_corredor, quantos_do_corredor, 'Correr')
-pular = movimento(movimentos_do_corredor, quantos_do_corredor, 'Pular')
-andar = movimento(movimentos_do_robo, quantos_do_robo, 'Andar')
-
-# O chão é uma peça quadrada vestida com a textura de grama do Molda, repetida pela pista.
-chao = load_model_from_mesh(gen_mesh_cube(LADO_DO_CHAO, 1, LADO_DO_CHAO))
-set_material_texture(chao.materials[0], MATERIAL_MAP_ALBEDO, load_texture('images/chao.png'))
-
-# O céu 360° do Molda é uma imagem panorâmica. A esfera do raylib vai de polo a polo pela
-# largura da imagem e dá a volta pela altura, então a imagem entra deitada (girada e espelhada)
-# e a esfera é desenhada girada, com o polo para cima.
-imagem_do_ceu = load_image('images/ceu.png')
-image_rotate_cw(imagem_do_ceu)
-image_flip_horizontal(imagem_do_ceu)
-ceu = load_model_from_mesh(gen_mesh_sphere(60, 32, 32))
-set_material_texture(ceu.materials[0], MATERIAL_MAP_ALBEDO, load_texture_from_image(imagem_do_ceu))
-unload_image(imagem_do_ceu)
-
-som_pulo = load_sound('sounds/pulo.wav')
-som_batida = load_sound('sounds/batida.wav')
 
 
 def escala_para(modelo, altura):
@@ -80,11 +44,6 @@ def caixa(modelo, escala, posicao, folga):
         Vector3(posicao.x + original.max.x * escala - folga,
                 posicao.y + (original.max.y - original.min.y) * escala - folga,
                 posicao.z + original.max.z * escala - folga))
-
-
-escala_do_corredor = escala_para(corredor, ALTURA_DO_CORREDOR)
-escala_do_robo = escala_para(robo, ALTURA_DO_ROBO)
-escala_do_cristal = escala_para(cristal, ALTURA_DO_CRISTAL)
 
 
 class Obstaculo:
@@ -117,11 +76,57 @@ def comecar():
     movimento_atual = correr
     rolagem = 0
 
+# ⚙️ Ao iniciar
+init_window(LARGURA, ALTURA, 'Corrida Infinita')
+init_audio_device()
+set_target_fps(60)
+
+# A câmera olha a pista de lado, um pouco à frente do corredor.
+camera = Camera3D(Vector3(10, 5, 5), Vector3(0, 1, 2), Vector3(0, 1, 0), 45, CAMERA_PERSPECTIVE)
+
+# O corredor e o robô foram feitos no Molda, com esqueleto e movimentos.
+# Cada movimento tem o nome que ele ganhou no Molda: é por esse nome que o jogo escolhe.
+corredor = load_model('models/corredor.glb')
+quantos_do_corredor = ffi.new('int *', 0)
+movimentos_do_corredor = load_model_animations('models/corredor.glb', quantos_do_corredor)
+robo = load_model('models/robo.glb')
+quantos_do_robo = ffi.new('int *', 0)
+movimentos_do_robo = load_model_animations('models/robo.glb', quantos_do_robo)
+cristal = load_model('models/cristal.glb')
+
+
+correr = movimento(movimentos_do_corredor, quantos_do_corredor, 'Correr')
+pular = movimento(movimentos_do_corredor, quantos_do_corredor, 'Pular')
+andar = movimento(movimentos_do_robo, quantos_do_robo, 'Andar')
+
+# O chão é uma peça quadrada vestida com a textura de grama do Molda, repetida pela pista.
+chao = load_model_from_mesh(gen_mesh_cube(LADO_DO_CHAO, 1, LADO_DO_CHAO))
+set_material_texture(chao.materials[0], MATERIAL_MAP_ALBEDO, load_texture('images/chao.png'))
+
+# O céu 360° do Molda é uma imagem panorâmica. A esfera do raylib vai de polo a polo pela
+# largura da imagem e dá a volta pela altura, então a imagem entra deitada (girada e espelhada)
+# e a esfera é desenhada girada, com o polo para cima.
+imagem_do_ceu = load_image('images/ceu.png')
+image_rotate_cw(imagem_do_ceu)
+image_flip_horizontal(imagem_do_ceu)
+ceu = load_model_from_mesh(gen_mesh_sphere(60, 32, 32))
+set_material_texture(ceu.materials[0], MATERIAL_MAP_ALBEDO, load_texture_from_image(imagem_do_ceu))
+unload_image(imagem_do_ceu)
+
+som_pulo = load_sound('sounds/pulo.wav')
+som_batida = load_sound('sounds/batida.wav')
+
+
+escala_do_corredor = escala_para(corredor, ALTURA_DO_CORREDOR)
+escala_do_robo = escala_para(robo, ALTURA_DO_ROBO)
+escala_do_cristal = escala_para(cristal, ALTURA_DO_CRISTAL)
+
 
 recorde = 0
 quadro_do_robo = 0
 comecar()
 
+# 🔁 Enquanto estiver rodando
 while not window_should_close():
     dt = get_frame_time()
 

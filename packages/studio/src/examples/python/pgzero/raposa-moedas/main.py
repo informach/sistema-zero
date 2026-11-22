@@ -1,19 +1,15 @@
+# 📦 Bibliotecas
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 640
 HEIGHT = 480
 TITLE = 'Raposa Caça-Moedas'
 VELOCIDADE = 5
 
-raposa = Actor('raposa')
-raposa.pos = (100, 300)
-moeda = Actor('moeda')
-pontos = 0
-tempo = 30
-fim_de_jogo = False
 
-
+# 🧩 Meus moldes
 def colocar_moeda():
     moeda.x = random.randint(40, WIDTH - 40)
     moeda.y = random.randint(100, HEIGHT - 40)
@@ -27,7 +23,31 @@ def contar_tempo():
         clock.unschedule(contar_tempo)
         sounds.fim.play()
 
+# ⚙️ Ao iniciar
+raposa = Actor('raposa')
+raposa.pos = (100, 300)
+moeda = Actor('moeda')
+pontos = 0
+tempo = 30
+fim_de_jogo = False
 
+
+colocar_moeda()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    global pontos, tempo, fim_de_jogo
+    if fim_de_jogo and key == keys.SPACE:
+        pontos = 0
+        tempo = 30
+        fim_de_jogo = False
+        raposa.pos = (100, 300)
+        colocar_moeda()
+        clock.schedule_interval(contar_tempo, 1.0)
+
+
+# 🔁 Enquanto estiver rodando
 def draw():
     screen.blit('fundo', (0, 0))
     moeda.draw()
@@ -57,19 +77,5 @@ def update():
         pontos = pontos + 1
         sounds.moeda.play()
         colocar_moeda()
-
-
-def on_key_down(key):
-    global pontos, tempo, fim_de_jogo
-    if fim_de_jogo and key == keys.SPACE:
-        pontos = 0
-        tempo = 30
-        fim_de_jogo = False
-        raposa.pos = (100, 300)
-        colocar_moeda()
-        clock.schedule_interval(contar_tempo, 1.0)
-
-
-colocar_moeda()
 clock.schedule_interval(contar_tempo, 1.0)
 pgzrun.go()

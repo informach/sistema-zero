@@ -56,11 +56,11 @@ class AudioRecorder:
 
 
 def load(game):
-    """Executa main.py sem imports, sem o entrypoint e sem criar tartarugas reais."""
+    """Executa main.py sem imports, sem o que ele faz ao iniciar e sem criar tartarugas reais."""
     tree = ast.parse(SOURCE.read_text(encoding="utf-8"))
     kept = []
     for node in tree.body:
-        if isinstance(node, (ast.Import, ast.If)):
+        if isinstance(node, (ast.Import, ast.If, ast.Expr, ast.For)):
             continue
         if (isinstance(node, ast.Assign) and isinstance(node.value, ast.Call)
                 and isinstance(node.value.func, ast.Attribute)
@@ -73,6 +73,13 @@ def load(game):
     exec(compile(tree, str(SOURCE), "exec"), game)
     return game
 
+
+
+def start(game):
+    """Roda o que o programa faz ao iniciar (o que o load pulou), com as tartarugas de mentira."""
+    tree = ast.parse(SOURCE.read_text(encoding="utf-8"))
+    tree.body = [node for node in tree.body if isinstance(node, (ast.Expr, ast.For))]
+    exec(compile(tree, str(SOURCE), "exec"), game)
 
 
 class Rules(unittest.TestCase):
@@ -168,7 +175,7 @@ class Rules(unittest.TestCase):
         self.assertTrue(0 <= self.state["angulo"] < 360)
 
     def test_space_arrows_and_click_are_wired(self):
-        self.game["iniciar"]()
+        start(self.game)
         calls = self.game["tela"].calls
         clicks = [args[0] for call, args in calls if call == "onscreenclick"]
         keys = {args[1]: args[0] for call, args in calls if call == "onkey"}
@@ -184,8 +191,7 @@ class Rules(unittest.TestCase):
     def test_pause_freezes_and_restart_or_close_never_adds_timers(self):
         screen = self.game["tela"]
         self.game["impulsionar"]()
-        self.game["agendar"]()
-        self.game["agendar"]()
+        self.game["a_cada_quadro"]()
         self.assertEqual(len(screen.timers), 1)
         self.game["pausar"]()
         angle = self.state["angulo"]

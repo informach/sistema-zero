@@ -95,6 +95,11 @@ export interface PythonBlockCodec {
    * The title still names the block in the palette search and tooltips.
    */
   compact?: 'plain' | 'quoted'
+  /**
+   * Text drawn right after a value socket, by input name ("a cada ⟨30⟩ milissegundos"). Only
+   * presentation: it is not part of the shape and never reaches the code.
+   */
+  suffixes?: Readonly<Record<string, string>>
   /** A specialized label is valid only when this root resolves to the official binding. */
   binding?: PythonBlockBinding
   /** Alias-aware extensions may derive the required binding from the actual call. */

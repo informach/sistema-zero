@@ -1,3 +1,4 @@
+# 📦 Bibliotecas
 from settings import *
 from player import Player
 from sprites import *
@@ -5,6 +6,7 @@ from groups import AllSprites
 
 from random import randint, choice
 
+# 🧩 Meus moldes
 class Game:
     def __init__(self):
         # setup
@@ -245,6 +247,7 @@ class Game:
 
         pygame.quit()
 
+# ⚙️ Ao iniciar
 if __name__ == '__main__':
     game = Game()
     game.run()

@@ -1,5 +1,7 @@
+# 📦 Bibliotecas
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Sapo Atravessa'
@@ -24,20 +26,8 @@ RIO = [
 ]
 TOCAS = [80, 240, 400, 560, 720]
 
-sapo = Actor('sapo')
-carros = []
-boias = []
-ocupadas = []
-vidas = 3
-pontos = 0
-fase = 1
-tempo = TEMPO_POR_SAPO
-# A linha mais alta que este sapo já alcançou: só pulo novo para cima dá pontos.
-mais_alto = INICIO[1]
-aviso = ''
-mancha = Actor('mancha', (-100, -100))
 
-
+# 🧩 Meus moldes
 def arrumar(coisa, altura, velocidade, numero, quantos):
     # Espalha as coisas da faixa pela largura da tela.
     coisa.x = numero * WIDTH / quantos + altura % 97
@@ -130,6 +120,61 @@ def chegar():
     morrer('Bateu na margem: mire numa toca vazia')
 
 
+def pular_de_volta():
+    sapo.image = 'sapo'
+
+# ⚙️ Ao iniciar
+sapo = Actor('sapo')
+carros = []
+boias = []
+ocupadas = []
+vidas = 3
+pontos = 0
+fase = 1
+tempo = TEMPO_POR_SAPO
+# A linha mais alta que este sapo já alcançou: só pulo novo para cima dá pontos.
+mais_alto = INICIO[1]
+aviso = ''
+mancha = Actor('mancha', (-100, -100))
+
+
+novo_jogo()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    global pontos, mais_alto
+    if vidas == 0:
+        if key == keys.SPACE:
+            novo_jogo()
+        return
+    x = sapo.x
+    y = sapo.y
+    if key == keys.UP:
+        y = y - PULO
+        sapo.angle = 0
+    elif key == keys.DOWN:
+        y = y + PULO
+        sapo.angle = 180
+    elif key == keys.LEFT:
+        x = x - PULO
+        sapo.angle = 90
+    elif key == keys.RIGHT:
+        x = x + PULO
+        sapo.angle = 270
+    else:
+        return
+    if y >= CHEGADA_Y and y <= INICIO[1] and x >= 20 and x <= WIDTH - 20:
+        sapo.pos = (x, y)
+        sapo.image = 'sapo_pulando'
+        clock.schedule(pular_de_volta, 0.15)
+        sounds.pulo.play()
+        if y < mais_alto:
+            mais_alto = y
+            pontos = pontos + 10
+
+
+# 🔁 Enquanto estiver rodando
 def update(dt):
     global tempo
     if vidas == 0:
@@ -164,42 +209,6 @@ def update(dt):
         chegar()
 
 
-def pular_de_volta():
-    sapo.image = 'sapo'
-
-
-def on_key_down(key):
-    global pontos, mais_alto
-    if vidas == 0:
-        if key == keys.SPACE:
-            novo_jogo()
-        return
-    x = sapo.x
-    y = sapo.y
-    if key == keys.UP:
-        y = y - PULO
-        sapo.angle = 0
-    elif key == keys.DOWN:
-        y = y + PULO
-        sapo.angle = 180
-    elif key == keys.LEFT:
-        x = x - PULO
-        sapo.angle = 90
-    elif key == keys.RIGHT:
-        x = x + PULO
-        sapo.angle = 270
-    else:
-        return
-    if y >= CHEGADA_Y and y <= INICIO[1] and x >= 20 and x <= WIDTH - 20:
-        sapo.pos = (x, y)
-        sapo.image = 'sapo_pulando'
-        clock.schedule(pular_de_volta, 0.15)
-        sounds.pulo.play()
-        if y < mais_alto:
-            mais_alto = y
-            pontos = pontos + 10
-
-
 def draw():
     screen.blit('fundo', (0, 0))
     for numero in range(len(TOCAS)):
@@ -222,7 +231,4 @@ def draw():
     if vidas == 0:
         screen.draw.text('Fim de jogo!', center=(WIDTH / 2, 300), fontsize=64, color='orange', owidth=1, ocolor='black')
         screen.draw.text('Espaço joga de novo', center=(WIDTH / 2, 350), fontsize=36, color='white', owidth=1, ocolor='black')
-
-
-novo_jogo()
 pgzrun.go()

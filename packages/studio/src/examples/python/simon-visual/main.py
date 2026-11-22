@@ -1,5 +1,6 @@
-"""Genius educacional: sequência que cresce, memória e repetição visíveis em blocos."""
+# Genius educacional: sequência que cresce, memória e repetição visíveis em blocos.
 
+# 📦 Bibliotecas
 import turtle
 import random
 import time
@@ -7,6 +8,7 @@ import math
 import sz_audio
 
 
+# 🎛️ Configurações
 CENTRO_Y = -10
 RAIO_FORA = 220
 RAIO_DENTRO = 70
@@ -25,15 +27,9 @@ ANGULOS = [90, 0, 270, 180]
 CORES = ["#166534", "#991b1b", "#1e3a8a", "#a16207"]
 CORES_ACESAS = ["#4ade80", "#f87171", "#60a5fa", "#fde047"]
 SONS = ["verde.wav", "vermelho.wav", "azul.wav", "amarelo.wav"]
-estado = {"aberto": False, "timer_pendente": False, "recorde": 0}
-
-tela = turtle.Screen()
-cenario = turtle.Turtle(visible=False)
-luz = turtle.Turtle(visible=False)
-dedo = turtle.Turtle(visible=False)
-painel = turtle.Turtle(visible=False)
 
 
+# 🧩 Meus moldes
 def setor(dentro, fora, abertura):
     # Um pedaço de anel apontando para cima; a tartaruga gira para cada cor.
     pontos = []
@@ -152,6 +148,22 @@ def tocar(cor):
         estado["espera"] = PAUSA_RODADA
 
 
+def tocar_verde():
+    tocar(0)
+
+
+def tocar_vermelho():
+    tocar(1)
+
+
+def tocar_azul():
+    tocar(2)
+
+
+def tocar_amarelo():
+    tocar(3)
+
+
 def clicar(x, y):
     dx = x
     dy = y - CENTRO_Y
@@ -194,26 +206,6 @@ def atualizar(tempo):
             proxima_rodada()
 
 
-def agendar():
-    if estado["aberto"] and not estado["timer_pendente"]:
-        estado["timer_pendente"] = True
-        tela.ontimer(quadro, INTERVALO)
-
-
-def quadro():
-    estado["timer_pendente"] = False
-    if not estado["aberto"]:
-        return
-    agora = time.monotonic()
-    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
-    estado["ultimo_tempo"] = agora
-    if not estado["pausado"]:
-        atualizar(tempo)
-    desenhar_painel()
-    tela.update()
-    agendar()
-
-
 def pausar():
     if estado["fase"] != "fim":
         estado["pausado"] = not estado["pausado"]
@@ -244,7 +236,6 @@ def reiniciar():
     desenhar_painel()
     estado["ultimo_tempo"] = time.monotonic()
     tela.update()
-    # Não agende aqui: o reinício reutiliza a cadeia existente.
 
 
 def fechar():
@@ -255,42 +246,66 @@ def fechar():
     tela.bye()
 
 
-def iniciar():
-    tela.setup(600, 680)
-    tela.title("Genius • Sistema Zero")
-    tela.bgcolor(COR_FUNDO)
-    tela.tracer(0)
-    tela.register_shape("setor", setor(RAIO_DENTRO, RAIO_FORA, 80))
-    for desenho in [cenario, luz, dedo, painel]:
-        desenho.penup()
-        desenho.speed(0)
-    cenario.shape("setor")
-    luz.shape("setor")
-    luz.goto(0, CENTRO_Y)
-    dedo.shape("circle")
-    dedo.shapesize(1.2)
-    dedo.color(COR_DEDO)
-    dedo.showturtle()
-    desenhar_cenario()
-    tela.onkeypress(lambda: tocar(0), "Up")
-    tela.onkeypress(lambda: tocar(1), "Right")
-    tela.onkeypress(lambda: tocar(2), "Down")
-    tela.onkeypress(lambda: tocar(3), "Left")
-    tela.onkey(novo_jogo, "Return")
-    tela.onkey(novo_jogo, "space")
-    tela.onkey(pausar, "p")
-    tela.onkey(pausar, "P")
-    tela.onkey(reiniciar, "r")
-    tela.onkey(reiniciar, "R")
-    tela.onkey(fechar, "Escape")
-    tela.onscreenclick(clicar)
-    tela.listen()
-    estado["aberto"] = True
-    reiniciar()
-    agendar()
-    if estado["aberto"]:
-        tela.mainloop()
+# ⚙️ Ao iniciar
+estado = {"aberto": True, "recorde": 0}
+
+tela = turtle.Screen()
+cenario = turtle.Turtle(visible=False)
+luz = turtle.Turtle(visible=False)
+dedo = turtle.Turtle(visible=False)
+painel = turtle.Turtle(visible=False)
+
+tela.setup(600, 680)
+tela.title("Genius • Sistema Zero")
+tela.bgcolor(COR_FUNDO)
+tela.tracer(0)
+tela.register_shape("setor", setor(RAIO_DENTRO, RAIO_FORA, 80))
+for desenho in [cenario, luz, dedo, painel]:
+    desenho.penup()
+    desenho.speed(0)
+cenario.shape("setor")
+luz.shape("setor")
+luz.goto(0, CENTRO_Y)
+dedo.shape("circle")
+dedo.shapesize(1.2)
+dedo.color(COR_DEDO)
+dedo.showturtle()
+desenhar_cenario()
+reiniciar()
 
 
-if __name__ == "__main__":
-    iniciar()
+# ⚡ Quando acontecer
+tela.onkeypress(tocar_verde, "Up")
+tela.onkeypress(tocar_vermelho, "Right")
+tela.onkeypress(tocar_azul, "Down")
+tela.onkeypress(tocar_amarelo, "Left")
+tela.onkey(novo_jogo, "Return")
+tela.onkey(novo_jogo, "space")
+tela.onkey(pausar, "p")
+tela.onkey(pausar, "P")
+tela.onkey(reiniciar, "r")
+tela.onkey(reiniciar, "R")
+tela.onkey(fechar, "Escape")
+tela.onscreenclick(clicar)
+tela.listen()
+
+
+# 🔁 Enquanto estiver rodando
+def a_cada_quadro():
+    if not estado["aberto"]:
+        return
+    agora = time.monotonic()
+    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
+    estado["ultimo_tempo"] = agora
+    if not estado["pausado"]:
+        atualizar(tempo)
+    desenhar_painel()
+    tela.update()
+    # Se a janela fechou durante esta volta, o laço para aqui.
+    if not estado["aberto"]:
+        return
+    tela.ontimer(a_cada_quadro, INTERVALO)
+
+
+a_cada_quadro()
+tela.mainloop()

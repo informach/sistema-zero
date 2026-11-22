@@ -1,20 +1,14 @@
+# 📦 Bibliotecas
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Barris na Rampa'
 
-heroi = Actor('heroi', (60, 540))
-barris = []
-vidas = 3
-pontos = 0
-venceu = False
-fim_de_jogo = False
-velocidade_y = 0
-espera = 0
 
-
+# 🧩 Meus moldes
 def cor_do_mapa(x, y, canal):
     # O mapa invisível (images/mapa.png): vermelho onde há viga, azul onde há escada.
     if x < 0 or x >= WIDTH or y < 0 or y >= HEIGHT:
@@ -97,7 +91,30 @@ def recomecar_heroi():
     velocidade_y = 0
     barris.clear()
 
+# ⚙️ Ao iniciar
+heroi = Actor('heroi', (60, 540))
+barris = []
+vidas = 3
+pontos = 0
+venceu = False
+fim_de_jogo = False
+velocidade_y = 0
+espera = 0
 
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    global vidas, pontos, fim_de_jogo, venceu, espera
+    if key == keys.SPACE and (fim_de_jogo or venceu):
+        vidas = 3
+        pontos = 0
+        fim_de_jogo = False
+        venceu = False
+        espera = 0
+        recomecar_heroi()
+
+
+# 🔁 Enquanto estiver rodando
 def update():
     global espera, vidas, fim_de_jogo, venceu, pontos
     if fim_de_jogo or venceu:
@@ -142,17 +159,6 @@ def draw():
         screen.draw.text('Você chegou ao topo!', center=(WIDTH / 2, HEIGHT / 2), fontsize=64, color='yellow', owidth=2, ocolor='black')
     if fim_de_jogo or venceu:
         screen.draw.text('Espaço joga de novo', center=(WIDTH / 2, HEIGHT / 2 + 56), fontsize=36, color='white', owidth=1.5, ocolor='black')
-
-
-def on_key_down(key):
-    global vidas, pontos, fim_de_jogo, venceu, espera
-    if key == keys.SPACE and (fim_de_jogo or venceu):
-        vidas = 3
-        pontos = 0
-        fim_de_jogo = False
-        venceu = False
-        espera = 0
-        recomecar_heroi()
 
 
 pgzrun.go()

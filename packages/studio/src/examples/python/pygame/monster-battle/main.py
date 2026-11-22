@@ -1,3 +1,4 @@
+# 📦 Bibliotecas
 from settings import *
 from support import *
 from timer import Timer
@@ -6,6 +7,7 @@ from random import choice
 from ui import *
 from attack import AttackAnimationSprite
 
+# 🧩 Meus moldes
 class Game:
     def __init__(self):
         pygame.init()
@@ -189,6 +191,7 @@ class Game:
 
         pygame.quit()
 
+# ⚙️ Ao iniciar
 if __name__ == '__main__':
     game = Game()
     game.run()

@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 600
 HEIGHT = 800
 TITLE = 'Nave-Mãe'
@@ -10,22 +12,8 @@ FILEIRAS = [(14, 65), (10, 85), (4, 105)]
 CORES_DA_BARRA = [(150, 70, 200), (120, 55, 165), (90, 40, 125), (60, 25, 85)]
 CORES_DO_ESCUDO = [(255, 214, 0), (230, 170, 0), (200, 120, 0), (150, 80, 0)]
 
-mae = Actor('nave_mae')
-piloto = Actor('piloto')
-nave = Actor('nave')
-tiro = Actor('tiro')
-barra = []
-escudos = []
-lugares = []
-bombas = []
-giro = 0
-quadros = 0
-vidas = 3
-venceu = False
-chegou = False
-ceu_y = 0
 
-
+# 🧩 Meus moldes
 def novo_jogo():
     global vidas, venceu, giro, chegou
     vidas = 3
@@ -79,6 +67,48 @@ def soltar_bomba():
         bombas.append(bomba)
 
 
+def parte_de_baixo():
+    # O ponto mais baixo da Nave-Mãe: o fundo dela ou o escudo inteiro mais baixo.
+    baixo = mae.bottom
+    for numero in range(len(escudos)):
+        if escudos[numero] < 4:
+            baixo = max(baixo, bloco_do_escudo(numero).bottom)
+    return baixo
+
+# ⚙️ Ao iniciar
+mae = Actor('nave_mae')
+piloto = Actor('piloto')
+nave = Actor('nave')
+tiro = Actor('tiro')
+barra = []
+escudos = []
+lugares = []
+bombas = []
+giro = 0
+quadros = 0
+vidas = 3
+venceu = False
+chegou = False
+ceu_y = 0
+
+
+novo_jogo()
+
+
+# ⚡ Quando acontecer
+def on_mouse_move(pos):
+    nave.x = min(max(pos[0], 30), WIDTH - 30)
+
+
+def on_mouse_down(pos):
+    if venceu or vidas == 0:
+        novo_jogo()
+    elif tiro.y <= -20:
+        tiro.midbottom = nave.midtop
+        sounds.tiro.play()
+
+
+# 🔁 Enquanto estiver rodando
 def draw():
     screen.blit('fundo', (0, 0))
     screen.blit('estrelas', (0, ceu_y))
@@ -112,15 +142,6 @@ def draw():
         screen.draw.text('Clique para jogar de novo', center=(WIDTH / 2, 640), fontsize=32, color='white')
 
 
-def parte_de_baixo():
-    # O ponto mais baixo da Nave-Mãe: o fundo dela ou o escudo inteiro mais baixo.
-    baixo = mae.bottom
-    for numero in range(len(escudos)):
-        if escudos[numero] < 4:
-            baixo = max(baixo, bloco_do_escudo(numero).bottom)
-    return baixo
-
-
 def update():
     global giro, quadros, vidas, venceu, ceu_y, chegou
     quadros = quadros + 1
@@ -151,20 +172,5 @@ def update():
         vidas = 0
         chegou = True
         sounds.dano.play()
-
-
-def on_mouse_move(pos):
-    nave.x = min(max(pos[0], 30), WIDTH - 30)
-
-
-def on_mouse_down(pos):
-    if venceu or vidas == 0:
-        novo_jogo()
-    elif tiro.y <= -20:
-        tiro.midbottom = nave.midtop
-        sounds.tiro.play()
-
-
-novo_jogo()
 clock.schedule_interval(soltar_bomba, 1.2)
 pgzrun.go()

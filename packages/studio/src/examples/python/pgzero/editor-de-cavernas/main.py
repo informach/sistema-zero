@@ -1,5 +1,7 @@
+# 📦 Bibliotecas
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 1000
 HEIGHT = 600
 TITLE = 'Editor de Cavernas'
@@ -19,33 +21,9 @@ LETRAS = {
     'minerador': 'M',
     'saida': 'S',
 }
-NOMES = {}
-for nome in LETRAS:
-    NOMES[LETRAS[nome]] = nome
-
-# O painel da direita: uma peça embaixo da outra.
-pecas = []
-for numero, nome in enumerate(LETRAS):
-    peca = Actor(nome)
-    peca.center = (900, 110 + numero * 48)
-    pecas.append(peca)
-botao_guardar = Rect((820, 460), (160, 40))
-botao_carregar = Rect((820, 510), (160, 40))
-
-mapa = []
-jogo = []
-escolhida = 'pedra'
-# 'editar' (desenhando a caverna) ou 'jogar' (testando)
-modo = 'editar'
-resultado = ''
-aviso = 'Clique numa peça e depois no mapa.'
-heroi_linha = 0
-heroi_coluna = 0
-gemas = 0
-gemas_total = 0
-pedido = ''
 
 
+# 🧩 Meus moldes
 def mapa_inicial():
     # Parede em volta, terra por dentro, o minerador num canto e a saída no outro.
     mapa.clear()
@@ -212,27 +190,6 @@ def passo():
     cair_pedras()
 
 
-def draw():
-    screen.fill((20, 14, 10))
-    if modo == 'editar':
-        grade = mapa
-    else:
-        grade = jogo
-    for linha in range(LINHAS):
-        for coluna in range(COLUNAS):
-            screen.blit(grade[linha][coluna], (coluna * TAMANHO, TOPO + linha * TAMANHO))
-    desenhar_painel()
-    if modo == 'editar':
-        screen.draw.text(aviso, topleft=(12, 8), fontsize=30, color='white')
-    else:
-        texto = 'Gemas: ' + str(gemas) + ' de ' + str(gemas_total) + '    Espaço volta ao editor'
-        screen.draw.text(texto, topleft=(12, 8), fontsize=30, color='white')
-    if resultado == 'venceu':
-        screen.draw.text('A caverna dá para vencer!', center=(400, 280), fontsize=52, color='yellow', owidth=1, ocolor='black')
-    if resultado == 'amassado':
-        screen.draw.text('Uma pedra caiu no minerador!', center=(400, 280), fontsize=48, color='orange', owidth=1, ocolor='black')
-
-
 def desenhar_painel():
     screen.draw.filled_rect(Rect((800, 0), (200, HEIGHT)), (26, 35, 64))
     if modo == 'editar':
@@ -250,7 +207,38 @@ def desenhar_painel():
     screen.draw.filled_rect(botao_carregar, (30, 136, 229))
     screen.draw.text('Carregar', center=botao_carregar.center, fontsize=32, color='white')
 
+# ⚙️ Ao iniciar
+NOMES = {}
+for nome in LETRAS:
+    NOMES[LETRAS[nome]] = nome
 
+# O painel da direita: uma peça embaixo da outra.
+pecas = []
+for numero, nome in enumerate(LETRAS):
+    peca = Actor(nome)
+    peca.center = (900, 110 + numero * 48)
+    pecas.append(peca)
+botao_guardar = Rect((820, 460), (160, 40))
+botao_carregar = Rect((820, 510), (160, 40))
+
+mapa = []
+jogo = []
+escolhida = 'pedra'
+# 'editar' (desenhando a caverna) ou 'jogar' (testando)
+modo = 'editar'
+resultado = ''
+aviso = 'Clique numa peça e depois no mapa.'
+heroi_linha = 0
+heroi_coluna = 0
+gemas = 0
+gemas_total = 0
+pedido = ''
+
+
+mapa_inicial()
+
+
+# ⚡ Quando acontecer
 def on_mouse_down(pos):
     global escolhida
     if modo != 'editar':
@@ -291,6 +279,25 @@ def on_key_down(key):
         pedido = 'baixo'
 
 
-mapa_inicial()
+# 🔁 Enquanto estiver rodando
+def draw():
+    screen.fill((20, 14, 10))
+    if modo == 'editar':
+        grade = mapa
+    else:
+        grade = jogo
+    for linha in range(LINHAS):
+        for coluna in range(COLUNAS):
+            screen.blit(grade[linha][coluna], (coluna * TAMANHO, TOPO + linha * TAMANHO))
+    desenhar_painel()
+    if modo == 'editar':
+        screen.draw.text(aviso, topleft=(12, 8), fontsize=30, color='white')
+    else:
+        texto = 'Gemas: ' + str(gemas) + ' de ' + str(gemas_total) + '    Espaço volta ao editor'
+        screen.draw.text(texto, topleft=(12, 8), fontsize=30, color='white')
+    if resultado == 'venceu':
+        screen.draw.text('A caverna dá para vencer!', center=(400, 280), fontsize=52, color='yellow', owidth=1, ocolor='black')
+    if resultado == 'amassado':
+        screen.draw.text('Uma pedra caiu no minerador!', center=(400, 280), fontsize=48, color='orange', owidth=1, ocolor='black')
 clock.schedule_interval(passo, 0.12)
 pgzrun.go()

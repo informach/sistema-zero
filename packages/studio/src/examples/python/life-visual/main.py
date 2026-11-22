@@ -1,5 +1,6 @@
-"""Jogo da Vida educacional: toda a lógica fica visível em blocos, Ponte e Python."""
+# Jogo da Vida educacional: toda a lógica fica visível em blocos, Ponte e Python.
 
+# 📦 Bibliotecas
 import turtle
 import random
 import math
@@ -7,6 +8,7 @@ import time
 import sz_audio
 
 
+# 🎛️ Configurações
 CELULA = 20
 COLUNAS = 40
 LINHAS = 30
@@ -22,15 +24,9 @@ COR_VIVA = "#4ade80"
 COR_CURSOR = "#ff4fd8"
 COR_FUNDO = "#0f1d2b"
 COR_LINHA = "#1b3147"
-estado = {"aberto": False, "timer_pendente": False}
-
-tela = turtle.Screen()
-cenario = turtle.Turtle(visible=False)
-pincel = turtle.Turtle(visible=False)
-cursor = turtle.Turtle(visible=False)
-painel = turtle.Turtle(visible=False)
 
 
+# 🧩 Meus moldes
 def posicao(casa):
     return (X0 + (casa[0] + 0.5) * CELULA, Y0 + (casa[1] + 0.5) * CELULA)
 
@@ -192,25 +188,6 @@ def atualizar(tempo):
         dar_passo()
 
 
-def agendar():
-    if estado["aberto"] and not estado["timer_pendente"]:
-        estado["timer_pendente"] = True
-        tela.ontimer(quadro, INTERVALO)
-
-
-def quadro():
-    estado["timer_pendente"] = False
-    if not estado["aberto"]:
-        return
-    agora = time.monotonic()
-    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
-    estado["ultimo_tempo"] = agora
-    atualizar(tempo)
-    desenhar_painel()
-    tela.update()
-    agendar()
-
-
 def rodar_ou_pausar():
     estado["rodando"] = not estado["rodando"]
     estado["acumulado"] = 0
@@ -228,6 +205,22 @@ def mover_cursor(dx, dy):
     linha = min(LINHAS - 1, max(0, estado["cursor"][1] + dy))
     estado["cursor"] = (coluna, linha)
     mostrar_cursor()
+
+
+def cursor_para_direita():
+    mover_cursor(1, 0)
+
+
+def cursor_para_esquerda():
+    mover_cursor(-1, 0)
+
+
+def cursor_para_cima():
+    mover_cursor(0, 1)
+
+
+def cursor_para_baixo():
+    mover_cursor(0, -1)
 
 
 def marcar():
@@ -262,7 +255,6 @@ def reiniciar():
     estado["ultimo_tempo"] = time.monotonic()
     sz_audio.play("sortear.wav", volume=0.5)
     tela.update()
-    # Não agende aqui: o reinício reutiliza a cadeia existente.
 
 
 def fechar():
@@ -273,45 +265,68 @@ def fechar():
     tela.bye()
 
 
-def iniciar():
-    tela.setup(900, 760)
-    tela.title("Jogo da Vida • Sistema Zero")
-    tela.bgcolor("#08121c")
-    tela.tracer(0)
-    for desenho in [cenario, pincel, cursor, painel]:
-        desenho.penup()
-        desenho.speed(0)
-    pincel.shape("square")
-    pincel.color(COR_VIVA)
-    pincel.shapesize(CELULA / 20 * 0.85)
-    cursor.shape("square")
-    cursor.color(COR_CURSOR)
-    cursor.shapesize(CELULA / 20 * 0.55)
-    cursor.showturtle()
-    desenhar_cenario()
-    tela.onkeypress(lambda: mover_cursor(1, 0), "Right")
-    tela.onkeypress(lambda: mover_cursor(-1, 0), "Left")
-    tela.onkeypress(lambda: mover_cursor(0, 1), "Up")
-    tela.onkeypress(lambda: mover_cursor(0, -1), "Down")
-    tela.onkey(marcar, "Return")
-    tela.onkey(rodar_ou_pausar, "space")
-    tela.onkey(rodar_ou_pausar, "p")
-    tela.onkey(rodar_ou_pausar, "P")
-    tela.onkey(um_passo, "n")
-    tela.onkey(um_passo, "N")
-    tela.onkey(limpar, "c")
-    tela.onkey(limpar, "C")
-    tela.onkey(reiniciar, "r")
-    tela.onkey(reiniciar, "R")
-    tela.onkey(fechar, "Escape")
-    tela.onscreenclick(clicar)
-    tela.listen()
-    estado["aberto"] = True
-    reiniciar()
-    agendar()
-    if estado["aberto"]:
-        tela.mainloop()
+# ⚙️ Ao iniciar
+estado = {"aberto": True}
+
+tela = turtle.Screen()
+cenario = turtle.Turtle(visible=False)
+pincel = turtle.Turtle(visible=False)
+cursor = turtle.Turtle(visible=False)
+painel = turtle.Turtle(visible=False)
+
+tela.setup(900, 760)
+tela.title("Jogo da Vida • Sistema Zero")
+tela.bgcolor("#08121c")
+tela.tracer(0)
+for desenho in [cenario, pincel, cursor, painel]:
+    desenho.penup()
+    desenho.speed(0)
+pincel.shape("square")
+pincel.color(COR_VIVA)
+pincel.shapesize(CELULA / 20 * 0.85)
+cursor.shape("square")
+cursor.color(COR_CURSOR)
+cursor.shapesize(CELULA / 20 * 0.55)
+cursor.showturtle()
+desenhar_cenario()
+reiniciar()
 
 
-if __name__ == "__main__":
-    iniciar()
+# ⚡ Quando acontecer
+tela.onkeypress(cursor_para_direita, "Right")
+tela.onkeypress(cursor_para_esquerda, "Left")
+tela.onkeypress(cursor_para_cima, "Up")
+tela.onkeypress(cursor_para_baixo, "Down")
+tela.onkey(marcar, "Return")
+tela.onkey(rodar_ou_pausar, "space")
+tela.onkey(rodar_ou_pausar, "p")
+tela.onkey(rodar_ou_pausar, "P")
+tela.onkey(um_passo, "n")
+tela.onkey(um_passo, "N")
+tela.onkey(limpar, "c")
+tela.onkey(limpar, "C")
+tela.onkey(reiniciar, "r")
+tela.onkey(reiniciar, "R")
+tela.onkey(fechar, "Escape")
+tela.onscreenclick(clicar)
+tela.listen()
+
+
+# 🔁 Enquanto estiver rodando
+def a_cada_quadro():
+    if not estado["aberto"]:
+        return
+    agora = time.monotonic()
+    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
+    estado["ultimo_tempo"] = agora
+    atualizar(tempo)
+    desenhar_painel()
+    tela.update()
+    # Se a janela fechou durante esta volta, o laço para aqui.
+    if not estado["aberto"]:
+        return
+    tela.ontimer(a_cada_quadro, INTERVALO)
+
+
+a_cada_quadro()
+tela.mainloop()

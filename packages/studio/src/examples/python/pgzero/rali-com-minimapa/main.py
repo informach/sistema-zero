@@ -1,5 +1,7 @@
+# 📦 Bibliotecas
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Rali com Minimapa'
@@ -40,16 +42,8 @@ LABIRINTO = [
 # Onde ficam as bandeiras: (coluna, linha).
 BANDEIRAS = [(1, 18), (18, 1), (18, 18), (10, 10), (4, 7), (13, 1), (16, 13), (7, 16)]
 
-jogador = Actor('carro')
-vermelhos = []
-bandeiras = []
-desejo = (1, 0)
-combustivel = 100
-vidas = 3
-# 'jogando', 'venceu' ou 'fim'
-estado = 'jogando'
 
-
+# 🧩 Meus moldes
 def colocar(carro, coluna, linha, dx, dy):
     # mapa_x e mapa_y: onde o carro está no labirinto inteiro (não na tela).
     carro.mapa_x = coluna * LADO + LADO // 2
@@ -153,6 +147,52 @@ def mover_vermelho(carro):
     virar_o_carro(carro)
 
 
+def desenhar_painel():
+    screen.blit('painel', (600, 0))
+    screen.draw.text('Bandeiras: ' + str(len(BANDEIRAS) - len(bandeiras)) + ' de ' + str(len(BANDEIRAS)), topleft=(616, 20), fontsize=26, color='white')
+    screen.draw.text('Vidas: ' + str(vidas), topleft=(616, 56), fontsize=26, color='white')
+    screen.draw.text('Combustível', topleft=(616, 100), fontsize=26, color='white')
+    screen.draw.filled_rect(Rect((616, 130), (combustivel * 1.6, 18)), 'orange')
+    screen.draw.rect(Rect((616, 130), (160, 18)), 'white')
+    # O minimapa: um pontinho para cada coisa, sem os muros.
+    for coluna, linha in bandeiras:
+        screen.draw.filled_rect(Rect((MINI_X + (coluna * LADO + LADO // 2) / MINI - 2, MINI_Y + (linha * LADO + LADO // 2) / MINI - 2), (5, 5)), 'yellow')
+    for carro in vermelhos:
+        screen.draw.filled_rect(Rect((MINI_X + carro.mapa_x / MINI - 2, MINI_Y + carro.mapa_y / MINI - 2), (5, 5)), 'red')
+    screen.draw.filled_rect(Rect((MINI_X + jogador.mapa_x / MINI - 3, MINI_Y + jogador.mapa_y / MINI - 3), (7, 7)), 'white')
+
+# ⚙️ Ao iniciar
+jogador = Actor('carro')
+vermelhos = []
+bandeiras = []
+desejo = (1, 0)
+combustivel = 100
+vidas = 3
+# 'jogando', 'venceu' ou 'fim'
+estado = 'jogando'
+
+
+novo_jogo()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    global desejo
+    if estado != 'jogando':
+        if key == keys.SPACE:
+            novo_jogo()
+        return
+    if key == keys.LEFT:
+        desejo = (-1, 0)
+    elif key == keys.RIGHT:
+        desejo = (1, 0)
+    elif key == keys.UP:
+        desejo = (0, -1)
+    elif key == keys.DOWN:
+        desejo = (0, 1)
+
+
+# 🔁 Enquanto estiver rodando
 def update():
     global desejo, combustivel, vidas, estado
     if estado != 'jogando':
@@ -221,38 +261,4 @@ def draw():
         screen.draw.text('Fim da corrida!', center=(300, 260), fontsize=60, color='orange', owidth=1, ocolor='black')
     if estado != 'jogando':
         screen.draw.text('Espaço joga de novo', center=(300, 320), fontsize=36, color='white', owidth=1, ocolor='black')
-
-
-def desenhar_painel():
-    screen.blit('painel', (600, 0))
-    screen.draw.text('Bandeiras: ' + str(len(BANDEIRAS) - len(bandeiras)) + ' de ' + str(len(BANDEIRAS)), topleft=(616, 20), fontsize=26, color='white')
-    screen.draw.text('Vidas: ' + str(vidas), topleft=(616, 56), fontsize=26, color='white')
-    screen.draw.text('Combustível', topleft=(616, 100), fontsize=26, color='white')
-    screen.draw.filled_rect(Rect((616, 130), (combustivel * 1.6, 18)), 'orange')
-    screen.draw.rect(Rect((616, 130), (160, 18)), 'white')
-    # O minimapa: um pontinho para cada coisa, sem os muros.
-    for coluna, linha in bandeiras:
-        screen.draw.filled_rect(Rect((MINI_X + (coluna * LADO + LADO // 2) / MINI - 2, MINI_Y + (linha * LADO + LADO // 2) / MINI - 2), (5, 5)), 'yellow')
-    for carro in vermelhos:
-        screen.draw.filled_rect(Rect((MINI_X + carro.mapa_x / MINI - 2, MINI_Y + carro.mapa_y / MINI - 2), (5, 5)), 'red')
-    screen.draw.filled_rect(Rect((MINI_X + jogador.mapa_x / MINI - 3, MINI_Y + jogador.mapa_y / MINI - 3), (7, 7)), 'white')
-
-
-def on_key_down(key):
-    global desejo
-    if estado != 'jogando':
-        if key == keys.SPACE:
-            novo_jogo()
-        return
-    if key == keys.LEFT:
-        desejo = (-1, 0)
-    elif key == keys.RIGHT:
-        desejo = (1, 0)
-    elif key == keys.UP:
-        desejo = (0, -1)
-    elif key == keys.DOWN:
-        desejo = (0, 1)
-
-
-novo_jogo()
 pgzrun.go()

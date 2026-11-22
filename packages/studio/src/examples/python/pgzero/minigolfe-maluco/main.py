@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 import math
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Minigolfe Maluco'
@@ -12,20 +14,8 @@ ATRITO = 0.985
 INICIOS = [(120, 190), (110, 500), (100, 330)]
 PARES = [2, 3, 3]
 
-seta = Actor('seta', anchor=(0, 9))
-bolinha = Actor('bolinha')
-bolinha.vx = 0
-bolinha.vy = 0
-buraco = 0
-forca = 5
-tacadas = 0
-placar = []
-antes_da_tacada = (0, 0)
-aviso = ''
-# 'mirando', 'rolando', 'acertou' ou 'fim'
-estado = 'mirando'
 
-
+# 🧩 Meus moldes
 def novo_jogo():
     global buraco
     placar.clear()
@@ -111,7 +101,42 @@ def tacar():
     estado = 'rolando'
     sounds.tacada.play()
 
+# ⚙️ Ao iniciar
+seta = Actor('seta', anchor=(0, 9))
+bolinha = Actor('bolinha')
+bolinha.vx = 0
+bolinha.vy = 0
+buraco = 0
+forca = 5
+tacadas = 0
+placar = []
+antes_da_tacada = (0, 0)
+aviso = ''
+# 'mirando', 'rolando', 'acertou' ou 'fim'
+estado = 'mirando'
 
+
+novo_jogo()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    global forca
+    if estado == 'fim':
+        if key == keys.SPACE:
+            novo_jogo()
+        return
+    if estado != 'mirando':
+        return
+    if key == keys.UP and forca < 10:
+        forca = forca + 1
+    elif key == keys.DOWN and forca > 1:
+        forca = forca - 1
+    elif key == keys.SPACE or key == keys.RETURN:
+        tacar()
+
+
+# 🔁 Enquanto estiver rodando
 def update():
     global forca, estado
     if estado == 'mirando':
@@ -161,23 +186,4 @@ def draw():
             par_total = par_total + numero
         screen.draw.text('Total: ' + str(total) + ' tacadas (par ' + str(par_total) + ')', center=(400, 280), fontsize=52, color='yellow', owidth=1, ocolor='black')
         screen.draw.text('Espaço joga de novo', center=(400, 340), fontsize=36, color='white', owidth=1, ocolor='black')
-
-
-def on_key_down(key):
-    global forca
-    if estado == 'fim':
-        if key == keys.SPACE:
-            novo_jogo()
-        return
-    if estado != 'mirando':
-        return
-    if key == keys.UP and forca < 10:
-        forca = forca + 1
-    elif key == keys.DOWN and forca > 1:
-        forca = forca - 1
-    elif key == keys.SPACE or key == keys.RETURN:
-        tacar()
-
-
-novo_jogo()
 pgzrun.go()

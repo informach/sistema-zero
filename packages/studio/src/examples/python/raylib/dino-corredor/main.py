@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 from pyray import *
 from random import randint, choice
 
+# 🎛️ Configurações
 LARGURA = 800
 ALTURA = 450
 # A linha do chão, na tela. O dino fica em pé nela, qualquer que seja o tamanho do desenho.
@@ -9,32 +11,11 @@ ESCALA = 4
 GRAVIDADE = 2400
 PULO = -820
 COR = (83, 83, 83, 255)
-
-init_window(LARGURA, ALTURA, 'Dino Corredor')
-init_audio_device()
-set_target_fps(60)
-
-# A folha do dino tem uma linha por animação, do jeito que o Pinta exporta:
-# a de cima é correndo (dois quadros) e a de baixo é pulando (um quadro).
-# O tamanho de um quadro sai da própria imagem: um desenho de qualquer tamanho entra no lugar.
-textura_dino = load_texture('images/dino.png')
 COLUNAS_DINO = 2
 LINHAS_DINO = 2
-LARGURA_DINO = textura_dino.width / COLUNAS_DINO
-ALTURA_DINO = textura_dino.height / LINHAS_DINO
-# A altura do dino em pé sai do desenho: um dino maior do Pinta continua com os pés no chão.
-CHAO = PE - ALTURA_DINO * ESCALA
-cactos = [load_texture(f'images/cacto{i}.png') for i in range(3)]
-# O passarinho bate as asas: uma linha só, com dois quadros.
-textura_passaro = load_texture('images/passaro.png')
-textura_nuvem = load_texture('images/nuvem.png')
-fonte = load_font_ex('fonts/pressstart2p.ttf', 16, None, 224)
-som_pulo = load_sound('sounds/pulo.wav')
-som_batida = load_sound('sounds/batida.wav')
-musica = load_music_stream('music/tema.ogg')
-play_music_stream(musica)
 
 
+# 🧩 Meus moldes
 class Obstaculo:
     def __init__(self, textura, quadros, y, velocidade):
         self.textura = textura
@@ -76,11 +57,35 @@ def comecar():
     falta = 1.5
     perdeu = False
 
+# ⚙️ Ao iniciar
+init_window(LARGURA, ALTURA, 'Dino Corredor')
+init_audio_device()
+set_target_fps(60)
+
+# A folha do dino tem uma linha por animação, do jeito que o Pinta exporta:
+# a de cima é correndo (dois quadros) e a de baixo é pulando (um quadro).
+# O tamanho de um quadro sai da própria imagem: um desenho de qualquer tamanho entra no lugar.
+textura_dino = load_texture('images/dino.png')
+LARGURA_DINO = textura_dino.width / COLUNAS_DINO
+ALTURA_DINO = textura_dino.height / LINHAS_DINO
+# A altura do dino em pé sai do desenho: um dino maior do Pinta continua com os pés no chão.
+CHAO = PE - ALTURA_DINO * ESCALA
+cactos = [load_texture(f'images/cacto{i}.png') for i in range(3)]
+# O passarinho bate as asas: uma linha só, com dois quadros.
+textura_passaro = load_texture('images/passaro.png')
+textura_nuvem = load_texture('images/nuvem.png')
+fonte = load_font_ex('fonts/pressstart2p.ttf', 16, None, 224)
+som_pulo = load_sound('sounds/pulo.wav')
+som_batida = load_sound('sounds/batida.wav')
+musica = load_music_stream('music/tema.ogg')
+play_music_stream(musica)
+
 
 recorde = 0
 quadro_dino = 0
 comecar()
 
+# 🔁 Enquanto estiver rodando
 while not window_should_close():
     dt = get_frame_time()
     update_music_stream(musica)

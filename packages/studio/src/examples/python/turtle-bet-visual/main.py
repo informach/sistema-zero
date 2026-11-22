@@ -1,11 +1,13 @@
-"""Corrida com Aposta educacional: toda a lógica fica visível em blocos, Ponte e Python."""
+# Corrida com Aposta educacional: toda a lógica fica visível em blocos, Ponte e Python.
 
+# 📦 Bibliotecas
 import turtle
 import random
 import time
 import sz_audio
 
 
+# 🎛️ Configurações
 INTERVALO = 16
 PASSO_CORRIDA = 100
 PASSO_MINIMO = 2
@@ -17,15 +19,9 @@ ESPACO_RAIAS = 70
 ALTURA_RAIA = 60
 CORES = ["#ff5c7a", "#4dabf7", "#69db7c", "#ffd43b"]
 NOMES = ["vermelha", "azul", "verde", "amarela"]
-estado = {"aberto": False, "timer_pendente": False}
-
-tela = turtle.Screen()
-pista = turtle.Turtle(visible=False)
-pincel = turtle.Turtle(visible=False)
-marcador = turtle.Turtle(visible=False)
-painel = turtle.Turtle(visible=False)
 
 
+# 🧩 Meus moldes
 class Corredora:
     """Uma tartaruga da corrida: cor, raia (1 a 4) e quanto ela já andou."""
 
@@ -173,26 +169,6 @@ def atualizar(tempo):
         desenhar_corredoras()
 
 
-def agendar():
-    if estado["aberto"] and not estado["timer_pendente"]:
-        estado["timer_pendente"] = True
-        tela.ontimer(quadro, INTERVALO)
-
-
-def quadro():
-    estado["timer_pendente"] = False
-    if not estado["aberto"]:
-        return
-    agora = time.monotonic()
-    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
-    estado["ultimo_tempo"] = agora
-    if not estado["pausado"]:
-        atualizar(tempo)
-    desenhar_painel()
-    tela.update()
-    agendar()
-
-
 def alinhar():
     estado["corredoras"] = []
     for indice in range(len(CORES)):
@@ -205,6 +181,22 @@ def apostar(raia):
         return
     estado["aposta"] = raia
     mostrar_aposta()
+
+
+def apostar_na_raia_1():
+    apostar(1)
+
+
+def apostar_na_raia_2():
+    apostar(2)
+
+
+def apostar_na_raia_3():
+    apostar(3)
+
+
+def apostar_na_raia_4():
+    apostar(4)
 
 
 def clicar(x, y):
@@ -245,7 +237,6 @@ def reiniciar():
     desenhar_painel()
     estado["ultimo_tempo"] = time.monotonic()
     tela.update()
-    # Não agende aqui: o reinício reutiliza a cadeia existente.
 
 
 def fechar():
@@ -256,39 +247,63 @@ def fechar():
     tela.bye()
 
 
-def iniciar():
-    tela.setup(900, 600)
-    tela.title("Corrida com Aposta • Sistema Zero")
-    tela.bgcolor("#16301d")
-    tela.tracer(0)
-    for desenho in [pista, pincel, marcador, painel]:
-        desenho.penup()
-        desenho.speed(0)
-    pincel.shape("turtle")
-    pincel.shapesize(1.6)
-    marcador.shape("triangle")
-    marcador.color("#ffffff")
-    marcador.shapesize(0.8)
-    marcador.showturtle()
-    desenhar_pista()
-    tela.onkey(lambda: apostar(1), "1")
-    tela.onkey(lambda: apostar(2), "2")
-    tela.onkey(lambda: apostar(3), "3")
-    tela.onkey(lambda: apostar(4), "4")
-    tela.onkey(largar, "space")
-    tela.onkey(pausar, "p")
-    tela.onkey(pausar, "P")
-    tela.onkey(reiniciar, "r")
-    tela.onkey(reiniciar, "R")
-    tela.onkey(fechar, "Escape")
-    tela.onscreenclick(clicar)
-    tela.listen()
-    estado["aberto"] = True
-    reiniciar()
-    agendar()
-    if estado["aberto"]:
-        tela.mainloop()
+# ⚙️ Ao iniciar
+estado = {"aberto": True}
+
+tela = turtle.Screen()
+pista = turtle.Turtle(visible=False)
+pincel = turtle.Turtle(visible=False)
+marcador = turtle.Turtle(visible=False)
+painel = turtle.Turtle(visible=False)
+
+tela.setup(900, 600)
+tela.title("Corrida com Aposta • Sistema Zero")
+tela.bgcolor("#16301d")
+tela.tracer(0)
+for desenho in [pista, pincel, marcador, painel]:
+    desenho.penup()
+    desenho.speed(0)
+pincel.shape("turtle")
+pincel.shapesize(1.6)
+marcador.shape("triangle")
+marcador.color("#ffffff")
+marcador.shapesize(0.8)
+marcador.showturtle()
+desenhar_pista()
+reiniciar()
 
 
-if __name__ == "__main__":
-    iniciar()
+# ⚡ Quando acontecer
+tela.onkey(apostar_na_raia_1, "1")
+tela.onkey(apostar_na_raia_2, "2")
+tela.onkey(apostar_na_raia_3, "3")
+tela.onkey(apostar_na_raia_4, "4")
+tela.onkey(largar, "space")
+tela.onkey(pausar, "p")
+tela.onkey(pausar, "P")
+tela.onkey(reiniciar, "r")
+tela.onkey(reiniciar, "R")
+tela.onkey(fechar, "Escape")
+tela.onscreenclick(clicar)
+tela.listen()
+
+
+# 🔁 Enquanto estiver rodando
+def a_cada_quadro():
+    if not estado["aberto"]:
+        return
+    agora = time.monotonic()
+    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
+    estado["ultimo_tempo"] = agora
+    if not estado["pausado"]:
+        atualizar(tempo)
+    desenhar_painel()
+    tela.update()
+    # Se a janela fechou durante esta volta, o laço para aqui.
+    if not estado["aberto"]:
+        return
+    tela.ontimer(a_cada_quadro, INTERVALO)
+
+
+a_cada_quadro()
+tela.mainloop()

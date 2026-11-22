@@ -1,8 +1,10 @@
+# 📦 Bibliotecas
 from settings import *
 
 # The images now come from the Pinta drawings (pinta.carregar_sprite, pinta.carregar_mapa),
 # so import_image and import_folder are no longer needed. The sounds still come from a folder.
 
+# 🧩 Meus moldes
 def audio_importer(*path):
     audio_dict = {}
     for folder_path, _, file_names in walk(join(*path)):

@@ -250,12 +250,13 @@ test('repeating the current deployment preserves its exact approved policy and p
   const f = await fixture()
   const previous = await preparePythonPromotion(f.input)
   const policy = previous.configuration.members.releases[0]!
-  // One block per Turtle concept since the 2026-10 palette review (aliases and spellings share it).
+  // One block per Turtle concept since the 2026-10 palette review (aliases and spellings share it),
+  // plus "repetir a cada" (the Turtle game loop, project areas of 2026-11-22).
   expect(
     policy.blockIds.filter(
       (id) => id.startsWith('sz_py_turtle_') && id !== 'sz_py_turtle_pinta_shape',
     ),
-  ).toHaveLength(84)
+  ).toHaveLength(85)
   expect(policy.blockIds.filter((id) => id === 'sz_py_turtle_pinta_shape')).toHaveLength(1)
   const baseline = structuredClone(previous.configuration)
   const next = await preparePythonPromotion({ ...f.input, baseline })

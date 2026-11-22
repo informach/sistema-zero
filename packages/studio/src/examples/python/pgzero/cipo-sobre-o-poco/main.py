@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 import math
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Cipó sobre o Poço'
@@ -9,25 +11,8 @@ POCO_COMECO = 260
 POCO_FIM = 540
 COMPRIMENTO = 260
 
-# O cipó gira em volta do ponto de cima, preso no galho.
-cipo = Actor('cipo', anchor=('center', 'top'))
-cipo.pos = (400, 170)
-balanco = 1
-explorador = Actor('explorador')
-explorador.midbottom = (80, CHAO)
-tronco = Actor('tronco')
-tronco.midbottom = (WIDTH + 40, CHAO)
-tesouro = Actor('tesouro')
-tesouro.midbottom = (730, CHAO)
-pendurado = False
-# Depois de soltar o cipó, só dá para agarrar de novo depois de pisar no chão.
-pode_agarrar = True
-pulo = 0
-caindo = False
-vidas = 3
-pegou_tesouro = False
 
-
+# 🧩 Meus moldes
 def ponta_do_cipo():
     # A ponta fica a COMPRIMENTO pixels do galho, na direção do ângulo.
     angulo = math.radians(cipo.angle)
@@ -62,21 +47,6 @@ def recomecar():
     caindo = False
 
 
-def draw():
-    screen.blit('fundo', (0, 0))
-    cipo.draw()
-    screen.blit('copas', (0, 0))
-    tesouro.draw()
-    tronco.draw()
-    explorador.draw()
-    screen.blit('chao', (0, CHAO - 5))
-    screen.draw.text('Vidas: ' + str(vidas), topleft=(12, 10), fontsize=32, color='white', owidth=1.5, ocolor='black')
-    if pegou_tesouro:
-        screen.draw.text('Você pegou o tesouro!', center=(WIDTH / 2, 560), fontsize=44, color='yellow', owidth=2, ocolor='black')
-    if vidas == 0:
-        screen.draw.text('Fim de jogo! Espaço recomeça', center=(WIDTH / 2, 560), fontsize=40, color='orange', owidth=2, ocolor='black')
-
-
 def mover_explorador():
     global pulo, caindo
     if keyboard.right and (no_chao() or pulo > 0):
@@ -95,6 +65,60 @@ def mover_explorador():
             caindo = True
     if explorador.bottom > CHAO and not caindo:
         explorador.bottom = CHAO
+
+# ⚙️ Ao iniciar
+# O cipó gira em volta do ponto de cima, preso no galho.
+cipo = Actor('cipo', anchor=('center', 'top'))
+cipo.pos = (400, 170)
+balanco = 1
+explorador = Actor('explorador')
+explorador.midbottom = (80, CHAO)
+tronco = Actor('tronco')
+tronco.midbottom = (WIDTH + 40, CHAO)
+tesouro = Actor('tesouro')
+tesouro.midbottom = (730, CHAO)
+pendurado = False
+# Depois de soltar o cipó, só dá para agarrar de novo depois de pisar no chão.
+pode_agarrar = True
+pulo = 0
+caindo = False
+vidas = 3
+pegou_tesouro = False
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    global pendurado, pulo, vidas, pegou_tesouro, pode_agarrar
+    if key != keys.SPACE:
+        return
+    if vidas == 0 or pegou_tesouro:
+        vidas = 3
+        pegou_tesouro = False
+        tronco.left = WIDTH
+        recomecar()
+    elif pendurado:
+        pendurado = False
+        pode_agarrar = False
+        pulo = 12
+    elif no_chao():
+        pulo = 22
+        sounds.pulo.play()
+
+
+# 🔁 Enquanto estiver rodando
+def draw():
+    screen.blit('fundo', (0, 0))
+    cipo.draw()
+    screen.blit('copas', (0, 0))
+    tesouro.draw()
+    tronco.draw()
+    explorador.draw()
+    screen.blit('chao', (0, CHAO - 5))
+    screen.draw.text('Vidas: ' + str(vidas), topleft=(12, 10), fontsize=32, color='white', owidth=1.5, ocolor='black')
+    if pegou_tesouro:
+        screen.draw.text('Você pegou o tesouro!', center=(WIDTH / 2, 560), fontsize=44, color='yellow', owidth=2, ocolor='black')
+    if vidas == 0:
+        screen.draw.text('Fim de jogo! Espaço recomeça', center=(WIDTH / 2, 560), fontsize=40, color='orange', owidth=2, ocolor='black')
 
 
 def update():
@@ -129,24 +153,6 @@ def update():
     if explorador.colliderect(tesouro):
         pegou_tesouro = True
         sounds.tesouro.play()
-
-
-def on_key_down(key):
-    global pendurado, pulo, vidas, pegou_tesouro, pode_agarrar
-    if key != keys.SPACE:
-        return
-    if vidas == 0 or pegou_tesouro:
-        vidas = 3
-        pegou_tesouro = False
-        tronco.left = WIDTH
-        recomecar()
-    elif pendurado:
-        pendurado = False
-        pode_agarrar = False
-        pulo = 12
-    elif no_chao():
-        pulo = 22
-        sounds.pulo.play()
 
 
 pgzrun.go()

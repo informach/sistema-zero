@@ -1,5 +1,7 @@
+# 📦 Bibliotecas
 from pygame.time import get_ticks
 
+# 🧩 Meus moldes
 class Timer:
     def __init__(self, duration, repeat = False, autostart = False, func = None):
         self.duration = duration

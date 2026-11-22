@@ -25,6 +25,13 @@ CPython/Tk, esses arquivos e o módulo `sz_audio` exportado, execute
 
 ## Explorar e modificar
 
+O código segue as áreas do projeto, na ordem em que o Python o lê:
+📦 Bibliotecas, 🎛️ Configurações (as constantes em MAIÚSCULAS: números, textos e
+listas que ficam iguais enquanto o jogo roda), 🧩 Meus moldes (as funções e as
+classes do jogo), ⚙️ Ao iniciar (a janela e as tartarugas), ⚡ Quando acontecer
+(as teclas) e 🔁 Enquanto estiver rodando (o laço `a_cada_quadro`). O comentário
+no começo de cada área só ajuda a ler, e o Estúdio o escreve sozinho.
+
 As constantes no topo são o painel de controle: `CELULA`, `COLUNAS` e `LINHAS`
 mudam o jardim; `PASSO_COBRINHA`, `PASSO_LAGARTA`, `ACELERACAO` e
 `PASSO_MINIMO` mudam o ritmo; `COR_CABECA`, `COR_CORPO` e `COR_FRUTA` mudam as
@@ -32,22 +39,23 @@ cores. Em `dar_passo`, troque `cobra.crescer += 2` para crescer mais.
 
 A classe `Cobra` guarda o corpo como uma lista de casas `(coluna, linha)`, com a
 cabeça no fim. Comece por `proxima`, `ocupa` e `andar`; depois veja `dar_passo`,
-que decide comer, crescer ou terminar. As teclas usam funções rápidas
-(`lambda: virar(1, 0)`) para passar a direção a uma única função.
+que decide comer, crescer ou terminar. Cada tecla chama uma função com nome
+(`virar_para_direita` chama `virar(1, 0)`), e todas moram em ⚡ Quando acontecer.
 
 Cinco tartarugas persistentes desenham a cena: `cenario` pinta o jardim uma vez,
 `pincel` carimba um quadrado por segmento, `fruta` se move até a próxima fruta e
 `painel` escreve o placar. A cada passo só mudam três carimbos (cabeça nova,
-cabeça antiga e cauda), em vez de redesenhar a cobra inteira. Uma única cadeia
-de `ontimer(..., 16)` mede o tempo com `time.monotonic()`; a pausa congela a
-partida e reiniciar não adiciona outra cadeia. Um quadro atrasado avança no
-máximo duas casas.
+cabeça antiga e cauda), em vez de redesenhar a cobra inteira. O laço do jogo,
+`a_cada_quadro` (em 🔁 Enquanto estiver rodando), mede o tempo com
+`time.monotonic()`; a pausa congela a partida e reiniciar não começa outro laço.
+Um quadro atrasado avança no máximo duas casas.
 
 ## Verificação e limites
 
 `python test_model.py` verifica regras reais do programa sem abrir Tk, navegador
-ou dispositivo de áudio: o arquivo é carregado sem os imports, e as tartarugas
-viram gravadores que contam carimbos e timers. Isso verifica o modelo e seus
-efeitos pedidos, não pixels, áudio ouvido, foco nem desempenho.
+ou dispositivo de áudio: o arquivo é carregado sem os imports e sem o que ele
+faz ao iniciar, e as tartarugas viram gravadores que contam carimbos e timers.
+Isso verifica o modelo e seus efeitos pedidos, não pixels, áudio ouvido, foco
+nem desempenho.
 
 Autoria e licença estão em [NOTICE.md](NOTICE.md) e [LICENSE](LICENSE).

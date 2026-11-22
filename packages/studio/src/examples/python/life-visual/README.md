@@ -30,6 +30,13 @@ Turtle. Com CPython/Tk, esses arquivos e o módulo `sz_audio` exportado, execute
 
 ## Explorar e modificar
 
+O código segue as áreas do projeto, na ordem em que o Python o lê:
+📦 Bibliotecas, 🎛️ Configurações (as constantes em MAIÚSCULAS: números, textos e
+listas que ficam iguais enquanto o jogo roda), 🧩 Meus moldes (as funções do
+jogo), ⚙️ Ao iniciar (a janela e as tartarugas), ⚡ Quando acontecer (as teclas)
+e 🔁 Enquanto estiver rodando (o laço `a_cada_quadro`). O comentário no começo de
+cada área só ajuda a ler, e o Estúdio o escreve sozinho.
+
 As constantes no topo são o painel de controle. `NASCE_COM` e `SOBREVIVE_COM`
 são as regras: troque `[3]` por `[3, 6]` para ver a variante "HighLife", ou
 `SOBREVIVE_COM` por `[1, 2, 3, 4, 5]` para uma colônia que cresce como um
@@ -41,26 +48,27 @@ simplesmente deixa de contar. `COR_VIVA` e `COR_CURSOR` mudam as cores.
 Comece por `vizinhas`, que lista as oito casas em volta, e por
 `contar_vizinhos`: cada casa viva soma um ponto em cada vizinha, então só as
 casas perto de vida aparecem na contagem. `proxima_geracao` aplica as regras e
-devolve o conjunto novo de casas vivas. As setas usam funções rápidas
-(`lambda: mover_cursor(1, 0)`) para passar a direção a uma única função.
+devolve o conjunto novo de casas vivas. Cada seta chama uma função com nome
+(`cursor_para_direita` chama `mover_cursor(1, 0)`), e todas moram em
+⚡ Quando acontecer.
 
 Quatro tartarugas persistentes desenham a cena: `cenario` pinta o fundo e as
 linhas da grade uma vez, `pincel` carimba um quadrado por casa viva, `cursor` é
 a marca rosa e `painel` escreve o placar. O dicionário `carimbos` lembra qual
 carimbo pertence a cada casa, e `aplicar` só apaga o que morreu e só carimba o
-que nasceu, em vez de redesenhar as 1200 casas a cada geração. Uma única cadeia
-de `ontimer(..., 16)` mede o tempo com `time.monotonic()`; pausar congela a
-colônia e reiniciar não adiciona outra cadeia. Um quadro atrasado avança no
-máximo duas gerações.
+que nasceu, em vez de redesenhar as 1200 casas a cada geração. O laço do jogo,
+`a_cada_quadro` (em 🔁 Enquanto estiver rodando), mede o tempo com
+`time.monotonic()`; pausar congela a colônia e reiniciar não começa outro laço.
+Um quadro atrasado avança no máximo duas gerações.
 
 ## Verificação e limites
 
 `python test_model.py` verifica regras reais do programa sem abrir Tk, navegador
-ou dispositivo de áudio: o arquivo é carregado sem os imports, e as tartarugas
-viram gravadores que contam carimbos e timers. Os testes conferem o pisca-pisca,
-o bloco parado, a volta pelas bordas, que só as casas que mudaram trocam de
-carimbo, o cursor, a pausa, a limpeza, o reinício sem cadeia duplicada e o
-limite de quadro atrasado. Isso verifica o modelo e seus efeitos pedidos, não
-pixels, áudio ouvido, foco nem desempenho.
+ou dispositivo de áudio: o arquivo é carregado sem os imports e sem o que ele
+faz ao iniciar, e as tartarugas viram gravadores que contam carimbos e timers.
+Os testes conferem o pisca-pisca, o bloco parado, a volta pelas bordas, que só
+as casas que mudaram trocam de carimbo, o cursor, a pausa, a limpeza, o reinício
+sem laço duplicado e o limite de quadro atrasado. Isso verifica o modelo e seus
+efeitos pedidos, não pixels, áudio ouvido, foco nem desempenho.
 
 Autoria e licença estão em [NOTICE.md](NOTICE.md) e [LICENSE](LICENSE).

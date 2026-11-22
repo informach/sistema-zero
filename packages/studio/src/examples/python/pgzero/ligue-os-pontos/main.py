@@ -1,17 +1,15 @@
+# 📦 Bibliotecas
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 640
 HEIGHT = 480
 TITLE = 'Ligue os Pontos'
 QUANTIDADE = 10
 
-pontos = []
-linhas = []
-proximo = 0
-terminou = False
 
-
+# 🧩 Meus moldes
 def novo_desenho():
     global proximo, terminou
     pontos.clear()
@@ -35,21 +33,17 @@ def sortear_lugar_livre(ponto):
             if ponto.distance_to(outro) < 60:
                 perto = True
 
-
-def draw():
-    screen.fill((250, 246, 232))
-    for linha in linhas:
-        screen.draw.line(linha[0], linha[1], (60, 60, 160))
-    numero = 1
-    for ponto in pontos:
-        ponto.draw()
-        screen.draw.text(str(numero), center=(ponto.x, ponto.y - 22), fontsize=26, color='black')
-        numero = numero + 1
-    if terminou:
-        screen.draw.text('Você ligou todos os pontos!', center=(WIDTH / 2, 30), fontsize=40, color=(30, 120, 60))
-        screen.draw.text('Aperte espaço para outro desenho', center=(WIDTH / 2, HEIGHT - 20), fontsize=26, color='black')
+# ⚙️ Ao iniciar
+pontos = []
+linhas = []
+proximo = 0
+terminou = False
 
 
+novo_desenho()
+
+
+# ⚡ Quando acontecer
 def on_mouse_down(pos):
     global proximo, terminou
     if terminou:
@@ -73,5 +67,17 @@ def on_key_down(key):
         novo_desenho()
 
 
-novo_desenho()
+# 🔁 Enquanto estiver rodando
+def draw():
+    screen.fill((250, 246, 232))
+    for linha in linhas:
+        screen.draw.line(linha[0], linha[1], (60, 60, 160))
+    numero = 1
+    for ponto in pontos:
+        ponto.draw()
+        screen.draw.text(str(numero), center=(ponto.x, ponto.y - 22), fontsize=26, color='black')
+        numero = numero + 1
+    if terminou:
+        screen.draw.text('Você ligou todos os pontos!', center=(WIDTH / 2, 30), fontsize=40, color=(30, 120, 60))
+        screen.draw.text('Aperte espaço para outro desenho', center=(WIDTH / 2, HEIGHT - 20), fontsize=26, color='black')
 pgzrun.go()

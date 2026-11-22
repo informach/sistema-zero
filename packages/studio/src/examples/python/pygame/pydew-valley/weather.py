@@ -1,3 +1,4 @@
+# 📦 Bibliotecas
 from random import randint, choice
 
 import pygame
@@ -6,6 +7,7 @@ from settings import SCREEN_WIDTH, SCREEN_HEIGHT, LAYERS
 from things import Thing
 
 
+# 🧩 Meus moldes
 class Sky:
     """The day slowly gets darker, until the farmer sleeps and a new day begins."""
 

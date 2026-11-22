@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Continuar?'
@@ -8,18 +10,10 @@ VIDAS = 3
 # Segundos da contagem da tela de continuar.
 CONTAGEM = 10
 
-nave = Actor('nave', (WIDTH / 2, 540))
-pedras = []
-vidas = 0
-pontos = 0
-recorde = 0
-quadros_da_contagem = 0
-apertou_espaco = False
-estado = 'titulo'
-
 
 # O que acontece ao entrar em cada estado.
 
+# 🧩 Meus moldes
 def entrar_no_titulo():
     global recorde, pontos
     recorde = max(recorde, pontos)
@@ -73,6 +67,22 @@ def atualizar_continuar():
     quadros_da_contagem = quadros_da_contagem - 1
 
 
+def mudar_para(proximo):
+    global estado
+    estado = proximo
+    AO_ENTRAR[proximo]()
+
+# ⚙️ Ao iniciar
+nave = Actor('nave', (WIDTH / 2, 540))
+pedras = []
+vidas = 0
+pontos = 0
+recorde = 0
+quadros_da_contagem = 0
+apertou_espaco = False
+estado = 'titulo'
+
+
 # As regras: em cada estado, uma lista de pares (condição, próximo estado).
 # A condição é uma função pequena, escrita com lambda, que responde True ou False.
 REGRAS = {
@@ -84,12 +94,14 @@ AO_ENTRAR = {'titulo': entrar_no_titulo, 'jogo': entrar_no_jogo, 'continuar': en
 A_CADA_QUADRO = {'titulo': atualizar_titulo, 'jogo': atualizar_jogo, 'continuar': atualizar_continuar}
 
 
-def mudar_para(proximo):
-    global estado
-    estado = proximo
-    AO_ENTRAR[proximo]()
+# ⚡ Quando acontecer
+def on_key_down(key):
+    global apertou_espaco
+    if key == keys.SPACE:
+        apertou_espaco = True
 
 
+# 🔁 Enquanto estiver rodando
 def update():
     global apertou_espaco
     A_CADA_QUADRO[estado]()
@@ -98,12 +110,6 @@ def update():
             mudar_para(proximo)
             break
     apertou_espaco = False
-
-
-def on_key_down(key):
-    global apertou_espaco
-    if key == keys.SPACE:
-        apertou_espaco = True
 
 
 def draw():

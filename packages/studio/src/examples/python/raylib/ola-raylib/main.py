@@ -1,10 +1,13 @@
+# 📦 Bibliotecas
 from pyray import *
 
+# 🎛️ Configurações
 LARGURA = 800
 ALTURA = 450
 # Cada ponto do desenho vira ESCALA pontos na tela: um desenho do Pinta fica grande e nítido.
 ESCALA = 4
 
+# ⚙️ Ao iniciar
 init_window(LARGURA, ALTURA, 'Olá, Raylib')
 set_target_fps(60)
 
@@ -23,6 +26,8 @@ unload_image(imagem)
 fonte = load_font_ex('fonts/pressstart2p.ttf', 16, None, 224)
 
 cor_do_circulo = YELLOW
+
+# 🔁 Enquanto estiver rodando
 while not window_should_close():
     # Clique no círculo grande para trocar a cor dele.
     if is_mouse_button_pressed(MOUSE_BUTTON_LEFT):

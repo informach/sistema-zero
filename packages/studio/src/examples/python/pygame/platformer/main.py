@@ -1,3 +1,4 @@
+# 📦 Bibliotecas
 from settings import *
 from sprites import *
 from groups import AllSprites
@@ -5,6 +6,7 @@ from support import *
 from timer import Timer
 from random import randint
 
+# 🧩 Meus moldes
 class Game:
     def __init__(self):
         pygame.init()
@@ -208,6 +210,7 @@ class Game:
 
         pygame.quit()
 
+# ⚙️ Ao iniciar
 if __name__ == '__main__':
     game = Game()
     game.run()

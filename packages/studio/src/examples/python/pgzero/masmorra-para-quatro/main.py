@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Masmorra para Quatro'
@@ -31,19 +33,11 @@ MAPA = [
 ]
 NOMES = ['guerreira', 'mago', 'elfa', 'valente']
 
-herois = []
-tesouros = []
-fantasmas = []
-tocas = []
-saida = Actor('saida')
-pontos = 0
-vidas = 5
-nivel = 1
-quadros = 0
-# 'jogando', 'passou' ou 'fim'
-estado = 'jogando'
+
+DIRECOES = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
 
+# 🧩 Meus moldes
 def centro(coluna, linha):
     return (coluna * TAMANHO + TAMANHO / 2, TOPO + linha * TAMANHO + TAMANHO / 2)
 
@@ -150,9 +144,6 @@ def mover_heroi(heroi):
     heroi.image = NOMES[heroi.numero] + '_' + heroi.lado + str(heroi.passos // 10 % 2 + 1)
 
 
-DIRECOES = [(1, 0), (-1, 0), (0, 1), (0, -1)]
-
-
 def vagar(fantasma, passo):
     # Andando à toa: segue a direção sorteada e sorteia outra quando bate na parede.
     dx, dy = fantasma.direcao
@@ -202,7 +193,36 @@ def soltar_fantasma():
     fantasma.direcao = (0, 0)
     fantasmas.append(fantasma)
 
+# ⚙️ Ao iniciar
+herois = []
+tesouros = []
+fantasmas = []
+tocas = []
+saida = Actor('saida')
+pontos = 0
+vidas = 5
+nivel = 1
+quadros = 0
+# 'jogando', 'passou' ou 'fim'
+estado = 'jogando'
 
+
+novo_jogo()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    global nivel
+    if key != keys.SPACE:
+        return
+    if estado == 'passou':
+        nivel = nivel + 1
+        montar_nivel()
+    elif estado == 'fim':
+        novo_jogo()
+
+
+# 🔁 Enquanto estiver rodando
 def update():
     global quadros, pontos, vidas, estado
     if estado != 'jogando':
@@ -268,18 +288,4 @@ def draw():
         screen.draw.text('Fim de jogo!', center=(WIDTH / 2, HEIGHT / 2), fontsize=56, color='orange', owidth=1, ocolor='black')
     if estado != 'jogando':
         screen.draw.text('Espaço continua', center=(WIDTH / 2, HEIGHT / 2 + 50), fontsize=34, color='white', owidth=1, ocolor='black')
-
-
-def on_key_down(key):
-    global nivel
-    if key != keys.SPACE:
-        return
-    if estado == 'passou':
-        nivel = nivel + 1
-        montar_nivel()
-    elif estado == 'fim':
-        novo_jogo()
-
-
-novo_jogo()
 pgzrun.go()

@@ -1,7 +1,9 @@
+# 📦 Bibliotecas
 from settings import *
 from support import import_frame
 from entities import Entity
 
+# 🧩 Meus moldes
 class AllSprites(pygame.sprite.Group):
     def __init__(self):
         super().__init__()

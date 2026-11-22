@@ -1,7 +1,9 @@
+# 📦 Bibliotecas
 import pygame
 from settings import LAYERS
 
 
+# 🧩 Meus moldes
 class Thing(pygame.sprite.Sprite):
     """Anything placed on the map: a picture, where it is and on which layer it is drawn."""
 

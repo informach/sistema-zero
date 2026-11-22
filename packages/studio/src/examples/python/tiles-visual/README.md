@@ -28,6 +28,13 @@ separado da biblioteca Turtle. Com CPython/Tk, esses arquivos e o módulo
 
 ## Explorar e modificar
 
+O código segue as áreas do projeto, na ordem em que o Python o lê:
+📦 Bibliotecas, 🎛️ Configurações (as constantes em MAIÚSCULAS: números, textos e
+listas que ficam iguais enquanto o jogo roda), 🧩 Meus moldes (as funções do
+jogo), ⚙️ Ao iniciar (a janela e as tartarugas), ⚡ Quando acontecer (as teclas)
+e 🔁 Enquanto estiver rodando (o laço `a_cada_quadro`). O comentário no começo de
+cada área só ajuda a ler, e o Estúdio o escreve sozinho.
+
 As constantes no topo são o painel de controle: `EMBARALHAR` diz quantos
 movimentos aleatórios bagunçam a grade (experimente 10 para um começo fácil),
 `CELULA` muda o tamanho das peças e `PISCAR` o ritmo da moldura. As cores ficam
@@ -40,21 +47,22 @@ de `embaralhar` é nunca sortear posições: ele parte do quebra-cabeça resolvi
 faz movimentos de verdade, sem desfazer o anterior, e no fim leva o vazio de
 volta ao canto. Por isso todo embaralhamento tem solução.
 
-As setas usam funções rápidas (`lambda: empurrar(-1, 0)`) para passar a direção
-a uma única função. Cinco tartarugas persistentes desenham a cena: `cenario`
-pinta a moldura do tabuleiro uma vez, `pincel` carimba um quadrado por peça,
-`numeros` escreve os números, `vazio` é a moldura do espaço livre e `painel`
-escreve o placar. Uma única cadeia de `ontimer(..., 16)` mede o tempo com
+Cada seta chama uma função com nome (`empurrar_para_esquerda` chama
+`empurrar(-1, 0)`), e todas moram em ⚡ Quando acontecer. Cinco tartarugas
+persistentes desenham a cena: `cenario` pinta a moldura do tabuleiro uma vez,
+`pincel` carimba um quadrado por peça, `numeros` escreve os números, `vazio` é a
+moldura do espaço livre e `painel` escreve o placar. O laço do jogo,
+`a_cada_quadro` (em 🔁 Enquanto estiver rodando), mede o tempo com
 `time.monotonic()`, conta os segundos e faz a moldura pulsar; a pausa congela a
-partida e reiniciar não adiciona outra cadeia. Um quadro atrasado conta no
-máximo 100 ms.
+partida e reiniciar não começa outro laço. Um quadro atrasado conta no máximo
+100 ms.
 
 ## Verificação e limites
 
 `python test_model.py` verifica regras reais do programa sem abrir Tk, navegador
-ou dispositivo de áudio: o arquivo é carregado sem os imports, e as tartarugas
-viram gravadores que contam carimbos e timers. Isso verifica o modelo e seus
-efeitos pedidos, não pixels, áudio ouvido, foco nem desempenho. As peças trocam
-de lugar de uma vez, sem animação de deslizar.
+ou dispositivo de áudio: o arquivo é carregado sem os imports e sem o que ele
+faz ao iniciar, e as tartarugas viram gravadores que contam carimbos e timers.
+Isso verifica o modelo e seus efeitos pedidos, não pixels, áudio ouvido, foco
+nem desempenho. As peças trocam de lugar de uma vez, sem animação de deslizar.
 
 Autoria e licença estão em [NOTICE.md](NOTICE.md) e [LICENSE](LICENSE).

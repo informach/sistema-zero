@@ -1,5 +1,7 @@
+# 📦 Bibliotecas
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 400
 TITLE = 'Mina que Desmorona'
@@ -17,22 +19,8 @@ MAPA = [
     '#######.....############',
 ]
 
-blocos = []
-tipos = []
-chaves = []
-mineiro = Actor('mineiro_d0')
-robo = Actor('robo')
-porta = Actor('porta')
-porta.midbottom = (70, 100)
-velocidade_y = 0
-no_chao = False
-olhando = 'd'
-passos = 0
-vidas = 3
-venceu = False
-robo_vai = 2
 
-
+# 🧩 Meus moldes
 def montar_caverna():
     # Lê o mapa e cria um retângulo para cada pedaço de chão; as chaves voltam ao lugar.
     blocos.clear()
@@ -125,7 +113,44 @@ def mover_robo():
     if robo.x > 760 or robo.x < 440:
         robo_vai = -robo_vai
 
+# ⚙️ Ao iniciar
+blocos = []
+tipos = []
+chaves = []
+mineiro = Actor('mineiro_d0')
+robo = Actor('robo')
+porta = Actor('porta')
+porta.midbottom = (70, 100)
+velocidade_y = 0
+no_chao = False
+olhando = 'd'
+passos = 0
+vidas = 3
+venceu = False
+robo_vai = 2
 
+
+robo.midbottom = (600, 350)
+montar_caverna()
+recomecar()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    global velocidade_y, vidas, venceu
+    if key != keys.SPACE:
+        return
+    if vidas == 0 or venceu:
+        vidas = 3
+        venceu = False
+        montar_caverna()
+        recomecar()
+    elif no_chao:
+        velocidade_y = PULO
+        sounds.pulo.play()
+
+
+# 🔁 Enquanto estiver rodando
 def draw():
     screen.blit('fundo', (0, 0))
     for numero in range(len(blocos)):
@@ -164,23 +189,4 @@ def update():
     if not chaves and mineiro.colliderect(porta):
         venceu = True
         sounds.vitoria.play()
-
-
-def on_key_down(key):
-    global velocidade_y, vidas, venceu
-    if key != keys.SPACE:
-        return
-    if vidas == 0 or venceu:
-        vidas = 3
-        venceu = False
-        montar_caverna()
-        recomecar()
-    elif no_chao:
-        velocidade_y = PULO
-        sounds.pulo.play()
-
-
-robo.midbottom = (600, 350)
-montar_caverna()
-recomecar()
 pgzrun.go()

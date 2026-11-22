@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Memória contra o Computador'
@@ -13,6 +15,7 @@ TEMPO_PARA_OLHAR = 1.0
 TEMPO_DO_COMPUTADOR = 0.6
 
 
+# 🧩 Meus moldes
 class Carta:
     """Uma carta da mesa: o bicho dela, o desenho e quem achou o par."""
 
@@ -79,15 +82,6 @@ class Computador:
         if not outras:
             outras = [numero for numero in livres if numero != primeira]
         return random.choice(outras)
-
-
-cartas = []
-computador = Computador()
-abertas = []
-pontos = {'voce': 0, 'computador': 0}
-vez = 'voce'
-estado = 'jogando'
-espera = 0
 
 
 def dar_as_cartas():
@@ -161,19 +155,20 @@ def jogar_computador():
         virar(computador.segunda(primeira, cartas[primeira].bicho, livres()))
 
 
-def update(dt):
-    global espera
-    if estado == 'fim':
-        return
-    espera = espera - dt
-    if espera > 0:
-        return
-    if estado == 'olhando':
-        conferir()
-    elif vez == 'computador':
-        jogar_computador()
+# ⚙️ Ao iniciar
+cartas = []
+computador = Computador()
+abertas = []
+pontos = {'voce': 0, 'computador': 0}
+vez = 'voce'
+estado = 'jogando'
+espera = 0
 
 
+dar_as_cartas()
+
+
+# ⚡ Quando acontecer
 def on_mouse_down(pos):
     if estado != 'jogando' or vez != 'voce':
         return
@@ -186,6 +181,20 @@ def on_mouse_down(pos):
 def on_key_down(key):
     if key == keys.SPACE and estado == 'fim':
         dar_as_cartas()
+
+
+# 🔁 Enquanto estiver rodando
+def update(dt):
+    global espera
+    if estado == 'fim':
+        return
+    espera = espera - dt
+    if espera > 0:
+        return
+    if estado == 'olhando':
+        conferir()
+    elif vez == 'computador':
+        jogar_computador()
 
 
 def draw():
@@ -207,7 +216,4 @@ def draw():
         screen.draw.text('Sua vez: vire duas cartas', center=(400, 40), fontsize=32, color='white')
     else:
         screen.draw.text('Vez do computador...', center=(400, 40), fontsize=32, color='white')
-
-
-dar_as_cartas()
 pgzrun.go()

@@ -1,0 +1,323 @@
+{
+  "kind": "python-visual-authoring",
+  "analyzer": {
+    "pythonVersion": "3.14.2",
+    "pyodideVersion": "314.0.7",
+    "distributionSha256": "1b9e2813e174008c0572c2233cd8f68f0f45d72f99902d25bbd769c23892291b",
+    "analyzerSha256": "030eee7115db46c8c19831372a0948f71bbda0a8ad751235d4da889ed68bdf9b"
+  },
+  "authoringRuntime": {
+    "profileId": "python-probe",
+    "releaseId": "probe-1",
+    "manifestSha256": "8e04b8116485b851bc2d280c4273d13e1524a3ecc1c2e7610e28de03fcb106c6"
+  },
+  "authoringRuntimeFeatures": [
+    "turtle-compound-shapes",
+    "project-missions-v1",
+    "pinta-map-world-v1",
+    "pinta-scene-physics-v1",
+    "molda-scene-assets-v1",
+    "python-background-focus-v1",
+    "molda-scene-regions-v1"
+  ],
+  "authoringLoader": "loadPythonAuthoring",
+  "extension": "python-pgzero",
+  "codecOrderSha256": "7dc0c6647e6c38a27d732f6c43dd50e7dccd2546f49c785edd557815eaa9cbf9",
+  "sourceSha256": "c89d217b8434abf978f8af23f85bcc0f790e962e50e2548ffc944018149243bd",
+  "generatedSha256": "1fdc005786db0b9e2d676fd324b2f707aa369cff2402968d151a1eedd14ade23",
+  "opaqueCount": 0,
+  "blockCount": 662,
+  "referencedBlocks": [
+    {
+      "id": "sz_py_and",
+      "count": 2
+    },
+    {
+      "id": "sz_py_arithmetic",
+      "count": 52
+    },
+    {
+      "id": "sz_py_assign",
+      "count": 63
+    },
+    {
+      "id": "sz_py_attribute",
+      "count": 44
+    },
+    {
+      "id": "sz_py_break",
+      "count": 1
+    },
+    {
+      "id": "sz_py_collection_remove",
+      "count": 4
+    },
+    {
+      "id": "sz_py_compare",
+      "count": 17
+    },
+    {
+      "id": "sz_py_continue",
+      "count": 1
+    },
+    {
+      "id": "sz_py_def",
+      "count": 6
+    },
+    {
+      "id": "sz_py_float",
+      "count": 2
+    },
+    {
+      "id": "sz_py_for",
+      "count": 10
+    },
+    {
+      "id": "sz_py_forever",
+      "count": 1
+    },
+    {
+      "id": "sz_py_global",
+      "count": 4
+    },
+    {
+      "id": "sz_py_if",
+      "count": 24
+    },
+    {
+      "id": "sz_py_import_one",
+      "count": 3
+    },
+    {
+      "id": "sz_py_integer",
+      "count": 74
+    },
+    {
+      "id": "sz_py_list",
+      "count": 5
+    },
+    {
+      "id": "sz_py_list_append",
+      "count": 3
+    },
+    {
+      "id": "sz_py_list_call",
+      "count": 3
+    },
+    {
+      "id": "sz_py_list_clear",
+      "count": 3
+    },
+    {
+      "id": "sz_py_math_atan2",
+      "count": 1
+    },
+    {
+      "id": "sz_py_math_degrees",
+      "count": 1
+    },
+    {
+      "id": "sz_py_math_hypot",
+      "count": 1
+    },
+    {
+      "id": "sz_py_max",
+      "count": 2
+    },
+    {
+      "id": "sz_py_min",
+      "count": 2
+    },
+    {
+      "id": "sz_py_negative",
+      "count": 5
+    },
+    {
+      "id": "sz_py_not",
+      "count": 2
+    },
+    {
+      "id": "sz_py_or",
+      "count": 2
+    },
+    {
+      "id": "sz_py_pgzero_actor",
+      "count": 5
+    },
+    {
+      "id": "sz_py_pgzero_actor_draw",
+      "count": 5
+    },
+    {
+      "id": "sz_py_pgzero_actor_property",
+      "count": 12
+    },
+    {
+      "id": "sz_py_pgzero_collidepoint",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_colliderect",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_distance_to",
+      "count": 4
+    },
+    {
+      "id": "sz_py_pgzero_draw",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_draw_text",
+      "count": 5
+    },
+    {
+      "id": "sz_py_pgzero_go",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_height",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_keyboard",
+      "count": 8
+    },
+    {
+      "id": "sz_py_pgzero_keys",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_on_key_down",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_rect",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_screen_blit",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_sound_play",
+      "count": 5
+    },
+    {
+      "id": "sz_py_pgzero_title",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_update",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_width",
+      "count": 1
+    },
+    {
+      "id": "sz_py_random_choice",
+      "count": 2
+    },
+    {
+      "id": "sz_py_random_randint",
+      "count": 2
+    },
+    {
+      "id": "sz_py_range",
+      "count": 2
+    },
+    {
+      "id": "sz_py_return",
+      "count": 4
+    },
+    {
+      "id": "sz_py_run",
+      "count": 7
+    },
+    {
+      "id": "sz_py_run_value",
+      "count": 3
+    },
+    {
+      "id": "sz_py_str",
+      "count": 3
+    },
+    {
+      "id": "sz_py_text",
+      "count": 25
+    },
+    {
+      "id": "sz_py_tuple",
+      "count": 10
+    },
+    {
+      "id": "sz_py_variable",
+      "count": 210
+    }
+  ],
+  "approvedBlockIdsSha256": "d447df688843ce29be5142e1aefe192a7099be67f72ce751ed1223af520ddae0",
+  "fullWorkspaceRoundtrip": true,
+  "initialWorkspaceSha256": "7b997ee96a1fffa1def7c988f0092f8618e74f8f4e12e0cde598cadb38a230dd",
+  "editedWorkspaceSha256": "e27a2bb166131a191589cc29da0ce793284418aef3cfc55a027faa7fcd7a610b",
+  "canonicalRenderReanalysis": true,
+  "runtimeCapabilitiesQualified": false,
+  "browserInteractionQualified": false,
+  "edits": [
+    {
+      "label": "width",
+      "path": {
+        "body": 3,
+        "inputs": [
+          {
+            "name": "value",
+            "index": 0
+          }
+        ]
+      },
+      "codecId": "sz_py_integer",
+      "field": "NUMBER",
+      "before": "800",
+      "after": "810",
+      "beforeSourceSha256": "900ac0b9ef8e5c542cb35e83fac68a4169f6d88640e78e00006835b662402733",
+      "afterSourceSha256": "cc8ecda13d8cb413ef1ee578c68904f37d63488ab3adc5c645094b5bbb6f8e16"
+    },
+    {
+      "label": "height",
+      "path": {
+        "body": 4,
+        "inputs": [
+          {
+            "name": "value",
+            "index": 0
+          }
+        ]
+      },
+      "codecId": "sz_py_integer",
+      "field": "NUMBER",
+      "before": "600",
+      "after": "610",
+      "beforeSourceSha256": "cc8ecda13d8cb413ef1ee578c68904f37d63488ab3adc5c645094b5bbb6f8e16",
+      "afterSourceSha256": "55e2dacfd437fa0ec62985e0c1cd525eb66d2ce44b35a4cf6c2ea53a1d711b5e"
+    },
+    {
+      "label": "title",
+      "path": {
+        "body": 5,
+        "inputs": [
+          {
+            "name": "value",
+            "index": 0
+          }
+        ]
+      },
+      "codecId": "sz_py_text",
+      "field": "TEXT",
+      "before": "Arena de Dois Comandos",
+      "after": "Arena de Dois Comandos!",
+      "beforeSourceSha256": "55e2dacfd437fa0ec62985e0c1cd525eb66d2ce44b35a4cf6c2ea53a1d711b5e",
+      "afterSourceSha256": "1fdc005786db0b9e2d676fd324b2f707aa369cff2402968d151a1eedd14ade23"
+    }
+  ]
+}

@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 450
 TITLE = 'Patrulha em Camadas'
@@ -9,26 +11,8 @@ GRAVIDADE = 0.5
 PULO = 11
 CHEGADA = 1000
 
-# Três camadas de fundo, cada uma com o dobro da largura da tela. A de trás anda devagar e a
-# da frente anda rápido: é isso que dá a sensação de distância.
-camadas = []
-for imagem, ritmo in [('montanhas_longe', 0.2), ('morros', 0.5), ('chao', 1.0)]:
-    camada = Actor(imagem)
-    camada.topleft = (0, 0)
-    camada.ritmo = ritmo
-    camadas.append(camada)
 
-jipe = Actor('jipe')
-obstaculos = []
-velocidade = 5
-vy = 0
-metros = 0
-vidas = 3
-proximo = 400
-# 'andando', 'batida', 'chegou' ou 'fim'
-estado = 'andando'
-
-
+# 🧩 Meus moldes
 def novo_jogo():
     global vidas, metros
     vidas = 3
@@ -71,7 +55,43 @@ def bateu(coisa):
         return no_chao() and coisa.left + 10 < jipe.x and jipe.x < coisa.right - 10
     return abs(coisa.x - jipe.x) < (coisa.width + jipe.width) / 2 - 8 and jipe.bottom > coisa.top + 6
 
+# ⚙️ Ao iniciar
+# Três camadas de fundo, cada uma com o dobro da largura da tela. A de trás anda devagar e a
+# da frente anda rápido: é isso que dá a sensação de distância.
+camadas = []
+for imagem, ritmo in [('montanhas_longe', 0.2), ('morros', 0.5), ('chao', 1.0)]:
+    camada = Actor(imagem)
+    camada.topleft = (0, 0)
+    camada.ritmo = ritmo
+    camadas.append(camada)
 
+jipe = Actor('jipe')
+obstaculos = []
+velocidade = 5
+vy = 0
+metros = 0
+vidas = 3
+proximo = 400
+# 'andando', 'batida', 'chegou' ou 'fim'
+estado = 'andando'
+
+
+novo_jogo()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    global vy
+    if estado == 'chegou' or estado == 'fim':
+        if key == keys.SPACE:
+            novo_jogo()
+        return
+    if (key == keys.SPACE or key == keys.UP) and no_chao() and estado == 'andando':
+        vy = -PULO
+        sounds.pulo.play()
+
+
+# 🔁 Enquanto estiver rodando
 def update():
     global vy, velocidade, metros, proximo, estado, vidas
     if estado != 'andando':
@@ -131,18 +151,4 @@ def draw():
         screen.draw.text('Fim da patrulha!', center=(WIDTH / 2, 180), fontsize=56, color='orange', owidth=1, ocolor='black')
     if estado == 'chegou' or estado == 'fim':
         screen.draw.text('Espaço joga de novo', center=(WIDTH / 2, 230), fontsize=34, color='white', owidth=1, ocolor='black')
-
-
-def on_key_down(key):
-    global vy
-    if estado == 'chegou' or estado == 'fim':
-        if key == keys.SPACE:
-            novo_jogo()
-        return
-    if (key == keys.SPACE or key == keys.UP) and no_chao() and estado == 'andando':
-        vy = -PULO
-        sounds.pulo.play()
-
-
-novo_jogo()
 pgzrun.go()

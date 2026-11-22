@@ -1,7 +1,9 @@
+# 📦 Bibliotecas
 import pygame
 import pinta
 from os.path import join
 
+# 🎛️ Configurações
 WINDOW_WIDTH, WINDOW_HEIGHT = 1280,720
 # How fast the monsters breathe (frames per second of the 'frente' and 'costas' animations).
 ANIMATION_SPEED = 2

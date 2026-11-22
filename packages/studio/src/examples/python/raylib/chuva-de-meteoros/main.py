@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 from pyray import *
 from random import randint, uniform
 
+# 🎛️ Configurações
 LARGURA = 800
 ALTURA = 450
 COR_DO_FUNDO = (15, 10, 25, 255)
@@ -9,30 +11,10 @@ VELOCIDADE_LASER = 600
 TEMPO_ENTRE_METEOROS = 0.5
 # Cada ponto do desenho vira ESCALA pontos na tela: um desenho do Pinta fica grande e nítido.
 ESCALA = 4
-
-init_window(LARGURA, ALTURA, 'Chuva de Meteoros')
-init_audio_device()
-set_target_fps(60)
-
-textura_nave = load_texture('images/nave.png')
-textura_meteoro = load_texture('images/meteoro.png')
-textura_laser = load_texture('images/laser.png')
-textura_estrela = load_texture('images/estrela.png')
-# A explosão é uma folha com os quadros lado a lado, do jeito que o Pinta exporta.
-# O tamanho de um quadro sai da própria imagem: um desenho de qualquer tamanho entra no lugar.
-textura_explosao = load_texture('images/explosao.png')
 QUADROS_EXPLOSAO = 5
-LARGURA_EXPLOSAO = textura_explosao.width / QUADROS_EXPLOSAO
-ALTURA_EXPLOSAO = textura_explosao.height
-fonte = load_font_ex('fonts/pressstart2p.ttf', 32, None, 224)
-som_laser = load_sound('sounds/laser.wav')
-som_explosao = load_sound('sounds/explosao.wav')
-musica = load_music_stream('music/tema.ogg')
-play_music_stream(musica)
-
-estrelas = [(Vector2(randint(0, LARGURA), randint(0, ALTURA)), uniform(1, 3)) for i in range(30)]
 
 
+# 🧩 Meus moldes
 class Sprite:
     def __init__(self, textura, posicao, velocidade, direcao):
         self.textura = textura
@@ -142,10 +124,33 @@ def comecar():
     falta = TEMPO_ENTRE_METEOROS
     perdeu = False
 
+# ⚙️ Ao iniciar
+init_window(LARGURA, ALTURA, 'Chuva de Meteoros')
+init_audio_device()
+set_target_fps(60)
+
+textura_nave = load_texture('images/nave.png')
+textura_meteoro = load_texture('images/meteoro.png')
+textura_laser = load_texture('images/laser.png')
+textura_estrela = load_texture('images/estrela.png')
+# A explosão é uma folha com os quadros lado a lado, do jeito que o Pinta exporta.
+# O tamanho de um quadro sai da própria imagem: um desenho de qualquer tamanho entra no lugar.
+textura_explosao = load_texture('images/explosao.png')
+LARGURA_EXPLOSAO = textura_explosao.width / QUADROS_EXPLOSAO
+ALTURA_EXPLOSAO = textura_explosao.height
+fonte = load_font_ex('fonts/pressstart2p.ttf', 32, None, 224)
+som_laser = load_sound('sounds/laser.wav')
+som_explosao = load_sound('sounds/explosao.wav')
+musica = load_music_stream('music/tema.ogg')
+play_music_stream(musica)
+
+estrelas = [(Vector2(randint(0, LARGURA), randint(0, ALTURA)), uniform(1, 3)) for i in range(30)]
+
 
 recorde = 0
 comecar()
 
+# 🔁 Enquanto estiver rodando
 while not window_should_close():
     dt = get_frame_time()
     update_music_stream(musica)

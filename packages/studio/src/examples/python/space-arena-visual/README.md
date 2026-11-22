@@ -28,6 +28,13 @@ impacto há um intervalo de proteção visível na cor da nave. Cada drone vale
 
 ## Fonte, blocos e modo Ponte
 
+O código segue as áreas do projeto, na ordem em que o Python o lê:
+📦 Bibliotecas, 🎛️ Configurações (as constantes em MAIÚSCULAS: números, textos e
+listas que ficam iguais enquanto o jogo roda), 🧩 Meus moldes (as funções do
+jogo), ⚙️ Ao iniciar (a janela e as tartarugas), ⚡ Quando acontecer (as teclas)
+e 🔁 Enquanto estiver rodando (o laço `a_cada_quadro`). O comentário no começo de
+cada área só ajuda a ler, e o Estúdio o escreve sozinho.
+
 `main.py` contém todo o programa. A fonte usa construções Python comuns:
 funções nomeadas, condições, repetições, listas e dicionários. Não há classes,
 herança, lambdas, comprehensions, `global`, `nonlocal` ou execução de texto.
@@ -76,11 +83,12 @@ reutilizadas. O corte visual fora da câmera não elimina entidades da simulaç�
 Três canetas Turtle desenham o mundo/radar, o painel e os avisos. Os carimbos do
 quadro anterior são apagados; texto estável não é reescrito em todos os quadros.
 
-Uma única cadeia `ontimer` atende a partida. O intervalo nominal é 60 Hz,
-compensando o tempo gasto na atualização, sem executar quadros extras para
-recuperar atraso. Reiniciar altera o modelo, mas não agenda outro timer.
-Pausa não avança física nem partículas. Fechar revoga a cadeia; um callback
-já agendado verifica o estado antes de trabalhar. Não há threads do jogo.
+O laço `a_cada_quadro`, em 🔁 Enquanto estiver rodando, atende a partida: cada
+volta agenda só a próxima. O intervalo nominal é 60 Hz, compensando o tempo
+gasto na atualização, sem executar quadros extras para recuperar atraso.
+Reiniciar altera o modelo, mas não começa outro laço. Pausa não avança física
+nem partículas. Fechar para o laço; uma volta que já estava marcada confere o
+estado antes de trabalhar. Não há threads do jogo.
 
 Este é um projeto novo, não uma cópia nem uma certificação do Space Arena do
 corpus de compatibilidade. O corpus e seus testes permanecem separados. Veja

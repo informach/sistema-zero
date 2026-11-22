@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 import math
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Pouso Lunar'
@@ -13,16 +15,8 @@ POUSO_LATERAL = 0.6
 # As pistas planas: (começo, fim, altura, quanto vale). Elas também estão desenhadas no mapa.
 PISTAS = [(120, 200, 470, 2), (360, 420, 540, 3), (620, 670, 300, 5)]
 
-modulo = Actor('modulo')
-vx = 0
-vy = 0
-combustivel = COMBUSTIVEL
-pontos = 0
-# 'voando', 'pousou' ou 'quebrou'
-estado = 'voando'
-mensagem = ''
 
-
+# 🧩 Meus moldes
 def novo_voo():
     global vx, vy, combustivel, estado, mensagem
     modulo.pos = (80, 60)
@@ -65,7 +59,27 @@ def tocou_o_chao():
             return True
     return False
 
+# ⚙️ Ao iniciar
+modulo = Actor('modulo')
+vx = 0
+vy = 0
+combustivel = COMBUSTIVEL
+pontos = 0
+# 'voando', 'pousou' ou 'quebrou'
+estado = 'voando'
+mensagem = ''
 
+
+novo_voo()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    if estado != 'voando' and key == keys.SPACE:
+        novo_voo()
+
+
+# 🔁 Enquanto estiver rodando
 def update():
     global vx, vy, combustivel, estado, pontos, mensagem
     if estado != 'voando':
@@ -133,12 +147,4 @@ def draw():
     if estado != 'voando':
         screen.draw.text(mensagem, center=(WIDTH / 2, 200), fontsize=44, color='yellow', owidth=1, ocolor='black')
         screen.draw.text('Espaço voa de novo', center=(WIDTH / 2, 245), fontsize=32, color='white', owidth=1, ocolor='black')
-
-
-def on_key_down(key):
-    if estado != 'voando' and key == keys.SPACE:
-        novo_voo()
-
-
-novo_voo()
 pgzrun.go()

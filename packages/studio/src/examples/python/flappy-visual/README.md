@@ -25,6 +25,13 @@ CPython/Tk, esses arquivos e o módulo `sz_audio` exportado, execute
 
 ## Explorar e modificar
 
+O código segue as áreas do projeto, na ordem em que o Python o lê:
+📦 Bibliotecas, 🎛️ Configurações (as constantes em MAIÚSCULAS: números, textos e
+listas que ficam iguais enquanto o jogo roda), 🧩 Meus moldes (as funções e as
+classes do jogo), ⚙️ Ao iniciar (a janela e as tartarugas), ⚡ Quando acontecer
+(as teclas) e 🔁 Enquanto estiver rodando (o laço `a_cada_quadro`). O comentário
+no começo de cada área só ajuda a ler, e o Estúdio o escreve sozinho.
+
 As constantes no topo são o painel de controle: `GRAVIDADE`, `IMPULSO` e
 `QUEDA_MAXIMA` mudam o voo; `VELOCIDADE_CANOS`, `VAO`, `LARGURA_CANO` e
 `DISTANCIA_CANOS` mudam a dificuldade; `COR_PASSARO`, `COR_CANO` e
@@ -37,16 +44,18 @@ quando um sai pela esquerda, `andar` o leva de volta para a direita e `sortear`
 escolhe um vão novo. Em `acerta`, o pássaro é um círculo e cada cano é um
 retângulo; o teste procura o ponto do cano mais perto do pássaro.
 
-Uma única tartaruga carimba os canos e o pássaro a cada quadro, nessa ordem, para
-o pássaro ficar sempre na frente. Uma única cadeia de `ontimer(..., 16)` mede o
-tempo com `time.monotonic()`; a pausa congela o voo, reiniciar não adiciona outra
-cadeia e um quadro atrasado avança no máximo dois quadros.
+Uma única tartaruga carimba os canos e o pássaro a cada quadro, nessa ordem,
+para o pássaro ficar sempre na frente. O laço do jogo, `a_cada_quadro` (em
+🔁 Enquanto estiver rodando), mede o tempo com `time.monotonic()`; a pausa
+congela o voo, reiniciar não começa outro laço e um quadro atrasado avança no
+máximo dois quadros.
 
 ## Verificação e limites
 
 `python test_model.py` verifica regras reais do programa sem abrir Tk, navegador
-ou dispositivo de áudio: o arquivo é carregado sem os imports, e as tartarugas
-viram gravadores que contam carimbos e timers. Isso verifica o modelo e seus
-efeitos pedidos, não pixels, áudio ouvido, foco nem desempenho.
+ou dispositivo de áudio: o arquivo é carregado sem os imports e sem o que ele
+faz ao iniciar, e as tartarugas viram gravadores que contam carimbos e timers.
+Isso verifica o modelo e seus efeitos pedidos, não pixels, áudio ouvido, foco
+nem desempenho.
 
 Autoria e licença estão em [NOTICE.md](NOTICE.md) e [LICENSE](LICENSE).
