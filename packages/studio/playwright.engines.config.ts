@@ -17,6 +17,7 @@ export default defineConfig({
     /engine-gpu-cycles\.spec\.ts/,
     /engine-2d-offscreen\.spec\.ts/,
     /devtools-cost\.spec\.ts/,
+    /engine-regions\.spec\.ts/,
   ],
   outputDir: './.cache/engines-results',
   forbidOnly: !!process.env.CI,

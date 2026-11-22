@@ -1,0 +1,56 @@
+{
+  "medidoEm": "2026-11-22T18:11:40.568Z",
+  "gpu": "emulada no CI (SwiftShader); os tempos não reprovam",
+  "linhas": {
+    "regioes": {
+      "voltas": 10,
+      "quadro": {
+        "p50": 216.6999999999971,
+        "p95": 316.6000000000058,
+        "maximo": 350,
+        "fpsMediano": 4.6
+      },
+      "desenhosPorRegiao": {
+        "Vila": 27,
+        "Floresta": 36,
+        "Caverna": 29
+      },
+      "memoriaJs": 167000000,
+      "gpuNaUltimaVolta": {
+        "buffers": 71,
+        "textures": 14,
+        "programs": 10,
+        "vertexArrays": 41
+      },
+      "entradas": {
+        "Vila": 11,
+        "Floresta": 20,
+        "Caverna": 10
+      },
+      "erros": []
+    },
+    "inteiro": {
+      "voltas": 10,
+      "quadro": {
+        "p50": 283.4000000000233,
+        "p95": 383.4000000000233,
+        "maximo": 499.89999999999964,
+        "fpsMediano": 3.5
+      },
+      "desenhosPorRegiao": {
+        "Vila": 31,
+        "Floresta": 35,
+        "Caverna": 27
+      },
+      "memoriaJs": 103000000,
+      "gpuNaUltimaVolta": {
+        "buffers": 95,
+        "textures": 13,
+        "programs": 10,
+        "vertexArrays": 48
+      },
+      "entradas": {},
+      "erros": []
+    }
+  }
+}

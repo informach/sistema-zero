@@ -6,7 +6,9 @@ name: Studio engines (GPU cycles, off-screen drawing and devtools cost)
 # recomeço que não recria nada) e o custo de desenhar sprites fora do palco no Jogo 2D
 # (`engine-2d-offscreen.spec.ts`). Desde o lote 3 da conclusão (22/11/2026), também o custo das
 # abas Desempenho e Investigar no processo do jogo (`devtools-cost.spec.ts`, meta da proposta:
-# abaixo de 5% do quadro). A evidência vai nos artefatos com o SHA.
+# abaixo de 5% do quadro). Desde o lote 7 da conclusão, também as regiões no motor com o jogo E
+# (`engine-regions.spec.ts`): o cenário é montado e compilado no navegador pela oficina e o Estúdio
+# o importa antes da prova. A evidência vai nos artefatos com o SHA.
 on:
   push:
     branches: ['staging']
@@ -16,6 +18,12 @@ on:
       - 'packages/studio/e2e/engine-gpu-cycles.spec.ts'
       - 'packages/studio/e2e/engine-2d-offscreen.spec.ts'
       - 'packages/studio/e2e/devtools-cost.spec.ts'
+      - 'packages/studio/e2e/engine-regions.spec.ts'
+      - 'packages/studio/playground/cenarios-integration/preparar-jogo-e.ts'
+      - 'packages/molda-cenarios/playground/jogo-e/**'
+      - 'packages/molda-cenarios/playground/oficina/qa-jogo-e.ts'
+      - 'packages/molda-cenarios-motor/src/compilar/**'
+      - 'packages/molda-cenarios-core/src/compilar/**'
       - 'packages/studio/src/preview/devtoolsBridge.ts'
       - 'packages/studio/src/check/instrumentCheckScript.ts'
       - 'packages/studio/src/components/devtools/**'
@@ -40,7 +48,7 @@ concurrency:
 jobs:
   engines:
     runs-on: ubuntu-24.04
-    timeout-minutes: 70
+    timeout-minutes: 100
     defaults:
       run:
         shell: bash
@@ -59,8 +67,18 @@ jobs:
       - working-directory: .
         run: bun install --frozen-lockfile
       - run: bunx playwright install --with-deps chromium
-      - name: GPU in 10 restarts, off-screen sprites and devtools cost
-        timeout-minutes: 60
+      - name: Jogo E (o cenário compilado no navegador pela oficina, depois o Estúdio)
+        timeout-minutes: 20
+        run: |
+          cd ../molda-cenarios
+          bun run dev:oficina > /tmp/oficina.log 2>&1 &
+          for i in $(seq 1 120); do curl -sf http://127.0.0.1:4541/ > /dev/null && break; sleep 1; done
+          node playground/jogo-e/preparar-cenario.mjs
+          kill %1 || true
+          cd ../studio
+          bun playground/cenarios-integration/preparar-jogo-e.ts
+      - name: GPU in 10 restarts, off-screen sprites, devtools cost and regions
+        timeout-minutes: 80
         run: bunx playwright test --config playwright.engines.config.ts
       - uses: actions/upload-artifact@v4
         if: always()
@@ -72,4 +90,5 @@ jobs:
             packages/studio/.cache/mission/engine-gpu-cycles.json
             packages/studio/.cache/mission/engine-2d-offscreen.json
             packages/studio/.cache/mission/devtools-cost.json
+            docs/estudio-evolucao/evidencias/jogo-e-regioes-2026-11-22/medidas.json
             packages/studio/.cache/engines-results
