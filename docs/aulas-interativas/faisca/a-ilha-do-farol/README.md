@@ -8,7 +8,7 @@ Curso do posto **Faísca**, depois de **A Chave do Farol**. Três aulas em bloco
 | [A chave está ao seu alcance](ilha-aula-2.roteiro.md) | X/Z no chão, Y na altura; contato em três dimensões | Posição da chave, coleta, memória e aviso |
 | [A luz volta ao farol](ilha-aula-3.roteiro.md) | Revisão e aplicação dos conceitos, sem repetir experiências do 2D | Resposta sem chave, vitória com chave (o farol acende com a animação do modelo), a luz que acende uma vez só (guarda `Se não ganhou`), personalização com as variações e teste completo |
 
-Cada aula tem manifesto, roteiro de produção, fala integral para ElevenLabs e índice de edição. A fonte editorial é [ilha-do-farol-conteudo.ts](../../../aulas-interativas-tecnico/qa/ilha-do-farol-conteudo.ts). Não editar somente os derivados. Nesta versão a professora grava o master inteiro, sem substituições por Dedé/Debinha.
+Cada aula tem manifesto, roteiro de produção, fala integral para ElevenLabs e índice de edição. A fonte editorial é [ilha-do-farol-conteudo.ts](../../../aulas-interativas-tecnico/qa/ilha-do-farol-conteudo.ts). Não editar somente os derivados. A professora grava o master inteiro; na edição kids, a Debinha (aulas 1 e 3) e o Dedé (aula 2) dizem as frases das tabelas de substituição do roteiro, com a voz dos arquivos `.debinha.elevenlabs.txt` e `.dede.elevenlabs.txt` (ver abaixo, 22/11/2026).
 
 - [Passo a passo em PDF](passo-a-passo-do-projeto.pdf) e [versão em texto](passo-a-passo.md).
 - [Projeto final importável no Estúdio](ilha-do-farol.szproject.json).
@@ -81,6 +81,27 @@ No molde do Cadê Todo Mundo? e de A Chave do Farol:
 **Pendências de produção:** gerar a voz nova (os três `.elevenlabs.txt`), gravar com o palco e
 acertar os tempos das setas no Verificar plano, reimportar as três aulas (a Aula 1 perdeu as seções
 `entrega` e `fecho`, e a Aula 2 a `fecho`) e anexar o PDF novo no Admin.
+
+## Debinha e Dedé: 22/11/2026
+
+A Ilha não tinha falas dos personagens. Agora tem, como o Cadê e a Chave do Farol: a Debinha nas
+aulas 1 e 3 e o Dedé na aula 2, doze frases ao todo. O campo `kids` de cada parte em
+`ilha-do-farol-conteudo.ts` marca a frase, e o gerador escreve a tabela de substituições no
+roteiro, o `.edicao.json` e o arquivo de voz do personagem.
+
+| Aula | Personagem | Frases |
+| --- | --- | --- |
+| 1 | Debinha | a pedra que esconde (abertura), a câmera e a chave (experiência), onde vai o bloco que faz andar |
+| 2 | Dedé | o y no 3D e o encostar (experiências), a chave que some para sempre?, como ver que o jogo guardou a chave |
+| 3 | Debinha | onde vai o aviso de que falta a chave, quem joga vai saber que deu certo?, o não na pergunta (experiência), por que a luz acendeu de novo, como mostrar o jogo para alguém |
+
+As perguntas das experiências e a do aviso da vitória já estavam na fala da professora e só
+ganharam a marcação. As outras seis são novas, no molde das que já foram gravadas na Chave do
+Farol e no Cadê, e a resposta seguinte começa pelo que foi pedido. Como a voz da Ilha ainda não foi
+gerada, nada gravado muda; todas as deixas do Na tela continuam na fala.
+
+**Pendência de produção:** gerar no ElevenLabs a voz de cada personagem com o arquivo dele, junto
+com a voz nova da professora, e o vídeo dos personagens para a montagem kids.
 
 ## Faísca: revisão de 27/10/2026
 

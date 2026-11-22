@@ -94,6 +94,10 @@
 
 [interested, animated voice] Olha só: a chave some quando o personagem encosta nela!
 
+[curious] A chave some para sempre?
+
+[engaging, energetic, conversational voice] Não, ela só sai desta partida.
+
 [upbeat, encouraging voice] Toque na tecla R. A chave volta, e você pode pegar de novo por outro caminho.
 
 [reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de Quando acontecer, logo abaixo do evento da tecla R, está o encontro Quando personagem encostar em chave, e dentro dele está Esconder o objeto chave.
@@ -138,7 +142,9 @@
 
 [interested, animated voice] Olha os dois lugares: ao começar, falso. Ao pegar a chave, verdadeiro.
 
-[engaging, energetic, conversational voice] Esse valor não aparece na ilha. Na próxima aula, o farol vai consultar essa informação.
+[curious] Como eu vejo se o jogo guardou a chave?
+
+[engaging, energetic, conversational voice] Jogando, você não vê, porque esse valor não aparece na ilha. Quem vai usar essa informação é o farol, na próxima aula.
 
 [reassuring, encouraging voice] Confira se ficou assim: em Ao iniciar está Criar variável temChave com valor falso, e no encontro com a chave, logo abaixo de Esconder o objeto chave, está Alterar variável temChave para verdadeiro.
 

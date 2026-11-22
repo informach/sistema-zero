@@ -48,7 +48,9 @@
 
 [engaging, energetic, conversational voice] Lembra dos quadros do jogo 2D? O jogo desenha a cena muitas vezes por segundo, e cada desenho é um quadro. No 3D é igual. Para o personagem andar, o jogo precisa olhar as setas em todo quadro.
 
-[confident, clear, unhurried voice] Por isso, o bloco novo vai dentro do bloco A cada quadro da cena, na área Enquanto estiver rodando. Encontre essa área. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+[curious] E onde eu coloco o bloco que faz ele andar?
+
+[confident, clear, unhurried voice] Dentro do bloco A cada quadro da cena, na área Enquanto estiver rodando. Encontre essa área. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 
 [confident, clear, unhurried voice] Repare: dentro de A cada quadro da cena já tem o bloco Escrever na tela. O bloco novo vai no começo, no espaço ao lado da palavra fazer.
 

@@ -6,7 +6,7 @@
   "blocks": [
     {
       "key": "video-abertura",
-      "plannedVideo": "Título: Jogue na ilha\n\nMaster integral da professora. Roteiro: ilha-aula-1.roteiro.md, clipe video-abertura. Gravação pendente."
+      "plannedVideo": "Título: Jogue na ilha\n\nMaster integral da professora. Roteiro: ilha-aula-1.roteiro.md, clipe video-abertura. Substituições kids: [{\"id\":\"video-abertura-K1\",\"clipe\":\"video-abertura\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"Será que a pedra está escondendo alguma coisa?\",\"falaPersonagem\":\"Será que a pedra está escondendo alguma coisa?\",\"ancoraAntes\":\"a profundidade. Um objeto pode ficar mais perto ou mais longe, e o da frente pode esconder o que está atrás dele.\",\"ancoraDepois\":\"Isso eu deixo para você descobrir. Repare também no aviso aqui em cima: ele diz o que fazer na partida. Para começar\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-abertura",
@@ -1689,7 +1689,7 @@
     },
     {
       "key": "video-ponto-de-vista",
-      "plannedVideo": "Título: O que aparece quando você muda de lugar?\n\nMaster integral da professora. Roteiro: ilha-aula-1.roteiro.md, clipe video-ponto-de-vista. Gravação pendente."
+      "plannedVideo": "Título: O que aparece quando você muda de lugar?\n\nMaster integral da professora. Roteiro: ilha-aula-1.roteiro.md, clipe video-ponto-de-vista. Substituições kids: [{\"id\":\"video-ponto-de-vista-K1\",\"clipe\":\"video-ponto-de-vista\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"Se a câmera mudar de lugar, a chave também muda de lugar?\",\"falaPersonagem\":\"Se a câmera mudar de lugar, a chave também muda de lugar?\",\"ancoraAntes\":\"de lugar e consegue olhar. Na ilha, a câmera também pode mudar de lugar. E perto de uma pedra tem uma chave escondida.\",\"ancoraDepois\":\"O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na imagem e o que continua\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-ponto-de-vista",
@@ -1732,7 +1732,7 @@
     },
     {
       "key": "video-movimento",
-      "plannedVideo": "Título: Faça o personagem andar\n\nMaster integral da professora. Roteiro: ilha-aula-1.roteiro.md, clipe video-movimento. Gravação pendente."
+      "plannedVideo": "Título: Faça o personagem andar\n\nMaster integral da professora. Roteiro: ilha-aula-1.roteiro.md, clipe video-movimento. Substituições kids: [{\"id\":\"video-movimento-K1\",\"clipe\":\"video-movimento\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"E onde eu coloco o bloco que faz ele andar?\",\"falaPersonagem\":\"E onde eu coloco o bloco que faz ele andar?\",\"ancoraAntes\":\"e cada desenho é um quadro. No 3D é igual. Para o personagem andar, o jogo precisa olhar as setas em todo quadro.\",\"ancoraDepois\":\"Dentro do bloco A cada quadro da cena, na área Enquanto estiver rodando. Encontre essa área. Se ela não estiver\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-movimento",

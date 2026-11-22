@@ -1,6 +1,6 @@
 # Roteiro de produção · A chave está ao seu alcance
 
-A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para gerar a voz integral. O jogo é de teclado: o robô dá o foco ao jogo (Rodar de novo no Estúdio, ou um toque no jogo pronto) antes de segurar as setas. Os tempos das setas no Na tela são estimativas para a velocidade 4 e se acertam no Verificar plano. Gravação e publicação desta revisão ainda não confirmadas.
+A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para gerar a voz integral. Na montagem kids, Dedé substitui somente as frases das tabelas de substituição, com a voz do arquivo .dede.elevenlabs.txt e sem voz sobreposta; o adulto usa o master integral. O jogo é de teclado: o robô dá o foco ao jogo (Rodar de novo no Estúdio, ou um toque no jogo pronto) antes de segurar as setas. Os tempos das setas no Na tela são estimativas para a velocidade 4 e se acertam no Verificar plano. Gravação e publicação desta revisão ainda não confirmadas.
 
 ## Parte 1. Para onde vai a chave?
 
@@ -27,6 +27,14 @@ A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para g
 
 [upbeat, encouraging voice] Agora você vai investigar para onde a chave vai quando cada um dos três números aumenta e quando diminui. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 ```
+
+**Substituições na edição kids:**
+
+| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
+| --- | --- | --- | --- | --- | --- | --- |
+| video-posicao-3d-K1 | Dedé | 1 | de mudar de lugar. Na ilha, a chave também tem os seus três números, e cada um muda o lugar dela de um jeito. | E o y, será que continua fazendo o que fazia no jogo 2D? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar para onde a chave vai quando cada um | [curious] |
+
+No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Recado na página (não gravar):** Sua vez! Investigue para onde a chave vai quando o x, o y e o z aumentam e diminuem. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
@@ -96,6 +104,14 @@ A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para g
 [upbeat, encouraging voice] Agora você vai investigar quando a chave e o personagem estão encostando de verdade e quando só parecem juntos na imagem. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 ```
 
+**Substituições na edição kids:**
+
+| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
+| --- | --- | --- | --- | --- | --- | --- |
+| video-contato-3d-K1 | Dedé | 1 | fazem barulho quando se tocam de verdade. Na ilha, olhando de cima, a chave pode parecer estar em cima do personagem. | Será que eles estão encostando? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar quando a chave e o personagem estão | [curious] |
+
+No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
+
 **Recado na página (não gravar):** Sua vez! Investigue quando a chave e o personagem estão encostando de verdade e quando só parecem juntos na imagem. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 ## Parte 4. Recolha a chave
@@ -137,6 +153,10 @@ A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para g
 
 [interested, animated voice] Olha só: a chave some quando o personagem encosta nela!
 
+[curious] A chave some para sempre?
+
+[engaging, energetic, conversational voice] Não, ela só sai desta partida.
+
 [upbeat, encouraging voice] Toque na tecla R. A chave volta, e você pode pegar de novo por outro caminho.
 
 [reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de Quando acontecer, logo abaixo do evento da tecla R, está o encontro Quando personagem encostar em chave, e dentro dele está Esconder o objeto chave.
@@ -147,6 +167,14 @@ A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para g
 
 [engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 ```
+
+**Substituições na edição kids:**
+
+| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
+| --- | --- | --- | --- | --- | --- | --- |
+| video-recolher-K1 | Dedé | 1 | Clique em Rodar de novo e leve o personagem até a chave. Olha só: a chave some quando o personagem encosta nela! | A chave some para sempre? | Não, ela só sai desta partida. Toque na tecla R. A chave volta, e você pode pegar de novo por outro caminho. Se algo | [curious] |
+
+No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Recado na página (não gravar):** Agora faça o personagem pegar a chave! Coloque o encontro logo abaixo do evento da tecla R e, dentro dele, Esconder o objeto chave. Teste e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
@@ -191,7 +219,9 @@ A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para g
 
 [interested, animated voice] Olha os dois lugares: ao começar, falso. Ao pegar a chave, verdadeiro.
 
-[engaging, energetic, conversational voice] Esse valor não aparece na ilha. Na próxima aula, o farol vai consultar essa informação.
+[curious] Como eu vejo se o jogo guardou a chave?
+
+[engaging, energetic, conversational voice] Jogando, você não vê, porque esse valor não aparece na ilha. Quem vai usar essa informação é o farol, na próxima aula.
 
 [reassuring, encouraging voice] Confira se ficou assim: em Ao iniciar está Criar variável temChave com valor falso, e no encontro com a chave, logo abaixo de Esconder o objeto chave, está Alterar variável temChave para verdadeiro.
 
@@ -199,6 +229,14 @@ A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para g
 
 [engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 ```
+
+**Substituições na edição kids:**
+
+| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
+| --- | --- | --- | --- | --- | --- | --- |
+| video-memoria-K1 | Dedé | 1 | porque o personagem acabou de pegar a chave. Olha os dois lugares: ao começar, falso. Ao pegar a chave, verdadeiro. | Como eu vejo se o jogo guardou a chave? | Jogando, você não vê, porque esse valor não aparece na ilha. Quem vai usar essa informação é o farol, na próxima aula. | [curious] |
+
+No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Recado na página (não gravar):** Agora faça o jogo guardar que o personagem pegou a chave! Crie temChave com falso em Ao iniciar e mude para verdadeiro no encontro com a chave. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 

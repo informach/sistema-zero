@@ -22,6 +22,7 @@ import { isBlockTypeAllowed } from '../../../packages/studio/src/core/levels'
 import { sanitizeProjectAssets } from '../../../packages/studio/src/core/projectAssets'
 import { SZIRInputSchema } from '../../../packages/studio/src/ir/schema'
 import { parseProjectFilesFromParts } from '../../../packages/studio/src/parsers/project'
+import { avatarDaAula } from './avatares-video'
 import {
   ILHA_ASSETS,
   ILHA_BARCOS,
@@ -31,8 +32,10 @@ import {
   ILHA_MODELS,
   ILHA_PERSONAGENS,
 } from './ilha-do-farol-assets'
+import { ilhaAulas } from './ilha-do-farol-conteudo'
 import { ilhaChecks } from './ilha-do-farol-criterios'
 import { ILHA_PARTES, montarProjetoIlha } from './ilha-do-farol-projeto'
+import { extrairPartesElevenLabs } from './roteiro-elevenlabs'
 
 const dir = resolve(import.meta.dirname, '../../aulas-interativas/faisca/a-ilha-do-farol')
 
@@ -210,5 +213,31 @@ describe('A Ilha do Farol', () => {
     const roots = json.scenes[0].nodes.map((i: number) => json.nodes[i].name)
     expect(roots).toEqual(expect.arrayContaining(['Chave', 'Aventureiro', 'Pedras', 'Bancada']))
     expect(json.animations ?? []).toEqual([])
+  })
+})
+
+describe('A Ilha do Farol: Debinha e Dedé', () => {
+  // Até 22/11/2026 a Ilha saía sem nenhuma fala dos personagens, ao contrário do Cadê e do Farol.
+  test.each(
+    ilhaAulas.map((aula, i) => [aula.slug, i] as const),
+  )('%s: as frases marcadas viram a tabela do roteiro e o arquivo de voz do personagem da aula', (slug, i) => {
+    const aula = ilhaAulas[i]!
+    const personagem = avatarDaAula(i)
+    const trocas = extrairPartesElevenLabs(
+      readFileSync(resolve(dir, `${slug}.roteiro.md`), 'utf8'),
+    ).flatMap((p) => p.intervencoes)
+    const marcadas = aula.trechos.flatMap((t) =>
+      (t.kids ?? []).map((frase) => [`video-${t.key}`, frase]),
+    )
+    expect(marcadas.length).toBeGreaterThan(1)
+    expect(trocas.map((t) => [t.clipe, t.falaPersonagem])).toEqual(marcadas)
+    expect(new Set(trocas.map((t) => t.personagem))).toEqual(new Set([personagem]))
+    const voz = readFileSync(
+      resolve(dir, `${slug}.${personagem === 'Dedé' ? 'dede' : 'debinha'}.elevenlabs.txt`),
+      'utf8',
+    )
+    expect(voz.split('[long pause]').map((f) => f.trim())).toEqual(
+      trocas.map((t) => `${t.tags.join(' ')} ${t.falaPersonagem}`),
+    )
   })
 })

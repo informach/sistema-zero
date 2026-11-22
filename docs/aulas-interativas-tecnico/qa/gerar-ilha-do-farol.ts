@@ -8,10 +8,11 @@ import {
 import { discoverySpeechSteps } from '../../../packages/core/src/learning/scene/discovery-guidance'
 import { ISLAND_SPEECH } from '../../../packages/core/src/learning/scene/island-3d'
 import { resolveCourseModels } from '../../../packages/studio/src/core/courseModels'
+import { avatarDaAula } from './avatares-video'
 import { formatarJson } from './formatar-json'
 import { derivadosDeVoz } from './gerar-falas-elevenlabs'
 import { gravarArquivo } from './gravar-arquivo'
-import { ilhaAulas } from './ilha-do-farol-conteudo'
+import { type IlhaTrecho, ilhaAulas } from './ilha-do-farol-conteudo'
 import { ilhaChecks } from './ilha-do-farol-criterios'
 import {
   ILHA_CURSO,
@@ -21,7 +22,46 @@ import {
   montarProjetoIlha,
 } from './ilha-do-farol-projeto'
 import { ilhaQuiz } from './ilha-do-farol-quiz'
-import { extrairPartesElevenLabs, sincronizarRecadosNaPagina } from './roteiro-elevenlabs'
+import {
+  contextoDeEdicao,
+  extrairPartesElevenLabs,
+  type IntervencaoKids,
+  type ParteFalado,
+  renderizarClipe,
+  semTags,
+  sincronizarRecadosNaPagina,
+} from './roteiro-elevenlabs'
+
+/**
+ * A fala de uma parte, com as trocas da edição kids (campo `kids`): a Debinha nas aulas 1 e 3 e o
+ * Dedé na aula 2, como no Cadê e na Chave do Farol. Cada troca é um parágrafo inteiro, com a
+ * professora antes e depois, para a edição cortar na frase e não no meio dela.
+ */
+const falaDaParte = (t: IlhaTrecho, aula: number): ParteFalado => {
+  const clipe = `video-${t.key}`
+  const paragrafos = t.text.split(/ (?=\[)/)
+  const intervencoes = (t.kids ?? []).map((frase, n): IntervencaoKids => {
+    const p = paragrafos.findIndex((x) => semTags(x) === frase)
+    if (p < 0)
+      throw new Error(`${clipe}: a fala do personagem não é um parágrafo da professora: ${frase}`)
+    const antes = semTags(paragrafos.slice(0, p).join(' '))
+    const depois = semTags(paragrafos.slice(p + 1).join(' '))
+    if (!antes || !depois)
+      throw new Error(`${clipe}: falta a professora antes ou depois de ${frase}`)
+    return {
+      id: `${clipe}-K${n + 1}`,
+      clipe,
+      personagem: avatarDaAula(aula),
+      falaPrincipal: frase,
+      falaPersonagem: frase,
+      ancoraAntes: contextoDeEdicao(antes, 'antes'),
+      ancoraDepois: contextoDeEdicao(depois, 'depois'),
+      ocorrencia: antes.split(frase).length,
+      tags: [paragrafos[p]?.match(/^\[[^\]]+\]/)?.[0] ?? '[curious]'],
+    }
+  })
+  return { clipe, texto: paragrafos.join('\n\n'), intervencoes }
+}
 
 const dir = resolve(import.meta.dirname, '../../aulas-interativas/faisca/a-ilha-do-farol')
 mkdirSync(dir, { recursive: true })
@@ -113,9 +153,10 @@ for (const [i, aula] of ilhaAulas.entries()) {
       pk = `ponte-${t.key}`,
       keys = [vk, pk],
       required = [vk]
+    const trocas = falaDaParte(t, i).intervencoes
     blocks.push({
       key: vk,
-      plannedVideo: `Título: ${t.title}\n\nMaster integral da professora. Roteiro: ${aula.slug}.roteiro.md, clipe ${vk}. Gravação pendente.`,
+      plannedVideo: `Título: ${t.title}\n\nMaster integral da professora. Roteiro: ${aula.slug}.roteiro.md, clipe ${vk}. ${trocas.length ? `Substituições kids: ${JSON.stringify(trocas)}. ` : ''}Gravação pendente.`,
     })
     // O recado do Zappy na página: o da parte (como no Farol) ou, sem ele, o comum do tipo.
     const bridge =
@@ -325,7 +366,7 @@ for (const [i, aula] of ilhaAulas.entries()) {
   write(`${aula.slug}.manifesto.json`, manifest)
   let script = `# Roteiro de produção · ${aula.title}
 
-A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para gerar a voz integral. O jogo é de teclado: o robô dá o foco ao jogo (Rodar de novo no Estúdio, ou um toque no jogo pronto) antes de segurar as setas. Os tempos das setas no Na tela são estimativas para a velocidade 4 e se acertam no Verificar plano. Gravação e publicação desta revisão ainda não confirmadas.
+A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para gerar a voz integral. Na montagem kids, ${avatarDaAula(i)} substitui somente as frases das tabelas de substituição, com a voz do arquivo .${avatarDaAula(i) === 'Dedé' ? 'dede' : 'debinha'}.elevenlabs.txt e sem voz sobreposta; o adulto usa o master integral. O jogo é de teclado: o robô dá o foco ao jogo (Rodar de novo no Estúdio, ou um toque no jogo pronto) antes de segurar as setas. Os tempos das setas no Na tela são estimativas para a velocidade 4 e se acertam no Verificar plano. Gravação e publicação desta revisão ainda não confirmadas.
 
 `
   // A numeração segue as partes da aula, com a revisão onde o manifesto a põe (antes da aparência).
@@ -334,13 +375,13 @@ A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para g
   for (const t of aula.trechos) {
     if (i === 2 && t.key === 'aparencia')
       script += `## Parte ${parte('revisao')}. O que você descobriu no 3D\n\nQuiz sem vídeo: escolha, demonstração, explicação e nova tentativa.\n\n`
-    script += `## Parte ${parte(t.key)}. ${t.title}\n\n**Clipe:** \`video-${t.key}\`\n\n**Na tela:** ${t.screen}\n\n**Fala para ElevenLabs:**\n\n\`\`\`text\n${t.text.replace(/ (?=\[)/g, '\n\n')}\n\`\`\`\n\n`
+    script += `## Parte ${parte(t.key)}. ${t.title}\n\n${renderizarClipe(falaDaParte(t, i), t.screen)}\n`
   }
   script = sincronizarRecadosNaPagina(script, manifest)
   write(`${aula.slug}.roteiro.md`, script)
   write(
     `${aula.slug}.md`,
-    `# ${aula.title}\n\n## Resumo\n\nAula ${i + 1} de A Ilha do Farol, no Faísca. Usa Programação e Jogo 3D. O projeto começa na etapa ${starts[i]} e termina em ${builds[i].at(-1)}. A última parte de construção termina com o envio do projeto e o reconhecimento do que a criança fez.\n\n## Partes e critérios\n\n${sections.map((s, j) => `### Parte ${j + 1}. ${s.title}\n\n${s.objective}\n\n- Intenção: ${s.intent}.\n- Blocos: ${s.blockKeys.join(', ')}.\n- Conclusão: ${s.completion.blockIds.join(', ')}${s.completion.projectChecks?.length ? '; objetivos do projeto atual' : ''}${s.completion.submissionUpToDate ? '; envio atualizado confirmado' : ''}.\n\n${s.completion.projectChecks?.map((c: { label: string }) => '- ' + c.label).join('\n') ?? ''}\n\n**Zappy na página (não gravar):** ${blocks.find((b) => s.blockKeys.includes(b.key) && b.content?.kind === 'dialogue')?.content.text ?? ''}`).join('\n\n')}\n\n## Produção\n\n[Fala integral e notas de tela](${aula.slug}.roteiro.md). Fonte editorial: ilha-do-farol-conteudo.ts. O Passo a passo fica na parte 2 da primeira aula; consulta e download são opcionais. Sem certificado. Mídia e publicação pendentes.\n`,
+    `# ${aula.title}\n\n## Resumo\n\nAula ${i + 1} de A Ilha do Farol, no Faísca. Usa Programação e Jogo 3D. O projeto começa na etapa ${starts[i]} e termina em ${builds[i].at(-1)}. A última parte de construção termina com o envio do projeto e o reconhecimento do que a criança fez.\n\n## Partes e critérios\n\n${sections.map((s, j) => `### Parte ${j + 1}. ${s.title}\n\n${s.objective}\n\n- Intenção: ${s.intent}.\n- Blocos: ${s.blockKeys.join(', ')}.\n- Conclusão: ${s.completion.blockIds.join(', ')}${s.completion.projectChecks?.length ? '; objetivos do projeto atual' : ''}${s.completion.submissionUpToDate ? '; envio atualizado confirmado' : ''}.\n\n${s.completion.projectChecks?.map((c: { label: string }) => '- ' + c.label).join('\n') ?? ''}\n\n**Zappy na página (não gravar):** ${blocks.find((b) => s.blockKeys.includes(b.key) && b.content?.kind === 'dialogue')?.content.text ?? ''}`).join('\n\n')}\n\n## Produção\n\n[Fala integral e notas de tela](${aula.slug}.roteiro.md). Na edição kids, ${avatarDaAula(i)} diz as frases das tabelas de substituição do roteiro. Fonte editorial: ilha-do-farol-conteudo.ts. O Passo a passo fica na parte 2 da primeira aula; consulta e download são opcionais. Sem certificado. Mídia e publicação pendentes.\n`,
   )
   for (const [ext, text] of derivadosDeVoz(extrairPartesElevenLabs(script)))
     write(`${aula.slug}${ext}`, text)
