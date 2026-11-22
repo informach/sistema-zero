@@ -176,7 +176,9 @@ test('mostrar o bloco da tecla R no Reino Zero Ultra', async ({ page }) => {
   mkdirSync(SAIDA, { recursive: true })
   writeFileSync(resolve(SAIDA, 'resultado.json'), `${JSON.stringify(resultado_, null, 2)}\n`)
   console.log(`[mostrar o bloco] ${JSON.stringify(resultado_)}`)
-  // Mostrar não é editar: o projeto salvo é o mesmo de antes (22/11/2026).
+  // Mostrar não é editar: o projeto salvo é o mesmo de antes (22/11/2026). Sem a leitura do salvo,
+  // "nenhuma diferença" não diria nada (revisão do lote 2).
+  expect(salvoAntes).not.toBeNull()
   expect(diferencas).toEqual([])
   expect(resultado_.projetoMarcadoComoMudado).toBe(false)
   // O trabalho do gesto, com folga sobre a medida depois do conserto (antes: 1.008 leituras de
@@ -184,4 +186,30 @@ test('mostrar o bloco da tecla R no Reino Zero Ultra', async ({ page }) => {
   // fica registrada.
   expect(resultado_.leiturasDeEstilo).toBeLessThan(600)
   expect(resultado_.blocosRedesenhados).toBeLessThan(550)
+
+  // Rodar depois de mostrar: o Rodar grava o que o canvas tem antes de montar o jogo
+  // (`flushScheduledRegeneration`), e a pilha que a abertura afastou não pode virar mudança do
+  // projeto (revisão do lote 2: regenerava e gravava os 7 mil blocos com a pilha afastada).
+  await page.evaluate(() => {
+    const w = window as unknown as { __medindo: boolean; __mudou: boolean }
+    w.__mudou = false
+    w.__medindo = true
+  })
+  await page.locator('[data-live-target="studio-run"]').click()
+  await expect(
+    page.frameLocator('iframe[title="Pré-visualização"]').locator('canvas').first(),
+  ).toBeAttached({ timeout: 90_000 })
+  await page.waitForTimeout(3000)
+  const mudouAoRodar = await page.evaluate(() => {
+    const w = window as unknown as { __medindo: boolean; __mudou: boolean }
+    w.__medindo = false
+    return w.__mudou
+  })
+  diferencas.length = 0
+  comparar(salvoAntes, await blocosSalvos(), 'blocos')
+  console.log(
+    `[mostrar o bloco] diferenças no salvo depois do Rodar: ${JSON.stringify(diferencas)}`,
+  )
+  expect(diferencas).toEqual([])
+  expect(mudouAoRodar).toBe(false)
 })

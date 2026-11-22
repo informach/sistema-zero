@@ -45,7 +45,9 @@ import {
  *    (`renderAround`); o resto do corpo vira uma fronteira adiada dentro da função, desenhada ao
  *    rolar como as outras. A unidade seguinte da área nunca é desenhada antes de o corpo adiado da
  *    unidade de cima terminar (`completeBodyAbove`): o que está acima de algo à vista continua com
- *    a geometria exata.
+ *    a geometria exata. Se a criança recolhe a função (ou a área) com essa fronteira pendente, ela
+ *    fica escondida como o corpo do item 6: nada a desenha nem liga ao banco até o bloco abrir
+ *    (`hiddenByCollapsed` olha TODOS os blocos acima, não só o pai; revisão do lote 2).
  *
  * Nunca nas aulas: os jogos dos cursos têm de 70 a 80 blocos e este módulo nem é carregado ali.
  *
@@ -232,7 +234,11 @@ class DeferredTail implements DeferredDrawing {
 
   constructor(readonly workspace: Blockly.WorkspaceSvg) {
     this.listener = (event) => {
-      if (this.boundaries.size === 0) return
+      if (this.boundaries.size === 0) {
+        // O que sobra adiado é corpo escondido de bloco recolhido: o que foi apagado sai da conta.
+        if (event.type === Blockly.Events.BLOCK_DELETE) this.publish()
+        return
+      }
       // Rolar, dar zoom, apagar ou mover blocos e soltar um arrasto mudam o que precisa de desenho.
       if (
         event.type === Blockly.Events.VIEWPORT_CHANGE ||
@@ -316,10 +322,15 @@ class DeferredTail implements DeferredDrawing {
     // medida de verdade, ele a encaixa de novo, como o Blockly faz ao desenhar o pai depois do filho.
     parent?.tightenChildrenEfficiently()
     // Uma unidade do corpo de uma função (a cauda que o `renderAround` cortou): a função cresce, e é
-    // redesenhada agora para a unidade seguinte da área encaixar embaixo dela no lugar certo. Na
-    // cadeia de uma área quem cresce é a raiz, redesenhada no fechamento do lote.
-    const holder = this.holderOf(unit)
-    if (holder?.getParent() && !this.deferred.has(holder)) holder.renderEfficiently()
+    // redesenhada agora para a unidade seguinte da área encaixar embaixo dela no lugar certo. Com o
+    // corte num corpo aninhado, cresce cada bloco em volta, de dentro para fora (revisão do lote 2).
+    // Na cadeia de uma área quem cresce é a raiz, redesenhada no fechamento do lote.
+    for (
+      let holder = this.holderOf(unit);
+      holder?.getParent() && !this.deferred.has(holder);
+      holder = this.holderOf(holder)
+    )
+      holder.renderEfficiently()
     return nextDeferred
   }
 
@@ -413,10 +424,14 @@ class DeferredTail implements DeferredDrawing {
    */
   private completeBodyAbove(unit: Block): void {
     const above = unit.getParent()
-    if (!above || above.getNextBlock() !== unit || this.boundaries.size <= 1) return
+    if (!above || above.getNextBlock() !== unit) return
+    if (this.boundaries.size === 0 || (this.boundaries.size === 1 && this.boundaries.has(unit)))
+      return
+    // Recolhida, a função de cima não mostra o corpo: ele fica adiado até ela abrir.
+    if (above.isCollapsed()) return
     for (const boundary of [...this.boundaries]) {
       if (boundary === unit || !this.boundaries.has(boundary)) continue
-      if (!this.containsInBody(above, boundary)) continue
+      if (!this.containsInBody(above, boundary) || this.hiddenByCollapsed(boundary)) continue
       for (let rest: Block | null = boundary; rest; ) rest = this.drawUnit(rest)
       this.nestedDrawn.push(boundary)
     }
@@ -428,15 +443,21 @@ class DeferredTail implements DeferredDrawing {
       if (!head.disposed) head.setConnectionTracking(true)
   }
 
-  /** O bloco está escondido dentro de um bloco recolhido já desenhado (o corpo dele)? */
+  /**
+   * O bloco está escondido no corpo de um bloco recolhido já desenhado, em QUALQUER nível acima? A
+   * fronteira que o `renderAround` deixa dentro de uma função fica escondida quando a criança
+   * recolhe a função (ou "Fechar todos os blocos" recolhe a área): olhar só o pai deixava o resto
+   * do corpo ser desenhado e ligado ao banco nas posições de antes, e um bloco arrastado encaixava
+   * dentro da função fechada (revisão do lote 2, 22/11/2026).
+   */
   private hiddenByCollapsed(head: Block): boolean {
-    const parent = head.getParent()
-    return Boolean(
-      parent &&
-        !this.deferred.has(parent) &&
-        parent.isCollapsed() &&
-        parent.getNextBlock() !== head,
-    )
+    let child = head
+    for (let parent = child.getParent(); parent; parent = child.getParent()) {
+      if (!this.deferred.has(parent) && parent.isCollapsed() && parent.getNextBlock() !== child)
+        return true
+      child = parent
+    }
+    return false
   }
 
   /**
@@ -450,13 +471,48 @@ class DeferredTail implements DeferredDrawing {
     const heads = block
       .getChildren(false)
       .filter((child) => child !== next && this.deferred.has(child))
-    if (heads.length === 0) return
+    // O resto de um corpo cortado pelo `renderAround` que ficou escondido enquanto o bloco estava
+    // recolhido: com algo já desenhado embaixo dele (a criança rolou com o bloco recolhido), ele é
+    // completado agora, como o `completeBodyAbove` faria; senão o que está embaixo ficaria na
+    // posição de um corpo mais curto (revisão do lote 2).
+    const bodies = [...this.boundaries].filter(
+      (boundary) =>
+        !boundary.disposed &&
+        this.containsInBody(block, boundary) &&
+        !this.hiddenByCollapsed(boundary) &&
+        this.drawnBelow(boundary),
+    )
+    if (heads.length === 0 && bodies.length === 0) return
     this.measuringOnce(() => {
       for (const head of heads) this.renderSubtree(head, null)
+      for (const boundary of bodies) {
+        if (!this.boundaries.has(boundary)) continue
+        for (let rest: Block | null = boundary; rest; ) rest = this.drawUnit(rest)
+        this.nestedDrawn.push(boundary)
+      }
     })
     for (const head of heads) if (!head.disposed) head.setConnectionTracking(true)
-    block.queueRender()
+    if (bodies.length > 0) {
+      const root = block.getRootBlock()
+      if (!root.disposed) root.queueRender()
+      Blockly.renderManagement.triggerQueuedRenders(this.workspace)
+      this.trackNestedDrawn()
+    } else block.queueRender()
     this.publish()
+  }
+
+  /**
+   * Há algo desenhado embaixo da parte adiada que começa em `boundary`? Subindo dela, cada bloco em
+   * cujo corpo ela está tem o próximo da cadeia embaixo desse corpo.
+   */
+  private drawnBelow(boundary: Block): boolean {
+    let child = boundary
+    for (let parent = child.getParent(); parent; parent = child.getParent()) {
+      const after = parent.getNextBlock()
+      if (after !== child && after && !this.deferred.has(after)) return true
+      child = parent
+    }
+    return false
   }
 
   /** A unidade onde começa a parte adiada que contém `block`. */
@@ -565,7 +621,20 @@ class DeferredTail implements DeferredDrawing {
   /** O bloco adiado vai virar raiz (desencaixado): a unidade dele é desenhada antes. */
   drawBeforeUnplug(block: Block): void {
     if (this.disposed || !this.deferred.has(block)) return
-    if (this.hiddenByCollapsed(this.boundaryAbove(block))) return
+    if (this.hiddenByCollapsed(this.boundaryAbove(block))) {
+      // Escondido num bloco recolhido, ele vai virar raiz à vista: desenha só ele (a posição dele no
+      // corpo não existe enquanto o bloco está recolhido). Sem isto ficava adiado e solto, sem desenho
+      // nem conexões, para sempre (revisão do lote 2). As conexões entram depois da troca de pai, só
+      // se ele ficou mesmo solto.
+      this.measuringOnce(() => this.renderSubtree(block, null))
+      requestAnimationFrame(() => {
+        void Blockly.renderManagement.finishQueuedRenders().then(() => {
+          if (!block.disposed && !block.getParent()) block.setConnectionTracking(true)
+          this.publish()
+        })
+      })
+      return
+    }
     const first = this.drawUnitsThrough(block)
     // O redesenho da raiz e as conexões ficam para depois da troca de pai (o Blockly está no meio
     // de um desencaixe): o próprio desencaixe enfileira o desenho das duas pontas, e as conexões
@@ -605,7 +674,8 @@ class DeferredTail implements DeferredDrawing {
     if (this.disposed) return
     const drawn = new Map<Block, Block[]>()
     for (const boundary of [...this.boundaries])
-      if (this.boundaries.has(boundary) && !boundary.disposed) this.drawChain(boundary, drawn)
+      if (this.boundaries.has(boundary) && !boundary.disposed && !this.hiddenByCollapsed(boundary))
+        this.drawChain(boundary, drawn)
     this.settle(drawn)
   }
 
@@ -657,6 +727,8 @@ class DeferredTail implements DeferredDrawing {
         this.drawChain(boundary, drawn)
         continue
       }
+      // Dentro de um bloco recolhido: fica adiada até ele abrir.
+      if (this.hiddenByCollapsed(boundary)) continue
       const root = boundary.getRootBlock()
       const rootXY = root.getRelativeToSurfaceXY()
       if (rootXY.x > right || rootXY.x + root.width < left) continue

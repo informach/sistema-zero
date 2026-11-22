@@ -14,6 +14,14 @@ import * as Blockly from 'blockly/core'
  */
 const shown = new WeakMap<Blockly.Workspace, Set<string>>()
 const listening = new WeakSet<Blockly.Workspace>()
+/** Quando o último bloco foi aberto só para mostrar (o afastamento do Blockly vem logo depois). */
+const shownAt = new WeakMap<Blockly.Workspace, number>()
+/**
+ * Quanto tempo depois de abrir um afastamento ainda é da abertura. O Blockly afasta 250 ms depois do
+ * desenho (`BUMP_DELAY`); passado isso, o afastamento é de outro gesto e é gravado como sempre
+ * (revisão do lote 2: sem prazo, todo afastamento deixava de ser gravado enquanto houvesse marca).
+ */
+const BUMP_WINDOW_MS = 2000
 
 type Node = Record<string, unknown>
 
@@ -38,14 +46,22 @@ export function expandForShowing(block: Blockly.BlockSvg): void {
     shown.set(workspace, ids)
   }
   ids.add(block.id)
+  shownAt.set(workspace, performance.now())
   if (!listening.has(workspace)) {
     listening.add(workspace)
-    workspace.addChangeListener((event) => forgetTouched(workspace, event))
+    workspace.addChangeListener((event) => forgetShownWhenTouched(workspace, event))
   }
 }
 
-/** A criança mexeu: o bloco marcado (ou o que envolve o bloco mexido) passa a valer como está. */
-function forgetTouched(workspace: Blockly.Workspace, event: Blockly.Events.Abstract): void {
+/**
+ * A criança mexeu: o bloco marcado (ou o que envolve o bloco mexido) passa a valer como está. O
+ * painel chama também no começo do ouvinte dele: o ouvinte daqui foi registrado depois, e um
+ * arrasto da função mostrada era gravado ainda com ela recolhida (revisão do lote 2).
+ */
+export function forgetShownWhenTouched(
+  workspace: Blockly.Workspace,
+  event: Blockly.Events.Abstract,
+): void {
   const ids = shown.get(workspace)
   if (!ids || ids.size === 0 || event.isUiEvent) return
   if (event instanceof Blockly.Events.BlockDelete) {
@@ -76,7 +92,35 @@ export function isBumpWhileShowing(
   event: Blockly.Events.Abstract,
 ): boolean {
   if (!(shown.get(workspace)?.size ?? 0)) return false
+  if (performance.now() - (shownAt.get(workspace) ?? Number.NEGATIVE_INFINITY) > BUMP_WINDOW_MS)
+    return false
   return event instanceof Blockly.Events.BlockMove && (event.reason ?? []).includes('bump')
+}
+
+/**
+ * Os dois estados salvos (texto do `saveWorkspaceState`) só diferem na posição das pilhas soltas?
+ * É o que sobra de um afastamento que não foi gravado (`isBumpWhileShowing`): a gravação de saída e
+ * o Jogar comparam o canvas com o último estado aplicado, e sem isto regeneravam e gravavam o
+ * projeto inteiro só pela pilha afastada (revisão do lote 2, 22/11/2026).
+ */
+export function differsOnlyInStackPositions(a: string, b: string): boolean {
+  const withoutPositions = (text: string): string | null => {
+    try {
+      const state: unknown = JSON.parse(text)
+      if (!isNode(state) || !isNode(state.blocks) || !Array.isArray(state.blocks.blocks))
+        return null
+      for (const node of state.blocks.blocks)
+        if (isNode(node)) {
+          delete node.x
+          delete node.y
+        }
+      return JSON.stringify(state)
+    } catch {
+      return null
+    }
+  }
+  const left = withoutPositions(a)
+  return left !== null && left === withoutPositions(b)
 }
 
 /** O bloco foi aberto só para mostrar (e a criança ainda não mexeu nele)? */

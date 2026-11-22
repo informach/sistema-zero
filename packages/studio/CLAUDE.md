@@ -11,12 +11,16 @@ O que não pode regredir:
   um bloco recolhido refaz o rótulo dele, e isso saía como mudança de campo, no desfazer e na
   regeneração); o corpo comprido em volta do alvo é cortado depois do alvo + 1,5 tela
   (`renderAround`) e completado antes da unidade seguinte (`completeBodyAbove`); centralizar num
-  bloco escondido para na unidade que o contém.
+  bloco escondido para na unidade que o contém. ⚠️ A fronteira deixada dentro da função fica
+  escondida quando a função (ou a área) é recolhida: `hiddenByCollapsed` olha TODOS os blocos
+  acima, e o `revealBody` completa o corpo se algo embaixo já foi desenhado (revisão do lote 2).
 - **Abrir só para mostrar (`blockly/transientExpansion.ts`)**: `revealBlockInWorkspace(…, {transient:
   true})`, só do `BlocklyPanel` (o Python abre como antes). Sem evento nem desfazer; o
   `saveWorkspaceState` grava o bloco recolhido (`keepShownBlocksCollapsed`, na ordem de chaves do
-  Blockly) até a criança mexer nele; o `bump` causado pela abertura não grava layout
-  (`isBumpWhileShowing`). ⚠️ Todo estado que sai do Blockly do Clássico JS precisa passar pelo
+  Blockly) até a criança mexer nele; o `bump` causado pela abertura (nos 2 s depois dela) não
+  grava layout (`isBumpWhileShowing`), e a gravação de saída e o Rodar ignoram essa diferença só de
+  posição (`differsOnlyInStackPositions` no `flushScheduledRegeneration`). ⚠️ Todo estado que
+  sai do Blockly do Clássico JS precisa passar pelo
   `saveWorkspaceState`, senão a abertura vira mudança do projeto.
 - Provas: `e2e/collapsed-reveal.spec.ts` (na config `offscreen-lifecycle`, três motores),
   `e2e/classic-reveal-scale.spec.ts` (o gesto no Reino Zero Ultra, projeto salvo igual e trabalho
