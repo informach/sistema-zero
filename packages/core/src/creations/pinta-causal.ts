@@ -91,7 +91,7 @@ export const PintaCausalManifestSchema = z
 export type PintaCausalManifest = z.infer<typeof PintaCausalManifestSchema>
 
 const mapping = z.array(z.number().int().min(-1).max(255)).min(1).max(PINTA_CAUSAL_LIMITS.tiles)
-const operation = z
+export const PintaCausalOperationSchema = z
   .discriminatedUnion('type', [
     z.strictObject({ type: z.literal('create') }),
     z.strictObject({ type: z.literal('update') }),
@@ -104,7 +104,7 @@ const operation = z
       op.type !== 'remap' ||
       (unique(op.oldToNew.filter((n) => n >= 0)) && op.oldToNew.every((n) => n < op.count)),
   )
-export type PintaCausalOperation = z.infer<typeof operation>
+export type PintaCausalOperation = z.infer<typeof PintaCausalOperationSchema>
 
 const put = z.strictObject({
   action: z.literal('put'),
@@ -117,7 +117,7 @@ const put = z.strictObject({
   bytes: count(PINTA_CAUSAL_LIMITS.itemBytes).min(1),
   sha256,
   thumb: z.string().max(12_000).nullable().optional(),
-  operation,
+  operation: PintaCausalOperationSchema,
 })
 const deletion = z.strictObject({
   action: z.literal('delete'),
