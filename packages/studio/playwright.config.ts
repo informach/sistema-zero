@@ -80,8 +80,10 @@ export default defineConfig({
       // A casca: só o funcionamento (nenhum arranjo de iframe isolou o WebKit na medição).
       // E a lixeira e o zoom do Blockly, como no Firefox (o desenho do SVG é de cada motor), e
       // Meus testes (o palco escondido do teste no motor do iPad).
+      // A migração da lista interrompida por recarga (lote 1, item 7): o IndexedDB do iPad.
       testMatch: [
         /reload-flush\.spec\.ts/,
+        /migration-interrupted\.spec\.ts/,
         /preview-shell(?:-performance)?\.spec\.ts/,
         /blockly-media\.spec\.ts/,
         /student-tests\.spec\.ts/,

@@ -64,3 +64,16 @@ export function promoteLocalMigration(
     },
   )
 }
+
+/**
+ * A gravação de saída da aba escondida (`interruptConditionalTransactions`, também com a página
+ * VIVA) aborta as escritas condicionais em voo, e a promoção é uma delas. Abortada, ela é lida de
+ * novo e tentada outra vez (22/11/2026): antes virava "pendente" e o card dizia "Preservado" até
+ * a próxima carga. Com a página indo embora, a nova tentativa morre junto, sem efeito, porque a
+ * promoção é uma transação só.
+ */
+export const INTERRUPTED = Symbol('promoção interrompida pela saída')
+export function interruptedByExit(error: unknown): typeof INTERRUPTED {
+  if ((error as { name?: unknown } | null)?.name === 'AbortError') return INTERRUPTED
+  throw error
+}

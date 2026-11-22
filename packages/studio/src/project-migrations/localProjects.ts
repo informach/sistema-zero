@@ -25,7 +25,7 @@ import { installLocalRevision, isLocalHead } from '../state/projectStorageRevisi
 import { gameStorageKey, type ProjectStorageScope } from '../state/projectStorageRuntime'
 import { type ProjectSummary, projectEnvironmentSummary } from '../state/projectSummary'
 import { prepareProjectForHost } from '../state/projectValidation'
-import { localSnapshotsEqual, promoteLocalMigration } from './localTransaction'
+import { interruptedByExit, localSnapshotsEqual, promoteLocalMigration } from './localTransaction'
 
 const PREFIXES = [
   'sz:project:',
@@ -226,8 +226,13 @@ async function migrateLocalLayout(
       version === 4
         ? await prepareProjectStorageWrite({ puts, deletes: sourceKeys })
         : { puts, deletes: sourceKeys }
-    if (await promoteLocalMigration(scope.store, expected, physicalWrite, scope.identity))
-      return !sameSource && !targetExists ? targetId : undefined
+    const promoted = await promoteLocalMigration(
+      scope.store,
+      expected,
+      physicalWrite,
+      scope.identity,
+    ).catch(interruptedByExit)
+    if (promoted === true) return !sameSource && !targetExists ? targetId : undefined
   }
   throw new ProjectDocumentError(
     'migration-pending',

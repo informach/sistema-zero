@@ -33,6 +33,19 @@ import {
  *    o chip do Zappy, desfazer e refazer, desencaixá-lo, organizar, a foto dos blocos), a cauda é
  *    desenhada até ele. Arrastar uma pilha que leva a cauda não a desenha: a conexão de baixo dela
  *    fica longe durante o gesto (`parkStackBottom`).
+ * 6. O corpo ESCONDIDO de um bloco recolhido (22/11/2026) continua adiado quando o bloco é
+ *    desenhado: só ele (a forma recolhida) e o próximo da cadeia. Ele é desenhado quando o bloco
+ *    abre (`setCollapsed(false)`, `revealBody`). Antes, desenhar até um alvo descia pelos corpos de
+ *    todas as funções recolhidas no caminho: no Reino Zero Ultra, 5.752 blocos redesenhados para
+ *    abrir uma, e cada medida de texto custa cerca de 90 vezes mais no Chrome conectado. Nada
+ *    adiado entra no banco de conexões, também pelo `startTrackingAll` que o Blockly chama ao abrir
+ *    um bloco (que ligaria as conexões do corpo ainda sem desenho, em posições velhas).
+ * 7. Desenhar até um alvo dentro do corpo de uma função aberta e comprida (a `updateGame` do Reino
+ *    Zero Ultra) desenha esse corpo de cima para baixo só até o alvo e mais uma tela e meia
+ *    (`renderAround`); o resto do corpo vira uma fronteira adiada dentro da função, desenhada ao
+ *    rolar como as outras. A unidade seguinte da área nunca é desenhada antes de o corpo adiado da
+ *    unidade de cima terminar (`completeBodyAbove`): o que está acima de algo à vista continua com
+ *    a geometria exata.
  *
  * Nunca nas aulas: os jogos dos cursos têm de 70 a 80 blocos e este módulo nem é carregado ali.
  *
@@ -205,6 +218,8 @@ class DeferredTail implements DeferredDrawing {
   readonly boundaries = new Set<Block>()
   /** Durante a carga: os ids das unidades onde a cauda começa. */
   loading: Set<string> | null = null
+  /** Corpos adiados desenhados por `completeBodyAbove`, à espera do fechamento do lote. */
+  private readonly nestedDrawn: Block[] = []
   private disposed = false
   private fillScheduled = false
   private published = -1
@@ -283,7 +298,8 @@ class DeferredTail implements DeferredDrawing {
    * mesma cadeia. O resto da cauda continua fora da página: cada unidade adiada é um pedaço solto
    * (`deferChain`), e só uma que o Blockly tenha aninhado de novo precisa sair.
    */
-  private drawUnit(unit: Block): Block | null {
+  private drawUnit(unit: Block, target: Block | null = null): Block | null {
+    this.completeBodyAbove(unit)
     const next = unit.getNextBlock()
     const nextDeferred = next && this.deferred.has(next) ? next : null
     if (nextDeferred) {
@@ -293,19 +309,154 @@ class DeferredTail implements DeferredDrawing {
     this.boundaries.delete(unit)
     const parent = unit.getParent()
     ;(parent ? parent.getSvgRoot() : this.workspace.getCanvas()).appendChild(unit.getSvgRoot())
-    this.renderSubtree(unit, next)
+    if (target && !unit.isCollapsed() && this.containsInBody(unit, target))
+      this.renderAround(unit, next, target)
+    else this.renderSubtree(unit, next)
     // O pai encaixou a unidade quando ela ainda não tinha desenho (conexão de cima em 0,0): com a
     // medida de verdade, ele a encaixa de novo, como o Blockly faz ao desenhar o pai depois do filho.
     parent?.tightenChildrenEfficiently()
+    // Uma unidade do corpo de uma função (a cauda que o `renderAround` cortou): a função cresce, e é
+    // redesenhada agora para a unidade seguinte da área encaixar embaixo dela no lugar certo. Na
+    // cadeia de uma área quem cresce é a raiz, redesenhada no fechamento do lote.
+    const holder = this.holderOf(unit)
+    if (holder?.getParent() && !this.deferred.has(holder)) holder.renderEfficiently()
     return nextDeferred
   }
 
-  /** Desenha de baixo para cima, como o `renderBlock` do Blockly: os filhos antes do pai. */
+  /**
+   * Desenha de baixo para cima, como o `renderBlock` do Blockly: os filhos antes do pai. O corpo
+   * escondido de um bloco recolhido fica adiado (o bloco desenha só a forma recolhida); ele entra
+   * quando o bloco abre (`revealBody`).
+   */
   private renderSubtree(block: Block, skip: Block | null): void {
-    for (const child of block.getChildren(false))
-      if (child !== skip) this.renderSubtree(child, null)
+    const next = block.getNextBlock()
+    const collapsed = block.isCollapsed()
+    for (const child of block.getChildren(false)) {
+      if (child === skip || (collapsed && child !== next)) continue
+      this.renderSubtree(child, null)
+    }
     this.deferred.delete(block)
     block.renderEfficiently()
+  }
+
+  /** O bloco que contém, por uma entrada, a cadeia em que `block` está (`null` numa raiz solta). */
+  private holderOf(block: Block): Block | null {
+    let child = block
+    let parent = child.getParent()
+    while (parent && parent.getNextBlock() === child) {
+      child = parent
+      parent = child.getParent()
+    }
+    return parent
+  }
+
+  /** O filho de `ancestor` no caminho até `block` (pela entrada ou pelo próximo), ou `null`. */
+  private entryInto(block: Block, ancestor: Block): Block | null {
+    let child = block
+    for (let parent = child.getParent(); parent; parent = child.getParent()) {
+      if (parent === ancestor) return child
+      child = parent
+    }
+    return null
+  }
+
+  /** `target` está dentro de `block` por uma entrada (não pela cadeia que segue depois dele)? */
+  private containsInBody(block: Block, target: Block): boolean {
+    const entry = this.entryInto(target, block)
+    return entry !== null && entry !== block.getNextBlock()
+  }
+
+  /**
+   * Desenha `unit` (sem `skip`, o próximo da cadeia) com o corpo que contém `target` desenhado de
+   * cima para baixo só até o alvo e mais uma tela e meia: a vista vai centralizar no alvo. O resto
+   * desse corpo vira uma fronteira adiada dentro de `unit` (`deferChain`), e a altura dela fecha no
+   * último desenhado, como a de uma área com cauda. As posições usadas aqui são estimativas (só
+   * decidem ONDE cortar); o desenho mede de verdade.
+   */
+  private renderAround(unit: Block, skip: Block | null, target: Block): void {
+    const head = this.entryInto(target, unit)
+    for (const child of unit.getChildren(false))
+      if (child !== skip && child !== head) this.renderSubtree(child, null)
+    const view = this.workspace.getMetricsManager().getViewMetrics(true)
+    const parent = unit.getParent()
+    let top =
+      (parent
+        ? parent.getRelativeToSurfaceXY().y + unit.relativeCoords.y
+        : unit.getRelativeToSurfaceXY().y) + AREA_HEADER_ESTIMATE
+    let limit = Number.POSITIVE_INFINITY
+    for (let member: Block | null = head; member; ) {
+      const following: Block | null = member.getNextBlock()
+      if (top > limit && this.deferred.has(member)) {
+        this.deferChain(member)
+        break
+      }
+      this.renderSubtree(member, following)
+      // De cima para baixo, quem está acima encaixou este bloco antes de ele ter medida: encaixa
+      // de novo, como o `drawUnit` faz com o pai (no caminho do Blockly o filho vem antes do pai).
+      member.getParent()?.tightenChildrenEfficiently()
+      if (
+        limit === Number.POSITIVE_INFINITY &&
+        (member === target || this.containsInBody(member, target))
+      )
+        limit = top + view.height * (0.5 + MARGIN_IN_VIEWS)
+      top += member.height
+      member = following
+    }
+    this.deferred.delete(unit)
+    unit.renderEfficiently()
+  }
+
+  /**
+   * Antes de desenhar `unit`, o corpo adiado da unidade de cima (o resto de uma função aberta que
+   * o `renderAround` cortou) é desenhado inteiro: `unit` nunca aparece com a posição de uma função
+   * mais curta do que ela é. As conexões desse corpo entram no banco no fechamento do lote.
+   */
+  private completeBodyAbove(unit: Block): void {
+    const above = unit.getParent()
+    if (!above || above.getNextBlock() !== unit || this.boundaries.size <= 1) return
+    for (const boundary of [...this.boundaries]) {
+      if (boundary === unit || !this.boundaries.has(boundary)) continue
+      if (!this.containsInBody(above, boundary)) continue
+      for (let rest: Block | null = boundary; rest; ) rest = this.drawUnit(rest)
+      this.nestedDrawn.push(boundary)
+    }
+  }
+
+  /** As conexões dos corpos completados por `completeBodyAbove`, depois do redesenho do lote. */
+  private trackNestedDrawn(): void {
+    for (const head of this.nestedDrawn.splice(0))
+      if (!head.disposed) head.setConnectionTracking(true)
+  }
+
+  /** O bloco está escondido dentro de um bloco recolhido já desenhado (o corpo dele)? */
+  private hiddenByCollapsed(head: Block): boolean {
+    const parent = head.getParent()
+    return Boolean(
+      parent &&
+        !this.deferred.has(parent) &&
+        parent.isCollapsed() &&
+        parent.getNextBlock() !== head,
+    )
+  }
+
+  /**
+   * O bloco desenhado `block` acabou de abrir: o corpo que estava escondido (e adiado) é desenhado
+   * agora, e só então as conexões dele entram no banco. Um bloco ainda adiado abre sem nada aqui: o
+   * corpo vem junto quando a cauda chegar a ele.
+   */
+  revealBody(block: Block): void {
+    if (this.disposed || this.deferred.has(block) || block.isCollapsed()) return
+    const next = block.getNextBlock()
+    const heads = block
+      .getChildren(false)
+      .filter((child) => child !== next && this.deferred.has(child))
+    if (heads.length === 0) return
+    this.measuringOnce(() => {
+      for (const head of heads) this.renderSubtree(head, null)
+    })
+    for (const head of heads) if (!head.disposed) head.setConnectionTracking(true)
+    block.queueRender()
+    this.publish()
   }
 
   /** A unidade onde começa a parte adiada que contém `block`. */
@@ -331,6 +482,7 @@ class DeferredTail implements DeferredDrawing {
     Blockly.renderManagement.triggerQueuedRenders(this.workspace)
     for (const firsts of drawn.values())
       for (const first of firsts) if (!first.disposed) first.setConnectionTracking(true)
+    this.trackNestedDrawn()
     this.publish()
   }
 
@@ -343,9 +495,15 @@ class DeferredTail implements DeferredDrawing {
    */
   private measuringOnce<T>(draw: () => T): T {
     Blockly.utils.dom.startTextWidthCache()
+    // Desenhar não é editar (22/11/2026): o desenho de um bloco recolhido refaz o rótulo da forma
+    // recolhida (`updateCollapsed`), e fora da carga isso saía como mudança de campo. Ia para o
+    // desfazer e acordava a regeneração e o salvamento do projeto inteiro. No caminho de sempre o
+    // mesmo rótulo é refeito dentro da carga, sem evento.
+    Blockly.Events.disable()
     try {
       return draw()
     } finally {
+      Blockly.Events.enable()
       Blockly.utils.dom.stopTextWidthCache()
     }
   }
@@ -354,15 +512,26 @@ class DeferredTail implements DeferredDrawing {
   private drawUnitsThrough(block: Block): Block {
     const first = this.boundaryAbove(block)
     this.measuringOnce(() => {
-      for (let unit: Block | null = first; unit && this.deferred.has(block); )
-        unit = this.drawUnit(unit)
+      for (let unit: Block | null = first; unit && this.deferred.has(block); ) {
+        // A unidade que contém o alvo é a última: se ele continua sem desenho, está no corpo
+        // escondido de um bloco recolhido (só aparece quando ele abrir), e seguir desenharia a
+        // cauda inteira à toa.
+        const holds = unit === block || this.containsInBody(unit, block)
+        unit = this.drawUnit(unit, block)
+        if (holds) break
+      }
     })
     return first
   }
 
-  /** Desenha, de cima para baixo, até `block` estar desenhado. Fora da parte adiada: nada. */
+  /**
+   * Desenha, de cima para baixo, até `block` estar desenhado. Fora da parte adiada: nada. Dentro do
+   * corpo escondido de um bloco recolhido: nada também (a posição só existe quando ele abrir, e
+   * desenhar ali ligaria conexões escondidas).
+   */
   drawThrough(block: Block): void {
     if (this.disposed || !this.deferred.has(block)) return
+    if (this.hiddenByCollapsed(this.boundaryAbove(block))) return
     const first = this.drawUnitsThrough(block)
     this.settle(new Map([[first.getRootBlock(), [first]]]))
   }
@@ -396,6 +565,7 @@ class DeferredTail implements DeferredDrawing {
   /** O bloco adiado vai virar raiz (desencaixado): a unidade dele é desenhada antes. */
   drawBeforeUnplug(block: Block): void {
     if (this.disposed || !this.deferred.has(block)) return
+    if (this.hiddenByCollapsed(this.boundaryAbove(block))) return
     const first = this.drawUnitsThrough(block)
     // O redesenho da raiz e as conexões ficam para depois da troca de pai (o Blockly está no meio
     // de um desencaixe): o próprio desencaixe enfileira o desenho das duas pontas, e as conexões
@@ -403,6 +573,7 @@ class DeferredTail implements DeferredDrawing {
     requestAnimationFrame(() => {
       void Blockly.renderManagement.finishQueuedRenders().then(() => {
         if (!first.disposed) first.setConnectionTracking(true)
+        this.trackNestedDrawn()
         this.publish()
       })
     })
@@ -454,7 +625,7 @@ class DeferredTail implements DeferredDrawing {
     for (const boundary of [...this.boundaries])
       if (boundary.disposed || !this.deferred.has(boundary)) this.boundaries.delete(boundary)
     if (this.boundaries.size === 0) {
-      this.deferred.clear()
+      // O que sobra adiado é corpo escondido de bloco recolhido: fica até o bloco abrir.
       this.publish()
       return
     }
@@ -555,11 +726,14 @@ function installHooks(): void {
     initSvg,
     renderEfficiently,
     select,
+    setCollapsed,
     setConnectionTracking,
     setParent,
     startDrag,
     updateComponentLocations,
   } = proto
+  const connectionProto = Blockly.RenderedConnection.prototype
+  const { startTrackingAll } = connectionProto
 
   proto.initSvg = function (this: Block) {
     initSvg.call(this)
@@ -626,6 +800,19 @@ function installHooks(): void {
   proto.startDrag = function (this: Block, e?: PointerEvent) {
     tailOf(this)?.parkStackBottom(this)
     startDrag.call(this, e)
+  }
+  // Abrir um bloco recolhido desenhado traz o corpo escondido, que estava adiado.
+  proto.setCollapsed = function (this: Block, collapsed: boolean) {
+    setCollapsed.call(this, collapsed)
+    if (!collapsed) tailOf(this)?.revealBody(this)
+  }
+  // O `Input.setVisible` de um bloco que abre chama `startTrackingAll`, que liga as conexões da
+  // árvore embaixo dele sem passar pelo `setConnectionTracking`: um bloco adiado ficaria no banco
+  // em posição velha. A recursão para no primeiro adiado; ele entra no banco quando for desenhado.
+  connectionProto.startTrackingAll = function (this: Blockly.RenderedConnection) {
+    const source = this.getSourceBlock()
+    if (tailOf(source)?.deferred.has(source)) return []
+    return startTrackingAll.call(this)
   }
 }
 

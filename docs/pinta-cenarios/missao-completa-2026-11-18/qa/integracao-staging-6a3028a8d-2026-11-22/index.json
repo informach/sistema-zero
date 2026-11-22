@@ -1,0 +1,291 @@
+{
+  "baseline": "9a3e3eb4a58cdf25c8a10c41795b537b64abc4f5",
+  "target": "6a3028a8d353cf9eb0ae948f4ae5f718f40f2726",
+  "blobs": [
+    {
+      "file": "docs/estudio-evolucao/classico-em-escala.md",
+      "received": "8d6eb2dd8ea40129a937d3415d7f8c8ff58154b7",
+      "index": "8d6eb2dd8ea40129a937d3415d7f8c8ff58154b7",
+      "identical": true
+    },
+    {
+      "file": "docs/estudio-evolucao/evidencias/mostrar-o-bloco-2026-11-22/README.md",
+      "received": "724f5381501130890491687dfed9b7adf296e071",
+      "index": "724f5381501130890491687dfed9b7adf296e071",
+      "identical": true
+    },
+    {
+      "file": "docs/estudio-evolucao/persistencia-matriz.md",
+      "received": "1c1fa372bedb4e2c7c5b5f06dac971095f1ab579",
+      "index": "1c1fa372bedb4e2c7c5b5f06dac971095f1ab579",
+      "identical": true
+    },
+    {
+      "file": "packages/community-kids/tests/creations-cloud.test.ts",
+      "received": "3742cebae994077c739b71c5f649b1f0f20b9b2c",
+      "index": "3742cebae994077c739b71c5f649b1f0f20b9b2c",
+      "identical": true
+    },
+    {
+      "file": "packages/community-kids/tests/studio-profile-switch.test.tsx",
+      "received": "38ebe2d070509d2467479ef63fcde2ac24ecd5a3",
+      "index": "38ebe2d070509d2467479ef63fcde2ac24ecd5a3",
+      "identical": true
+    },
+    {
+      "file": "packages/member-shell/src/lib/studio-template.ts",
+      "received": "e98e10a2e3c9cf290cfbc6578d994ca32a85dc81",
+      "index": "e98e10a2e3c9cf290cfbc6578d994ca32a85dc81",
+      "identical": true
+    },
+    {
+      "file": "packages/member-shell/tests/studio-template.test.ts",
+      "received": "2f78ddf45399af6d0a8cd53411ff762ad153c215",
+      "index": "2f78ddf45399af6d0a8cd53411ff762ad153c215",
+      "identical": true
+    },
+    {
+      "file": "packages/members/tests/db/creations.repository.test.ts",
+      "received": "0f48a64273ffaeadd028a3e723b0d59c9daa1dba",
+      "index": "32f5528381891d88490cbe21ba419ed0da3a984a",
+      "identical": false
+    },
+    {
+      "file": "packages/studio/CLAUDE.md",
+      "received": "ebf5c6a00b46a74250bc54cb3b5c5f333766b739",
+      "index": "ebf5c6a00b46a74250bc54cb3b5c5f333766b739",
+      "identical": true
+    },
+    {
+      "file": "packages/studio/e2e/classic-reveal-scale.spec.ts",
+      "received": "9855018f3e3e596f3d584a3e430ae92af4834fba",
+      "index": "9855018f3e3e596f3d584a3e430ae92af4834fba",
+      "identical": true
+    },
+    {
+      "file": "packages/studio/e2e/collapsed-reveal.spec.ts",
+      "received": "2ccc9ceaf7aa70c909e43ad1ac31339d92ebc74e",
+      "index": "2ccc9ceaf7aa70c909e43ad1ac31339d92ebc74e",
+      "identical": true
+    },
+    {
+      "file": "packages/studio/e2e/migration-interrupted.spec.ts",
+      "received": "a8623b4f66db93f2827173aac30e00f6caca368e",
+      "index": "a8623b4f66db93f2827173aac30e00f6caca368e",
+      "identical": true
+    },
+    {
+      "file": "packages/studio/e2e/offscreen-lifecycle.config.ts",
+      "received": "c1de852c7ccc7c4c3a44177c04e6aea10d27a3ea",
+      "index": "c1de852c7ccc7c4c3a44177c04e6aea10d27a3ea",
+      "identical": true
+    },
+    {
+      "file": "packages/studio/playwright.config.ts",
+      "received": "cad39d4f0c03d7dbdb9a4827de370cbd59d70341",
+      "index": "cad39d4f0c03d7dbdb9a4827de370cbd59d70341",
+      "identical": true
+    },
+    {
+      "file": "packages/studio/src/blockly/deferredTail.test.ts",
+      "received": "b481775756ce76f94a01ad9a6fc1f7dc6dc13b34",
+      "index": "b481775756ce76f94a01ad9a6fc1f7dc6dc13b34",
+      "identical": true
+    },
+    {
+      "file": "packages/studio/src/blockly/deferredTail.ts",
+      "received": "30e0905dd8b1569d4d3b72900fea4fce708aad72",
+      "index": "30e0905dd8b1569d4d3b72900fea4fce708aad72",
+      "identical": true
+    },
+    {
+      "file": "packages/studio/src/blockly/runtimeMark.ts",
+      "received": "f491fa43ffb73974709afe8b8eaba1d64184760f",
+      "index": "f491fa43ffb73974709afe8b8eaba1d64184760f",
+      "identical": true
+    },
+    {
+      "file": "packages/studio/src/blockly/savedWorkspaceState.ts",
+      "received": "f5cd70ee2ec0493dc1240ce7ba9258173f61fc65",
+      "index": "f5cd70ee2ec0493dc1240ce7ba9258173f61fc65",
+      "identical": true
+    },
+    {
+      "file": "packages/studio/src/blockly/transientExpansion.ts",
+      "received": "c30ea540ebd8aced3e5149965629aa048d10cbc8",
+      "index": "c30ea540ebd8aced3e5149965629aa048d10cbc8",
+      "identical": true
+    },
+    {
+      "file": "packages/studio/src/components/blocks/BlocklyPanel.tsx",
+      "received": "5108242fe06eced0b23f40cdbbfce59dc36419bf",
+      "index": "5108242fe06eced0b23f40cdbbfce59dc36419bf",
+      "identical": true
+    },
+    {
+      "file": "packages/studio/src/persistence/service.test.ts",
+      "received": "fa52ae4ef742995ff717620596c0680401e82443",
+      "index": "fa52ae4ef742995ff717620596c0680401e82443",
+      "identical": true
+    },
+    {
+      "file": "packages/studio/src/persistence/service.ts",
+      "received": "f462c172483b99a8026540c3ee0070042c48d605",
+      "index": "f462c172483b99a8026540c3ee0070042c48d605",
+      "identical": true
+    },
+    {
+      "file": "packages/studio/src/project-migrations/localProjects.test.ts",
+      "received": "620ed8320b41f23052305b8482a159bc1e17d591",
+      "index": "620ed8320b41f23052305b8482a159bc1e17d591",
+      "identical": true
+    },
+    {
+      "file": "packages/studio/src/project-migrations/localProjects.ts",
+      "received": "fba269b947583fe2ad66d7783ac6ccce92709ef5",
+      "index": "fba269b947583fe2ad66d7783ac6ccce92709ef5",
+      "identical": true
+    },
+    {
+      "file": "packages/studio/src/project-migrations/localTransaction.ts",
+      "received": "2a3c689d9b37ef0f91fcf2894fec34011e952f85",
+      "index": "2a3c689d9b37ef0f91fcf2894fec34011e952f85",
+      "identical": true
+    },
+    {
+      "file": "packages/studio/src/project-migrations/localV3.ts",
+      "received": "b54cc84ac8af24dae370d44e0b1dc034a497af1b",
+      "index": "b54cc84ac8af24dae370d44e0b1dc034a497af1b",
+      "identical": true
+    },
+    {
+      "file": "packages/studio/src/project-migrations/localV3Projects.test.ts",
+      "received": "54237a8166f4b2e4449083069ba863894b584907",
+      "index": "54237a8166f4b2e4449083069ba863894b584907",
+      "identical": true
+    }
+  ],
+  "records": [
+    {
+      "file": "service.log.gz",
+      "bytes": 1634,
+      "sha256": "70af0ed5ddd95af7b74b584b206aa85797fe95380829d51d19a49c44d929c930"
+    },
+    {
+      "file": "migrations.log.gz",
+      "bytes": 1153,
+      "sha256": "4737c248fca3e79f60ef628397f1a977ed5d5c9c03c62007b2c3eafa585e8245"
+    },
+    {
+      "file": "deferred.log.gz",
+      "bytes": 916,
+      "sha256": "821fedcb419f9edc56ed2f7e06dac9c68a68abf9657ed29023f48396e71fa7c5"
+    },
+    {
+      "file": "member-shell.log.gz",
+      "bytes": 906,
+      "sha256": "84ffad53c0c0050395b5faa3df1eb7562b9fbbe94819ddeb88b64fd704aa3808"
+    },
+    {
+      "file": "cloud-client.log.gz",
+      "bytes": 2541,
+      "sha256": "7f98c6672c87027e28fbd79af010a9eea218e117f70004efb819fd211835d459"
+    },
+    {
+      "file": "profile.log.gz",
+      "bytes": 206,
+      "sha256": "fe97f02a89b2aa6c87c40bed4b338f23a7e77a37b27c4d4fce1159cc937b3ba7"
+    },
+    {
+      "file": "studio-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63"
+    },
+    {
+      "file": "member-shell-types-final.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63"
+    },
+    {
+      "file": "biome.log.gz",
+      "bytes": 65,
+      "sha256": "9632459f6d9c47dd2c7b5906f9a5adda59a71b979b5bfb715d41e64c69c9f448"
+    },
+    {
+      "file": "reveal-browser.log.gz",
+      "bytes": 840,
+      "sha256": "629fecbd7607220beebf85be387809028dade84e9bdfc293c416cee2b1ab7e8f"
+    },
+    {
+      "file": "live-browser.log.gz",
+      "bytes": 18841,
+      "sha256": "981247822286a0067d8f31f3f15edb1eea2b6967a897bdf5442e356a2f26ebac"
+    },
+    {
+      "file": "webkit-migration.log.gz",
+      "bytes": 18598,
+      "sha256": "c8b43ceb978c04233a0583941d623e9240fec7f96d69e6b7d16f1394431575b7"
+    },
+    {
+      "file": "integration-browser.log.gz",
+      "bytes": 2108,
+      "sha256": "b276a1dc6356199b7061d7b0377891ec1e349f36e8ca1989f591715827cb1185"
+    },
+    {
+      "file": "staging-6a-test-union.mjs.gz",
+      "bytes": 1179,
+      "sha256": "730784f7d61f54acb183e9669d3016cb565383e7459eca0d0475c5a04f44366e"
+    },
+    {
+      "file": "staging-6a-test-union.json.gz",
+      "bytes": 381,
+      "sha256": "a2dc30b8a95465a51ca0b18b8c721e6d09327e46dd5e724fdcd6e5d497ccac3c"
+    },
+    {
+      "file": "archive-staging-6a.cjs.gz",
+      "bytes": 1530,
+      "sha256": "92e3642e988974edd24d33fd2a6682b4dba94da12b82023982c4a80685533ee6"
+    },
+    {
+      "file": "integration-report.json.gz",
+      "bytes": 929851,
+      "sha256": "c876af8b359bb9f60ced23ed07c232bbe271886a3165d8e926cd2109c8aaece9"
+    }
+  ],
+  "sqlUnion": {
+    "baseline": "9a3e3eb4a",
+    "incoming": "6a3028a8d353cf9eb0ae948f4ae5f718f40f2726",
+    "file": "packages/members/tests/db/creations.repository.test.ts",
+    "previousTests": 15,
+    "incomingTests": 16,
+    "mergedTests": 16,
+    "previousBodiesIntact": true,
+    "incomingBodiesIntact": 14,
+    "existingFormat6ParameterizedReplacements": 2,
+    "sha256": {
+      "before": "213c9a56ce0b02b22e51e7e2b0288d4e6dd21a9af507825a07689ea5c77decbf",
+      "incoming": "a5002a7bf4c0c752b75a5e7d40c6d51254fc785ef80900e4c5a16f0e8b951f25",
+      "merged": "a733d45999e819403b70189c0b1dbe7ba017f9ea22859c2c1957165d69de4e7e"
+    }
+  },
+  "unit": {
+    "pass": 157,
+    "assertions": 701,
+    "files": 7
+  },
+  "browser": {
+    "pass": 36,
+    "retries": 0,
+    "collapsedReveal": 21,
+    "realApp": 3,
+    "pintaIntegration": 12
+  },
+  "types": [
+    "studio",
+    "member-shell"
+  ],
+  "pintaCoreSourcesUnchanged": true,
+  "sqlTestsRun": false,
+  "featureMergedIntoStaging": false,
+  "additionalDevices": false
+}

@@ -1,5 +1,27 @@
 # @sistemazero/studio
 
+## "Mostrar o bloco" em projeto grande: corpos escondidos e abertura só para mostrar (22/11/2026)
+
+Detalhe e números em `docs/estudio-evolucao/classico-em-escala.md` (seção do lote 2 da conclusão).
+O que não pode regredir:
+
+- **Cauda adiada (`blockly/deferredTail.ts`)**: o corpo escondido de um bloco recolhido continua
+  adiado até ele abrir (`revealBody`, gancho em `setCollapsed`); `RenderedConnection.startTrackingAll`
+  não liga conexão de bloco adiado; o lote de desenho roda com `Blockly.Events.disable()` (desenhar
+  um bloco recolhido refaz o rótulo dele, e isso saía como mudança de campo, no desfazer e na
+  regeneração); o corpo comprido em volta do alvo é cortado depois do alvo + 1,5 tela
+  (`renderAround`) e completado antes da unidade seguinte (`completeBodyAbove`); centralizar num
+  bloco escondido para na unidade que o contém.
+- **Abrir só para mostrar (`blockly/transientExpansion.ts`)**: `revealBlockInWorkspace(…, {transient:
+  true})`, só do `BlocklyPanel` (o Python abre como antes). Sem evento nem desfazer; o
+  `saveWorkspaceState` grava o bloco recolhido (`keepShownBlocksCollapsed`, na ordem de chaves do
+  Blockly) até a criança mexer nele; o `bump` causado pela abertura não grava layout
+  (`isBumpWhileShowing`). ⚠️ Todo estado que sai do Blockly do Clássico JS precisa passar pelo
+  `saveWorkspaceState`, senão a abertura vira mudança do projeto.
+- Provas: `e2e/collapsed-reveal.spec.ts` (na config `offscreen-lifecycle`, três motores),
+  `e2e/classic-reveal-scale.spec.ts` (o gesto no Reino Zero Ultra, projeto salvo igual e trabalho
+  limitado) e as guardas do Blockly 12.5.1 no `deferredTail.test.ts`.
+
 ## Compartilhar de novo atualiza o jogo no Mural (20/11/2026)
 
 O adapter do Compartilhar ganhou `status?({project, compare}, signal)` (`StudioShareStatus`,

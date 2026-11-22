@@ -1,6 +1,7 @@
 import * as Blockly from 'blockly/core'
 import { markLifecycleBlocksState } from './blocksStateVersion'
 import { jsonPlainCopy } from './jsonPlainCopy'
+import { keepShownBlocksCollapsed } from './transientExpansion'
 
 /**
  * O estado do workspace como o Estúdio guarda: o `save` do Blockly copiado para objetos comuns
@@ -13,9 +14,10 @@ import { jsonPlainCopy } from './jsonPlainCopy'
  * `docs/estudio-evolucao/classico-em-escala.md`). É o lote 3 do plano.
  */
 export function saveWorkspaceState(workspace: Blockly.Workspace) {
-  return markLifecycleBlocksState(
-    jsonPlainCopy(Blockly.serialization.workspaces.save(workspace)) as ReturnType<
-      typeof Blockly.serialization.workspaces.save
-    >,
-  )
+  const state = jsonPlainCopy(Blockly.serialization.workspaces.save(workspace)) as ReturnType<
+    typeof Blockly.serialization.workspaces.save
+  >
+  // Um bloco aberto só para mostrar outro continua salvo recolhido (`transientExpansion.ts`).
+  keepShownBlocksCollapsed(workspace, state)
+  return markLifecycleBlocksState(state)
 }

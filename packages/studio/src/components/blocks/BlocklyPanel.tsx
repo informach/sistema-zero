@@ -62,6 +62,7 @@ import {
 } from '../../blockly/runtimeMark'
 import { saveWorkspaceState } from '../../blockly/savedWorkspaceState'
 import { SearchAwareHorizontalFlyout } from '../../blockly/searchHorizontalFlyout'
+import { isBumpWhileShowing } from '../../blockly/transientExpansion'
 import { projectBlockTypes } from '../../core/projectDocument'
 import { useCrossHighlight } from '../../hooks/useCrossHighlight'
 import { useHostAppearanceRevision } from '../../hooks/useHostAppearanceRevision'
@@ -985,6 +986,8 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       const layoutOnly =
         event.type === Blockly.Events.BLOCK_MOVE &&
         isPureWorkspaceLayoutMove(event as Blockly.Events.BlockMove)
+      // O afastamento automático causado por uma função aberta só para mostrar não é gravado.
+      if (layoutOnly && isBumpWhileShowing(workspace, event)) return
       const svgWorkspace = workspace as Blockly.WorkspaceSvg
       if (typeof svgWorkspace.isDragging === 'function' && svgWorkspace.isDragging()) {
         if (layoutOnly) shouldPersistLayoutAfterDragRef.current = true
@@ -1205,7 +1208,9 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         Blockly.svgResize(svgWorkspace)
         isSelectingFromEditorRef.current = true
         try {
-          revealBlockInWorkspace(svgWorkspace, id, true)
+          // Só para mostrar (22/11/2026): a função recolhida que envolve o bloco abre sem virar
+          // edição (sem desfazer, sem regerar e salvar o projeto, que segue gravando-a recolhida).
+          revealBlockInWorkspace(svgWorkspace, id, true, { transient: true })
         } finally {
           queueMicrotask(() => {
             isSelectingFromEditorRef.current = false

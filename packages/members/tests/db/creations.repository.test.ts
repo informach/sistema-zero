@@ -440,6 +440,48 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
     expect(record?.pending).toBeNull()
   })
 
+  // A página que vai embora no meio da subida (lote 1, item 9, 22/11/2026): a reserva fica
+  // pendurada, sem commit. A página seguinte reserva com a MESMA base (a marca não avançou): a base
+  // é conferida com a revisão confirmada, então passa, e a reserva nova troca a pendurada.
+  test('a reserva pendurada de uma página que morreu é trocada pela próxima com a mesma base', async () => {
+    const dono = { ...base, userId: randomUUID(), accountId: randomUUID(), itemId: 'jogo-que-caiu' }
+    expect(await repo.reserveUpload(dono)).toEqual({ ok: true, revision: 1, missingParts: [] })
+    expect((await repo.commit({ ...dono, revision: 1, storageRef: 'caiu/1' })).ok).toBe(true)
+
+    // Página 1: reserva com a base 1 e morre antes do commit.
+    expect(await repo.reserveUpload({ ...dono, bytes: 120, baseRevision: 1 })).toEqual({
+      ok: true,
+      revision: 2,
+      missingParts: [],
+    })
+    // Página 2: a mesma base passa e a reserva ganha número (e chave no armazenamento) novos.
+    expect(await repo.reserveUpload({ ...dono, bytes: 130, baseRevision: 1 })).toEqual({
+      ok: true,
+      revision: 3,
+      missingParts: [],
+    })
+    // Um PUT velho da página 1 que chegasse tarde não confirma por cima da reserva nova.
+    expect(await repo.commit({ ...dono, revision: 2, storageRef: 'caiu/2' })).toEqual({
+      ok: false,
+    })
+    expect(await repo.commit({ ...dono, revision: 3, storageRef: 'caiu/3' })).toEqual({
+      ok: true,
+      alreadyCommitted: false,
+      previousStorageRef: 'caiu/1',
+      releasedPartRefs: [],
+    })
+    const [listado] = await repo.list(dono.userId, 'studio')
+    expect(listado?.revision).toBe(3)
+    expect(listado?.bytes).toBe(130)
+    // A próxima edição já parte da revisão 3.
+    expect((await repo.reserveUpload({ ...dono, baseRevision: 3 })).ok).toBe(true)
+    expect(await repo.reserveUpload({ ...dono, baseRevision: 1 })).toEqual({
+      ok: false,
+      reason: 'stale-base',
+      currentRevision: 3,
+    })
+  })
+
   test('reserva → commit promove os pendentes; commit errado recusado; lixeira; contador nunca volta; idempotência', async () => {
     const first = await repo.reserveUpload(base)
     expect(first).toEqual({ ok: true, revision: 1, missingParts: [] })

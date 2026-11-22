@@ -483,7 +483,18 @@ export function createPersistenceService(
           // vai tentar gravá-lo: a recusa (outra aba gravou antes, cota) apagaria a edição calada.
           // A página segue viva, então a cópia de saída nativa basta; na próxima leitura ela vira
           // "(edição recuperada)" quando não puder entrar no projeto.
-          if (adapter?.flushOnExit && !isFenced(serviceScopeIdentity, project.id))
+          // ⚠️ Pelo id, não pela referência (revisão de 22/11/2026): a referência também muda a cada
+          // edição nova do MESMO projeto, que o salvamento seguinte grava. E nunca quando a recusa
+          // é a transferência para a gravação de saída (`AbortError` de `stageProjectExit`): a
+          // cópia mais nova já foi feita, e esta antiga, gravada depois na mesma chave, a cobriria.
+          const leftEditor = store.getState().project?.id !== project.id
+          const transferredToExit = (err as { name?: unknown } | null)?.name === 'AbortError'
+          if (
+            leftEditor &&
+            !transferredToExit &&
+            adapter?.flushOnExit &&
+            !isFenced(serviceScopeIdentity, project.id)
+          )
             void adapter
               .flushOnExit(snapshotForSave(project), {
                 incompleteBlocks: shouldStripBlocks(project.id),

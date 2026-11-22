@@ -1,4 +1,5 @@
 import * as Blockly from 'blockly/core'
+import { expandForShowing } from './transientExpansion'
 
 /**
  * O sinal vermelho no bloco onde o jogo parou (redesenho do clássico, 11/2026): o aviso do
@@ -57,9 +58,16 @@ export function runtimeErrorBlockId(workspace: Blockly.Workspace): string | null
  * Reino Zero Ultra, "Mostrar o bloco" abria 78 funções e mudava o projeto salvo, que subia de novo
  * para a conta (achado na conferência do staging, 21/11/2026).
  */
-export function expandAroundBlock(block: Blockly.Block): void {
-  for (let parent = block.getSurroundParent(); parent; parent = parent.getSurroundParent())
-    if (parent.isCollapsed()) parent.setCollapsed(false)
+export function expandAroundBlock(
+  block: Blockly.Block,
+  options: { transient?: boolean } = {},
+): void {
+  for (let parent = block.getSurroundParent(); parent; parent = parent.getSurroundParent()) {
+    if (!parent.isCollapsed()) continue
+    // Só para mostrar (22/11/2026): sem evento, sem desfazer, e o projeto salvo segue recolhido.
+    if (options.transient && parent instanceof Blockly.BlockSvg) expandForShowing(parent)
+    else parent.setCollapsed(false)
+  }
 }
 
 /**
@@ -70,10 +78,11 @@ export function revealBlockInWorkspace(
   workspace: Blockly.WorkspaceSvg,
   blockId: string,
   openBubble: boolean,
+  options: { transient?: boolean } = {},
 ): boolean {
   const block = liveBlock(workspace, blockId)
   if (!block) return false
-  expandAroundBlock(block)
+  expandAroundBlock(block, options)
   // `blockOnly`: centraliza no PRÓPRIO bloco, não na pilha que vem embaixo dele.
   workspace.centerOnBlock(block.id, true)
   block.select()

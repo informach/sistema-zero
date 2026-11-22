@@ -713,3 +713,50 @@ Mover só a organização visual (arrastar uma área sem mudar encaixes) já nã
 (`persistWorkspaceLayout`): grava só o estado. A gravação no IndexedDB do Estúdio livre sai no
 autosave (1 s depois da última edição, no máximo 5 s), não a cada gesto, e não foi medida aqui com
 10 mil blocos.
+
+## "Mostrar o bloco" numa função recolhida da cauda (lote 2 da conclusão, 22/11/2026)
+
+No Chrome conectado, o gesto da busca no Reino Zero Ultra ("se tecla", tecla R) travava a aba por
+uma tarefa de 243 s, contra 522 ms no playground: lá cada medida de texto em SVG custa cerca de 90
+vezes mais. Por isso o conserto mira o TRABALHO do gesto, que não depende da máquina, contado no
+e2e `classic-reveal-scale.spec.ts` (o gesto de verdade, no playground de produção):
+
+| Medida | Antes | Depois |
+|---|---|---|
+| Leituras de estilo (`getComputedStyle`) | 1.008 | 444 |
+| Blocos redesenhados | 5.752 | 393 |
+| Grupos na página no fim | 850 | 493 |
+| Maior tarefa (Chromium local) | 542 ms | cerca de 140 ms |
+| O projeto salvo mudou | sim | não |
+
+O que mudou, em `blockly/deferredTail.ts` e `blockly/transientExpansion.ts`:
+
+1. **O corpo escondido de um bloco recolhido continua adiado** quando a cauda desenha o bloco: só a
+   forma recolhida e o próximo da cadeia. Ele é desenhado quando o bloco abre (gancho em
+   `setCollapsed`, `revealBody`). Desenhar até o alvo descia antes pelos corpos de todas as
+   funções recolhidas no caminho.
+2. **Nada adiado vai ao banco de conexões pelo `startTrackingAll`**, que o `Input.setVisible` do
+   Blockly chama ao abrir um bloco sem passar pelo `setConnectionTracking`.
+3. **Desenhar a cauda não é editar**: o lote roda com os eventos desligados. O desenho de um
+   bloco recolhido refaz o rótulo da forma recolhida, e fora da carga isso saía como mudança de
+   campo: ia para o desfazer e acordava a regeneração e o salvamento do projeto inteiro.
+4. **Abrir só para mostrar** (`expandForShowing`, usado pelo `revealBlockInWorkspace` do
+   `BlocklyPanel`): sem evento, sem desfazer; o `saveWorkspaceState` segue gravando o bloco
+   recolhido, com as chaves na ordem do Blockly, até a criança mexer nele, recolher ou abrir de
+   propósito, ou apagar. O afastamento automático de uma pilha solta (`moveBy(…, ['bump'])`) que a
+   abertura causa não é gravado como layout enquanto há bloco aberto só para mostrar. O Python
+   continua abrindo como antes.
+5. **O corpo comprido da função que envolve o alvo** é desenhado só até o alvo e mais uma tela e
+   meia (`renderAround`); o resto vira uma fronteira adiada dentro da função, desenhada ao rolar. A
+   unidade seguinte da área nunca é desenhada antes de o corpo adiado da de cima terminar
+   (`completeBodyAbove`), e a função é redesenhada a cada unidade de corpo desenhada.
+6. **Centralizar num bloco escondido sem abrir a função** (cursor do código, `select`) desenha só
+   até a unidade que o contém.
+
+Os 145 grupos postos na página são as unidades da cauda até o alvo: elas são desenhadas de cima
+para baixo para a posição do alvo ser exata (a regra da etapa 3). Provas: `collapsed-reveal.spec.ts`
+(Blockly real, normal × adiado, sete casos, nos três motores; cada peça sabotada deixa um caso
+vermelho), o `offscreen-lifecycle.spec.ts` inteiro, as guardas novas do `deferredTail.test.ts`
+(`setCollapsed` → `setVisible` → `startTrackingAll`; `renderEfficiently` → `updateCollapsed`) e o
+`classic-reveal-scale.spec.ts`, que exige o projeto salvo igual e limita leituras de estilo e
+blocos redesenhados. O tempo no Chrome conectado é registrado no staging, não prometido.

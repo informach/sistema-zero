@@ -237,6 +237,13 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    Próximo: consultas/geometria e motores. A criação atual de `rows × cols`
    não serve para cena 4 e seu número de versão não pode ativar física precisa
    em mapas migrados. Sem promoção pública ou fechamento do item por esse núcleo.
+   Staging `6a3028a8d` recebida e revisada em
+   `qa/integracao-staging-6a3028a8d-2026-11-22/`: 26 de 27 blobs idênticos ao
+   remoto; teste SQL unido conserva os corpos anteriores e o caso novo. Correções
+   recebidas de recuperação, migração interrompida e abertura transitória do
+   Blockly validadas com 157 testes, 36 ensaios de navegador e tipos completos
+   Estúdio/member-shell. Nenhuma fonte Pinta/Core/3D alterada. Prosseguir às
+   consultas/geometria regionais, sem promover contratos por esta integração.
 
 Na promoção do store, conferir também os orçamentos globais de metadados e JSON
 antes do histórico/autosave. A soma de objetos/propriedades em várias camadas
