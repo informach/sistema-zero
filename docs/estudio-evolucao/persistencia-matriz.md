@@ -84,6 +84,11 @@ not claim an exit copy…" segue valendo). Testes: `projectSynchronousRecovery.t
 a confirmed native copy is enough…") e `service.test.ts` ("o flush da aba escondida avisa que a
 página segue viva…"), os dois vermelhos no código antigo; no playground, o mesmo gesto passou de
 "Erro ao salvar" a "Alterações não salvas" (o mesmo de um projeto pequeno com a aba escondida).
+No staging (apps em `4eddccb1b`), numa cópia nova do Reino Zero Ultra com uma alteração pendente e a
+página dada como escondida (simulado: a troca de aba não esconde a página no Chrome conectado):
+nenhum "Erro ao salvar", o selo em "Alterações não salvas" enquanto escondida e "Salvo · Guardado
+na sua conta" 4 s depois de voltar à vista
+([`../qa/2026-11-21-studio-lote8-staging.md`](../qa/2026-11-21-studio-lote8-staging.md)).
 
 ## Outros itens da seção 13 conferidos neste lote
 

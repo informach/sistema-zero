@@ -35,23 +35,65 @@ manual por SHA completo); os consertos achados aqui foram implantados em seguida
    conectado desenha devagar quando a janela não está à vista); a parte que cabia ao Estúdio era não
    mudar o projeto à toa.
 
-## Achado aberto (sem causa confirmada)
+4. **"Erro ao salvar" no Reino Zero Ultra com a aba escondida** (era o achado aberto desta
+   conferência). Na segunda cópia, o topo passou a "Erro ao salvar", com a dica "A cópia de
+   recuperação completa não pôde ser preparada…". Medido no playground: o registro de recuperação
+   do projeto aberto tem 3.068.580 caracteres, acima do teto de 2 milhões da cópia síncrona (a do
+   `localStorage`), e a saída rejeitava mesmo com a cópia nativa (IndexedDB) confirmada. Conserto
+   `ed9412f96`: com a página viva (aba só escondida), a cópia nativa confirmada basta; no
+   `pagehide` nada mudou. Detalhe em `docs/estudio-evolucao/persistencia-matriz.md`.
 
-Na segunda cópia do Reino Zero Ultra (a das 78 funções abertas pelo defeito 3, antes do conserto),
-o topo passou a "Erro ao salvar", com a dica "Falha ao salvar projeto: A cópia de recuperação
-completa não pôde ser preparada. Salve ou exporte antes de fechar esta aba." A mensagem vem de
-`state/synchronousExitJournal.ts`: a cópia de recuperação síncrona (a que vai para o
-`localStorage` quando a aba fica escondida ou fecha) tem teto próprio de 2.000.000 de caracteres e
-500 mil nós (`exitJournalCodec.ts`). O Chrome conectado fica com a janela escondida, então o
-salvamento passa por esse caminho. O JSON do exemplo como vem tem 367.092 caracteres; o tamanho do
-projeto aberto (com o estado dos blocos, a IR e o código gerado) não foi medido. Pendente: medir e
-decidir se um projeto desse tamanho deve caber na cópia de recuperação ou salvar por outro caminho
-com a aba escondida. O aviso de alterações não salvas dessa aba também segurou uma navegação.
+## Conferência depois dos consertos (apps em `4eddccb1b`, 21/11/2026, 22h30)
+
+Community, community-kids e admin implantados em `4eddccb1b` (deploy manual por SHA completo; o
+Members segue em `7b00717b6`, sem mudança de servidor desde então). Aba nova do Chrome conectado; a
+aba antiga, presa na cópia com "Erro ao salvar", ficou aberta e intocada.
+
+| O que | Como | Resultado |
+|---|---|---|
+| Busca no Reino Zero Ultra | Cópia nova pelos jogos prontos, "Procurar no programa", "se tecla", resultado da tecla R | "7 blocos", cada resultado com a linha do próprio bloco; o bloco da tecla R ficou selecionado e só a função que o envolve (`updateGame`) abriu: as outras 76 continuam recolhidas (antes do `1750d5881` eram 78 abertas). Escolher um resultado cuja função já está aberta (tecla 1) não gerou tarefa longa |
+| Aba escondida | Com uma alteração pendente ("Desfazer"), a página foi dada como escondida no instante em que o selo virou "Alterações não salvas" (simulado: `visibilityState` trocado e `visibilitychange` disparado, porque a aba do Chrome conectado não fica escondida ao trocar de aba) | Nenhum "Erro ao salvar". Enquanto escondida, o selo fica em "Alterações não salvas" (a cópia de saída foi aceita; a gravação normal espera a página voltar, como num projeto pequeno). De volta à vista, "Salvo · Guardado na sua conta" em 4 s |
+| "Virar profissional" | Projeto novo "QA problemas 21-11 noite" (JavaScript, blocos, em branco) → menu ⋯ → "Virar profissional" | O Pro abriu com "Problemas ✓": "Nenhum problema encontrado por estas conferências." Seguiu zerado depois de rodar (antes do `10b267b0b` eram 42) |
+| "Ver mudanças" com arquivo novo vazio | No mesmo Pro: Rodar, "+ Novo" → `notas.js` vazio, "Histórico do projeto" → "Ver mudanças" | A comparação abriu com "Arquivo para comparar: notas.js" (antes do `51bef14ec`: "Esta versão é igual ao projeto de agora") |
+
+**O travamento continua neste Chrome, mas é do navegador conectado.** Escolher o resultado da
+tecla R na cópia nova travou a aba por uma tarefa única de 243.449 ms. O mesmo gesto, na mesma
+cópia nova, medido no playground (Chromium local): maior tarefa de 522 ms, com o mesmo estado final
+(852 grupos de blocos na página, 76 funções recolhidas). Para separar a máquina do Estúdio, o mesmo
+teste sem Estúdio nenhum (1.500 textos em SVG, 300 medições de largura, que é o que o Blockly faz ao
+desenhar) deu:
+
+| Navegador | Laço de CPU | Medições de texto em SVG |
+|---|---|---|
+| Chrome conectado (Chrome 157, Windows, RTX 3050, 12 núcleos) | 51 ms | 4.119 ms |
+| Chrome 157.0.8103.80 desta máquina, com janela | 60 ms | 46 ms |
+| Chrome 157 desta máquina, sem janela | 60 ms | 52 ms |
+| Chromium 148 do Playwright | 72 ms | 54 ms |
+
+O texto em SVG é cerca de 90 vezes mais lento naquele navegador, com a CPU até mais rápida. Ligar à
+força a acessibilidade (`--force-renderer-accessibility`) ou os domínios DOM, CSS, Overlay e
+Accessibility do CDP não reproduziu a lentidão aqui. A causa dentro daquele navegador não foi
+achada; não é da versão do Chrome nem do Estúdio.
+
+## Os dois intermitentes da homologação 44954172658, consertados pela causa
+
+- **`ProjectList.creationScope`** (`ff230c579`): o `NewProjectModal` escolhia a linguagem num
+  efeito depois de abrir. O primeiro quadro com a janela mostrava a escolha de linguagem, e na lista
+  (janela carregada sob demanda, fora do `act`) o teste via esse quadro sem a opção "Com código". O
+  estado de abertura agora é ajustado durante a renderização, na transição fechado → aberto. Teste
+  novo lê o primeiro quadro num efeito de layout: reprova no código antigo.
+- **`css-learning.spec.ts`** (`4eddccb1b`): era perda de código de verdade. Trocar da Ponte para os
+  Blocos antes de a Ponte traduzir o código aciona a recuperação do `BlocksMode`. Se ela gravava os
+  blocos novos entre a carga dos blocos velhos e o `FINISHED_LOADING` dela, o `BlocklyPanel`
+  regenerava arquivos e blocos a partir do canvas velho: o HTML e o CSS digitados sumiam e o canvas
+  ficava vazio (o trace do CI mostrou o canvas vazio por 15 s). Medido: 5 ms separavam o caso bom
+  do ruim. A regeneração de uma carga agora não vale quando a store já tem outros blocos. O e2e
+  novo `bridge-blocks-race.spec.ts` força a ordem ruim (quadros congelados, o pacote dos parsers
+  preso) e reprova sem o conserto com o mesmo sintoma.
 
 ## Não conferido aqui
 
-- O mesmo gesto da busca no staging depois do conserto: community e community-kids já estão em
-  `1750d5881`, mas a aba conferida ficou presa na cópia com "Erro ao salvar" (acima).
 - O Kids (a mesma tela do Estúdio Completo, o mesmo código).
-- A subida para a conta de um projeto de 7 mil blocos medida à parte: o travamento coincidiu com
-  ela, mas a causa medida foi a das funções abertas.
+- A aba realmente escondida (janela minimizada) no Chrome conectado: a troca de aba não esconde a
+  página ali, então o caminho foi simulado. Os testes do serviço cobrem o evento de verdade.
+- A subida para a conta de um projeto de 7 mil blocos medida à parte.

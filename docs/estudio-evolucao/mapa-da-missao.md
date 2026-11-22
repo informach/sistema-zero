@@ -55,3 +55,20 @@ entregáveis.
   promessas falsas (`0fe5d470e`); a carga dos blocos Python e a busca em bloco travado
   (`0179cbf52`); os avisos dos grupos do Jogo 2D (`fab54bc52`); o teste da busca que passava por
   sorte (`b182d1313`). Os documentos foram conferidos contra o código e corrigidos.
+
+## Fecho do plano (noite de 21/11)
+
+- **"Erro ao salvar" com a aba escondida** num projeto de 7 mil blocos: o registro de recuperação do
+  Reino Zero Ultra aberto tem 3.068.580 caracteres e não cabe na cópia síncrona (teto de 2
+  milhões); com a página viva, a cópia nativa confirmada basta (`ed9412f96`,
+  [`persistencia-matriz.md`](persistencia-matriz.md)).
+- **Os dois intermitentes da homologação 44954172658, pela causa**: a janela de projeto novo
+  escolhia a linguagem num efeito (`ff230c579`); e a troca da Ponte para os Blocos no meio da
+  tradução podia regenerar os arquivos a partir da carga velha dos blocos, apagando o código
+  digitado (`4eddccb1b`, e2e `bridge-blocks-race.spec.ts`).
+- **Conferido de novo no staging** (apps em `4eddccb1b`,
+  [`../qa/2026-11-21-studio-lote8-staging.md`](../qa/2026-11-21-studio-lote8-staging.md)): a busca no
+  Reino Zero Ultra, o Pro convertido sem problemas, "Ver mudanças" com o arquivo novo vazio e a aba
+  escondida (simulada) sem "Erro ao salvar". O gesto da busca ainda leva minutos no Chrome
+  conectado, onde o texto em SVG é cerca de 90 vezes mais lento que no mesmo Chrome noutra máquina;
+  no playground a maior tarefa é de 522 ms.
