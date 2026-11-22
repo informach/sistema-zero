@@ -17,6 +17,7 @@
 import { createHash } from 'node:crypto'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
+import sharp from 'sharp'
 import { writeGeneratedSource } from './writeGeneratedSource'
 
 const raiz = resolve(import.meta.dir, '../../..')
@@ -52,7 +53,12 @@ const sha256 = createHash('sha256').update(conteudo).digest('hex')
 const destino = join(import.meta.dir, '../.cache/galeria/estudio-exemplos/jogo-e')
 await mkdir(destino, { recursive: true })
 await writeFile(join(destino, `${sha256}.json`), conteudo)
-const capa = `data:image/png;base64,${(await readFile(join(pasta, 'olhar-inicio.png'))).toString('base64')}`
+// A foto da prova tem 1280 x 720; a capa do card vai em 640 x 360 (JPEG), leve para a galeria.
+const foto = await sharp(await readFile(join(pasta, 'olhar-inicio.png')))
+  .resize(640, 360)
+  .jpeg({ quality: 82 })
+  .toBuffer()
+const capa = `data:image/jpeg;base64,${foto.toString('base64')}`
 writeGeneratedSource(
   join(import.meta.dir, '../src/examples/jogoEArquivo.generated.ts'),
   `// Gerado por scripts/gen-jogo-e-galeria.ts. Não edite.
@@ -62,7 +68,7 @@ export const JOGO_E_ARQUIVO = {
   sha256: '${sha256}',
   bytes: ${conteudo.length},
 } as const
-/** A capa: a foto do início do jogo E, tirada pela própria prova dele. */
+/** A capa: a foto da Floresta, tirada pela própria prova do jogo E (e2e/engine-regions.spec.ts). */
 export const JOGO_E_CAPA =
   '${capa}'
 `,

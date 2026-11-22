@@ -73,7 +73,9 @@ describe('o jogo E na galeria', () => {
     expect(jogoE.arquivo).toBe(JOGO_E_ARQUIVO)
     expect(JOGO_E_ARQUIVO.caminho).toBe(`jogo-e/${JOGO_E_ARQUIVO.sha256}.json`)
     expect(JOGO_E_ARQUIVO.sha256).toMatch(/^[0-9a-f]{64}$/)
-    expect(jogoE.cover).toMatch(/^data:image\/png;base64,/)
+    expect(jogoE.cover).toMatch(/^data:image\/jpeg;base64,/)
+    // Leve para a galeria (a foto da prova tem 1280 x 720; a capa vai reduzida).
+    expect(jogoE.cover.length).toBeLessThan(80_000)
   })
 
   it('sem o endereço do host o card não aparece; com ele, aparece no grupo do Jogo 3D', async () => {
