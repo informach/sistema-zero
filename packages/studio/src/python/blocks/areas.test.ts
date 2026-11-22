@@ -229,6 +229,29 @@ describe('a área de cada linha', () => {
     expect(isPythonSettingsStatement(assign('VIDAS', integer('3')))).toBe(true)
     expect(isPythonSettingsStatement(assign('vidas', integer('3')))).toBe(false)
     expect(isPythonSettingsStatement(assign('CHAO', call(name('carregar'))))).toBe(false)
+    // Contas que dão erro na hora não são valor fixo (revisão final, achado 10).
+    const float = (value: string) =>
+      node('Constant', { value: { literal: 'float', value }, kind: null })
+    const op = (left: PythonNode, kind: string, right: PythonNode) =>
+      node('BinOp', { left, op: node(kind), right })
+    // 1e300 ** 2: OverflowError.
+    expect(isPythonSettingsStatement(assign('X', op(float('1e300'), 'Pow', integer('2'))))).toBe(
+      false,
+    )
+    // (10 ** 64) ** 5 * 1.0: o inteiro enorme não vira float.
+    const huge = op(op(integer('10'), 'Pow', integer('64')), 'Pow', integer('5'))
+    expect(isPythonSettingsStatement(assign('Y', op(huge, 'Mult', float('1.0'))))).toBe(false)
+    // "a" * 10000 * 10000 * 10000: MemoryError.
+    const big = binop(binop(binop(text('a'), integer('10000')), integer('10000')), integer('10000'))
+    expect(isPythonSettingsStatement(assign('Z', big))).toBe(false)
+    // As contas de sempre continuam.
+    expect(isPythonSettingsStatement(assign('W', op(integer('2'), 'Pow', integer('10'))))).toBe(
+      true,
+    )
+    expect(isPythonSettingsStatement(assign('V', binop(text('ab'), integer('3'))))).toBe(true)
+    expect(isPythonSettingsStatement(assign('U', op(integer('800'), 'Div', integer('2'))))).toBe(
+      true,
+    )
     // Lista, dicionário e conjunto de valores fixos (se o resto do arquivo os muda, quem diz é a
     // análise do módulo: áreas.differential.test.ts).
     const listOf = (...elts: PythonNode[]) => node('List', { elts, ctx: node('Load') })
@@ -299,13 +322,16 @@ describe('efeitos e troca de lugar', () => {
     expect(walrus!.effects.binds.has('n')).toBe(true)
   })
 
-  test('duas chamadas não trocam; o registro de tecla troca com o que não mexe nos registros', () => {
-    const [, , , bg, clear, register, draw] = info([
+  test('duas chamadas não trocam; o registro de tecla só troca com o que não chama nada', () => {
+    const item = node('Subscript', { value: name('placar'), slice: integer('0'), ctx: node('Store') })
+    const [, , , , bg, clear, score, register, draw] = info([
       line(imp('turtle')),
       line(assign('tela', call(attribute(name('turtle'), 'Screen')))),
       line(def('virar')),
+      line(assign('placar', call(name('list')))),
       line(method('tela', 'bgcolor', [text('black')])),
       line(method('tela', 'clear')),
+      line(node('Assign', { targets: [item], value: integer('1'), type_comment: null })),
       line(
         method('tela', 'onkeypress', [name('virar'), text('Up')]),
         'sz_py_turtle_screen_onkeypress',
@@ -313,8 +339,12 @@ describe('efeitos e troca de lugar', () => {
       line(run(name('print'), [text('oi')])),
     ])
     expect(pythonCommuteConflict(bg!, draw!)).toEqual({ reason: 'effects' })
-    expect(pythonStatementsCommute(register!, bg!)).toBe(true)
+    // Desenhar (e até trocar a cor do fundo) apresenta o quadro e despacha as teclas que
+    // chegaram: a tecla ligada depois perderia o que a criança apertou (revisão final, achado 1).
+    expect(pythonCommuteConflict(register!, bg!)).toEqual({ reason: 'effects' })
+    expect(pythonCommuteConflict(register!, draw!)).toEqual({ reason: 'effects' })
     expect(pythonCommuteConflict(register!, clear!)).toEqual({ reason: 'effects' })
+    expect(pythonStatementsCommute(register!, score!)).toBe(true)
   })
 
   test('chamada de função da criança soma o que ela lê', () => {
@@ -482,7 +512,9 @@ describe('organizar', () => {
           pure: false,
           barrier: false,
           registration: false,
+          turtleRegistration: false,
           sensitive: false,
+          quiet: false,
         },
       }))
       // Toda sequência que nunca volta, e o menor custo entre elas.

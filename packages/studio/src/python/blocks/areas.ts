@@ -238,6 +238,8 @@ const DYNAMIC_SCOPE_CALLS = new Set([
   'setattr',
   'delattr',
   '__import__',
+  // `dir()` lista os nomes do módulo naquela hora.
+  'dir',
 ])
 const TURTLE_REGISTRATIONS = new Set([
   'onkey',
@@ -320,6 +322,11 @@ const KNOWN_SUBMODULES = new Set(['os.path'])
 const SAFE_BASE_CLASSES = new Set(['object', 'Exception'])
 /** Métodos especiais que não rodam sozinhos em operadores ou leitura de atributo. */
 const PLAIN_DUNDERS = new Set(['__init__', '__repr__', '__str__'])
+/**
+ * Rodam escondidos: `print(obj)`, `str(obj)`, f-string e `repr` chamam o `__str__`/`__repr__` da
+ * criança. Toda linha que roda alguma coisa conta com eles (revisão final, achado 2).
+ */
+const IMPLICIT_DUNDERS = new Set(['__repr__', '__str__'])
 const SETTINGS_NAME = /^[A-Z][A-Z0-9_]*$/
 
 // ─── Análise das linhas de topo ─────────────────────────────────────────────────────────────
@@ -340,8 +347,16 @@ export interface PythonStatementEffects {
   barrier: boolean
   /** Registro de tecla/clique do Turtle ou agendamento do relógio do Pygame Zero. */
   registration: boolean
+  /**
+   * Registro do Turtle: só troca com linha que não chama nada. Desenhar com animação apresenta o
+   * quadro e despacha as teclas que chegaram (no Tk e no Turtle do Estúdio), então uma tecla
+   * ligada depois do desenho perde o que a criança apertou durante ele.
+   */
+  turtleRegistration: boolean
   /** Chama (direto ou pelas funções da criança) uma API que depende dos registros. */
   sensitive: boolean
+  /** Não chama nada: nem API nem código da criança. */
+  quiet: boolean
 }
 
 export interface PythonStatementAreaInfo {
@@ -387,6 +402,14 @@ interface UserCode {
   magic: boolean
   /** Classes cuja criação de subclasse roda código (`__init_subclass__`, metaclasse). */
   hookedClasses: Set<string>
+  /** Corpos que rodam sem chamada escrita (`m:__str__`, `m:__repr__`). */
+  implicit: Set<string>
+  /** Funções com `yield`: chamar só cria o gerador; o corpo roda onde ele é consumido. */
+  generators: Set<string>
+  /** Nomes que guardam um gerador: ler o nome pode rodar código da criança. */
+  generatorVars: Set<string>
+  /** Nomes cujos atributos recebem valor (`math.pi = 3`): `from math import pi` lê na hora. */
+  attributeOwners: Set<string>
 }
 
 const str = (value: PythonValue | undefined) => (typeof value === 'string' ? value : undefined)
@@ -497,6 +520,8 @@ interface SafeValue {
   reach?: number
   /** O mesmo para o que um `for` entrega dele: os itens (num dicionário, as chaves). */
   yields?: number
+  /** Tamanho conhecido de um texto ou de uma tupla (para repetir e juntar sem estourar). */
+  length?: number
 }
 
 /** Pode ser chave de dicionário ou item de conjunto sem dar erro. */
@@ -517,6 +542,7 @@ const tupleOf = (parts: readonly SafeValue[]): SafeValue => {
   return {
     kind: 'tuple',
     nonzero: parts.length > 0,
+    length: parts.length,
     ...(inner >= 0 ? { reach: inner + 1, yields: inner } : {}),
   }
 }
@@ -524,16 +550,21 @@ const tupleOf = (parts: readonly SafeValue[]): SafeValue => {
 const numeric = (value: SafeValue) =>
   value.kind === 'int' || value.kind === 'float' || value.kind === 'bool'
 
+/** Inteiro "pequeno": conta com ele cabe num float sem perder nada. */
+const SMALL_INT = 2 ** 53
+/** Tamanho máximo de texto ou tupla calculado numa configuração. */
+const MAX_SEQUENCE = 1_000_000
+
 function literalValue(value: PythonValue | undefined): SafeValue | undefined {
   if (value === null) return { kind: 'none' }
   if (typeof value === 'boolean') return { kind: 'bool', exact: value ? 1 : 0, nonzero: value }
-  if (typeof value === 'string') return { kind: 'str' }
+  if (typeof value === 'string') return { kind: 'str', length: value.length }
   if (value && typeof value === 'object' && !Array.isArray(value) && 'literal' in value) {
     if (value.literal === 'int' && typeof value.value === 'string') {
       const exact = Number(value.value)
       return {
         kind: 'int',
-        ...(Number.isSafeInteger(exact) && Math.abs(exact) < 1e9 ? { exact } : {}),
+        ...(Number.isSafeInteger(exact) && Math.abs(exact) <= SMALL_INT ? { exact } : {}),
         nonzero: value.value !== '0' && value.value !== '-0',
       }
     }
@@ -584,37 +615,63 @@ function safeEvaluate(
       const right = safeEvaluate(child(value, 'right'), known)
       const op = child(value, 'op')?.kind
       if (!left || !right) return undefined
-      const repeat = (sequence: SafeValue, count: SafeValue): SafeValue | undefined =>
-        (sequence.kind === 'str' || sequence.kind === 'tuple') &&
-        (count.kind === 'int' || count.kind === 'bool') &&
-        count.exact !== undefined &&
-        Math.abs(count.exact) <= 10_000
-          ? { kind: sequence.kind, ...depth(sequence) }
-          : undefined
+      // `"a" * 10000 * 10000 * 10000` dá MemoryError: o tamanho do resultado tem limite.
+      const repeat = (sequence: SafeValue, count: SafeValue): SafeValue | undefined => {
+        if (sequence.kind !== 'str' && sequence.kind !== 'tuple') return undefined
+        if ((count.kind !== 'int' && count.kind !== 'bool') || count.exact === undefined)
+          return undefined
+        if (sequence.length === undefined) return undefined
+        const length = sequence.length * Math.max(0, count.exact)
+        if (length > MAX_SEQUENCE) return undefined
+        return { kind: sequence.kind, length, ...depth(sequence) }
+      }
       if (numeric(left) && numeric(right)) {
         const floating = left.kind === 'float' || right.kind === 'float'
         const kind: SafeValue['kind'] = floating ? 'float' : 'int'
-        if (op === 'Add' || op === 'Sub' || op === 'Mult') return { kind }
-        if (op === 'Div') return right.nonzero ? { kind: 'float' } : undefined
-        if (op === 'FloorDiv' || op === 'Mod') return right.nonzero ? { kind } : undefined
-        if (op === 'Pow')
-          return right.kind === 'int' &&
-            right.exact !== undefined &&
-            right.exact >= 0 &&
-            right.exact <= 64
-            ? { kind }
-            : undefined
+        // Inteiro sem valor exato pode ser enorme: virar float com ele dá OverflowError
+        // (`(10**64)**5 * 1.0`). Misturar com float, ou dividir, só com inteiro pequeno conhecido.
+        const small = (side: SafeValue) => side.kind === 'float' || side.exact !== undefined
+        const exactOf = (result: number) =>
+          Number.isSafeInteger(result) && Math.abs(result) <= SMALL_INT ? { exact: result } : {}
+        if (op === 'Add' || op === 'Sub' || op === 'Mult') {
+          if (floating && !(small(left) && small(right))) return undefined
+          if (floating || left.exact === undefined || right.exact === undefined) return { kind }
+          const result =
+            op === 'Add'
+              ? left.exact + right.exact
+              : op === 'Sub'
+                ? left.exact - right.exact
+                : left.exact * right.exact
+          return { kind, ...exactOf(result), ...(result !== 0 ? { nonzero: true } : {}) }
+        }
+        if (op === 'Div')
+          return right.nonzero && small(left) && small(right) ? { kind: 'float' } : undefined
+        if (op === 'FloorDiv' || op === 'Mod')
+          return right.nonzero && (!floating || (small(left) && small(right))) ? { kind } : undefined
+        // Potência só de inteiros pequenos conhecidos: com float, `1e300 ** 2` dá OverflowError.
+        if (op === 'Pow') {
+          if (floating || left.exact === undefined || right.exact === undefined) return undefined
+          if (right.exact < 0 || right.exact > 64) return undefined
+          const result = left.exact ** right.exact
+          return Math.abs(result) <= SMALL_INT ? { kind: 'int', exact: result } : undefined
+        }
         return undefined
       }
       if (
         op === 'Add' &&
         left.kind === right.kind &&
         (left.kind === 'str' || left.kind === 'tuple')
-      )
+      ) {
+        // Texto e tupla de tamanho conhecido: juntar não passa do limite (MemoryError).
+        if (left.length === undefined || right.length === undefined) return undefined
+        const length = left.length + right.length
+        if (length > MAX_SEQUENCE) return undefined
         return {
           kind: left.kind,
+          length,
           ...depth((left.reach ?? -1) >= (right.reach ?? -1) ? left : right),
         }
+      }
       if (op === 'Mult') return repeat(left, right) ?? repeat(right, left)
       return undefined
     }
@@ -744,14 +801,14 @@ export function isPythonSettingsStatement(statement: PythonNode, codecId?: strin
 }
 
 /** Métodos de lista, dicionário e conjunto que só leem. */
+/**
+ * Métodos de lista, dicionário e conjunto que só leem e não entregam pedaço que muda (`get`,
+ * `values`, `items` e `copy` entregam: `onlyReads` segue o que eles devolvem).
+ */
 const READ_METHODS = new Set([
   'index',
   'count',
-  'copy',
-  'get',
   'keys',
-  'values',
-  'items',
   'union',
   'intersection',
   'difference',
@@ -804,28 +861,57 @@ function onlyReads(name: PythonNode, parents: readonly PythonNode[], value: Safe
   let current = name
   let index = parents.length - 1
   let steps = 0
+  // Cópia rasa (`copy()`, fatia): o pedaço é novo, os itens dele são os mesmos.
+  let shallow = false
+  // `values()`/`items()`: o `for` nele entrega os valores, um `[…]` adiante.
+  let view = false
   for (;;) {
     const parent = parents[index]
     if (parent?.kind === 'Subscript' && parent.fields.value === current) {
       // `CORES[0] = …`, `del CORES[0]`, `MAPA[l][c] += 1`: troca um item.
       if (child(parent, 'ctx')?.kind !== 'Load') return false
+      if (child(parent, 'slice')?.kind === 'Slice') shallow = true
+      else {
+        steps++
+        shallow = false
+        view = false
+      }
       current = parent
-      steps++
       index--
       continue
     }
     if (parent?.kind === 'Attribute' && parent.fields.value === current) {
       const call = parents[index - 1]
       const called = call?.kind === 'Call' && call.fields.func === parent
+      const method = str(parent.fields.attr) ?? ''
       // Método de algo que não muda (um texto: `MAPA[0].count("#")`) não muda nada.
       if (steps > reach) return called
-      return called && READ_METHODS.has(str(parent.fields.attr) ?? '')
+      if (!called) return false
+      // Mudar a cópia rasa (`CORES.copy().append(…)`) não mexe no original.
+      if (shallow && !['get', 'values', 'items', 'copy'].includes(method)) return true
+      if (READ_METHODS.has(method)) return true
+      if (method === 'get') {
+        steps++
+        shallow = false
+        view = false
+      } else if (method === 'values' || method === 'items') view = true
+      else if (method === 'copy') shallow = true
+      else return false
+      current = call
+      index -= 2
+      continue
     }
     break
   }
   // Pode mudar o próprio pedaço? E os itens que um `for` (ou uma cópia rasa) tira dele?
-  const itself = steps <= reach
-  const items = steps === 0 ? (value.yields ?? -1) >= 0 : steps + 1 <= reach
+  const itself = !shallow && !view && steps <= reach
+  // Entregar o pedaço adiante: ele mesmo pode mudar, ou (cópia rasa, vista) os itens dele.
+  const leaks = itself || steps + 1 <= reach
+  const items = view
+    ? steps + 1 <= reach
+    : steps === 0
+      ? (value.yields ?? -1) >= 0
+      : steps + 1 <= reach
   const parent = parents[index]
   if (!parent) return true
   switch (parent.kind) {
@@ -838,7 +924,7 @@ function onlyReads(name: PythonNode, parents: readonly PythonNode[], value: Safe
     case 'JoinedStr':
       return true
     case 'UnaryOp':
-      return child(parent, 'op')?.kind === 'Not' || !itself
+      return child(parent, 'op')?.kind === 'Not' || !leaks
     case 'BinOp':
       // `DIRECOES + [(0, 0)]` faz outra lista, com os mesmos itens dentro.
       return steps + 1 > reach
@@ -847,20 +933,20 @@ function onlyReads(name: PythonNode, parents: readonly PythonNode[], value: Safe
     case 'For':
     case 'AsyncFor':
     case 'comprehension':
-      return parent.fields.iter === current ? !items : !itself
+      return parent.fields.iter === current ? !items : !leaks
     case 'Call': {
       if (parent.fields.func === current) return true
       const kind = readerCall(parent)
-      return kind === 'reads' || (kind === 'items' && !items) || !itself
+      return kind === 'reads' || (kind === 'items' && !items) || !leaks
     }
     case 'keyword': {
       const call = parents[index - 1]
       const kind = call?.kind === 'Call' ? readerCall(call) : undefined
-      return kind === 'reads' || (kind === 'items' && !items) || !itself
+      return kind === 'reads' || (kind === 'items' && !items) || !leaks
     }
     default:
       // Guardado noutro nome, devolvido, entregue a uma função: só não importa se não muda.
-      return !itself
+      return !leaks
   }
 }
 
@@ -1193,7 +1279,11 @@ function bodyFacts(
       case 'Name':
         if (isNode(value.fields.ctx) && value.fields.ctx.kind === 'Load') {
           const id = str(value.fields.id) ?? ''
-          if (!locals.has(id)) facts.reads.add(id)
+          if (!locals.has(id)) {
+            facts.reads.add(id)
+            // Ler um gerador (no `for`, no `list`, no `next`) roda o corpo dele.
+            if (user.generatorVars.has(id)) facts.targets.unknown = true
+          }
         }
         return
       case 'Global':
@@ -1261,6 +1351,18 @@ function moduleScopeStatements(body: readonly PythonNode[]): PythonNode[] {
   return out
 }
 
+/** A função tem `yield` no corpo dela (não no de uma função, lambda ou classe de dentro). */
+function yieldsHere(definition: PythonNode): boolean {
+  const visit = (value: PythonValue | undefined): boolean => {
+    if (Array.isArray(value)) return value.some(visit)
+    if (!isNode(value)) return false
+    if (value.kind === 'Yield' || value.kind === 'YieldFrom') return true
+    if (['FunctionDef', 'AsyncFunctionDef', 'Lambda', 'ClassDef'].includes(value.kind)) return false
+    return Object.values(value.fields).some(visit)
+  }
+  return visit(definition.fields.body)
+}
+
 /** O valor pode ser (ou guardar) uma função da criança: lambda, nome de função/classe, método. */
 function holdsCallable(value: PythonValue | undefined, user: UserCode): boolean {
   if (Array.isArray(value)) return value.some((item) => holdsCallable(item, user))
@@ -1294,6 +1396,10 @@ function collectUserCode(module: PythonNode, codecIds: readonly (string | undefi
     anyBarrier: false,
     magic: false,
     hookedClasses: new Set(),
+    implicit: new Set(),
+    generators: new Set(),
+    generatorVars: new Set(),
+    attributeOwners: new Set(),
   }
   body.forEach((statement, index) => {
     if (
@@ -1308,6 +1414,7 @@ function collectUserCode(module: PythonNode, codecIds: readonly (string | undefi
   for (const statement of moduleScopeStatements(body)) {
     if (statement.kind === 'FunctionDef' || statement.kind === 'AsyncFunctionDef') {
       user.functions.add(str(statement.fields.name) ?? '')
+      if (yieldsHere(statement)) user.generators.add(`f:${str(statement.fields.name) ?? ''}`)
       functionNodes.push(statement)
     }
     if (statement.kind !== 'ClassDef') continue
@@ -1316,9 +1423,19 @@ function collectUserCode(module: PythonNode, codecIds: readonly (string | undefi
     classNodes.push(statement)
     if (list(statement, 'keywords').length) user.hookedClasses.add(className)
     for (const member of list(statement, 'body')) {
+      // `acao = falar` no corpo da classe: `obj.acao()` pode levar a qualquer corpo; e
+      // `x = property(…)` roda código numa simples leitura `obj.x`.
+      if (member.kind === 'Assign' || member.kind === 'AnnAssign') {
+        for (const id of assignedNames(member) ?? []) user.storedAttributes.add(id)
+        const value = child(member, 'value')
+        if (value?.kind === 'Call' && /property$/.test(calleeName(value) ?? '')) user.magic = true
+        continue
+      }
       if (member.kind !== 'FunctionDef' && member.kind !== 'AsyncFunctionDef') continue
       const memberName = str(member.fields.name) ?? ''
       user.methods.add(memberName)
+      if (IMPLICIT_DUNDERS.has(memberName)) user.implicit.add(`m:${memberName}`)
+      if (yieldsHere(member)) user.generators.add(`m:${memberName}`)
       if (memberName === '__init_subclass__') user.hookedClasses.add(className)
       if (/^__.+__$/.test(memberName) && !PLAIN_DUNDERS.has(memberName)) user.magic = true
       if (
@@ -1338,8 +1455,21 @@ function collectUserCode(module: PythonNode, codecIds: readonly (string | undefi
     if (!isNode(value)) return
     if (value.kind === 'Global')
       for (const id of value.fields.names as string[]) user.globalsWritten.add(id)
-    if (value.kind === 'Attribute' && isNode(value.fields.ctx) && value.fields.ctx.kind !== 'Load')
+    if (value.kind === 'Attribute' && isNode(value.fields.ctx) && value.fields.ctx.kind !== 'Load') {
       user.storedAttributes.add(str(value.fields.attr) ?? '')
+      const owner = child(value, 'value')
+      if (owner?.kind === 'Name') user.attributeOwners.add(str(owner.fields.id) ?? '')
+    }
+    // `pares = (dobro(n) for n in …)` ou `g = contar()`: o corpo roda onde o gerador é lido.
+    if (value.kind === 'Assign' || value.kind === 'AnnAssign') {
+      const made = child(value, 'value')
+      const func = made?.kind === 'Call' ? child(made, 'func') : undefined
+      const generator =
+        made?.kind === 'GeneratorExp' ||
+        (func?.kind === 'Name' && user.generators.has(`f:${str(func.fields.id) ?? ''}`)) ||
+        (func?.kind === 'Attribute' && user.generators.has(`m:${str(func.fields.attr) ?? ''}`))
+      if (generator) for (const id of assignedNames(value) ?? []) user.generatorVars.add(id)
+    }
     for (const field of Object.values(value.fields)) visit(field)
   }
   visit(body)
@@ -1550,8 +1680,11 @@ function walkStatement(statement: PythonNode, user: UserCode, context: PythonAre
         const id = str(value.fields.id) ?? ''
         const usage = isNode(value.fields.ctx) ? value.fields.ctx.kind : 'Load'
         if (locals?.has(id)) return
-        if (usage === 'Load') walk.reads.add(id)
-        else walk.binds.add(id)
+        if (usage === 'Load') {
+          walk.reads.add(id)
+          // Ler um gerador (no `for`, no `list`, no `next`) roda o corpo dele.
+          if (user.generatorVars.has(id)) walk.targets.unknown = true
+        } else walk.binds.add(id)
         return
       }
       case 'Lambda':
@@ -1850,13 +1983,29 @@ function pureStatement(
     case 'AsyncFunctionDef':
       return pureDefinition(statement, bound)
     case 'Assign':
-    case 'AnnAssign':
+    case 'AnnAssign': {
       // `cor = AZUL`, `pular = lambda: …`: só cria o nome (o alvo é nome simples, nunca item ou atributo).
+      const names = assignedNames(statement)
+      if (!names) return false
+      // `x, y = posicao` lê o conteúdo (pode mudar, dar erro, gastar um gerador): só a tupla
+      // escrita do mesmo tamanho (`A, B = 1, 2`) desempacota sem rodar nada.
+      const target = statement.kind === 'Assign' ? list(statement, 'targets')[0] : undefined
+      const value = child(statement, 'value')
+      if (target && target.kind !== 'Name') {
+        const targets = list(target, 'elts')
+        const values = value?.kind === 'Tuple' ? list(value, 'elts') : undefined
+        if (
+          !values ||
+          values.length !== targets.length ||
+          [...targets, ...values].some((item) => item.kind === 'Starred')
+        )
+          return false
+      }
       return (
-        !!assignedNames(statement) &&
         pureValue(statement.fields.value, bound) &&
         (statement.kind === 'Assign' || pureValue(statement.fields.annotation, bound))
       )
+    }
     case 'ClassDef': {
       if (
         list(statement, 'decorator_list').length ||
@@ -1898,7 +2047,12 @@ function pureStatement(
         }
         if (member.kind === 'Assign' || member.kind === 'AnnAssign') {
           const value = child(member, 'value')
-          return !!assignedNames(member) && pureValue(value ?? null, bound)
+          // A anotação no corpo da classe é lida na hora (até o Python 3.13).
+          return (
+            !!assignedNames(member) &&
+            pureValue(value ?? null, bound) &&
+            (member.kind === 'Assign' || pureValue(member.fields.annotation, bound))
+          )
         }
         return false
       })
@@ -1926,6 +2080,8 @@ function pureStatement(
       const module = str(statement.fields.module) ?? ''
       const exported = context.starExports?.get(module)
       if (!known(module.split('.')[0]!) || !exported) return false
+      // `math.pi = 3` em algum lugar: o `from math import pi` lê o atributo naquela hora.
+      if (user.attributeOwners.has(module.split('.')[0]!)) return false
       return list(statement, 'names').every((alias) => {
         const id = str(alias.fields.name) ?? ''
         return id === '*' || exported.includes(id)
@@ -2088,13 +2244,27 @@ export function analyzePythonModuleAreas(
       pure,
       barrier: walk.barrier,
       registration: !!registration,
+      turtleRegistration: registration === 'turtle',
       sensitive: false,
+      // Com operador da criança (`magic`) ou `__str__` no arquivo, uma conta ou uma f-string
+      // também roda código.
+      quiet:
+        !walk.apis.size &&
+        !walk.targets.keys.size &&
+        !walk.targets.unknown &&
+        !walk.inline.length &&
+        !user.magic &&
+        !user.implicit.size,
     }
     const apis = new Set(walk.apis)
     // O registro só GUARDA a função (ela roda depois, no laço do Turtle ou do relógio). Nas outras
-    // linhas, soma o que rodam as funções da criança alcançadas pelas chamadas.
+    // linhas, soma o que rodam as funções da criança alcançadas pelas chamadas, e o que roda
+    // escondido (`__str__`/`__repr__` num `print`): quem roda alguma coisa pode rodar eles.
     if (!pure && !registration) {
-      const reach = reachOf(walk.targets, walk.inline, user)
+      const targets: CallTargets = effects.quiet
+        ? walk.targets
+        : { keys: new Set([...walk.targets.keys, ...user.implicit]), unknown: walk.targets.unknown }
+      const reach = reachOf(targets, walk.inline, user)
       const unknown = user.magic || reach.targets.unknown
       const ran = unknown
         ? {
@@ -2195,7 +2365,10 @@ export function pythonCommuteConflict(
   if (a.effects.pure || b.effects.pure) return undefined
   // O registro de tecla/clique (ou do relógio do Pygame Zero) só guarda a função para depois.
   const registrationOk = (registration: PythonStatementAreaInfo, other: PythonStatementAreaInfo) =>
-    registration.effects.registration && !other.effects.registration && !other.effects.sensitive
+    registration.effects.registration &&
+    !other.effects.registration &&
+    !other.effects.sensitive &&
+    (!registration.effects.turtleRegistration || other.effects.quiet)
   if (registrationOk(a, b) || registrationOk(b, a)) return undefined
   return { reason: 'effects' }
 }
