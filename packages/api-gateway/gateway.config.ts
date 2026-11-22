@@ -7,6 +7,7 @@ import {
 import { arquipelagoGateway } from './src/infrastructure/config/arquipelago-routes'
 import { cenariosRoutes } from './src/infrastructure/config/cenarios-routes'
 import type { GatewayConfigInput } from './src/infrastructure/config/gateway-config.schema'
+import { pintaCausalRoutes } from './src/infrastructure/config/pinta-causal-routes'
 import { subscriptionRecoveryRoutes } from './src/infrastructure/config/subscription-recovery-routes'
 
 /**
@@ -2847,6 +2848,7 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
+    ...pintaCausalRoutes(membersInternalTransforms),
     // ── Molda Cenários: bibliotecas, mundos e cenários 3D (16/11/2026) ──
     ...cenariosRoutes(membersInternalTransforms),
     // Resumo de progresso dos FILHOS (área dos pais, kids). A conta vem do header
