@@ -57,7 +57,7 @@ export function CourseProgressCard({ course }: { course: MemberCourseProgressVie
         </div>
         {course.audience ? (
           <Badge variant={course.audience === 'kids' ? 'success' : 'muted'}>
-            {course.audience === 'kids' ? 'Kids' : 'Adulto'}
+            {course.learner === 'parents' ? 'Pais' : course.audience === 'kids' ? 'Kids' : 'Adulto'}
           </Badge>
         ) : null}
       </div>

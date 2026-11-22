@@ -22,7 +22,7 @@ import type {
   ListMembersResult,
 } from '../../../domain/ports/entitlement-repository.port'
 import type { Database } from './db'
-import { entitlements } from './schema'
+import { courses, entitlements } from './schema'
 
 type Row = typeof entitlements.$inferSelect
 type InsertRow = typeof entitlements.$inferInsert
@@ -210,13 +210,30 @@ export class DrizzleEntitlementRepository implements EntitlementRepository {
     // Membership (HAVING): mantém o grupo se ele tem ≥1 matrícula que casa o filtro.
     // As contagens do sumário continuam sobre o conjunto TODO do membro (não filtrado).
     const having: SQL[] = []
-    if (filter.status === 'active') {
-      having.push(sql`count(*) filter (where ${activeFilter}) > 0`)
-    } else if (filter.status) {
-      having.push(sql`count(*) filter (where ${entitlements.status}::text = ${filter.status}) > 0`)
-    }
-    if (filter.courseRef) {
-      having.push(sql`count(*) filter (where ${entitlements.courseRef} = ${filter.courseRef}) > 0`)
+    if (filter.learner === 'parents') {
+      const parentGrant = sql`(${entitlements.accessType} = 'all_kids_courses' or
+        (${entitlements.accessType} = 'course' and exists (
+          select 1 from ${courses} where ${courses.slug} = ${entitlements.courseRef}
+            and ${courses.audience} = 'kids' and ${courses.learner} = 'parents'
+        )))`
+      const matching: SQL[] = [parentGrant]
+      if (filter.status === 'active') matching.push(activeFilter)
+      else if (filter.status) matching.push(sql`${entitlements.status}::text = ${filter.status}`)
+      if (filter.courseRef) matching.push(sql`${entitlements.courseRef} = ${filter.courseRef}`)
+      having.push(sql`count(*) filter (where ${and(...matching)}) > 0`)
+    } else {
+      if (filter.status === 'active') {
+        having.push(sql`count(*) filter (where ${activeFilter}) > 0`)
+      } else if (filter.status) {
+        having.push(
+          sql`count(*) filter (where ${entitlements.status}::text = ${filter.status}) > 0`,
+        )
+      }
+      if (filter.courseRef) {
+        having.push(
+          sql`count(*) filter (where ${entitlements.courseRef} = ${filter.courseRef}) > 0`,
+        )
+      }
     }
     // Todo grupo tem ≥1 linha → `count(*) > 0` é no-op (quando não há filtro).
     const havingCond = having.length > 0 ? and(...having) : sql`count(*) > 0`

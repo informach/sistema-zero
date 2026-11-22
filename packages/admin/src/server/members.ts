@@ -50,6 +50,7 @@ interface AiUsageStatsRaw {
 }
 
 export interface ListMembersParams {
+  learner?: 'parents'
   status?: string
   courseRef?: string
   limit?: number
@@ -100,11 +101,19 @@ export function listMembers(
   p: ListMembersParams,
 ): Promise<GatewayResponse<Paginated<MemberSummaryView>>> {
   return gatewayFetch('/members/admin/members', {
-    query: { status: p.status, courseRef: p.courseRef, limit: p.limit, offset: p.offset },
+    query: {
+      learner: p.learner,
+      status: p.status,
+      courseRef: p.courseRef,
+      limit: p.limit,
+      offset: p.offset,
+    },
   })
 }
 
 interface CourseProgress {
+  audience?: string | null
+  learner?: 'child' | 'parents' | null
   courseRef: string
   title: string | null
   status: string | null
@@ -198,15 +207,17 @@ export function getMemberActivity(
 /** Certificados emitidos para o aprendiz: `GET /members/admin/members/:userId/certificates`. */
 export function getMemberCertificates(
   userId: string,
+  scope: { audience?: string; learner?: string } = {},
 ): Promise<GatewayResponse<{ certificates: MemberCertificateView[] }>> {
-  return gatewayFetch(`/members/admin/members/${enc(userId)}/certificates`)
+  return gatewayFetch(`/members/admin/members/${enc(userId)}/certificates`, { query: scope })
 }
 
 /** Classificações dadas pelo aprendiz: `GET /members/admin/members/:userId/ratings`. */
 export function getMemberRatings(
   userId: string,
+  scope: { audience?: string; learner?: string } = {},
 ): Promise<GatewayResponse<{ ratings: MemberRatingView[] }>> {
-  return gatewayFetch(`/members/admin/members/${enc(userId)}/ratings`)
+  return gatewayFetch(`/members/admin/members/${enc(userId)}/ratings`, { query: scope })
 }
 
 /** Revoga um certificado emitido: `POST /members/admin/certificates/:id/revoke`. */

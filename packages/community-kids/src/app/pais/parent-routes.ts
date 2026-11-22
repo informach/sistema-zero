@@ -5,6 +5,11 @@
  */
 export type ParentSectionId = 'inicio' | 'familia' | 'cursos' | 'oficinas' | 'conta' | 'ajuda'
 
+/** O responsável recebe dúvidas de aula e recados gerais enviados pela equipe à sua conta. */
+export function isParentHelpContext(context: string): boolean {
+  return context === 'lesson_section' || context === 'general'
+}
+
 /**
  * O menu lateral da área dos pais (redesenho de 14/11/2026): o Acompanhamento virou a aba
  * Progresso da página de cada filho, e os cursos para pais ganharam a sua seção.
