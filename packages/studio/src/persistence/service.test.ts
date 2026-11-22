@@ -8,6 +8,7 @@ import type { StudioPersistenceAdapter } from './types'
 // real local-persistence tests that run later in the same Bun process.
 
 const { createProjectStore, useProjectStore } = await import('../state/projectStore')
+const { registerProjectOperation } = await import('../state/projectOperations')
 const {
   cancelPendingAutosavesFor,
   createPersistenceService,
@@ -403,6 +404,62 @@ describe('PersistenceService — aba escondida', () => {
     await Bun.sleep(0)
     expect(calls.at(-1)).toEqual({ name: 'fechando' })
 
+    detach()
+  })
+
+  // Lacuna "o terminal do Pro na saída" (22/11/2026): uma escrita do terminal só entra no projeto
+  // quando a sincronia do sistema de arquivos a lê. Com a aba escondida (página viva), a cópia de
+  // saída imediata ainda não a tinha; o serviço espera as operações pendentes e grava de novo.
+  it('na aba escondida, a escrita do terminal ainda não lida entra numa segunda cópia de saída', async () => {
+    const calls: string[] = []
+    const service = createPersistenceService(useProjectStore, {
+      load: async () => null,
+      save: async () => {},
+      flushOnExit: async (project) => {
+        calls.push(project.name)
+      },
+    })
+    const detach = service.attach()
+    useProjectStore
+      .getState()
+      .setProject(createEmptyProject('project-terminal', 'antes do terminal'))
+    const unregister = registerProjectOperation(useProjectStore, {
+      projectId: 'project-terminal',
+      flush: async () => {
+        await Bun.sleep(0)
+        useProjectStore.getState().rename('depois do terminal')
+      },
+    })
+
+    setVisibility('hidden')
+    await Bun.sleep(20)
+    expect(calls).toEqual(['antes do terminal', 'depois do terminal'])
+
+    unregister()
+    detach()
+  })
+
+  it('na aba escondida, sem escrita pendente, a cópia de saída sai uma vez só', async () => {
+    const calls: string[] = []
+    const service = createPersistenceService(useProjectStore, {
+      load: async () => null,
+      save: async () => {},
+      flushOnExit: async (project) => {
+        calls.push(project.name)
+      },
+    })
+    const detach = service.attach()
+    useProjectStore.getState().setProject(createEmptyProject('project-quieto', 'sem terminal'))
+    const unregister = registerProjectOperation(useProjectStore, {
+      projectId: 'project-quieto',
+      flush: async () => {},
+    })
+
+    setVisibility('hidden')
+    await Bun.sleep(20)
+    expect(calls).toEqual(['sem terminal'])
+
+    unregister()
     detach()
   })
 

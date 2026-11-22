@@ -614,8 +614,25 @@ export function createPersistenceService(
     // A página segue viva (só escondida): a cópia nativa confirmada basta, mesmo quando a cópia
     // síncrona não cabe (projeto grande; achado na conferência do staging de 21/11/2026).
     const flushWhenHidden = () => {
-      if (document.visibilityState === 'hidden') flushPending(true, true)
-      else {
+      if (document.visibilityState === 'hidden') {
+        flushPending(true, true)
+        // As escritas que ainda não entraram no projeto (o terminal do Pro: a sincronia do sistema
+        // de arquivos lê a escrita depois do evento do observador e de uma espera curta) não
+        // estavam nesta cópia. A página segue viva, então dá para esperar essas operações; se o
+        // projeto mudou com elas, a cópia de saída é gravada de novo (lacuna "o terminal do Pro na
+        // saída", 22/11/2026). Na saída de verdade (`pagehide`) não dá para esperar a leitura.
+        const before = store.getState().project
+        if (before)
+          void flushProjectOperations(store, before.id)
+            .then(() => {
+              const current = store.getState()
+              if (current.project === before || current.project?.id !== before.id) return
+              if (document.visibilityState !== 'hidden') return
+              flushed = false
+              flushPending(true, true)
+            })
+            .catch((error) => emitError(formatPersistenceError(error)))
+      } else {
         const current = store.getState()
         if (adapter?.flushOnExit && flushed && current.project && current.isDirty) {
           flushed = false
