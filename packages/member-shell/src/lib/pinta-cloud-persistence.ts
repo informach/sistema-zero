@@ -48,6 +48,7 @@
  */
 
 import {
+  PINTA_MAX_READ_FORMAT_VERSION,
   PINTA_PALETTE_LIBRARY_ITEM_ID,
   PINTA_PALETTE_LIBRARY_KIND,
   PINTA_PALETTE_LIBRARY_TOOL,
@@ -56,6 +57,7 @@ import {
   pintaCanWriteNativeSchema,
   pintaWriteFormatVersion,
 } from '@sistemazero/core/creations'
+import type { PintaCausalLocalPort, PintaEditorWriteContext } from '@sistemazero/pinta'
 import type { PaletteLibrary, PintaAsset } from '@sistemazero/pinta/assets'
 import {
   assetFromJson,
@@ -76,6 +78,16 @@ import { conflictCopyName, uniqueCreationName } from './creation-names'
 import type { CloudCreationSummary, CloudDownload, CreationsCloud } from './creations-cloud'
 import { createStoredSyncedMarks, reconcileCreations, type SyncedMarks } from './creations-sync'
 import { perfSpanAsync } from './perf'
+import {
+  type PintaCausalRemapBase,
+  type PintaQueuedSlots,
+  preparePintaCausalRemap,
+  stagePintaCausalWrite,
+} from './pinta-causal-authoring'
+import { PintaCausalRequestError } from './pinta-causal-cloud'
+import { discoverPintaCausalSnapshot, readPintaCausalJson } from './pinta-causal-pull'
+import { flushPintaCausalOutbox } from './pinta-causal-queue'
+import { syncPintaCausalAccount } from './pinta-causal-sync'
 
 /** O que o wrapper avisa ao pacote (espelho estrutural de `PintaPersistenceEvent`). */
 export type PintaCloudPersistenceEvent =
@@ -233,11 +245,15 @@ function schemaStampOf(asset: PintaAsset): number {
 
 /** A superfície do `PintaPersistence` do pacote (espelhada aqui para não importar o barril React). */
 export interface PintaPersistenceLike {
-  persistAsset(asset: PintaAsset): Promise<void>
-  persistAssets(assets: readonly PintaAsset[]): Promise<void>
+  persistAsset(asset: PintaAsset, context?: PintaEditorWriteContext): Promise<void>
+  persistAssets(assets: readonly PintaAsset[], context?: PintaEditorWriteContext): Promise<void>
   deleteAsset(id: string, base?: PintaAsset): Promise<void>
   loadAssetById(id: string): Promise<PintaAsset | null>
   listAllAssets(): Promise<PintaAsset[]>
+  observesReferences?: true
+  holdOpen?(id: string): Promise<() => void>
+  prepareTileRemap?(source: PintaAsset): Promise<readonly PintaAsset[]>
+  accountConfirmation?: Pick<CreationsCloud, 'confirm' | 'download'>
   subscribe?(listener: (event: PintaCloudPersistenceEvent) => void): () => void
   /** Biblioteca "Minhas paletas" (registro único; ver o pacote). O wrapper a espelha na nuvem. */
   loadPaletteLibrary?(): Promise<PaletteLibrary | null>
@@ -316,6 +332,11 @@ export function copyName(name: string, taken: Set<string>): string {
 export function createCloudMirroredPintaPersistence(options: {
   local: PintaPersistenceLike
   cloud: CreationsCloud
+  causal?: {
+    local: PintaCausalLocalPort
+    holdOpen(id: string): Promise<() => void>
+    withClosed(ids: readonly string[], apply: () => Promise<boolean>): Promise<boolean>
+  }
   /** Perfil (namespace) — as marcas de sincronia são por perfil. */
   viewerId: string
   localNamespace?: string
@@ -345,6 +366,124 @@ export function createCloudMirroredPintaPersistence(options: {
   reconcileMinIntervalMs?: number
 }): PintaPersistenceLike {
   const { local, cloud } = options
+  const causalLocal = options.causal?.local
+  const causalCloud = cloud.pintaCausal
+  const causalSession = new AbortController()
+  let lastRemap: PintaCausalRemapBase | undefined
+  let queuedSlots: PintaQueuedSlots | undefined
+  let knownLegacy = false
+  let causalTimer: ReturnType<typeof setTimeout> | null = null
+  async function reportCausalQueue(error?: unknown): Promise<void> {
+    if (!causalLocal || !cloud.reportPintaQueue || causalSession.signal.aborted) return
+    const { sealed, pending } = await causalLocal.inspect()
+    if (causalSession.signal.aborted) return
+    const ids = new Set(pending.flatMap((unit) => unit.members.map((member) => member.itemId)))
+    for (const member of sealed?.local.members ?? []) ids.add(member.itemId)
+    if (!ids.size) cloud.reportPintaQueue([], 'saved')
+    else if (typeof navigator !== 'undefined' && !navigator.onLine)
+      cloud.reportPintaQueue([...ids], 'offline')
+    else if (error)
+      cloud.reportPintaQueue(
+        [...ids],
+        'error',
+        error instanceof PintaCausalRequestError &&
+          ['operation-expired', 'operation-aborted', 'not-found'].includes(error.reason)
+          ? 'Seus desenhos estão neste aparelho. Uma nova versão da conta precisa ser conferida.'
+          : 'Seus desenhos estão neste aparelho. Não consegui guardá-los na conta agora.',
+      )
+    else cloud.reportPintaQueue([...ids], 'saving')
+  }
+  async function probeCausal() {
+    if (!causalLocal || !causalCloud) return null
+    const snapshot = await discoverPintaCausalSnapshot({
+      local: causalLocal,
+      cloud: causalCloud,
+      signal: causalSession.signal,
+    })
+    knownLegacy = snapshot === null
+    return snapshot
+  }
+  async function prepareTileRemap(source: PintaAsset): Promise<readonly PintaAsset[]> {
+    if (!causalLocal || !causalCloud) return local.listAllAssets()
+    const state = await causalLocal.inspect()
+    if (
+      lastRemap?.source.id === source.id &&
+      (state.pending.some((unit) => unit.opId === queuedSlots?.opId) ||
+        (lastRemap.snapshot.epoch === (state.writeEpoch ?? state.epoch) &&
+          pintaLocalRevisionOf(lastRemap.source) === pintaLocalRevisionOf(source)))
+    )
+      return lastRemap.assets
+    const snapshot = await probeCausal()
+    const catalog = await local.listAllAssets()
+    if (!snapshot) {
+      if (await cloud.peek(source.id))
+        throw Error('Ainda não consegui conferir a conta para mudar a ordem das peças.')
+      return catalog
+    }
+    lastRemap = await preparePintaCausalRemap({
+      source,
+      snapshot,
+      local: catalog,
+      localState: await causalLocal.inspect(),
+      cloud: causalCloud,
+      signal: causalSession.signal,
+    })
+    return lastRemap.assets
+  }
+  function wakeCausal(): void {
+    if (!causalLocal || !causalCloud || causalSession.signal.aborted || causalTimer) return
+    causalTimer = setTimeout(() => {
+      causalTimer = null
+      if (reconcileInFlight) {
+        wakeCausal()
+        return
+      }
+      void local
+        .listAllAssets()
+        .then(startReconcile)
+        .catch(() => {})
+    }, 1_500)
+  }
+  async function stageCausal(
+    assets: readonly PintaAsset[],
+    context?: PintaEditorWriteContext,
+    deletion?: { id: string; before?: PintaAsset },
+  ): Promise<boolean> {
+    if (!causalLocal || !causalCloud) return false
+    const state = await causalLocal.inspect()
+    if (!state.protocolKnown && (knownLegacy || !(await probeCausal()))) return false
+    const root = assets[0]
+    const remap =
+      root &&
+      lastRemap?.source.id === root.id &&
+      context?.layout &&
+      (lastRemap.snapshot.epoch === (state.writeEpoch ?? state.epoch) ||
+        state.pending.some((unit) => unit.opId === queuedSlots?.opId))
+        ? lastRemap
+        : undefined
+    const sentId = root && state.confirmed.get(root.id)?.opId
+    const undo =
+      queuedSlots &&
+      sentId === queuedSlots.opId &&
+      context?.slotLineage?.before === queuedSlots.after &&
+      context.slotLineage.after === queuedSlots.before
+        ? sentId
+        : undefined
+    const staged = await stagePintaCausalWrite({
+      local: causalLocal,
+      catalog: await local.listAllAssets(),
+      assets,
+      context,
+      deletion,
+      remapBase: undo ? undefined : remap,
+      queuedSlots,
+      inverseOf: undo,
+    })
+    if (staged.slots) queuedSlots = staged.slots
+    await reportCausalQueue().catch(() => {})
+    wakeCausal()
+    return true
+  }
   const now = options.now ?? (() => Date.now())
   const loadLibrary = local.loadPaletteLibrary?.bind(local)
   const saveLibrary = local.savePaletteLibrary?.bind(local)
@@ -1072,6 +1211,20 @@ export function createCloudMirroredPintaPersistence(options: {
 
   async function reconcile(localAssets: PintaAsset[]): Promise<PintaAsset[]> {
     if (!cloud.supported) return localAssets
+    if (causalLocal && causalCloud && options.causal) {
+      const started = now()
+      const result = await syncPintaCausalAccount({
+        local: causalLocal,
+        cloud: causalCloud,
+        reader: PINTA_MAX_READ_FORMAT_VERSION,
+        signal: causalSession.signal,
+        withClosed: options.causal.withClosed,
+        isOpen: (id) => options.isAssetOpen?.(id) ?? false,
+        canContinue: () => now() - started < budgetMs,
+      })
+      knownLegacy = result.mode === 'legacy'
+      if (result.mode === 'causal') return local.listAllAssets()
+    }
     // O que está na fila (um DELETE, o último autosave) sobe ANTES de a lista da nuvem ser lida:
     // senão a descida via o item apagado ainda vivo lá e reenviava a remoção à toa (ou, com a
     // revisão nova já confirmada, trazia o item de volta). Com teto, para a galeria não ficar
@@ -1237,10 +1390,17 @@ export function createCloudMirroredPintaPersistence(options: {
 
   /** Dispara uma reconciliação (single-flight) e avisa o pacote do começo e do fim. */
   function startReconcile(localAssets: PintaAsset[]): void {
-    if (!cloud.supported || reconcileInFlight) return
+    if (!cloud.supported || reconcileInFlight || causalSession.signal.aborted) return
     emit({ type: 'sync-start' })
     reconcileInFlight = perfSpanAsync('kids:pinta:reconcile', () => reconcile(localAssets))
-      .catch(() => localAssets) // nuvem fora do ar: fica com o que há aqui, como sempre
+      .then(async (assets) => {
+        await reportCausalQueue().catch(() => {})
+        return assets
+      })
+      .catch(async (error) => {
+        await reportCausalQueue(error).catch(() => {})
+        return localAssets
+      })
       .finally(() => {
         lastReconcileEndedAt = now()
         reconcileInFlight = null
@@ -1253,13 +1413,74 @@ export function createCloudMirroredPintaPersistence(options: {
   // (fora do intervalo mínimo — é um pedido pontual, não uma releitura em laço).
   let unsubscribeOpenState: (() => void) | null =
     options.subscribeAssetOpenState?.((event) => {
-      if (event.type !== 'closed' || !skippedOpen.has(event.id)) return
+      if (event.type !== 'closed') return
+      if (lastRemap?.source.id === event.id) lastRemap = undefined
+      if (causalLocal && causalCloud) wakeCausal()
+      if (!skippedOpen.has(event.id)) return
       skippedOpen.delete(event.id)
       void local.listAllAssets().then((localAssets) => startReconcile(localAssets))
     }) ?? null
 
+  if (causalLocal && causalCloud && typeof window !== 'undefined')
+    window.addEventListener('online', wakeCausal)
+  const accountConfirmation: PintaPersistenceLike['accountConfirmation'] =
+    causalLocal && causalCloud
+      ? {
+          async confirm(id, options) {
+            if (!(await causalLocal.inspect()).protocolKnown && !(await probeCausal()))
+              return cloud.confirm(id, options)
+            const signal = AbortSignal.any([
+              causalSession.signal,
+              AbortSignal.timeout(options?.timeoutMs ?? 15_000),
+            ])
+            await flushPintaCausalOutbox({
+              local: causalLocal,
+              cloud: causalCloud,
+              reader: PINTA_MAX_READ_FORMAT_VERSION,
+              signal,
+            })
+            const { pending, sealed, confirmed } = await causalLocal.inspect()
+            if (
+              !confirmed.get(id)?.sha256 ||
+              pending.some((unit) => unit.members.some((member) => member.itemId === id)) ||
+              sealed?.local.members.some((member) => member.itemId === id)
+            )
+              throw Error('A versão do desenho ainda não foi confirmada na conta')
+          },
+          async download(id) {
+            if (!(await causalLocal.inspect()).protocolKnown) return cloud.download(id)
+            const signal = causalSession.signal
+            const snapshot = await probeCausal()
+            const entry = snapshot?.entries.find((item) => item.itemId === id)
+            if (!snapshot || !entry) return null
+            const json = await readPintaCausalJson(
+              await causalCloud.download(entry, snapshot.epoch, signal),
+              signal,
+            )
+            await causalCloud.verifyEpoch(snapshot.epoch, signal)
+            const updatedAt = Date.parse(entry.itemUpdatedAt)
+            return {
+              json,
+              summary: { ...entry, itemUpdatedAt: updatedAt, syncedAt: updatedAt, thumb: null },
+              parts: [],
+              fetchPart: async () => {
+                throw Error('O desenho não tem partes separadas.')
+              },
+            }
+          },
+        }
+      : undefined
   return {
-    async persistAsset(asset) {
+    ...(causalLocal && causalCloud && options.causal
+      ? {
+          observesReferences: true as const,
+          prepareTileRemap,
+          holdOpen: options.causal.holdOpen,
+          accountConfirmation,
+        }
+      : {}),
+    async persistAsset(asset, context) {
+      if (await stageCausal([asset], context)) return
       await observeBeforeWrite(asset)
       noteWrittenHere(asset)
       try {
@@ -1271,7 +1492,8 @@ export function createCloudMirroredPintaPersistence(options: {
       }
       enqueue(asset)
     },
-    async persistAssets(assets) {
+    async persistAssets(assets, context) {
+      if (await stageCausal(assets, context)) return
       for (const asset of assets) await observeBeforeWrite(asset)
       for (const asset of assets) noteWrittenHere(asset)
       try {
@@ -1284,6 +1506,7 @@ export function createCloudMirroredPintaPersistence(options: {
       for (const asset of assets) enqueue(asset)
     },
     async deleteAsset(id, base) {
+      if (await stageCausal([], undefined, { id, before: base })) return
       await local.deleteAsset(id, base)
       // A lápide (com a revisão conhecida) ANTES de apagar a marca.
       enqueueRemove(id)
@@ -1364,6 +1587,9 @@ export function createCloudMirroredPintaPersistence(options: {
         }
       : {}),
     dispose() {
+      causalSession.abort()
+      if (causalTimer) clearTimeout(causalTimer)
+      if (typeof window !== 'undefined') window.removeEventListener('online', wakeCausal)
       unsubscribeLocal?.()
       unsubscribeOpenState?.()
       unsubscribeOpenState = null

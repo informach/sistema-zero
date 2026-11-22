@@ -98,11 +98,11 @@ export function PintaClient({
       async concluir() {
         if (!pintaControl.current || !cloud)
           throw new Error('O Pinta ainda não está pronto para guardar a criação')
-        return concluirPinta(pintaControl.current, cloud)
+        return concluirPinta(pintaControl.current, persistence?.accountConfirmation ?? cloud)
       },
     })
     return () => onCompletionControlChange(null)
-  }, [cloud, onCompletionControlChange])
+  }, [cloud, onCompletionControlChange, persistence])
 
   // A DESCIDA está em andamento (o wrapper avisa `sync-start`/`sync-end`): selo "buscando…".
   const [syncingSession, setSyncingSession] = useState<PintaPersistenceLike | null>(null)
@@ -153,13 +153,26 @@ export function PintaClient({
             viewerId,
             audience,
           })
+          const scoped = cloud.pintaCausal
+            ? m.createPintaCausalPersistence({ namespace: localNamespace })
+            : null
           persistence = createCloudMirroredPintaPersistence({
-            local,
+            local: scoped ?? local,
             cloud,
             viewerId,
             localNamespace,
             isAssetOpen: m.isPintaAssetOpen,
             subscribeAssetOpenState: m.subscribePintaAssetOpenState,
+            ...(scoped
+              ? {
+                  causal: {
+                    local: scoped.causal,
+                    holdOpen: (id) => m.holdPintaEditorLock(localNamespace, id),
+                    withClosed: (ids, apply) =>
+                      m.withClosedPintaEditors(localNamespace, ids, apply),
+                  },
+                }
+              : {}),
           })
         }
         setLoad({ key: loadKey, status: 'ready', mod: m, cloud, persistence })

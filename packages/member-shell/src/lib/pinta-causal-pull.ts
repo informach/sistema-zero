@@ -60,7 +60,6 @@ export async function pullPintaCausalSnapshot(options: {
   signal: AbortSignal
   isOpen(id: string): boolean
   withClosed(ids: readonly string[], apply: () => Promise<boolean>): Promise<boolean>
-  legacyBase?(before: PintaAsset): { revision: number; localRevision: string } | undefined
 }): Promise<boolean> {
   const { snapshot, local, cloud, signal } = options
   const state = await local.inspect()
@@ -102,12 +101,10 @@ export async function pullPintaCausalSnapshot(options: {
   const transitions = ids.map((id) => {
     const previous = bases.get(id)
     if (!previous) throw new Error('Não encontrei o desenho guardado para conferir.')
-    const confirmedLegacy = previous.before && options.legacyBase?.(previous.before)
     return {
       ...previous,
       after: staged.get(id) ?? null,
       remote: visible.get(id) ?? null,
-      ...(confirmedLegacy ? { confirmedLegacy } : {}),
     }
   })
   const pull = { fromEpoch: state.epoch, epoch: snapshot.epoch, transitions }

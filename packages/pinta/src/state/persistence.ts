@@ -67,6 +67,7 @@ import {
   readLocalCausalState,
   readLocalCausalUpload,
   rememberLocalCausalProtocol,
+  renewLocalCausalUpload,
   sealLocalCausalDraft,
   stageLocalCausalDraft,
 } from './localCausalOutbox'
@@ -339,10 +340,10 @@ function scheduleWarmUp(cache: GalleryBackupSizeCache): void {
   }, 0)
 }
 
-export function runSerializedWrite(
+export function runSerializedWrite<Result>(
   storeHandle: StoreHandle,
-  task: () => Promise<void>,
-): Promise<void> {
+  task: () => Promise<Result>,
+): Promise<Result> {
   const prev = writeChains.get(storeHandle)
   const next = prev ? prev.then(task, task) : task()
   const settled = next.then(
@@ -456,6 +457,12 @@ export interface PintaCausalLocalPort<Asset extends PintaMemoryAsset = PintaAsse
     blobs: ReadonlyMap<string, Blob>,
   ): Promise<boolean>
   inFlight(): Promise<{ sealed: PintaCausalSealed; blobs: ReadonlyMap<string, Blob> } | null>
+  renew(
+    previous: Pick<PintaCausalSealed, 'intentHash' | 'intent'>,
+    next: PintaCausalIntent,
+    intentHash: string,
+    ready: () => boolean,
+  ): Promise<boolean>
   acknowledge(receipt: PintaCausalResult, ready?: () => boolean): Promise<boolean>
 }
 
@@ -707,6 +714,14 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
       }, causalInventory),
     inFlight: () =>
       transaction(readLocalCausalUpload, () => [PINTA_CAUSAL_OUTBOX_KEY, PINTA_CAUSAL_BLOBS_KEY]),
+    renew: (previous, next, intentHash, ready) =>
+      transaction((records) => {
+        if (!ready()) return false
+        const before = localCausalBytes(records)
+        const renewed = renewLocalCausalUpload(records, previous, next, intentHash)
+        if (renewed) checkCombined(records, resolveLocalRecords(records, false), before)
+        return renewed
+      }, causalInventory),
     acknowledge: (receipt, ready) =>
       transaction(
         (records) => {

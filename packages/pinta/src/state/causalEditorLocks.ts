@@ -30,8 +30,8 @@ export async function withClosedPintaEditors(
   const acquire = (index: number): Promise<boolean> => {
     const key = lockKeys[index]
     if (!key) return write()
-    return navigator.locks.request(key, { ifAvailable: true }, (lock) =>
-      lock ? acquire(index + 1) : false,
+    return navigator.locks.request(key, { ifAvailable: true }, async (lock) =>
+      lock ? await acquire(index + 1) : false,
     )
   }
   return acquire(0)

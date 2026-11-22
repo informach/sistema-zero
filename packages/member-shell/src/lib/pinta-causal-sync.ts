@@ -1,5 +1,4 @@
 import type { PintaCausalLocalPort } from '@sistemazero/pinta'
-import type { PintaAsset } from '@sistemazero/pinta/assets'
 import type { PintaCausalCloud, PintaCloudSnapshot } from './pinta-causal-cloud'
 import { discoverPintaCausalSnapshot, pullPintaCausalSnapshot } from './pinta-causal-pull'
 import { flushPintaCausalOutbox } from './pinta-causal-queue'
@@ -17,7 +16,6 @@ export async function syncPintaCausalAccount(options: {
   canContinue(): boolean
   isOpen(id: string): boolean
   withClosed(ids: readonly string[], apply: () => Promise<boolean>): Promise<boolean>
-  legacyBase?(asset: PintaAsset): { revision: number; localRevision: string } | undefined
 }): Promise<PintaCausalSyncOutcome> {
   const { cloud, local, reader, signal } = options
   let snapshot = await discoverPintaCausalSnapshot(options)

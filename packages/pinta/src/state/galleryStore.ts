@@ -6,6 +6,7 @@
  */
 import { createStore, type StoreApi } from 'zustand/vanilla'
 import { COPY } from '../core/copy'
+import type { PintaResourceObservation } from '../core/localAssetOrigin'
 import { embeddedTilesetOf } from '../core/mapResourceVersions'
 import { createAsset, type NewAssetInput } from '../core/newAsset'
 import { perfSpanAsync } from '../core/perf'
@@ -19,6 +20,7 @@ import {
   pintaAssetDependencyIds,
   sanitizeProjectRef,
 } from '../core/project'
+import { observePintaReferences } from '../core/sceneMapClosure'
 import { findTemplate } from '../templates/catalog'
 import { cloneWithNewIds, planImport, uniqueName } from './importPlan'
 import {
@@ -125,6 +127,22 @@ const CHANGED_RELOAD_DELAY_MS = 250
 export function createGalleryStore(
   persistence: PintaPersistence = createPintaPersistence(),
 ): PintaGalleryStore {
+  function contextFor(assets: readonly PintaAsset[]) {
+    const catalog = [...store.getState().assets, ...assets]
+    const resources = new Map<string, PintaResourceObservation>()
+    for (const asset of assets)
+      for (const observed of observePintaReferences(asset, catalog))
+        resources.set(observed.id, observed)
+    return { resources: [...resources.values()] }
+  }
+  const persistOne = (asset: PintaAsset) =>
+    persistence.observesReferences
+      ? persistence.persistAsset(asset, contextFor([asset]))
+      : persistence.persistAsset(asset)
+  const persistMany = (assets: readonly PintaAsset[]) =>
+    persistence.observesReferences
+      ? persistence.persistAssets(assets, contextFor(assets))
+      : persistence.persistAssets(assets)
   let mutationTail = Promise.resolve()
   function enqueueMutation<T>(task: () => Promise<T>): Promise<T> {
     const result = mutationTail.then(task, task)
@@ -180,7 +198,7 @@ export function createGalleryStore(
       }
       const asset = createAsset(input, name)
       try {
-        await persistence.persistAsset(asset)
+        await persistOne(asset)
         set((state) => ({
           assets: upsertSorted(state.assets, asset),
           mutateError: null,
@@ -204,7 +222,7 @@ export function createGalleryStore(
       }
       const asset = { ...prepared, name }
       try {
-        await persistence.persistAsset(asset)
+        await persistOne(asset)
         set((state) => ({ assets: upsertSorted(state.assets, asset), mutateError: null }))
         return asset
       } catch (error) {
@@ -253,7 +271,7 @@ export function createGalleryStore(
       try {
         // Um modelo é UMA criação lógica: o setMany do IndexedDB grava todos
         // na mesma transação, sem deixar companheiro órfão em falha parcial.
-        await persistence.persistAssets(prepared)
+        await persistMany(prepared)
         set((state) => ({
           assets: prepared.reduce(upsertSorted, state.assets),
           mutateError: null,
@@ -282,7 +300,7 @@ export function createGalleryStore(
       }
       const renamed = { ...asset, name: normalized, updatedAt: Date.now() } as PintaAsset
       try {
-        await persistence.persistAsset(renamed)
+        await persistOne(renamed)
         set((state) => ({ assets: upsertSorted(state.assets, renamed), mutateError: null }))
         return true
       } catch (error) {
@@ -303,7 +321,7 @@ export function createGalleryStore(
       }
       const copy = cloneWithNewIds(asset, name)
       try {
-        await persistence.persistAsset(copy)
+        await persistOne(copy)
         set((state) => ({ assets: upsertSorted(state.assets, copy), mutateError: null }))
         return copy
       } catch (error) {
@@ -392,7 +410,7 @@ export function createGalleryStore(
       const restored = restoredPairs.map(({ restored: asset }) => asset)
       if (options.atomic) {
         try {
-          await persistence.persistAssets(restored)
+          await persistMany(restored)
           set((state) => ({
             assets: restored.reduce(upsertSorted, state.assets),
             mutateError: null,
@@ -421,7 +439,7 @@ export function createGalleryStore(
           continue
         }
         try {
-          await persistence.persistAsset(restoredAsset)
+          await persistOne(restoredAsset)
           persistedIds.add(restoredAsset.id)
           set((state) => ({ assets: upsertSorted(state.assets, restoredAsset) }))
           added += 1

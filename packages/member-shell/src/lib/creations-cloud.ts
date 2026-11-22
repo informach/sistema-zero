@@ -157,6 +157,11 @@ export type RemovedListener = (result: { revision: number }) => void
 export interface CreationsCloud {
   readonly tool: CreationTool
   readonly pintaCausal?: PintaCausalCloud
+  reportPintaQueue?(
+    ids: readonly string[],
+    status: 'saving' | 'offline' | 'error' | 'saved',
+    error?: string,
+  ): void
   /** A nuvem funciona neste navegador? (`CompressionStream`; sem ele, tudo vira no-op). */
   readonly supported: boolean
   /**
@@ -513,6 +518,11 @@ export function createCreationsCloud(options: {
         failures: number
       }
   const pending = new Map<string, Job>()
+  let pintaPending = new Set<string>()
+  let pintaQueueStatus: Pick<CloudSyncState, 'status' | 'lastError'> = {
+    status: 'idle',
+    lastError: null,
+  }
   const conflicts = new Set<{ itemId: string; done: Promise<void> }>()
   /** A última falha de cada item, até ele voltar à fila: o `confirm` rejeita com ela. */
   const failedItems = new Map<string, { message: string; code?: string }>()
@@ -580,7 +590,12 @@ export function createCreationsCloud(options: {
   }
 
   function setState(patch: Partial<CloudSyncState>): void {
-    const next: CloudSyncState = { ...state, ...patch, pending: pending.size }
+    const next: CloudSyncState = {
+      ...state,
+      ...patch,
+      ...(pintaPending.size ? pintaQueueStatus : {}),
+      pending: pending.size + pintaPending.size,
+    }
     // Só notifica quando algo VISÍVEL mudou: cada autosave chamava `schedule()` → `saving`
     // de novo → re-render do selo e, pior, o `aria-live` repetia o recado a cada ciclo.
     if (
@@ -1215,6 +1230,7 @@ export function createCreationsCloud(options: {
   function getItemState(itemId: string): CloudItemState {
     if (!supported)
       return { status: 'unsupported', lastError: CLOUD_MESSAGES.unsupported, code: null }
+    if (pintaPending.has(itemId)) return { ...pintaQueueStatus, code: null }
     const failure = failedItems.get(itemId)
     if (failure) return { status: 'error', lastError: failure.message, code: failure.code ?? null }
     const busy = pending.has(itemId) || [...conflicts].some((entry) => entry.itemId === itemId)
@@ -1310,7 +1326,26 @@ export function createCreationsCloud(options: {
 
   return {
     tool,
-    ...(pintaCausal ? { pintaCausal } : {}),
+    ...(pintaCausal
+      ? {
+          pintaCausal,
+          reportPintaQueue(
+            ids: readonly string[],
+            status: 'saving' | 'offline' | 'error' | 'saved',
+            error?: string,
+          ) {
+            if (disposed || (!ids.length && !pintaPending.size)) return
+            pintaPending = new Set(ids)
+            pintaQueueStatus = { status, lastError: error ?? null }
+            for (const id of ids) seen.add(id)
+            setState({
+              ...pintaQueueStatus,
+              ...(status === 'saved' ? { lastSavedAt: now() } : {}),
+            })
+            signalProgress()
+          },
+        }
+      : {}),
     supported,
     list,
     upload,

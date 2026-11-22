@@ -12,6 +12,7 @@ import { COPY } from '../../core/copy'
 import {
   type AnyTilesetAsset,
   isTilesetKind,
+  type PintaAsset,
   type PintaBitmap,
   resolveAssetPalette,
   type VectorFrame,
@@ -129,13 +130,21 @@ const COLLISION_LABEL: Record<TileCollision, string> = {
 
 export function TileStrip({ className }: { className?: string }): JSX.Element | null {
   const { editor, session } = useEditorStores()
-  const { gallery } = usePintaApp()
+  const { gallery, persistence } = usePintaApp()
   const { showToast } = useToast()
   const asset = useEditor((state) => state.asset)
   const frameIndex = useSession((state) => state.frameIndex)
   const [details, setDetails] = useState(false),
     [brush, setBrush] = useState(DEFAULT_MAP_BRUSH)
   const colors = useMemo(() => resolveAssetPalette(asset), [asset])
+  const queued = useRef(Promise.resolve())
+  const active = useRef(true)
+  useEffect(() => {
+    active.current = true
+    return () => {
+      active.current = false
+    }
+  }, [])
 
   if (!isTilesetKind(asset)) return null
   const selectedIndex = Math.min(frameIndex, asset.tiles.length - 1)
@@ -147,14 +156,14 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
    * `commitLinked` — o remap entra na MESMA entrada de undo do tileset (desfazer
    * a edição da peça volta os mapas junto; não deixa mais célula apontando errado).
    */
-  function mutate(
-    op: (tileset: AnyTilesetAsset) => {
-      next: AnyTilesetAsset
-      selectIndex?: number
-      remap?: { insertedAt: number } | { removedAt: number }
-      limitToast?: string
-    },
-  ): void {
+  type Mutation = (tileset: AnyTilesetAsset) => {
+    next: AnyTilesetAsset
+    selectIndex?: number
+    remap?: { insertedAt: number } | { removedAt: number }
+    limitToast?: string
+  }
+  function applyMutation(op: Mutation): Promise<void> | void {
+    if (!active.current) return
     const current = editor.getState().asset
     if (!isTilesetKind(current) || current.id !== asset.id) return
     const { next, selectIndex, remap, limitToast } = op(current)
@@ -162,25 +171,45 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
       if (limitToast) showToast(limitToast)
       return
     }
-    let accepted: boolean
-    if (remap) {
-      const linked = remapTilesetConsumers(
-        gallery.getState().assets,
-        editor.getState().linkedAssets ?? [],
-        current.id,
-        remap,
-      )
-      if (!linked.ok) {
-        showToast(COPY.tiles.remapRefused(linked.assetName))
-        return
+    const apply = (catalog: readonly PintaAsset[]): void => {
+      if (!active.current || editor.getState().asset !== current) return
+      let accepted: boolean
+      if (remap) {
+        const linked = remapTilesetConsumers(
+          catalog,
+          editor.getState().linkedAssets ?? [],
+          current.id,
+          remap,
+        )
+        if (!linked.ok) {
+          showToast(COPY.tiles.remapRefused(linked.assetName))
+          return
+        }
+        accepted = editor
+          .getState()
+          .commitLinked(next, { before: linked.before, after: linked.after }, remap)
+      } else {
+        accepted = editor.getState().commit(next)
       }
-      accepted = editor
-        .getState()
-        .commitLinked(next, { before: linked.before, after: linked.after }, remap)
-    } else {
-      accepted = editor.getState().commit(next)
+      if (accepted && selectIndex !== undefined) session.getState().selectFrame(selectIndex)
     }
-    if (accepted && selectIndex !== undefined) session.getState().selectFrame(selectIndex)
+    const renumbers = remap && ('removedAt' in remap || remap.insertedAt < current.tiles.length)
+    if (renumbers && persistence.prepareTileRemap)
+      return persistence.prepareTileRemap(current).then(apply, () => {
+        if (active.current) showToast(COPY.tiles.remapRefused(current.name))
+      })
+    apply(gallery.getState().assets)
+  }
+  function mutate(op: Mutation): void {
+    if (persistence.prepareTileRemap) {
+      queued.current = queued.current
+        .then(() => applyMutation(op))
+        .catch(() => {
+          if (active.current) showToast(COPY.tiles.remapRefused(asset.name))
+        })
+    } else {
+      void applyMutation(op)
+    }
   }
 
   return (

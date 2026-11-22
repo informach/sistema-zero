@@ -708,10 +708,11 @@ export function EditorScreen({
                 observePintaReferences(asset, gallery.getState().assets),
             }
           : {}),
-        persist: (saved, linked, layout, resources) =>
+        persist: (saved, linked, layout, resources, slotLineage) =>
           persistence.observesReferences
             ? persistence.persistAssets([saved, ...linked], {
                 ...(layout ? { layout } : {}),
+                ...(slotLineage ? { slotLineage } : {}),
                 resources: resources ?? [],
               })
             : persistence.persistAssets([saved, ...linked]),

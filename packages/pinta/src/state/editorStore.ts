@@ -28,6 +28,12 @@ export interface PintaEditorLayoutChange {
 export interface PintaEditorWriteContext {
   layout?: PintaEditorLayoutChange
   resources: readonly PintaResourceObservation[]
+  slotLineage?: PintaEditorSlotLineage
+}
+
+export interface PintaEditorSlotLineage {
+  before: readonly symbol[]
+  after: readonly symbol[]
 }
 
 export interface PintaEditorState<Asset extends PintaMemoryAsset = PintaAsset> {
@@ -139,6 +145,7 @@ export interface PintaEditorStoreOptions<Asset extends PintaMemoryAsset = PintaA
     linkedAssets: readonly Asset[],
     layout?: PintaEditorLayoutChange,
     resources?: readonly PintaResourceObservation[],
+    slotLineage?: PintaEditorSlotLineage,
   ) => Promise<void>
   observeResources?: (asset: Asset) => readonly PintaResourceObservation[]
   onSaved?: (asset: Asset, linkedAssets: readonly Asset[]) => void
@@ -224,11 +231,13 @@ export function createEditorStore<Asset extends PintaMemoryAsset = PintaAsset>(
           slots && savedSlots && slots !== savedSlots
             ? { oldToNew: savedSlots.map((slot) => slots.indexOf(slot)), count: slots.length }
             : undefined
+        const slotLineage = slots && savedSlots ? { before: savedSlots, after: slots } : undefined
         set({ dirty: false, saveState: 'saving', saveError: null })
 
         const request = (async (): Promise<PintaSaveResult> => {
           try {
-            if (resources) await options.persist(snapshot, linkedSnapshot, layout, resources)
+            if (resources)
+              await options.persist(snapshot, linkedSnapshot, layout, resources, slotLineage)
             else if (layout) await options.persist(snapshot, linkedSnapshot, layout)
             else await options.persist(snapshot, linkedSnapshot)
             savedSlots = slots
