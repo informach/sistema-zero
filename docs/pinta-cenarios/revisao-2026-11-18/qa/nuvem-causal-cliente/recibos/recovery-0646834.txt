@@ -1,0 +1,15 @@
+bun test v1.3.11 (af24e281)
+
+.cache\pinta-review-20261122\recovery\packages\pinta\recovery-review.test.ts:
+(pass) recuperação cria nome que resolve uma porta antes ausente e fora do fechamento [16.00ms]
+(pass) alias de ID remoto sombreia nome de cópia que planImport colocou na porta
+(pass) lápide local sem base versus documento de conta não admite primeira descida nem oferece cópia [15.00ms]
+(pass) uma pintura posterior na folha recém-criada prende referência local com revisão anterior ao primeiro snapshot
+(pass) porta apontando a mapa público cujo ID coincide com ID de folha privada é capturada pela cópia privada
+(pass) recuperação regional mantém origem, grade esparsa 10000x10000, vínculo e createdAt [16.00ms]
+(pass) porta histórica ainda quebrada em membro divergente adia todos os itens do epoch
+
+ 7 pass
+ 0 fail
+ 47 expect() calls
+Ran 7 tests across 1 file. [154.00ms]

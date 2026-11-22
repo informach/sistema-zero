@@ -1,0 +1,138 @@
+{
+  "cliente": "e28bb5dbbc9cfa27e0b4d60b89678f3d4eb78b44",
+  "members": "d75bb7f7949f42b4865ba8816bb9b6673ae2693b",
+  "bun": "1.3.11",
+  "postgresql": "16.13",
+  "ensaios": [
+    {
+      "alvo": "host",
+      "nome": "real-editor-redo-review.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/real-editor-redo-review.inc"
+      ],
+      "sha256": "51e0e9de23a93157e694d9934b3b1093a6d17d748ae5c131ad6878badd325ea7",
+      "lfAdicional": 3
+    },
+    {
+      "alvo": "host",
+      "nome": "real-editor-undo-review.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/real-editor-undo-review.inc"
+      ],
+      "sha256": "93459d4918f4469faec4bf716a9dfe0f1b95b7f28e2a140596498df3c1719e98",
+      "lfAdicional": 2
+    },
+    {
+      "alvo": "host",
+      "nome": "reincarnation-review.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/reincarnation-review.inc"
+      ],
+      "sha256": "ad7c0276c8ab72282d3a3bb4624471d010b979e8ed6ab413bf15b84741694dbc",
+      "lfAdicional": 1
+    },
+    {
+      "alvo": "host",
+      "nome": "repair-then-adopt-review.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/repair-then-adopt-review.inc"
+      ],
+      "sha256": "cdbe74dee9d0fdb38fb1e784589a668ab48f3535f8f9df6a2663e56220c55dc4"
+    },
+    {
+      "alvo": "host",
+      "nome": "stable-slot-review.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/stable-slot-review.inc"
+      ],
+      "sha256": "bce176fe4344d89115f90d6e0f26a1d806d8313373cf458dd8234c39a89c976e"
+    },
+    {
+      "alvo": "host",
+      "nome": "undo-expiry-review.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/undo-expiry-review.inc"
+      ],
+      "sha256": "54404f1d12ef52f05b539fb77b71372a77dbf3e98b74916710f1da34b32b2eb3",
+      "lfAdicional": 1
+    },
+    {
+      "alvo": "pinta",
+      "nome": "recovery-review.test.ts",
+      "fontes": [
+        "ensaios/adocao.inc"
+      ],
+      "sha256": "22b860f37465aaaedc9766561ad46084cbdafdcbf0f4cd37053230fe0ad6e792"
+    },
+    {
+      "alvo": "members",
+      "nome": "stable-slot.test.ts",
+      "fontes": [
+        "ensaios/indice-estavel-pg.inc"
+      ],
+      "sha256": "c5d690fd831f39fee7d59446708ad9215895c3c56be5d3dba4d545dd94fcbaa3",
+      "lfAdicional": 1
+    }
+  ],
+  "recibos": [
+    {
+      "arquivo": "recibos/recovery-0646834.txt",
+      "originalSha256": "14445d7fa72459890b5c4b0d2150ee33b88ccfdb66ac288302888ffdbddd8cca",
+      "sha256": "cbefc9163ad2ad88892e0fdb14fcf5a9075fe9b61acee022ae7290e4d7017a9a",
+      "commit": "0646834df2e6c4dba9716e4ab2156c4798cb4123",
+      "resultado": "7 casos/47 asserções de caracterização"
+    },
+    {
+      "arquivo": "recibos/prepared-09aa-review.txt",
+      "originalSha256": "2b39504eba78bacb91e637380b54d21a5f923b48a93ae11d0f64e743f0e550c9",
+      "sha256": "fe0a260b996d906403f64df7a50481850fa6309b644b14cd24a3f57e38d818b5",
+      "commit": "09aa01d52244591380d7ac314ecdbe46b217c58e",
+      "resultado": "2 passam/3 falham antes das correções"
+    },
+    {
+      "arquivo": "recibos/prepared-b145-review.txt",
+      "originalSha256": "33a6d7a7acc0bc08c8b5fb7d5c6eaabbe954f1dd0cbfdfed03edb033d0d93490",
+      "sha256": "167de5f876f82c47f44c178f8b79e806716ac4c2ee016e96e5438eb54e5415aa",
+      "commit": "b145c08c87aad0c5e2142e7edb8d4c4b45d19fa4",
+      "resultado": "5 passam/22 asserções"
+    },
+    {
+      "arquivo": "recibos/combined-e28.txt",
+      "originalSha256": "606f2c668c0c020596fd82928b825c54886d9fb351719c411e4f520c3f458808",
+      "sha256": "86ca922f4c0a2488f09ef7a3ea0ee75ace18c962f0b0d3ffc9530457e21f2f8b",
+      "commit": "e28bb5dbbc9cfa27e0b4d60b89678f3d4eb78b44",
+      "resultado": "19 passam/127 asserções"
+    },
+    {
+      "arquivo": "recibos/pg-stable-slot.txt",
+      "originalSha256": "a2c422d9ff96f26f0a546b40c3ecf859fda82de46ecc16f9a8adce33999fb301",
+      "sha256": "404490cbf0bcbf835cc7c0e5b6974da719eecb1474bfcee363529e27aac9482f",
+      "commit": "d75bb7f7949f42b4865ba8816bb9b6673ae2693b",
+      "resultado": "1 passa/3 asserções"
+    },
+    {
+      "arquivo": "recibos/pg-omitted-replay.txt",
+      "originalSha256": "e2989c297e4aec6c6a81f6031bd465de6128aa3f85f46728d9b22f75bdce3479",
+      "sha256": "2f837e5808f89dcea03dc20250d967a4f032be11c3efc9def7ea8466d41e5e2f",
+      "commit": "d75bb7f7949f42b4865ba8816bb9b6673ae2693b",
+      "resultado": "2 passam/19 asserções"
+    }
+  ],
+  "arvoresGit": {
+    "cliente": {
+      "packages/pinta/src": "83a4a3c5e1bddf037b32aa8a519de638893d0baa",
+      "packages/member-shell/src/lib": "10e463b77764a4a9d17af3fb03de165f31383180",
+      "packages/core/src/creations": "d8194a9bf000900057970cef45b5209ead9fdefd"
+    },
+    "members": {
+      "packages/members/src": "d8f565037f48ec43e1458e77870d86bfa610621b",
+      "packages/members/tests/db": "16819e3d6d7de93523fe3fbd05d67c3809d34d16"
+    }
+  }
+}

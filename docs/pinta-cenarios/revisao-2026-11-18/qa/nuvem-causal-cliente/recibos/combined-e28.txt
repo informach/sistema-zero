@@ -1,0 +1,39 @@
+bun test v1.3.11 (af24e281)
+
+.cache\pinta-review-20261122\recovery-e28\packages\pinta\recovery-review.test.ts:
+(pass) recuperação conserva porta antes ausente de mapa fora do fechamento [15.00ms]
+(pass) cópia guarda destino local apesar do alias de ID remoto [16.00ms]
+(pass) lápide sem base recupera o item remoto sem enfileirar exclusão
+(pass) primeira adoção admite uma pintura posterior de slot estável [16.00ms]
+(pass) cópia de porta para mapa público sobrevive a ID privado homônimo
+(pass) recuperação regional mantém origem, grade esparsa 10000x10000, vínculo e createdAt [15.00ms]
+(pass) porta histórica ainda ausente conserva estado durante adoção e recuperação [16.00ms]
+(pass) catálogo local sem divergências de documento não captura porta remota por ID
+(pass) descida incremental protege nomes oficiais contra sombra local por ID
+
+.cache\pinta-review-20261122\recovery-e28\packages\member-shell\tests\fixtures\real-editor-redo-review.test.ts:
+(pass) undo preserva prova da operação original [63.00ms]
+(pass) undo preserva prova da operação renovada [31.00ms]
+
+.cache\pinta-review-20261122\recovery-e28\packages\member-shell\tests\fixtures\real-editor-undo-review.test.ts:
+(pass) undo preserva prova da operação original [16.00ms]
+
+.cache\pinta-review-20261122\recovery-e28\packages\member-shell\tests\fixtures\reincarnation-review.test.ts:
+(pass) proof: a sealed fresh creation whose id was compacted in the cloud acknowledges only its verified receipt
+
+.cache\pinta-review-20261122\recovery-e28\packages\member-shell\tests\fixtures\repair-then-adopt-review.test.ts:
+(pass) a galeria retoma a adoção e mostra o motivo de recuperação: invalid-reference [16.00ms]
+(pass) a galeria retoma a adoção e mostra o motivo de recuperação: unobserved-delete
+(pass) pintar slot zero por EditorStore conserva a leitura de mapa até primeira adoção [15.00ms]
+
+.cache\pinta-review-20261122\recovery-e28\packages\member-shell\tests\fixtures\stable-slot-review.test.ts:
+(pass) um mapa editado que só usa slot estável permite remover a última peça no sucessor [32.00ms]
+
+.cache\pinta-review-20261122\recovery-e28\packages\member-shell\tests\fixtures\undo-expiry-review.test.ts:
+(pass) undo preserva prova da operação original [16.00ms]
+(pass) undo preserva prova da operação renovada [16.00ms]
+
+ 19 pass
+ 0 fail
+ 127 expect() calls
+Ran 19 tests across 7 files. [701.00ms]

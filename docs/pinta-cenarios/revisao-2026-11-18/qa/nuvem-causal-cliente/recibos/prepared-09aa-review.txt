@@ -1,0 +1,65 @@
+bun test v1.3.11 (af24e281)
+
+.cache\pinta-review-20261122\prepared-09aa\packages\member-shell\tests\fixtures\stable-slot-review.test.ts:
+125 |     }
+126 |     const queue = await local.inspect()
+127 |     if (queue.sealed) continue
+128 |     const first = queue.pending[0]
+129 |     if (!first) return
+130 |     if (first.follows) throw new PintaCausalRequestError(409, 'unresolved-predecessor')
+                                   ^
+PintaCausalRequestError: Não consegui guardar estas mudanças juntas na conta.
+ status: 409,
+ reason: "unresolved-predecessor",
+ itemId: undefined,
+
+      at flushPintaCausalOutbox (⟨worktree⟩\.cache\pinta-review-20261122\prepared-09aa\packages\member-shell\src\lib\pinta-causal-queue.ts:130:30)
+      at async <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\prepared-09aa\packages\member-shell\tests\fixtures\stable-slot-review.test.ts:132:10)
+(fail) um mapa editado que só usa slot estável permite remover a última peça no sucessor [62.00ms]
+
+.cache\pinta-review-20261122\prepared-09aa\packages\member-shell\tests\fixtures\undo-expiry-review.test.ts:
+(pass) undo preserva prova da operação original [16.00ms]
+133 |     return {opId:intent.opId,intentHash,epoch:'2',members:intent.members.map(m=>({itemId:m.itemId,revision:2,deleted:false,sha256:m.sha256,layoutRevision:m.itemId===sheet.id?'2':null}))}
+134 |   }},signal:new AbortController().signal})
+135 |   const last=await local.loadAssetById(sheet.id),lastMap=await local.loadAssetById(map.id)
+136 |   await wrapper.persistAssets([{...last,tiles:source.tiles,solid:source.solid,platform:source.platform},{...lastMap,layers:map.layers}],{resources:[{id:sheet.id,localRevision:pintaLocalRevisionOf(last)}],layout:{oldToNew:[1],count:2},slotLineage:{before:nextSlots,after:previousSlots}})
+137 |   const [undo]=(await local.causal.inspect()).pending
+138 |   expect(undo.inverseOf).toBe(sent.at(-1).opId)
+                               ^
+error: expect(received).toBe(expected)
+
+Expected: "f82962f5-311a-414f-b6dd-e5c9a154bb76"
+Received: undefined
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\prepared-09aa\packages\member-shell\tests\fixtures\undo-expiry-review.test.ts:138:26)
+(fail) undo preserva prova da operação renovada [15.00ms]
+
+.cache\pinta-review-20261122\prepared-09aa\packages\member-shell\tests\fixtures\real-editor-undo-review.test.ts:
+133 |     sent.push(intent)
+134 |     if(renew && sent.length===1)throw new PintaCausalRequestError(409,'operation-expired')
+135 |     return {opId:intent.opId,intentHash,epoch:'2',members:intent.members.map(m=>({itemId:m.itemId,revision:2,deleted:false,sha256:m.sha256,layoutRevision:m.itemId===sheet.id?'2':null}))}
+136 |   }},signal:new AbortController().signal})
+137 |   const last=await local.loadAssetById(sheet.id),lastMap=await local.loadAssetById(map.id)
+138 |   editor.getState().undo(); expect(await editor.getState().flush()).toEqual({ok:true})
+                                                                          ^
+error: expect(received).toEqual(expected)
+
+  {
+-   "ok": true,
++   "error": "Um recurso usado pelo desenho mudou desde que foi aberto.",
++   "ok": false,
+  }
+
+- Expected  - 1
++ Received  + 2
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\prepared-09aa\packages\member-shell\tests\fixtures\real-editor-undo-review.test.ts:138:69)
+(fail) undo preserva prova da operação original [16.00ms]
+
+.cache\pinta-review-20261122\prepared-09aa\packages\member-shell\tests\fixtures\reincarnation-review.test.ts:
+(pass) proof: a sealed fresh creation whose id was compacted in the cloud acknowledges only its verified receipt
+
+ 2 pass
+ 3 fail
+ 19 expect() calls
+Ran 5 tests across 4 files. [281.00ms]

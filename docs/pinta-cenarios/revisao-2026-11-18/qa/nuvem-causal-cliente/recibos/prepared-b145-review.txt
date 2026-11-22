@@ -1,0 +1,19 @@
+bun test v1.3.11 (af24e281)
+
+.cache\pinta-review-20261122\prepared-b145\packages\member-shell\tests\fixtures\real-editor-undo-review.test.ts:
+(pass) undo preserva prova da operação original [94.00ms]
+
+.cache\pinta-review-20261122\prepared-b145\packages\member-shell\tests\fixtures\reincarnation-review.test.ts:
+(pass) proof: a sealed fresh creation whose id was compacted in the cloud acknowledges only its verified receipt [15.00ms]
+
+.cache\pinta-review-20261122\prepared-b145\packages\member-shell\tests\fixtures\stable-slot-review.test.ts:
+(pass) um mapa editado que só usa slot estável permite remover a última peça no sucessor [32.00ms]
+
+.cache\pinta-review-20261122\prepared-b145\packages\member-shell\tests\fixtures\undo-expiry-review.test.ts:
+(pass) undo preserva prova da operação original [15.00ms]
+(pass) undo preserva prova da operação renovada [16.00ms]
+
+ 5 pass
+ 0 fail
+ 22 expect() calls
+Ran 5 tests across 4 files. [317.00ms]
