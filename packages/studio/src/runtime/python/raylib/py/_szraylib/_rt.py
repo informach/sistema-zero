@@ -170,6 +170,7 @@ input = _Input()
 ops = array('d')
 _previous_payload = None
 _pinta_owners = set()
+_pinta_release_after_present = set()
 _transport = None
 _decoder = None
 _root = '.'
@@ -275,8 +276,8 @@ def require_window(function):
         raise RuntimeError(f'{function}: abra a janela antes com init_window(largura, altura, "título").')
 
 
-def check_records():
-    if len(ops) > MAX_RECORDS:
+def check_records(additional=0):
+    if len(ops) + additional > MAX_RECORDS:
         raise RuntimeError('O quadro tem desenhos demais. Um laço está desenhando sem parar? '
                            'Confira se end_drawing() está dentro do laço do jogo.')
 
@@ -301,17 +302,31 @@ def _pinta_carregar(images, payload):
     return reply.get('pintaOwner')
 
 
+def _pinta_closing_records():
+    # end_drawing appends one command for each mode that is still open.
+    return int(window.mode_2d) + int(window.texture_mode)
+
+
 def _pinta_desenhar(owner, index, crop, matrix, opacity):
     require_window('desenhar cenário do Pinta')
     if mode != '2d':
         raise RuntimeError('Este cenário do Pinta usa Raylib 2D.')
+    if len(crop) != 4 or len(matrix) != 6:
+        raise ValueError('O recorte e a matriz do cenário do Pinta têm tamanho inválido.')
+    check_records(14 + _pinta_closing_records())
     ops.extend((OP_PINTA_AFFINE, owner, index, *crop, *matrix, opacity))
     _pinta_owners.add(owner)
 
 
 def _pinta_descartar(owner):
+    if mode != '2d':
+        raise RuntimeError('Este cenário do Pinta usa Raylib 2D.')
     if owner in _pinta_owners:
-        ops.extend((OP_PINTA_RELEASE, owner))
+        if len(ops) + 2 + _pinta_closing_records() <= MAX_RECORDS:
+            ops.extend((OP_PINTA_RELEASE, owner))
+        else:
+            # A full frame still needs its texture. Release it after the render acknowledgement.
+            _pinta_release_after_present.add(owner)
         _pinta_owners.discard(owner)
     else:
         _exchange({'pintaRelease': owner}, b'')
@@ -403,6 +418,10 @@ def present():
     audio.clear()
     _previous_payload = payload
     _pinta_owners.clear()
+    if _pinta_release_after_present:
+        for owner in tuple(_pinta_release_after_present):
+            _exchange({'pintaRelease': owner}, b'')
+            _pinta_release_after_present.remove(owner)
     _apply_reply(reply)
     _held = reply.get('hold') is True
     return reply

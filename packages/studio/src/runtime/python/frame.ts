@@ -427,6 +427,7 @@ async function initialize(event: MessageEvent<unknown>) {
     )
       throw new Error('O snapshot pertence a outra execução.')
     const canvas = pythonCanvasExtension(snapshot.configuration.extensions)
+    const pintaRegional = canvas === 'python-pgzero' || canvas === 'python-raylib-2d'
     pausable = canvas !== undefined
     pauseOnAnyReply = canvas === 'python-turtle'
     rendererReady = !canvas
@@ -467,7 +468,7 @@ async function initialize(event: MessageEvent<unknown>) {
           renderer = module.createPgzeroRenderer(document.body, {
             focus,
             name: canvas === 'python-pygame' ? 'Pygame-ce' : 'Pygame Zero',
-            pintaRegional: canvas === 'python-pgzero',
+            pintaRegional,
             ...('mission' in value && value.mission === true ? { mission: true as const } : {}),
             onAudio: pgzeroAudio,
             takeEndedVoices: (limit) => audio.takeEnded(limit),
@@ -487,7 +488,7 @@ async function initialize(event: MessageEvent<unknown>) {
           if (closed) return
           renderer = module.createRaylibRenderer(document.body, {
             focus,
-            pintaRegional: canvas === 'python-raylib-2d',
+            pintaRegional,
             onAudio: pgzeroAudio,
             takeEndedVoices: (limit) => audio.takeEnded(limit),
             onTitle: (title) => {
@@ -568,7 +569,8 @@ async function initialize(event: MessageEvent<unknown>) {
               const current = renderer
               if (!prepared || !current || closed)
                 throw new Error('O ambiente gráfico ainda não está pronto.')
-              if (isPintaTextureRequest(request)) return current.exchange(request, images)
+              if (pintaRegional && isPintaTextureRequest(request))
+                return current.exchange(request, images)
               return pause.exchange(
                 request,
                 () => current.exchange(request, images),

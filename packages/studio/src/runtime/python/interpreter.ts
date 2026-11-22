@@ -547,8 +547,7 @@ export async function createPythonInterpreter(options: {
               // O pedido curto de quem espera com o programa pausado (aba Investigar) não é um
               // quadro: vai ao quadro da página como veio, sem dados (framePause.ts).
               if (raw === PYTHON_HOLD_REQUEST) return options.graphics!(raw, []).then(pythonReply)
-              if (isPintaTextureRequest(raw)) {
-                if (pygame) throw new Error('O compositor do Pinta é do Pygame Zero neste canal.')
+              if (!pygame && isPintaTextureRequest(raw)) {
                 return options.graphics!(
                   raw,
                   pintaTextureAttachments(raw, payload, PGZERO_LIMITS.images),
@@ -643,9 +642,7 @@ export async function createPythonInterpreter(options: {
             (raw: unknown, payload: unknown) => {
               // O pedido curto de quem espera com o programa pausado (aba Investigar).
               if (raw === PYTHON_HOLD_REQUEST) return options.graphics!(raw, []).then(pythonReply)
-              if (isPintaTextureRequest(raw)) {
-                if (resources.kind !== 'python-raylib-2d')
-                  throw new Error('O compositor do Pinta é do Raylib 2D neste canal.')
+              if (resources.kind === 'python-raylib-2d' && isPintaTextureRequest(raw)) {
                 return options.graphics!(
                   raw,
                   pintaTextureAttachments(raw, payload, RAYLIB_LIMITS.textures),

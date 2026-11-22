@@ -123,13 +123,15 @@ export function createPgzeroRenderer(
   const textCache = new Map<string, TextSurface>()
   let textCachePixels = 0
   let imagePixels = 0
-  const pinta = createPintaTextureStore({
-    maxImages: PGZERO_LIMITS.images,
-    maxPixels: PGZERO_LIMITS.totalImagePixels,
-    existing: () => ({ images: images.size, pixels: imagePixels }),
-    create: (bitmap) => bitmap,
-    release: (bitmap) => bitmap.close(),
-  })
+  const pinta = options.pintaRegional
+    ? createPintaTextureStore({
+        maxImages: PGZERO_LIMITS.images,
+        maxPixels: PGZERO_LIMITS.totalImagePixels,
+        existing: () => ({ images: images.size, pixels: imagePixels }),
+        create: (bitmap) => bitmap,
+        release: (bitmap) => bitmap.close(),
+      })
+    : undefined
   const input = createPgzeroInputQueue()
   const pacer = createPgzeroFramePacer()
   const listeners = new AbortController()
@@ -677,8 +679,7 @@ export function createPgzeroRenderer(
           break
         }
         case PGZERO_OP.PINTA_AFFINE: {
-          if (!options.pintaRegional)
-            throw new Error('Este jogo não usa o compositor do Pygame Zero.')
+          if (!pinta) throw new Error('Lista de desenho do Pygame Zero inválida.')
           const image = pinta.image(r[at]!, r[at + 1]!)
           checkPintaAffine(r, at, image)
           const w = r[at + 4]!,
@@ -694,8 +695,7 @@ export function createPgzeroRenderer(
           break
         }
         case PGZERO_OP.PINTA_RELEASE:
-          if (!options.pintaRegional)
-            throw new Error('Este jogo não usa o compositor do Pygame Zero.')
+          if (!pinta) throw new Error('Lista de desenho do Pygame Zero inválida.')
           pinta.release(r[at]!)
           break
         // The shapes of pygame.draw and screen.draw fill whole pixels, exactly pygame-ce's
@@ -806,6 +806,12 @@ export function createPgzeroRenderer(
     })
   }
 
+  async function finishPaint(previous: Promise<void>) {
+    shown = undefined
+    await previous
+    active()
+  }
+
   // Resources --------------------------------------------------------------------------------
   async function decodeVector(bytes: Uint8Array<ArrayBuffer>, filePath: string) {
     // CSP: img-src blob:. The element keeps the drawing as a vector for every later draw.
@@ -830,10 +836,19 @@ export function createPgzeroRenderer(
   ) {
     if (bytes.byteLength > PGZERO_LIMITS.imageBytes)
       throw new Error(`A imagem ${filePath} é grande demais.`)
-    if (imagePixels + pinta.pixels + w * h > PGZERO_LIMITS.totalImagePixels)
-      throw new Error('As imagens do jogo passaram do limite de tamanho.')
-    if (pinta.count && !images.has(id) && images.size + pinta.count >= PGZERO_LIMITS.images)
-      throw new Error('O jogo carregou imagens demais ao mesmo tempo.')
+    function budgetError() {
+      if (imagePixels + (pinta?.pixels ?? 0) + w * h > PGZERO_LIMITS.totalImagePixels)
+        return 'As imagens do jogo passaram do limite de tamanho.'
+      if (pinta?.count && !images.has(id) && images.size + pinta.count >= PGZERO_LIMITS.images)
+        return 'O jogo carregou imagens demais ao mesmo tempo.'
+    }
+    let error = budgetError()
+    // Only a frame that currently cannot fit must wait for the preceding paint's releases.
+    if (error && pinta?.count && shown) {
+      await finishPaint(shown)
+      error = budgetError()
+    }
+    if (error) throw new Error(error)
     if (/\.svg$/i.test(filePath)) {
       const vector = await decodeVector(bytes, filePath)
       if (disposed) {
@@ -918,17 +933,10 @@ export function createPgzeroRenderer(
       if (busy) throw new Error('Um quadro do Pygame Zero já está em andamento.')
       busy = true
       try {
-        if (isPintaTextureRequest(raw)) {
-          if (!options.pintaRegional)
-            throw new Error('Este jogo não usa o compositor do Pygame Zero.')
+        if (pinta && isPintaTextureRequest(raw)) {
           const request = readPintaTextureRequest(raw, PGZERO_LIMITS.images)
           // An older batch may still draw or release an owner before this resource exchange.
-          if (shown) {
-            const previous = shown
-            shown = undefined
-            await previous
-            active()
-          }
+          if (shown) await finishPaint(shown)
           if ('owner' in request) {
             checkPintaReleaseAttachments(attachments)
             pinta.release(request.owner)
@@ -957,12 +965,7 @@ export function createPgzeroRenderer(
         if (header.decode !== undefined) return { text: '{}', bytes: vectorPixels(header.decode) }
         // The previous batch reaches the screen first: it still uses the current text tables and
         // window size. Python is never more than one frame ahead of the display.
-        if (shown) {
-          const previous = shown
-          shown = undefined
-          await previous
-          active()
-        }
+        if (shown) await finishPaint(shown)
         for (const [id] of header.fonts) {
           const bytes = supplied.get(PGZERO_FONT_ATTACHMENT_BASE + id)
           if (!bytes) throw new Error('Faltou uma fonte do jogo.')
@@ -1120,7 +1123,7 @@ export function createPgzeroRenderer(
       raf = undefined
       pendingPaint?.reject(new Error('A execução do Pygame Zero foi encerrada.'))
       pendingPaint = undefined
-      pinta.dispose()
+      pinta?.dispose()
       for (const image of images.values()) image.close()
       images.clear()
       lastPixels?.close()

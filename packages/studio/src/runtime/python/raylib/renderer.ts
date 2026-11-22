@@ -284,13 +284,15 @@ export function createRaylibRenderer(
   let three: Raylib3D | undefined
   let renderingTexture = false
   let currentPixels = 0
-  const pinta = createPintaTextureStore({
-    maxImages: RAYLIB_LIMITS.textures,
-    maxPixels: RAYLIB_LIMITS.totalPixels,
-    existing: () => ({ images: gl ? textures.size : 2, pixels: currentPixels }),
-    create: createPintaTexture,
-    release: (entry) => gl?.deleteTexture(entry.texture),
-  })
+  const pinta = options.pintaRegional
+    ? createPintaTextureStore({
+        maxImages: RAYLIB_LIMITS.textures,
+        maxPixels: RAYLIB_LIMITS.totalPixels,
+        existing: () => ({ images: gl ? textures.size : 2, pixels: currentPixels }),
+        create: createPintaTexture,
+        release: (entry) => gl?.deleteTexture(entry.texture),
+      })
+    : undefined
 
   function active() {
     if (disposed) throw new Error('A execução do Raylib foi encerrada.')
@@ -387,9 +389,9 @@ export function createRaylibRenderer(
     // must not stay half made). The built-in textures and the font atlases are the runtime's,
     // as on the Python side, which counts only what the game loads.
     const counted = id > DEFAULT_FONT_TEXTURE && !fontAtlas ? w * h : 0
-    if (counted && currentPixels + pinta.pixels + counted > RAYLIB_LIMITS.totalPixels)
+    if (counted && currentPixels + (pinta?.pixels ?? 0) + counted > RAYLIB_LIMITS.totalPixels)
       throw new Error('As imagens do jogo passaram do limite de tamanho.')
-    if (counted && textures.size + pinta.count >= RAYLIB_LIMITS.textures)
+    if (counted && textures.size + (pinta?.count ?? 0) >= RAYLIB_LIMITS.textures)
       throw new Error('O jogo carregou imagens demais ao mesmo tempo.')
     const texture = g.createTexture()
     // raylib (rlLoadTexture on OpenGL 3.3): TEXTURE_FILTER_POINT and TEXTURE_WRAP_REPEAT, the
@@ -1271,8 +1273,11 @@ export function createRaylibRenderer(
     vertex(trx, try_, u1, v0, tint)
   }
 
-  function pintaAffine(list: Float64Array, at: number) {
-    const image = pinta.image(list[at]!, list[at + 1]!)
+  function pintaAffine(
+    list: Float64Array,
+    at: number,
+    image: ReturnType<typeof createPintaTexture>,
+  ) {
     checkPintaAffine(list, at, image)
     const x = list[at + 2]!,
       y = list[at + 3]!,
@@ -1746,13 +1751,11 @@ export function createRaylibRenderer(
           npatch(r, at)
           break
         case RAYLIB_OP.PINTA_AFFINE:
-          if (!options.pintaRegional)
-            throw new Error('Este jogo não usa o compositor do Raylib 2D.')
-          pintaAffine(r, at)
+          if (!pinta) throw new Error('Lista de desenho do Raylib inválida.')
+          pintaAffine(r, at, pinta.image(r[at]!, r[at + 1]!))
           break
         case RAYLIB_OP.PINTA_RELEASE:
-          if (!options.pintaRegional)
-            throw new Error('Este jogo não usa o compositor do Raylib 2D.')
+          if (!pinta) throw new Error('Lista de desenho do Raylib inválida.')
           endBatch()
           pinta.release(r[at]!)
           break
@@ -2046,9 +2049,7 @@ export function createRaylibRenderer(
       if (busy) throw new Error('Um quadro do Raylib já está em andamento.')
       busy = true
       try {
-        if (isPintaTextureRequest(raw)) {
-          if (!options.pintaRegional)
-            throw new Error('Este jogo não usa o compositor do Raylib 2D.')
+        if (pinta && isPintaTextureRequest(raw)) {
           const request = readPintaTextureRequest(raw, RAYLIB_LIMITS.textures)
           if ('owner' in request) {
             checkPintaReleaseAttachments(attachments)
@@ -2163,7 +2164,7 @@ export function createRaylibRenderer(
       raf = undefined
       pendingPaint?.reject(new Error('A execução do Raylib foi encerrada.'))
       pendingPaint = undefined
-      pinta.dispose()
+      pinta?.dispose()
       if (canvas && canvas.ownerDocument.pointerLockElement === canvas)
         canvas.ownerDocument.exitPointerLock()
       three?.dispose()
