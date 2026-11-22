@@ -161,10 +161,12 @@ export function conditionalWrite<T>(
   store: UseStore,
   identity: string,
   generation: number,
-  keys: readonly IDBValidKey[],
-  decide: (values: unknown[]) => { write: IdbWrite; result: T },
+  keys: readonly IDBValidKey[] | ((keys: readonly IDBValidKey[]) => readonly IDBValidKey[]),
+  decide: (values: unknown[], keys: readonly IDBValidKey[]) => { write: IdbWrite; result: T },
 ): Promise<T> {
-  const ready = prepareProjectTransport(keys)
+  // Inventory selection is for stores without the document transport. The key
+  // list and its values must be observed inside the same transaction as the put.
+  const ready = typeof keys === 'function' ? undefined : prepareProjectTransport(keys)
   if (ready) return ready.then(() => conditionalWrite(store, identity, generation, keys, decide))
   return openTransaction(store, 'readwrite', (objectStore) => {
     const transaction = objectStore.transaction
@@ -191,12 +193,16 @@ export function conditionalWrite<T>(
         active!.delete(transaction)
         if (active!.size === 0) conditionalTransactions.delete(identity)
       })
-    try {
-      const values: unknown[] = new Array(keys.length)
-      let remaining = keys.length
+    const abort = (error: unknown) => {
+      failure = error
+      abortQuietly(transaction)
+    }
+    const read = (selected: readonly IDBValidKey[]) => {
+      const values: unknown[] = new Array(selected.length)
+      let remaining = selected.length
       const finish = () => {
         try {
-          const { write, result } = decide(values)
+          const { write, result } = decide(values, selected)
           for (const [key, value] of write.puts ?? [])
             objectStore.put(encodeProjectStorageValue(key, value), key)
           for (const key of write.deletes ?? []) objectStore.delete(key)
@@ -204,26 +210,36 @@ export function conditionalWrite<T>(
           conditionalTransactions.get(identity)?.delete(transaction)
           if (typeof transaction.commit === 'function') transaction.commit()
         } catch (error) {
-          failure = error
-          abortQuietly(transaction)
+          abort(error)
         }
       }
       if (remaining === 0) finish()
-      keys.forEach((key, index) => {
+      selected.forEach((key, index) => {
         const request = objectStore.get(key)
         request.onsuccess = () => {
           try {
             values[index] = decodeProjectStorageValue(key, request.result)
             if (--remaining === 0) finish()
           } catch (error) {
-            failure = error
-            abortQuietly(transaction)
+            abort(error)
           }
         }
       })
+    }
+    try {
+      if (typeof keys !== 'function') read(keys)
+      else {
+        const request = objectStore.getAllKeys()
+        request.onsuccess = () => {
+          try {
+            read(keys(request.result))
+          } catch (error) {
+            abort(error)
+          }
+        }
+      }
     } catch (error) {
-      failure = error
-      abortQuietly(transaction)
+      abort(error)
     }
     return done
   })

@@ -13,18 +13,21 @@ let hold: { started: () => void; finished: Promise<void> } | undefined
 let releaseHeld = () => {}
 mock.module('idb-keyval', () => ({
   createStore: (name: string) => fakeUseStore(name),
-  get: async (key: IDBValidKey, store?: { name?: string }) => {
-    const value = kv(store).get(key)
-    if (hold && store?.name?.startsWith('sistema-zero-personal-assets-') && key === 'asset:d1') {
+  get: async (key: IDBValidKey, store?: { name?: string }) => kv(store).get(key),
+  getMany: async (keys: IDBValidKey[], store?: { name?: string }) => {
+    const values = keys.map((key) => kv(store).get(key))
+    if (
+      hold &&
+      store?.name?.startsWith('sistema-zero-personal-assets-') &&
+      keys.includes('asset:d1')
+    ) {
       const waiting = hold
       hold = undefined
       waiting.started()
       await waiting.finished
     }
-    return value
+    return values
   },
-  getMany: async (keys: IDBValidKey[], store?: { name?: string }) =>
-    keys.map((key) => kv(store).get(key)),
   keys: async (store?: { name?: string }) => [...kv(store).keys()],
   set: async (key: IDBValidKey, value: unknown, store?: { name?: string }) => {
     kv(store).set(key, value)

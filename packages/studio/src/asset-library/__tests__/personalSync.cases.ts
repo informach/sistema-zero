@@ -44,10 +44,6 @@ mock.module('idb-keyval', () => ({
   },
   getMany: async (keys: IDBValidKey[], store?: { name?: string }) => {
     reads += 1
-    if (store?.name?.includes('personal-assets')) {
-      personalInventoryReads += 1
-      await beforePersonalInventory?.()
-    }
     for (const key of keys) if (typeof key === 'string') askedKeys.push(key)
     return keys.map((key) => kvOf(store).get(key))
   },
@@ -65,6 +61,10 @@ mock.module('idb-keyval', () => ({
   },
   keys: async (store?: { name?: string }) => {
     reads += 1
+    if (store?.name?.includes('personal-assets')) {
+      personalInventoryReads += 1
+      await beforePersonalInventory?.()
+    }
     return [...kvOf(store).keys()]
   },
   update: async (

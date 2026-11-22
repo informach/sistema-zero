@@ -37,6 +37,8 @@ mock.module('idb-keyval', () => ({
     kvOf(store).delete(key)
   },
   delMany: async (keys: IDBValidKey[], store?: { name?: string }) => {
+    beforeDelete?.()
+    if (failDeletes) throw new Error('IndexedDB indisponível')
     for (const key of keys) kvOf(store).delete(key)
   },
   keys: async (store?: { name?: string }) => {

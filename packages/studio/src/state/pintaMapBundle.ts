@@ -1,6 +1,8 @@
 import { ulid } from 'ulid'
 import { mergeDrawingIntoAsset, personalIdOf } from '../asset-library/personalAssetMerge'
 import { uniqueAssetName } from '../core/assetNames'
+import { isUnusablePintaRegionalAsset } from '../core/pintaAuthoredPngVersion'
+import { UNSUPPORTED_PINTA_REGION } from '../core/pintaRegionalReference'
 import {
   PROJECT_ASSET_LIMITS,
   type ProjectAsset,
@@ -29,6 +31,7 @@ export function preparePintaMapBundle(
     throw new Error('Este conjunto de mapas é inválido ou grande demais.')
   const next = [...current]
   for (const input of inputs) {
+    if (isUnusablePintaRegionalAsset(input)) throw new Error(UNSUPPORTED_PINTA_REGION)
     const scene = sanitizeSceneMeta(input.scene)
     if (!input.id || input.id.includes(':') || !scene)
       throw new Error('Um dos mapas está incompleto ou passou do limite do Estúdio.')

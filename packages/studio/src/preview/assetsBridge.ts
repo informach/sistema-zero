@@ -1,4 +1,5 @@
 import type { PintaScene } from '@sistemazero/core/studio/pinta-scene'
+import { hasRegionalPintaReference, UNSUPPORTED_PINTA_REGION } from '../core/pintaRegionalReference'
 import { sanitizeSceneMeta } from '../core/projectAssets'
 import { resolverAssetsDoTransporte3D, type TransporteDeCenas3D } from '../core/scene3d/transporte'
 /**
@@ -118,6 +119,7 @@ function safeMetaManifest(
   let totalChars = 0
   for (const [name, entry] of Object.entries(meta)) {
     if (!Object.hasOwn(safeAssets, name)) continue
+    if (hasRegionalPintaReference(entry)) throw new Error(UNSUPPORTED_PINTA_REGION)
     const tilemap = safeTilemapEntry(entry?.tilemap)
     // `tilemapFront` não passa daqui: nenhum motor o lê (a frente do cenário vem da cena).
     const scene = sanitizeSceneMeta(entry?.scene)

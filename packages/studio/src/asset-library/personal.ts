@@ -14,7 +14,7 @@ import type { PintaScene } from '@sistemazero/core/studio/pinta-scene'
  * Todas as operações são FAIL-SOFT (`{ok:false}`/array vazio/no-op) — quota de
  * IndexedDB cheia ou ambiente sem IDB nunca derruba o editor.
  */
-import { createStore, del, get, getMany, keys, set } from 'idb-keyval'
+import { getMany, keys } from 'idb-keyval'
 import {
   isValidAssetDataUrl,
   normalizeAssetName,
@@ -25,112 +25,31 @@ import {
   sanitizeTilemapMeta,
   sanitizeTilesetMeta,
 } from '#core'
+import { isUnusablePintaRegionalAsset } from '../core/pintaAuthoredPngVersion'
+import { UNSUPPORTED_PINTA_REGION } from '../core/pintaRegionalReference'
 import { sanitizeSceneMeta } from '../core/projectAssets'
-import { writeInOneTransaction } from '../state/idbTransaction'
+import {
+  ASSET_KEY_PREFIX,
+  assetKey,
+  getPersonalAssetsNamespace,
+  getStoreHandle,
+  markPersonalAssetsChanged,
+  PERSONAL_ASSET_LIMITS,
+  type PersonalStorageInventory,
+  personalAssetChars,
+  regionalKey,
+  regionalQuota,
+  withPersonalAssetUpdate,
+} from './personalStorage'
 
-const ASSET_KEY_PREFIX = 'asset:'
-const assetKey = (id: string) => `${ASSET_KEY_PREFIX}${id}`
-
-/**
- * Marcador de "algum desenho mudou", em `localStorage` — o sinal que atravessa
- * ABAS (a criança edita no Pinta numa aba e o jogo está aberto noutra).
- *
- * Por que aqui: `savePersonalAsset` é o funil ÚNICO de escrita da biblioteca,
- * então o "Usar no Estúdio" e a reemissão automática do Pinta bumpam o marcador
- * de graça — nenhum host precisa saber que ele existe.
- *
- * Por que `localStorage` e não `BroadcastChannel`: o valor precisa SOBREVIVER à
- * aba fechada (editar hoje, abrir o Estúdio amanhã) e ser lido de forma
- * SÍNCRONA sob demanda. É a mesma escolha (e o mesmo motivo) do
- * `blockly/blockClipboard.ts`. O Estúdio lê no foco e acompanha commits de outras abas.
- *
- * A chave leva o NAMESPACE porque a biblioteca é por PERFIL: o desenho de um
- * irmão não pode disparar a sincronia dos projetos do outro.
- */
-const CHANGED_KEY_PREFIX = 'sz:desenhos-alterados:'
-const changedKey = (namespace = storageNamespace) => `${CHANGED_KEY_PREFIX}${namespace}`
-
-/** `localStorage` pode não existir (SSR) ou lançar (Safari privado, cota). */
-function safeLocalStorage(): Storage | null {
-  try {
-    return typeof localStorage === 'undefined' ? null : localStorage
-  } catch {
-    return null
-  }
-}
-
-/** Carimba "a biblioteca deste perfil mudou agora". Best-effort. */
-function markPersonalAssetsChanged(namespace?: string): void {
-  try {
-    safeLocalStorage()?.setItem(
-      changedKey(namespace),
-      JSON.stringify({ at: Date.now(), changeId: crypto.randomUUID() }),
-    )
-  } catch {
-    // Only the notification is removed; the committed library stays intact.
-    // A missing marker makes the next sweep conservative instead of looking unchanged.
-    try {
-      safeLocalStorage()?.removeItem(changedKey(namespace))
-    } catch {}
-  }
-}
-
-/**
- * Quando a biblioteca deste perfil mudou pela última vez (0 = nunca/indisponível).
- * Carimbo legado para consumidores de datas. A sincronia compara o token completo,
- * pois duas gravações podem acontecer no mesmo milissegundo.
- */
-export function personalAssetsChangedAt(namespace?: string): number {
-  try {
-    const raw = safeLocalStorage()?.getItem(changedKey(namespace))
-    if (!raw) return 0
-    const parsed: unknown = JSON.parse(raw)
-    if (!parsed || typeof parsed !== 'object') return 0
-    const at = (parsed as { at?: unknown }).at
-    return typeof at === 'number' && Number.isFinite(at) ? at : 0
-  } catch {
-    return 0
-  }
-}
-
-/** Opaque change identity; legacy `{at}` markers remain readable. */
-export function personalAssetsChangeToken(namespace?: string): string {
-  try {
-    const raw = safeLocalStorage()?.getItem(changedKey(namespace))
-    if (!raw) return ''
-    const value: unknown = JSON.parse(raw)
-    if (!value || typeof value !== 'object' || !('at' in value)) return ''
-    return typeof value.at === 'number' && Number.isFinite(value.at) ? raw : ''
-  } catch {
-    return ''
-  }
-}
-
-/** Notify only after another tab commits this profile's personal library. */
-export function subscribePersonalAssetsChanged(
-  onChange: () => void,
-  namespace = storageNamespace,
-): () => void {
-  const storage = safeLocalStorage()
-  if (!storage || typeof window === 'undefined') return () => {}
-  const key = changedKey(namespace)
-  const onStorage = (event: StorageEvent): void => {
-    if (event.storageArea === storage && event.key === key) onChange()
-  }
-  window.addEventListener('storage', onStorage)
-  return () => window.removeEventListener('storage', onStorage)
-}
-
-export const PERSONAL_ASSET_LIMITS = {
-  maxCount: 128,
-  /**
-   * Orçamento total de `dataUrl` (~28 MB de binário inflado em base64). Subiu de 24 M
-   * em 09/2026, quando os binários 3D do Molda (modelo .glb até ~5 MB, céu .hdr)
-   * passaram a morar aqui ao lado dos desenhos.
-   */
-  maxTotalChars: 40_000_000,
-  maxNameChars: 48,
-} as const
+export {
+  getPersonalAssetsNamespace,
+  PERSONAL_ASSET_LIMITS,
+  personalAssetsChangedAt,
+  personalAssetsChangeToken,
+  setPersonalAssetsNamespace,
+  subscribePersonalAssetsChanged,
+} from './personalStorage'
 
 /** O tipo de um item da biblioteca pessoal (imagem do Pinta; modelo/céu do Molda). */
 export type PersonalAssetKind = 'image' | 'model3d' | 'environment3d'
@@ -177,49 +96,6 @@ export interface SavePersonalAssetResult {
   /** Revisão monotônica efetivamente persistida. */
   updatedAt?: number
   error?: string
-}
-
-let storageNamespace = ''
-let store: ReturnType<typeof createStore> | null = null
-
-/**
- * Namespace por PERFIL (mesmo contrato do `setStorageNamespace` de projetos).
- * Vazio = store default. Chamado pelo wrapper `setStudioStorageNamespace` e
- * pelo host do Pinta antes de salvar.
- */
-export function setPersonalAssetsNamespace(namespace: string): void {
-  const next = namespace.trim()
-  if (next === storageNamespace) return
-  storageNamespace = next
-  store = null
-}
-
-/** Namespace atual — o AssetsPanel só mostra "Meus desenhos" quando ≠ ''. */
-export function getPersonalAssetsNamespace(): string {
-  return storageNamespace
-}
-
-function personalAssetsDatabaseName(namespace: string): string {
-  return namespace ? `sistema-zero-personal-assets-${namespace}` : 'sistema-zero-personal-assets'
-}
-
-// Um handle por namespace explícito (a nuvem chama por item; cada `createStore` novo abre
-// uma conexão própria com o IndexedDB no 1º uso).
-const storesByNamespace = new Map<string, ReturnType<typeof createStore>>()
-function getStoreHandle(namespace?: string) {
-  if (namespace !== undefined) {
-    const key = namespace.trim()
-    let handle = storesByNamespace.get(key)
-    if (!handle) {
-      handle = createStore(personalAssetsDatabaseName(key), 'kv')
-      storesByNamespace.set(key, handle)
-    }
-    return handle
-  }
-  if (!store) {
-    store = createStore(personalAssetsDatabaseName(storageNamespace), 'kv')
-  }
-  return store
 }
 
 function sanitizePersonalAsset(raw: unknown): PersonalAsset | null {
@@ -300,19 +176,56 @@ export async function readPersonalAssetInventory(options?: {
 
 /** Writers must distinguish an unreadable inventory from an empty library. */
 async function readPersonalAssets(
-  kvStore: ReturnType<typeof createStore>,
+  kvStore: ReturnType<typeof getStoreHandle>,
 ): Promise<PersonalAsset[]> {
   const allKeys = await keys(kvStore)
   const assetKeys = allKeys.filter(
     (key): key is string => typeof key === 'string' && key.startsWith(ASSET_KEY_PREFIX),
   )
   if (assetKeys.length === 0) return []
-  const values = await getMany<unknown>(assetKeys, kvStore)
-  const assets = values
-    .map((value) => sanitizePersonalAsset(value))
-    .filter((asset): asset is PersonalAsset => asset !== null)
+  const refs = assetKeys.map((key) => key.slice(ASSET_KEY_PREFIX.length))
+  const values = await readPersonalAssetCopies(refs, kvStore)
+  const assets = values.filter((asset): asset is PersonalAsset => asset !== null)
   assets.sort((a, b) => b.updatedAt - a.updatedAt)
   return assets
+}
+
+async function readPersonalAssetCopies(
+  ids: readonly string[],
+  store: ReturnType<typeof getStoreHandle>,
+) {
+  const values = await getMany<unknown>(
+    ids.flatMap((id) => [regionalKey(id), assetKey(id)]),
+    store,
+  )
+  return ids.map((_, i) => {
+    const legacy = values[i * 2 + 1]
+    return values[i * 2] === undefined && !isUnusablePintaRegionalAsset(legacy)
+      ? sanitizePersonalAsset(legacy)
+      : null
+  })
+}
+
+function splitInventory({ legacy, regional }: PersonalStorageInventory) {
+  const protectedRecords = new Map(regional)
+  const assets: PersonalAsset[] = []
+  let shadowChars = 0
+  for (const [id, raw] of legacy) {
+    if (regional.has(id)) {
+      // Old tabs may recreate a hidden cover. Charge its physical bytes but do
+      // not let it count as a separate logical item or supply a legacy name.
+      if (raw && typeof raw === 'object' && 'dataUrl' in raw && typeof raw.dataUrl === 'string')
+        shadowChars += personalAssetChars(raw as { dataUrl: string })
+      continue
+    }
+    if (isUnusablePintaRegionalAsset(raw)) {
+      protectedRecords.set(id, raw)
+      continue
+    }
+    const asset = sanitizePersonalAsset(raw)
+    if (asset) assets.push(asset)
+  }
+  return { assets, protectedRecords, shadowChars }
 }
 
 /**
@@ -348,10 +261,12 @@ function preparePersonalAsset(
   input: PersonalAssetInput,
   existing: readonly PersonalAsset[],
   now: number,
+  reserved: NonNullable<ReturnType<typeof regionalQuota>>,
 ): PreparedPersonalAsset {
   if (!input.id || input.id.includes(':')) {
     return { ok: false, error: 'Esse desenho veio com uma identificação inválida.' }
   }
+  if (isUnusablePintaRegionalAsset(input)) return { ok: false, error: UNSUPPORTED_PINTA_REGION }
   const kind = personalAssetKindOf(input.kind)
   if (kind === 'image') {
     if (!isValidAssetDataUrl(input.dataUrl)) {
@@ -371,24 +286,16 @@ function preparePersonalAsset(
   const previous = existing.find((a) => a.id === input.id)
   const others = existing.filter((a) => a.id !== input.id)
 
-  if (!previous && others.length >= PERSONAL_ASSET_LIMITS.maxCount) {
+  if (!previous && others.length + reserved.count >= PERSONAL_ASSET_LIMITS.maxCount) {
     return { ok: false, error: 'A sua biblioteca está cheia! Apague um desenho antigo.' }
   }
-  const chars = (a: {
-    dataUrl: string
-    scene?: unknown
-    tilemap?: unknown
-    tilemapFront?: unknown
-  }) =>
-    a.dataUrl.length +
-    JSON.stringify([a.scene ?? null, a.tilemap ?? null, a.tilemapFront ?? null]).length
-  const othersChars = others.reduce((sum, a) => sum + chars(a), 0)
-  if (othersChars + chars(input) > PERSONAL_ASSET_LIMITS.maxTotalChars) {
+  const othersChars = others.reduce((sum, a) => sum + personalAssetChars(a), reserved.chars)
+  if (othersChars + personalAssetChars(input) > PERSONAL_ASSET_LIMITS.maxTotalChars) {
     return { ok: false, error: 'A sua biblioteca está sem espaço! Apague um desenho antigo.' }
   }
 
   // Dedup de nome contra OUTROS desenhos (reenviar o mesmo id mantém o nome).
-  const taken = new Set(others.map((a) => a.name))
+  const taken = new Set([...others.map((a) => a.name), ...reserved.names])
   let name = baseName
   for (let n = 2; taken.has(name); n += 1) {
     name = `${baseName}-${n}`
@@ -450,14 +357,12 @@ export async function savePersonalAsset(
   options?: { namespace?: string },
 ): Promise<SavePersonalAssetResult> {
   // Capture the account before the first asynchronous read.
-  const namespace = options?.namespace ?? storageNamespace
+  const namespace = options?.namespace ?? getPersonalAssetsNamespace()
   try {
-    const kvStore = getStoreHandle(namespace)
-    const prepared = preparePersonalAsset(input, await readPersonalAssets(kvStore), Date.now())
-    if (!prepared.ok) return prepared
-    const { record } = prepared
-    await set(assetKey(record.id), record, kvStore)
+    const result = await writePersonalAssets([input], namespace)
+    if (!result.ok) return result
     markPersonalAssetsChanged(namespace)
+    const record = result.assets[0]!
     return { ok: true, name: record.name, updatedAt: record.updatedAt }
   } catch {
     return { ok: false, error: 'Não consegui salvar agora. Tente de novo daqui a pouco.' }
@@ -473,7 +378,7 @@ export async function savePersonalAssetBundle(
   inputs: readonly PersonalAssetInput[],
   options?: { namespace?: string },
 ): Promise<SavePersonalAssetBundleResult> {
-  const namespace = options?.namespace ?? storageNamespace
+  const namespace = options?.namespace ?? getPersonalAssetsNamespace()
   if (
     inputs.length < 1 ||
     inputs.length > 16 ||
@@ -481,25 +386,42 @@ export async function savePersonalAssetBundle(
   )
     return { ok: false, error: 'Este conjunto de mapas é inválido ou grande demais.' }
   try {
-    const kvStore = getStoreHandle(namespace)
-    const previous = await readPersonalAssets(kvStore)
+    const result = await writePersonalAssets(inputs, namespace)
+    if (result.ok) markPersonalAssetsChanged(namespace)
+    return result
+  } catch {
+    return { ok: false, error: 'Não consegui salvar os mapas agora. Tente de novo daqui a pouco.' }
+  }
+}
+
+function writePersonalAssets(
+  inputs: readonly PersonalAssetInput[],
+  namespace: string,
+): Promise<SavePersonalAssetBundleResult> {
+  return withPersonalAssetUpdate<SavePersonalAssetBundleResult>(namespace, (stored) => {
+    const { assets: previous, protectedRecords, shadowChars } = splitInventory(stored)
+    const reserved = regionalQuota(protectedRecords)
+    if (!reserved || inputs.some(({ id }) => protectedRecords.has(id)))
+      return { write: {}, result: { ok: false, error: UNSUPPORTED_PINTA_REGION } }
+    reserved.chars += shadowChars
     const replaced = new Set(inputs.map((a) => a.id))
-    let inventory = previous.filter((a) => !replaced.has(a.id))
+    const inventory = previous.filter((a) => !replaced.has(a.id))
     const assets: PersonalAsset[] = []
     const now = Date.now()
     for (const input of inputs) {
       const old = previous.find((a) => a.id === input.id)
-      const prepared = preparePersonalAsset(input, old ? [...inventory, old] : inventory, now)
-      if (!prepared.ok) return prepared
+      const prepared = preparePersonalAsset(
+        input,
+        old ? [...inventory, old] : inventory,
+        now,
+        reserved,
+      )
+      if (!prepared.ok) return { write: {}, result: prepared }
       assets.push(prepared.record)
-      inventory = [...inventory.filter((a) => a.id !== input.id), prepared.record]
+      inventory.push(prepared.record)
     }
-    await writeInOneTransaction(kvStore, { puts: assets.map((a) => [assetKey(a.id), a]) })
-    markPersonalAssetsChanged(namespace)
-    return { ok: true, assets }
-  } catch {
-    return { ok: false, error: 'Não consegui salvar os mapas agora. Tente de novo daqui a pouco.' }
-  }
+    return { write: { puts: assets.map((a) => [assetKey(a.id), a]) }, result: { ok: true, assets } }
+  })
 }
 
 export type RemovePersonalAssetResult = { ok: true } | { ok: false; error: string }
@@ -513,11 +435,18 @@ export async function removePersonalAsset(
   id: string,
   options?: { namespace?: string },
 ): Promise<RemovePersonalAssetResult> {
-  const namespace = options?.namespace ?? storageNamespace
+  const namespace = options?.namespace ?? getPersonalAssetsNamespace()
   try {
-    await del(assetKey(id), getStoreHandle(namespace))
-    markPersonalAssetsChanged(namespace)
-    return { ok: true }
+    const result = await withPersonalAssetUpdate<RemovePersonalAssetResult>(
+      namespace,
+      ({ legacy, regional }) => {
+        if (regional.has(id) || isUnusablePintaRegionalAsset(legacy.get(id)))
+          return { write: {}, result: { ok: false, error: UNSUPPORTED_PINTA_REGION } }
+        return { write: { deletes: [assetKey(id)] }, result: { ok: true } }
+      },
+    )
+    if (result.ok) markPersonalAssetsChanged(namespace)
+    return result
   } catch {
     return { ok: false, error: 'Não consegui excluir agora. Tente de novo daqui a pouco.' }
   }
@@ -537,12 +466,9 @@ export async function getPersonalAssets(
   const unique = [...new Set(ids)]
   if (unique.length === 0) return result
   try {
-    const values = await getMany<unknown>(
-      unique.map((id) => assetKey(id)),
-      getStoreHandle(options?.namespace),
-    )
+    const values = await readPersonalAssetCopies(unique, getStoreHandle(options?.namespace))
     unique.forEach((id, index) => {
-      result.set(id, sanitizePersonalAsset(values[index]))
+      result.set(id, values[index] ?? null)
     })
   } catch {
     for (const id of unique) result.set(id, null)
@@ -554,10 +480,6 @@ export async function getPersonalAsset(
   id: string,
   options?: { namespace?: string },
 ): Promise<PersonalAsset | null> {
-  try {
-    const raw = await get<unknown>(assetKey(id), getStoreHandle(options?.namespace))
-    return sanitizePersonalAsset(raw)
-  } catch {
-    return null
-  }
+  const assets = await getPersonalAssets([id], options)
+  return assets.get(id) ?? null
 }

@@ -1,4 +1,5 @@
 import { isValidAssetDataUrl, type ProjectAsset } from '#core'
+import { isUnusablePintaRegionalAsset } from '../core/pintaAuthoredPngVersion'
 import type { PersonalAsset } from './personal'
 
 export const PERSONAL_LIB_PREFIX = 'personal:'
@@ -17,6 +18,7 @@ export function mergeDrawingIntoAsset(
 ): ProjectAsset | null {
   // Legacy canonical copies cannot replace an explicitly derived frame/map.
   if (asset.pintaImage !== undefined) return null
+  if (isUnusablePintaRegionalAsset(asset) || isUnusablePintaRegionalAsset(drawing)) return null
   const is3D = asset.kind === 'model3d' || asset.kind === 'environment3d'
   // 3D: o nome do arquivo faz parte da validação (extensão × MIME × assinatura), então
   // vale o da criação nova e, sem ele, o que o asset já tinha.

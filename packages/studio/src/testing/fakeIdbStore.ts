@@ -311,14 +311,15 @@ async function finish(
       return
     }
     let answers: unknown[]
+    const firstReads = reads.slice()
     try {
-      answers = await fetchAnswers(store, reads)
+      answers = await fetchAnswers(store, firstReads)
     } catch (error) {
       abort(error)
       return
     }
-    const deliverAll = () => {
-      reads.forEach((read, index) => {
+    const deliver = (batch: readonly PendingRead[]) => {
+      batch.forEach((read, index) => {
         read.request.deliver(answers[index])
       })
     }
@@ -340,10 +341,23 @@ async function finish(
       // O `success` é uma TAREFA separada no navegador, e não uma microtask: quem encadeia
       // promessas no `complete` chega a ler antes dele.
       await new Promise<void>((resolve) => setTimeout(resolve, 0))
-      deliverAll()
+      deliver(firstReads)
       return
     }
-    pending.deliverWhileActive(deliverAll)
+    pending.deliverWhileActive(() => deliver(firstReads))
+    let delivered = firstReads.length
+    // A live inventory CAS may request values in the getAllKeys success event.
+    while (!pending.abortCalled() && delivered < reads.length) {
+      const added = reads.slice(delivered)
+      try {
+        answers = await fetchAnswers(store, added)
+      } catch (error) {
+        abort(error)
+        return
+      }
+      delivered += added.length
+      pending.deliverWhileActive(() => deliver(added))
+    }
     if (pending.abortCalled()) {
       abort(null)
       return

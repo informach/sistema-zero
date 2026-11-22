@@ -34,6 +34,7 @@ mock.module('idb-keyval', () => ({
     kvOf(store).set(key, value)
   },
   setMany: async (pairs: Array<[IDBValidKey, unknown]>, store?: { name?: string }) => {
+    if (failWrites) throw new Error('IndexedDB indisponível')
     for (const [key, value] of pairs) kvOf(store).set(key, value)
   },
   del: async (key: IDBValidKey, store?: { name?: string }) => {

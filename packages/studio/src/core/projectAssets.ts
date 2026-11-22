@@ -10,6 +10,7 @@ import {
 } from '@sistemazero/core/studio/pinta-scene'
 import { courseModelDataUrl, isCourseModelStub } from './courseModels'
 import { readPintaImageAssetMetadata } from './pintaImageAsset'
+import { hasRegionalPintaReference, UNSUPPORTED_PINTA_REGION } from './pintaRegionalReference'
 import { validProMaterialPath } from './proAssetPaths'
 import {
   isScene3DAssetKind,
@@ -595,6 +596,7 @@ export function sanitizeProjectAssets(
     if (out.length >= MAX_ASSETS_COUNT) break
     if (!item || typeof item !== 'object' || Array.isArray(item)) continue
     const a = item as Record<string, unknown>
+    if (hasRegionalPintaReference(a)) throw new Error(UNSUPPORTED_PINTA_REGION)
     const pintaImage = readPintaImageAssetMetadata(a)
     if (
       a.kind !== 'image' &&
@@ -723,6 +725,7 @@ export function assetManifest(
   const out: Record<string, string> = Object.create(null)
   if (!assets) return out
   for (const a of assets) {
+    if (hasRegionalPintaReference(a)) throw new Error(UNSUPPORTED_PINTA_REGION)
     if (a && a.kind === 'image' && typeof a.name === 'string' && typeof a.dataUrl === 'string') {
       out[a.name] = a.dataUrl
     }
@@ -805,6 +808,7 @@ export function assetMetaManifest(
   if (!assets) return out
   const sendScene = !context || codeUsesPintaScenePlayer(context.code)
   for (const a of assets) {
+    if (hasRegionalPintaReference(a)) throw new Error(UNSUPPORTED_PINTA_REGION)
     if (a?.kind !== 'image' || typeof a.name !== 'string') continue
     const hitbox = a.sprite?.hitbox
     // Named animation is resolved by the engine, so its geometry travels with it.
