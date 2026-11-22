@@ -1,10 +1,15 @@
+import { createHash } from 'node:crypto'
+import { readFile } from 'node:fs/promises'
+import { gunzipSync } from 'node:zlib'
 import { expect, test } from '@playwright/test'
 import type { PintaCausalIntent, PintaCausalResult } from '@sistemazero/core/creations/pinta-causal'
+import { unzipSync } from 'fflate'
 import { openPintaAuthorityProof as proof } from './helpers/pintaAuthorityRealm'
 
 declare global {
   interface Window {
     releaseCausalEditor?: () => void
+    mountPintaRecoveryGallery(namespace: string): void
   }
 }
 
@@ -700,4 +705,111 @@ test('an editor in another tab defers the complete delta before the final local 
   expect(raced.epoch).toBe('4')
   expect(raced.names).toContain('edicao-local')
   expect(raced.names.some((name) => name.endsWith('-nova-nova'))).toBe(false)
+})
+
+test('gallery offers the exact original download after reopening a v3 queue offline', async ({
+  page,
+  context,
+}) => {
+  await proof(page)
+  const recorded = await page.evaluate(async () => {
+    const p = window.pinta026
+    const namespace = crypto.randomUUID()
+    const local = p.createPintaCausalPersistence({ namespace })
+    const sheet = p.createTilesetAsset({ name: 'folha', tileSize: 8 })
+    const map = p.createTilemapAsset({ name: 'vila', tilesetId: sheet.id, cols: 2, rows: 2 })
+    map.layers[0]!.cells![0] = 0
+    const signal = new AbortController().signal
+    const encoded = await local.causal.encodeCandidates([sheet, map], signal)
+    await local.causal.applyPull(
+      {
+        fromEpoch: null,
+        epoch: '1',
+        transitions: [sheet, map].map((after, i) => ({
+          id: after.id,
+          before: null,
+          beforeRevision: null,
+          after,
+          remote: {
+            revision: 1,
+            sha256: encoded.puts[i]!.sha256,
+            layoutRevision: i === 0 ? '1' : null,
+          },
+        })),
+      },
+      () => true,
+    )
+    const [base] = await local.causal.capture([map.id])
+    if (base?.before?.kind !== 'tilemap') throw Error('Vila ausente')
+    const after = { ...base.before, name: 'minha-vila' }
+    const shadow = await local.causal.encodeCandidates([after], signal)
+    const opId = crypto.randomUUID()
+    await local.causal.stage({
+      opId,
+      baseEpoch: '1',
+      shadow,
+      readSet: [
+        {
+          source: 'snapshot',
+          consumerId: map.id,
+          targetId: sheet.id,
+          revision: 1,
+          sha256: encoded.puts[0]!.sha256,
+          layoutRevision: '1',
+        },
+      ],
+      transitions: [{ ...base, after, baseRevision: 1, operation: { type: 'update' } }],
+    })
+    const physical = window.pintaPhysicalRegions
+    const db = physical.createStore(`sistema-zero-pinta-${namespace}`, 'kv')
+    await physical.withAssetTransaction(
+      db,
+      (records) => {
+        const current = records.get('pinta:sync:causal')
+        if (!current || typeof current !== 'object') throw Error('Fila ausente')
+        records.set('pinta:sync:causal', { ...current, version: 3 })
+      },
+      () => ['pinta:sync:causal'],
+    )
+    const legacy = p.createPintaPersistence({ namespace })
+    const leaf = await legacy.loadAssetById(sheet.id)
+    if (leaf?.kind !== 'tileset') throw Error('Folha ausente')
+    leaf.tiles[0]!.data[0] = 5
+    await legacy.persistAsset(leaf)
+    return { namespace, opId, mapId: map.id, sheetId: sheet.id, sha: shadow.puts[0]!.sha256 }
+  })
+  await page.close()
+  const reopened = await context.newPage()
+  await reopened.goto('/proof/recovery-gallery.html')
+  await reopened.waitForFunction(() => typeof window.mountPintaRecoveryGallery === 'function')
+  await context.setOffline(true)
+  try {
+    await reopened.evaluate(
+      (namespace) => window.mountPintaRecoveryGallery(namespace),
+      recorded.namespace,
+    )
+    const button = reopened.getByRole('button', { name: 'Baixar edições guardadas' })
+    await expect(button).toBeVisible()
+    const download = reopened.waitForEvent('download')
+    await button.click()
+    const result = await download
+    expect(result.suggestedFilename()).toBe('edicoes-guardadas-pinta.zip')
+    const path = await result.path()
+    if (!path) throw Error('Download ausente')
+    const files = unzipSync(await readFile(path))
+    expect(Object.keys(files).sort()).toEqual(
+      [`${recorded.opId}/${recorded.mapId}.pinta.json.gz`, 'LEIA-ME.txt'].sort(),
+    )
+    const gzip = files[`${recorded.opId}/${recorded.mapId}.pinta.json.gz`]
+    if (!gzip) throw Error('Arquivo nativo ausente')
+    expect(createHash('sha256').update(gzip).digest('hex')).toBe(recorded.sha)
+    expect(JSON.parse(gunzipSync(gzip).toString('utf8')).assets[0]).toMatchObject({
+      id: recorded.mapId,
+      name: 'minha-vila',
+      tilesetId: recorded.sheetId,
+    })
+  } finally {
+    await reopened.close()
+    await context.setOffline(false)
+  }
 })

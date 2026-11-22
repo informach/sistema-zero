@@ -286,7 +286,7 @@ test('the native 8 policy keeps a signed sparse map in the durable causal shadow
   expect(await local.loadAssetById(source.id)).toEqual(source)
   const reopened = createRegionPintaPersistence({ namespace })
   const { version, unbased } = await reopened.causal.inspect()
-  expect(version).toBe(3)
+  expect(version).toBe(4)
   if (!unbased) throw Error('Missing local unit')
   const candidate = await reopened.causal.retained(unbased.opId)
   const blob = candidate?.blobs.get(source.id)

@@ -23,6 +23,14 @@ import { pintaDoorBindings } from '../core/sceneMapClosure'
 import { PINTA_CAUSAL_OUTBOX_KEY } from './assetAuthorityKeys'
 import type { LocalAssetTransition, LocalSnapshot } from './localAssetAuthority'
 import { copyArchivedRecovery, planArchivedRecovery } from './localCausalArchive'
+import {
+  keepLivePins,
+  type LocalPins,
+  type PintaPinDraft,
+  retainPinnedWrites,
+  uniquePinBytes,
+  validLocalPins,
+} from './localCausalPins'
 import { localRecoveryClosure, localRecoverySeeds, recoverLocalAssets } from './localCausalRecovery'
 
 export { PINTA_CAUSAL_OUTBOX_KEY } from './assetAuthorityKeys'
@@ -58,6 +66,7 @@ export interface PintaCausalLocalDraft<Asset extends PintaMemoryAsset> {
   independent?: true
   shadow?: PintaCandidateBytes
   authors?: ReadonlyMap<string, Asset>
+  pins?: PintaPinDraft
 }
 
 interface PintaLocalUnbasedRead {
@@ -75,6 +84,7 @@ export interface PintaLocalUnbasedDraft<Asset extends PintaMemoryAsset> {
   migrations?: readonly { itemId: string; localRevision: string }[]
   shadow?: PintaCandidateBytes
   authors?: ReadonlyMap<string, Asset>
+  pins?: PintaPinDraft
 }
 
 interface PintaLocalUnbased {
@@ -144,6 +154,7 @@ export interface PintaCausalLocalPull<Asset extends PintaMemoryAsset> {
   recoverInitial?: true
   recoverDiverged?: true
   archived?: readonly { opId: string; localRevision: string; sha256: string; asset: Asset }[]
+  archivedPins?: readonly { opId: string; sha256: string; asset: Asset }[]
   recoverUnit?: {
     opId: string
     intentHash: string
@@ -158,7 +169,8 @@ export interface PintaCausalLocalPull<Asset extends PintaMemoryAsset> {
 export class PintaCausalPullDeferred extends Error {}
 
 export interface LocalCausalState {
-  version: 1 | 2 | 3
+  version: 1 | 2 | 3 | 4
+  pins?: LocalPins
   protocolKnown: boolean
   epoch: string | null
   /** A complete read epoch followed by this device's consecutive confirmed writes. */
@@ -429,7 +441,7 @@ export function readLocalCausalState(records: ReadonlyMap<string, unknown>): Loc
   const value = records.get(PINTA_CAUSAL_OUTBOX_KEY)
   if (value === undefined)
     return {
-      version: 3,
+      version: 4,
       protocolKnown: false,
       epoch: null,
       pending: [],
@@ -438,7 +450,7 @@ export function readLocalCausalState(records: ReadonlyMap<string, unknown>): Loc
     }
   if (
     !object(value) ||
-    (value.version !== 1 && value.version !== 2 && value.version !== 3) ||
+    (value.version !== 1 && value.version !== 2 && value.version !== 3 && value.version !== 4) ||
     (value.protocolKnown !== undefined && typeof value.protocolKnown !== 'boolean') ||
     (value.epoch != null && !pintaCausalEpochSchema.safeParse(value.epoch).success) ||
     (value.writeEpoch !== undefined &&
@@ -450,11 +462,14 @@ export function readLocalCausalState(records: ReadonlyMap<string, unknown>): Loc
     !value.pending.every(pendingState) ||
     (value.prepared !== undefined && !preparedState(value.prepared, value.pending)) ||
     (value.shadows !== undefined &&
-      (value.version !== 3 ||
+      ((value.version !== 3 && value.version !== 4) ||
         !shadowState(value.shadows, value.pending, value.prepared, value.unbased))) ||
     (value.sealed !== null && !sealedState(value.sealed)) ||
     !confirmedState(value.confirmed)
   )
+    invalid()
+  const ownerIds = pinOwners(value.pending, value.sealed, value.unbased)
+  if (value.pins !== undefined && (value.version !== 4 || !validLocalPins(value.pins, ownerIds)))
     invalid()
   const ids = new Set<string>()
   const mutableOwners = new Set<string>()
@@ -470,6 +485,7 @@ export function readLocalCausalState(records: ReadonlyMap<string, unknown>): Loc
   }
   return {
     version: value.version,
+    ...(validLocalPins(value.pins, ownerIds) ? { pins: value.pins } : {}),
     protocolKnown: value.protocolKnown === true,
     epoch: typeof value.epoch === 'string' ? value.epoch : null,
     ...(typeof value.writeEpoch === 'string' ? { writeEpoch: value.writeEpoch } : {}),
@@ -591,7 +607,23 @@ export function stageLocalUnbasedDraft<Asset extends PintaMemoryAsset>(
       ),
     )
   }
-  saveState(records, { ...state, unbased, ...(draft.shadow ? { shadows } : {}) })
+  const pins = draft.pins
+    ? retainPinnedWrites(records, snapshot, state, unbased.opId, draft.pins)
+    : state.pins
+  if (draft.pins) {
+    const authored = new Map(members.map((member) => [member.itemId, member]))
+    const resources = new Map(pins?.get(unbased.opId)?.map((entry) => [entry.itemId, entry]))
+    for (const { targetId, localRevision } of unbased.readSet) {
+      if (!localRevision || authored.get(targetId)?.localRevision === localRevision) continue
+      if (resources.get(targetId)?.localRevision !== localRevision) invalid()
+    }
+  }
+  saveState(records, {
+    ...state,
+    unbased,
+    ...(pins ? { pins } : {}),
+    ...(draft.shadow ? { shadows } : {}),
+  })
   return snapshot
 }
 
@@ -604,10 +636,12 @@ export function localCausalBytes(records: ReadonlyMap<string, unknown>): number 
     ...(state.recovered ? { recovered: [...state.recovered] } : {}),
     ...(state.prepared ? { prepared: [...state.prepared] } : {}),
     ...(state.shadows ? { shadows: [...state.shadows] } : {}),
+    ...(state.pins ? { pins: [...state.pins] } : {}),
   })
   return (
     new TextEncoder().encode(metadata).length +
     (state.sealed?.bytes ?? 0) +
+    uniquePinBytes(state.pins) +
     [...(state.prepared?.values() ?? []), ...(state.shadows?.values() ?? [])].reduce(
       (total, entry) => total + entry.bytes,
       0,
@@ -615,8 +649,23 @@ export function localCausalBytes(records: ReadonlyMap<string, unknown>): number 
   )
 }
 
+function pinOwners(
+  pending: readonly PintaCausalPending[],
+  sealed: PintaCausalSealed | null,
+  unbased: unknown,
+): Set<string> {
+  return new Set([
+    ...pending.map(({ opId }) => opId),
+    ...(sealed ? [sealed.local.opId] : []),
+    ...(unbasedState(unbased) ? [unbased.opId] : []),
+  ])
+}
+
 function saveState(records: Map<string, unknown>, state: LocalCausalState): void {
-  records.set(PINTA_CAUSAL_OUTBOX_KEY, { ...state, version: 3 })
+  const pins =
+    state.pins &&
+    keepLivePins(records, state.pins, pinOwners(state.pending, state.sealed, state.unbased))
+  records.set(PINTA_CAUSAL_OUTBOX_KEY, { ...state, ...(pins ? { pins } : {}), version: 4 })
 }
 
 export function rememberLocalCausalProtocol(records: Map<string, unknown>): void {
@@ -1130,8 +1179,30 @@ export function stageLocalCausalDraft<Asset extends PintaMemoryAsset>(
     )
   const recovered = new Map(state.recovered)
   for (const id of items) recovered.delete(id)
+  const pins = draft.pins
+    ? retainPinnedWrites(records, snapshot, state, pending.opId, draft.pins)
+    : state.pins
+  if (draft.pins) {
+    const resources = new Map(pins?.get(pending.opId)?.map((entry) => [entry.itemId, entry]))
+    for (const read of pending.readSet) {
+      if (read.source === 'unit') continue
+      const entry = resources.get(read.targetId)
+      if (!entry) invalid()
+      if (read.source === 'predecessor') {
+        if (entry.localRevision !== read.base.localRevision) invalid()
+        continue
+      }
+      if (
+        entry.remote?.revision !== read.revision ||
+        entry.remote.sha256 !== read.sha256 ||
+        entry.remote.layoutRevision !== read.layoutRevision
+      )
+        invalid()
+    }
+  }
   saveState(records, {
     ...state,
+    ...(pins ? { pins } : {}),
     protocolKnown: true,
     ...(state.recovered ? { recovered } : {}),
     ...(draft.shadow ? { shadows } : {}),
@@ -1464,8 +1535,15 @@ export function renewLocalCausalUpload(
       ),
     }
   })
+  const pins = new Map(state.pins)
+  const retained = pins.get(opId)
+  if (retained) {
+    pins.delete(opId)
+    pins.set(renewed, retained)
+  }
   saveState(records, {
     ...state,
+    ...(state.pins ? { pins } : {}),
     pending,
     sealed: {
       ...sealed,

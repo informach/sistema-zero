@@ -10,12 +10,14 @@ import {
   MAX_BACKUP_FILE_BYTES,
   observePintaReferences,
   type PintaAsset,
+  pintaAssetDependencyIds,
   pintaLocalRevisionOf,
   pintaValuesEqual,
   tilemapTilesetIds,
 } from '@sistemazero/pinta/assets'
 import { pintaCausalChangedSurvivingSlots } from '@sistemazero/pinta/assets/causal'
 import type { PintaCausalCloud, PintaCloudSnapshot } from './pinta-causal-cloud'
+import { encodePintaObservedResources } from './pinta-causal-pins'
 import { readPintaCausalJson } from './pinta-causal-pull'
 
 type Draft = Parameters<PintaCausalLocalPort['stage']>[0]
@@ -139,6 +141,21 @@ export async function preparePintaCausalRemap(options: {
   const verifiedConsumers = new Set<string>()
   let sourceBase = catalog.get(source.id) ?? source
   const budget = { remaining: MAX_BACKUP_FILE_BYTES }
+  async function fetchVerified(entry: PintaCausalEntry): Promise<PintaAsset> {
+    const archived = await cloud.download(entry, snapshot.epoch, signal)
+    const { asset, warnings } = assetFromJson(await readPintaCausalJson(archived, signal, budget))
+    if (
+      entry.coverage !== 'certified' ||
+      !entry.sha256 ||
+      !asset ||
+      warnings.length ||
+      asset.id !== entry.itemId ||
+      asset.kind !== entry.kind ||
+      asset.name !== entry.name
+    )
+      throw Error('Não consegui conferir um dos desenhos que usa estas peças.')
+    return asset
+  }
   for (const entry of snapshot.entries) {
     if (entry.itemId !== source.id && entry.kind !== 'tilemap' && entry.kind !== 'map-set') continue
     signal.throwIfAborted()
@@ -169,18 +186,7 @@ export async function preparePintaCausalRemap(options: {
       } else verifiedConsumers.add(entry.itemId)
       continue
     }
-    const archived = await cloud.download(entry, snapshot.epoch, signal)
-    const { asset, warnings } = assetFromJson(await readPintaCausalJson(archived, signal, budget))
-    if (
-      entry.coverage !== 'certified' ||
-      entry.sha256 === null ||
-      !asset ||
-      warnings.length ||
-      asset.id !== entry.itemId ||
-      asset.kind !== entry.kind ||
-      asset.name !== entry.name
-    )
-      throw Error('Não consegui conferir um dos mapas que pode usar estas peças.')
+    const asset = await fetchVerified(entry)
     if (local && !pintaValuesEqual(local, asset))
       throw Error('Uma versão local ainda precisa ser guardada antes de mudar as peças.')
     if (entry.itemId === source.id) {
@@ -199,6 +205,38 @@ export async function preparePintaCausalRemap(options: {
       (local.kind === 'tilemap' || local.kind === 'map-set')
     )
       verifiedConsumers.add(id)
+  }
+  const universe = [...catalog.values()]
+  const related = universe.filter((asset) => pintaAssetDependencyIds(asset).includes(source.id))
+  const reached = new Set(related.map(({ id }) => id))
+  reached.add(source.id)
+  related.push(sourceBase)
+  for (const asset of related) {
+    for (const { id } of observePintaReferences(asset, [...catalog.values()])) {
+      if (reached.has(id)) continue
+      reached.add(id)
+      const entry = entries.get(id)
+      const current = catalog.get(id)
+      const known = localState.confirmed.get(id)
+      const revision = current && pintaLocalRevisionOf(current)
+      if (
+        !entry ||
+        (current &&
+          entry.sha256 &&
+          known?.revision === entry.revision &&
+          known.sha256 === entry.sha256 &&
+          known.localRevision === revision) ||
+        (current && frozen.get(id)?.localRevision === revision)
+      ) {
+        if (current) related.push(current)
+        continue
+      }
+      const remote = await fetchVerified(entry)
+      if (current && !pintaValuesEqual(current, remote))
+        throw Error('Uma versão local ainda precisa ser guardada antes de mudar as peças.')
+      if (!current) catalog.set(id, remote)
+      related.push(current ?? remote)
+    }
   }
   await cloud.verifyEpoch(snapshot.epoch, signal)
   return {
@@ -508,8 +546,18 @@ export async function stagePintaCausalWrite(options: {
     return left < right ? -1 : left > right ? 1 : 0
   })
   const shadow = await local.encodeCandidates([...output.values()], options.signal)
+  const pins = await encodePintaObservedResources({
+    local,
+    state,
+    candidates: [...output.values()],
+    catalog: options.catalog,
+    readSet,
+    remote: referencePlan,
+    signal: options.signal,
+  })
   const pending = await local.stage({
     shadow,
+    pins,
     authors: options.authors,
     opId: replaces[0]?.opId ?? crypto.randomUUID(),
     baseEpoch: epoch,

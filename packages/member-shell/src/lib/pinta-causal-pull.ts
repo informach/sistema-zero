@@ -57,7 +57,9 @@ export async function readPintaCausalJson(
 
 type LocalPull = Parameters<PintaCausalLocalPort['applyPull']>[0]
 type QueueState = Awaited<ReturnType<PintaCausalLocalPort['inspect']>>
-type RetainedPort = Partial<Pick<PintaCausalLocalPort, 'retained' | 'inFlight' | 'decodeCandidate'>>
+type RetainedPort = Partial<
+  Pick<PintaCausalLocalPort, 'retained' | 'inFlight' | 'pinned' | 'decodeCandidate'>
+>
 
 async function readRetainedCandidates(
   local: RetainedPort,
@@ -65,7 +67,7 @@ async function readRetainedCandidates(
   recovery: LocalPull['recoverUnit'],
   budget: { remaining: number },
   signal: AbortSignal,
-): Promise<NonNullable<LocalPull['archived']>> {
+): Promise<Pick<LocalPull, 'archived' | 'archivedPins'>> {
   const sealed = recovery ? state.sealed : null
   const groups = [
     ...(sealed
@@ -81,6 +83,32 @@ async function readRetainedCandidates(
     ...(!recovery && state.unbased ? [state.unbased] : []),
   ]
   const archived: NonNullable<LocalPull['archived']>[number][] = []
+  const archivedPins: NonNullable<LocalPull['archivedPins']>[number][] = []
+  const decoded = new Map<string, PintaAsset>()
+  async function decode(
+    put: NonNullable<Awaited<ReturnType<PintaCausalLocalPort['retained']>>>['puts'][number],
+    blob: Blob | undefined,
+  ): Promise<PintaAsset> {
+    if (!blob || blob.size !== put.bytes)
+      throw Error('Não consegui conferir os arquivos guardados neste aparelho.')
+    signal.throwIfAborted()
+    const data = new Uint8Array(await blob.arrayBuffer())
+    if ((await pintaCausalGzipHash(data.buffer)) !== put.sha256)
+      throw Error('Não consegui conferir os arquivos guardados neste aparelho.')
+    const asset =
+      decoded.get(put.sha256) ??
+      local.decodeCandidate?.(await readPintaCausalJson(data, signal, budget))
+    if (
+      !asset ||
+      asset.id !== put.itemId ||
+      asset.kind !== put.kind ||
+      asset.name !== put.name ||
+      new Date(asset.updatedAt).toISOString() !== put.itemUpdatedAt
+    )
+      throw Error('Não consegui abrir os arquivos guardados neste aparelho.')
+    decoded.set(put.sha256, asset)
+    return asset
+  }
   for (const group of groups) {
     const isSeal = group.opId === sealed?.intent.opId
     const sent = isSeal ? await local.inFlight?.() : null
@@ -89,26 +117,13 @@ async function readRetainedCandidates(
       sent && sent.sealed.intentHash === recovery?.intentHash
         ? sent.sealed.intent.members.filter((member) => member.action === 'put')
         : retained?.puts
-    if (!puts) continue
     const members = new Map(group.members.map((member) => [member.itemId, member]))
-    for (const put of puts) {
+    for (const put of puts ?? []) {
       const member = members.get(put.itemId)
       const blob = (sent?.blobs ?? retained?.blobs)?.get(put.itemId)
-      if (!member || member.deleted || !blob || blob.size !== put.bytes)
+      if (!member || member.deleted)
         throw Error('Não consegui conferir os arquivos guardados neste aparelho.')
-      signal.throwIfAborted()
-      const data = new Uint8Array(await blob.arrayBuffer())
-      if ((await pintaCausalGzipHash(data.buffer)) !== put.sha256)
-        throw Error('Não consegui conferir os arquivos guardados neste aparelho.')
-      const asset = local.decodeCandidate?.(await readPintaCausalJson(data, signal, budget))
-      if (
-        !asset ||
-        asset.id !== put.itemId ||
-        asset.kind !== put.kind ||
-        asset.name !== put.name ||
-        new Date(asset.updatedAt).toISOString() !== put.itemUpdatedAt
-      )
-        throw Error('Não consegui abrir os arquivos guardados neste aparelho.')
+      const asset = await decode(put, blob)
       archived.push({
         opId: group.opId,
         localRevision: member.localRevision,
@@ -116,8 +131,13 @@ async function readRetainedCandidates(
         asset,
       })
     }
+    const resources = await local.pinned?.(group.opId)
+    for (const put of resources?.puts ?? []) {
+      const asset = await decode(put, resources?.blobs.get(put.itemId))
+      archivedPins.push({ opId: group.opId, sha256: put.sha256, asset })
+    }
   }
-  return archived
+  return { archived, archivedPins }
 }
 
 /** The input represents every visible ID at the same server epoch. */
@@ -214,7 +234,7 @@ export async function pullPintaCausalSnapshot(options: {
   }
   let impact = await local.pullImpact(pull)
   if (impact.needsArchive && !impact.ids.some(options.isOpen)) {
-    pull.archived = await readRetainedCandidates(local, state, recovery, budget, signal)
+    Object.assign(pull, await readRetainedCandidates(local, state, recovery, budget, signal))
     impact = await local.pullImpact(pull)
   }
   if (impact.ids.some(options.isOpen) || (impact.blocked && !impact.needsArchive)) return false

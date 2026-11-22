@@ -37,6 +37,16 @@ ${version === 'current' ? `import * as physicalRegions from ${JSON.stringify(joi
     `<html lang="pt-BR"><title>Prova local 026 (${version})</title><script type="module" src="/proof/${version}.js"></script><body>IndexedDB local, sem nuvem</body></html>`,
   )
 }
+const gallery = await Bun.build({
+  entrypoints: [join(pinta, 'scripts/authority-recovery-gallery.tsx')],
+  target: 'browser',
+  outdir: proof,
+})
+if (!gallery.success) throw new AggregateError(gallery.logs, 'Não compilou a galeria de prova')
+await writeFile(
+  join(proof, 'recovery-gallery.html'),
+  '<html lang="pt-BR"><title>Recuperação do Pinta</title><script type="module" src="/proof/authority-recovery-gallery.js"></script><body><div id="root"></div></body></html>',
+)
 const app = join(temporary, 'app')
 await build({
   configFile: join(pinta, 'playground/vite.config.ts'),

@@ -160,18 +160,27 @@ export function planArchivedRecovery<Asset extends PintaMemoryAsset>(
   }
   const seeds = new Map<RecoveryDraft, Set<string>>()
   for (const draft of drafts) {
+    const displacedPins = state.pins
+      ?.get(draft.opId)
+      ?.some(
+        (pin) =>
+          pin.localRevision !== null &&
+          snapshot.documents.get(pin.itemId)?.revision !== pin.localRevision,
+      )
     for (const { itemId, localRevision, deleted } of draft.members) {
       if (deleted || latest.get(itemId) !== draft) continue
       const current = snapshot.documents.get(itemId)
       const retained = memberAsset(draft, itemId)
       const displaced = current?.revision !== localRevision
-      const affectedReader = draft.readSet.some((edge) => {
-        if (edge.consumerId !== itemId) return false
-        if (result.diverged.has(edge.targetId)) return true
-        const observed = observedRevision(draft, edge)
-        if (observed) return snapshot.documents.get(edge.targetId)?.revision !== observed
-        return edge.source === 'snapshot'
-      })
+      const affectedReader =
+        displacedPins ||
+        draft.readSet.some((edge) => {
+          if (edge.consumerId !== itemId) return false
+          if (result.diverged.has(edge.targetId)) return true
+          const observed = observedRevision(draft, edge)
+          if (observed) return snapshot.documents.get(edge.targetId)?.revision !== observed
+          return edge.source === 'snapshot'
+        })
       if (!displaced && !affectedReader) continue
       if (!retained) {
         if (latest.get(itemId) === draft || draft.hashes.has(itemId)) result.incomplete = true
@@ -185,7 +194,12 @@ export function planArchivedRecovery<Asset extends PintaMemoryAsset>(
   }
 
   for (const [draft, ids] of seeds) {
-    const catalog = new Map(certified)
+    const pins = new Map<string, Asset>()
+    const entries = new Map(state.pins?.get(draft.opId)?.map((entry) => [entry.itemId, entry]))
+    for (const { opId, sha256, asset } of pull.archivedPins ?? [])
+      if (opId === draft.opId && entries.get(asset.id)?.put.sha256 === sha256)
+        pins.set(asset.id, asset)
+    const catalog = new Map([...certified, ...pins])
     const selected = new Map<string, { asset: Asset; source?: RecoveryDraft }>()
     const pending: string[] = []
     function include(id: string, asset: Asset | undefined, source?: RecoveryDraft): void {
@@ -199,11 +213,12 @@ export function planArchivedRecovery<Asset extends PintaMemoryAsset>(
         return
       }
       result.ids.add(id)
+      const currentRevision = snapshot.documents.get(id)?.revision
       if (
         source?.members.some(
-          ({ itemId, localRevision }) =>
-            itemId === id && localRevision === snapshot.documents.get(id)?.revision,
-        )
+          ({ itemId, localRevision }) => itemId === id && localRevision === currentRevision,
+        ) ||
+        (pins.has(id) && entries.get(id)?.localRevision === currentRevision)
       )
         result.restoredCurrent.add(id)
       selected.set(id, { asset, ...(source ? { source } : {}) })
@@ -216,6 +231,13 @@ export function planArchivedRecovery<Asset extends PintaMemoryAsset>(
       const { asset, source } = selected.get(id)!
       if (!source) {
         const refs = resourceIds(asset, catalog)
+        if (pins.has(id)) {
+          for (const target of refs) {
+            const own = memberAsset(draft, target)
+            include(target, pins.get(target) ?? own, pins.has(target) ? undefined : draft)
+          }
+          continue
+        }
         // A nested published document has no local read set. Its reachable bytes are only
         // reconstructible from the complete catalog observed at the same epoch.
         if (
@@ -233,6 +255,11 @@ export function planArchivedRecovery<Asset extends PintaMemoryAsset>(
       // Resolve each reference to its own source. The current contents of a shared ID are not a basis.
       for (const edge of source.readSet.filter(({ consumerId }) => consumerId === id)) {
         const target = edge.targetId
+        const retained = edge.source === 'unit' ? undefined : pins.get(target)
+        if (retained) {
+          include(target, retained)
+          continue
+        }
         switch (edge.source) {
           case 'unit':
             include(target, memberAsset(source, target), source)

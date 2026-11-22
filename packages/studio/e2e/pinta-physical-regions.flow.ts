@@ -1581,7 +1581,7 @@ test('native 8 shadow and physical 3 document share rollback and reopen without 
       { namespace, id, opId },
     ),
   ).toEqual({
-    outbox: 3,
+    outbox: 4,
     physical: 3,
     source: 5,
     archived: 5,

@@ -54,6 +54,7 @@ export {
   PINTA_MAX_SCHEMA,
   type PintaAsset,
   type PintaAssetKind,
+  pintaAssetDependencyIds,
   pintaAssetSchema,
   sanitizePintaAsset,
   type TileAnimationFrame,

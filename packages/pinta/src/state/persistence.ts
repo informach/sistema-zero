@@ -89,6 +89,7 @@ import {
   stageLocalCausalDraft,
   stageLocalUnbasedDraft,
 } from './localCausalOutbox'
+import { PINTA_CAUSAL_PIN_BLOBS_KEY, readPinnedCandidate } from './localCausalPins'
 import type { LocalStorageCodec } from './localChunkStorage'
 
 export {
@@ -488,6 +489,7 @@ export interface PintaCausalLocalPort<Asset extends PintaMemoryAsset = PintaAsse
   prepared(opId: string): Promise<ReturnType<typeof readLocalCausalPrepared>>
   retained(opId: string): Promise<ReturnType<typeof readLocalCausalRetained>>
   retainedArchive(): Promise<ReadonlyMap<string, PintaCandidateBytes>>
+  pinned(opId: string): Promise<PintaCandidateBytes | null>
   seal(
     preparation: string,
     intent: PintaCausalIntent,
@@ -631,8 +633,6 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
     return snapshot
   }
   const causalKeys = [PINTA_CAUSAL_OUTBOX_KEY]
-  const causalInventory: AssetRecordSelection = (records) =>
-    records.has(PINTA_CAUSAL_OUTBOX_KEY) ? null : causalKeys
   const candidateInventory =
     (
       pick: (state: LocalCausalState) => readonly string[],
@@ -640,7 +640,10 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
     ): AssetRecordSelection =>
     (records) => {
       if (!records.has(PINTA_CAUSAL_OUTBOX_KEY)) return causalKeys
-      const missing = pick(readLocalCausalState(records)).filter((key) => !records.has(key))
+      const state = readLocalCausalState(records)
+      const missing = [...pick(state), ...(state.pins ? [PINTA_CAUSAL_PIN_BLOBS_KEY] : [])].filter(
+        (key) => !records.has(key),
+      )
       return missing.length ? missing : includeGallery ? null : []
     }
   const allRetainedKeys = (state: LocalCausalState) => [
@@ -736,12 +739,15 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
     },
     inspect: () => transaction(readLocalCausalState, () => causalKeys),
     rememberProtocol: () =>
-      transaction((records) => {
-        if (readLocalCausalState(records).protocolKnown) return
-        const before = localCausalBytes(records)
-        rememberLocalCausalProtocol(records)
-        checkCombined(records, resolveLocalRecords(records, false), before)
-      }),
+      transaction(
+        (records) => {
+          if (readLocalCausalState(records).protocolKnown) return
+          const before = localCausalBytes(records)
+          rememberLocalCausalProtocol(records)
+          checkCombined(records, resolveLocalRecords(records, false), before)
+        },
+        candidateInventory(() => []),
+      ),
     pullImpact: (pull) =>
       transaction((records) =>
         localCausalPullImpact(
@@ -911,6 +917,11 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
         (records) => readLocalCausalRetained(records, opId),
         () => [PINTA_CAUSAL_OUTBOX_KEY, localPreparedKey(opId)],
       ),
+    pinned: (opId) =>
+      transaction(
+        (records) => readPinnedCandidate(records, readLocalCausalState(records).pins?.get(opId)),
+        () => [PINTA_CAUSAL_OUTBOX_KEY, PINTA_CAUSAL_PIN_BLOBS_KEY],
+      ),
     retainedArchive: () =>
       transaction(
         (records) => {
@@ -928,6 +939,10 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
           ]) {
             const candidate = readLocalCausalRetained(records, opId)
             if (candidate) candidates.set(opId, candidate)
+          }
+          for (const [opId, pins] of state.pins ?? []) {
+            const candidate = readPinnedCandidate(records, pins)
+            if (candidate?.puts.length) candidates.set(`${opId}/pecas-relacionadas`, candidate)
           }
           return candidates
         },
@@ -954,13 +969,16 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
     inFlight: () =>
       transaction(readLocalCausalUpload, () => [PINTA_CAUSAL_OUTBOX_KEY, PINTA_CAUSAL_BLOBS_KEY]),
     renew: (previous, next, intentHash, ready) =>
-      transaction((records) => {
-        if (!ready()) return false
-        const before = localCausalBytes(records)
-        const renewed = renewLocalCausalUpload(records, previous, next, intentHash)
-        if (renewed) checkCombined(records, resolveLocalRecords(records, false), before)
-        return renewed
-      }, causalInventory),
+      transaction(
+        (records) => {
+          if (!ready()) return false
+          const before = localCausalBytes(records)
+          const renewed = renewLocalCausalUpload(records, previous, next, intentHash)
+          if (renewed) checkCombined(records, resolveLocalRecords(records, false), before)
+          return renewed
+        },
+        candidateInventory(() => []),
+      ),
     acknowledge: (receipt, ready) =>
       transaction(
         (records) => {
@@ -970,10 +988,7 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
           if (acknowledged) checkCombined(records, resolveLocalRecords(records, false), before)
           return acknowledged
         },
-        (records) =>
-          records.has(PINTA_CAUSAL_BLOBS_KEY)
-            ? null
-            : [PINTA_CAUSAL_OUTBOX_KEY, PINTA_CAUSAL_BLOBS_KEY],
+        candidateInventory(() => [PINTA_CAUSAL_BLOBS_KEY]),
       ),
   }
   const finishProtectedWrite = (

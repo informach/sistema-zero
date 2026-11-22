@@ -21,7 +21,7 @@ import {
 import { observePintaReferences } from '../../../pinta/src/core/sceneMapClosure'
 import { assetFromJson, assetToJson } from '../../../pinta/src/export/assetJson'
 import { createEditorStore } from '../../../pinta/src/state/editorStore'
-import { clearIdbMock, setIdbWriteGuard } from '../../../pinta/src/testing/idbMock'
+import { clearIdbMock, idbMockDb, setIdbWriteGuard } from '../../../pinta/src/testing/idbMock'
 import { createMapObject } from '../../../pinta/src/tiles/mapObjects'
 import { freezeMapTilesets, freezeObjectResource } from '../../../pinta/src/tiles/resourceVersions'
 import { addObjectLayer } from '../../../pinta/src/tiles/tilemapOps'
@@ -398,7 +398,7 @@ test('o espelho guarda dois cortes e desfaz um offline num grupo com mapa remoto
   })
   try {
     const catalog = await wrapper.prepareTileRemap!(current)
-    expect(downloaded).toEqual([map.id])
+    expect(downloaded).toEqual([map.id, otherSheet.id])
     const one = remapTilesetConsumers(catalog, [], sheet.id, { removedAt: 0 })
     if (!one.ok) throw Error('Primeiro remap recusado')
     const two = remapTilesetConsumers(catalog, one.after, sheet.id, { removedAt: 0 })
@@ -2053,19 +2053,49 @@ test.each([
   }
 })
 
-test('oferece o arquivo nativo quando as peças que o mapa leu deixaram de existir', async () => {
-  const namespace = 'lost-historical-resource'
+test.each([
+  'fila-antiga',
+  'retencao-v4',
+  'porta-v4',
+] as const)('recuperação da folha observada pelo mapa: %s', async (mode) => {
+  const namespace = `lost-historical-resource-${mode}`
   const local = createPintaCausalPersistence({ namespace })
   const legacy = createPintaPersistence({ namespace })
   const sheet = createTilesetAsset({ name: 'pecas', tileSize: 8, now: 10 })
-  const map = createTilemapAsset({ name: 'vila', tilesetId: sheet.id, cols: 2, rows: 2, now: 10 })
+  const nested = mode === 'porta-v4'
+  const detail = createTilesetAsset({ name: 'piso', tileSize: 8, now: 10 })
+  const cabin = createTilemapAsset({
+    name: 'cabana',
+    tilesetId: sheet.id,
+    cols: 2,
+    rows: 2,
+    now: 10,
+  })
+  const village = createTilemapAsset({
+    name: 'vila',
+    tilesetId: nested ? detail.id : sheet.id,
+    cols: 2,
+    rows: 2,
+    now: 10,
+  })
+  const map = nested ? addObjectLayer(village, 'Portas') : village
   map.layers[0]!.cells![0] = 0
-  const before = [await cloudAsset(sheet, 1, '1'), await cloudAsset(map, 1)]
+  if (nested) {
+    const objects = map.layers.find(isObjectLayer)
+    if (!objects) throw Error('Camada de portas ausente')
+    objects.objects.push(createMapObject({ role: 'door', properties: { destino: cabin.id } }))
+  }
+  const assetsBefore = nested ? [sheet, map, detail, cabin] : [sheet, map]
+  const before = await Promise.all(
+    assetsBefore.map((asset, index) =>
+      cloudAsset(asset, 1, index === 0 || asset.kind === 'tileset' ? '1' : null),
+    ),
+  )
   await local.causal.applyPull(
     {
       fromEpoch: null,
       epoch: '1',
-      transitions: [sheet, map].map((after, i) => ({
+      transitions: assetsBefore.map((after, i) => ({
         id: after.id,
         before: null,
         beforeRevision: null,
@@ -2083,12 +2113,17 @@ test('oferece o arquivo nativo quando as peças que o mapa leu deixaram de exist
   const transport: PintaCausalCloud = {
     snapshot: async () => {
       if (offline) throw Error('sem rede')
-      return { epoch: '2', requiredFormat: 6, entries: [later.entry, before[1]!.entry] }
+      return {
+        epoch: '2',
+        requiredFormat: 6,
+        entries: [later.entry, ...before.slice(1).map(({ entry }) => entry)],
+      }
     },
     verifyEpoch: async (epoch) => {
       expect(epoch).toBe('2')
     },
-    download: async ({ itemId }) => (itemId === sheet.id ? later.gzip : before[1]!.gzip),
+    download: async ({ itemId }) =>
+      itemId === sheet.id ? later.gzip : before.find(({ entry }) => entry.itemId === itemId)!.gzip,
     backfill: async () => {
       throw Error('backfill inesperado')
     },
@@ -2098,15 +2133,19 @@ test('oferece o arquivo nativo quando as peças que o mapa leu deixaram de exist
     },
     settle: async () => ({ state: 'aborted' }),
   }
+  const inputPort =
+    mode === 'fila-antiga'
+      ? {
+          ...local.causal,
+          stage: (draft: Parameters<typeof local.causal.stage>[0]) =>
+            local.causal.stage({ ...draft, pins: undefined }),
+        }
+      : local.causal
   const wrapper = createCloudMirroredPintaPersistence({
     local,
     cloud: { ...cloud, pintaCausal: transport },
     viewerId: namespace,
-    causal: {
-      local: local.causal,
-      holdOpen: async () => () => {},
-      withClosed: (_, apply) => apply(),
-    },
+    causal: { local: inputPort, holdOpen: async () => () => {}, withClosed: (_, apply) => apply() },
   })
   try {
     const author = await local.loadAssetById(map.id)
@@ -2116,7 +2155,7 @@ test('oferece o arquivo nativo quando as peças que o mapa leu deixaram de exist
     await wrapper.persistAsset(
       { ...author, name: 'minha-vila', updatedAt: 12 },
       {
-        resources: [{ id: sheet.id, localRevision: pintaLocalRevisionOf(originalSheet) ?? null }],
+        resources: observePintaReferences(author, await local.listAllAssets()),
       },
     )
     const work = {
@@ -2128,6 +2167,18 @@ test('oferece o arquivo nativo quando as peças que o mapa leu deixaram de exist
     await expect(flushPintaCausalOutbox(work)).rejects.toThrow('sem rede')
     const held = await local.causal.inFlight()
     if (!held) throw Error('Mapa retido ausente')
+    expect(held.sealed.intent.members.map(({ itemId }) => itemId)).toEqual([map.id])
+    const originalResource = await local.causal.pinned(held.sealed.intent.opId)
+    if (mode === 'fila-antiga') {
+      expect(originalResource).toBeNull()
+      const disk = idbMockDb(`sistema-zero-pinta-${namespace}`)
+      const record = disk.get('pinta:sync:causal')
+      if (!record || typeof record !== 'object') throw Error('Fila ausente')
+      disk.set('pinta:sync:causal', { ...record, version: 3 })
+    } else
+      expect(originalResource?.puts.map(({ itemId }) => itemId).sort()).toEqual(
+        (nested ? [sheet.id, detail.id, cabin.id] : [sheet.id]).sort(),
+      )
     const editedSheet = await legacy.loadAssetById(sheet.id)
     if (editedSheet?.kind !== 'tileset') throw Error('Folha ausente')
     editedSheet.tiles[0]!.data[0] = 5
@@ -2144,6 +2195,29 @@ test('oferece o arquivo nativo quando as peças que o mapa leu deixaram de exist
       await finished
     } finally {
       unsubscribe?.()
+    }
+    if (mode !== 'fila-antiga') {
+      const assets = await local.listAllAssets()
+      const authorCopy = assets.find((asset) => asset.name === 'minha-vila-copia')
+      if (authorCopy?.kind !== 'tilemap') throw Error('Vila recuperada ausente')
+      const binding = authorCopy.layers.find(isObjectLayer)?.objects[0]?.properties.destino
+      const connected = nested ? assets.find((asset) => asset.id === binding) : authorCopy
+      if (connected?.kind !== 'tilemap') throw Error('Destino histórico ausente')
+      if (nested) expect(connected.name).toBe('cabana-copia')
+      const retainedSheet = assets.find((asset) => asset.id === connected.tilesetId)
+      if (retainedSheet?.kind !== 'tileset') throw Error('Folha histórica ausente')
+      expect(retainedSheet.tiles[0]?.data[0]).toBe(0)
+      const artistLeaf = assets
+        .filter((asset) => asset.kind === 'tileset' && asset.name.startsWith('pecas'))
+        .map((asset) => asset.tiles[0]?.data[0])
+        .sort()
+      expect(artistLeaf).toEqual([0, 5, 7])
+      expect(assets.find((asset) => asset.id === map.id)?.name).toBe('vila')
+      expect((await local.causal.inspect()).epoch).toBe('2')
+      expect(await local.causal.inFlight()).toBeNull()
+      expect(await local.causal.pinned(held.sealed.intent.opId)).toBeNull()
+      expect(queued).toEqual([])
+      return
     }
     expect(wrapper.needsRetainedRecovery?.()).toBe(true)
     // Files come from this device and stay available with the account disconnected.
@@ -2165,7 +2239,147 @@ test('oferece o arquivo nativo quando as peças que o mapa leu deixaram de exist
     expect((await local.causal.inFlight())?.sealed.intentHash).toBe(held.sealed.intentHash)
     const current = await local.loadAssetById(sheet.id)
     expect(current?.kind === 'tileset' && current.tiles[0]?.data[0]).toBe(5)
+    const restarted = createCloudMirroredPintaPersistence({
+      local,
+      cloud: { ...cloud, pintaCausal: transport },
+      viewerId: namespace,
+      causal: {
+        local: local.causal,
+        holdOpen: async () => () => {},
+        withClosed: (_, apply) => apply(),
+      },
+    })
+    try {
+      await restarted.listAllAssets()
+      expect(restarted.needsRetainedRecovery?.()).toBe(true)
+      const saved = await restarted.loadRetainedRecoveryFiles?.()
+      const original = saved?.get(`${held.sealed.intent.opId}/${map.id}.pinta.json.gz`)
+      if (!original) throw Error('Arquivo offline ausente')
+      expect(await pintaCausalGzipHash(await original.arrayBuffer())).toBe(put.sha256)
+    } finally {
+      restarted.dispose?.()
+    }
     expect(queued).toEqual([])
+  } finally {
+    wrapper.dispose?.()
+  }
+})
+
+test('a mesma folha ocupa um só Blob e permanece até confirmar o último desenho que a lê', async () => {
+  const namespace = 'pin-dedup-lifecycle'
+  const local = createPintaCausalPersistence({ namespace })
+  const sheet = createTilesetAsset({ name: 'folha', tileSize: 8 })
+  const a = createTilemapAsset({ name: 'vila', tilesetId: sheet.id, cols: 2, rows: 2 })
+  const b = createTilemapAsset({ name: 'cabana', tilesetId: sheet.id, cols: 2, rows: 2 })
+  const documents = await Promise.all([
+    cloudAsset(sheet, 1, '1'),
+    cloudAsset(a, 1),
+    cloudAsset(b, 1),
+  ])
+  await local.causal.applyPull(
+    {
+      fromEpoch: null,
+      epoch: '1',
+      transitions: [sheet, a, b].map((after, i) => ({
+        id: after.id,
+        before: null,
+        beforeRevision: null,
+        after,
+        remote: documents[i]!.entry,
+      })),
+    },
+    () => true,
+  )
+  const disk = idbMockDb(`sistema-zero-pinta-${namespace}`)
+  const key = 'pinta:sync:observed-resources'
+  const { cloud } = fakeCloud(a, 1)
+  let sends = 0
+  let online = false
+  const transport: PintaCausalCloud = {
+    snapshot: async () => {
+      throw Error('sem rede')
+    },
+    verifyEpoch: async () => {
+      throw Error('sem rede')
+    },
+    backfill: async () => {
+      throw Error('sem rede')
+    },
+    download: async () => {
+      throw Error('sem rede')
+    },
+    upload: async ({ intent, intentHash }) => {
+      if (!online) throw Error('sem rede')
+      const [put] = intent.members
+      if (put?.action !== 'put' || intent.members.length !== 1) throw Error('PUT incorreto')
+      expect(put.itemId).toBe(++sends === 1 ? a.id : b.id)
+      const blobs = disk.get(key)
+      if (!(blobs instanceof Map)) throw Error('Base observada ausente')
+      expect(blobs.size).toBe(1)
+      expect((await local.causal.inspect()).pins?.size).toBe(sends === 1 ? 2 : 1)
+      return {
+        opId: intent.opId,
+        intentHash,
+        epoch: String(BigInt(intent.baseEpoch) + 1n),
+        members: [
+          {
+            itemId: put.itemId,
+            revision: 2,
+            sha256: put.sha256,
+            layoutRevision: null,
+            deleted: false,
+          },
+        ],
+      }
+    },
+  }
+  const wrapper = createCloudMirroredPintaPersistence({
+    local,
+    cloud: { ...cloud, pintaCausal: transport },
+    viewerId: namespace,
+    causal: {
+      local: local.causal,
+      holdOpen: async () => () => {},
+      withClosed: (_, apply) => apply(),
+    },
+  })
+  try {
+    const original = await local.loadAssetById(sheet.id)
+    const first = await local.loadAssetById(a.id)
+    const second = await local.loadAssetById(b.id)
+    if (!first || !second || !original) throw Error('Catálogo ausente')
+    const ctx = {
+      resources: [{ id: sheet.id, localRevision: pintaLocalRevisionOf(original) ?? null }],
+    }
+    const author = { ...first, name: 'minha-vila' }
+    setIdbWriteGuard((putKey) => {
+      if (putKey === key) throw Error('Anexo interrompido')
+    })
+    try {
+      await expect(wrapper.persistAsset(author, ctx)).rejects.toThrow('Anexo interrompido')
+    } finally {
+      setIdbWriteGuard(null)
+    }
+    expect((await local.loadAssetById(a.id))?.name).toBe('vila')
+    expect(disk.has(key)).toBe(false)
+    expect((await local.causal.inspect()).pending).toEqual([])
+    await wrapper.persistAsset(author, ctx)
+    const work = {
+      local: local.causal,
+      cloud: transport,
+      reader: 6,
+      signal: new AbortController().signal,
+    }
+    await expect(flushPintaCausalOutbox(work)).rejects.toThrow('sem rede')
+    await wrapper.persistAsset({ ...second, name: 'minha-cabana' }, ctx)
+    const stored = disk.get(key)
+    if (!(stored instanceof Map)) throw Error('Anexos ausentes')
+    expect(stored.size).toBe(1)
+    online = true
+    await flushPintaCausalOutbox(work)
+    expect(sends).toBe(2)
+    expect(disk.has(key)).toBe(false)
+    expect((await local.causal.inspect()).pins?.size).toBe(0)
   } finally {
     wrapper.dispose?.()
   }

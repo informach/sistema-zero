@@ -88,6 +88,7 @@ import {
   stagePintaCausalWrite,
 } from './pinta-causal-authoring'
 import { PintaCausalRequestError, pintaCausalGzipHash } from './pinta-causal-cloud'
+import { encodePintaObservedResources } from './pinta-causal-pins'
 import {
   discoverPintaCausalSnapshot,
   PintaCausalRecoveryNeedsFilesError,
@@ -641,7 +642,8 @@ export function createCloudMirroredPintaPersistence(options: {
           throw Error('Um dos desenhos mudou em outra janela.')
         return { ...before, after }
       })
-      const gallery = [...(await local.listAllAssets()), ...assets]
+      const catalog = await local.listAllAssets()
+      const gallery = [...catalog, ...assets]
       const observations = new Map(
         context?.resources.map(({ id, localRevision }) => [id, localRevision]),
       )
@@ -671,8 +673,32 @@ export function createCloudMirroredPintaPersistence(options: {
         [...retainedAssets, ...assets],
         causalSession.signal,
       )
+      const writtenIds = new Set(ids)
+      const known =
+        state.unbased?.members.filter(
+          ({ itemId, deleted }) => !deleted && !writtenIds.has(itemId),
+        ) ?? []
+      const prior = new Map(catalog.map((asset) => [asset.id, asset]))
+      const carried = known.map(({ itemId, localRevision }) => {
+        const asset = prior.get(itemId)
+        if (!asset || pintaLocalRevisionOf(asset) !== localRevision)
+          throw Error('Uma mudança guardada foi atualizada em outra janela.')
+        return asset
+      })
+      const pins = await encodePintaObservedResources({
+        local: causalLocal,
+        state,
+        candidates: [...carried, ...assets],
+        catalog,
+        readSet: [
+          ...(state.unbased?.readSet.filter(({ consumerId }) => !writtenIds.has(consumerId)) ?? []),
+          ...readSet,
+        ].map((edge) => ({ ...edge, source: 'local' as const })),
+        signal: causalSession.signal,
+      })
       await causalLocal.stageUnbased({
         shadow,
+        pins,
         authors,
         migrations: migrating,
         transitions: changes,
@@ -1815,9 +1841,35 @@ export function createCloudMirroredPintaPersistence(options: {
           ),
           ...(state.unbased?.members ?? []).map((part) => [part.itemId, part] as const),
         ])
-        needsRetainedRecovery = [...latest].some(
-          ([id, version]) => !version.deleted && observed.get(id) !== version.localRevision,
+        const differs = (id: string, revision: string) => observed.get(id) !== revision
+        const inherited = [...(state.sealed ? [state.sealed.local] : []), ...state.pending].filter(
+          ({ opId }) => !state.pins?.has(opId),
         )
+        needsRetainedRecovery =
+          [...latest].some(
+            ([id, version]) => !version.deleted && differs(id, version.localRevision),
+          ) ||
+          inherited.some(({ readSet }) =>
+            readSet.some((edge) => {
+              if (edge.source === 'unit') return false
+              if (edge.source === 'predecessor')
+                return differs(edge.targetId, edge.base.localRevision)
+              const mark = state.confirmed.get(edge.targetId)
+              return (
+                !mark ||
+                mark.deleted ||
+                mark.revision !== edge.revision ||
+                mark.sha256 !== edge.sha256 ||
+                (mark.layoutRevision ?? undefined) !== edge.layoutRevision ||
+                differs(edge.targetId, mark.localRevision)
+              )
+            }),
+          ) ||
+          (!!state.unbased &&
+            !state.pins?.has(state.unbased.opId) &&
+            state.unbased.readSet.some(
+              ({ targetId, localRevision }) => !!localRevision && differs(targetId, localRevision),
+            ))
       }
       for (const asset of localAssets) {
         observeUnverifiedBase(asset)
