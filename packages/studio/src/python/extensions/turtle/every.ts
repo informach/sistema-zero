@@ -123,7 +123,8 @@ export function turtleEveryCodec(ontimer: PythonBlockCodec): PythonBlockCodec {
       const closing = closingCall(value)
       return closing && ontimer.bindingFor?.(expression(closing.call))
     },
-    defaultNode: () => definition('a_cada_quadro', [reschedule('tela', 'a_cada_quadro', integer('30'))]),
+    defaultNode: () =>
+      definition('a_cada_quadro', [reschedule('tela', 'a_cada_quadro', integer('30'))]),
     decode(value) {
       if (!plainDefinition(value)) return
       const closing = closingCall(value)

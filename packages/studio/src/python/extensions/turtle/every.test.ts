@@ -77,7 +77,10 @@ function roundTrip(module: PythonNode) {
     const saved = Blockly.serialization.workspaces.save(workspace)
     workspace.clear()
     Blockly.serialization.workspaces.load(saved, workspace)
-    const restored = pythonVisualToAST(pythonWorkspaceToVisual(workspace, roots, [], codecs), codecs)
+    const restored = pythonVisualToAST(
+      pythonWorkspaceToVisual(workspace, roots, [], codecs),
+      codecs,
+    )
     expect(pythonSemanticTree(restored)).toEqual(pythonSemanticTree(module))
   } finally {
     workspace.dispose()
@@ -105,7 +108,10 @@ test('a função que se reagenda com a tela do Turtle vira o bloco "repetir a ca
 })
 
 test('vale com o módulo (turtle.ontimer) e com o ontimer de "from turtle import *"', () => {
-  const viaModule = moduleNode([importTurtle, def('passo', [ontimer('turtle', 'passo', integer('50'))])])
+  const viaModule = moduleNode([
+    importTurtle,
+    def('passo', [ontimer('turtle', 'passo', integer('50'))]),
+  ])
   expect(codecOf(top(viaModule)[1])).toBe('sz_py_turtle_every')
   roundTrip(viaModule)
   const star = moduleNode([
@@ -155,7 +161,9 @@ test('trocar o nome no bloco troca a função e o reagendamento juntos', () => {
   expect(pythonSemanticTree(renamed)).toEqual(
     pythonSemanticTree(def('passo', [step, ontimer('tela', 'passo')])),
   )
-  expect(() => codec.encode({ ...shape, fields: [{ name: 'NAME', label: '', value: '1x' }] })).toThrow()
+  expect(() =>
+    codec.encode({ ...shape, fields: [{ name: 'NAME', label: '', value: '1x' }] }),
+  ).toThrow()
 })
 
 test('o bloco mostra "milissegundos" logo depois do tempo, antes dos comandos', () => {

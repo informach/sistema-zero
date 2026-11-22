@@ -7,9 +7,9 @@
  */
 import { describe, expect, test } from 'bun:test'
 import { fileURLToPath } from 'node:url'
-import type { PythonNode } from '../language/types'
 import { STUDIO_PYTHON_RUNTIME_FEATURES } from '@sistemazero/core/studio/python-runtime-features'
 import { PGZERO_RESOLVER_OPTIONS, PYTHON_PGZERO_CODECS } from '../extensions/pgzero/catalog'
+import type { PythonNode } from '../language/types'
 import { analyzePythonModuleAreas, planPythonOrganize } from './areas'
 import { orderPythonAuthoringCodecs } from './authoring'
 import type { PythonBlockCodec } from './contract'
@@ -605,7 +605,10 @@ describe.skipIf(!PYTHON)('lista, dicionário e conjunto em MAIÚSCULAS', () => {
       ['GRADE = [[0, 0], [1, 1]]\nprint(GRADE[0][1], len(GRADE))\n', 0],
       ['A, B = [1], (2, 3)\nprint(A[0], B)\n', 0],
       // A cópia rasa de uma lista de textos é nova: mudar a cópia não muda a constante.
-      ['CORES = ["a"]\ncopia = CORES.copy()\ncopia.append("b")\nprint(CORES[:1], list(NOMES.keys()))\nNOMES = {"x": 1}\n', 0],
+      [
+        'CORES = ["a"]\ncopia = CORES.copy()\ncopia.append("b")\nprint(CORES[:1], list(NOMES.keys()))\nNOMES = {"x": 1}\n',
+        0,
+      ],
       // Dicionário de listas de textos: o `for` tira textos da lista de dentro.
       [
         'ABERTURAS = {"I": ["cima", "baixo"]}\nfor lado in ABERTURAS["I"]:\n    print(lado)\nprint("cima" in ABERTURAS.get("I", []))\n',
@@ -617,7 +620,8 @@ describe.skipIf(!PYTHON)('lista, dicionário e conjunto em MAIÚSCULAS', () => {
         0,
       ],
     ]
-    for (const [source, area] of areasOf(constants)) expect([source, area]).toEqual([source, 'settings'])
+    for (const [source, area] of areasOf(constants))
+      expect([source, area]).toEqual([source, 'settings'])
   })
 
   test('o programa muda, ou entrega a quem pode mudar: Ao iniciar', () => {
@@ -644,7 +648,8 @@ describe.skipIf(!PYTHON)('lista, dicionário e conjunto em MAIÚSCULAS', () => {
       ['BASE = {"a": 1}\nTUDO = {**BASE}\n', 1],
       ['CORES = ["a"]\nCORES = ["b"]\n', 0],
     ]
-    for (const [source, area] of areasOf(variables)) expect([source, area]).toEqual([source, 'start'])
+    for (const [source, area] of areasOf(variables))
+      expect([source, area]).toEqual([source, 'start'])
   })
 })
 
