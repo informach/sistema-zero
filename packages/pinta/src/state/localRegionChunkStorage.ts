@@ -160,7 +160,13 @@ export function prepareLocalRegionDocument(key: string, raw: unknown) {
   return { doc, empty, locations, keys, revision: doc.revision as string }
 }
 
-type PreparedRegionDocument = NonNullable<ReturnType<typeof prepareLocalRegionDocument>>
+export type PreparedRegionDocument = NonNullable<ReturnType<typeof prepareLocalRegionDocument>>
+
+export function localRegionChunkKey(id: string, layer: string, col: number, row: number): string {
+  const key = keyOf(id, layer, col, row)
+  if (!key) invalid()
+  return key
+}
 
 /** Only the viewport needs to look up a physical key by layer and coordinates. */
 export function localRegionChunkDirectory(prepared: PreparedRegionDocument) {
@@ -261,4 +267,40 @@ export const localRegionStorageCodec: LocalStorageCodec = {
       asset.kind === 'map-set' ? { ...asset, map: { ...map, layers } } : { ...map, layers }
     return { document: { ...doc, version: 3, storage: STORAGE, asset: header }, chunks }
   },
+}
+
+/** Build the next complete directory without replacing chunks outside the admitted footprint. */
+export function patchLocalRegionDocument(
+  base: PreparedRegionDocument,
+  asset: RegionAsset,
+  revision: string,
+  selection: ReadonlySet<string>,
+  records: ReadonlyMap<string, unknown>,
+) {
+  const key = LOCAL_ASSET_PREFIX + base.empty.id
+  const { storage: _storage, ...fields } = base.doc
+  const encoded = localRegionStorageCodec.encode(
+    key,
+    { ...fields, version: 1, revision, asset },
+    records,
+  )
+  const next = prepareLocalRegionDocument(key, encoded.document)
+  if (!next || next.keys.some((key) => !selection.has(key))) invalid()
+  const original = localRegionChunkDirectory(base)
+  const edited = localRegionChunkDirectory(next)
+  if (edited.size !== original.size || [...edited.keys()].some((id) => !original.has(id))) invalid()
+  const map = mapOf(next.empty)
+  const layers = map.layers.map((layer) => {
+    if (!isTileLayer(layer)) return layer
+    const chunks = [
+      ...original.get(layer.id)!.filter(({ key }) => !selection.has(key)),
+      ...edited.get(layer.id)!,
+    ].sort((a, b) => a.row - b.row || a.col - b.col)
+    return { ...layer, cells: { ...layer.cells, chunks } }
+  })
+  const header =
+    next.empty.kind === 'map-set' ? { ...next.empty, map: { ...map, layers } } : { ...map, layers }
+  const document = prepareLocalRegionDocument(key, { ...next.doc, asset: header })
+  if (!document) invalid()
+  return { document, chunks: encoded.chunks }
 }

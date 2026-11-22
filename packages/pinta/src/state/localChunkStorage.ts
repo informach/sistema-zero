@@ -274,13 +274,13 @@ export function planLocalStorageWrites(
   before: ReadonlyMap<string, unknown>,
   after: ReadonlyMap<string, unknown>,
   physical: ReadonlyMap<string, unknown>,
-  codec: LocalStorageCodec = localDenseStorageCodec,
+  codec: LocalStorageCodec | null = localDenseStorageCodec,
 ): { puts: Map<string, unknown>; deletes: Set<string> } {
   const puts = new Map<string, unknown>(),
     deletes = new Set<string>()
   for (const [key, value] of after) {
     if (before.has(key) && value === before.get(key)) continue
-    if (key.startsWith(LOCAL_ASSET_PREFIX)) {
+    if (codec && key.startsWith(LOCAL_ASSET_PREFIX)) {
       const encoded = codec.encode(key, value, physical)
       puts.set(key, encoded.document)
       for (const [chunk, cells] of encoded.chunks)
@@ -292,7 +292,7 @@ export function planLocalStorageWrites(
   for (const key of before.keys())
     if (!after.has(key)) {
       deletes.add(key)
-      if (key.startsWith(LOCAL_ASSET_PREFIX))
+      if (codec && key.startsWith(LOCAL_ASSET_PREFIX))
         for (const chunk of codec.keys(key, physical.get(key))) deletes.add(chunk)
     }
   for (const key of puts.keys()) deletes.delete(key)

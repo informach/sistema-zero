@@ -120,42 +120,50 @@ mock.module('idb-keyval', () => ({
 
 // The IndexedDB IO boundary only. Domain resolution, revisions and recovery run unchanged.
 // Commit is all-or-nothing, including a failing put after the first queued put.
+async function withMockAssetTransaction<T>(
+  store: { name?: string },
+  plan: (records: Map<string, unknown>) => T,
+  select?: (records: ReadonlyMap<string, unknown>) => readonly string[] | null,
+  _codec?: unknown,
+  inspectKeys?: (keys: readonly string[], allKeys: readonly IDBValidKey[]) => void,
+): Promise<T> {
+  const kv = resolveKV(store)
+  return serialized(kv, async () => {
+    stats.atomic++
+    const records = new Map<string, unknown>()
+    const source = structuredClone(kv)
+    inspectKeys?.([...source.keys()].filter(isLocalAssetInventoryKey), [...source.keys()])
+    const visited = new Set<string>()
+    while (true) {
+      const keys = select?.(records) ?? [...source.keys()].filter(isLocalAssetInventoryKey)
+      const pending = keys.filter((key) => !visited.has(key))
+      if (!pending.length) break
+      for (const key of pending) {
+        visited.add(key)
+        records.set(key, structuredClone(source.get(key)))
+        stats.atomicKeys++
+        await readGuard?.(key, store.name ?? '')
+      }
+    }
+    const before = new Map(records)
+    const result = plan(records)
+    for (const [key, value] of records)
+      if (value !== before.get(key)) await writeGuard?.(key, value)
+    for (const key of before.keys()) if (!records.has(key)) kv.delete(key)
+    for (const [key, value] of records)
+      if (value !== before.get(key)) kv.set(key, structuredClone(value))
+    return result
+  })
+}
+
 mock.module('../state/assetAuthorityDb', () => ({
-  withAssetTransaction: async <T>(
+  withAssetTransaction: withMockAssetTransaction,
+  withPhysicalAssetUpdate: <T>(
     store: { name?: string },
     plan: (records: Map<string, unknown>) => T,
-    select?: (records: ReadonlyMap<string, unknown>) => readonly string[] | null,
-    _codec?: unknown,
-    inspectKeys?: (keys: readonly string[]) => void,
-  ): Promise<T> => {
-    const kv = resolveKV(store)
-    return serialized(kv, async () => {
-      stats.atomic++
-      const records = new Map<string, unknown>()
-      const source = structuredClone(kv)
-      inspectKeys?.([...source.keys()].filter(isLocalAssetInventoryKey))
-      const visited = new Set<string>()
-      while (true) {
-        const keys = select?.(records) ?? [...source.keys()].filter(isLocalAssetInventoryKey)
-        const pending = keys.filter((key) => !visited.has(key))
-        if (!pending.length) break
-        for (const key of pending) {
-          visited.add(key)
-          records.set(key, structuredClone(source.get(key)))
-          stats.atomicKeys++
-          await readGuard?.(key, store.name ?? '')
-        }
-      }
-      const before = new Map(records)
-      const result = plan(records)
-      for (const [key, value] of records)
-        if (value !== before.get(key)) await writeGuard?.(key, value)
-      for (const key of before.keys()) if (!records.has(key)) kv.delete(key)
-      for (const [key, value] of records)
-        if (value !== before.get(key)) kv.set(key, structuredClone(value))
-      return result
-    })
-  },
+    select: (records: ReadonlyMap<string, unknown>) => readonly string[] | null,
+    inspectKeys: (keys: readonly string[], allKeys: readonly IDBValidKey[]) => void,
+  ) => withMockAssetTransaction(store, plan, select, null, inspectKeys),
 }))
 
 /** Zera TODOS os "DBs" (chamar no beforeEach). */

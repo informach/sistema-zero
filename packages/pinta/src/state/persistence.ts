@@ -20,7 +20,11 @@ import type { PintaCausalIntent, PintaCausalResult } from '@sistemazero/core/cre
 import { createStore, getMany, keys } from 'idb-keyval'
 import { pintaValuesEqual } from '../core/assetEquality'
 import type { PintaMemoryAsset } from '../core/assetMemory'
-import { pintaLocalOriginOf, recordPintaLocalOrigin } from '../core/localAssetOrigin'
+import {
+  type PintaResourceObservation,
+  pintaLocalOriginOf,
+  recordPintaLocalOrigin,
+} from '../core/localAssetOrigin'
 import { withMapResourceVersions } from '../core/mapResourceVersions'
 import type { PaletteAccount } from '../core/paletteAccount'
 import type { PaletteLibrary } from '../core/paletteLibrary'
@@ -41,7 +45,11 @@ import {
 import { sceneMapClosure } from '../core/sceneMapClosure'
 import { assetFromJson, assetToJson } from '../export/assetJson'
 import { GalleryBackupSizeCache, MAX_BACKUP_FILE_BYTES } from '../export/projectJson'
-import { type AssetRecordSelection, withAssetTransaction } from './assetAuthorityDb'
+import {
+  type AssetRecordSelection,
+  withAssetTransaction,
+  withPhysicalAssetUpdate,
+} from './assetAuthorityDb'
 import type { PintaEditorWriteContext } from './editorStore'
 import {
   applyAssetTransitions,
@@ -125,7 +133,7 @@ export function getPintaStorageNamespace(): string {
   return storageNamespace
 }
 
-const dbNameFor = (namespace: string): string =>
+export const dbNameFor = (namespace: string): string =>
   namespace ? `sistema-zero-pinta-${namespace}` : 'sistema-zero-pinta'
 const dbNames = new WeakMap<StoreHandle, string>()
 function getStoreHandle(explicit?: string): StoreHandle {
@@ -311,6 +319,30 @@ function notifyOtherTabs(storeHandle: StoreHandle, dbName: string, ids: readonly
   }
 }
 
+/** Internal regional CAS. Publish changes only after the shared storage transaction commits. */
+export function updateLocalPintaRecords<T>(
+  namespace: string,
+  id: string,
+  select: AssetRecordSelection,
+  write: (records: Map<string, unknown>) => { value: T; changed: boolean },
+  inspectKeys: (keys: readonly string[], allKeys: readonly IDBValidKey[]) => void,
+): Promise<T> {
+  const storeHandle = getStoreHandle(namespace)
+  return runSerializedWrite(storeHandle, async () => {
+    const { value, changed } = await withPhysicalAssetUpdate(
+      storeHandle,
+      write,
+      select,
+      inspectKeys,
+    )
+    if (changed) {
+      backupSizeCaches.get(storeHandle)?.invalidate([id])
+      notifyOtherTabs(storeHandle, dbNameFor(namespace), [id])
+    }
+    return value
+  })
+}
+
 function reportLocalRecovery<Asset extends PintaMemoryAsset>(
   storeHandle: StoreHandle,
   snapshot: LocalSnapshot<Asset>,
@@ -396,6 +428,11 @@ export function runSerializedWrite<Result>(
 export interface PintaPersistence<Asset extends PintaMemoryAsset = PintaAsset> {
   persistAsset(asset: Asset, context?: PintaEditorWriteContext): Promise<void>
   persistAssets(assets: readonly Asset[], context?: PintaEditorWriteContext): Promise<void>
+  persistRevision?(
+    previous: Asset,
+    asset: Asset,
+    resources: readonly PintaResourceObservation[],
+  ): Promise<void>
   deleteAsset(id: string, base?: Asset): Promise<void>
   loadAssetById(id: string): Promise<Asset | null>
   listAllAssets(): Promise<Asset[]>

@@ -11,11 +11,13 @@ import {
 } from './localRegionAssetAuthority'
 import { readRegionCaptureSnapshot } from './localRegionCapture'
 import { localRegionStorageCodec } from './localRegionChunkStorage'
+import { persistLocalRegionRevision } from './localRegionEditing'
 import {
   captureLocalPintaAssetForImage,
   createLocalPintaPersistence,
   decodeLegacyLocalCandidate,
   encodeLegacyLocalCandidate,
+  getPintaStorageNamespace,
   type LocalPersistenceFormat,
   type PintaCaptureOptions,
   type PintaCausalLocalPort,
@@ -47,7 +49,24 @@ function regionPersistenceFormat(): LocalPersistenceFormat<PintaMemoryAsset> {
 export function createRegionPintaPersistence(
   options: { namespace?: string } = {},
 ): PintaPersistence<PintaMemoryAsset> & { causal: PintaCausalLocalPort<PintaMemoryAsset> } {
-  return createLocalPintaPersistence(options, regionPersistenceFormat())
+  const namespace = options.namespace ?? getPintaStorageNamespace()
+  const local = createLocalPintaPersistence(
+    { namespace, guardCausalWrites: true },
+    regionPersistenceFormat(),
+  )
+  return {
+    ...local,
+    observesReferences: true,
+    async persistRevision(previous, asset, resources) {
+      if (
+        isLocalRegionAsset(previous) &&
+        isLocalRegionAsset(asset) &&
+        (await persistLocalRegionRevision(namespace, previous, asset, resources))
+      )
+        return
+      await local.persistAsset(asset)
+    },
+  }
 }
 
 /** Internal structured capture; connected places are included unless explicitly disabled. */

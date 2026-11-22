@@ -18,8 +18,36 @@ export function withAssetTransaction<T>(
   codec: LocalStorageCodec | null = localDenseStorageCodec,
   inspectKeys?: (keys: readonly string[]) => void,
 ): Promise<T> {
-  return openStore(
+  return transactAssetRecords(
+    openStore,
+    plan,
     codec ? 'readwrite' : 'readonly',
+    codec,
+    select,
+    inspectKeys,
+  )
+}
+
+/** Physical writes are allowed only after the caller validates the pinned directory and patch. */
+export function withPhysicalAssetUpdate<T>(
+  openStore: UseStore,
+  plan: (records: Map<string, unknown>) => T,
+  select: AssetRecordSelection,
+  inspectKeys: (keys: readonly string[], allKeys: readonly IDBValidKey[]) => void,
+): Promise<T> {
+  return transactAssetRecords(openStore, plan, 'readwrite', null, select, inspectKeys)
+}
+
+function transactAssetRecords<T>(
+  openStore: UseStore,
+  plan: (records: Map<string, unknown>) => T,
+  mode: 'readonly' | 'readwrite',
+  codec: LocalStorageCodec | null,
+  select?: AssetRecordSelection,
+  inspectKeys?: (keys: readonly string[], allKeys: readonly IDBValidKey[]) => void,
+): Promise<T> {
+  return openStore(
+    mode,
     (store) =>
       new Promise<T>((resolve, reject) => {
         const tx = store.transaction
@@ -39,7 +67,7 @@ export function withAssetTransaction<T>(
         }
         const run = () => {
           try {
-            if (!codec) {
+            if (mode === 'readonly') {
               result = plan(records)
               return
             }
@@ -96,7 +124,7 @@ export function withAssetTransaction<T>(
             keys.onsuccess = () => {
               try {
                 fullKeys = keys.result.filter(isLocalAssetInventoryKey)
-                inspectKeys?.(fullKeys)
+                inspectKeys?.(fullKeys, keys.result)
                 step()
               } catch (error) {
                 abort(error)

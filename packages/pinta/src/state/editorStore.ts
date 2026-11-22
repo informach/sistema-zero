@@ -147,6 +147,12 @@ export interface PintaEditorStoreOptions<Asset extends PintaMemoryAsset = PintaA
     resources?: readonly PintaResourceObservation[],
     slotLineage?: PintaEditorSlotLineage,
   ) => Promise<void>
+  /** The regional local port can reuse the confirmed immutable base of this autosave. */
+  persistRevision?: (
+    previous: Asset,
+    asset: Asset,
+    resources: readonly PintaResourceObservation[],
+  ) => Promise<void>
   observeResources?: (asset: Asset) => readonly PintaResourceObservation[]
   onSaved?: (asset: Asset, linkedAssets: readonly Asset[]) => void
   /** Delay por instância; produção usa 1s, testes podem injetar um valor curto. */
@@ -224,6 +230,7 @@ export function createEditorStore<Asset extends PintaMemoryAsset = PintaAsset>(
 
         dirty = false
         const snapshot = get().asset
+        const previous = get().savedAsset
         const linkedSnapshot = currentLinked ? [...currentLinked] : []
         const slots = currentSlots
         const resources = currentResources
@@ -236,7 +243,9 @@ export function createEditorStore<Asset extends PintaMemoryAsset = PintaAsset>(
 
         const request = (async (): Promise<PintaSaveResult> => {
           try {
-            if (resources)
+            if (options.persistRevision && !linkedSnapshot.length && !layout && !slotLineage)
+              await options.persistRevision(previous, snapshot, resources ?? [])
+            else if (resources)
               await options.persist(snapshot, linkedSnapshot, layout, resources, slotLineage)
             else if (layout) await options.persist(snapshot, linkedSnapshot, layout)
             else await options.persist(snapshot, linkedSnapshot)
