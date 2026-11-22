@@ -1,0 +1,48 @@
+{
+  "produto": "44f040be6b31d192819843725756bffb7dd15629",
+  "data": "2026-11-22",
+  "browser": "Chrome 157.0.8103.80",
+  "perfil": "IndexedDB real em contexto novo, duas abas e recarga da página",
+  "estadoFinal": {
+    "ground": 0,
+    "front": 0,
+    "rules": 2,
+    "seed": 39,
+    "dirty": false,
+    "canUndo": true,
+    "canRedo": false,
+    "saveState": "saved"
+  },
+  "janelaConcorrente": {
+    "saveState": "error",
+    "dirty": true
+  },
+  "errosDePagina": [],
+  "nativeVersion": 9,
+  "oldCheckout": "ef58e00a0f52539fccda062479b3c1d08fa73014",
+  "historico": {
+    "publico": 0,
+    "regional": 0,
+    "ambosComAviso": true,
+    "registroRecusado": true
+  },
+  "sha256": {
+    "mundo.pinta.json": "ec71a59a3650bbe7cbc5c6f6dd786ca6481b03ecba4540d8a42df1711beef9c0",
+    "mapa.pinta-regras.json": "244a729e0b8dd832f53ef02277d52f0139b82561efbfdae6b03ac60e52832009",
+    "oficina.png": "af3cb9c40e2d8377db5b9c06a8147adfd840908bba6f46365b501de52042e256"
+  },
+  "ensaios": {
+    "foco": {
+      "testes": 22,
+      "assercoes": 175,
+      "arquivos": 6,
+      "falhas": 0
+    },
+    "regressao": {
+      "testes": 74,
+      "assercoes": 383,
+      "arquivos": 11,
+      "falhas": 0
+    }
+  }
+}
