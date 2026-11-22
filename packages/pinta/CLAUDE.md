@@ -48,6 +48,16 @@ galeria, transporte, adaptadores e segurança do inventário parcial da nuvem.
 Provas em `qa/fabrica-regional-interna-2026-11-22/`. Abertura ainda reconstrói
 todos os chunks do documento; isso não é carregamento sob demanda.
 
+`captureRegionPintaAssetForImage` usa o capturador transacional comum com essa
+política e inclui os lugares ligados por padrão, inclusive portas de conjuntos
+usados como raiz. Captura regional estrita recusa inventário incompatível e
+folhas indisponíveis; a captura visual pública conserva sua política anterior.
+`regionAssetBundleToJson` reutiliza o coletor portátil e o backup privado 8,
+conservando IDs e vínculos. Não selecionar no host antes dos adaptadores/cena
+e da proteção de inventário parcial da nuvem. Provas e pacotes da Vila real em
+`qa/captura-e-transporte-regional-2026-11-22/`; não homologam cena 4 ou exportadores
+externos regionais, nem ativam importação 8 na galeria pública.
+
 `RegionMapSetAsset`/codec 8 também permanecem internos. Captura, instância e
 separação usam células por regiões e o clonador comum; a separação esparsa conserva
 a árvore de grupos. O gesto admite no máximo 65.536 células ocupadas, além do teto

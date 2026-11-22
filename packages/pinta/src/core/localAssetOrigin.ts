@@ -1,5 +1,4 @@
 import type { PintaMemoryAsset } from './assetMemory'
-import type { PintaAsset } from './project'
 
 // Session-only provenance. Symbols survive object spreads used by editing commands,
 // but never enter IndexedDB structured clone, JSON, exported assets or cloud files.
@@ -36,9 +35,9 @@ export function recordPintaLocalOrigin(
 }
 
 /** Preserve the local base of an adapter replacement, instead of borrowing a later read. */
-export function inheritPintaLocalOrigin<T extends PintaAsset>(
+export function inheritPintaLocalOrigin<T extends PintaMemoryAsset>(
   replacement: T,
-  base?: PintaAsset | null,
+  base?: PintaMemoryAsset | null,
 ): T {
   const origin = (base as WithOrigin | undefined | null)?.[LOCAL_ORIGIN]
   return origin && origin.id === replacement.id

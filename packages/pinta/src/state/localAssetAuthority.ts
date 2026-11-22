@@ -148,7 +148,11 @@ export function createLocalAssetAuthority<Asset extends PintaMemoryAsset>(
           legacy = readMirror(raw, id, doc)
         if (doc && !localValuesEqual(legacy, doc.asset)) return null
         // Named legacy doors require the authoritative map inventory in this same transaction.
-        if (includeSceneMaps && [doc?.asset, legacy].some((a) => a?.kind === 'tilemap')) return null
+        if (
+          includeSceneMaps &&
+          [doc?.asset, legacy].some((a) => a?.kind === 'tilemap' || a?.kind === 'map-set')
+        )
+          return null
         for (const asset of [doc?.asset, legacy])
           if (asset) for (const ref of pintaAssetDependencyIds(asset)) found.add(ref)
         if (found.size > 225) return null

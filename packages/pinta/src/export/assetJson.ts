@@ -15,6 +15,7 @@
  * certo; para RETOMAR o próprio trabalho seria fatal, porque cada abertura do bloco criaria um
  * desenho novo. Por isso este módulo fala com o `importPintaJson` DIRETO e nunca com o store.
  */
+import type { PintaMemoryAsset } from '../core/assetMemory'
 import {
   PINTA_DEPENDENCY_ASSET_LIMIT,
   type PintaAsset,
@@ -56,12 +57,12 @@ export function assetBundleToJson(
 }
 
 /** References only: the detector never repeatedly encodes cells or images. */
-function collectAssetBundle(
-  asset: PintaAsset,
-  byId: ReadonlyMap<string, PintaAsset>,
+export function collectAssetBundle<Asset extends PintaMemoryAsset>(
+  asset: Asset,
+  byId: ReadonlyMap<string, Asset>,
   cache: Map<string, readonly string[] | null>,
-): PintaAsset[] | null {
-  const dependenciesOf = (item: PintaAsset): readonly string[] | null => {
+): Asset[] | null {
+  const dependenciesOf = (item: Asset): readonly string[] | null => {
     if (cache.has(item.id)) return cache.get(item.id) ?? null
     try {
       const ids = [
@@ -78,7 +79,7 @@ function collectAssetBundle(
   const dependencies = dependenciesOf(asset)
   if (!dependencies) return null
   const seen = new Set<string>([asset.id]),
-    ordered: PintaAsset[] = []
+    ordered: Asset[] = []
   // Iterativo: propriedades podem ligar recursos em ciclos ou cadeias longas. O teto é o da
   // captura de imagens; ultrapassá-lo recusa o pacote inteiro em vez de omitir referências.
   const pending = [{ asset, dependencies, next: 0 }]

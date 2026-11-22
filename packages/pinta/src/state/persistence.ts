@@ -26,6 +26,7 @@ import {
   type PintaAsset,
   pintaAssetDependencyIds,
   sanitizePintaAsset,
+  tilemapOfAsset,
   tilemapTilesetIds,
   withPintaSchemaStamp,
 } from '../core/project'
@@ -38,6 +39,7 @@ import {
   LOCAL_ASSET_PREFIX,
   type LocalSnapshot,
   PintaLocalConflictError,
+  PintaLocalStorageError,
   PintaStorageBudgetError,
   resolveLocalRecords,
   selectLocalAssetRecords,
@@ -407,16 +409,7 @@ export function isPintaStorageBudgetError(error: unknown): error is PintaStorage
  * abrem juntas.
  */
 export function createPintaPersistence(options: { namespace?: string } = {}): PintaPersistence {
-  return createLocalPintaPersistence(options, {
-    authority: {
-      resolveLocalRecords,
-      selectLocalAssetRecords,
-      writeLocalRecords,
-      deleteLocalRecord,
-    },
-    stamp: withPintaSchemaStamp,
-    legacyAssets: (assets) => assets,
-  })
+  return createLocalPintaPersistence(options, legacyPersistenceFormat)
 }
 
 /** Internal policy boundary. Public callers continue to select native 0–7 and physical 1/2. */
@@ -427,8 +420,16 @@ export interface LocalPersistenceFormat<Asset extends PintaMemoryAsset> {
   >
   stamp(asset: Asset): Asset
   codec?: LocalStorageCodec
+  /** Structured regional captures cannot omit incompatible or unavailable resources. */
+  strictCapture?: true
   /** Only the legacy policy may use the sprite inventory/RLE incremental cache. */
   legacyAssets?(assets: readonly Asset[]): readonly PintaAsset[]
+}
+
+const legacyPersistenceFormat: LocalPersistenceFormat<PintaAsset> = {
+  authority: { resolveLocalRecords, selectLocalAssetRecords, writeLocalRecords, deleteLocalRecord },
+  stamp: withPintaSchemaStamp,
+  legacyAssets: (assets) => assets,
 }
 
 export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
@@ -738,28 +739,58 @@ export function loadAssetById(id: string): Promise<PintaAsset | null> {
  * `tilemapTilesetIds` order, keeping only the ones present and compatible (the same rule as
  * `resolveMapTilesets`: a layer whose pieces are missing or incompatible is never drawn).
  */
-export async function capturePintaAssetForImage(
-  id: string,
-  options: { namespace?: string; signal?: AbortSignal; includeSceneMaps?: boolean } = {},
-): Promise<
+export type PintaAssetCapture<Asset extends PintaMemoryAsset = PintaAsset> =
   | {
       ok: true
-      source: PintaAsset
+      source: Asset
       tileset: AnyTilesetAsset | null
       tilesets: AnyTilesetAsset[]
-      assets?: PintaAsset[]
+      assets?: Asset[]
     }
   | { ok: false; reason: 'not-found' | 'needs-tileset' }
-> {
-  const store = getStoreHandle(options.namespace?.trim())
+
+export type PintaCaptureOptions = {
+  namespace?: string
+  signal?: AbortSignal
+  includeSceneMaps?: boolean
+}
+
+export function capturePintaAssetForImage(
+  id: string,
+  options: PintaCaptureOptions = {},
+): Promise<PintaAssetCapture> {
+  // Preserve the historical public API's explicit-namespace normalization.
+  return captureLocalPintaAssetForImage(
+    id,
+    { ...options, namespace: options.namespace?.trim() },
+    legacyPersistenceFormat,
+  )
+}
+
+/** Complete snapshot from the same format policy/transaction used by persistence. */
+export async function captureLocalPintaAssetForImage<Asset extends PintaMemoryAsset>(
+  id: string,
+  options: PintaCaptureOptions,
+  format: LocalPersistenceFormat<Asset>,
+): Promise<PintaAssetCapture<Asset>> {
+  const store = getStoreHandle(options.namespace)
+  const { resolveLocalRecords, selectLocalAssetRecords } = format.authority
   options.signal?.throwIfAborted()
   const snapshot = await withAssetTransaction(
     store,
-    resolveLocalRecords,
+    (records) => {
+      const snapshot = resolveLocalRecords(records)
+      if (format.strictCapture && snapshot.issues.length)
+        throw new PintaLocalStorageError(
+          'Atualize a página antes de levar este cenário completo. Há lugares em um formato mais novo.',
+        )
+      return snapshot
+    },
     selectLocalAssetRecords([id], options.signal, options.includeSceneMaps),
+    format.codec,
   )
   options.signal?.throwIfAborted()
-  reportLocalRecovery(store, snapshot, [...snapshot.assets.values()])
+  reportLocalRecovery(store, snapshot, format.legacyAssets?.([...snapshot.assets.values()]))
   for (const [assetId, asset] of snapshot.assets)
     recordPintaLocalOrigin(
       asset,
@@ -768,8 +799,8 @@ export async function capturePintaAssetForImage(
     )
   const source = snapshot.assets.get(id)
   if (!source) return { ok: false, reason: 'not-found' }
-  const discovered = new Map<string, PintaAsset>([[id, source]])
-  const pending = [source]
+  const discovered = new Map<string, Asset>([[id, source]])
+  const pending: Asset[] = [source]
   while (pending.length) {
     const next = pending.pop()
     if (!next) break
@@ -781,6 +812,7 @@ export async function capturePintaAssetForImage(
       if (!linked) {
         // Existing flat-map exports deliberately skip unavailable optional layer sheets.
         if (
+          !format.strictCapture &&
           next.kind === 'tilemap' &&
           ref !== next.tilesetId &&
           tilemapTilesetIds(next).includes(ref)
@@ -793,12 +825,12 @@ export async function capturePintaAssetForImage(
     }
   }
   const world =
-    options.includeSceneMaps && source.kind === 'tilemap'
-      ? sceneMapClosure(source, [...snapshot.assets.values()])
+    options.includeSceneMaps && (source.kind === 'tilemap' || format.strictCapture)
+      ? sceneMapClosure<Asset>(source, [...snapshot.assets.values()])
       : null
   if (world) for (const asset of world.assets) discovered.set(asset.id, asset)
   const assets = [...discovered.values()].filter((a) => a.id !== id)
-  const map = source.kind === 'tilemap' ? source : source.kind === 'map-set' ? source.map : null
+  const map = tilemapOfAsset(source)
   const find = map
     ? withMapResourceVersions(map, (ref) => snapshot.assets.get(ref) ?? null)
     : (ref: string) => snapshot.assets.get(ref) ?? null

@@ -182,6 +182,18 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    na seleção anterior; captura, transporte, inventário parcial da nuvem e
    adaptadores ainda pendem. Não fechar o item 4. Próximo: captura do mundo
    completo pela mesma autoridade e transporte regional, antes do host 8.
+   Captura/arquivo nativo regional privados verificados com a Vila real: seis
+   recursos, 16 camadas de peças, conjunto e portas, coordenadas negativas e
+   reimportação em outro contexto/banco com bytes iguais. O mesmo grafo inclui
+   portas ocultas de conjunto usado como raiz. Duas recusas foram reproduzidas
+   e corrigidas: folha secundária ausente e lugar futuro opaco. O caminho
+   estrito não busca chunks desconhecidos nem muda a captura visual legada.
+   Suíte 2.728, 50 focados e quatro ensaios novos aprovados; matriz completa e
+   fronteira do Estúdio têm recibos em
+   `qa/captura-e-transporte-regional-2026-11-22/`. Ainda não ativa a galeria/host
+   ou o transporte público 8. Próximo: contrato cena 4/PNG 5 e seus leitores,
+   integração dos consumidores públicos e segurança do inventário parcial da
+   nuvem, antes do rollout. O item 4 e a etapa macro permanecem abertos.
 
 Na promoção do store, conferir também os orçamentos globais de metadados e JSON
 antes do histórico/autosave. A soma de objetos/propriedades em várias camadas

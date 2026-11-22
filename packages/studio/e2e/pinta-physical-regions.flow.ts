@@ -692,3 +692,138 @@ test('two factory clients preserve stale regional RAM through abort, durable rec
     copy: 10,
   })
 })
+
+test('native 8 captures and transports the real Vila, Cabana and sets through an independent browser realm', async ({
+  page,
+  context,
+}, info) => {
+  const namespace = `region-world-transport-${Date.now()}`
+  const exported = await page.evaluate(async (namespace) => {
+    const p = window.pintaPhysicalRegions,
+      world = p.regionVila()
+    await p.createRegionPintaPersistence({ namespace }).persistAssets(world.assets)
+    const capture = await p.captureRegionPintaAssetForImage(world.map.id, { namespace })
+    if (!capture.ok) throw Error(capture.reason)
+    const text = p.regionAssetBundleToJson(capture.source, capture.assets ?? [])
+    if (!text) throw Error('Transporte ausente')
+    return { text, id: world.map.id, ids: world.assets.map((asset) => asset.id).sort() }
+  }, namespace)
+  await test.info().attach('vila-regional.pinta.json', {
+    body: Buffer.from(exported.text),
+    contentType: 'application/json',
+  })
+  await page.close()
+  const reopened = await context.newPage()
+  if (info.project.name === 'cpu-4x') {
+    const cdp = await context.newCDPSession(reopened)
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
+  }
+  await proof(reopened)
+  expect(
+    await reopened.evaluate(
+      async ({ namespace, text, id }) => {
+        const p = window.pintaPhysicalRegions,
+          restored = p.decodeRegionGalleryBackup(text)
+        if (restored.warnings.length) throw Error(restored.warnings.join('; '))
+        const local = p.createRegionPintaPersistence({ namespace: `${namespace}-imported` })
+        await local.persistAssets(restored.assets)
+        const capture = await p.captureRegionPintaAssetForImage(id, {
+          namespace: `${namespace}-imported`,
+        })
+        if (!capture.ok || capture.source.kind !== 'tilemap' || !('origin' in capture.source))
+          throw Error('Mapa não reabriu')
+        const tiles = capture.source.layers.filter(
+            (layer) => layer.kind === undefined || layer.kind === 'tiles',
+          ),
+          floor = tiles[0]
+        if (!floor) throw Error('Chão ausente')
+        const textAgain = p.regionAssetBundleToJson(capture.source, capture.assets ?? [])
+        return {
+          ids: [capture.source, ...(capture.assets ?? [])].map((asset) => asset.id).sort(),
+          tileLayers: tiles.length,
+          allLayers: capture.source.layers.length,
+          origin: capture.source.origin,
+          cell: p.cellAt(capture.source, floor.id, -64, -64),
+          tilesets: capture.tilesets.length,
+          set: capture.assets?.some((asset) => asset.kind === 'map-set' && 'origin' in asset.map),
+          identical: textAgain === text,
+        }
+      },
+      { namespace, text: exported.text, id: exported.id },
+    ),
+  ).toEqual({
+    ids: exported.ids,
+    tileLayers: 16,
+    allLayers: 18,
+    origin: { col: -64, row: -64 },
+    cell: 3,
+    tilesets: 2,
+    set: true,
+    identical: true,
+  })
+})
+
+test('regional capture refuses an opaque future place before reading any future chunks or producing a package', async ({
+  page,
+}) => {
+  const namespace = `region-world-opaque-${Date.now()}`
+  expect(
+    await page.evaluate(async (namespace) => {
+      const p = window.pintaPhysicalRegions,
+        world = p.regionVila(),
+        local = p.createRegionPintaPersistence({ namespace }),
+        store = p.createStore(`sistema-zero-pinta-${namespace}`, 'kv'),
+        futureKey = 'pinta:local:document:future',
+        futureChunk = 'pinta:local:chunk:future:ground:0:0'
+      await local.persistAssets(world.assets)
+      const opaque = {
+        version: 4,
+        capability: 9,
+        revision: 'future-place',
+        storage: 'future-regions',
+        asset: { kind: 'tilemap', schema: 9, id: 'future', chunks: [futureChunk] },
+      }
+      await store(
+        'readwrite',
+        (kv) =>
+          new Promise<void>((resolve, reject) => {
+            kv.put(opaque, futureKey)
+            kv.put(new Int16Array(1024), futureChunk)
+            kv.transaction.oncomplete = () => resolve()
+            kv.transaction.onabort = () => reject(kv.transaction.error)
+          }),
+      )
+      const original = IDBObjectStore.prototype.get,
+        transactions = new Set<IDBTransaction>()
+      let chunkReads = 0,
+        error = ''
+      IDBObjectStore.prototype.get = function (key) {
+        transactions.add(this.transaction)
+        if (String(key) === futureChunk) chunkReads++
+        return original.call(this, key)
+      }
+      try {
+        await p.captureRegionPintaAssetForImage(world.map.id, { namespace })
+      } catch (caught) {
+        error = String(caught)
+      } finally {
+        IDBObjectStore.prototype.get = original
+      }
+      const after = await store(
+        'readonly',
+        (kv) =>
+          new Promise<unknown>((resolve, reject) => {
+            const request = kv.get(futureKey)
+            request.onsuccess = () => resolve(request.result)
+            request.onerror = () => reject(request.error)
+          }),
+      )
+      return {
+        refused: error.includes('Atualize a página'),
+        chunkReads,
+        transactions: transactions.size,
+        unchanged: JSON.stringify(after) === JSON.stringify(opaque),
+      }
+    }, namespace),
+  ).toEqual({ refused: true, chunkReads: 0, transactions: 1, unchanged: true })
+})

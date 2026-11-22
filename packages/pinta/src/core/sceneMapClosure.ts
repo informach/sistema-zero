@@ -1,11 +1,6 @@
+import type { PintaMemoryAsset } from './assetMemory'
 import { COPY } from './copy'
-import {
-  isObjectLayer,
-  PINTA_DEPENDENCY_ASSET_LIMIT,
-  type PintaAsset,
-  pintaAssetDependencyIds,
-  type TilemapAsset,
-} from './project'
+import { isObjectLayer, PINTA_DEPENDENCY_ASSET_LIMIT, pintaAssetDependencyIds } from './project'
 
 export class SceneMapClosureError extends Error {
   constructor(
@@ -33,8 +28,8 @@ export class SceneMapClosureError extends Error {
 
 /** Door references share the same rules in playable worlds and editable files. */
 export function pintaDoorDependencyIds(
-  asset: PintaAsset,
-  byId: ReadonlyMap<string, PintaAsset>,
+  asset: PintaMemoryAsset,
+  byId: ReadonlyMap<string, PintaMemoryAsset>,
 ): string[] {
   const map = asset.kind === 'tilemap' ? asset : asset.kind === 'map-set' ? asset.map : null
   if (!map) return []
@@ -67,16 +62,18 @@ export function pintaDoorDependencyIds(
 }
 
 /** Complete authored world, including hidden doors and doors inside linked sets. No raster or UI. */
-export function sceneMapClosure(
-  root: TilemapAsset,
-  assets: readonly PintaAsset[],
-): { maps: TilemapAsset[]; assets: PintaAsset[] } {
+export function sceneMapClosure<Asset extends PintaMemoryAsset>(
+  root: Asset,
+  assets: readonly Asset[],
+): { maps: Extract<Asset, { kind: 'tilemap' }>[]; assets: Asset[] } {
   const byId = new Map(assets.map((a) => [a.id, a]))
   byId.set(root.id, root)
-  const found = new Map<string, PintaAsset>([[root.id, root]])
-  const pending: PintaAsset[] = [root],
-    maps: TilemapAsset[] = []
-  const add = (asset: PintaAsset): void => {
+  const found = new Map<string, Asset>([[root.id, root]])
+  const pending: Asset[] = [root],
+    maps: Extract<Asset, { kind: 'tilemap' }>[] = []
+  const isMap = (asset: Asset): asset is Extract<Asset, { kind: 'tilemap' }> =>
+    asset.kind === 'tilemap'
+  const add = (asset: Asset): void => {
     if (found.has(asset.id)) return
     if (found.size >= PINTA_DEPENDENCY_ASSET_LIMIT)
       throw new SceneMapClosureError('too-many-resources')
@@ -85,7 +82,7 @@ export function sceneMapClosure(
   }
   for (let cursor = 0; cursor < pending.length; cursor++) {
     const asset = pending[cursor]!
-    if (asset.kind === 'tilemap') {
+    if (isMap(asset)) {
       maps.push(asset)
       if (maps.length > 16) throw new SceneMapClosureError('too-many-maps')
     }

@@ -1,5 +1,5 @@
 import { pintaValuesEqual } from './assetEquality'
-import { assetBytes, retainedAssetBytes } from './assetMemory'
+import { assetBytes, type PintaMemoryAsset, retainedAssetBytes } from './assetMemory'
 import type {
   AnyTilesetAsset,
   PintaAsset,
@@ -141,7 +141,15 @@ export function prepareMapResourceVersions(
 export function withMapResourceVersions(
   map: MapResourceSource,
   find: (id: string) => PintaAsset | null,
-): (id: string) => PintaAsset | null {
+): (id: string) => PintaAsset | null
+export function withMapResourceVersions(
+  map: MapResourceSource,
+  find: (id: string) => PintaMemoryAsset | null,
+): (id: string) => PintaMemoryAsset | null
+export function withMapResourceVersions(
+  map: MapResourceSource,
+  find: (id: string) => PintaMemoryAsset | null,
+): (id: string) => PintaMemoryAsset | null {
   const versions = new Map(
     (map.resources ?? []).map((version) => [version.asset.id, version.asset]),
   )
