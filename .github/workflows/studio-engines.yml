@@ -73,7 +73,8 @@ jobs:
           cd ../molda-cenarios
           bun run dev:oficina > /tmp/oficina.log 2>&1 &
           for i in $(seq 1 120); do curl -sf http://127.0.0.1:4541/ > /dev/null && break; sleep 1; done
-          node playground/jogo-e/preparar-cenario.mjs
+          # Sem o servidor da oficina, o log dele diz por quê (revisão do lote 7).
+          node playground/jogo-e/preparar-cenario.mjs || { cat /tmp/oficina.log; exit 1; }
           kill %1 || true
           cd ../studio
           bun playground/cenarios-integration/preparar-jogo-e.ts
@@ -90,5 +91,5 @@ jobs:
             packages/studio/.cache/mission/engine-gpu-cycles.json
             packages/studio/.cache/mission/engine-2d-offscreen.json
             packages/studio/.cache/mission/devtools-cost.json
-            docs/estudio-evolucao/evidencias/jogo-e-regioes-2026-11-22/medidas.json
+            output/cenarios-reforma/jogo-e/medidas.json
             packages/studio/.cache/engines-results

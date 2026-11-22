@@ -169,3 +169,40 @@ test('relevo grande demais para regiões: o painel avisa antes de guardar (revis
   }
   expect(problemasDaRegiao(grande, r)[0]).toContain('grande demais para dividir em regiões')
 })
+
+describe('revisão do lote 7', () => {
+  // Uma Vila (0..32 em x) com oito vizinhas pequenas em cima dela, e a nona região encostada.
+  const oito = Array.from({ length: 8 }, (_, i) => ({
+    id: `v${i}`,
+    nome: `V${i}`,
+    caixa: { x0: i * 4, z0: -8, x1: i * 4 + 4, z1: -4 },
+    vizinhas: ['cheia'],
+  }))
+  const cheia: RegiaoDeCenario = {
+    id: 'cheia',
+    nome: 'Vila',
+    caixa: { x0: 0, z0: -4, x1: 32, z1: 8 },
+    vizinhas: oito.map((r) => r.id),
+  }
+  const doc = plano([cheia, ...oito])
+
+  test('a nona região encostada não ganha como vizinha quem já tem oito', () => {
+    const nova = novaRegiao(doc, 'nona', { x: 0, z: 8 }, { x: 10, z: 20 })
+    expect(nova.vizinhas).not.toContain('cheia')
+    expect(problemasDaRegiao(doc, nova)).toEqual([])
+  })
+
+  test('marcar à mão a vizinha cheia dá o recado em português antes da prévia', () => {
+    const nova = novaRegiao(doc, 'nona', { x: 0, z: 8 }, { x: 10, z: 20 })
+    expect(problemasDaRegiao(doc, alternarVizinha(nova, 'cheia', true))).toEqual([
+      'A região Vila tem 9 vizinhas. Uma região pode ter até 8.',
+    ])
+  })
+
+  test('apagar um canto (Delete) não desloca a região: ela continua com os quatro', () => {
+    const antes = { x0: 0, z0: 0, x1: 20, z1: 10 }
+    const tres = cantosDaRegiao(antes).slice(1)
+    expect(caixaPelosCantos(plano(), antes, tres, 0)).toEqual(antes)
+    expect(caixaPelosCantos(plano(), antes, tres, null)).toEqual(antes)
+  })
+})

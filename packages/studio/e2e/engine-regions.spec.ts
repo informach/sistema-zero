@@ -28,10 +28,9 @@ import { expect, type Page, test } from '@playwright/test'
 
 const RAIZ = resolve(import.meta.dirname, '../../..')
 const JOGO_E = resolve(RAIZ, 'output/cenarios-reforma/jogo-e')
-const OUTPUT = resolve(
-  RAIZ,
-  'docs/estudio-evolucao/evidencias/jogo-e-regioes-2026-11-22/medidas.json',
-)
+// As medidas de cada rodada ficam fora do Git (o CI as guarda como artefato); a cópia das
+// evidências em `docs/` é atualizada de propósito, não a cada execução (revisão do lote 7).
+const OUTPUT = resolve(JOGO_E, 'medidas.json')
 const ROTA = [
   ['Vila', -128, -96],
   ['Floresta', 0, -96],
@@ -137,6 +136,7 @@ interface Volta {
   gpu: Record<string, number>
   entradas: Record<string, number>
   carregadas: string[]
+  falhas: string[]
 }
 
 async function passar(page: Page, x: number, z: number) {
@@ -192,6 +192,47 @@ async function esperarCavernaFora(page: Page) {
     },
     undefined,
     { timeout: 120_000, polling: 500 },
+  )
+}
+
+type Regioes = {
+  carregadas: readonly string[]
+  falhas: readonly string[]
+} | null
+
+/**
+ * Espera uma região entrar na carga, pelo nome (revisão do lote 7: o bloco decide pela caixa, sem
+ * olhar a carga, então contar as entradas não prova que a região carregou). Uma região que falha
+ * reprova na hora, com o recado do motor.
+ */
+async function esperarCarregada(page: Page, nome: string) {
+  await page.waitForFunction(
+    (nome) => {
+      const h = (
+        window as unknown as {
+          __qaJogoE: {
+            cena: {
+              _sceneHandle?: {
+                estadoDasRegioes(): {
+                  carregadas: readonly string[]
+                  falhas: readonly string[]
+                  aviso: string | null
+                } | null
+                dados: { regioes?: Array<{ id: string; nome: string }> }
+              }
+            }
+          }
+        }
+      ).__qaJogoE.cena._sceneHandle
+      const id = h?.dados.regioes?.find((r) => r.nome === nome)?.id
+      if (!id) return true
+      const estado = h?.estadoDasRegioes()
+      if (estado?.falhas.length)
+        throw Error(`A região falhou: ${estado.falhas.join(', ')} (${estado.aviso ?? ''})`)
+      return estado?.carregadas.includes(id) ?? false
+    },
+    nome,
+    { timeout: 120_000, polling: 250 },
   )
 }
 
@@ -262,6 +303,9 @@ for (const versao of ['regioes', 'inteiro'] as const)
     for (let v = 0; v < VOLTAS; v++) {
       for (const [nome, x, z] of ROTA) {
         passagens.push(...(await passar(page, x, z)))
+        // Com regiões, a região onde o herói chegou precisa estar carregada (e a Caverna, que não
+        // é vizinha da Vila, só carrega aqui).
+        if (versao === 'regioes') await esperarCarregada(page, nome)
         const calls = await page.evaluate(() => {
           const cena = (
             window as unknown as {
@@ -290,10 +334,12 @@ for (const versao of ['regioes', 'inteiro'] as const)
           }
           const handle = w.__qaJogoE.cena._sceneHandle
           const nomeDe = (id: string) => handle?.dados.regioes?.find((r) => r.id === id)?.nome ?? id
+          const estado = handle?.estadoDasRegioes() as unknown as Regioes
           return {
             gpu: w.__szGpuVivos(),
             entradas: { ...w.__qaEntradas },
-            carregadas: [...(handle?.estadoDasRegioes()?.carregadas ?? [])].map(nomeDe),
+            carregadas: [...(estado?.carregadas ?? [])].map(nomeDe),
+            falhas: [...(estado?.falhas ?? [])].map(nomeDe),
           }
         }),
       )
@@ -333,8 +379,10 @@ for (const versao of ['regioes', 'inteiro'] as const)
       expect(entradas.Floresta).toBe(VOLTAS * 2)
       expect(entradas.Caverna).toBe(VOLTAS)
       expect(entradas.Vila).toBe(VOLTAS + 1)
-      // De volta à Vila, a Caverna (não vizinha) saiu da carga (a volta só é amostrada depois).
+      // De volta à Vila, a Caverna (não vizinha) saiu da carga (a volta só é amostrada depois), e
+      // nenhuma região ficou esperando nova tentativa.
       expect(voltas.at(-1)!.carregadas).toContain('Vila')
       expect(voltas.at(-1)!.carregadas).not.toContain('Caverna')
+      expect(voltas.flatMap((volta) => volta.falhas)).toEqual([])
     }
   })

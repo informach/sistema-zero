@@ -75,7 +75,8 @@ export function nomeLivreDeRegiao(regioes: readonly RegiaoDeCenario[] | undefine
 
 /**
  * Uma região nova a partir de dois cliques no chão: nome livre e, como vizinhas, as regiões que
- * encostam nela (até 8). A criança confere e muda antes de guardar.
+ * encostam nela (até 8). Quem já tem 8 vizinhas fica de fora da sugestão: o par passaria do teto
+ * do outro lado (revisão do lote 7). A criança confere e muda antes de guardar.
  */
 export function novaRegiao(
   doc: Pick<DocumentoDeCenario, 'base' | 'regioes'>,
@@ -89,6 +90,7 @@ export function novaRegiao(
     nome: nomeLivreDeRegiao(doc.regioes),
     caixa,
     vizinhas: vizinhasSugeridas(doc.regioes, caixa, id)
+      .filter((r) => r.vizinhas.length < LIMITES_REGIOES.vizinhas)
       .slice(0, LIMITES_REGIOES.vizinhas)
       .map((r) => r.id),
   }
@@ -134,6 +136,8 @@ export function cantosDaRegiao(caixa: CaixaDeRegiao): PontoNoChao[] {
 /**
  * A caixa depois de arrastar um canto: o canto `selecionado` leva as duas bordas que ele toca, e a
  * caixa continua alinhada aos eixos. Sem canto escolhido, a caixa que envolve os quatro pontos.
+ * Sem os quatro (um Delete apagou um canto), a caixa fica como estava: os índices escorregariam e o
+ * canto lido seria outro (revisão do lote 7).
  */
 export function caixaPelosCantos(
   doc: Pick<DocumentoDeCenario, 'base'>,
@@ -141,6 +145,7 @@ export function caixaPelosCantos(
   cantos: readonly PontoNoChao[],
   selecionado: number | null,
 ): CaixaDeRegiao {
+  if (cantos.length !== 4) return { ...antes }
   const c = { ...antes }
   const p = selecionado === null ? undefined : cantos[selecionado]
   if (p && selecionado !== null) {

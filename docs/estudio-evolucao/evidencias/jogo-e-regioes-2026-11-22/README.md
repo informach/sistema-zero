@@ -29,16 +29,20 @@ Reprova se:
   volta uma vez por volta; Floresta 20; Caverna 10);
 - os objetos de GPU vivos (buffers, texturas, programas e VAOs) mudarem nas últimas quatro voltas
   (cada volta é amostrada no estado estável, depois de a Caverna sair da carga);
-- a Caverna (que não é vizinha da Vila) continuar carregada depois da volta à Vila.
+- a região onde o herói chegou não entrar na carga (a Caverna, que não é vizinha da Vila, só
+  carrega quando ele chega lá), ou alguma região falhar e ficar esperando nova tentativa;
+- a Caverna continuar carregada depois da volta à Vila.
 
-Registra sem reprovar (GPU emulada, SwiftShader), em `medidas.json`:
+Registra sem reprovar (GPU emulada, SwiftShader). Cada rodada grava as medidas em
+`output/cenarios-reforma/jogo-e/medidas.json` (fora do Git; no CI, o artefato `studio-engines`), e
+a cópia `medidas.json` desta pasta é a da rodada registrada aqui:
 
 | | Com regiões | Sem regiões |
 |---|---|---|
-| Quadro p50 / p95 / máximo (ms) | 217 / 300 / 333 | 283 / 383 / 450 |
+| Quadro p50 / p95 / máximo (ms) | 217 / 317 / 350 | 283 / 383 / 500 |
 | Quadros por segundo (mediana) | 4,6 | 3,5 |
 | Desenhos (Vila / Floresta / Caverna) | 27 / 36 / 29 | 31 / 35 / 27 |
-| Memória JS | 177 MB | 123 MB |
+| Memória JS | 167 MB | 103 MB |
 
 Os tempos absolutos são da GPU emulada (a meta de 30 quadros por segundo vale para GPU de verdade e
 não é medida aqui). A comparação relativa mostra a carga por regiões desenhando menos e com quadros

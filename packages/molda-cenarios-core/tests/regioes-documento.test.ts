@@ -88,9 +88,10 @@ describe('as regiões do documento', () => {
         base,
       ),
     ).toContain('Já existe uma região chamada vila.')
-    expect(errosDasRegioes([regiao('a', '   ', [0, 0, 10, 10])], base)).toContain(
-      'A região a precisa de um nome.',
-    )
+    // O recado não mostra o id interno (revisão do lote 7): a criança só vê nomes.
+    expect(errosDasRegioes([regiao('o-1a2b3c', '   ', [0, 0, 10, 10])], base)).toEqual([
+      'Uma região está sem nome. Escreva um nome para ela.',
+    ])
     expect(errosDasRegioes([regiao('a', 'Vila', [5, 0, 5, 10])], base)).toContain(
       'A região Vila precisa ter largura e comprimento.',
     )
@@ -100,9 +101,28 @@ describe('as regiões do documento', () => {
     expect(errosDasRegioes([regiao('a', 'Vila', [0, 0, 10, 10], ['a'])], base)).toContain(
       'A região Vila não pode ser vizinha dela mesma.',
     )
-    expect(errosDasRegioes([regiao('a', 'Vila', [0, 0, 10, 10], ['zz'])], base)).toContain(
-      'A região Vila cita uma vizinha que não existe: zz',
+    expect(errosDasRegioes([regiao('a', 'Vila', [0, 0, 10, 10], ['zz'])], base)).toEqual([
+      'A região Vila cita uma vizinha que não existe mais.',
+    ])
+    // Mais de 8 vizinhas (a outra ponta de um par, revisão do lote 7): recado em português, não o
+    // do esquema.
+    const nove = Array.from({ length: 9 }, (_, i) =>
+      regiao(`v${i}`, `V${i}`, [i * 10, 20, i * 10 + 10, 30], ['a']),
     )
+    expect(
+      errosDasRegioes(
+        [
+          regiao(
+            'a',
+            'Vila',
+            [0, 0, 90, 10],
+            nove.map((r) => r.id),
+          ),
+          ...nove,
+        ],
+        base,
+      ),
+    ).toEqual(['A região Vila tem 9 vizinhas. Uma região pode ter até 8.'])
     expect(
       errosDasRegioes(
         [regiao('a', 'Vila', [0, 0, 10, 10], ['b']), regiao('b', 'Mata', [10, 0, 20, 10])],
@@ -117,7 +137,7 @@ describe('as regiões do documento', () => {
         ],
         base,
       ),
-    ).toEqual(['A região Vila repete a vizinha b.'])
+    ).toEqual(['A região Vila repete a vizinha Mata.'])
     expect(
       errosDasRegioes(
         [regiao('a', 'Vila', [0, 0, 10, 10]), regiao('b', 'Mata', [9, 0, 20, 10])],

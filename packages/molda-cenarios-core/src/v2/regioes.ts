@@ -1,5 +1,5 @@
 import type { BaseDeCenario } from './documento'
-import type { CaixaDeRegiao, RegiaoDeCenario } from './regioes-schema'
+import { type CaixaDeRegiao, LIMITES_REGIOES, type RegiaoDeCenario } from './regioes-schema'
 
 export * from './regioes-schema'
 
@@ -77,7 +77,8 @@ export function errosDasRegioesNoRetangulo(
     if (porId.has(r.id)) erros.push(`Região duplicada: ${r.id}`)
     porId.set(r.id, r)
     const nome = nomeComparavel(r.nome)
-    if (!nome) erros.push(`A região ${r.id} precisa de um nome.`)
+    // Os recados mostram nomes, nunca o id interno (revisão do lote 7).
+    if (!nome) erros.push('Uma região está sem nome. Escreva um nome para ela.')
     else if (nomes.has(nome)) erros.push(`Já existe uma região chamada ${r.nome.trim()}.`)
     nomes.add(nome)
     if (!(r.caixa.x1 - r.caixa.x0 > FOLGA && r.caixa.z1 - r.caixa.z0 > FOLGA))
@@ -86,16 +87,22 @@ export function errosDasRegioesNoRetangulo(
       erros.push(`A região ${r.nome} sai da base do cenário.`)
   }
   for (const r of regioes) {
+    // O esquema já limita, mas o par pode passar do teto na OUTRA ponta (a nona região encostada
+    // numa que já tem oito): o recado chega em português, antes do esquema (revisão do lote 7).
+    if (r.vizinhas.length > LIMITES_REGIOES.vizinhas)
+      erros.push(
+        `A região ${r.nome} tem ${r.vizinhas.length} vizinhas. Uma região pode ter até ${LIMITES_REGIOES.vizinhas}.`,
+      )
     const vistas = new Set<string>()
     for (const v of r.vizinhas) {
       if (v === r.id) {
         erros.push(`A região ${r.nome} não pode ser vizinha dela mesma.`)
         continue
       }
-      if (vistas.has(v)) erros.push(`A região ${r.nome} repete a vizinha ${v}.`)
-      vistas.add(v)
       const outra = porId.get(v)
-      if (!outra) erros.push(`A região ${r.nome} cita uma vizinha que não existe: ${v}`)
+      if (vistas.has(v)) erros.push(`A região ${r.nome} repete a vizinha ${outra?.nome ?? v}.`)
+      vistas.add(v)
+      if (!outra) erros.push(`A região ${r.nome} cita uma vizinha que não existe mais.`)
       else if (!outra.vizinhas.includes(r.id))
         erros.push(
           `A região ${r.nome} tem ${outra.nome} como vizinha, mas ${outra.nome} não tem ${r.nome}.`,

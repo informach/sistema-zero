@@ -87,6 +87,15 @@ try {
   assert.ok(floresta, 'a Floresta não foi guardada')
   assert.deepEqual(floresta.vizinhas, [vila.id])
   assert.deepEqual(duas.find((r) => r.id === vila.id).vizinhas, [floresta.id])
+  // O "Encaixar na vizinha" encostou as bordas de verdade (revisão do lote 7): sem folga entre as
+  // duas e sem área em comum.
+  const cv = duas.find((r) => r.id === vila.id).caixa,
+    cf = floresta.caixa,
+    folga = Math.hypot(
+      Math.max(0, cf.x0 - cv.x1, cv.x0 - cf.x1),
+      Math.max(0, cf.z0 - cv.z1, cv.z0 - cf.z1),
+    )
+  assert.ok(folga < 1e-6, `a Floresta ficou a ${folga} m da Vila depois do Encaixar`)
   await p.screenshot({ path: resolve(saida, '02-vila-e-floresta.png') })
 
   // 3. A lista mostra as duas; editar e apagar a Floresta tira a vizinhança da Vila.
@@ -96,8 +105,42 @@ try {
   await painel.getByRole('button', { name: 'Apagar região', exact: true }).click()
   const uma = await regioes(1)
   assert.deepEqual(uma[0].vizinhas, [])
+
+  // 4. Revisão do lote 7: o rascunho de Regiões vale como os do Jogo.
+  const contar = () =>
+    p.evaluate(
+      async (id) =>
+        ((await window.__cenarios.host.abrirCenario(id)).documento.regioes ?? []).length,
+      id,
+    )
+  // 4a. Marcando os cantos: os ladrilhos do jogo ficam desligados, o Ctrl+Z não mexe no cenário (a
+  // Floresta apagada não volta) e o Escape fecha a ferramenta.
+  await painel.getByRole('button', { name: 'Nova região', exact: true }).click()
+  await painel.getByText('Toque em dois cantos opostos').waitFor()
+  assert.ok(
+    await rail.getByRole('button', { name: 'Início', exact: true }).isDisabled(),
+    'o ladrilho Início ficou ligado com a ferramenta Regiões aberta',
+  )
+  await p.keyboard.press('Control+z')
+  await p.keyboard.press('Escape')
+  await painel.getByText('Toque em dois cantos opostos').waitFor({ state: 'detached' })
+  await p.waitForTimeout(1500)
+  assert.equal(await contar(), 1, 'o Ctrl+Z com a ferramenta Regiões aberta desfez o cenário')
+  assert.equal(await painel.getByRole('button', { name: 'Floresta', exact: true }).count(), 0)
+  // 4b. Começar uma região e trocar de aba não trava a oficina.
+  await painel.getByRole('button', { name: 'Nova região', exact: true }).click()
+  await painel.getByText('Toque em dois cantos opostos').waitFor()
+  await aba('Objetos').click()
+  assert.ok(
+    await p.getByRole('button', { name: 'Desfazer', exact: true }).isEnabled(),
+    'a oficina ficou travada depois de trocar de aba no meio de uma região',
+  )
+  await aba('Jogo').click()
+  assert.equal(await painel.getByText('Toque em dois cantos opostos').count(), 0)
   assert.deepEqual(erros, [])
-  console.log('Regiões: criar com dois toques, vizinha em par, encaixe, editar e apagar.')
+  console.log(
+    'Regiões: criar com dois toques, vizinha em par, encaixe, editar, apagar e as guardas da oficina.',
+  )
 } finally {
   await browser.close()
 }
