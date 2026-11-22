@@ -932,3 +932,81 @@ describe('PersistenceService — cerca de exclusão limitada (sem vazamento)', (
     expect(useProjectStore.getState().isDirty).toBe(false)
   })
 })
+
+// Revisão do lote 1 (22/11/2026): o salvamento recusado só vira cópia de saída quando o projeto
+// SAIU do editor (pelo id, não pela referência, que também muda a cada edição nova) e nunca quando
+// a recusa é a própria transferência para a gravação de saída (a cópia mais nova já foi feita).
+describe('PersistenceService — recusa de um salvamento antigo com o projeto ainda aberto', () => {
+  afterEach(() => {
+    delete (document as { visibilityState?: unknown }).visibilityState
+    setAutosaveDelayForTests(null)
+  })
+
+  function service(exits: string[], firstSave: Promise<void>) {
+    const store = createProjectStore()
+    let saves = 0
+    const persistence = createPersistenceService(store, {
+      load: async () => null,
+      appliesSavesInCallOrder: true,
+      save: () => (++saves === 1 ? firstSave : new Promise<void>(() => {})),
+      flushOnExit: async (project, options) => {
+        exits.push(`${project.name}:${options?.pageAlive === true}`)
+      },
+    })
+    return { store, persistence, saves: () => saves }
+  }
+
+  it('a aba escondida aborta o salvamento antigo em voo: a cópia de saída mais nova não é coberta', async () => {
+    setAutosaveDelayForTests(10)
+    const exits: string[] = []
+    let rejectFirst: (error: unknown) => void = () => {}
+    const first = new Promise<void>((_, reject) => {
+      rejectFirst = reject
+    })
+    first.catch(() => {})
+    const { store, persistence, saves } = service(exits, first)
+    const detach = persistence.attach()
+    try {
+      store.getState().setProject(createEmptyProject('p-saida', 'A'))
+      await Bun.sleep(60)
+      expect(saves()).toBe(1)
+      store.getState().rename('B')
+      Object.defineProperty(document, 'visibilityState', {
+        configurable: true,
+        get: () => 'hidden',
+      })
+      document.dispatchEvent(new Event('visibilitychange'))
+      rejectFirst(
+        new DOMException('Gravação transferida para a recuperação de saída.', 'AbortError'),
+      )
+      await Bun.sleep(30)
+      expect(exits).toEqual(['B:true'])
+    } finally {
+      detach()
+    }
+  })
+
+  it('um salvamento antigo recusado com uma edição mais nova na tela não vira cópia de saída', async () => {
+    setAutosaveDelayForTests(10)
+    const exits: string[] = []
+    let rejectFirst: (error: unknown) => void = () => {}
+    const first = new Promise<void>((_, reject) => {
+      rejectFirst = reject
+    })
+    first.catch(() => {})
+    const { store, persistence, saves } = service(exits, first)
+    const detach = persistence.attach()
+    try {
+      store.getState().setProject(createEmptyProject('p-recusa', 'A'))
+      await Bun.sleep(60)
+      expect(saves()).toBe(1)
+      // A criança segue editando o MESMO projeto; o salvamento de A é recusado (cota cheia).
+      store.getState().rename('B')
+      rejectFirst(new DOMException('A cota acabou.', 'QuotaExceededError'))
+      await Bun.sleep(30)
+      expect(exits).toEqual([])
+    } finally {
+      detach()
+    }
+  })
+})

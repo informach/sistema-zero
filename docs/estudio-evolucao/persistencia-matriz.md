@@ -40,7 +40,7 @@ relativos a `packages/`.
 | 6. Local → nuvem da conta | CSY (só o local mudou → sobe; marcas e lápides sobrevivem); SC (a marca só avança no commit); CC "a página morre no reserva / envio / commit / commit-chegou…" (22/11) | PC (o restauro substitui, com a cota que aborta tudo); CSY; CC (4xx não entra em laço); MCR | CC (offline tenta de novo, 5xx); SC (descida falha: a lápide sobrevive; manifesto incoerente recusado) | SC (cópias "(deste computador)" e "(de outro aparelho)"); CSY (relógio adiantado, duas abas mesclam); MCR (aparelho atrasado não passa por cima) | PC (restauro ESTRITO recusa bloco desconhecido); SC; CC; SCT | n/a |
 | 7. Rascunhos de aula e envios | LDS; LDK (parte com envio em dia espera o commit); LWD; E2E-arte (POST abortado: recado, editor igual, rascunho vence ao recarregar, reenvio entra; 22/11) | LDP; SLS (banco indisponível não vira rascunho vazio) | LDC (prazo não confirma nem cancela; um bloco não segura o outro); LDP; SLS; MST | LDS (os dois mexeram: a mais nova abre, a outra fica guardada); LDC; LWD; MST (reenvio guarda a anterior); MSR; TPL (lógica do aviso) | LDO, LDP, LDC (página antiga); MST; MLD | sem queda simulada: MLD, SLS |
 | 8. Materiais do Pinta e do Molda, cercas, game-storage | E2E-flush (três arquivos do Molda); PSY. **game-storage: —** | E2E-pinta (falha no segundo put não deixa metade da Vila); PSY (cota conserva o mundo fechado inteiro); GS (corta por desenho) | PSY; CC (parte ausente é temporária); PBD | PSY (jogo aberto no meio da varredura); PC (não recria partição apagada); GS (gravação depois do delete não ressuscita); COORD (lápide durável) | PSY (cena que esta versão não lê não some); E2E-pinta; GS (registro corrompido vira `{}`) | PSY |
-| 9. Troca de perfil com gravação em voo | BROW fase profile-switch; QA manual no staging (`e6d880a23`); SPS (o editor completo do Kids com o adaptador e o IndexedDB de verdade; 22/11) | **—** (parcial: COORD "quota recovery does not block the profile…") | CC (409 VIEWER_MISMATCH); SC; LDK | SSP "trocar de perfil com projeto não salvo grava no perfil antigo e nunca no novo"; COORD; PSY; PBD. **Duas abas ao mesmo tempo em perfis diferentes: —** | n/a | parcial: L3R |
+| 9. Troca de perfil com gravação em voo | BROW fase profile-switch; QA manual no staging (`e6d880a23`); SPS (o editor completo do Kids com o adaptador e o IndexedDB de verdade, e um editor de mentira que grava ao desmontar; 22/11) | **—** (parcial: COORD "quota recovery does not block the profile…") | CC (409 VIEWER_MISMATCH); SC; LDK | SSP "trocar de perfil com projeto não salvo grava no perfil antigo e nunca no novo"; COORD; PSY; PBD. **Duas abas ao mesmo tempo em perfis diferentes: —** | n/a | parcial: L3R |
 | 10. Python e Pro | WDP; CW; DOCS; WCS "avisa ao fechar enquanto a escrita não foi lida, e a escrita entra no projeto"; SVC (aba escondida grava de novo depois de ler o terminal; 22/11) | DOCS; FS; PO; PROM | n/a | DOCS; PPS; FS (escrita tardia do terminal detectada); CW | WD; `editableProjectValidation.test.ts`; FS | sem queda simulada: L3; PPS |
 
 ## As oito lacunas: o que cada uma virou (22/11/2026)
@@ -83,11 +83,24 @@ consertado primeiro.
 7. **A troca de perfil no app** (`c6ac8826c`): "Trocar de perfil" é um link dentro do app (o
    caminho do item 0). SPS prova a metade do app: o editor completo prende o adaptador ao perfil de
    antes, e a gravação da saída cai no banco daquela criança mesmo com o armazenamento já passado ao
-   perfil seguinte (sabotado, a edição cai no banco da outra criança).
+   perfil seguinte (sabotado, a edição cai no banco da outra criança). O editor ali é de mentira e
+   grava ao desmontar; a ordem real da desmontagem do Estúdio é provada no STU (item 0).
 8. **A subida em voo quando a aba fecha** (`3b4de2e1c`): CC com a fila real e as marcas relidas
    numa página nova, nas quatro paradas (reserva, envio, commit, commit que chegou sem resposta); a
    marca não avança e a página seguinte reserva com a base de antes. CRD (Postgres real, CI): a
    reserva pendurada é trocada pela próxima com a mesma base, e o commit atrasado dela é recusado.
+
+**Revisão independente do lote (22/11/2026).** Achou um defeito no item 0, consertado com dois
+testes vermelhos no SVC: o salvamento recusado virava cópia de saída sempre que a referência do
+projeto mudava, inclusive com uma edição nova do MESMO projeto na tela, e uma cópia antiga podia
+cobrir a mais nova na mesma chave quando a gravação de saída da aba escondida abortava o salvamento
+em voo. Agora só vale com o projeto fora do editor (pelo id) e nunca para o aborto da transferência.
+Achou também que a régua do aviso de projeto inicial ficava muda em blocos com parâmetros (o id do
+parâmetro é sorteado ao abrir): o `extraState` passou a ser comparado sem ids. O alerta de que o
+`flush` dos blocos regeneraria por cima do código da Ponte depende de eventos de variável do
+Blockly ou de comentário solto no espaço de trabalho, que o Estúdio JavaScript não oferece
+(variáveis são campos de texto, comentários são de bloco e chegam como mudança): ficou registrado,
+sem mudança.
 
 Continua fora das oito: o Python não tem prova de saída em navegador real (só IndexedDB falso), e o
 game-storage (o save do jogo da criança) lê um registro corrompido ou futuro como `{}` e o

@@ -113,6 +113,20 @@ function withoutLessonArt(
 /** O que o editor põe sozinho num bloco ao abrir: não é trabalho da criança. */
 const EDITOR_BLOCK_KEYS = new Set(['id', 'x', 'y'])
 
+/**
+ * O `extraState` sem os ids que o editor sorteia ao abrir: os parâmetros de função e método
+ * (`paramsMutator`) são gravados `{name, id}`, e o projeto inicial dos manifestos não traz o id
+ * (revisão de 22/11/2026). O nome continua contando.
+ */
+function withoutGeneratedIds(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(withoutGeneratedIds)
+  if (!isRecord(value)) return value
+  const out: Record<string, unknown> = {}
+  for (const [key, child] of Object.entries(value))
+    if (key !== 'id') out[key] = withoutGeneratedIds(child)
+  return out
+}
+
 const BLOCKS_NOT_COMPARABLE = Symbol('blocos não comparáveis')
 
 /** Os blocos sem id e posição. `null` quando a régua não se aplica (variável referida por id). */
@@ -126,6 +140,10 @@ function blocksContent(value: unknown): unknown {
   const out: Record<string, unknown> = {}
   for (const [key, child] of Object.entries(value)) {
     if (isBlock && EDITOR_BLOCK_KEYS.has(key)) continue
+    if (isBlock && key === 'extraState') {
+      out[key] = withoutGeneratedIds(child)
+      continue
+    }
     // Campo com objeto é referência por id (variável do Blockly): sem id, não dá para comparar.
     if (isBlock && key === 'fields' && isRecord(child)) {
       if (Object.values(child).some((field) => typeof field === 'object' && field !== null))

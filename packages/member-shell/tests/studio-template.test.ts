@@ -314,6 +314,29 @@ describe('isInitialTemplateProject', () => {
     expect(isInitialTemplateProject(aberto, modeloComBlocos())).toBe(false)
   })
 
+  test('blocos: o id sorteado dos parâmetros de um método não é trabalho, o nome é', () => {
+    const metodo = (params: Array<Record<string, string>>) => ({
+      blocks: {
+        languageVersion: 0,
+        blocks: [{ type: 'sz_class_method', extraState: { params }, fields: { NAME: 'andar' } }],
+      },
+    })
+    const modelo = projeto(
+      { 'script.js': 'class A { andar(passo) {} }' },
+      { blocksState: metodo([{ name: 'passo' }]) },
+    )
+    const aberto = projeto(
+      { 'script.js': 'class A { andar(passo) {} } // regerado' },
+      { blocksState: metodo([{ name: 'passo', id: 'sorteado-ao-abrir' }]) },
+    )
+    const renomeado = projeto(
+      { 'script.js': 'class A { andar(salto) {} }' },
+      { blocksState: metodo([{ name: 'salto', id: 'sorteado-ao-abrir' }]) },
+    )
+    expect(isInitialTemplateProject(aberto, modelo)).toBe(true)
+    expect(isInitialTemplateProject(renomeado, modelo)).toBe(false)
+  })
+
   test('blocos com variável do Blockly (referência por id) seguem a régua dos arquivos', () => {
     const comVariavel = (blocks: object) => ({ ...blocks, variables: [{ name: 'v', id: 'v1' }] })
     const modelo = projeto(
