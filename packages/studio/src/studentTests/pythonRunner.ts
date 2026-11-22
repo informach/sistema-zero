@@ -85,8 +85,12 @@ export interface RunPythonStudentTestOptions {
 
 /**
  * O lugar escondido da execução: na página, sem receber clique nem foco, e desenhando. ⚠️ Na tela
- * e com opacidade 0, nunca `display: none`, `visibility: hidden` ou fora da tela: o navegador para
- * o `requestAnimationFrame` de um quadro que não está desenhado (o mesmo do palco do JavaScript).
+ * e quase transparente, nunca `display: none`, `visibility: hidden` ou fora da tela: o navegador
+ * para o `requestAnimationFrame` de um quadro que não está desenhado. ⚠️⚠️ E nem opacidade 0: o
+ * quadro do Python vem de OUTRA origem, e o Chromium estrangula o de outra origem com opacidade 0
+ * como se estivesse escondido. Medido em 22/11/2026: 2 quadros por segundo, e a seta segurada 1 s
+ * andava 24 px (o `dt` cortado em 0,1 s), então "a seta leva até a chave" reprovava; com 0,01 o
+ * jogo roda a 60 quadros por segundo (61 em 1 s).
  */
 export function mountHiddenPythonTestFrame(): { frame: HTMLIFrameElement; release(): void } {
   const holder = document.createElement('div')
@@ -98,7 +102,7 @@ export function mountHiddenPythonTestFrame(): { frame: HTMLIFrameElement; releas
     top: '0',
     width: `${STUDENT_TEST_VIEWPORT.width}px`,
     height: `${STUDENT_TEST_VIEWPORT.height}px`,
-    opacity: '0',
+    opacity: '0.01',
     pointerEvents: 'none',
   })
   const frame = document.createElement('iframe')

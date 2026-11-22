@@ -504,7 +504,6 @@ test('Meus testes no Python: o programa que não compila conta o erro, e o que t
   test.setTimeout(240_000)
   const ponto = PYTHON_CASES[4]
   const quebrado = await studentTest(page, 'classic-pgzeroErroDeEscrita', ponto)
-  console.log(`[casos python] erro de escrita: ${JSON.stringify(quebrado).slice(0, 600)}`)
   // O mesmo caminho do JavaScript: o teste não passa e a observação traz o erro do programa (a aba
   // diz "o jogo deu erro durante o teste").
   expect(quebrado.status).toBe('failed')
