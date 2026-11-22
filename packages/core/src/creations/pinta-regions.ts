@@ -197,7 +197,7 @@ function encode(cells: Int16Array): string {
   const view = new DataView(bytes.buffer)
   for (let index = 0; index < cells.length; index += 1)
     view.setInt16(index * 2, cells[index]!, true)
-  return btoa(String.fromCharCode(...bytes))
+  return btoa(Reflect.apply(String.fromCharCode, null, bytes))
 }
 
 /** Header-only admission for storage readers, before requesting any cell payloads. */
