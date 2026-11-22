@@ -99,3 +99,13 @@ Os recibos identificam o resultado anterior no 4cf e as execuções no f166. Est
 ```powershell
 python ./repetir.py --retencao C:/caminho/do/checkout-f166 --legado C:/caminho/do/checkout-64c --v3 C:/caminho/do/checkout-4cf --recursos-v4
 ```
+
+## Recuperação da autoria e das referências
+
+O grupo de aceitação usa o escritor de registro v1 de `64c197d53` e o leitor v2 de `5ef94cc85`. Em cada caso ambos compartilham o armazenamento do candidato pelo adaptador IndexedDB do Pinta. O Bun executa vinte testes com três estados terminais, reinício, exclusão, coalescência, falha de escrita e primeira adoção. No candidato anterior à sombra durável, os vinte testes falharam em 124 asserções executadas. [Recibo de referência](recibos/duravel-5ef.txt)
+
+```powershell
+python ./repetir.py --duravel C:/caminho/do/candidato --legado C:/caminho/do/checkout-64c --leitor-v2 C:/caminho/do/checkout-5ef
+```
+
+O ensaio da vila abre cada mapa recuperado, segue a porta pelo nome e lê a peça usada pela célula em ambos os lados. A variante indireta usa outra folha na vila, de modo que a alteração na cabana só afeta a vila por meio da porta. Duas variantes mudam uma folha que o grupo leu sem gravar. Uma delas mantém a revisão exata da folha na conta. A outra elimina essa fonte e exige que o aparelho conserve o selo, os bytes e a edição posterior.

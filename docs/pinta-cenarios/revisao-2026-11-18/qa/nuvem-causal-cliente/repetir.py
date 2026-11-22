@@ -25,7 +25,8 @@ def source(case):
     return text
 
 
-def run_candidate(root, database, legacy=None, retention=False, v3=None, pins=False):
+def run_candidate(root, database, legacy=None, retention=False, v3=None, pins=False,
+                  reader_v2=None):
     package = root / "packages"
     members = package / "members"
     env = os.environ.copy()
@@ -34,7 +35,14 @@ def run_candidate(root, database, legacy=None, retention=False, v3=None, pins=Fa
         if not entry.is_file():
             raise SystemExit("Checkout do escritor antigo sem o módulo de persistência.")
         env["PINTA_REVIEW_LEGACY_ENTRY"] = str(entry)
-        targets = {"retencao" if retention else "terminal": package / "member-shell"}
+        if reader_v2 is not None:
+            entry_v2 = reader_v2 / "packages/pinta/src/state/persistence.ts"
+            if not entry_v2.is_file():
+                raise SystemExit("Checkout da versão 2 sem o módulo de persistência.")
+            env["PINTA_REVIEW_V2_ENTRY"] = str(entry_v2)
+            targets = {"duravel": package / "member-shell"}
+        else:
+            targets = {"retencao" if retention else "terminal": package / "member-shell"}
         if v3:
             v3_entry = v3 / "packages/pinta/src/state/persistence.ts"
             if not v3_entry.is_file():
@@ -91,13 +99,17 @@ def main():
     parser.add_argument("--legado", type=Path, metavar="CHECKOUT")
     parser.add_argument("--v3", type=Path, metavar="CHECKOUT")
     parser.add_argument("--recursos-v4", action="store_true")
+    parser.add_argument("--duravel", type=Path, metavar="CHECKOUT")
+    parser.add_argument("--leitor-v2", type=Path, metavar="CHECKOUT")
     args = parser.parse_args()
-    if bool(args.terminal or args.retencao) != bool(args.legado):
-        parser.error("--terminal e --retencao usam o checkout do escritor --legado")
+    if bool(args.terminal or args.retencao or args.duravel) != bool(args.legado):
+        parser.error("--terminal, --retencao e --duravel usam o checkout do escritor --legado")
     if args.v3 and not args.retencao:
         parser.error("--v3 requer o leitor --retencao")
     if args.recursos_v4 and not args.v3:
         parser.error("--recursos-v4 precisa do escritor --v3 para provar a recusa da escrita antiga")
+    if bool(args.duravel) != bool(args.leitor_v2):
+        parser.error("--duravel e --leitor-v2 exigem os dois checkouts")
     for receipt in INDEX["recibos"]:
         path = HERE / receipt["arquivo"]
         verify_text(path.read_text("utf-8"), receipt["sha256"], path.name)
@@ -111,6 +123,9 @@ def main():
     if args.retencao:
         run_candidate(args.retencao.resolve(), False, args.legado.resolve(),
                       retention=True, v3=args.v3.resolve() if args.v3 else None, pins=args.recursos_v4)
+    if args.duravel:
+        run_candidate(args.duravel.resolve(), False, args.legado.resolve(),
+                      reader_v2=args.leitor_v2.resolve())
     if args.members:
         run_candidate(args.members.resolve(), True)
 

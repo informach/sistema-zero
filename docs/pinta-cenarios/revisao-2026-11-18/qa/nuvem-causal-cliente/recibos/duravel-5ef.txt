@@ -1,0 +1,384 @@
+Fontes e recibos conferidos.
+bun test v1.3.11 (af24e281)
+
+packages\member-shell\.cache\pinta-qa-x884o48s\ponta-duravel.test.ts:
+207 |           withClosed: (_, run) => run(),
+208 |         })
+209 |       await expect(sync((id) => id === sheet.id)).rejects.toThrow()
+210 |       expect((await restart.causal.inFlight()).sealed.intentHash).toBe(original.sealed.intentHash)
+211 |       expect((await restart.causal.inspect()).epoch).toBe('1')
+212 |       await expect(sync(() => false)).resolves.toMatchObject({ applied: true })
+                                                     ^
+error:
+
+Expected promise that resolves
+Received promise that rejected: Promise { <rejected> }
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\terminal-5ef\packages\member-shell\.cache\pinta-qa-x884o48s\ponta-duravel.test.ts:212:48)
+(fail) recuperação do último PUT por duas versões reais: expired, delete [62.00ms]
+213 |       const assets = await restart.listAllAssets()
+214 |       const official = assets.find((asset) => asset.id === sheet.id)
+215 |       expect(official.tiles[0].data[0]).toBe(7)
+216 |       const localCopies = assets.filter((asset) => asset.id !== sheet.id)
+217 |       const wanted = mode === 'successor' ? [3, 4, 5] : mode === 'overwrite' ? [3, 5] : [3]
+218 |       expect(localCopies.map((asset) => asset.tiles[0].data[0]).sort()).toEqual(wanted)
+                                                                              ^
+error: expect(received).toEqual(expected)
+
+@@ -1,3 +1,3 @@
+  [
+-   3,
+    5,
+
+- Expected  - 1
++ Received  + 0
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\terminal-5ef\packages\member-shell\.cache\pinta-qa-x884o48s\ponta-duravel.test.ts:218:73)
+(fail) recuperação do último PUT por duas versões reais: expired, overwrite [16.00ms]
+213 |       const assets = await restart.listAllAssets()
+214 |       const official = assets.find((asset) => asset.id === sheet.id)
+215 |       expect(official.tiles[0].data[0]).toBe(7)
+216 |       const localCopies = assets.filter((asset) => asset.id !== sheet.id)
+217 |       const wanted = mode === 'successor' ? [3, 4, 5] : mode === 'overwrite' ? [3, 5] : [3]
+218 |       expect(localCopies.map((asset) => asset.tiles[0].data[0]).sort()).toEqual(wanted)
+                                                                              ^
+error: expect(received).toEqual(expected)
+
+@@ -1,4 +1,3 @@
+  [
+-   3,
+-   4,
+    5,
+
+- Expected  - 2
++ Received  + 0
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\terminal-5ef\packages\member-shell\.cache\pinta-qa-x884o48s\ponta-duravel.test.ts:218:73)
+(fail) recuperação do último PUT por duas versões reais: expired, successor [15.00ms]
+207 |           withClosed: (_, run) => run(),
+208 |         })
+209 |       await expect(sync((id) => id === sheet.id)).rejects.toThrow()
+210 |       expect((await restart.causal.inFlight()).sealed.intentHash).toBe(original.sealed.intentHash)
+211 |       expect((await restart.causal.inspect()).epoch).toBe('1')
+212 |       await expect(sync(() => false)).resolves.toMatchObject({ applied: true })
+                                                     ^
+error:
+
+Expected promise that resolves
+Received promise that rejected: Promise { <rejected> }
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\terminal-5ef\packages\member-shell\.cache\pinta-qa-x884o48s\ponta-duravel.test.ts:212:48)
+(fail) recuperação do último PUT por duas versões reais: aborted, delete [16.00ms]
+213 |       const assets = await restart.listAllAssets()
+214 |       const official = assets.find((asset) => asset.id === sheet.id)
+215 |       expect(official.tiles[0].data[0]).toBe(7)
+216 |       const localCopies = assets.filter((asset) => asset.id !== sheet.id)
+217 |       const wanted = mode === 'successor' ? [3, 4, 5] : mode === 'overwrite' ? [3, 5] : [3]
+218 |       expect(localCopies.map((asset) => asset.tiles[0].data[0]).sort()).toEqual(wanted)
+                                                                              ^
+error: expect(received).toEqual(expected)
+
+@@ -1,3 +1,3 @@
+  [
+-   3,
+    5,
+
+- Expected  - 1
++ Received  + 0
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\terminal-5ef\packages\member-shell\.cache\pinta-qa-x884o48s\ponta-duravel.test.ts:218:73)
+(fail) recuperação do último PUT por duas versões reais: aborted, overwrite [16.00ms]
+213 |       const assets = await restart.listAllAssets()
+214 |       const official = assets.find((asset) => asset.id === sheet.id)
+215 |       expect(official.tiles[0].data[0]).toBe(7)
+216 |       const localCopies = assets.filter((asset) => asset.id !== sheet.id)
+217 |       const wanted = mode === 'successor' ? [3, 4, 5] : mode === 'overwrite' ? [3, 5] : [3]
+218 |       expect(localCopies.map((asset) => asset.tiles[0].data[0]).sort()).toEqual(wanted)
+                                                                              ^
+error: expect(received).toEqual(expected)
+
+@@ -1,4 +1,3 @@
+  [
+-   3,
+-   4,
+    5,
+
+- Expected  - 2
++ Received  + 0
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\terminal-5ef\packages\member-shell\.cache\pinta-qa-x884o48s\ponta-duravel.test.ts:218:73)
+(fail) recuperação do último PUT por duas versões reais: aborted, successor [15.00ms]
+207 |           withClosed: (_, run) => run(),
+208 |         })
+209 |       await expect(sync((id) => id === sheet.id)).rejects.toThrow()
+210 |       expect((await restart.causal.inFlight()).sealed.intentHash).toBe(original.sealed.intentHash)
+211 |       expect((await restart.causal.inspect()).epoch).toBe('1')
+212 |       await expect(sync(() => false)).resolves.toMatchObject({ applied: true })
+                                                     ^
+error:
+
+Expected promise that resolves
+Received promise that rejected: Promise { <rejected> }
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\terminal-5ef\packages\member-shell\.cache\pinta-qa-x884o48s\ponta-duravel.test.ts:212:48)
+(fail) recuperação do último PUT por duas versões reais: unknown, delete
+213 |       const assets = await restart.listAllAssets()
+214 |       const official = assets.find((asset) => asset.id === sheet.id)
+215 |       expect(official.tiles[0].data[0]).toBe(7)
+216 |       const localCopies = assets.filter((asset) => asset.id !== sheet.id)
+217 |       const wanted = mode === 'successor' ? [3, 4, 5] : mode === 'overwrite' ? [3, 5] : [3]
+218 |       expect(localCopies.map((asset) => asset.tiles[0].data[0]).sort()).toEqual(wanted)
+                                                                              ^
+error: expect(received).toEqual(expected)
+
+@@ -1,3 +1,3 @@
+  [
+-   3,
+    5,
+
+- Expected  - 1
++ Received  + 0
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\terminal-5ef\packages\member-shell\.cache\pinta-qa-x884o48s\ponta-duravel.test.ts:218:73)
+(fail) recuperação do último PUT por duas versões reais: unknown, overwrite [16.00ms]
+213 |       const assets = await restart.listAllAssets()
+214 |       const official = assets.find((asset) => asset.id === sheet.id)
+215 |       expect(official.tiles[0].data[0]).toBe(7)
+216 |       const localCopies = assets.filter((asset) => asset.id !== sheet.id)
+217 |       const wanted = mode === 'successor' ? [3, 4, 5] : mode === 'overwrite' ? [3, 5] : [3]
+218 |       expect(localCopies.map((asset) => asset.tiles[0].data[0]).sort()).toEqual(wanted)
+                                                                              ^
+error: expect(received).toEqual(expected)
+
+@@ -1,4 +1,3 @@
+  [
+-   3,
+-   4,
+    5,
+
+- Expected  - 2
++ Received  + 0
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\terminal-5ef\packages\member-shell\.cache\pinta-qa-x884o48s\ponta-duravel.test.ts:218:73)
+(fail) recuperação do último PUT por duas versões reais: unknown, successor [16.00ms]
+
+packages\member-shell\.cache\pinta-qa-x884o48s\versoes-do-mundo.test.ts:
+303 |           catalog.get(house.tilesetId)?.tiles[0].data[house.layers.find(isTileLayer).cells[0]],
+304 |           linked &&
+305 |             catalog.get(linked.tilesetId)?.tiles[0].data[linked.layers.find(isTileLayer).cells[0]],
+306 |         ]
+307 |       })
+308 |       expect(worlds.sort()).toEqual(
+                                  ^
+error: expect(received).toEqual(expected)
+
+@@ -2,6 +2,3 @@
+    [
+-     3,
+-     3,
+-   ],
+-   [
+      5,
+
+- Expected  - 4
++ Received  + 0
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\terminal-5ef\packages\member-shell\.cache\pinta-qa-x884o48s\versoes-do-mundo.test.ts:308:29)
+(fail) porta e peça em cada versão da vila após escritor antigo: sealed, sheet [31.00ms]
+303 |           catalog.get(house.tilesetId)?.tiles[0].data[house.layers.find(isTileLayer).cells[0]],
+304 |           linked &&
+305 |             catalog.get(linked.tilesetId)?.tiles[0].data[linked.layers.find(isTileLayer).cells[0]],
+306 |         ]
+307 |       })
+308 |       expect(worlds.sort()).toEqual(
+                                  ^
+error: expect(received).toEqual(expected)
+
+@@ -2,6 +2,3 @@
+    [
+-     3,
+-     3,
+-   ],
+-   [
+      5,
+
+- Expected  - 4
++ Received  + 0
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\terminal-5ef\packages\member-shell\.cache\pinta-qa-x884o48s\versoes-do-mundo.test.ts:308:29)
+(fail) porta e peça em cada versão da vila após escritor antigo: sealed, group [32.00ms]
+303 |           catalog.get(house.tilesetId)?.tiles[0].data[house.layers.find(isTileLayer).cells[0]],
+304 |           linked &&
+305 |             catalog.get(linked.tilesetId)?.tiles[0].data[linked.layers.find(isTileLayer).cells[0]],
+306 |         ]
+307 |       })
+308 |       expect(worlds.sort()).toEqual(
+                                  ^
+error: expect(received).toEqual(expected)
+
+@@ -3,6 +3,3 @@
+      2,
+-     3,
+-   ],
+-   [
+-     2,
+      5,
+
+- Expected  - 4
++ Received  + 0
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\terminal-5ef\packages\member-shell\.cache\pinta-qa-x884o48s\versoes-do-mundo.test.ts:308:29)
+(fail) porta e peça em cada versão da vila após escritor antigo: sealed, indirect [31.00ms]
+303 |           catalog.get(house.tilesetId)?.tiles[0].data[house.layers.find(isTileLayer).cells[0]],
+304 |           linked &&
+305 |             catalog.get(linked.tilesetId)?.tiles[0].data[linked.layers.find(isTileLayer).cells[0]],
+306 |         ]
+307 |       })
+308 |       expect(worlds.sort()).toEqual(
+                                  ^
+error: expect(received).toEqual(expected)
+
+@@ -6,6 +6,3 @@
+    [
+-     1,
+-     1,
+-   ],
+-   [
+      5,
+
+- Expected  - 4
++ Received  + 0
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\terminal-5ef\packages\member-shell\.cache\pinta-qa-x884o48s\versoes-do-mundo.test.ts:308:29)
+(fail) porta e peça em cada versão da vila após escritor antigo: sealed, external-available [31.00ms]
+262 |           isOpen: () => false,
+263 |           withClosed: (_, apply) => apply(),
+264 |         })
+265 |       if (change === 'external-missing') {
+266 |         const before = await reopened.causal.inFlight()
+267 |         await expect(sync()).rejects.toThrow()
+                                           ^
+error:
+
+Expected promise that rejects
+Received promise that resolved: Promise { <resolved> }
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\terminal-5ef\packages\member-shell\.cache\pinta-qa-x884o48s\versoes-do-mundo.test.ts:267:38)
+(fail) porta e peça em cada versão da vila após escritor antigo: sealed, external-missing [16.00ms]
+303 |           catalog.get(house.tilesetId)?.tiles[0].data[house.layers.find(isTileLayer).cells[0]],
+304 |           linked &&
+305 |             catalog.get(linked.tilesetId)?.tiles[0].data[linked.layers.find(isTileLayer).cells[0]],
+306 |         ]
+307 |       })
+308 |       expect(worlds.sort()).toEqual(
+                                  ^
+error: expect(received).toEqual(expected)
+
+@@ -2,6 +2,3 @@
+    [
+-     3,
+-     3,
+-   ],
+-   [
+      5,
+
+- Expected  - 4
++ Received  + 0
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\terminal-5ef\packages\member-shell\.cache\pinta-qa-x884o48s\versoes-do-mundo.test.ts:308:29)
+(fail) porta e peça em cada versão da vila após escritor antigo: unbased, sheet [15.00ms]
+303 |           catalog.get(house.tilesetId)?.tiles[0].data[house.layers.find(isTileLayer).cells[0]],
+304 |           linked &&
+305 |             catalog.get(linked.tilesetId)?.tiles[0].data[linked.layers.find(isTileLayer).cells[0]],
+306 |         ]
+307 |       })
+308 |       expect(worlds.sort()).toEqual(
+                                  ^
+error: expect(received).toEqual(expected)
+
+@@ -2,6 +2,3 @@
+    [
+-     3,
+-     3,
+-   ],
+-   [
+      5,
+
+- Expected  - 4
++ Received  + 0
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\terminal-5ef\packages\member-shell\.cache\pinta-qa-x884o48s\versoes-do-mundo.test.ts:308:29)
+(fail) porta e peça em cada versão da vila após escritor antigo: unbased, group [16.00ms]
+303 |           catalog.get(house.tilesetId)?.tiles[0].data[house.layers.find(isTileLayer).cells[0]],
+304 |           linked &&
+305 |             catalog.get(linked.tilesetId)?.tiles[0].data[linked.layers.find(isTileLayer).cells[0]],
+306 |         ]
+307 |       })
+308 |       expect(worlds.sort()).toEqual(
+                                  ^
+error: expect(received).toEqual(expected)
+
+@@ -3,6 +3,3 @@
+      2,
+-     3,
+-   ],
+-   [
+-     2,
+      5,
+
+- Expected  - 4
++ Received  + 0
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\terminal-5ef\packages\member-shell\.cache\pinta-qa-x884o48s\versoes-do-mundo.test.ts:308:29)
+(fail) porta e peça em cada versão da vila após escritor antigo: unbased, indirect [31.00ms]
+
+packages\member-shell\.cache\pinta-qa-x884o48s\transacao-da-ponta.test.ts:
+146 |     await wrapper.persistAsset(sheet, { resources: [] })
+147 |     const [first] = (await local.causal.inspect()).pending
+148 |     const key = localPreparedKey(first.opId),
+149 |       id = sheet.id
+150 |     const candidate = disk.get(key)
+151 |     expect(candidate).toBeInstanceOf(Map)
+                            ^
+error: expect(received).toBeInstanceOf(expected)
+
+Expected constructor: [class Map]
+Received value: undefined
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\terminal-5ef\packages\member-shell\.cache\pinta-qa-x884o48s\transacao-da-ponta.test.ts:151:23)
+(fail) a troca de um gzip mutável usa a mesma transação, espaço e chave
+
+packages\member-shell\.cache\pinta-qa-x884o48s\leitores-do-registro.test.ts:
+151 |       },
+152 |     })
+153 |     try {
+154 |       await wrapper.persistAsset(sheet, { resources: [] })
+155 |       const state = await local.causal.inspect()
+156 |       expect(state.version).toBe(3)
+                                  ^
+error: expect(received).toBe(expected)
+
+Expected: 3
+Received: 2
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\terminal-5ef\packages\member-shell\.cache\pinta-qa-x884o48s\leitores-do-registro.test.ts:156:29)
+(fail) a versão 3 adota registro real v1 e o leitor anterior recusa a escrita posterior
+151 |       },
+152 |     })
+153 |     try {
+154 |       await wrapper.persistAsset(sheet, { resources: [] })
+155 |       const state = await local.causal.inspect()
+156 |       expect(state.version).toBe(3)
+                                  ^
+error: expect(received).toBe(expected)
+
+Expected: 3
+Received: 2
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\terminal-5ef\packages\member-shell\.cache\pinta-qa-x884o48s\leitores-do-registro.test.ts:156:29)
+(fail) a versão 3 adota registro real v2 e o leitor anterior recusa a escrita posterior
+
+ 0 pass
+ 20 fail
+ 124 expect() calls
+Ran 20 tests across 4 files. [537.00ms]

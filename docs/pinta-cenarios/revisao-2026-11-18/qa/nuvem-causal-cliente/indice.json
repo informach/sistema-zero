@@ -110,6 +110,42 @@
       "originalSha256": "340e19ecc24c133d483121da5c76a8633acea4335770be32060c967912296c9c"
     },
     {
+      "alvo": "duravel",
+      "nome": "ponta-duravel.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/ponta-duravel.inc"
+      ],
+      "sha256": "562bbc72f7976df0a33e9c706d79395e34662b2f32fe05402b3e8a7aea25dfcb"
+    },
+    {
+      "alvo": "duravel",
+      "nome": "versoes-do-mundo.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/versoes-do-mundo.inc"
+      ],
+      "sha256": "b75c1655d4e75bac409b4cb46687052e4fb68d3a0b128d89d7062401ccb3cde2"
+    },
+    {
+      "alvo": "duravel",
+      "nome": "transacao-da-ponta.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/transacao-da-ponta.inc"
+      ],
+      "sha256": "32db8e0f5a6ae80d8a35832a8016b541b1f20858885428e8ec33c9c98bd9c2b9"
+    },
+    {
+      "alvo": "duravel",
+      "nome": "leitores-do-registro.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/leitores-do-registro.inc"
+      ],
+      "sha256": "cc87a1a5e22caadd6581d90a5a0d94881c5053902c247eb2be681152fbb09e39"
+    },
+    {
       "alvo": "retencao",
       "nome": "real-shadow-quota-review.test.ts",
       "fontes": [
@@ -322,6 +358,13 @@
       "sha256": "c6f5ae1143d9c45b410deae22d1afd4a3d4af8e14639e0fde88bbd691af7f95a",
       "commit": "5ef94cc8593c847d9c4a25c395f7a8a6f5797b94",
       "resultado": "1 falha/8 asserções"
+    },
+    {
+      "arquivo": "recibos/duravel-5ef.txt",
+      "originalSha256": "084cd39444bac664961febb6354b290871fffb49ef77afe933f738cd158b4e87",
+      "sha256": "3024dd4de75a44e1c7ec5c853d605efbb6515242853a19d9b6f46476be6a4ba6",
+      "commit": "5ef94cc8593c847d9c4a25c395f7a8a6f5797b94",
+      "resultado": "20 falham/124 asserções no candidato anterior à sombra durável"
     },
     {
       "arquivo": "recibos/replay-85e.txt",
