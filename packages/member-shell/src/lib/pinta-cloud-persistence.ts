@@ -87,8 +87,12 @@ import {
   preparePintaOfflineRemap,
   stagePintaCausalWrite,
 } from './pinta-causal-authoring'
-import { PintaCausalRequestError } from './pinta-causal-cloud'
-import { discoverPintaCausalSnapshot, readPintaCausalJson } from './pinta-causal-pull'
+import { PintaCausalRequestError, pintaCausalGzipHash } from './pinta-causal-cloud'
+import {
+  discoverPintaCausalSnapshot,
+  PintaCausalRecoveryNeedsFilesError,
+  readPintaCausalJson,
+} from './pinta-causal-pull'
 import { flushPintaCausalOutbox, freezePintaCausalPending } from './pinta-causal-queue'
 import { syncPintaCausalAccount } from './pinta-causal-sync'
 
@@ -256,6 +260,8 @@ export interface PintaPersistenceLike {
   loadAssetById(id: string): Promise<PintaAsset | null>
   listAllAssets(): Promise<PintaAsset[]>
   observesReferences?: true
+  needsRetainedRecovery?(): boolean
+  loadRetainedRecoveryFiles?(): Promise<ReadonlyMap<string, Blob>>
   holdOpen?(id: string): Promise<() => void>
   prepareTileRemap?(source: PintaAsset): Promise<readonly PintaAsset[]>
   accountConfirmation?: Pick<CreationsCloud, 'confirm' | 'download'>
@@ -378,8 +384,26 @@ export function createCloudMirroredPintaPersistence(options: {
   let lastRemapChain = ''
   let queuedSlots: PintaQueuedSlots | undefined
   let knownLegacy = false
+  let needsRetainedRecovery = false
+  async function loadRetainedRecoveryFiles(): Promise<ReadonlyMap<string, Blob>> {
+    const files = new Map<string, Blob>()
+    if (!causalLocal) return files
+    const signal = causalSession.signal
+    for (const [opId, { puts, blobs }] of await causalLocal.retainedArchive()) {
+      for (const { itemId, sha256 } of puts) {
+        signal.throwIfAborted()
+        const blob = blobs.get(itemId)
+        if (!blob || (await pintaCausalGzipHash(await blob.arrayBuffer())) !== sha256)
+          throw Error('Não consegui conferir os arquivos guardados neste aparelho.')
+        files.set(`${opId}/${encodeURIComponent(itemId)}.pinta.json.gz`, blob)
+      }
+    }
+    signal.throwIfAborted()
+    return files
+  }
   let causalTimer: ReturnType<typeof setTimeout> | null = null
   async function reportCausalQueue(error?: unknown): Promise<void> {
+    if (error instanceof PintaCausalRecoveryNeedsFilesError) needsRetainedRecovery = true
     if (!causalLocal || !cloud.reportPintaQueue || causalSession.signal.aborted) return
     const { sealed, pending, unbased, recovered, confirmed } = await causalLocal.inspect()
     if (causalSession.signal.aborted) return
@@ -411,15 +435,17 @@ export function createCloudMirroredPintaPersistence(options: {
       cloud.reportPintaQueue(
         [...ids],
         'error',
-        error instanceof PintaCausalRequestError &&
-          [
-            'operation-expired',
-            'operation-aborted',
-            'not-found',
-            'unresolved-predecessor',
-          ].includes(error.reason)
-          ? 'Seus desenhos estão neste aparelho. Uma nova versão da conta precisa ser conferida.'
-          : 'Seus desenhos estão neste aparelho. Não consegui guardá-los na conta agora.',
+        error instanceof PintaCausalRecoveryNeedsFilesError
+          ? 'Faltam peças da versão anterior. Baixe as edições guardadas na galeria.'
+          : error instanceof PintaCausalRequestError &&
+              [
+                'operation-expired',
+                'operation-aborted',
+                'not-found',
+                'unresolved-predecessor',
+              ].includes(error.reason)
+            ? 'Seus desenhos estão neste aparelho. Uma nova versão da conta precisa ser conferida.'
+            : 'Seus desenhos estão neste aparelho. Não consegui guardá-los na conta agora.',
       )
     else cloud.reportPintaQueue([...ids], 'saving')
   }
@@ -526,12 +552,44 @@ export function createCloudMirroredPintaPersistence(options: {
         .catch(() => {})
     }, 1_500)
   }
+  const slotSnapshots = new WeakMap<readonly symbol[], readonly symbol[]>()
+  function captureSlots(slots: readonly symbol[]): readonly symbol[] {
+    const previous = slotSnapshots.get(slots)
+    if (
+      previous &&
+      previous.length === slots.length &&
+      previous.every((slot, i) => slot === slots[i])
+    )
+      return previous
+    const copy = [...slots]
+    slotSnapshots.set(slots, copy)
+    return copy
+  }
   async function stageCausal(
-    assets: readonly PintaAsset[],
-    context?: PintaEditorWriteContext,
-    deletion?: { id: string; before?: PintaAsset },
+    authoring: readonly PintaAsset[],
+    requestedContext?: PintaEditorWriteContext,
+    requestedDeletion?: { id: string; before?: PintaAsset },
   ): Promise<boolean> {
     if (!causalLocal || !causalCloud) return false
+    // Capture one detached version before the first await. The document and its retained gzip
+    // must never encode different contents under the same IndexedDB revision.
+    const assets = authoring.map((asset) => causalLocal.captureCandidate(asset))
+    const authors = new Map(authoring.map((asset) => [asset.id, asset]))
+    const deletion = requestedDeletion && {
+      id: requestedDeletion.id,
+      before: requestedDeletion.before && causalLocal.captureCandidate(requestedDeletion.before),
+    }
+    const context = requestedContext && {
+      resources: requestedContext.resources.map((ref) => ({ ...ref })),
+      layout: requestedContext.layout && {
+        oldToNew: [...requestedContext.layout.oldToNew],
+        count: requestedContext.layout.count,
+      },
+      slotLineage: requestedContext.slotLineage && {
+        before: captureSlots(requestedContext.slotLineage.before),
+        after: captureSlots(requestedContext.slotLineage.after),
+      },
+    }
     let state = await causalLocal.inspect()
     const renumbering = !!context?.layout?.oldToNew.some((next, old) => next !== old)
     const structure = !!deletion || renumbering
@@ -615,6 +673,7 @@ export function createCloudMirroredPintaPersistence(options: {
       )
       await causalLocal.stageUnbased({
         shadow,
+        authors,
         migrations: migrating,
         transitions: changes,
         readSet,
@@ -632,6 +691,7 @@ export function createCloudMirroredPintaPersistence(options: {
       signal: causalSession.signal,
       catalog: await local.listAllAssets(),
       assets,
+      authors,
       context,
       deletion,
       remapBase: undo ? undefined : remap,
@@ -1391,7 +1451,10 @@ export function createCloudMirroredPintaPersistence(options: {
       })
       knownLegacy = result.mode === 'legacy'
       if (result.mode === 'causal') {
-        if (result.applied && (await causalLocal.inspect()).pending.length > 0) wakeCausal()
+        if (result.applied) {
+          needsRetainedRecovery = false
+          if ((await causalLocal.inspect()).pending.length > 0) wakeCausal()
+        }
         return local.listAllAssets()
       }
     }
@@ -1644,6 +1707,8 @@ export function createCloudMirroredPintaPersistence(options: {
     ...(causalLocal && causalCloud && options.causal
       ? {
           observesReferences: true as const,
+          needsRetainedRecovery: () => needsRetainedRecovery,
+          loadRetainedRecoveryFiles,
           prepareTileRemap,
           holdOpen: options.causal.holdOpen,
           accountConfirmation,
@@ -1707,6 +1772,34 @@ export function createCloudMirroredPintaPersistence(options: {
     },
     async listAllAssets() {
       const localAssets = await local.listAllAssets()
+      if (causalLocal && causalCloud && !needsRetainedRecovery) {
+        const state = await causalLocal.inspect()
+        const observed = new Map(
+          localAssets.map((asset) => [asset.id, pintaLocalRevisionOf(asset)]),
+        )
+        const latest = new Map([
+          ...(state.sealed?.local.members ?? []).map(
+            (part) =>
+              [
+                part.itemId,
+                { localRevision: part.localRevision, deleted: part.action === 'delete' },
+              ] as const,
+          ),
+          ...state.pending.flatMap((group) =>
+            group.members.map(
+              (part) =>
+                [
+                  part.itemId,
+                  { localRevision: part.localRevision, deleted: part.action === 'delete' },
+                ] as const,
+            ),
+          ),
+          ...(state.unbased?.members ?? []).map((part) => [part.itemId, part] as const),
+        ])
+        needsRetainedRecovery = [...latest].some(
+          ([id, version]) => !version.deleted && observed.get(id) !== version.localRevision,
+        )
+      }
       for (const asset of localAssets) {
         observeUnverifiedBase(asset)
         lostFormat(asset)

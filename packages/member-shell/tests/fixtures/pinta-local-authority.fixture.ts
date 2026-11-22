@@ -5,7 +5,10 @@ import {
   type PintaCausalIntent,
   pintaCausalIntentHash,
 } from '@sistemazero/core/creations/pinta-causal'
-import { pintaLocalRevisionOf } from '../../../pinta/src/core/localAssetOrigin'
+import {
+  pintaLocalRevisionOf,
+  pintaResourceObservation,
+} from '../../../pinta/src/core/localAssetOrigin'
 import type { PintaAsset } from '../../../pinta/src/core/project'
 import {
   createPixelSpriteAsset,
@@ -1832,8 +1835,10 @@ test.each([
   'successor',
   'removed',
   'unbased',
+  'unbased-removed',
 ] as const)('recupera separadamente a revisão retida e a edição de outra instalação: %s', async (mode) => {
   const namespace = `recovery-${mode}`
+  const unbased = mode === 'unbased' || mode === 'unbased-removed'
   const local = createPintaCausalPersistence({ namespace })
   const old = createPintaPersistence({ namespace })
   const sheet = createTilesetAsset({ name: 'pedras', tileSize: 8, now: 1000 })
@@ -1845,7 +1850,7 @@ test.each([
   }
   const before = await cloudAsset(sheet, 1, '1')
   const cloudSeven = await cloudAsset(pixel(sheet, 7), 2, '7')
-  if (mode === 'unbased') await old.persistAsset(sheet)
+  if (unbased) await old.persistAsset(sheet)
   else
     await local.causal.applyPull(
       {
@@ -1899,8 +1904,8 @@ test.each([
   try {
     const base = await local.loadAssetById(sheet.id)
     if (base?.kind !== 'tileset') throw Error('Folha ausente')
-    await wrapper.persistAsset(pixel(base, mode === 'unbased' ? 4 : 3), { resources: [] })
-    if (mode !== 'unbased') {
+    await wrapper.persistAsset(pixel(base, unbased ? 4 : 3), { resources: [] })
+    if (!unbased) {
       await expect(flushPintaCausalOutbox(work)).rejects.toThrow('sem rede')
       if (mode === 'successor') {
         const loaded = await local.loadAssetById(sheet.id)
@@ -1913,7 +1918,7 @@ test.each([
   }
   const fromOld = await old.loadAssetById(sheet.id)
   if (fromOld?.kind !== 'tileset') throw Error('Versão da outra instalação ausente')
-  if (mode === 'removed') await old.deleteAsset(sheet.id, fromOld)
+  if (mode === 'removed' || mode === 'unbased-removed') await old.deleteAsset(sheet.id, fromOld)
   else await old.persistAsset(pixel(fromOld, 5))
   const reopened = createPintaCausalPersistence({ namespace })
   const prior = await reopened.causal.inspect()
@@ -1947,7 +1952,15 @@ test.each([
   const copies = (await reopened.listAllAssets()).filter((item) => item.id !== sheet.id)
   expect(
     copies.map((asset) => (asset.kind === 'tileset' ? asset.tiles[0]?.data[0] : -1)).sort(),
-  ).toEqual(mode === 'removed' ? [3] : mode === 'successor' || mode === 'unbased' ? [4, 5] : [3, 5])
+  ).toEqual(
+    mode === 'removed'
+      ? [3]
+      : mode === 'unbased-removed'
+        ? [4]
+        : mode === 'successor' || unbased
+          ? [4, 5]
+          : [3, 5],
+  )
   const settled = await reopened.causal.inspect()
   expect(settled.sealed).toBeNull()
   expect(settled.pending).toEqual([])
@@ -1956,4 +1969,204 @@ test.each([
   expect(settled.recovered?.size).toBe(copies.length)
   expect(settled.confirmed.get(sheet.id)?.opId).toBeUndefined()
   expect(queued).toEqual([])
+})
+
+test.each([
+  'based',
+  'unbased',
+] as const)('o documento e a sombra usam a mesma captura antes de codificar: %s', async (mode) => {
+  const namespace = `snapshot-before-encode-${mode}`
+  const local = createPintaCausalPersistence({ namespace })
+  const sheet = createTilesetAsset({ name: 'pedra', tileSize: 8, now: 1000 })
+  const map = createTilemapAsset({ name: 'vila', tilesetId: sheet.id, cols: 2, rows: 2 })
+  if (mode === 'based')
+    await local.causal.applyPull({ fromEpoch: null, epoch: '1', transitions: [] }, () => true)
+  const { cloud } = fakeCloud(map, 0)
+  const offline = async (): Promise<never> => {
+    throw Error('sem rede')
+  }
+  const transport: PintaCausalCloud = {
+    snapshot: offline,
+    verifyEpoch: offline,
+    download: offline,
+    backfill: offline,
+    upload: offline,
+  }
+  const encodeCandidates = local.causal.encodeCandidates
+  let began: (() => void) | undefined
+  let release: (() => void) | undefined
+  const encoded = new Promise<void>((resolve) => {
+    began = resolve
+  })
+  const waiting = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  const wrapper = createCloudMirroredPintaPersistence({
+    local,
+    cloud: { ...cloud, pintaCausal: transport },
+    viewerId: namespace,
+    causal: {
+      local: {
+        ...local.causal,
+        encodeCandidates: async (assets, signal) => {
+          const candidate = await encodeCandidates(assets, signal)
+          began?.()
+          await waiting
+          return candidate
+        },
+      },
+      holdOpen: async () => () => {},
+      withClosed: (_, apply) => apply(),
+    },
+  })
+  try {
+    const saved = wrapper.persistAsset(sheet, { resources: [] })
+    sheet.tiles[0]!.data[0] = 3
+    await encoded
+    sheet.tiles[0]!.data[0] = 4
+    release?.()
+    await saved
+    const stored = await local.loadAssetById(sheet.id)
+    const state = await local.causal.inspect()
+    const draft = state.unbased ?? state.pending[0]
+    if (!draft || stored?.kind !== 'tileset') throw Error('Gravação ausente')
+    const candidate = await local.causal.retained(draft.opId)
+    const blob = candidate?.blobs.get(sheet.id)
+    if (!blob) throw Error('Sombra ausente')
+    const json = await new Response(
+      blob.stream().pipeThrough(new DecompressionStream('gzip')),
+    ).text()
+    const shadow = local.causal.decodeCandidate(json)
+    if (shadow?.kind !== 'tileset') throw Error('Sombra inválida')
+    expect(stored.tiles[0]?.data[0]).toBe(0)
+    expect(shadow.tiles[0]?.data[0]).toBe(0)
+    expect(pintaLocalRevisionOf(sheet)).toBe(pintaLocalRevisionOf(stored))
+    expect(pintaResourceObservation(sheet)).toBeNull()
+    // A edição feita depois segue a mesma linhagem, agora com o último valor.
+    await wrapper.persistAsset(sheet, { resources: [] })
+    const latest = await local.loadAssetById(sheet.id)
+    expect(latest?.kind === 'tileset' && latest.tiles[0]?.data[0]).toBe(4)
+    expect(pintaResourceObservation(sheet)?.localRevision).toBe(pintaLocalRevisionOf(sheet))
+  } finally {
+    release?.()
+    wrapper.dispose?.()
+  }
+})
+
+test('oferece o arquivo nativo quando as peças que o mapa leu deixaram de existir', async () => {
+  const namespace = 'lost-historical-resource'
+  const local = createPintaCausalPersistence({ namespace })
+  const legacy = createPintaPersistence({ namespace })
+  const sheet = createTilesetAsset({ name: 'pecas', tileSize: 8, now: 10 })
+  const map = createTilemapAsset({ name: 'vila', tilesetId: sheet.id, cols: 2, rows: 2, now: 10 })
+  map.layers[0]!.cells![0] = 0
+  const before = [await cloudAsset(sheet, 1, '1'), await cloudAsset(map, 1)]
+  await local.causal.applyPull(
+    {
+      fromEpoch: null,
+      epoch: '1',
+      transitions: [sheet, map].map((after, i) => ({
+        id: after.id,
+        before: null,
+        beforeRevision: null,
+        after,
+        remote: before[i]!.entry,
+      })),
+    },
+    () => true,
+  )
+  const incoming = structuredClone(sheet)
+  incoming.tiles[0]!.data[0] = 7
+  const later = await cloudAsset(incoming, 2, '2')
+  const { cloud, queued } = fakeCloud(map, 1)
+  let offline = true
+  const transport: PintaCausalCloud = {
+    snapshot: async () => {
+      if (offline) throw Error('sem rede')
+      return { epoch: '2', requiredFormat: 6, entries: [later.entry, before[1]!.entry] }
+    },
+    verifyEpoch: async (epoch) => {
+      expect(epoch).toBe('2')
+    },
+    download: async ({ itemId }) => (itemId === sheet.id ? later.gzip : before[1]!.gzip),
+    backfill: async () => {
+      throw Error('backfill inesperado')
+    },
+    upload: async () => {
+      if (offline) throw Error('sem rede')
+      throw new PintaCausalRequestError(409, 'epoch-changed')
+    },
+    settle: async () => ({ state: 'aborted' }),
+  }
+  const wrapper = createCloudMirroredPintaPersistence({
+    local,
+    cloud: { ...cloud, pintaCausal: transport },
+    viewerId: namespace,
+    causal: {
+      local: local.causal,
+      holdOpen: async () => () => {},
+      withClosed: (_, apply) => apply(),
+    },
+  })
+  try {
+    const author = await local.loadAssetById(map.id)
+    const originalSheet = await local.loadAssetById(sheet.id)
+    if (author?.kind !== 'tilemap' || originalSheet?.kind !== 'tileset')
+      throw Error('Catálogo ausente')
+    await wrapper.persistAsset(
+      { ...author, name: 'minha-vila', updatedAt: 12 },
+      {
+        resources: [{ id: sheet.id, localRevision: pintaLocalRevisionOf(originalSheet) ?? null }],
+      },
+    )
+    const work = {
+      local: local.causal,
+      cloud: transport,
+      reader: 6,
+      signal: new AbortController().signal,
+    }
+    await expect(flushPintaCausalOutbox(work)).rejects.toThrow('sem rede')
+    const held = await local.causal.inFlight()
+    if (!held) throw Error('Mapa retido ausente')
+    const editedSheet = await legacy.loadAssetById(sheet.id)
+    if (editedSheet?.kind !== 'tileset') throw Error('Folha ausente')
+    editedSheet.tiles[0]!.data[0] = 5
+    await legacy.persistAsset(editedSheet)
+    offline = false
+    let unsubscribe: (() => void) | undefined
+    const finished = new Promise<void>((resolve) => {
+      unsubscribe = wrapper.subscribe?.((event) => {
+        if (event.type === 'sync-end') resolve()
+      })
+    })
+    try {
+      await wrapper.listAllAssets()
+      await finished
+    } finally {
+      unsubscribe?.()
+    }
+    expect(wrapper.needsRetainedRecovery?.()).toBe(true)
+    // Files come from this device and stay available with the account disconnected.
+    offline = true
+    const files = await wrapper.loadRetainedRecoveryFiles?.()
+    const blob = files?.get(`${held.sealed.intent.opId}/${map.id}.pinta.json.gz`)
+    const put = held.sealed.intent.members.find((member) => member.itemId === map.id)
+    if (!blob || put?.action !== 'put') throw Error('Arquivo original não disponível')
+    expect(await pintaCausalGzipHash(await blob.arrayBuffer())).toBe(put.sha256)
+    const json = await new Response(
+      blob.stream().pipeThrough(new DecompressionStream('gzip')),
+    ).text()
+    expect(local.causal.decodeCandidate(json)).toMatchObject({
+      id: map.id,
+      name: 'minha-vila',
+      tilesetId: sheet.id,
+    })
+    expect((await local.causal.inspect()).epoch).toBe('1')
+    expect((await local.causal.inFlight())?.sealed.intentHash).toBe(held.sealed.intentHash)
+    const current = await local.loadAssetById(sheet.id)
+    expect(current?.kind === 'tileset' && current.tiles[0]?.data[0]).toBe(5)
+    expect(queued).toEqual([])
+  } finally {
+    wrapper.dispose?.()
+  }
 })

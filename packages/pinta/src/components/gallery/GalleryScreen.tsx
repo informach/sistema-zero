@@ -37,7 +37,7 @@ import { isTilemapBundle } from '../../export/assetJson'
 import { type PintaBackupReadFailure, readPintaBackupFile } from '../../export/backupFile'
 import { triggerDownload } from '../../export/download'
 import { importPintaJson } from '../../export/projectJson'
-import { zipGallery } from '../../export/zip'
+import { zipGallery, zipRetainedRecoveryFiles } from '../../export/zip'
 import { decodeImageFile, IMPORT_ACCEPT, MAX_IMAGE_FILE_BYTES } from '../../import/decodeImage'
 import type { RGBAImage } from '../../import/quantize'
 import { usePintaApp, usePintaGallery } from '../appContext'
@@ -157,7 +157,7 @@ function suggestName(role: NewAssetRole, taken: ReadonlySet<string>): string {
 }
 
 export function GalleryScreen(): JSX.Element {
-  const { gallery, openAsset, takeInitialIntent, initialIntentVersion } = usePintaApp()
+  const { gallery, persistence, openAsset, takeInitialIntent, initialIntentVersion } = usePintaApp()
   const hostChrome = usePintaHostChrome()
   const { showToast } = useToast()
   const recoveryNotice = usePintaGallery((state) => state.recoveryNotice)
@@ -311,6 +311,24 @@ export function GalleryScreen(): JSX.Element {
       onToggleSelect={toggleSelection}
     />
   )
+
+  async function handleDownloadRecovery(): Promise<void> {
+    if (zipping || !persistence.loadRetainedRecoveryFiles) return
+    setZipping(true)
+    try {
+      const files = await persistence.loadRetainedRecoveryFiles()
+      if (!files.size) {
+        showToast(COPY.gallery.retainedRecoveryUnavailable)
+        return
+      }
+      triggerDownload(await zipRetainedRecoveryFiles(files), 'edicoes-guardadas-pinta.zip')
+      showToast(COPY.toast.downloadReady)
+    } catch {
+      showToast(COPY.gallery.zipError)
+    } finally {
+      setZipping(false)
+    }
+  }
 
   async function handleDownloadAll(): Promise<void> {
     if (zipping) return
@@ -641,6 +659,24 @@ export function GalleryScreen(): JSX.Element {
                   </p>
                   <Button variant="primary" onClick={() => window.location.reload()}>
                     {COPY.gallery.newerFormatReload}
+                  </Button>
+                </div>
+              ) : null}
+              {persistence.needsRetainedRecovery?.() ? (
+                <div
+                  role="alert"
+                  className="mb-5 flex flex-wrap items-center gap-3 rounded-xl border-2 border-pin-accent bg-pin-surface px-4 py-3"
+                >
+                  <p className="min-w-0 flex-1 font-semibold text-pin-text text-sm">
+                    {COPY.gallery.retainedRecovery}
+                  </p>
+                  <Button
+                    variant="pillSoft"
+                    disabled={zipping}
+                    onClick={() => void handleDownloadRecovery()}
+                  >
+                    <Download aria-hidden="true" />
+                    {COPY.gallery.downloadRetainedRecovery}
                   </Button>
                 </div>
               ) : null}

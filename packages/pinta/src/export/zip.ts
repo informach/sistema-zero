@@ -202,6 +202,19 @@ export async function buildGalleryFileMap(
   return { files, readme }
 }
 
+/** Preserve the original native gzip files when their exact dependency graph cannot reopen. */
+export async function zipRetainedRecoveryFiles(files: ReadonlyMap<string, Blob>): Promise<Blob> {
+  const { strToU8, zipSync } = await import('fflate')
+  const entries: Record<string, Uint8Array> = {
+    'LEIA-ME.txt': strToU8(
+      'Edições guardadas pelo Pinta neste aparelho. Cada pasta contém os arquivos originais de uma gravação.\n' +
+        'Mantenha as peças e os mapas da mesma versão juntos. Este ZIP serve para recuperar os arquivos; não é um backup completo da galeria.\n',
+    ),
+  }
+  for (const [name, blob] of files) entries[name] = new Uint8Array(await blob.arrayBuffer())
+  return new Blob([zipSync(entries, { level: 0 }).slice().buffer], { type: 'application/zip' })
+}
+
 /** Zipa o mapa (fflate sob demanda; chaves com `/` viram pastas). */
 export async function zipGallery(
   assets: PintaAsset[],

@@ -57,6 +57,7 @@ export interface PintaCausalLocalDraft<Asset extends PintaMemoryAsset> {
   requireKnownInventory?: boolean
   independent?: true
   shadow?: PintaCandidateBytes
+  authors?: ReadonlyMap<string, Asset>
 }
 
 interface PintaLocalUnbasedRead {
@@ -73,6 +74,7 @@ export interface PintaLocalUnbasedDraft<Asset extends PintaMemoryAsset> {
   stableTilesets?: readonly string[]
   migrations?: readonly { itemId: string; localRevision: string }[]
   shadow?: PintaCandidateBytes
+  authors?: ReadonlyMap<string, Asset>
 }
 
 interface PintaLocalUnbased {
@@ -834,6 +836,9 @@ export function installLocalCausalPull<Asset extends PintaMemoryAsset>(
     if (impact.blocked || impact.ids.some((id) => !covered.has(id)))
       throw new PintaCausalPullDeferred()
     moved = new Set(impact.recover ?? [])
+    const archive = planArchivedRecovery(pull, state, before)
+    for (const id of archive.diverged) moved.add(id)
+    for (const id of archive.restoredCurrent) moved.add(id)
     for (const change of pull.transitions) {
       if (Boolean(change.after) !== Boolean(change.remote)) invalid()
       if (!terminal && ownsLocalCausalMember(state, change.id, false))
@@ -851,9 +856,6 @@ export function installLocalCausalPull<Asset extends PintaMemoryAsset>(
           throw new PintaCausalPullDeferred()
       } else if (!change.remote && !mark) throw new PintaCausalPullDeferred()
     }
-    const archive = planArchivedRecovery(pull, state, before)
-    for (const id of archive.diverged) moved.add(id)
-    for (const id of archive.restoredCurrent) moved.add(id)
     if (!moved.size) return []
     const official = officialProjection(pull, state, before)
     if (!official) throw new PintaCausalPullDeferred()

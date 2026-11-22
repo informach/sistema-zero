@@ -293,6 +293,7 @@ export async function stagePintaCausalWrite(options: {
   signal: AbortSignal
   catalog: readonly PintaAsset[]
   assets?: readonly PintaAsset[]
+  authors?: ReadonlyMap<string, PintaAsset>
   deletion?: { id: string; before?: PintaAsset }
   context?: PintaEditorWriteContext
   remapBase?: PintaCausalRemapBase
@@ -509,6 +510,7 @@ export async function stagePintaCausalWrite(options: {
   const shadow = await local.encodeCandidates([...output.values()], options.signal)
   const pending = await local.stage({
     shadow,
+    authors: options.authors,
     opId: replaces[0]?.opId ?? crypto.randomUUID(),
     baseEpoch: epoch,
     transitions,

@@ -57,13 +57,11 @@ export async function readPintaCausalJson(
 
 type LocalPull = Parameters<PintaCausalLocalPort['applyPull']>[0]
 type QueueState = Awaited<ReturnType<PintaCausalLocalPort['inspect']>>
-type Capture = Awaited<ReturnType<PintaCausalLocalPort['capture']>>[number]
 type RetainedPort = Partial<Pick<PintaCausalLocalPort, 'retained' | 'inFlight' | 'decodeCandidate'>>
 
 async function readRetainedCandidates(
   local: RetainedPort,
   state: QueueState,
-  bases: ReadonlyMap<string, Capture>,
   recovery: LocalPull['recoverUnit'],
   budget: { remaining: number },
   signal: AbortSignal,
@@ -82,16 +80,6 @@ async function readRetainedCandidates(
       : []),
     ...(!recovery && state.unbased ? [state.unbased] : []),
   ]
-  const latest = new Map(
-    groups.flatMap(({ members }) => members.map((part) => [part.itemId, part] as const)),
-  )
-  if (
-    ![...latest.values()].some(
-      ({ itemId, localRevision, deleted }) =>
-        !deleted && bases.get(itemId)?.beforeRevision !== localRevision,
-    )
-  )
-    return []
   const archived: NonNullable<LocalPull['archived']>[number][] = []
   for (const group of groups) {
     const isSeal = group.opId === sealed?.intent.opId
@@ -216,9 +204,7 @@ export async function pullPintaCausalSnapshot(options: {
       remote: visible.get(id) ?? null,
     }
   })
-  const archived = await readRetainedCandidates(local, state, bases, recovery, budget, signal)
-  const pull = {
-    ...(archived.length ? { archived } : {}),
+  const pull: LocalPull = {
     fromEpoch: state.epoch,
     epoch: snapshot.epoch,
     transitions,
@@ -226,10 +212,14 @@ export async function pullPintaCausalSnapshot(options: {
     ...(recoverDiverged ? { recoverDiverged: true as const } : {}),
     ...(recovery ? { recoverUnit: recovery } : {}),
   }
-  const impact = await local.pullImpact(pull)
-  if (impact.needsArchive) throw new PintaCausalRecoveryNeedsFilesError()
-  if (impact.blocked || impact.ids.some(options.isOpen)) return false
+  let impact = await local.pullImpact(pull)
+  if (impact.needsArchive && !impact.ids.some(options.isOpen)) {
+    pull.archived = await readRetainedCandidates(local, state, recovery, budget, signal)
+    impact = await local.pullImpact(pull)
+  }
+  if (impact.ids.some(options.isOpen) || (impact.blocked && !impact.needsArchive)) return false
   await cloud.verifyEpoch(snapshot.epoch, signal)
+  if (impact.needsArchive) throw new PintaCausalRecoveryNeedsFilesError()
   return options.withClosed(impact.ids, () =>
     local.applyPull(
       { ...pull, coveredIds: impact.ids },

@@ -5,6 +5,7 @@ import { pintaDoorBindings } from '../core/sceneMapClosure'
 import type { LocalAssetTransition, LocalSnapshot } from './localAssetAuthority'
 import type {
   LocalCausalState,
+  PintaCausalConfirmed,
   PintaCausalLocalPull,
   PintaLocalCausalRead,
 } from './localCausalOutbox'
@@ -28,6 +29,18 @@ interface RecoveryDraft {
 
 type Pull<Asset extends PintaMemoryAsset> = PintaCausalLocalPull<Asset>
 type Archived<Asset extends PintaMemoryAsset> = NonNullable<Pull<Asset>['archived']>[number]
+type Read = RecoveryDraft['readSet'][number]
+
+function matchesRead(
+  mark: Pick<PintaCausalConfirmed, 'revision' | 'sha256' | 'layoutRevision'> | null | undefined,
+  edge: Extract<Read, { source: 'snapshot' }>,
+): boolean {
+  return (
+    mark?.revision === edge.revision &&
+    mark.sha256 === edge.sha256 &&
+    (mark.layoutRevision ?? undefined) === edge.layoutRevision
+  )
+}
 
 function recoveryDrafts<Asset extends PintaMemoryAsset>(
   pull: Pull<Asset>,
@@ -110,8 +123,6 @@ export function planArchivedRecovery<Asset extends PintaMemoryAsset>(
     result.ids.add(id)
     result.diverged.add(id)
   }
-  if (!result.diverged.size) return result
-
   const byOp = new Map(drafts.map((draft) => [draft.opId, draft]))
   const remote = new Map(pull.transitions.map((change) => [change.id, change]))
   const certified = new Map<string, Asset>()
@@ -130,6 +141,23 @@ export function planArchivedRecovery<Asset extends PintaMemoryAsset>(
         : undefined)
     )
   }
+  function observedRevision(draft: RecoveryDraft, edge: Read): string | null {
+    switch (edge.source) {
+      case 'unit':
+        return (
+          draft.members.find(({ itemId, deleted }) => itemId === edge.targetId && !deleted)
+            ?.localRevision ?? null
+        )
+      case 'local':
+        return edge.localRevision
+      case 'predecessor':
+        return edge.base.localRevision
+      case 'snapshot': {
+        const mark = state.confirmed.get(edge.targetId)
+        return mark && !mark.deleted && matchesRead(mark, edge) ? mark.localRevision : null
+      }
+    }
+  }
   const seeds = new Map<RecoveryDraft, Set<string>>()
   for (const draft of drafts) {
     for (const { itemId, localRevision, deleted } of draft.members) {
@@ -137,9 +165,13 @@ export function planArchivedRecovery<Asset extends PintaMemoryAsset>(
       const current = snapshot.documents.get(itemId)
       const retained = memberAsset(draft, itemId)
       const displaced = current?.revision !== localRevision
-      const affectedReader = draft.readSet.some(
-        ({ consumerId, targetId }) => consumerId === itemId && result.diverged.has(targetId),
-      )
+      const affectedReader = draft.readSet.some((edge) => {
+        if (edge.consumerId !== itemId) return false
+        if (result.diverged.has(edge.targetId)) return true
+        const observed = observedRevision(draft, edge)
+        if (observed) return snapshot.documents.get(edge.targetId)?.revision !== observed
+        return edge.source === 'snapshot'
+      })
       if (!displaced && !affectedReader) continue
       if (!retained) {
         if (latest.get(itemId) === draft || draft.hashes.has(itemId)) result.incomplete = true
@@ -234,22 +266,13 @@ export function planArchivedRecovery<Asset extends PintaMemoryAsset>(
             break
           }
           case 'snapshot': {
-            const sameBase = (
-              part:
-                | { revision: number; sha256: string | null; layoutRevision: string | null }
-                | null
-                | undefined,
-            ) =>
-              part?.revision === edge.revision &&
-              part.sha256 === edge.sha256 &&
-              (part.layoutRevision ?? undefined) === edge.layoutRevision
             const incoming = remote.get(target)
             const base = state.confirmed.get(target)
             include(
               target,
-              sameBase(base) && certified.has(target)
+              matchesRead(base, edge) && certified.has(target)
                 ? certified.get(target)
-                : sameBase(incoming?.remote)
+                : matchesRead(incoming?.remote, edge)
                   ? (incoming?.after ?? undefined)
                   : undefined,
             )

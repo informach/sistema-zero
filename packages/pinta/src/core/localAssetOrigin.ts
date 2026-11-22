@@ -33,8 +33,9 @@ export function recordPintaLocalOrigin(
   asset: PintaMemoryAsset,
   database: string,
   revision: string | null,
+  exactRead = true,
 ): void {
-  if (revision) exactReads.set(asset, revision)
+  if (revision && exactRead) exactReads.set(asset, revision)
   else exactReads.delete(asset)
   const existing = pintaLocalOriginOf(asset, database)
   // The same editing lineage (including undo and edits queued during autosave) advances

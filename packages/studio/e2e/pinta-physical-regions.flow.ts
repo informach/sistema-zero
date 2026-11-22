@@ -1494,3 +1494,101 @@ test('linked PNG-5 metadata admits Vila and Cabana together before decoding thei
     contentType: 'application/json',
   })
 })
+
+test('native 8 shadow and physical 3 document share rollback and reopen without the writer', async ({
+  page,
+  context,
+}) => {
+  const namespace = `region-shadow-${Date.now()}`
+  const id = await initialize(page, namespace)
+  const opId = await page.evaluate(
+    async ({ namespace, id }) => {
+      const p = window.pintaPhysicalRegions
+      const local = p.createRegionPintaPersistence({ namespace })
+      const signal = new AbortController().signal
+      async function paint(value: number) {
+        const [base] = await local.causal.capture([id])
+        if (base?.before?.kind !== 'tilemap' || !('origin' in base.before))
+          throw Error('Mapa esparso ausente')
+        const after = p.setCell(base.before, base.before.layers[0]!.id, -64, -64, value)
+        await local.causal.stageUnbased({
+          transitions: [{ ...base, after }],
+          readSet: [],
+          shadow: await local.causal.encodeCandidates([after], signal),
+        })
+      }
+      await paint(5)
+      const state = await local.causal.inspect()
+      if (!state.unbased) throw Error('Rascunho ausente')
+      const opId = state.unbased.opId
+      const original = IDBObjectStore.prototype.put
+      IDBObjectStore.prototype.put = function (value, key) {
+        if (key === `pinta:sync:prepared:${opId}`) throw Error('Sombra interrompida')
+        return original.call(this, value, key)
+      }
+      try {
+        let refused = false
+        try {
+          await paint(6)
+        } catch (error) {
+          refused = String(error).includes('Sombra interrompida')
+        }
+        if (!refused) throw Error('A alteração parcial não foi recusada')
+      } finally {
+        IDBObjectStore.prototype.put = original
+      }
+      return opId
+    },
+    { namespace, id },
+  )
+  await page.close()
+  const reopened = await context.newPage()
+  await proof(reopened)
+  expect(
+    await reopened.evaluate(
+      async ({ namespace, id, opId }) => {
+        const p = window.pintaPhysicalRegions
+        const local = p.createRegionPintaPersistence({ namespace })
+        const source = await local.loadAssetById(id)
+        const candidate = await local.causal.retained(opId)
+        const blob = candidate?.blobs.get(id)
+        if (source?.kind !== 'tilemap' || !('origin' in source) || !blob)
+          throw Error('Rascunho incompleto')
+        const json = await new Response(
+          blob.stream().pipeThrough(new DecompressionStream('gzip')),
+        ).text()
+        const archived = local.causal.decodeCandidate(json)
+        if (archived?.kind !== 'tilemap' || !('origin' in archived))
+          throw Error('Mapa retido inválido')
+        const raw = await p.withAssetTransaction(
+          p.createStore(`sistema-zero-pinta-${namespace}`, 'kv'),
+          (records) => records.get(`pinta:local:document:${id}`),
+          () => [`pinta:local:document:${id}`],
+        )
+        return {
+          outbox: (await local.causal.inspect()).version,
+          physical: raw && typeof raw === 'object' && 'version' in raw ? raw.version : null,
+          source: p.cellAt(source, source.layers[0]!.id, -64, -64),
+          archived: p.cellAt(archived, archived.layers[0]!.id, -64, -64),
+          origin: archived.origin,
+          area: [archived.rows, archived.cols],
+          compact: blob.size < 8192,
+          publicOpened: !!(await window.pinta026
+            .createPintaPersistence({ namespace })
+            .loadAssetById(id)),
+        }
+      },
+      { namespace, id, opId },
+    ),
+  ).toEqual({
+    outbox: 3,
+    physical: 3,
+    source: 5,
+    archived: 5,
+    origin: { col: -64, row: -64 },
+    area: [10000, 10000],
+    compact: true,
+    publicOpened: false,
+  })
+  await reopened.close()
+})

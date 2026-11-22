@@ -18,8 +18,9 @@ import {
 } from '@sistemazero/core/creations'
 import type { PintaCausalIntent, PintaCausalResult } from '@sistemazero/core/creations/pinta-causal'
 import { createStore, get, getMany, keys, update } from 'idb-keyval'
+import { pintaValuesEqual } from '../core/assetEquality'
 import type { PintaMemoryAsset } from '../core/assetMemory'
-import { recordPintaLocalOrigin } from '../core/localAssetOrigin'
+import { pintaLocalOriginOf, recordPintaLocalOrigin } from '../core/localAssetOrigin'
 import { withMapResourceVersions } from '../core/mapResourceVersions'
 import type { PaletteLibrary } from '../core/paletteLibrary'
 import { mergePaletteLibraries, sanitizePaletteLibrary } from '../core/paletteLibrary'
@@ -392,6 +393,8 @@ export interface PintaPersistence<Asset extends PintaMemoryAsset = PintaAsset> {
   /** Account host holds the shared read lease until this editor closes. */
   holdOpen?(id: string): Promise<() => void>
   observesReferences?: true
+  needsRetainedRecovery?(): boolean
+  loadRetainedRecoveryFiles?(): Promise<ReadonlyMap<string, Blob>>
   prepareTileRemap?(source: Asset): Promise<readonly Asset[]>
   /**
    * OPCIONAL: observar mudanças feitas por fora (ver `PintaPersistenceEvent`). O IndexedDB do
@@ -462,6 +465,7 @@ export function createPintaPersistence(options: { namespace?: string } = {}): Pi
 }
 
 export interface PintaCausalLocalPort<Asset extends PintaMemoryAsset = PintaAsset> {
+  captureCandidate(asset: Asset): Asset
   encodeCandidates(assets: readonly Asset[], signal: AbortSignal): Promise<PintaCandidateBytes>
   decodeCandidate(json: string): Asset | null
   capture(ids: readonly string[]): Promise<readonly Omit<LocalAssetTransition<Asset>, 'after'>[]>
@@ -483,6 +487,7 @@ export interface PintaCausalLocalPort<Asset extends PintaMemoryAsset = PintaAsse
   ): Promise<boolean>
   prepared(opId: string): Promise<ReturnType<typeof readLocalCausalPrepared>>
   retained(opId: string): Promise<ReturnType<typeof readLocalCausalRetained>>
+  retainedArchive(): Promise<ReadonlyMap<string, PintaCandidateBytes>>
   seal(
     preparation: string,
     intent: PintaCausalIntent,
@@ -629,12 +634,19 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
   const causalInventory: AssetRecordSelection = (records) =>
     records.has(PINTA_CAUSAL_OUTBOX_KEY) ? null : causalKeys
   const candidateInventory =
-    (pick: (state: LocalCausalState) => readonly string[]): AssetRecordSelection =>
+    (
+      pick: (state: LocalCausalState) => readonly string[],
+      includeGallery = true,
+    ): AssetRecordSelection =>
     (records) => {
       if (!records.has(PINTA_CAUSAL_OUTBOX_KEY)) return causalKeys
       const missing = pick(readLocalCausalState(records)).filter((key) => !records.has(key))
-      return missing.length ? missing : null
+      return missing.length ? missing : includeGallery ? null : []
     }
+  const allRetainedKeys = (state: LocalCausalState) => [
+    ...(state.sealed ? [PINTA_CAUSAL_BLOBS_KEY] : []),
+    ...[...(state.prepared?.keys() ?? []), ...(state.shadows?.keys() ?? [])].map(localPreparedKey),
+  ]
   const shadowInventory = candidateInventory((state) =>
     [...(state.shadows?.keys() ?? [])].map(localPreparedKey),
   )
@@ -675,6 +687,12 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
         : []
     }
   const causal: PintaCausalLocalPort<Asset> = {
+    captureCandidate(asset) {
+      const detached = structuredClone(asset)
+      const origin = pintaLocalOriginOf(asset, dbName)
+      if (origin) recordPintaLocalOrigin(detached, dbName, origin.revision)
+      return detached
+    },
     encodeCandidates: async (assets, signal) => {
       const blobs = new Map<string, Blob>()
       const puts: PintaPreparedPut[] = []
@@ -814,9 +832,14 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
         }, shadowInventory)
         const ids = draft.transitions.map(({ id }) => id)
         backupSizeCache.invalidate(ids)
-        for (const { id, after } of draft.transitions)
-          if (after)
-            recordPintaLocalOrigin(after, dbName, snapshot.documents.get(id)?.revision ?? null)
+        for (const { id, after } of draft.transitions) {
+          if (!after) continue
+          const revision = snapshot.documents.get(id)?.revision ?? null
+          recordPintaLocalOrigin(after, dbName, revision)
+          const author = draft.authors?.get(id)
+          if (author)
+            recordPintaLocalOrigin(author, dbName, revision, pintaValuesEqual(author, after))
+        }
         accept(snapshot, ids)
         notifyOtherTabs(storeHandle, dbName, ids)
       }),
@@ -832,9 +855,14 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
         }, shadowInventory)
         const ids = pending.members.map((member) => member.itemId)
         backupSizeCache.invalidate(ids)
-        for (const { id, after } of draft.transitions)
-          if (after)
-            recordPintaLocalOrigin(after, dbName, snapshot.documents.get(id)?.revision ?? null)
+        for (const { id, after } of draft.transitions) {
+          if (!after) continue
+          const revision = snapshot.documents.get(id)?.revision ?? null
+          recordPintaLocalOrigin(after, dbName, revision)
+          const author = draft.authors?.get(id)
+          if (author)
+            recordPintaLocalOrigin(author, dbName, revision, pintaValuesEqual(author, after))
+        }
         accept(snapshot, ids)
         notifyOtherTabs(storeHandle, dbName, ids)
         return pending
@@ -882,6 +910,28 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
       transaction(
         (records) => readLocalCausalRetained(records, opId),
         () => [PINTA_CAUSAL_OUTBOX_KEY, localPreparedKey(opId)],
+      ),
+    retainedArchive: () =>
+      transaction(
+        (records) => {
+          const state = readLocalCausalState(records)
+          const candidates = new Map<string, PintaCandidateBytes>()
+          const saved = readLocalCausalUpload(records)
+          if (saved)
+            candidates.set(saved.sealed.local.opId, {
+              puts: saved.sealed.intent.members.filter((member) => member.action === 'put'),
+              blobs: saved.blobs,
+            })
+          for (const opId of [
+            ...(state.prepared?.keys() ?? []),
+            ...(state.shadows?.keys() ?? []),
+          ]) {
+            const candidate = readLocalCausalRetained(records, opId)
+            if (candidate) candidates.set(opId, candidate)
+          }
+          return candidates
+        },
+        candidateInventory(allRetainedKeys, false),
       ),
     seal: (preparation, intent, intentHash, blobs) =>
       transaction(
