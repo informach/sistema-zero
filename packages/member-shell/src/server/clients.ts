@@ -1576,10 +1576,18 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     getCreationDownload(
       tool: CreationToolView,
       itemId: string,
+      studioReader?: string,
     ): Promise<GatewayResponse<CreationDownloadTicketView>> {
       return gw.gatewayFetch(`/members/creations/${enc(tool)}/${enc(itemId)}/download`, {
         method: 'GET',
-        ...(audience === 'adult' ? { query: { audience } } : {}),
+        ...(audience === 'adult' || studioReader
+          ? {
+              query: {
+                ...(audience === 'adult' ? { audience } : {}),
+                ...(studioReader ? { studioReader } : {}),
+              },
+            }
+          : {}),
       })
     },
     /** Lixeira lógica (idempotente). O `storageKey` devolvido é o blob que o BFF apaga do R2. */

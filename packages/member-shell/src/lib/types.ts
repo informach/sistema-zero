@@ -1,4 +1,5 @@
 import type { ModuleAnimation } from '@sistemazero/core/course/module-animation'
+import type { StudioSealedReceipt } from '@sistemazero/core/creations/studio-sealed-storage'
 import type {
   LessonLearningProgress,
   LessonRequirement,
@@ -812,6 +813,7 @@ export interface CreationDownloadTicketView {
   bytes: number
   summary: CreationSummaryView
   parts?: CreationPartTicketView[]
+  studioSealReceipt?: StudioSealedReceipt
 }
 
 /** `POST /members/lessons/:lessonId/blocks/:blockId/studio-submission`. */
@@ -1966,4 +1968,5 @@ export interface CreationDownloadUrlView {
   item: CreationSummaryView
   parts: Array<{ hash: string; bytes: number; url: string }>
   serverNow: string
+  studioSealReceipt?: StudioSealedReceipt
 }

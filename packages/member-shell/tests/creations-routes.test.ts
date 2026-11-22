@@ -1,4 +1,9 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test'
+import {
+  STUDIO_SEALED_STORAGE_PROTOCOL,
+  STUDIO_SEALED_STORAGE_READER,
+  studioSealedBlobKey,
+} from '@sistemazero/core/creations/studio-sealed-storage'
 import { createEmptyProject } from '@sistemazero/studio/project'
 import { documentFixture } from '../../studio/src/state/fixtures/projectDocuments'
 
@@ -90,6 +95,99 @@ const SUMMARY = {
   thumb: null,
   syncedAt: '2026-08-18T12:00:01.000Z',
 }
+
+const sealedManifest = {
+  protocol: STUDIO_SEALED_STORAGE_PROTOCOL,
+  nonce: '70000000-0000-4000-8000-000000000001',
+  requirements: { envelopeVersion: 2, projectFormat: 2, materials: 'legacy' },
+  gzipSha256: HASH_A,
+  jsonSha256: HASH_B,
+  manifestBytes: 100,
+}
+
+describe('Studio sealed download negotiation', () => {
+  const locator = { userId: USER.id, audience: 'kids', itemId: SUMMARY.itemId } as const
+  const olderPart = {
+    protocol: STUDIO_SEALED_STORAGE_PROTOCOL,
+    nonce: '70000000-0000-4000-8000-000000000002',
+    gzipSha256: HASH_A,
+    hash: HASH_C,
+    bytes: 200,
+  }
+  const storageKey = studioSealedBlobKey(locator, sealedManifest.nonce, 'sealed')
+  const part = {
+    ...olderPart,
+    storageKey: studioSealedBlobKey(locator, olderPart.nonce, 'sealed', olderPart.hash),
+  }
+  const ticket = {
+    storageKey,
+    revision: SUMMARY.revision,
+    bytes: 300,
+    summary: { ...SUMMARY, formatVersion: 2 },
+    parts: [part],
+    studioSealReceipt: sealedManifest,
+  }
+  const context = { params: Promise.resolve({ tool: 'studio', itemId: SUMMARY.itemId }) }
+  const request = (reader?: string) =>
+    new Request(`https://community.test/api/project${reader ? `?studioReader=${reader}` : ''}`)
+
+  test('signs the exact sealed project and the reused part only for an advertised reader', async () => {
+    const { routes } = buildRoutes({
+      members: { getCreationDownload: async () => ({ status: 200, body: ticket }) },
+    })
+    const old = await routes.creationsDownloadUrl.GET(request(), context)
+    expect(old.status).toBe(409)
+    expect(r2.presignGet).toEqual([])
+    const modern = await routes.creationsDownloadUrl.GET(
+      request(STUDIO_SEALED_STORAGE_READER),
+      context,
+    )
+    expect(modern.status).toBe(200)
+    expect(await modern.json()).toMatchObject({ studioSealReceipt: sealedManifest })
+    expect(r2.presignGet).toEqual([storageKey, part.storageKey])
+  })
+
+  test('refuses future envelopes or parts from another scope before signing anything', async () => {
+    const untrusted = [
+      {
+        ...ticket,
+        studioSealReceipt: {
+          ...sealedManifest,
+          requirements: { ...sealedManifest.requirements, envelopeVersion: 3 },
+        },
+      },
+      { ...ticket, studioSealReceipt: undefined },
+      {
+        ...ticket,
+        parts: [
+          {
+            ...part,
+            storageKey: studioSealedBlobKey(
+              { ...locator, audience: 'adult' },
+              olderPart.nonce,
+              'sealed',
+              olderPart.hash,
+            ),
+          },
+        ],
+      },
+    ]
+    for (const body of untrusted) {
+      const { routes } = buildRoutes({
+        members: { getCreationDownload: async () => ({ status: 200, body }) },
+      })
+      const result = await routes.creationsDownloadUrl.GET(
+        request(STUDIO_SEALED_STORAGE_READER),
+        context,
+      )
+      expect(result.status).toBe(409)
+      expect(await result.json()).toMatchObject({
+        error: { code: 'STUDIO_STORAGE_PROTOCOL_REQUIRED' },
+      })
+      expect(r2.presignGet).toEqual([])
+    }
+  })
+})
 
 function buildRoutes(
   over: {

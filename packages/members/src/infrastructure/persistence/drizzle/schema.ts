@@ -21,6 +21,10 @@ import type {
   PintaPaletteCommitProof,
   PintaPaletteTicket,
 } from '@sistemazero/core/creations/pinta-palette-writer'
+import type {
+  CreationStoragePartRef,
+  StudioSealedReceipt,
+} from '@sistemazero/core/creations/studio-sealed-storage'
 import type { HelpTutorialDocument } from '@sistemazero/core/help'
 import type {
   AdultCreatorCapability,
@@ -2233,12 +2237,6 @@ export const creationToolEnum = members.enum('creation_tool', [
   'lesson-pinta',
 ])
 
-/** Shape de uma parte no JSONB (espelho de `CreationPartRef` do domínio). */
-export interface CreationPartRefRow {
-  hash: string
-  bytes: number
-}
-
 export const creations = members.table(
   'creations',
   {
@@ -2285,6 +2283,7 @@ export const creations = members.table(
     }>(),
     pendingPaletteWrite: jsonb('pending_palette_write').$type<PintaPaletteTicket>(),
     paletteWriteReceipt: jsonb('palette_write_receipt').$type<PintaPaletteCommitProof>(),
+    studioSealReceipt: jsonb('studio_seal_receipt').$type<StudioSealedReceipt>(),
     /** Bytes reservados (o BFF assina exatamente esse Content-Length; o commit promove). */
     pendingBytes: integer('pending_bytes'),
     /** Nome/kind/updatedAt/thumb que o commit vai promover — a lista NÃO vê. */
@@ -2303,9 +2302,9 @@ export const creations = members.table(
      * conteúdo, cada um um objeto próprio no R2 (o manifesto em `storage_ref` só aponta os
      * hashes). `[]` = blob único (Pinta, legado). `bytes` da linha = TOTAL (manifesto + partes).
      */
-    parts: jsonb('parts').$type<CreationPartRefRow[]>().notNull().default(sql`'[]'::jsonb`),
+    parts: jsonb('parts').$type<CreationStoragePartRef[]>().notNull().default(sql`'[]'::jsonb`),
     /** As partes da reserva em voo (todas as que a revisão reservada referencia). */
-    pendingParts: jsonb('pending_parts').$type<CreationPartRefRow[]>(),
+    pendingParts: jsonb('pending_parts').$type<CreationStoragePartRef[]>(),
     /**
      * Impressão digital do CONTEÚDO da revisão corrente (`v1:<sha256>`, calculada no navegador
      * pela régua do core): é o que o "envio em dia" compara com a do envio. Texto opaco aqui;

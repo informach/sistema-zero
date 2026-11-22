@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { creationPartStorageKey } from '@sistemazero/core/creations'
+import { resolveCreationPartKey } from '@sistemazero/core/creations/studio-sealed-storage'
 import { DomainError, ValidationError } from '@sistemazero/core/errors'
 import { awaitWithSignal } from '@sistemazero/core/http'
 import {
@@ -14,6 +14,7 @@ import {
 import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
 import { LessonNotFoundError } from '../../domain/course/course.errors'
 import { hasComingSoonBlock } from '../../domain/course/lesson-block'
+import { StudioStorageProtocolError } from '../../domain/creations/creation.errors'
 import { gallerySubmissionReceipt } from '../../domain/learning/gallery-receipt'
 import { GallerySourceUnavailableError } from '../../domain/learning/gallery-source.errors'
 import { LearningConflictError } from '../../domain/learning/learning.errors'
@@ -146,6 +147,7 @@ export class GalleryDeliveryService {
         )
       if (creation.tool === 'pinta' && !GALLERY_DRAWING_KINDS.includes(creation.kind))
         throw new ValidationError('Selecione desenhos, personagens, cenários ou peças do Pinta.')
+      if (creation.studioSealReceipt) throw new StudioStorageProtocolError()
       const prefix = `creations/${actor.userId}/lesson-submissions/${blockId}/${input.requestId}/${generation}/${creation.itemId}-${creation.revision}`
       const item = {
         itemId: creation.itemId,
@@ -161,13 +163,14 @@ export class GalleryDeliveryService {
       copies.push({ source: creation.storageRef, destination: item.storageKey })
       for (const part of creation.parts)
         copies.push({
-          source: creationPartStorageKey(
-            actor.userId,
-            creation.tool,
-            creation.itemId,
-            part.hash,
-            part.rev,
-            course.audience,
+          source: resolveCreationPartKey(
+            {
+              userId: actor.userId,
+              tool: creation.tool,
+              itemId: creation.itemId,
+              audience: course.audience,
+            },
+            part,
           ),
           destination: `${prefix}/parts/${part.hash}.gz`,
         })

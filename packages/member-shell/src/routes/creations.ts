@@ -13,13 +13,18 @@ import {
   PintaPaletteBaseSchema,
   PintaPaletteCommitCapabilitySchema,
 } from '@sistemazero/core/creations/pinta-palette-writer'
+import { STUDIO_SEALED_STORAGE_READER } from '@sistemazero/core/creations/studio-sealed-storage'
 import { isDocumentRecord, ProjectDocumentError } from '@sistemazero/studio/project-document'
 import { validateEditableStudioCreationSnapshot } from '@sistemazero/studio/project-validation'
 import { after, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { isReadonlyImpersonation } from '../lib/act'
 import type { MembersClient } from '../server/clients'
-import { CREATION_BLOB_CONTENT_TYPE, signCreationDownload } from '../server/creation-download'
+import {
+  CREATION_BLOB_CONTENT_TYPE,
+  StudioStorageDownloadError,
+  signCreationDownload,
+} from '../server/creation-download'
 import { mediaErrorResponse } from '../server/media'
 import {
   r2DeleteObjectsUgc,
@@ -624,7 +629,18 @@ export function createCreationsRoutes(deps: {
       const item = await parseItem(ctx)
       if (!item) return invalid()
       const palette = paletteItem(item)
-      const requestProtocol = new URL(req.url).searchParams.getAll('paletteWrite')
+      const query = new URL(req.url).searchParams
+      const requestProtocol = query.getAll('paletteWrite')
+      const reader = query.getAll('studioReader')
+      const studioReader = reader[0]
+      if (
+        reader.length > 0 &&
+        (item.tool !== 'studio' ||
+          reader.length !== 1 ||
+          studioReader !== STUDIO_SEALED_STORAGE_READER)
+      ) {
+        return invalid()
+      }
       if (requestProtocol.length > 0) {
         if (
           !palette ||
@@ -641,7 +657,9 @@ export function createCreationsRoutes(deps: {
         const incompatible = await requireAdultNamespace(item.tool)
         if (incompatible) return incompatible
       }
-      const ticket = await members.getCreationDownload(item.tool, item.itemId)
+      const ticket = studioReader
+        ? await members.getCreationDownload(item.tool, item.itemId, studioReader)
+        : await members.getCreationDownload(item.tool, item.itemId)
       if (ticket.status !== 200 || !ticket.body) return response(ticket.status, ticket.body)
       if (palette && session.audience === 'adult') {
         const user = await session.getSession()
@@ -662,8 +680,24 @@ export function createCreationsRoutes(deps: {
           })
       }
       try {
-        return NextResponse.json(await signCreationDownload(storage.presignGet, ticket.body))
+        const actor =
+          studioReader && ticket.body.studioSealReceipt ? await session.getSession() : null
+        const sealedRead =
+          studioReader && actor
+            ? {
+                reader: studioReader,
+                locator: { userId: actor.id, audience: session.audience, itemId: item.itemId },
+              }
+            : undefined
+        return NextResponse.json(
+          await signCreationDownload(storage.presignGet, ticket.body, sealedRead),
+        )
       } catch (error) {
+        if (error instanceof StudioStorageDownloadError) {
+          return response(409, {
+            error: { code: 'STUDIO_STORAGE_PROTOCOL_REQUIRED', message: error.message },
+          })
+        }
         return mediaErrorResponse(error)
       }
     },

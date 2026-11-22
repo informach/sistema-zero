@@ -11,6 +11,11 @@ import {
   pintaPaletteBlobKey,
 } from '@sistemazero/core/creations/pinta-palette-writer'
 import {
+  canReadStudioSealedStorage,
+  resolveCreationPartKey,
+  type StudioSealedReceipt,
+} from '@sistemazero/core/creations/studio-sealed-storage'
+import {
   STUDIO_PROJECT_FORMAT_VERSION,
   STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION,
 } from '@sistemazero/core/studio'
@@ -33,7 +38,6 @@ import {
   type CreationPartRef,
   type CreationSummary,
   type CreationTool,
-  creationPartStorageKey,
   creationStorageKey,
   isCreationPartHash,
   isLessonCreationTool,
@@ -49,6 +53,7 @@ import {
   CreationQuotaExceededError,
   CreationRevisionMismatchError,
   CreationStaleBaseError,
+  StudioStorageProtocolError,
 } from '../../domain/creations/creation.errors'
 import { classifyPintaPaletteLibraryCreation } from '../../domain/creations/palette-library'
 import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
@@ -66,9 +71,7 @@ import {
 export { invalidateToolOwnership, resetToolOwnershipCacheForTests } from './tool-ownership-cache'
 
 /** Uma parte a assinar/baixar: hash, bytes e a chave dela no R2. */
-export interface CreationPartTicket extends CreationPartRef {
-  storageKey: string
-}
+export type CreationPartTicket = CreationPartRef & { storageKey: string }
 
 /** O que o `reserve` devolve ao BFF: a revisão, a chave que ele vai assinar e as partes FALTANTES. */
 export interface CreationUploadTicket {
@@ -106,6 +109,7 @@ export interface CreationDownloadTicket {
   summary: CreationSummary
   /** As partes da revisão corrente, na ordem da linha (o BFF assina um GET para cada). */
   parts: CreationPartTicket[]
+  studioSealReceipt?: StudioSealedReceipt
 }
 
 /**
@@ -440,13 +444,14 @@ export class ReserveCreationUploadService {
       bytes: input.bytes,
       parts: reservation.missingParts.map((part) => ({
         ...part,
-        storageKey: creationPartStorageKey(
-          input.userId,
-          input.tool,
-          input.itemId,
-          part.hash,
-          part.rev,
-          this.creations.audience ?? 'kids',
+        storageKey: resolveCreationPartKey(
+          {
+            userId: input.userId,
+            tool: input.tool,
+            itemId: input.itemId,
+            audience: this.creations.audience ?? 'kids',
+          },
+          part,
         ),
       })),
     }
@@ -550,13 +555,14 @@ export class CommitCreationUploadService {
     const releasedStorageKeys = [
       ...(result.previousStorageRef ? [result.previousStorageRef] : []),
       ...result.releasedPartRefs.map((part) =>
-        creationPartStorageKey(
-          input.userId,
-          input.tool,
-          input.itemId,
-          part.hash,
-          part.rev,
-          this.creations.audience ?? 'kids',
+        resolveCreationPartKey(
+          {
+            userId: input.userId,
+            tool: input.tool,
+            itemId: input.itemId,
+            audience: this.creations.audience ?? 'kids',
+          },
+          part,
         ),
       ),
     ]
@@ -576,10 +582,18 @@ export class GetCreationDownloadService {
     userId: string,
     tool: CreationTool,
     itemId: string,
+    studioRead?: { reader: string; accountId: string },
   ): Promise<CreationDownloadTicket> {
     const record = await this.creations.get(userId, tool, itemId)
     if (!record || record.deletedAt !== null || !record.storageRef) {
       throw new CreationNotFoundError()
+    }
+    const receipt = record.studioSealReceipt
+    if (receipt) {
+      if (studioRead && record.accountId !== studioRead.accountId) throw new CreationNotFoundError()
+      if (!canReadStudioSealedStorage(studioRead?.reader, receipt.requirements)) {
+        throw new StudioStorageProtocolError()
+      }
     }
     return {
       storageKey: record.storageRef,
@@ -588,15 +602,12 @@ export class GetCreationDownloadService {
       summary: toCreationSummary(record),
       parts: record.parts.map((part) => ({
         ...part,
-        storageKey: creationPartStorageKey(
-          userId,
-          tool,
-          itemId,
-          part.hash,
-          part.rev,
-          this.creations.audience ?? 'kids',
+        storageKey: resolveCreationPartKey(
+          { userId, tool, itemId, audience: this.creations.audience ?? 'kids' },
+          part,
         ),
       })),
+      ...(receipt ? { studioSealReceipt: receipt } : {}),
     }
   }
 }
@@ -651,13 +662,9 @@ export class DeleteCreationService {
       storageKeys: [
         ...(result.storageRef ? [result.storageRef] : []),
         ...result.partRefs.map((part) =>
-          creationPartStorageKey(
-            userId,
-            tool,
-            itemId,
-            part.hash,
-            part.rev,
-            this.creations.audience ?? 'kids',
+          resolveCreationPartKey(
+            { userId, tool, itemId, audience: this.creations.audience ?? 'kids' },
+            part,
           ),
         ),
       ],

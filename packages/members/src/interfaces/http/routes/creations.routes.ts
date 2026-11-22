@@ -1,6 +1,7 @@
 import type { PintaCausalViewer } from '@sistemazero/core/creations/pinta-causal'
+import { STUDIO_SEALED_STORAGE_READER } from '@sistemazero/core/creations/studio-sealed-storage'
 import { ForbiddenError } from '@sistemazero/core/http'
-import { Elysia } from 'elysia'
+import { Elysia, t } from 'elysia'
 import type {
   CommitCreationUploadService,
   CompactCreationTombstonesService,
@@ -25,6 +26,11 @@ import {
   CreationToolParams,
   CreationUploadBody,
 } from '../dtos'
+
+const CreationDownloadQuery = t.Object({
+  ...AudienceQuery.properties,
+  studioReader: t.Optional(t.Literal(STUDIO_SEALED_STORAGE_READER)),
+})
 
 export interface CreationsRoutesDeps {
   causalQaProfiles?: readonly PintaCausalViewer[]
@@ -140,8 +146,11 @@ export function creationsRoutes(deps: CreationsRoutesDeps) {
             resolveUserId(headers),
             params.tool,
             params.itemId,
+            query.studioReader
+              ? { reader: query.studioReader, accountId: resolveAccountId(headers) }
+              : undefined,
           ),
-        { query: AudienceQuery, params: CreationItemParams },
+        { query: CreationDownloadQuery, params: CreationItemParams },
       )
       // Lixeira lógica (idempotente).
       .delete(

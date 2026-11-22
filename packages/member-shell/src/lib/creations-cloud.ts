@@ -49,6 +49,12 @@ import {
   type PintaPaletteUploadCapability,
   PintaPaletteUploadCapabilitySchema,
 } from '@sistemazero/core/creations/pinta-palette-writer'
+import {
+  canReadStudioSealedStorage,
+  STUDIO_SEALED_STORAGE_READER,
+  type StudioSealedReceipt,
+  StudioSealedReceiptSchema,
+} from '@sistemazero/core/creations/studio-sealed-storage'
 import { perfSpanAsync } from './perf'
 import { createPintaCausalCloud, type PintaCausalCloud } from './pinta-causal-cloud'
 
@@ -275,6 +281,7 @@ export interface CloudDownload {
   summary: CloudCreationSummary
   parts: Array<{ hash: string; bytes: number }>
   fetchPart(hash: string): Promise<string>
+  studioSealReceipt?: StudioSealedReceipt
 }
 
 interface CloudError extends Error {
@@ -502,6 +509,7 @@ export function createCreationsCloud(options: {
   audience?: 'adult' | 'kids'
   pintaCausalEnabled?: boolean
   pintaPaletteWriteEnabled?: boolean
+  studioSealedReader?: boolean
   /** Injetável (testes). Default: o `fetch` global. */
   fetch?: FetchLike
   /**
@@ -532,6 +540,10 @@ export function createCreationsCloud(options: {
   const supported = gzipSupported()
   const paletteWriter =
     tool === 'pinta' && !!options.viewerId && options.pintaPaletteWriteEnabled === true
+  const studioReader =
+    tool === 'studio' && options.studioSealedReader && hashSupported()
+      ? STUDIO_SEALED_STORAGE_READER
+      : undefined
   const base = `/api/creations/${tool}`
   const viewerHeaders: Record<string, string> = options.viewerId
     ? { 'x-sz-viewer': options.viewerId }
@@ -1022,6 +1034,7 @@ export function createCreationsCloud(options: {
     parts?: Array<{ hash: string; bytes: number; url: string }>
     /** ISO do relógio do servidor (BFF de 10/10/2026 em diante). */
     serverNow?: string
+    studioSealReceipt?: unknown
   }
 
   async function fetchTicket(
@@ -1029,7 +1042,8 @@ export function createCreationsCloud(options: {
     options?: { signal?: AbortSignal },
   ): Promise<DownloadTicket | null> {
     try {
-      return await api<DownloadTicket>(`/${encodeURIComponent(itemId)}/download`, {
+      const query = studioReader ? `?studioReader=${studioReader}` : ''
+      return await api<DownloadTicket>(`/${encodeURIComponent(itemId)}/download${query}`, {
         signal: options?.signal,
       })
     } catch (error) {
@@ -1088,6 +1102,19 @@ export function createCreationsCloud(options: {
     ticket: DownloadTicket,
     options?: { signal?: AbortSignal },
   ): Promise<CloudDownload> {
+    const studioSealReceipt =
+      ticket.studioSealReceipt === undefined
+        ? undefined
+        : StudioSealedReceiptSchema.safeParse(ticket.studioSealReceipt)
+    if (
+      studioSealReceipt &&
+      (!studioSealReceipt.success ||
+        !canReadStudioSealedStorage(studioReader, studioSealReceipt.data.requirements))
+    ) {
+      const error = new Error('Atualize o Estúdio para abrir esta revisão.') as CloudError
+      error.code = 'STUDIO_STORAGE_PROTOCOL_REQUIRED'
+      throw error
+    }
     const signal = options?.signal ? anySignal(abort.signal, options.signal) : abort.signal
     const json = await getBlobText(ticket.downloadUrl, signal)
     const partUrls = new Map((ticket.parts ?? []).map((part) => [part.hash, part]))
@@ -1095,6 +1122,7 @@ export function createCreationsCloud(options: {
       json,
       summary: toSummary(ticket.item),
       parts: (ticket.parts ?? []).map(({ hash, bytes }) => ({ hash, bytes })),
+      ...(studioSealReceipt?.success ? { studioSealReceipt: studioSealReceipt.data } : {}),
       fetchPart: async (hash: string) => {
         const part = partUrls.get(hash)
         if (!part) {

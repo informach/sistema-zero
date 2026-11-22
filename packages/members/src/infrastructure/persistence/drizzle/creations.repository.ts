@@ -7,18 +7,26 @@ import {
   type PintaPaletteTicket,
   pintaPaletteBlobKey,
 } from '@sistemazero/core/creations/pinta-palette-writer'
+import {
+  StudioSealedPartRefSchema,
+  StudioSealedReceiptSchema,
+  studioSealedBlobKey,
+} from '@sistemazero/core/creations/studio-sealed-storage'
 import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
 import { and, desc, eq, inArray, isNotNull, isNull, lt, or, sql } from 'drizzle-orm'
 import type { CourseAudience } from '../../../domain/course/course'
 import {
+  CREATION_LIMITS,
   type CreationDraftState,
   type CreationPartRef,
   type CreationRecord,
   type CreationSummary,
   type CreationTool,
   emptyCountByTool,
+  hasStudioSealedStorage,
   isStudioFormatTool,
 } from '../../../domain/creations/creation'
+import { StudioStorageProtocolError } from '../../../domain/creations/creation.errors'
 import {
   classifyPintaPaletteLibraryCreation,
   isPintaPaletteLibraryCreation,
@@ -187,10 +195,31 @@ const toRecord = (row: Row): CreationRecord => ({
       : null,
   lastReservedRevision: row.lastReservedRevision,
   storageRef: row.storageRef,
-  parts: sanitizeParts(row.parts),
+  ...confirmedParts(row),
   deletedAt: row.deletedAt,
   createdAt: row.createdAt,
 })
+
+const sealedParts = StudioSealedPartRefSchema.array().max(128)
+
+function confirmedParts(row: Row): Pick<CreationRecord, 'parts' | 'studioSealReceipt'> {
+  if (!hasStudioSealedStorage(row)) return { parts: sanitizeParts(row.parts) }
+  const receipt = StudioSealedReceiptSchema.safeParse(row.studioSealReceipt)
+  const parts = sealedParts.safeParse(row.parts)
+  if (
+    row.tool !== 'studio' ||
+    !receipt.success ||
+    !parts.success ||
+    row.storageRef !== studioSealedBlobKey(row, receipt.data.nonce, 'sealed') ||
+    row.formatVersion !== receipt.data.requirements.projectFormat ||
+    row.bytes > CREATION_LIMITS.maxItemBytes ||
+    new Set(parts.data.map((part) => part.hash)).size !== parts.data.length ||
+    row.bytes !== receipt.data.manifestBytes + parts.data.reduce((sum, part) => sum + part.bytes, 0)
+  ) {
+    throw new StudioStorageProtocolError()
+  }
+  return { studioSealReceipt: receipt.data, parts: parts.data }
+}
 
 /**
  * O JSONB vem de nós mesmos, mas o tipo é defensivo: só `{hash, bytes, rev}` válidos passam.
@@ -510,11 +539,14 @@ export class DrizzleCreationsRepository implements CreationsRepository {
           kind: creations.kind,
           parts: creations.parts,
           deletedAt: creations.deletedAt,
+          studioSealReceipt: creations.studioSealReceipt,
         })
         .from(creations)
         .where(whereItem(input.userId, input.tool, input.itemId, this.audience))
         .limit(1)
         .for('update')
+
+      if (existing && hasStudioSealedStorage(existing)) throw new StudioStorageProtocolError()
 
       const actor = { userId: input.userId, accountId: input.accountId, audience: this.audience }
       const reservedPalette =
@@ -780,6 +812,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       }
       if (row?.pendingUnit) throw new PintaCausalError('operation-conflict', input.itemId)
       if (!row) return { ok: false }
+      if (hasStudioSealedStorage(row)) throw new StudioStorageProtocolError()
       // Retry de um 200 perdido: a revisão pedida JÁ é a corrente. Idempotente — MESMO com
       // outra reserva em voo (`pending_revision` de outra aba): dizer 409 aqui faria o BFF
       // tratar a revisão corrente como "recusada" e apagar o blob VIVO do R2.
@@ -960,11 +993,13 @@ export class DrizzleCreationsRepository implements CreationsRepository {
           pendingFormatVersion: creations.pendingFormatVersion,
           pendingRevision: creations.pendingRevision,
           pendingPaletteWrite: creations.pendingPaletteWrite,
+          studioSealReceipt: creations.studioSealReceipt,
         })
         .from(creations)
         .where(whereItem(userId, tool, itemId, this.audience))
         .limit(1)
         .for('update')
+      if (row && hasStudioSealedStorage(row)) throw new StudioStorageProtocolError()
       const reservedPalette = tool === PALETTE_LIBRARY_TOOL && itemId === PALETTE_LIBRARY_ITEM_ID
       const owner = { userId, audience: this.audience } as const
       const authority = reservedPalette ? await paletteGeneration(tx, owner) : null
