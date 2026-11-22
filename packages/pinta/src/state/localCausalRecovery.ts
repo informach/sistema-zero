@@ -1,7 +1,13 @@
 import { pintaValuesEqual } from '../core/assetEquality'
 import type { PintaMemoryAsset } from '../core/assetMemory'
-import { isTilesetKind, pintaAssetDependencyIds } from '../core/project'
-import { pintaDoorBindings } from '../core/sceneMapClosure'
+import {
+  isObjectLayer,
+  isTilesetKind,
+  pintaAssetDependencyIds,
+  type TilemapAsset,
+  type TilemapCells,
+} from '../core/project'
+import { pintaDoorBinding, pintaDoorBindings } from '../core/sceneMapClosure'
 import { planImport } from './importPlan'
 import type { LocalAssetTransition, LocalSnapshot } from './localAssetAuthority'
 import type { PintaCausalLocalPull } from './localCausalOutbox'
@@ -46,7 +52,6 @@ export function initialRecoveryClosure<Asset extends PintaMemoryAsset>(
   }
   for (const asset of assets.values()) {
     const doors = pintaDoorBindings(asset, assets)
-    if (doors.some(({ binding }) => binding.type !== 'target')) unavailable.add(asset.id)
     const refs = new Set([
       ...pintaAssetDependencyIds(asset),
       ...doors.flatMap(({ binding }) => (binding.type === 'target' ? [binding.id] : [])),
@@ -67,6 +72,44 @@ export function initialRecoveryClosure<Asset extends PintaMemoryAsset>(
   return { ids, incomplete: ids.some((id) => unavailable.has(id) || !assets.has(id)) }
 }
 
+/** A portal follows the original global target even when the map has an embedded alias. */
+function restoreDoorTargets<Map extends TilemapAsset<TilemapCells>>(
+  before: TilemapAsset<TilemapCells>,
+  copy: Map,
+  originals: ReadonlyMap<string, PintaMemoryAsset>,
+  recoveredIds: ReadonlyMap<string, string>,
+): Map {
+  return {
+    ...copy,
+    layers: copy.layers.map((layer, i) => {
+      const original = before.layers[i]
+      if (!original || !isObjectLayer(original) || !isObjectLayer(layer)) return layer
+      return {
+        ...layer,
+        objects: layer.objects.map((obj, j) => {
+          const source = original.objects[j]
+          if (source?.role !== 'door') return obj
+          const properties = { ...obj.properties }
+          for (const key of ['destino', 'destination']) {
+            const value = source.properties[key]
+            if (value === undefined) continue
+            const selector = typeof value === 'object' ? value.value : value
+            const binding =
+              typeof selector === 'string' ? pintaDoorBinding(selector, originals) : null
+            const target = binding?.type === 'target' ? recoveredIds.get(binding.id) : undefined
+            properties[key] = target
+              ? typeof value === 'object'
+                ? { ...value, value: target }
+                : target
+              : value
+          }
+          return { ...obj, properties }
+        }),
+      }
+    }),
+  }
+}
+
 export function recoverInitialLocalAssets<Asset extends PintaMemoryAsset>(
   ids: readonly string[],
   pull: PintaCausalLocalPull<Asset>,
@@ -85,7 +128,14 @@ export function recoverInitialLocalAssets<Asset extends PintaMemoryAsset>(
       .filter((asset) => !remote.has(asset.id))
       .map(({ name }) => name),
     ...[...remote.values()].flatMap((asset) => (asset ? [asset.name] : [])),
+    ...snapshot.assets.keys(),
+    ...remote.keys(),
   ])
+  for (const asset of [...snapshot.assets.values(), ...remote.values()]) {
+    if (!asset) continue
+    for (const { selector } of pintaDoorBindings(asset, snapshot.assets))
+      if (typeof selector === 'string') names.add(selector)
+  }
   const imported = planImport(
     selected,
     new Set(selected.filter(isTilesetKind).map(({ id }) => id)),
@@ -93,10 +143,54 @@ export function recoverInitialLocalAssets<Asset extends PintaMemoryAsset>(
     ({ name }) => `${name.slice(0, 42).replace(/-+$/, '')}-copia`,
   )
   if (imported.error || imported.pairs.length !== selected.length) return null
-  const copies = imported.pairs.map(({ restored }, index) => ({
-    ...restored,
-    createdAt: selected[index]!.createdAt,
-  }))
+  const copies = imported.pairs.map(({ restored }, index) => {
+    const original = selected[index]!
+    const copy = { ...restored, createdAt: original.createdAt }
+    if (copy.kind === 'tilemap' && original.kind === 'tilemap')
+      return restoreDoorTargets(original, copy, snapshot.assets, imported.idMap)
+    if (copy.kind === 'map-set' && original.kind === 'map-set')
+      return {
+        ...copy,
+        map: restoreDoorTargets(original.map, copy.map, snapshot.assets, imported.idMap),
+      }
+    return copy
+  })
+  const projected = new Map(snapshot.assets)
+  for (const original of selected) projected.delete(original.id)
+  for (const [id, after] of remote) {
+    if (after) projected.set(id, after)
+    else projected.delete(id)
+  }
+  for (const copy of copies) {
+    if (projected.has(copy.id)) return null
+    projected.set(copy.id, copy)
+  }
+  for (const asset of snapshot.assets.values()) {
+    if (remote.has(asset.id) || imported.idMap.has(asset.id)) continue
+    if (
+      !pintaValuesEqual(
+        pintaDoorBindings(asset, snapshot.assets),
+        pintaDoorBindings(asset, projected),
+      )
+    )
+      return null
+  }
+  const official = new Map(
+    [...remote].flatMap(([id, asset]) => (asset ? [[id, asset] as const] : [])),
+  )
+  for (const asset of official.values())
+    if (!pintaValuesEqual(pintaDoorBindings(asset, official), pintaDoorBindings(asset, projected)))
+      return null
+  for (const [i, copy] of copies.entries()) {
+    const original = selected[i]!
+    const expected = pintaDoorBindings(original, snapshot.assets).map(({ binding }) =>
+      binding.type === 'target'
+        ? { ...binding, id: imported.idMap.get(binding.id) ?? binding.id }
+        : binding,
+    )
+    const actual = pintaDoorBindings(copy, projected).map(({ binding }) => binding)
+    if (!pintaValuesEqual(expected, actual)) return null
+  }
   const writes: LocalAssetTransition<Asset>[] = copies.map((after) => ({
     id: after.id,
     before: null,

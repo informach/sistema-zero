@@ -51,7 +51,7 @@ export function* pintaDoorSelectors(asset: PintaMemoryAsset): IterableIterator<s
   }
 }
 
-function doorBinding(destination: string, byId: ReadonlyMap<string, PintaMemoryAsset>) {
+export function pintaDoorBinding(destination: string, byId: ReadonlyMap<string, PintaMemoryAsset>) {
   const exact = byId.get(destination)
   if (exact)
     return exact.kind === 'tilemap'
@@ -73,7 +73,9 @@ export function pintaDoorBindings(
   return [...rawDoorSelectors(asset)].map((selector) => ({
     selector,
     binding:
-      typeof selector === 'string' ? doorBinding(selector, byId) : { type: 'invalid' as const },
+      typeof selector === 'string'
+        ? pintaDoorBinding(selector, byId)
+        : { type: 'invalid' as const },
   }))
 }
 
@@ -84,7 +86,7 @@ export function pintaDoorDependencyIds(
 ): string[] {
   const ids = new Set<string>()
   for (const destination of pintaDoorSelectors(asset)) {
-    const binding = doorBinding(destination, byId)
+    const binding = pintaDoorBinding(destination, byId)
     if (binding.type === 'ambiguous') throw new SceneMapClosureError('ambiguous-map')
     if (binding.type !== 'target') throw new SceneMapClosureError('missing-map')
     ids.add(binding.id)

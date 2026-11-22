@@ -1,7 +1,12 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import type { PintaCausalIntent } from '@sistemazero/core/creations/pinta-causal'
 import { pintaLocalRevisionOf, pintaResourceObservation } from '../core/localAssetOrigin'
-import type { MapSetAsset, TilemapAsset } from '../core/project'
+import type {
+  MapSetAsset,
+  PintaAsset,
+  TilemapAsset,
+  TilemapObjectPropertyValue,
+} from '../core/project'
 import {
   createPixelSpriteAsset,
   createTilemapAsset,
@@ -10,6 +15,7 @@ import {
   isObjectLayer,
   withPintaSchemaStamp,
 } from '../core/project'
+import { pintaDoorBindings } from '../core/sceneMapClosure'
 import { galleryBackupByteLength, MAX_BACKUP_FILE_BYTES } from '../export/projectJson'
 import {
   clearIdbMock,
@@ -165,6 +171,74 @@ describe('authority of the causal gallery', () => {
     }
     expect((await local.loadAssetById(forest.id))?.name).toBe('bosque')
     expect((await local.causal.inspect()).epoch).toBe('1')
+  })
+
+  it('recovers door bindings in their global namespace and leaves retained selectors unchanged', async () => {
+    const local = createPintaCausalPersistence({ namespace: 'recovery-door-aliases' })
+    const sheet = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+    const independentSheet = createTilesetAsset({ name: 'outras-pecas', tileSize: 16 })
+    const room = (name: string, tilesetId: string) =>
+      createTilemapAsset({ name, tilesetId, cols: 2, rows: 2 })
+    function doors(
+      map: TilemapAsset,
+      destinations: readonly TilemapObjectPropertyValue[],
+    ): TilemapAsset {
+      const next = addObjectLayer(map, 'Portas')
+      const layer = next.layers.find(isObjectLayer)
+      if (!layer) throw Error('Camada ausente')
+      layer.objects.push(
+        ...destinations.map((destino, i) =>
+          createMapObject({ id: `porta-${i}`, role: 'door', properties: { destino } }),
+        ),
+      )
+      return next
+    }
+    const cabin = { ...room('cabana', sheet.id), id: 'folha-versao' }
+    const frozen = { ...sheet, id: cabin.id }
+    const home = doors(
+      {
+        ...room('vila', frozen.id),
+        resources: [{ sourceId: sheet.id, capturedAt: 1, asset: frozen }],
+      },
+      ['cabana', { type: 'asset', value: cabin.id }, 'historica-ausente'],
+    )
+    const isolated = doors(room('isolada', independentSheet.id), ['vila-copia'])
+    await local.persistAssets([sheet, independentSheet, cabin, home, isolated])
+    const after: PintaAsset[] = [
+      { ...cabin, name: 'cabana-conta' },
+      { ...room('outra', sheet.id), id: 'cabana-copia' },
+    ]
+    const bases = await local.causal.capture(after.map(({ id }) => id))
+    const remote = { revision: 2, sha256: 'a'.repeat(64), layoutRevision: null }
+    const pull = {
+      fromEpoch: null,
+      epoch: '2',
+      recoverInitial: true as const,
+      transitions: bases.map((base, i) => ({ ...base, after: after[i]!, remote })),
+    }
+    const impact = await local.causal.pullImpact(pull)
+    expect(impact.blocked).toBe(false)
+    expect(impact.ids).not.toContain(isolated.id)
+    expect(await local.causal.applyPull({ ...pull, coveredIds: impact.ids }, () => true)).toBe(true)
+    const catalog = new Map((await local.listAllAssets()).map((asset) => [asset.id, asset]))
+    const homeCopy = [...catalog.values()].find((a) => a.name === 'vila-copia-2')
+    const cabinCopy = [...catalog.values()].find((a) => a.name === 'cabana-copia-2')
+    if (homeCopy?.kind !== 'tilemap' || cabinCopy?.kind !== 'tilemap')
+      throw Error('Cópias ausentes')
+    expect(homeCopy.tilesetId).toBe(homeCopy.resources?.[0]?.asset.id)
+    expect(homeCopy.tilesetId).not.toBe(cabinCopy.id)
+    expect(pintaDoorBindings(homeCopy, catalog)).toEqual([
+      { selector: cabinCopy.id, binding: { type: 'target', id: cabinCopy.id } },
+      { selector: cabinCopy.id, binding: { type: 'target', id: cabinCopy.id } },
+      { selector: 'historica-ausente', binding: { type: 'missing' } },
+    ])
+    expect(homeCopy.layers.find(isObjectLayer)?.objects[1]?.properties.destino).toEqual({
+      type: 'asset',
+      value: cabinCopy.id,
+    })
+    expect(pintaDoorBindings(catalog.get(isolated.id)!, catalog)).toEqual([
+      { selector: 'vila-copia', binding: { type: 'missing' } },
+    ])
   })
 
   it('counts drawings and the sealed gzip in the same budget and keeps the draft after refusal', async () => {
