@@ -230,6 +230,13 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    `qa/envelope-png-regional-2026-11-22/`. É fronteira de uma cena e descritores;
    ainda faltam montagem/carga completa de mundos, leitores de jogo/capacidades
    e seleção no host. Não fecha PNG 5 integral, item 4 ou etapas macro.
+   Consulta/visita esparsa movida do Pinta ao Core, com reexportação das mesmas
+   funções no editor e índice/chaves compartilhados pelos mutadores. Provas em
+   `qa/leitura-regional-compartilhada-2026-11-22/`: 16.384 consultas e 512
+   percursos idênticos ao código anterior, mais referência densa independente.
+   Próximo: consultas/geometria e motores. A criação atual de `rows × cols`
+   não serve para cena 4 e seu número de versão não pode ativar física precisa
+   em mapas migrados. Sem promoção pública ou fechamento do item por esse núcleo.
 
 Na promoção do store, conferir também os orçamentos globais de metadados e JSON
 antes do histórico/autosave. A soma de objetos/propriedades em várias camadas

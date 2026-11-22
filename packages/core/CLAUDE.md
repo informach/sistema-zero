@@ -1,5 +1,16 @@
 # CLAUDE.md — @sistemazero/core
 
+## Leitura de células regionais compartilhada (22/11/2026)
+
+`creations/pinta-region-reader.ts` recebe o leitor anterior do Pinta: consulta
+pontual, índice por contexto e visita esparsa por chunks/ordem global. O editor
+reexporta as mesmas funções. Grades são imutáveis e já admitidas pelo codec;
+não substituir guards de documento/conta por este acesso em memória. Helpers
+de chaves/ordem/índice também atendem aos mutadores, sem chaves físicas ou cache
+global. Provas e 512 comparações históricas em
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitura-regional-compartilhada-2026-11-22/`.
+Ainda não é integração de jogo/regiões no host ou capacidade publicada.
+
 ## Leitor interno de cenas regionais (22/11/2026)
 
 `studio/pinta-region-image.ts` prepara metadados Pinta 5 em PNG: entrada JSON

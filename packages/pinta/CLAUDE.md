@@ -47,6 +47,14 @@ a validar seus PNGs filhos: falta integração do loader/encoder do mundo e dos
 motores antes do host. Fixture do leitor PNG 4 é autêntica e congelada, sem
 seleção no produto. Provas em `qa/envelope-png-regional-2026-11-22/`.
 
+`tiles/regionCells.ts` reexporta consulta/visita do Core; a implementação única
+está em `creations/pinta-region-reader.ts`. Mutação permanece no editor e usa
+as mesmas chaves/ordem/índice em memória. Não usar esses helpers como autoridade
+de IO ou validação de documento. A leitura é para snapshots imutáveis já
+admitidos; não há cache global de documentos. Provas e comparações exatas em
+`qa/leitura-regional-compartilhada-2026-11-22/`. Motores ainda precisam consumir
+regiões sem materializar `rows × cols`, respeitando a física legada/precisa.
+
 `state/localRegionChunkStorage.ts` prepara o físico 3 como política opt-in do
 IO transacional existente. `parsePintaRegionLayerLocations` confere cabeçalhos
 antes das requisições de buffers; limites globais, IDs e dono das chaves são
