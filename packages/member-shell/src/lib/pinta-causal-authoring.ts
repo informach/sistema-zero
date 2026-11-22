@@ -295,6 +295,7 @@ export async function stagePintaCausalWrite(options: {
   deletion?: { id: string; before?: PintaAsset }
   context?: PintaEditorWriteContext
   remapBase?: PintaCausalRemapBase
+  inverseReadBase?: PintaCausalRemapBase
   queuedSlots?: PintaQueuedSlots
   inverseOf?: string
   independent?: true
@@ -370,7 +371,8 @@ export async function stagePintaCausalWrite(options: {
     return source?.localRevision === revision ? source : undefined
   }
   const localRevs = new Map(bases.map((base) => [base.id, base.beforeRevision]))
-  const originals = new Map(remapBase?.assets.map((asset) => [asset.id, asset]))
+  const referencePlan = remapBase ?? options.inverseReadBase
+  const originals = new Map(referencePlan?.assets.map((asset) => [asset.id, asset]))
   for (const base of bases) {
     const after = output.get(base.id) ?? null
     const prepared = remapBase?.entries.get(base.id)
@@ -410,12 +412,12 @@ export async function stagePintaCausalWrite(options: {
       } else operation = pending?.operation ?? { type: 'update' }
       if (authoredIds.has(after.id) || recovered.has(after.id)) {
         const original =
-          base.id !== root?.id && remapBase?.verifiedConsumers.has(base.id)
+          base.id !== root?.id && referencePlan?.verifiedConsumers.has(base.id)
             ? originals.get(base.id)
             : undefined
         const plannedReferences = new Set(
-          original && remapBase
-            ? observePintaReferences(original, remapBase.assets).map(({ id }) => id)
+          original && referencePlan
+            ? observePintaReferences(original, referencePlan.assets).map(({ id }) => id)
             : [],
         )
         for (const ref of observePintaReferences(after, catalog)) {
@@ -423,7 +425,7 @@ export async function stagePintaCausalWrite(options: {
             const targetBefore = localRevs.get(ref.id)
             if (
               targetBefore &&
-              !(remapBase && root?.id === ref.id) &&
+              !((remapBase || options.inverseOf) && root?.id === ref.id) &&
               !(recovered.has(after.id) && state.recovered?.get(ref.id) === targetBefore) &&
               observed.get(ref.id) !== targetBefore
             )
@@ -444,8 +446,24 @@ export async function stagePintaCausalWrite(options: {
             })
             continue
           }
-          const pinned = plannedReferences.has(ref.id) ? remapBase?.entries.get(ref.id) : undefined
-          if (pinned?.coverage === 'certified' && pinned.sha256) {
+          const pinned = plannedReferences.has(ref.id)
+            ? referencePlan?.entries.get(ref.id)
+            : undefined
+          const mark = state.confirmed.get(ref.id)
+          const oldBasisStillCurrent =
+            referencePlan &&
+            pinned &&
+            (mark
+              ? !mark.deleted &&
+                mark.revision === pinned.revision &&
+                mark.sha256 === pinned.sha256 &&
+                mark.layoutRevision === pinned.layoutRevision
+              : BigInt(epoch) === BigInt(referencePlan.epoch) + 1n)
+          if (
+            pinned?.coverage === 'certified' &&
+            pinned.sha256 &&
+            (remapBase || oldBasisStillCurrent)
+          ) {
             readSet.push({
               source: 'snapshot',
               consumerId: after.id,
@@ -456,7 +474,6 @@ export async function stagePintaCausalWrite(options: {
             })
             continue
           }
-          const mark = state.confirmed.get(ref.id)
           if (!mark || mark.deleted || !mark.sha256 || observed.get(ref.id) !== mark.localRevision)
             throw Error('Um recurso usado pelo desenho mudou desde que foi aberto.')
           readSet.push({

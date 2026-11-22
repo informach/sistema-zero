@@ -531,13 +531,13 @@ export function createCloudMirroredPintaPersistence(options: {
         ))
         ? lastRemap
         : undefined
-    const sentId = root && state.confirmed.get(root.id)?.opId
+    const receipt = root && state.confirmed.get(root.id)
     const undo =
       queuedSlots &&
-      sentId === queuedSlots.opId &&
+      (receipt?.opId === queuedSlots.opId || receipt?.originalOpId === queuedSlots.opId) &&
       context?.slotLineage?.before === queuedSlots.after &&
       context.slotLineage.after === queuedSlots.before
-        ? sentId
+        ? receipt.opId
         : undefined
     if (!remap && (state.writeEpoch ?? state.epoch) === null) {
       const targets = new Map(assets.map((asset) => [asset.id, asset]))
@@ -578,6 +578,7 @@ export function createCloudMirroredPintaPersistence(options: {
       context,
       deletion,
       remapBase: undo ? undefined : remap,
+      inverseReadBase: undo && root?.id === lastRemap?.source.id ? lastRemap : undefined,
       queuedSlots,
       inverseOf: undo,
       ...(independent ? { independent: true as const } : {}),

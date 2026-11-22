@@ -86,6 +86,7 @@ export interface PintaCausalPendingMember extends PintaCausalDraftMember {
 
 export interface PintaCausalPending {
   opId: string
+  originalOpId?: string
   /** Changes on a replacement, including ones that deliberately keep the operation ID. */
   preparation: string
   baseEpoch: string
@@ -124,6 +125,7 @@ export interface PintaCausalConfirmed {
   sha256: string | null
   layoutRevision: string | null
   opId?: string
+  originalOpId?: string
 }
 
 export interface PintaCausalLocalPull<Asset extends PintaMemoryAsset> {
@@ -182,6 +184,8 @@ function pendingState(value: unknown): value is PintaCausalPending {
   if (
     !object(value) ||
     !pintaCausalOpIdSchema.safeParse(value.opId).success ||
+    (value.originalOpId !== undefined &&
+      !pintaCausalOpIdSchema.safeParse(value.originalOpId).success) ||
     !pintaCausalOpIdSchema.safeParse(value.preparation).success ||
     !pintaCausalEpochSchema.safeParse(value.baseEpoch).success ||
     (value.follows !== undefined && !pintaCausalOpIdSchema.safeParse(value.follows).success) ||
@@ -279,7 +283,9 @@ function confirmedState(value: unknown): value is Map<string, PintaCausalConfirm
       (mark.deleted && (mark.sha256 !== null || mark.layoutRevision !== null)) ||
       (mark.layoutRevision !== null &&
         !pintaCausalEpochSchema.safeParse(mark.layoutRevision).success) ||
-      (mark.opId !== undefined && !pintaCausalOpIdSchema.safeParse(mark.opId).success)
+      (mark.opId !== undefined && !pintaCausalOpIdSchema.safeParse(mark.opId).success) ||
+      (mark.originalOpId !== undefined &&
+        !pintaCausalOpIdSchema.safeParse(mark.originalOpId).success)
     )
       return false
   }
@@ -1007,7 +1013,12 @@ export function renewLocalCausalUpload(
     pending,
     sealed: {
       ...sealed,
-      local: { ...sealed.local, opId: renewed, baseEpoch: newEpoch },
+      local: {
+        ...sealed.local,
+        originalOpId: sealed.local.originalOpId ?? opId,
+        opId: renewed,
+        baseEpoch: newEpoch,
+      },
       intent: next,
       intentHash,
     },
@@ -1028,18 +1039,6 @@ function followVerifiedReceipt(
   )
     return pending
   const touched = new Set(receipt.members.map(({ itemId }) => itemId))
-  const planned = new Set(pending.members.map(({ itemId }) => itemId))
-  const topology = new Set(
-    pending.members
-      .filter((member) => member.action === 'delete' || member.operation?.type === 'remap')
-      .map(({ itemId }) => itemId),
-  )
-  if (
-    sealed.intent.readSet.some(
-      (edge) => topology.has(edge.targetId) && !planned.has(edge.consumerId),
-    )
-  )
-    return pending
   const resultOf = (id: string, observation: PintaCausalPredecessor) => {
     const mark = confirmed.get(id)
     return touched.has(id) &&
@@ -1142,6 +1141,7 @@ export function acknowledgeLocalCausalDraft(
       sha256: member.sha256,
       layoutRevision: member.layoutRevision,
       opId: receipt.opId,
+      ...(sealed.local.originalOpId ? { originalOpId: sealed.local.originalOpId } : {}),
     })
     local.delete(member.itemId)
   }

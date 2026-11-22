@@ -15,7 +15,9 @@ import {
   isTileLayer,
   withPintaSchemaStamp,
 } from '../../../pinta/src/core/project'
+import { observePintaReferences } from '../../../pinta/src/core/sceneMapClosure'
 import { assetFromJson, assetToJson } from '../../../pinta/src/export/assetJson'
+import { createEditorStore } from '../../../pinta/src/state/editorStore'
 import { clearIdbMock } from '../../../pinta/src/testing/idbMock'
 import { createMapObject } from '../../../pinta/src/tiles/mapObjects'
 import { freezeMapTilesets, freezeObjectResource } from '../../../pinta/src/tiles/resourceVersions'
@@ -1134,4 +1136,228 @@ test('recibo de criação após compactar lápide pode confirmar a nova revisão
   const state = await local.causal.inspect()
   expect(state.confirmed.get(sprite.id)).toMatchObject({ opId, revision: 1, deleted: false })
   expect(state.sealed).toBeNull()
+})
+
+test('remover peça sem leitor avança pela edição anterior de um mapa com slot estável', async () => {
+  const sheet = addTile(createTilesetAsset({ name: 'pecas', tileSize: 8 }), 0)
+  const map = createTilemapAsset({ name: 'cabana', cols: 1, rows: 1, tilesetId: sheet.id })
+  map.layers.find(isTileLayer)!.cells[0] = 0
+  const local = createPintaCausalPersistence({ namespace: 'stable-slot-follow' })
+  const initial = await Promise.all([cloudAsset(sheet, 1, '1'), cloudAsset(map, 1)])
+  await local.causal.applyPull(
+    {
+      fromEpoch: null,
+      epoch: '1',
+      transitions: [sheet, map].map((after, i) => ({
+        id: after.id,
+        before: null,
+        beforeRevision: null,
+        after,
+        remote: initial[i]!.entry,
+      })),
+    },
+    () => true,
+  )
+  const source = await local.loadAssetById(sheet.id)
+  const room = await local.loadAssetById(map.id)
+  if (source?.kind !== 'tileset' || room?.kind !== 'tilemap') throw Error('Acervo incompleto')
+  const { cloud } = fakeCloud(map, 1)
+  const unused = async (): Promise<never> => {
+    throw Error('Operação inesperada')
+  }
+  const transport: PintaCausalCloud = {
+    snapshot: async () => {
+      throw TypeError('offline')
+    },
+    download: unused,
+    verifyEpoch: unused,
+    upload: unused,
+    backfill: unused,
+  }
+  const wrapper = createCloudMirroredPintaPersistence({
+    local,
+    cloud: { ...cloud, pintaCausal: transport },
+    viewerId: 'stable',
+    causal: {
+      local: local.causal,
+      holdOpen: async () => () => {},
+      withClosed: (_, apply) => apply(),
+    },
+  })
+  try {
+    await wrapper.persistAsset(
+      { ...room, layers: room.layers.map((layer) => ({ ...layer, opacity: 0.5 })) },
+      {
+        resources: [{ id: sheet.id, localRevision: pintaLocalRevisionOf(source) ?? null }],
+      },
+    )
+    const catalog = await wrapper.prepareTileRemap!(source)
+    const remap = remapTilesetConsumers(catalog, [], sheet.id, { removedAt: 1 })
+    if (!remap.ok) throw Error('Remap recusado')
+    expect(remap.after).toEqual([])
+    await wrapper.persistAssets([removeTile(source, 1)], {
+      resources: [],
+      layout: { oldToNew: [0, -1], count: 1 },
+    })
+    expect((await local.causal.inspect()).pending).toHaveLength(2)
+    const order: string[] = []
+    await flushPintaCausalOutbox({
+      local: local.causal,
+      reader: 6,
+      signal: new AbortController().signal,
+      cloud: {
+        async upload({ intent, intentHash }) {
+          const [member] = intent.members
+          if (member?.action !== 'put') throw Error('Operação ausente')
+          order.push(member.itemId)
+          return {
+            opId: intent.opId,
+            intentHash,
+            epoch: String(1 + order.length),
+            members: [
+              {
+                itemId: member.itemId,
+                revision: 2,
+                deleted: false,
+                sha256: member.sha256,
+                layoutRevision: member.itemId === sheet.id ? '3' : null,
+              },
+            ],
+          }
+        },
+      },
+    })
+    expect(order).toEqual([map.id, sheet.id])
+    expect((await local.causal.inspect()).pending).toHaveLength(0)
+  } finally {
+    wrapper.dispose?.()
+  }
+})
+
+test.each([
+  false,
+  true,
+])('desfazer pelo editor vincula o recibo remapeado, renovação=%s', async (renew) => {
+  const sheet = addTile(createTilesetAsset({ name: 'pecas', tileSize: 8 }), 0)
+  const scenery = createTilesetAsset({ name: 'detalhes', tileSize: 8 })
+  const map = createTilemapAsset({ name: 'cabana', cols: 1, rows: 1, tilesetId: sheet.id })
+  const layer = map.layers.find(isTileLayer)!
+  layer.cells[0] = 0
+  map.layers.push({ ...layer, id: 'detalhe', tilesetId: scenery.id, cells: new Int16Array([0]) })
+  const local = createPintaCausalPersistence({ namespace: `undo-receipt-${renew}` })
+  const originals = [sheet, scenery, map]
+  const initial = await Promise.all(
+    originals.map((asset) => cloudAsset(asset, 1, asset.kind === 'tileset' ? '1' : null)),
+  )
+  await local.causal.applyPull(
+    {
+      fromEpoch: null,
+      epoch: '1',
+      transitions: originals.map((after, i) => ({
+        id: after.id,
+        before: null,
+        beforeRevision: null,
+        after,
+        remote: initial[i]!.entry,
+      })),
+    },
+    () => true,
+  )
+  const source = await local.loadAssetById(sheet.id)
+  if (source?.kind !== 'tileset') throw Error('Folha ausente')
+  const { cloud } = fakeCloud(map, 1)
+  const unused = async (): Promise<never> => {
+    throw Error('Operação inesperada')
+  }
+  const transport: PintaCausalCloud = {
+    snapshot: async () => ({
+      epoch: '1',
+      requiredFormat: 6,
+      entries: initial.map(({ entry }) => entry),
+    }),
+    download: unused,
+    verifyEpoch: async () => {},
+    upload: unused,
+    backfill: unused,
+  }
+  const wrapper = createCloudMirroredPintaPersistence({
+    local,
+    cloud: { ...cloud, pintaCausal: transport },
+    viewerId: 'undo',
+    causal: {
+      local: local.causal,
+      holdOpen: async () => () => {},
+      withClosed: (_, apply) => apply(),
+    },
+  })
+  try {
+    const catalog = await wrapper.prepareTileRemap!(source)
+    const remap = remapTilesetConsumers(catalog, [], sheet.id, { removedAt: 0 })
+    if (!remap.ok) throw Error('Remap recusado')
+    const editor = createEditorStore({
+      asset: source,
+      observeResources: (asset) => observePintaReferences(asset, catalog),
+      persist: (asset, linked, layout, resources, slotLineage) =>
+        wrapper.persistAssets([asset, ...linked], {
+          layout,
+          resources: resources ?? [],
+          slotLineage,
+        }),
+    })
+    expect(editor.getState().commitLinked(removeTile(source, 0), remap, { removedAt: 0 })).toBe(
+      true,
+    )
+    expect(await editor.getState().flush()).toEqual({ ok: true })
+    const sent: string[] = []
+    await flushPintaCausalOutbox({
+      local: local.causal,
+      reader: 6,
+      signal: new AbortController().signal,
+      cloud: {
+        ...transport,
+        async upload({ intent, intentHash }) {
+          sent.push(intent.opId)
+          if (renew && sent.length === 1)
+            throw new PintaCausalRequestError(409, 'operation-expired')
+          return {
+            opId: intent.opId,
+            intentHash,
+            epoch: '2',
+            members: intent.members.map((member) => {
+              if (member.action !== 'put') throw Error('Operação inesperada')
+              return {
+                itemId: member.itemId,
+                revision: 2,
+                deleted: false,
+                sha256: member.sha256,
+                layoutRevision: member.itemId === sheet.id ? '2' : null,
+              }
+            }),
+          }
+        },
+      },
+    })
+    if (renew) expect(sent[0]).not.toBe(sent[1])
+    editor.getState().undo()
+    expect(await editor.getState().flush()).toEqual({ ok: true })
+    const [undo] = (await local.causal.inspect()).pending
+    expect(undo?.inverseOf).toBe(sent.at(-1))
+    expect(undo?.readSet).toEqual(
+      expect.arrayContaining([
+        { source: 'unit', consumerId: map.id, targetId: sheet.id },
+        {
+          source: 'snapshot',
+          consumerId: map.id,
+          targetId: scenery.id,
+          revision: 1,
+          sha256: initial[1]!.entry.sha256,
+          layoutRevision: '1',
+        },
+      ]),
+    )
+    const restored = await local.loadAssetById(map.id)
+    expect(restored?.kind === 'tilemap' && restored.layers.find(isTileLayer)?.cells[0]).toBe(0)
+  } finally {
+    wrapper.dispose?.()
+  }
 })
