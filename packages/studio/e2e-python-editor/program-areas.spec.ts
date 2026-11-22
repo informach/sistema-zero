@@ -25,23 +25,65 @@ const closeFunctions = (page: Page) =>
   page.getByRole('button', { name: 'Fechar as funções', exact: true })
 /** Espera o arquivo parar de mudar (o organizar e o commit dele terminaram). */
 async function settle(read: () => Promise<string | undefined>) {
+  // O organizar grava em etapas (o commit da Ponte, depois o salvamento automático): o arquivo
+  // está pronto quando passa SEIS segundos sem mudar. Ler no meio da gravação pode dar conflito,
+  // e isso conta como "ainda mudando".
+  const deadline = Date.now() + 45_000
   let last: string | undefined
-  await expect
-    .poll(
-      async () => {
-        const now = await read()
-        const same = now !== undefined && now === last
-        last = now
-        return same
-      },
-      { intervals: [700], timeout: 30_000 },
-    )
-    .toBe(true)
+  let quietSince = Date.now()
+  while (Date.now() < deadline) {
+    await new Promise((done) => setTimeout(done, 500))
+    let now: string | undefined
+    try {
+      now = await read()
+    } catch {
+      quietSince = Date.now()
+      continue
+    }
+    if (now !== last) {
+      last = now
+      quietSince = Date.now()
+    } else if (now !== undefined && Date.now() - quietSince >= 6_000) return
+  }
+  throw new Error('O arquivo não parou de mudar depois de organizar.')
 }
+const AREA_MARKERS = [
+  '# 📦 Bibliotecas',
+  '# 🎛️ Configurações',
+  '# 🧩 Meus moldes',
+  '# ⚙️ Ao iniciar',
+  '# ⚡ Quando acontecer',
+  '# 🔁 Enquanto estiver rodando',
+]
+/**
+ * O programa sem os comentários de área e sem linhas em branco: o desfazer de uma exclusão recria
+ * os blocos, e o Python os escreve de novo do jeito dele (linha em branco antes de cada método).
+ */
+const sameProgram = (text: string | undefined) =>
+  text
+    ?.split('\n')
+    .filter((line) => line.trim() !== '' && !AREA_MARKERS.includes(line))
+    .join('\n')
 const START = '# ⚙️ Ao iniciar'
 const MOLDS = '# 🧩 Meus moldes'
-const blocksSurface = (page: Page) =>
-  page.locator('section[aria-label="Editor de blocos Python"] .blocklySvg')
+/**
+ * Um clique num ponto LIVRE do espaço dos blocos (o fundo do Blockly), longe da paleta, da barra
+ * de rolagem, da lixeira e dos blocos: um ponto fixo cai na paleta, que fica em coluna à esquerda.
+ */
+async function clickBlocks(page: Page, button: 'left' | 'right' = 'left') {
+  const point = await page.evaluate(() => {
+    const svg = document.querySelector('section[aria-label="Editor de blocos Python"] .blocklySvg')
+    if (!svg) return undefined
+    const box = svg.getBoundingClientRect()
+    for (let y = box.bottom - 40; y > box.top + 40; y -= 16)
+      for (let x = box.right - 40; x > box.left + 40; x -= 16)
+        if (document.elementFromPoint(x, y)?.classList.contains('blocklyMainBackground'))
+          return { x, y }
+    return undefined
+  })
+  if (!point) throw new Error('Não há ponto livre no espaço dos blocos.')
+  await page.mouse.click(point.x, point.y, { button })
+}
 
 test('program scratch survives Monaco edits and source undo with its identity and fields intact', async ({
   page,
@@ -75,6 +117,8 @@ test('program scratch survives Monaco edits and source undo with its identity an
 test('program index opens a secondary scratch class and nested functions without executing them', async ({
   page,
 }) => {
+  // Largo: o "devolver resultado ⟨73⟩" cabe no painel dos blocos, ao lado da paleta em coluna.
+  await page.setViewportSize({ width: 1600, height: 1000 })
   await page.goto('/')
   await page.waitForFunction(() => !!globalThis.pythonBridgeProbe)
   await page.evaluate(() => pythonBridgeProbe.create())
@@ -135,7 +179,8 @@ test('Pac-Man program areas reveal editable functions and persist non-executable
   const state = () => page.evaluate(() => studioFreeProbe.workspace())
   await expect.poll(async () => (await state()).mounted).toBeLessThan(300)
   const overview = (await state()).mounted
-  expect((await state()).count).toBe(2022)
+  // 2022 de antes, sem o "Programa" e com as 4 áreas que o Pac-Man usa (22/11/2026).
+  expect((await state()).count).toBe(2025)
   expect((await state()).opaque).toEqual([])
   const source = () =>
     page.evaluate(async () => {
@@ -150,7 +195,7 @@ test('Pac-Man program areas reveal editable functions and persist non-executable
     })
   // O exemplo se organiza pelas áreas no primeiro clique nos blocos (22/11/2026): a régua é o
   // arquivo depois disso (com os exemplos já convertidos, o clique não muda nada).
-  await blocksSurface(page).click({ position: { x: 10, y: 200 } })
+  await clickBlocks(page)
   await settle(source)
   const original = await source()
   const savedProgram = () => page.evaluate(() => studioFreeProbe.savedProgramArea('main.py'))
@@ -166,12 +211,11 @@ test('Pac-Man program areas reveal editable functions and persist non-executable
       }
     })
     .toEqual({ pending: false, areas: true })
-  const legacyRoot = await page.evaluate(() => studioFreeProbe.legacyWorkspaceSnapshot())
+  const savedLine = await page.evaluate(() => studioFreeProbe.firstAreaLineId())
   await page.getByTitle('Voltar à lista de projetos', { exact: true }).click()
-  await page.evaluate(() => studioFreeProbe.saveLegacyWorkspace())
   await page.getByRole('button', { name: 'Abrir projeto Pac-Man (Blocos)', exact: true }).click()
-  // The old IDs prove restoration; a silent fallback to a new projection would replace them.
-  await expect(page.locator(`[data-id="${legacyRoot}"]`)).toBeVisible({ timeout: 45_000 })
+  // The same IDs prove the saved workspace was restored; a new projection would replace them.
+  await expect(page.locator(`[data-id="${savedLine}"]`)).toBeVisible({ timeout: 45_000 })
   await expect.poll(async () => (await state()).mounted).toBe(overview)
   await expect.poll(source).toBe(original)
   await jumpButton(page).click()
@@ -192,9 +236,7 @@ test('Pac-Man program areas reveal editable functions and persist non-executable
   await closeFunctions(page).click()
   await expect.poll(async () => (await state()).mounted).toBe(overview)
   // Presentation navigation never consumes the semantic undo step.
-  await page
-    .locator('section[aria-label="Editor de blocos Python"] .blocklySvg')
-    .click({ position: { x: 10, y: 200 } })
+  await clickBlocks(page)
   await page.keyboard.press('Control+z')
   await expect
     .poll(async () => (await source()).replace('velocidade = (4)', 'velocidade = 4'))
@@ -308,13 +350,19 @@ test('program navigation and Ponte reveal nested class and function bodies witho
     .locator(`[data-id="${classId}"]`)
     .click({ button: 'right', position: { x: 16, y: 12 } })
   await page.getByRole('menuitem', { name: /^Deletar \d+ blocos$/ }).click()
-  await expect(jumpButton(page)).toHaveCount(0)
+  // O "Ir para" continua (ele lista as áreas); a classe sai do código.
+  await expect
+    .poll(() => page.evaluate(() => pythonBridgeProbe.state().source))
+    .not.toContain('class Nave')
   await page.keyboard.press('Control+z')
   await expect(jumpButton(page)).toBeVisible()
   await goTo(page, 'Função passo')
   // Undo recreates blocks with the old IDs and new SVG nodes.
   await expect(literal).toBeVisible()
-  await expect.poll(() => page.evaluate(() => pythonBridgeProbe.state().source)).toBe(source)
+  // O mesmo programa; os gestos escreveram os comentários de área.
+  await expect
+    .poll(async () => sameProgram(await page.evaluate(() => pythonBridgeProbe.state().source)))
+    .toBe(sameProgram(source))
   await page.setViewportSize({ width: 640, height: 850 })
   await page.evaluate(() => pythonBridgeProbe.layout(true))
   await page.getByRole('tab', { name: 'Blocos', exact: true }).click()
@@ -336,14 +384,14 @@ test('o código que veio de fora se organiza no primeiro clique nos blocos, e o 
   await expect(page.locator('.sz_py_area_start')).toBeVisible({ timeout: 20_000 })
   // Enquanto a criança não volta para os blocos, o arquivo fica como ela escreveu.
   expect(await source()).toBe(typed)
-  await blocksSurface(page).click({ position: { x: 10, y: 200 } })
+  await clickBlocks(page)
   await expect
     .poll(source)
     .toMatch(new RegExp(`^${MOLDS}\ndef pular\\(\\):\n {4}pass\n+${START}\nprint\\(1\\)\n$`))
   await page.keyboard.press('Control+z')
   await expect.poll(source).toBe(`${START}\n${typed}`)
   // "Organizar blocos" no menu do espaço dos blocos faz o mesmo, a qualquer hora.
-  await blocksSurface(page).click({ button: 'right', position: { x: 10, y: 200 } })
+  await clickBlocks(page, 'right')
   await page.getByRole('menuitem', { name: 'Organizar blocos', exact: true }).click()
   await expect.poll(source).toMatch(new RegExp(`^${MOLDS}\ndef pular`))
 })
@@ -360,7 +408,7 @@ test('a linha que não pode ir para a área dela fica no Ao iniciar, com nota e 
   const source = () => page.evaluate(() => pythonBridgeProbe.state().source)
   const klass = page.locator('.sz_py_class').first()
   await expect(klass).toBeVisible({ timeout: 20_000 })
-  await blocksSurface(page).click({ position: { x: 10, y: 200 } })
+  await clickBlocks(page)
   // A nota (aviso do Blockly) explica por quê; o arquivo não muda.
   await expect(klass.locator('.blocklyIconGroup')).toHaveCount(1)
   expect(await source()).toBe(typed)

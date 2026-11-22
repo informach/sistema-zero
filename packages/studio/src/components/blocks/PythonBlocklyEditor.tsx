@@ -333,7 +333,9 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
   const t = useT()
   const [program, setProgram] = useState<PythonProgramNavigationState>({ entries: [], scratch: 0 })
   // Reflect the actual open scope, including navigation from Ponte, undo and tutor.
-  const activeDefinition = program.entries.filter((entry) => entry.expanded).at(-1)?.id ?? ''
+  // A função (ou o chapéu) aberta agora: as áreas ficam sempre abertas e não contam.
+  const activeDefinition =
+    program.entries.filter((entry) => entry.expanded && !entry.area).at(-1)?.id ?? ''
   const [view, setView] = useState<View>({
     phase: 'loading',
     message: 'Preparando os blocos Python…',

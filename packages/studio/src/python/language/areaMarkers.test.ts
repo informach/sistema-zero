@@ -70,6 +70,17 @@ describe('comentários de área', () => {
     )
   })
 
+  test('o arquivo não fica começando com linha em branco depois que um comentário de área sai', () => {
+    // Organizar e desfazer: a função voltou para o Ao iniciar, e a separação ficou no topo.
+    const source = `\n${marker('start')}\nprint(1)\n${marker('molds')}\npular()\n`
+    expect(organize(source, ['start', 'start'])).toBe(`${marker('start')}\nprint(1)\npular()\n`)
+    // Depois do shebang, a linha em branco é do autor e fica.
+    const shebang = `#!/usr/bin/env python3\n\n${marker('molds')}\nprint(1)\n`
+    expect(organize(shebang, ['start'])).toBe(
+      `#!/usr/bin/env python3\n\n${marker('start')}\nprint(1)\n`,
+    )
+  })
+
   test('mantém o que está certo e tira o repetido, o da área errada e o do rodapé', () => {
     const source = [
       marker('start'),

@@ -65,9 +65,24 @@ export function planPythonAreaMarkers(
   const insertions: { offset: number; text: string }[] = []
   const markersIn = (start: number, end: number) =>
     markers.filter((token) => token.range.start >= start && token.range.start < end)
+  const blankLine = (line: { start: number; end: number }) =>
+    /^[\t \f]*$/.test(source.slice(line.start, line.end))
   const removeLine = (token: PythonToken) => {
     const line = lines.lineAt(token.range.start)
-    removals.push({ start: line.start, end: line.next, token: token.range.start })
+    let end = line.next
+    // A separação que vinha depois dele também sai quando sobraria no começo do arquivo ou
+    // grudada em outra linha em branco (organizar e desfazer não deixam buraco).
+    if (end < source.length) {
+      const after = lines.lineAt(end)
+      const before = line.start > 0 ? lines.lineAt(line.start - 1) : undefined
+      if (
+        blankLine(after) &&
+        after.next > end &&
+        (line.start <= header || !before || blankLine(before))
+      )
+        end = after.next
+    }
+    removals.push({ start: line.start, end, token: token.range.start })
   }
   let previousEnd = 0
   body.forEach((_, index) => {
@@ -105,6 +120,24 @@ export function planPythonAreaMarkers(
     previousEnd = range.end
   })
   for (const token of markersIn(previousEnd, source.length + 1)) removeLine(token)
+  // O arquivo não começa com linha em branco antes do primeiro comentário de área: é a sobra da
+  // separação de uma área que mudou (organizar e desfazer). Só no começo do arquivo, nunca depois
+  // de shebang ou codificação, e só quando o que vem depois é (ou vai ser) um comentário de área.
+  if (header === 0) {
+    let end = 0
+    while (end < source.length) {
+      const line = lines.lineAt(end)
+      if (line.next <= end || !/^[\t \f]*$/.test(source.slice(line.start, line.end))) break
+      end = line.next
+    }
+    const markerNext =
+      markers.some(
+        (token) =>
+          token.range.start === end &&
+          !removals.some((removal) => removal.token === token.range.start),
+      ) || insertions.some((insertion) => insertion.offset === end)
+    if (end > 0 && markerNext) removals.push({ start: 0, end, token: -1 })
+  }
   if (!removals.length && !insertions.length) return NONE
   // Uma remoção e uma inserção no mesmo lugar viram uma troca só.
   const byStart = new Map<number, PythonSourceEdit>()
@@ -125,5 +158,8 @@ export function planPythonAreaMarkers(
       })
   }
   const edits = [...byStart.values()].sort((a, b) => a.range.start - b.range.start)
-  return { edits, dropped: new Set(removals.map((removal) => removal.token)) }
+  return {
+    edits,
+    dropped: new Set(removals.map((removal) => removal.token).filter((token) => token >= 0)),
+  }
 }

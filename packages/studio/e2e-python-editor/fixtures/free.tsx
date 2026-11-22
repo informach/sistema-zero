@@ -9,10 +9,8 @@ import { type EditableStudioProject, isPythonProject } from '../../src/core/edit
 import * as Studio from '../../src/index'
 import { ProjectList } from '../../src/projects/ProjectList'
 import {
-  createPythonWorkspaceDraft,
   readPythonScratchWorkspace,
   readPythonWorkspaceDraft,
-  updatePythonWorkspaceDraft,
 } from '../../src/python/blocks/workspaceDraft'
 import { createStudioStores } from '../../src/state/studioStores'
 
@@ -22,7 +20,6 @@ export function createFreeProbe(root: Root) {
   let viewerId = ''
   let includePintaAsset = false
   let includeExamples = false
-  let legacyProject: EditableStudioProject | null = null
   function visualWorkspace() {
     const workspaces = Blockly.common
       .getAllWorkspaces()
@@ -164,56 +161,31 @@ export function createFreeProbe(root: Root) {
       return {
         pending: draft?.pending,
         baseSource: draft?.baseSource,
+        // As peças de rascunho (as áreas vazias também ficam no rascunho, mas não são peças).
         scratchIds:
-          scratch?.blocks?.blocks?.map((block: Blockly.serialization.blocks.State) => block.id) ??
-          [],
+          scratch?.blocks?.blocks
+            ?.filter(
+              (block: Blockly.serialization.blocks.State) => !block.type.startsWith('sz_py_area_'),
+            )
+            .map((block: Blockly.serialization.blocks.State) => block.id) ?? [],
         rootIds: draft?.rootIds,
         rootTypes: state?.blocks?.blocks?.map(
           (block: Blockly.serialization.blocks.State) => block.type,
         ),
       }
     },
-    /** Seed an actual pre-area cache, then reopen it through normal persistence/hydration. */
-    async legacyWorkspaceSnapshot() {
-      const project = currentProjectId
-        ? await Studio.createLocalPersistenceAdapter().load(currentProjectId)
-        : null
-      if (!project || !isPythonProject(project) || project.kind !== 'classic')
-        throw new Error('Expected Python classic')
+    /**
+     * O id da primeira linha da primeira área com linhas. Reaberto o projeto, o mesmo id prova que
+     * o rascunho salvo (com as áreas) voltou, e não uma projeção nova do código.
+     */
+    firstAreaLineId() {
       const workspace = Blockly.serialization.workspaces.save(visualWorkspace())
-      // A primeira área com linhas (as seis `sz_py_area_<tipo>` substituíram o Programa).
       const area = (workspace.blocks.blocks as Blockly.serialization.blocks.State[]).find(
         (block) => block.type.startsWith('sz_py_area_') && block.inputs?.CHILDREN?.block,
       )
-      const first = area?.inputs?.CHILDREN?.block
-      if (!first?.id) throw new Error('Expected a nonempty program')
-      workspace.blocks.blocks = [first]
-      const queue = [first]
-      while (queue.length) {
-        const block = queue.pop()!
-        delete block.collapsed
-        for (const connection of [
-          ...Object.values(block.inputs ?? {}),
-          ...(block.next ? [block.next] : []),
-        ]) {
-          if (connection.block) queue.push(connection.block)
-          if (connection.shadow) queue.push(connection.shadow)
-        }
-      }
-      const draft = {
-        ...createPythonWorkspaceDraft(project, 'main.py', workspace, [first.id]),
-        pending: false,
-      }
-      legacyProject = {
-        ...project,
-        blocksState: updatePythonWorkspaceDraft(project, 'main.py', draft),
-      }
-      return first.id
-    },
-    async saveLegacyWorkspace() {
-      if (!legacyProject) throw new Error('Capture the legacy workspace before closing')
-      await Studio.createLocalPersistenceAdapter().save(legacyProject)
-      legacyProject = null
+      const id = area?.inputs?.CHILDREN?.block?.id
+      if (!id) throw new Error('Expected a nonempty program')
+      return id
     },
     workspace() {
       const workspace = visualWorkspace()

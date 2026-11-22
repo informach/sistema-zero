@@ -38,6 +38,8 @@ export interface PythonProgramEntry {
   label: string
   depth: number
   expanded: boolean
+  /** Uma área do projeto (sempre aberta: não conta como a função aberta agora). */
+  area?: boolean
 }
 export interface PythonProgramNavigationState {
   entries: PythonProgramEntry[]
@@ -115,6 +117,7 @@ export function createPythonProgramNavigation(
         depth: 0,
         label: kind ? PYTHON_AREA_BY_KIND.get(kind)!.title : 'Área',
         expanded: !frame.isCollapsed(),
+        area: true,
       })
       visit(frame.getInputTargetBlock(PYTHON_AREA_INPUT), 1)
     }

@@ -7,6 +7,7 @@ import { afterEach, describe, expect, test } from 'bun:test'
 import { fileURLToPath } from 'node:url'
 import * as Blockly from 'blockly/core'
 import { executablePythonAreaFrames, pythonAreaFrames } from '../blocks/areaFrames'
+import { organizePythonWorkspace } from '../blocks/areaOrganize'
 import {
   analyzePythonModuleAreas,
   PYTHON_AREA_BY_KIND,
@@ -183,6 +184,22 @@ describe.skipIf(!PYTHON)('áreas do projeto no caminho do editor (CPython)', () 
     blockWith(opened.ws, 'sz_py_integer', 'NUMBER', '1').setFieldValue('2', 'NUMBER')
     const source = await commit(opened)
     expect(source.split(marker('start')).length - 1).toBe(1)
+  }, 30_000)
+
+  test('organizar e desfazer não deixam linha em branco no começo do arquivo', async () => {
+    const typed = 'print(1)\ndef pular():\n    pass\n'
+    const opened = await open(typed)
+    expect(organizePythonWorkspace(opened.ws, codecs).changed).toBe(true)
+    const organized = await commit(opened)
+    opened.ws.dispose()
+    // O desfazer: a função volta para depois do print, no Ao iniciar.
+    const again = await open(organized)
+    const definition = blockWith(again.ws, 'sz_py_def')
+    const print = blockWith(again.ws, 'sz_py_print')
+    definition.unplug(true)
+    print.nextConnection!.connect(definition.previousConnection!)
+    const undone = await commit(again)
+    expect(undone).toBe(`${marker('start')}\n${typed}`)
   }, 30_000)
 
   test('excluir a última área com linhas apaga o programa e deixa o rascunho de fora', async () => {
