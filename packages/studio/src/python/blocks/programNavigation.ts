@@ -2,6 +2,7 @@ import * as Blockly from 'blockly/core'
 import {
   orderedPythonAreaFrames,
   PYTHON_AREA_INPUT,
+  pushOverlappingPythonAreas,
   pythonAreaKindOf,
   pythonScratchRoots,
 } from './areaFrames'
@@ -159,6 +160,8 @@ export function createPythonProgramNavigation(
         }
       }
     }
+    // Uma função aberta pode ter feito a área crescer por cima de outra.
+    if (!workspace.isDragging()) pushOverlappingPythonAreas(workspace)
     publish()
   }
   async function reveal(id?: string, select = true) {

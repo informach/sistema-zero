@@ -416,3 +416,31 @@ test('a linha que não pode ir para a área dela fica no Ao iniciar, com nota e 
   await page.getByRole('menuitem', { name: 'Levar para 🧩 Meus moldes', exact: true }).click()
   await expect.poll(source).toMatch(new RegExp(`^${MOLDS}\nclass Nave:`))
 })
+
+test('a área que cresce ao abrir uma função empurra a vizinha, sem cobrir', async ({ page }) => {
+  await page.setViewportSize({ width: 1600, height: 1000 })
+  await page.goto('/')
+  await page.waitForFunction(() => !!globalThis.pythonBridgeProbe)
+  await page.evaluate(() => pythonBridgeProbe.create())
+  const typed =
+    'def placar():\n    print("um texto bem comprido para a função ficar larga quando abrir")\n\nprint(1)\n'
+  await page.evaluate((value) => pythonBridgeProbe.replaceSavedSource(value), typed)
+  await expect(jumpButton(page)).toBeVisible({ timeout: 20_000 })
+  // Arrumadas com a função FECHADA: as duas áreas ficam juntinhas na mesma fileira.
+  await clickBlocks(page, 'right')
+  await page.getByRole('menuitem', { name: 'Organizar blocos', exact: true }).click()
+  await goTo(page, 'Função placar')
+  const box = async (selector: string) => (await page.locator(selector).first().boundingBox())!
+  await expect
+    .poll(async () => {
+      const a = await box('.sz_py_area_molds')
+      const b = await box('.sz_py_area_start')
+      return (
+        a.x + a.width <= b.x ||
+        b.x + b.width <= a.x ||
+        a.y + a.height <= b.y ||
+        b.y + b.height <= a.y
+      )
+    })
+    .toBe(true)
+})

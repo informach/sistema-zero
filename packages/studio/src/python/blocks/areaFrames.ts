@@ -160,3 +160,43 @@ export function pythonAreaPositions(workspace: Blockly.Workspace) {
   }
   return positions
 }
+
+/**
+ * Área que cresceu (uma função aberta, um bloco a mais) e passou por cima de outra: a de depois,
+ * na ordem das fileiras, vai para a direita (mesma fileira) ou para baixo. Fora do desfazer (é
+ * arrumação da tela, não gesto da criança). Devolve se mexeu.
+ */
+export function pushOverlappingPythonAreas(workspace: Blockly.Workspace): boolean {
+  let frames: Map<PythonAreaKind, Blockly.Block>
+  try {
+    frames = pythonAreaFrames(workspace)
+  } catch {
+    return false
+  }
+  const ordered = PYTHON_AREA_LAYOUT_ROWS.flat()
+    .map((kind) => frames.get(kind))
+    .filter((frame): frame is Blockly.BlockSvg => frame instanceof Blockly.BlockSvg)
+  if (ordered.length < 2) return false
+  const undo = Blockly.Events.getRecordUndo()
+  Blockly.Events.setRecordUndo(false)
+  let moved = false
+  try {
+    for (let pass = 0; pass < ordered.length; pass++) {
+      let changed = false
+      for (let later = 1; later < ordered.length; later++)
+        for (let earlier = 0; earlier < later; earlier++) {
+          const a = ordered[earlier]!.getBoundingRectangle()
+          const b = ordered[later]!.getBoundingRectangle()
+          if (a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top)
+            continue
+          if (Math.abs(a.top - b.top) < GAP) ordered[later]!.moveBy(a.right + GAP - b.left, 0)
+          else ordered[later]!.moveBy(0, a.bottom + GAP - b.top)
+          changed = moved = true
+        }
+      if (!changed) break
+    }
+  } finally {
+    Blockly.Events.setRecordUndo(undo)
+  }
+  return moved
+}
