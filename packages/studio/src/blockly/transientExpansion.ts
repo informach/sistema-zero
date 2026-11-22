@@ -65,6 +65,20 @@ function forgetTouched(workspace: Blockly.Workspace, event: Blockly.Events.Abstr
   }
 }
 
+/**
+ * Um afastamento automático do Blockly (`moveBy(…, ['bump'])`: o corpo da função aberta passou
+ * por cima de uma pilha solta, que é afastada) enquanto há bloco aberto só para mostrar. O
+ * afastamento aparece na tela, mas não é gravado como mudança de layout: o projeto salvo continua o
+ * de antes, com a função recolhida. Na próxima gravação de verdade as posições da tela entram.
+ */
+export function isBumpWhileShowing(
+  workspace: Blockly.Workspace,
+  event: Blockly.Events.Abstract,
+): boolean {
+  if (!(shown.get(workspace)?.size ?? 0)) return false
+  return event instanceof Blockly.Events.BlockMove && (event.reason ?? []).includes('bump')
+}
+
 /** O bloco foi aberto só para mostrar (e a criança ainda não mexeu nele)? */
 export function isShownOnly(block: Blockly.Block): boolean {
   return shown.get(block.workspace)?.has(block.id) ?? false
