@@ -1,5 +1,49 @@
 # @sistemazero/studio
 
+## Áreas do projeto no Python (22/11/2026)
+
+O editor de blocos do Python tem as seis áreas do JavaScript (📦 🎛️ 🧩 ⚙️ ⚡ 🔁), que no Python
+são TRECHOS do arquivo na ordem em que ele roda. Proposta aprovada e desenho técnico em
+[`docs/plans/2026-11-22-python-areas-do-projeto.md`](../../docs/plans/2026-11-22-python-areas-do-projeto.md)
+(substitui a área única "Programa", `sz_py_program`, que saiu). O que não pode regredir:
+
+- **O código manda.** A área de cada linha vem do tipo da linha (`python/blocks/areas.ts`); o
+  comentário `# 📦 Bibliotecas` etc. só acompanha, e quem o escreve e apaga é a fase 2 da
+  transação visual (`python/language/areaMarkers.ts`). Comentário de área = linha inteira, coluna
+  0, texto exato (espaço no fim não conta), nunca acima de shebang ou da codificação
+  (`pythonModuleHeaderEnd`, PEP 263, linha 1 ou 2). As proteções de comentário só aceitam soltar
+  um comentário de área (`droppedComments`).
+- ⚠️⚠️ **Organizar nunca muda o programa.** Duas linhas com efeito nunca trocam de lugar; só
+  troca quem só cria nomes e não pode dar erro, e o registro de tecla/relógio. Mexeu no modelo de
+  efeitos de `areas.ts`? Rode `areas.differential.test.ts` com Python 3.13+ no PATH (sem ele a
+  prova é PULADA com aviso, e verde não diz nada; o `analyzer.py` recusa tudo num 3.12). O 1º
+  modelo mudava programas reais (revisão de 22/11, M1 a M12) e passou em todos os testes de tabela.
+- **Todo programa cabe**: o ⚙️ Ao iniciar aceita qualquer bloco; a linha que não pode ir para a
+  área dela fica onde está, com a nota `python-area` e "Levar para <área>". O bloco que liga ou
+  desliga o jogo fica no fim, e tudo depois do laço do jogo é terminal.
+- **Guardas** (`areaGuards.ts`): ignoram eventos com `recordUndo` desligado e as cargas; o
+  conserto entra no MESMO grupo de eventos do gesto (um Ctrl+Z desfaz os dois). ⚠️ No workspace
+  headless não há `isDragging` nem `moveTo` (são do `WorkspaceSvg`/`BlockSvg`): o `next build`
+  do Kids reprovou por isso. ⚠️ Os eventos do Blockly headless chegam na tarefa seguinte; o
+  teste espera um tique.
+- **Layout fora do desfazer**: `pushOverlappingPythonAreas` (a área que cresce empurra a
+  vizinha) roda com `Events.setRecordUndo(false)` e só fora do arraste.
+- **Organizar sozinho só depois de carga vinda do código** (abrir, Ponte, modo Código), no
+  primeiro `pointerup`/`focusin` nos blocos e só para quem edita; nunca enquanto a criança digita.
+  O `sz_organize` do JavaScript some quando o workspace tem `__szOrganizePython`.
+- **Rascunhos**: áreas vazias e blocos soltos são rascunho e sobrevivem à Ponte; rascunho com a
+  área antiga `sz_py_program` é descartado (não há alunos de Python).
+- ⚠️ **Os exemplos do repositório só mudam junto com os recibos novos**: o catálogo entra no
+  `codecOrderSha256` e o `check:python-visual-examples` do CI reprova. Por isso o bloco novo do
+  Turtle (`sz_py_turtle_every`, lote 5) espera a requalificação. Pipeline: fixtures de edição
+  (`scripts/python/example-edit-fixtures.ts --check`) → `organize-examples.ts --out <pasta>` →
+  `requalify-gallery.ts` → `gen:*` → `check:*`.
+- e2e (`e2e-python-editor/program-areas.spec.ts`, `workspace-layout.spec.ts`, job
+  `python-browser-isolation`): clicar nos blocos procura um ponto LIVRE do
+  `blocklyMainBackground` (num ponto fixo a paleta intercepta) e esperar a gravação pede 6 s sem
+  mudança; as fixtures contam rascunho sem os `sz_py_area_*`. No Windows o servidor de provas
+  exige Bun 1.4.3.
+
 ## "Mostrar o bloco" em projeto grande: corpos escondidos e abertura só para mostrar (22/11/2026)
 
 Detalhe e números em `docs/estudio-evolucao/classico-em-escala.md` (seção do lote 2 da conclusão).

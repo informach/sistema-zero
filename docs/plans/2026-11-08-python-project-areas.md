@@ -1,5 +1,10 @@
 # Proposta: áreas de projeto para Python
 
+> **Substituído em 22/11/2026** por [`2026-11-22-python-areas-do-projeto.md`](2026-11-22-python-areas-do-projeto.md):
+> a área única "Programa" deu lugar às seis áreas do projeto, e a regra "seções nunca
+> reordenam" deu lugar a "o Estúdio reorganiza só o que não muda o programa". O texto abaixo
+> fica como histórico.
+
 Status: implementação local em `fix/python-classic-performance-20261108`, autorizada em 08/11/2026. Qualificação e medições em `docs/qa/2026-11-08-python-classic-performance.md`.
 
 Revisão de 08/11: os dois achados de rascunhos foram corrigidos, com armazenamento independente da fonte e navegação de funções/classes externas; detalhes em `docs/qa/2026-11-08-python-program-areas-review.md`. O usuário esclareceu que não há alunos usando Python: compatibilidade com projetos antigos não é requisito. Os exemplos prontos da galeria devem nascer dentro de Programa; todos os 104 exemplos clássicos foram qualificados, e a apresentação inicial agora é salva automaticamente.
