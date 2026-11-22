@@ -728,3 +728,56 @@ test('projeto V4 válido acima de 16MiB privados mantém as fontes editáveis e 
   const files = unzipSync(new Uint8Array(await output.blob.arrayBuffer()))
   for (const module of base.extraFiles) expect(strFromU8(files[module.name]!)).toBe(module.content)
 })
+
+test('reabre a autoria regional e cria só um fork completo do restauro V4 posterior', async () => {
+  const { IDBKeyRange: Range } = await import('fake-indexeddb')
+  const { promoteLocalRegionalProject, preserveLegacyRegionalEdit, legacyProjectKeys } =
+    await import('../project-migrations/localRegionalAuthority')
+  const { readRetainedManifest, readRetainedParts } = await import('./retainedProjectStore')
+  const { readValue, writeInOneTransaction } = await import('./idbTransaction')
+  const { listProjectSummariesLight } = await import('./projectListStorage')
+  const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'IDBKeyRange')
+  Object.defineProperty(globalThis, 'IDBKeyRange', { value: Range, configurable: true })
+  try {
+    const scope = privateRegionalProjectScope('fork-da-aba-antiga'),
+      id = 'original'
+    const base = { ...createEmptyProject(id, 'Oficina'), blocksState, assets: [image] }
+    await persistProject(base, {}, scope)
+    const keys = legacyProjectKeys(id)
+    await writeInOneTransaction(scope.store, { puts: [[keys.game, { visita: '1' }]] })
+    const expected = (await readValue(scope.store, keys.head)) as { token: string }
+    const head = await promoteLocalRegionalProject({
+      scope,
+      id,
+      expectedV4Token: expected.token,
+      assets: [{ ...image, ...after }],
+    })
+    const previous = await readRetainedParts(scope, head)
+    expect((await preserveLegacyRegionalEdit(scope, head)).fork).toBeUndefined()
+    const alt = structuredClone(base)
+    alt.name = 'Outro programa'
+    alt.files['script.js'] = 'console.log("revisão alternativa")'
+    alt.blocksState.blocks.blocks[0]!.id = 'outro-bloco'
+    await restoreProjectFromCloud(alt, { expectedId: id, namespace: scope.namespace })
+    await writeInOneTransaction(scope.store, { puts: [[keys.game, { visita: '9' }]] })
+    const { fork } = await preserveLegacyRegionalEdit(scope, head)
+    expect(fork).toBeString()
+    const other = (await readRetainedManifest(scope, fork!))!
+    const saved = await readRetainedParts(scope, other)
+    expect(saved.files).toMatchObject({ id: fork, files: { 'script.js': alt.files['script.js'] } })
+    expect(saved.blocks).toStrictEqual({ id: fork, blocksState: alt.blocksState })
+    expect(saved.assets).toStrictEqual({ id: fork, assets: base.assets })
+    expect(saved.game).toStrictEqual({ visita: '9' })
+    expect((await preserveLegacyRegionalEdit(scope, head)).fork).toBe(fork)
+    expect((await listProjectSummariesLight(scope)).map((s) => s.id).sort()).toEqual(
+      [id, fork!].sort(),
+    )
+    await discardImportedProjectSnapshot(id, { namespace: scope.namespace })
+    expect((await preserveLegacyRegionalEdit(scope, head)).fork).toBeUndefined()
+    expect(await readRetainedParts(scope, head)).toStrictEqual(previous)
+    expect(await readRetainedParts(scope, other)).toStrictEqual(saved)
+  } finally {
+    if (descriptor) Object.defineProperty(globalThis, 'IDBKeyRange', descriptor)
+    else Reflect.deleteProperty(globalThis, 'IDBKeyRange')
+  }
+})

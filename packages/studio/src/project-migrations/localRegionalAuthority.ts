@@ -32,7 +32,12 @@ import {
   RETAINED_PARTS,
   type RetainedPart,
 } from '../state/retainedProjectParts'
-import { commitRetainedProject } from '../state/retainedProjectStore'
+import {
+  commitRetainedProject,
+  type RetainedManifest,
+  readRetainedManifest,
+  retainedProjectKey,
+} from '../state/retainedProjectStore'
 import { hasSynchronousExitJournal } from '../state/synchronousExitJournalProbe'
 import { localSnapshotsEqual } from './localTransaction'
 
@@ -147,7 +152,7 @@ export async function promoteLocalRegionalProject(options: {
   )
     pending()
   const next = await prepareRetainedParts(values)
-  const origin = await sha256Hex(JSON.stringify(next.parts))
+  const origin = await authoredOrigin(next.parts)
   if (replacement !== undefined) {
     const updated = await prepareRetainedParts({ assets: candidate.assets })
     next.parts.assets = updated.parts.assets!
@@ -165,4 +170,83 @@ export async function promoteLocalRegionalProject(options: {
       ready?.() !== false &&
       !hasSynchronousExitJournal(scope.exitJournalStorage, scope.identity, id),
   })
+}
+
+async function authoredOrigin(parts: Awaited<ReturnType<typeof prepareRetainedParts>>['parts']) {
+  // A freshly bound legacy head is evidence for CAS. It is not itself an authored edit.
+  const { head: _head, ...authored } = parts
+  return sha256Hex(JSON.stringify(authored))
+}
+export async function preserveLegacyRegionalEdit(
+  scope: ProjectStorageScope,
+  parent: RetainedManifest,
+) {
+  const { id } = parent
+  const { values, guards } = await readLegacyRegionalSource(scope, id)
+  const dataParts = [
+    'meta',
+    'files',
+    'state',
+    'blocks',
+    'assets',
+    'thumb',
+    'game',
+    'applications',
+  ] as const
+  if (
+    !dataParts.some((key) => values[key] !== undefined) &&
+    (values.head === undefined || (isLocalHead(values.head) && values.head.deleted))
+  )
+    return { guards }
+  const raw = classicSource(id, values)
+  const captured = await prepareRetainedParts(values)
+  const origin = await authoredOrigin(captured.parts)
+  // The original private measurement revision included the legacy CAS token in its origin.
+  if (
+    origin === parent.origin ||
+    (await sha256Hex(JSON.stringify(captured.parts))) === parent.origin
+  )
+    return { guards }
+  const scopeMarker = await sha256Hex(JSON.stringify([id, origin]))
+  const targetId = `recuperado-${id.slice(0, 28)}-${scopeMarker.slice(0, 24)}`
+  const already = await readRetainedManifest(scope, targetId)
+  if (already) {
+    if (already.origin !== scopeMarker) pending()
+    return { guards, fork: targetId }
+  }
+  const dest = await readLegacyRegionalSource(scope, targetId)
+  if (Object.keys(dest.values).length) pending()
+  const recovered = await prepareEditableStudioProject(raw, { [PRIVATE_REGIONAL_PROJECT]: scope })
+  if (!recovered) pending()
+  const fork: SourceValues = { ...values }
+  for (const key of ['meta', 'files', 'state', 'blocks', 'assets', 'thumb'] as const) {
+    const value = values[key]
+    if (isDocumentRecord(value)) fork[key] = { ...value, id: targetId }
+  }
+  if (!isDocumentRecord(fork.meta)) pending()
+  fork.meta.name = `${recovered.name.slice(0, 175)} (edição recuperada)`
+  delete fork.meta.publication
+  const target = await prepareRetainedParts(fork)
+  const noDraft = (projectId: string) => {
+    const prefix = projectRecoveryKey(projectId, '')
+    return IDBKeyRange.bound(prefix, prefix + '\uffff')
+  }
+  try {
+    await commitRetainedProject(scope, {
+      id: targetId,
+      expectedToken: null,
+      origin: scopeMarker,
+      candidate: target,
+      source: [...guards, ...dest.guards, [retainedProjectKey(id), JSON.stringify(parent)]],
+      absent: [noDraft(id), noDraft(targetId)],
+      ready: () =>
+        !hasSynchronousExitJournal(scope.exitJournalStorage, scope.identity, id) &&
+        !hasSynchronousExitJournal(scope.exitJournalStorage, scope.identity, targetId),
+    })
+  } catch (error) {
+    if (!(error instanceof ProjectWriteConflict)) throw error
+    const committed = await readRetainedManifest(scope, targetId)
+    if (committed?.origin !== scopeMarker) throw error
+  }
+  return { guards, fork: targetId }
 }
