@@ -12,8 +12,8 @@
     },
     "codecId": "sz_py_integer",
     "field": "NUMBER",
-    "before": "300",
-    "after": "310"
+    "before": "364",
+    "after": "374"
   },
   {
     "label": "gravidade",

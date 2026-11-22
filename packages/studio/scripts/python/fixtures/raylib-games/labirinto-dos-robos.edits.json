@@ -1,0 +1,34 @@
+[
+  {
+    "label": "altura da parede",
+    "path": {
+      "body": 5,
+      "inputs": [
+        {
+          "name": "VALUE",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_integer",
+    "field": "NUMBER",
+    "before": "3",
+    "after": "4"
+  },
+  {
+    "label": "velocidade",
+    "path": {
+      "body": 7,
+      "inputs": [
+        {
+          "name": "VALUE",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_integer",
+    "field": "NUMBER",
+    "before": "4",
+    "after": "5"
+  }
+]
