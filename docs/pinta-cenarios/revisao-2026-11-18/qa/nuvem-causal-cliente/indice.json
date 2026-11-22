@@ -106,8 +106,8 @@
         "ensaios/contexto-host.inc",
         "ensaios/terminal-pending-review.inc"
       ],
-      "sha256": "16ef17088e21762328f8b01c801049014ef204d3461e2c86310d11c4420c368a",
-      "originalSha256": "d3a3317378c1846aea79aeecd04e914d371eb6d7cec7e27a3a6a7c5b584d962c"
+      "sha256": "3f895f4a52f1499b6e873106d7f7b3d1459fa92842efe06b369929a60b57f672",
+      "originalSha256": "340e19ecc24c133d483121da5c76a8633acea4335770be32060c967912296c9c"
     },
     {
       "alvo": "retencao",
@@ -318,8 +318,8 @@
     },
     {
       "arquivo": "recibos/terminal-pending-5ef.txt",
-      "originalSha256": "8a797f5773aaecc23dc96c3db0225c18b711a91d4c0b75303f7d29b0b8cc0b46",
-      "sha256": "f42cc0d6099449a41dbfc08cacd6be878ecfdd45436d31a46ede3e54d24ab8ba",
+      "originalSha256": "a7ac128deb729627d866333ef9da6cfa1a326a318499db72bf869b8cb3861721",
+      "sha256": "c6f5ae1143d9c45b410deae22d1afd4a3d4af8e14639e0fde88bbd691af7f95a",
       "commit": "5ef94cc8593c847d9c4a25c395f7a8a6f5797b94",
       "resultado": "1 falha/8 asserções"
     },

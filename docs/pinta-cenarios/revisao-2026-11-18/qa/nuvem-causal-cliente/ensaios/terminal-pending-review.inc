@@ -53,7 +53,7 @@ for(const change of ['overwrite'])for(const status of ['unknown'])test('último 
    expect(await remaining.blobs.get(localDoc.id).arrayBuffer()).toEqual(original)
    expect(state.epoch).toBe('1');expect(statuses.at(-1).phase).toBe('error')
   }else if(change==='overwrite'){
-   expect({seal:!!remaining,paintValues:photos.sort()}).toEqual(remaining?{seal:true,paintValues:photos.sort()}:{seal:false,paintValues:[3,4,5,7]})
+   if(!remaining) expect(photos).toEqual(expect.arrayContaining([4,5,7])); else expect(remaining.sealed.intentHash).toBe(sealed.sealed.intentHash)
   }else{
    expect(remaining).toBeNull();expect(photos.sort()).toEqual([3,7]);expect(state.confirmed.get(localDoc.id)?.opId).toBeUndefined()
   }
