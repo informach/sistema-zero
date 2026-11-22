@@ -27,10 +27,10 @@ export async function withClosedPintaEditors(
   if (!ids.length) return write()
   if (typeof navigator === 'undefined' || !navigator.locks) return false
   const lockKeys = [...new Set(ids)].sort().map((id) => lockName(namespace, id))
-  const acquire = (index: number): Promise<boolean> => {
+  const acquire = async (index: number): Promise<boolean> => {
     const key = lockKeys[index]
     if (!key) return write()
-    return navigator.locks.request(key, { ifAvailable: true }, async (lock) =>
+    return await navigator.locks.request(key, { ifAvailable: true }, async (lock) =>
       lock ? await acquire(index + 1) : false,
     )
   }

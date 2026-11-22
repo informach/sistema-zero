@@ -64,12 +64,14 @@ import {
   type PintaCausalPending,
   PintaCausalPullDeferred,
   type PintaCausalSealed,
+  type PintaLocalUnbasedDraft,
   readLocalCausalState,
   readLocalCausalUpload,
   rememberLocalCausalProtocol,
   renewLocalCausalUpload,
   sealLocalCausalDraft,
   stageLocalCausalDraft,
+  stageLocalUnbasedDraft,
 } from './localCausalOutbox'
 import type { LocalStorageCodec } from './localChunkStorage'
 
@@ -448,6 +450,7 @@ export interface PintaCausalLocalPort<Asset extends PintaMemoryAsset = PintaAsse
   rememberProtocol(): Promise<void>
   pullImpact(pull: PintaCausalLocalPull<Asset>): Promise<{ ids: string[]; blocked: boolean }>
   applyPull(pull: PintaCausalLocalPull<Asset>, ready: () => boolean): Promise<boolean>
+  stageUnbased(draft: PintaLocalUnbasedDraft<Asset>): Promise<void>
   stage(draft: PintaCausalLocalDraft<Asset>): Promise<PintaCausalPending>
   prepare(opId: string): Promise<{ pending: PintaCausalPending; assets: Asset[] } | null>
   seal(
@@ -630,16 +633,14 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
         const before = localCausalBytes(records)
         rememberLocalCausalProtocol(records)
         checkCombined(records, resolveLocalRecords(records, false), before)
-      }, causalInventory),
+      }),
     pullImpact: (pull) =>
-      transaction(
-        (records) =>
-          localCausalPullImpact(
-            pull,
-            readLocalCausalState(records),
-            resolveLocalRecords(records, false),
-          ),
-        causalInventory,
+      transaction((records) =>
+        localCausalPullImpact(
+          pull,
+          readLocalCausalState(records),
+          resolveLocalRecords(records, false),
+        ),
       ),
     applyPull: (pull, ready) =>
       runSerializedWrite(storeHandle, async () => {
@@ -651,7 +652,7 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
           )
           if (applied) checkCombined(records, applied, before)
           return applied
-        }, causalInventory).catch((error) => {
+        }).catch((error) => {
           if (error instanceof PintaCausalPullDeferred) return null
           throw error
         })
@@ -661,6 +662,24 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
         accept(snapshot, ids)
         if (ids.length) notifyOtherTabs(storeHandle, dbName, ids)
         return true
+      }),
+    stageUnbased: (draft) =>
+      runSerializedWrite(storeHandle, async () => {
+        const snapshot = await transaction((records) => {
+          const before = localCausalBytes(records)
+          const written = stageLocalUnbasedDraft(records, draft, () =>
+            applyAssetTransitions(records, draft.transitions, draft.requireKnownInventory === true),
+          )
+          checkCombined(records, written, before)
+          return written
+        })
+        const ids = draft.transitions.map(({ id }) => id)
+        backupSizeCache.invalidate(ids)
+        for (const { id, after } of draft.transitions)
+          if (after)
+            recordPintaLocalOrigin(after, dbName, snapshot.documents.get(id)?.revision ?? null)
+        accept(snapshot, ids)
+        notifyOtherTabs(storeHandle, dbName, ids)
       }),
     stage: (draft) =>
       runSerializedWrite(storeHandle, async () => {

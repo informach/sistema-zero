@@ -26,6 +26,7 @@ export interface PintaCausalRemapBase {
   snapshot: PintaCloudSnapshot
   source: PintaAsset
   entries: ReadonlyMap<string, PintaCausalEntry>
+  verifiedConsumers: ReadonlySet<string>
   assets: readonly PintaAsset[]
 }
 
@@ -40,6 +41,7 @@ export async function preparePintaCausalRemap(options: {
   const { source, snapshot, localState, cloud, signal } = options
   const entries = new Map(snapshot.entries.map((entry) => [entry.itemId, entry]))
   const catalog = new Map(options.local.map((asset) => [asset.id, asset]))
+  const verifiedConsumers = new Set<string>()
   let sourceBase = catalog.get(source.id) ?? source
   const budget = { remaining: MAX_BACKUP_FILE_BYTES }
   for (const entry of snapshot.entries) {
@@ -49,6 +51,8 @@ export async function preparePintaCausalRemap(options: {
     const local = catalog.get(entry.itemId)
     if (
       local &&
+      entry.coverage === 'certified' &&
+      entry.sha256 !== null &&
       known?.revision === entry.revision &&
       known.sha256 === entry.sha256 &&
       known.localRevision === pintaLocalRevisionOf(local)
@@ -57,12 +61,20 @@ export async function preparePintaCausalRemap(options: {
         if (pintaLocalRevisionOf(local) !== pintaLocalRevisionOf(source))
           throw Error('A folha aberta mudou desde a sua última leitura.')
         sourceBase = local
-      }
+      } else verifiedConsumers.add(entry.itemId)
       continue
     }
     const archived = await cloud.download(entry, snapshot.epoch, signal)
     const { asset, warnings } = assetFromJson(await readPintaCausalJson(archived, signal, budget))
-    if (!asset || warnings.length || asset.id !== entry.itemId || asset.kind !== entry.kind)
+    if (
+      entry.coverage !== 'certified' ||
+      entry.sha256 === null ||
+      !asset ||
+      warnings.length ||
+      asset.id !== entry.itemId ||
+      asset.kind !== entry.kind ||
+      asset.name !== entry.name
+    )
       throw Error('Não consegui conferir um dos mapas que pode usar estas peças.')
     if (local && !pintaValuesEqual(local, asset))
       throw Error('Uma versão local ainda precisa ser guardada antes de mudar as peças.')
@@ -70,11 +82,11 @@ export async function preparePintaCausalRemap(options: {
       if (!local || pintaLocalRevisionOf(local) !== pintaLocalRevisionOf(source))
         throw Error('A folha aberta mudou desde a sua última leitura.')
       sourceBase = local
-    }
+    } else verifiedConsumers.add(entry.itemId)
     catalog.set(asset.id, local ?? asset)
   }
   await cloud.verifyEpoch(snapshot.epoch, signal)
-  return { snapshot, source: sourceBase, entries, assets: [...catalog.values()] }
+  return { snapshot, source: sourceBase, entries, verifiedConsumers, assets: [...catalog.values()] }
 }
 
 function slotMask(indices: readonly number[]): string {
@@ -219,6 +231,7 @@ export async function stagePintaCausalWrite(options: {
     }
   }
   const localRevs = new Map(bases.map((base) => [base.id, base.beforeRevision]))
+  const originals = new Map(remapBase?.assets.map((asset) => [asset.id, asset]))
   for (const base of bases) {
     const after = output.get(base.id) ?? null
     const prepared = remapBase?.entries.get(base.id)
@@ -256,6 +269,15 @@ export async function stagePintaCausalWrite(options: {
         )
       } else operation = pending?.operation ?? { type: 'update' }
       if (authoredIds.has(after.id)) {
+        const original =
+          base.id !== root?.id && remapBase?.verifiedConsumers.has(base.id)
+            ? originals.get(base.id)
+            : undefined
+        const plannedReferences = new Set(
+          original && remapBase
+            ? observePintaReferences(original, remapBase.assets).map(({ id }) => id)
+            : [],
+        )
         for (const ref of observePintaReferences(after, catalog)) {
           if (output.has(ref.id)) {
             const targetBefore = localRevs.get(ref.id)
@@ -268,8 +290,18 @@ export async function stagePintaCausalWrite(options: {
             readSet.push({ source: 'unit', consumerId: after.id, targetId: ref.id })
             continue
           }
-          // Linked maps were changed by the remapper, which only reads the sheet in this unit.
-          if (remapBase && root?.id !== after.id) continue
+          const pinned = plannedReferences.has(ref.id) ? remapBase?.entries.get(ref.id) : undefined
+          if (pinned?.coverage === 'certified' && pinned.sha256) {
+            readSet.push({
+              source: 'snapshot',
+              consumerId: after.id,
+              targetId: ref.id,
+              revision: pinned.revision,
+              sha256: pinned.sha256,
+              ...(pinned.layoutRevision ? { layoutRevision: pinned.layoutRevision } : {}),
+            })
+            continue
+          }
           const sent = observedPredecessor(ref.id, observed.get(ref.id))
           if (sent?.sha256) {
             readSet.push({

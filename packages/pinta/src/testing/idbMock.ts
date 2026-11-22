@@ -5,6 +5,7 @@
  * toca persistência importa ESTE módulo antes de importar o código sob teste.
  */
 import { mock } from 'bun:test'
+import { isLocalAssetInventoryKey } from '../state/assetAuthorityKeys'
 
 type KV = Map<IDBValidKey, unknown>
 
@@ -132,24 +133,10 @@ mock.module('../state/assetAuthorityDb', () => ({
       stats.atomic++
       const records = new Map<string, unknown>()
       const source = structuredClone(kv)
-      inspectKeys?.(
-        [...source.keys()].filter(
-          (key): key is string =>
-            typeof key === 'string' &&
-            (key.startsWith('pinta:asset:') || key.startsWith('pinta:local:')) &&
-            !key.startsWith('pinta:local:chunk:'),
-        ),
-      )
+      inspectKeys?.([...source.keys()].filter(isLocalAssetInventoryKey))
       const visited = new Set<string>()
       while (true) {
-        const keys =
-          select?.(records) ??
-          [...source.keys()].filter(
-            (key): key is string =>
-              typeof key === 'string' &&
-              (key.startsWith('pinta:asset:') || key.startsWith('pinta:local:')) &&
-              !key.startsWith('pinta:local:chunk:'),
-          )
+        const keys = select?.(records) ?? [...source.keys()].filter(isLocalAssetInventoryKey)
         const pending = keys.filter((key) => !visited.has(key))
         if (!pending.length) break
         for (const key of pending) {

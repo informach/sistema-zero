@@ -20,7 +20,7 @@ export async function discoverPintaCausalSnapshot(options: {
   if (snapshot === null) {
     const state = await local.inspect()
     signal.throwIfAborted()
-    if (state.protocolKnown || state.sealed || state.pending.length > 0)
+    if (state.protocolKnown || state.unbased || state.sealed || state.pending.length > 0)
       throw new PintaCausalRequestError(409, 'protocol-required')
     return null
   }

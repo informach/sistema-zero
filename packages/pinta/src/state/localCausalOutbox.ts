@@ -18,9 +18,10 @@ import type { PintaMemoryAsset } from '../core/assetMemory'
 import { PintaLocalStorageError } from '../core/localStorageErrors'
 import { isTilesetKind, pintaAssetDependencyIds } from '../core/project'
 import { pintaDoorDependencyIds, SceneMapClosureError } from '../core/sceneMapClosure'
+import { PINTA_CAUSAL_OUTBOX_KEY } from './assetAuthorityKeys'
 import type { LocalAssetTransition, LocalSnapshot } from './localAssetAuthority'
 
-export const PINTA_CAUSAL_OUTBOX_KEY = 'pinta:sync:causal'
+export { PINTA_CAUSAL_OUTBOX_KEY } from './assetAuthorityKeys'
 export const PINTA_CAUSAL_BLOBS_KEY = 'pinta:sync:sealed-blobs'
 
 interface PintaCausalDraftMember {
@@ -50,6 +51,24 @@ export interface PintaCausalLocalDraft<Asset extends PintaMemoryAsset> {
   /** Exact queued preparations this draft supersedes. Every member must follow. */
   replaces?: readonly { opId: string; preparation: string }[]
   requireKnownInventory?: boolean
+}
+
+interface PintaLocalUnbasedRead {
+  consumerId: string
+  targetId: string
+  localRevision: string | null
+}
+
+export interface PintaLocalUnbasedDraft<Asset extends PintaMemoryAsset> {
+  transitions: readonly LocalAssetTransition<Asset>[]
+  readSet: readonly PintaLocalUnbasedRead[]
+  requireKnownInventory?: boolean
+}
+
+interface PintaLocalUnbased {
+  opId: string
+  members: readonly { itemId: string; localRevision: string; deleted: boolean }[]
+  readSet: readonly PintaLocalUnbasedRead[]
 }
 
 export interface PintaCausalPendingMember extends PintaCausalDraftMember {
@@ -90,7 +109,6 @@ export interface PintaCausalLocalPull<Asset extends PintaMemoryAsset> {
   coveredIds?: readonly string[]
   transitions: readonly (LocalAssetTransition<Asset> & {
     remote: Pick<PintaCausalConfirmed, 'revision' | 'sha256' | 'layoutRevision'> | null
-    /** An exact native revision authenticated before this client started using the outbox. */
   })[]
 }
 
@@ -102,6 +120,7 @@ export interface LocalCausalState {
   epoch: string | null
   /** A complete read epoch followed by this device's consecutive confirmed writes. */
   writeEpoch?: string
+  unbased?: PintaLocalUnbased
   pending: PintaCausalPending[]
   sealed: PintaCausalSealed | null
   confirmed: Map<string, PintaCausalConfirmed>
@@ -246,6 +265,48 @@ function confirmedState(value: unknown): value is Map<string, PintaCausalConfirm
   return true
 }
 
+function unbasedState(value: unknown): value is PintaLocalUnbased {
+  if (
+    !object(value) ||
+    !pintaCausalOpIdSchema.safeParse(value.opId).success ||
+    !Array.isArray(value.members) ||
+    value.members.length === 0 ||
+    value.members.length > PINTA_CAUSAL_LIMITS.members ||
+    !Array.isArray(value.readSet) ||
+    value.readSet.length > PINTA_CAUSAL_LIMITS.readEdges
+  )
+    return false
+  const memberIds = new Set<string>()
+  for (const member of value.members) {
+    if (
+      !object(member) ||
+      typeof member.itemId !== 'string' ||
+      !pintaCausalItemIdSchema.safeParse(member.itemId).success ||
+      memberIds.has(member.itemId) ||
+      !localRevision(member.localRevision) ||
+      typeof member.deleted !== 'boolean'
+    )
+      return false
+    memberIds.add(member.itemId)
+  }
+  const edges = new Set<string>()
+  for (const edge of value.readSet) {
+    if (
+      !object(edge) ||
+      typeof edge.consumerId !== 'string' ||
+      !memberIds.has(edge.consumerId) ||
+      typeof edge.targetId !== 'string' ||
+      !pintaCausalItemIdSchema.safeParse(edge.targetId).success ||
+      (edge.localRevision !== null && !localRevision(edge.localRevision))
+    )
+      return false
+    const key = `${edge.consumerId}\u0000${edge.targetId}`
+    if (edges.has(key)) return false
+    edges.add(key)
+  }
+  return true
+}
+
 export function readLocalCausalState(records: ReadonlyMap<string, unknown>): LocalCausalState {
   const value = records.get(PINTA_CAUSAL_OUTBOX_KEY)
   if (value === undefined)
@@ -264,6 +325,7 @@ export function readLocalCausalState(records: ReadonlyMap<string, unknown>): Loc
     (value.epoch != null && !pintaCausalEpochSchema.safeParse(value.epoch).success) ||
     (value.writeEpoch !== undefined &&
       !pintaCausalEpochSchema.safeParse(value.writeEpoch).success) ||
+    (value.unbased !== undefined && !unbasedState(value.unbased)) ||
     !Array.isArray(value.pending) ||
     value.pending.length > PINTA_CAUSAL_LIMITS.members ||
     !value.pending.every(pendingState) ||
@@ -286,17 +348,62 @@ export function readLocalCausalState(records: ReadonlyMap<string, unknown>): Loc
     protocolKnown: value.protocolKnown === true,
     epoch: typeof value.epoch === 'string' ? value.epoch : null,
     ...(typeof value.writeEpoch === 'string' ? { writeEpoch: value.writeEpoch } : {}),
+    ...(unbasedState(value.unbased) ? { unbased: value.unbased } : {}),
     pending: value.pending,
     sealed: value.sealed,
     confirmed: value.confirmed,
   }
 }
 
-export function ownsLocalCausalMember(state: LocalCausalState, id: string): boolean {
+export function ownsLocalCausalMember(
+  state: LocalCausalState,
+  id: string,
+  beforeBasis = true,
+): boolean {
   return (
+    (beforeBasis && (state.unbased?.members.some((member) => member.itemId === id) ?? false)) ||
     state.pending.some((unit) => unit.members.some((member) => member.itemId === id)) ||
     (state.sealed?.local.members.some((member) => member.itemId === id) ?? false)
   )
+}
+
+export function stageLocalUnbasedDraft<Asset extends PintaMemoryAsset>(
+  records: Map<string, unknown>,
+  draft: PintaLocalUnbasedDraft<Asset>,
+  write: () => LocalSnapshot<Asset>,
+): LocalSnapshot<Asset> {
+  const state = readLocalCausalState(records)
+  if (
+    state.epoch !== null ||
+    state.writeEpoch !== undefined ||
+    draft.transitions.some(({ id }) => ownsLocalCausalMember(state, id, false))
+  )
+    invalid()
+  const snapshot = write()
+  const updated = new Set(draft.transitions.map(({ id }) => id))
+  const members = [...(state.unbased?.members.filter(({ itemId }) => !updated.has(itemId)) ?? [])]
+  for (const { id, after } of draft.transitions) {
+    const revision = snapshot.documents.get(id)?.revision
+    if (!revision) invalid()
+    members.push({ itemId: id, localRevision: revision, deleted: after === null })
+  }
+  const unbased = {
+    opId: state.unbased?.opId ?? crypto.randomUUID(),
+    members,
+    readSet: [
+      ...(state.unbased?.readSet.filter(({ consumerId }) => !updated.has(consumerId)) ?? []),
+      ...draft.readSet.map((edge) => ({
+        ...edge,
+        localRevision:
+          updated.has(edge.targetId) && snapshot.assets.has(edge.targetId)
+            ? (snapshot.documents.get(edge.targetId)?.revision ?? null)
+            : edge.localRevision,
+      })),
+    ],
+  }
+  if (!unbasedState(unbased)) invalid()
+  saveState(records, { ...state, unbased })
+  return snapshot
 }
 
 export function localCausalBytes(records: ReadonlyMap<string, unknown>): number {
@@ -376,7 +483,7 @@ export function installLocalCausalPull<Asset extends PintaMemoryAsset>(
   )
     return null
   for (const change of pull.transitions) {
-    if (ownsLocalCausalMember(state, change.id)) return null
+    if (ownsLocalCausalMember(state, change.id, false)) return null
     const mark = state.confirmed.get(change.id)
     if (Boolean(change.after) !== Boolean(change.remote)) invalid()
     if (
@@ -408,14 +515,94 @@ export function installLocalCausalPull<Asset extends PintaMemoryAsset>(
       layoutRevision: change.remote?.layoutRevision ?? null,
     })
   }
+  const local = prepareUnbasedCreates(state.unbased, pull, snapshot, confirmed)
+  const { unbased: stillUnbased, ...account } = state
   saveState(records, {
-    ...state,
+    ...account,
     protocolKnown: true,
     epoch: pull.epoch,
     writeEpoch: pull.epoch,
     confirmed,
+    ...(local
+      ? { pending: local.members.length ? [...state.pending, local] : state.pending }
+      : stillUnbased
+        ? { unbased: stillUnbased }
+        : {}),
   })
   return snapshot
+}
+
+function prepareUnbasedCreates<Asset extends PintaMemoryAsset>(
+  unbased: PintaLocalUnbased | undefined,
+  pull: PintaCausalLocalPull<Asset>,
+  snapshot: LocalSnapshot<Asset>,
+  confirmed: ReadonlyMap<string, PintaCausalConfirmed>,
+): PintaCausalPending | null {
+  if (!unbased) return null
+  const transitions = new Map(pull.transitions.map((change) => [change.id, change]))
+  const members: PintaCausalPendingMember[] = []
+  for (const draft of unbased.members) {
+    const change = transitions.get(draft.itemId)
+    const mark = confirmed.get(draft.itemId)
+    if (mark && !mark.deleted) {
+      if (
+        change?.beforeRevision !== draft.localRevision ||
+        !pintaValuesEqual(change.before, change.after)
+      )
+        return null
+      continue
+    }
+    if (snapshot.documents.get(draft.itemId)?.revision !== draft.localRevision) return null
+    if (!draft.deleted)
+      members.push({
+        itemId: draft.itemId,
+        localRevision: draft.localRevision,
+        action: 'put',
+        baseRevision: 0,
+        operation: { type: 'create' },
+      })
+  }
+  const creates = new Map(members.map((member) => [member.itemId, member.localRevision]))
+  const readSet: PintaCausalRead[] = []
+  for (const read of unbased.readSet) {
+    if (!creates.has(read.consumerId)) continue
+    if (creates.has(read.targetId)) {
+      if (creates.get(read.targetId) !== read.localRevision) return null
+      readSet.push({ source: 'unit', consumerId: read.consumerId, targetId: read.targetId })
+      continue
+    }
+    const mark = confirmed.get(read.targetId)
+    const change = transitions.get(read.targetId)
+    if (
+      !mark?.sha256 ||
+      mark.deleted ||
+      !read.localRevision ||
+      (mark.localRevision !== read.localRevision &&
+        (change?.beforeRevision !== read.localRevision ||
+          !pintaValuesEqual(change.before, change.after)))
+    )
+      return null
+    readSet.push({
+      source: 'snapshot',
+      consumerId: read.consumerId,
+      targetId: read.targetId,
+      revision: mark.revision,
+      sha256: mark.sha256,
+      ...(mark.layoutRevision ? { layoutRevision: mark.layoutRevision } : {}),
+    })
+  }
+  readSet.sort((a, b) => {
+    const left = `${a.consumerId}\u0000${a.targetId}`
+    const right = `${b.consumerId}\u0000${b.targetId}`
+    return left < right ? -1 : left > right ? 1 : 0
+  })
+  return {
+    opId: unbased.opId,
+    preparation: crypto.randomUUID(),
+    baseEpoch: pull.epoch,
+    readSet,
+    members,
+  }
 }
 
 export function stageLocalCausalDraft<Asset extends PintaMemoryAsset>(

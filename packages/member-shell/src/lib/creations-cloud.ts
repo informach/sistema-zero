@@ -469,6 +469,7 @@ export function createCreationsCloud(options: {
   /** Perfil dono da fila: vai em `x-sz-viewer` (o BFF confere com a sessão). */
   viewerId?: string
   audience?: 'adult' | 'kids'
+  pintaCausalEnabled?: boolean
   /** Injetável (testes). Default: o `fetch` global. */
   fetch?: FetchLike
   /**
@@ -557,7 +558,12 @@ export function createCreationsCloud(options: {
   let disposed = false
   const abort = new AbortController()
   const causalSession =
-    tool === 'pinta' && supported && hashSupported() && options.viewerId && options.audience
+    options.pintaCausalEnabled &&
+    tool === 'pinta' &&
+    supported &&
+    hashSupported() &&
+    options.viewerId &&
+    options.audience
       ? new AbortController()
       : null
   const pintaCausal =

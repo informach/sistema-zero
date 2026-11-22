@@ -10,6 +10,7 @@ Base `c34117d6a`. A publicação causal mantém uma folha, seus mapas e os conju
 - [x] Testar em IndexedDB falha no último membro, coleções de dois perfis, reinício entre gravação e envio e recibo após editar um membro novamente.
 - [x] Medir documentos, metadados e bytes do envio selado juntos na mesma transação. Uma mudança que reduz o uso continua possível quando o acervo antigo ultrapassa o teto.
 - [x] Validar registros recuperados da fila pelo contrato de epoch, revisão, identificação e intenção. Conservar dados em disco se a validação falhar.
+- [x] Antes da primeira leitura autenticada, guardar no mesmo commit as revisões locais, as lápides e os recursos observados. Esse estado não tem epoch remoto. Depois de conferir o inventário inteiro, promover como criações os IDs realmente ausentes, mantendo juntos seus recursos. Se a leitura encontra conteúdo divergente, conservar o rascunho local.
 - [ ] Ligar a exclusão em `galleryStore.ts` e os vínculos do documento externo em `mapSetEditorStore.ts`. As referências novas guardam o layout ou documento que a pessoa realmente leu. Uma referência a um recurso da própria unidade pode apontar para esse membro.
 
 ## Fila da conta
@@ -18,6 +19,7 @@ Base `c34117d6a`. A publicação causal mantém uma folha, seus mapas e os conju
 - [x] Implementar o transporte privado, a selagem antes do PUT, a recuperação do recibo e a descoberta persistente sem retorno ao protocolo individual.
 - [x] Atualizar a sessão de `pinta-client.tsx` para capturar módulo, banco, perfil, público e fila juntos. Ao trocar de sessão, abortar efeitos em voo e deixar os registros pendentes no banco anterior. O fluxo local sem perfil usa sua própria autoridade.
 - [x] Preparar remapeamentos a partir de todas as páginas do mesmo epoch, trazendo consumidores remotos ausentes. Compor gestos de remoção, pintura e desfazer pelo histórico de peças do editor. Conferir na entrega de aula a versão pinada e serializada que o editor guardou.
+- [ ] Congelar candidatos que um gesto sucessor precisa sobrescrever localmente. Todos os gzip guardados concorrem com os desenhos no orçamento existente, com uma única reserva em voo. Gestos compatíveis no mesmo documento continuam coalescidos. O transporte de teste é opt-in por `NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1=1`.
 - [ ] Exercitar edição sobre reserva encerrada com base remota divergente e resolver a unidade sem editar a base observada.
 - [ ] Testar envio offline e retomada, resposta do commit perdida, duas abas e dois perfis, nova referência concorrente e exclusão recusada. A folha e seus consumidores não podem ser lidos entre dois estados do mesmo lote.
 

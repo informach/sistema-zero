@@ -152,6 +152,7 @@ export function PintaClient({
             maxFormatVersion: PINTA_MAX_READ_FORMAT_VERSION,
             viewerId,
             audience,
+            pintaCausalEnabled: process.env.NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1 === '1',
           })
           const scoped = cloud.pintaCausal
             ? m.createPintaCausalPersistence({ namespace: localNamespace })

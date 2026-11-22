@@ -1,6 +1,6 @@
 import type { UseStore } from 'idb-keyval'
+import { isLocalAssetInventoryKey } from './assetAuthorityKeys'
 import {
-  LOCAL_CHUNK_PREFIX,
   type LocalStorageCodec,
   localDenseStorageCodec,
   planLocalStorageWrites,
@@ -89,12 +89,7 @@ export function withAssetTransaction<T>(
             const keys = store.getAllKeys()
             keys.onsuccess = () => {
               try {
-                fullKeys = keys.result.filter(
-                  (key): key is string =>
-                    typeof key === 'string' &&
-                    (key.startsWith('pinta:asset:') || key.startsWith('pinta:local:')) &&
-                    !key.startsWith(LOCAL_CHUNK_PREFIX),
-                )
+                fullKeys = keys.result.filter(isLocalAssetInventoryKey)
                 inspectKeys?.(fullKeys)
                 step()
               } catch (error) {

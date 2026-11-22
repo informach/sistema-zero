@@ -65,6 +65,7 @@ import {
   emptyPaletteLibrary,
   inheritPintaLocalOrigin,
   mergePaletteLibraries,
+  observePintaReferences,
   PINTA_LIMITS,
   PINTA_MAX_SCHEMA,
   PintaLocalConflictError,
@@ -375,10 +376,11 @@ export function createCloudMirroredPintaPersistence(options: {
   let causalTimer: ReturnType<typeof setTimeout> | null = null
   async function reportCausalQueue(error?: unknown): Promise<void> {
     if (!causalLocal || !cloud.reportPintaQueue || causalSession.signal.aborted) return
-    const { sealed, pending } = await causalLocal.inspect()
+    const { sealed, pending, unbased } = await causalLocal.inspect()
     if (causalSession.signal.aborted) return
     const ids = new Set(pending.flatMap((unit) => unit.members.map((member) => member.itemId)))
     for (const member of sealed?.local.members ?? []) ids.add(member.itemId)
+    for (const member of unbased?.members ?? []) ids.add(member.itemId)
     if (!ids.size) cloud.reportPintaQueue([], 'saved')
     else if (typeof navigator !== 'undefined' && !navigator.onLine)
       cloud.reportPintaQueue([...ids], 'offline')
@@ -406,6 +408,8 @@ export function createCloudMirroredPintaPersistence(options: {
   async function prepareTileRemap(source: PintaAsset): Promise<readonly PintaAsset[]> {
     if (!causalLocal || !causalCloud) return local.listAllAssets()
     const state = await causalLocal.inspect()
+    if (!knownLegacy && state.epoch === null && state.writeEpoch === undefined)
+      return local.listAllAssets()
     if (
       lastRemap?.source.id === source.id &&
       (state.pending.some((unit) => unit.opId === queuedSlots?.opId) ||
@@ -451,7 +455,8 @@ export function createCloudMirroredPintaPersistence(options: {
   ): Promise<boolean> {
     if (!causalLocal || !causalCloud) return false
     const state = await causalLocal.inspect()
-    if (!state.protocolKnown && (knownLegacy || !(await probeCausal()))) return false
+    const structure = !!deletion || !!context?.layout?.oldToNew.some((next, old) => next !== old)
+    if (!state.protocolKnown && knownLegacy && !state.unbased) return false
     const root = assets[0]
     const remap =
       root &&
@@ -469,6 +474,38 @@ export function createCloudMirroredPintaPersistence(options: {
       context.slotLineage.after === queuedSlots.before
         ? sentId
         : undefined
+    if (!remap && (state.writeEpoch ?? state.epoch) === null) {
+      const targets = new Map(assets.map((asset) => [asset.id, asset]))
+      const ids = deletion ? [deletion.id] : [...targets.keys()]
+      if (!ids.length) return true
+      const entries = await causalLocal.capture(ids)
+      const changes = entries.map((before) => {
+        const after = targets.get(before.id) ?? null
+        const author = after ?? deletion?.before
+        if (before.beforeRevision !== (author ? (pintaLocalRevisionOf(author) ?? null) : null))
+          throw Error('Um dos desenhos mudou em outra janela.')
+        return { ...before, after }
+      })
+      const gallery = [...(await local.listAllAssets()), ...assets]
+      const observations = new Map(
+        context?.resources.map(({ id, localRevision }) => [id, localRevision]),
+      )
+      const readSet = assets.flatMap((consumer) =>
+        observePintaReferences(consumer, gallery).map((ref) => ({
+          consumerId: consumer.id,
+          targetId: ref.id,
+          localRevision: observations.get(ref.id) ?? (structure ? ref.localRevision : null),
+        })),
+      )
+      await causalLocal.stageUnbased({
+        transitions: changes,
+        readSet,
+        requireKnownInventory: structure,
+      })
+      await reportCausalQueue().catch(() => {})
+      wakeCausal()
+      return true
+    }
     const staged = await stagePintaCausalWrite({
       local: causalLocal,
       catalog: await local.listAllAssets(),
@@ -1223,7 +1260,10 @@ export function createCloudMirroredPintaPersistence(options: {
         canContinue: () => now() - started < budgetMs,
       })
       knownLegacy = result.mode === 'legacy'
-      if (result.mode === 'causal') return local.listAllAssets()
+      if (result.mode === 'causal') {
+        if (result.applied && (await causalLocal.inspect()).pending.length > 0) wakeCausal()
+        return local.listAllAssets()
+      }
     }
     // O que está na fila (um DELETE, o último autosave) sobe ANTES de a lista da nuvem ser lida:
     // senão a descida via o item apagado ainda vivo lá e reenviava a remoção à toa (ou, com a
