@@ -240,6 +240,9 @@ export function tryRemapTilemapCells<Map extends AuthorMap>(
         tilemap.rows > PINTA_MAP_FORMAT_LIMITS.maxRows))
   )
     return { ok: false, reason: 'invalid-map' }
+  // Private snapshots shadow the gallery resource, even when both have the same ID.
+  if (tilesetId !== undefined && tilemap.resources?.some(({ asset }) => asset.id === tilesetId))
+    return { ok: true, map: tilemap }
   let allocated = 0,
     tileLayers = 0
   for (const layer of tilemap.layers) {
@@ -308,19 +311,17 @@ export function tryRemapTilemapCells<Map extends AuthorMap>(
       let changed = false
       const objects: TilemapObject[] = []
       for (const o of layer.objects) {
-        if (o.art?.assetId !== tilesetId || o.art.tile === undefined) {
+        if (o.art?.assetId !== tilesetId) {
           objects.push(o)
           continue
         }
-        if (
-          !Number.isSafeInteger(o.art.tile) ||
-          o.art.tile < 0 ||
-          o.art.tile >= PINTA_MAP_FORMAT_LIMITS.maxTiles
-        )
+        // Sheet art without an explicit index draws slot zero.
+        const tile = o.art.tile ?? 0
+        if (!Number.isSafeInteger(tile) || tile < 0 || tile >= PINTA_MAP_FORMAT_LIMITS.maxTiles)
           return { ok: false, reason: 'invalid-map' }
-        const next = remapOne(o.art.tile)
+        const next = remapOne(tile)
         if (next >= PINTA_MAP_FORMAT_LIMITS.maxTiles) return { ok: false, reason: 'tile-budget' }
-        if (next === o.art.tile) {
+        if (next === tile) {
           objects.push(o)
           continue
         }

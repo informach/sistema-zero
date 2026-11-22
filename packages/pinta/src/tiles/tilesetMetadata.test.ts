@@ -182,7 +182,8 @@ describe('remapTilemapCells: a arte dos objetos (`art.tile`) acompanha a peça',
     map = addMapObject(map, layerId, arte('alvo', 'pecas', 2))
     map = addMapObject(map, layerId, arte('alta', 'pecas', 3))
     map = addMapObject(map, layerId, arte('de-outras-pecas', 'outras', 2))
-    map = addMapObject(map, layerId, arte('sprite-inteiro', 'pecas'))
+    map = addMapObject(map, layerId, arte('primeira-implicita', 'pecas'))
+    map = addMapObject(map, layerId, arte('sprite-inteiro', 'retrato'))
     return map
   }
   const artes = (map: TilemapAsset) =>
@@ -200,6 +201,7 @@ describe('remapTilemapCells: a arte dos objetos (`art.tile`) acompanha a peça',
       alvo: 3,
       alta: 4,
       'de-outras-pecas': 2,
+      'primeira-implicita': 'inteiro',
       'sprite-inteiro': 'inteiro',
     })
   })
@@ -212,6 +214,7 @@ describe('remapTilemapCells: a arte dos objetos (`art.tile`) acompanha a peça',
       alvo: 'sem arte (rect)',
       alta: 2,
       'de-outras-pecas': 2,
+      'primeira-implicita': 'inteiro',
       'sprite-inteiro': 'inteiro',
     })
     // O objeto continua no mapa, no mesmo lugar e com o mesmo id.
@@ -228,6 +231,58 @@ describe('remapTilemapCells: a arte dos objetos (`art.tile`) acompanha a peça',
       alvo: 2,
       'de-outras-pecas': 'sem arte (rect)',
     })
+  })
+
+  it('a peça zero implícita acompanha inserção e remoção e conserva a arte de sprite', () => {
+    const original = mapaComArte()
+    const chao = original.layers[0]!
+    if (chao.kind === 'objects' || chao.kind === 'group') throw new Error('Camada sem peças')
+    const antes = {
+      ...original,
+      layers: [
+        { ...chao, cells: Int16Array.from([CELL_FLIP_H, 1]) },
+        ...original.layers.slice(1),
+      ],
+    }
+    const objetos = (map: TilemapAsset) => map.layers.find(isObjectLayer)!.objects
+    const implicita = objetos(antes)[4]!
+    const sprite = objetos(antes)[5]!
+
+    const depoisDaInsercao = remapTilemapCells(antes, { insertedAt: 0 }, 'pecas')
+    expect(objetos(depoisDaInsercao)[4]).toEqual({
+      ...implicita,
+      art: { assetId: 'pecas', tile: 1 },
+    })
+    expect(objetos(depoisDaInsercao)[5]).toBe(sprite)
+    expect(depoisDaInsercao.layers[0]).toMatchObject({
+      cells: Int16Array.from([1 | CELL_FLIP_H, 2]),
+    })
+
+    const movimento = remapTilemapCells(depoisDaInsercao, { removedAt: 2 }, 'pecas')
+    expect(objetos(movimento)[4]).toBe(objetos(depoisDaInsercao)[4]!)
+    expect(objetos(movimento)[5]).toBe(sprite)
+    expect(movimento.layers[0]).toMatchObject({ cells: Int16Array.from([1 | CELL_FLIP_H, -1]) })
+
+    const semAPrimeira = remapTilemapCells(antes, { removedAt: 0 }, 'pecas')
+    const { art: _art, ...implicitaSemArte } = implicita
+    expect(objetos(semAPrimeira)[4]).toEqual({ ...implicitaSemArte, shape: 'rect' })
+    expect(objetos(semAPrimeira)[5]).toBe(sprite)
+    expect(semAPrimeira.layers[0]).toMatchObject({ cells: Int16Array.from([-1, 0]) })
+    expect(objetos(remapTilemapCells(antes, { insertedAt: 2 }, 'pecas'))[4]).toBe(implicita)
+    expect(Object.hasOwn(implicita.art!, 'tile')).toBe(false)
+  })
+
+  it('uma folha privada com o mesmo id continua a resolver suas próprias células e objetos', () => {
+    const map = mapaComArte()
+    const chao = map.layers[0]!
+    if (chao.kind === 'objects' || chao.kind === 'group') throw new Error('Camada sem peças')
+    const antes: TilemapAsset = {
+      ...map,
+      layers: [{ ...chao, cells: Int16Array.from([0, 1]) }, ...map.layers.slice(1)],
+      resources: [{ sourceId: 'outra-folha', capturedAt: 1, asset: { ...pecas(), id: 'pecas' } }],
+    }
+    expect(remapTilemapCells(antes, { removedAt: 0 }, 'pecas')).toBe(antes)
+    expect(remapTilemapCells(antes, { insertedAt: 0 }, 'pecas')).toBe(antes)
   })
 
   it('células e arte mudam juntas, e a célula virada continua virada', () => {
