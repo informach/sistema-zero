@@ -13,10 +13,19 @@ export function mapImageSize(
   scale: number,
   maxPx = Infinity,
 ): { width: number; height: number; scale: number } | null {
+  return mapPixelImageSize(map.cols * tileSize, map.rows * tileSize, scale, maxPx)
+}
+
+export function mapPixelImageSize(
+  widthPixels: number,
+  heightPixels: number,
+  scale: number,
+  maxPx = Infinity,
+): { width: number; height: number; scale: number } | null {
   if (!Number.isFinite(scale) || scale <= 0 || !(maxPx > 0)) return null
-  const actual = Math.min(scale, maxPx / (Math.max(map.cols, map.rows) * tileSize)),
-    width = Math.max(1, Math.round(map.cols * tileSize * actual)),
-    height = Math.max(1, Math.round(map.rows * tileSize * actual))
+  const actual = Math.min(scale, maxPx / Math.max(widthPixels, heightPixels)),
+    width = Math.max(1, Math.round(widthPixels * actual)),
+    height = Math.max(1, Math.round(heightPixels * actual))
   if (
     !Number.isSafeInteger(width) ||
     !Number.isSafeInteger(height) ||

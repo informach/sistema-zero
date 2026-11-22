@@ -1,17 +1,36 @@
-import type { PintaRegionCells } from '@sistemazero/core/creations'
+import {
+  createHexRegionCellReader,
+  createPintaProjectionGeometry,
+  createRegionCellReader,
+  type PintaHexRegionCells,
+  type PintaMapProjection,
+  type PintaRegionCells,
+  unpackPintaHexCell,
+} from '@sistemazero/core/creations'
+import type { PintaProjectedScene } from '@sistemazero/core/studio/pinta-projected-scene'
 import type { PintaRegionScene } from '@sistemazero/core/studio/pinta-region-scene'
 import type { PintaScene, PintaSceneCellsLayer } from '@sistemazero/core/studio/pinta-scene'
 import type { PintaRegionSceneQuery } from '@sistemazero/core/studio/pinta-scene-query'
 import { sceneArtFrame, sceneLayerState } from '@sistemazero/core/studio/pinta-scene-runtime'
 import { cellMatrix, cellTile } from '../tiles/cell'
 import { createTileCellReader, mapCellBounds } from '../tiles/mapCellReader'
-import { MAP_IMAGE_LIMITS, MapImageBudgetError, mapImageSize } from '../tiles/mapImageBudget'
+import {
+  MAP_IMAGE_LIMITS,
+  MapImageBudgetError,
+  mapImageSize,
+  mapPixelImageSize,
+} from '../tiles/mapImageBudget'
 
-type DrawableScene = PintaScene | PintaRegionScene
-type DrawableLayer = PintaSceneCellsLayer<number[] | PintaRegionCells>
-type DrawableBounds = { cols: number; rows: number; origin?: { col: number; row: number } }
+type DrawableScene = PintaScene | PintaRegionScene | PintaProjectedScene
+type DrawableLayer = PintaSceneCellsLayer<number[] | PintaRegionCells | PintaHexRegionCells>
+type DrawableBounds = {
+  cols: number
+  rows: number
+  origin?: { col: number; row: number }
+  projection?: PintaMapProjection
+}
 type ViewBox = { x: number; y: number; width: number; height: number }
-type SceneViewport = ViewBox & { regionCells: PintaRegionSceneQuery['regionCells'] }
+type SceneViewport = ViewBox & { regionCells?: PintaRegionSceneQuery['regionCells'] }
 
 /** Compositor estático/animado compartilhado pela imagem de exportação e pelo teste no Pinta. */
 export async function loadSceneImages(
@@ -42,6 +61,70 @@ export function drawScene(
   viewport?: SceneViewport,
 ): void {
   const size = scene.tileSize
+  let projections:
+    | Map<PintaMapProjection, ReturnType<typeof createPintaProjectionGeometry>>
+    | undefined
+  function geometryOf(projection: PintaMapProjection) {
+    projections ??= new Map()
+    const current = projections.get(projection)
+    if (current) return current
+    const geometry = createPintaProjectionGeometry(projection)
+    projections.set(projection, geometry)
+    return geometry
+  }
+  function paintProjected(
+    bounds: DrawableBounds & { projection: PintaMapProjection },
+    grid: PintaRegionCells | PintaHexRegionCells,
+    sheet: PintaScene['tilesets'][number],
+    image: CanvasImageSource,
+    viewport?: ViewBox,
+  ): void {
+    const geometry = geometryOf(bounds.projection)
+    const area = mapCellBounds(bounds)
+    // An atlas frame can extend beyond its footprint, including on hex turns.
+    // Admit conservatively before visiting occupied cells, then sort by feet.
+    const padding = size * Math.SQRT2
+    const visible = viewport
+      ? geometry.visibleCells(area, {
+          x: viewport.x - padding,
+          y: viewport.y - padding,
+          width: viewport.width + 2 * padding,
+          height: viewport.height + 2 * padding,
+        })
+      : area
+    if (!visible) return
+    const hex = grid.kind === 'hex-regions'
+    const reader = hex ? createHexRegionCellReader(grid) : createRegionCellReader(grid)
+    const painted: Array<{ value: number; x: number; y: number }> = []
+    reader.visitOccupied(visible, (value, col, row) => {
+      const { x, y } = geometry.center(col, row)
+      painted.push({ value, x, y })
+    })
+    painted.sort((a, b) => a.y - b.y || a.x - b.x)
+    for (const { value, x, y } of painted) {
+      const transform = hex ? unpackPintaHexCell(value) : null
+      if (hex && !transform) continue
+      const tile = animatedTile(transform?.tile ?? cellTile(value), sheet.animations)
+      ctx.save()
+      ctx.translate(x + (size - geometry.cellWidth) / 2, y + (geometry.cellHeight - size) / 2)
+      if (transform) {
+        ctx.rotate((transform.rotation * Math.PI) / 180)
+        ctx.scale(transform.flipX ? -1 : 1, transform.flipY ? -1 : 1)
+      } else ctx.transform(...cellMatrix(value), 0, 0)
+      ctx.drawImage(
+        image,
+        (tile % sheet.columns) * size,
+        Math.floor(tile / sheet.columns) * size,
+        size,
+        size,
+        -size / 2,
+        -size / 2,
+        size,
+        size,
+      )
+      ctx.restore()
+    }
+  }
   function animatedTile(
     tile: number,
     animations: PintaScene['tilesets'][number]['animations'],
@@ -94,11 +177,13 @@ export function drawScene(
             )
             ctx.restore()
           }
-          if (Array.isArray(l.cells))
+          if (!Array.isArray(l.cells) && bounds.projection)
+            paintProjected({ ...bounds, projection: bounds.projection }, l.cells, ts, image, local)
+          else if (Array.isArray(l.cells))
             l.cells.forEach((value, i) => {
               cell(value, i % bounds.cols, Math.floor(i / bounds.cols))
             })
-          else if (local && viewport) {
+          else if (l.cells.kind === 'regions' && local && viewport?.regionCells) {
             const col = Math.floor(local.x / size),
               row = Math.floor(local.y / size)
             viewport.regionCells(l.cells).visitOccupied(
@@ -111,7 +196,7 @@ export function drawScene(
               cell,
               'row-major',
             )
-          } else {
+          } else if (l.cells.kind === 'regions') {
             const rect = mapCellBounds(bounds)
             createTileCellReader(l.cells, rect).visitOccupied(rect, cell, 'row-major')
           }
@@ -137,10 +222,14 @@ export function drawScene(
           if (o.setId) {
             const set = scene.sets?.find((s) => s.id === o.setId)
             if (set && (!objectView || (o.width > 0 && o.height > 0))) {
-              const sx = o.width / (set.cols * size),
-                sy = o.height / (set.rows * size),
-                ox = 'origin' in set ? set.origin.col * size : 0,
-                oy = 'origin' in set ? set.origin.row * size : 0
+              const projected =
+                'projection' in set
+                  ? geometryOf(set.projection).worldBounds(mapCellBounds(set))
+                  : null
+              const sx = o.width / (projected?.width ?? set.cols * size),
+                sy = o.height / (projected?.height ?? set.rows * size),
+                ox = projected?.x ?? ('origin' in set ? set.origin.col * size : 0),
+                oy = projected?.y ?? ('origin' in set ? set.origin.row * size : 0)
               ctx.scale(sx, sy)
               if ('origin' in set) ctx.translate(-ox, -oy)
               const setView = objectView && {
@@ -237,22 +326,34 @@ export async function scenePng(
   scale = 1,
   maxPx = Infinity,
 ): Promise<{ dataUrl: string; width: number; height: number } | null> {
-  const actual = Math.min(scale, maxPx / (Math.max(scene.cols, scene.rows) * scene.tileSize))
-  if ('origin' in scene && !mapImageSize(scene, scene.tileSize, scale, maxPx))
+  const projected =
+    scene.version === 5
+      ? createPintaProjectionGeometry(scene.projection).worldBounds(mapCellBounds(scene))
+      : null
+  const budget = projected
+    ? mapPixelImageSize(projected.width, projected.height, scale, maxPx)
+    : null
+  const actual =
+    budget?.scale ?? Math.min(scale, maxPx / (Math.max(scene.cols, scene.rows) * scene.tileSize))
+  if (projected ? !budget : 'origin' in scene && !mapImageSize(scene, scene.tileSize, scale, maxPx))
     throw new MapImageBudgetError()
-  if (scene.cols * scene.rows * (scene.tileSize * actual) ** 2 > MAP_IMAGE_LIMITS.pixels)
+  if (
+    !projected &&
+    scene.cols * scene.rows * (scene.tileSize * actual) ** 2 > MAP_IMAGE_LIMITS.pixels
+  )
     throw new Error(
       'A imagem ficou grande demais. Use uma escala menor ou baixe o cenário como projeto.',
     )
   const canvas = document.createElement('canvas')
-  canvas.width = Math.max(1, Math.round(scene.cols * scene.tileSize * actual))
-  canvas.height = Math.max(1, Math.round(scene.rows * scene.tileSize * actual))
+  canvas.width = budget?.width ?? Math.max(1, Math.round(scene.cols * scene.tileSize * actual))
+  canvas.height = budget?.height ?? Math.max(1, Math.round(scene.rows * scene.tileSize * actual))
   const ctx = canvas.getContext('2d')
   if (!ctx) return null
   const images = await loadSceneImages(scene)
   ctx.imageSmoothingEnabled = false
   ctx.scale(actual, actual)
-  if ('origin' in scene)
+  if (projected) ctx.translate(-projected.x, -projected.y)
+  else if ('origin' in scene)
     ctx.translate(-scene.origin.col * scene.tileSize, -scene.origin.row * scene.tileSize)
   drawScene(ctx, scene, images, 'back')
   drawScene(ctx, scene, images, 'front')

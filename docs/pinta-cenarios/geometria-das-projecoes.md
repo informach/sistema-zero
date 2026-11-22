@@ -40,6 +40,16 @@ de acessar o primeiro payload. A área conserva os limites assinados
 existentes. As grades hexagonais admitem 1.024 regiões, somando até
 4 MiB de índices. O codec Int16 conserva o teto de 2.048 regiões.
 
+O documento autoral privado guarda a projeção e a opção de crescimento no
+mapa. Scene 5 também admite conjuntos com uma projeção própria. As duas
+formas carregam índices compactos e validam a orientação antes de ler células.
+Uma cena isométrica ou hexagonal declara física precisa.
+
+O compositor alinha a imagem da peça com a base da pegada. O recorte
+considera imagens maiores que a célula e os giros hexagonais. O Canvas nativo
+produziu os mesmos pixels com e sem recorte para células assinadas nas duas
+projeções, em cenários de 10.000 × 10.000 com um chunk ocupado.
+
 ## Integração
 
 1. Admitir o documento projetado e aplicar crescimento e pintura na mesma
