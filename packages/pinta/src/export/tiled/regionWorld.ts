@@ -48,7 +48,7 @@ export async function importRegionalTiledWorld(
         if (layer.kind !== 'objects') continue
         for (const object of layer.objects) {
           if (object.role !== 'door') continue
-          const unwrap = (property: (typeof object.properties)[string]) =>
+          const unwrap = (property: (typeof object.properties)[string] | undefined) =>
             typeof property === 'object' ? property.value : property
           const raw = unwrap(object.properties.destino) || unwrap(object.properties.destination)
           if (!raw) continue

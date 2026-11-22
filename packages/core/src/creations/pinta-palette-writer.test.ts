@@ -11,7 +11,7 @@ const generation = '11111111-1111-4111-8111-111111111111'
 const nonce = '22222222-2222-4222-8222-222222222222'
 
 test('absence has a zero revision and preserves an adopted generation', () => {
-  const absent = { protocol, generation: null, revision: 0, exists: false, adopted: false }
+  const absent = { protocol, generation: null, revision: 0, exists: false, adopted: false } as const
   expect(PintaPaletteHeadSchema.parse(absent)).toEqual(absent)
   expect(PintaPaletteHeadSchema.safeParse({ ...absent, adopted: true }).success).toBe(false)
   expect(PintaPaletteHeadSchema.safeParse({ ...absent, generation, adopted: true }).success).toBe(
