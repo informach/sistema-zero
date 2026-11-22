@@ -1,3 +1,5 @@
+import { createPintaProjectionGeometry } from '../creations/pinta-projection-geometry'
+import type { PintaProjectedScene } from './pinta-projected-scene'
 import type { PintaScene, PintaSceneLayer, PintaSceneObject } from './pinta-scene'
 import type { PintaSceneDocument, PintaSceneQuery } from './pinta-scene-query'
 
@@ -184,7 +186,9 @@ export function transformSceneSetObject(
 type ScenePoint = { x: number; y: number }
 type ObjectMatch = (object: PintaSceneObject) => boolean
 
-function* directSceneObjects(layers: PintaSceneDocument['layers']) {
+type ObjectScene = PintaSceneDocument | PintaProjectedScene
+
+function* directSceneObjects(layers: ObjectScene['layers']) {
   for (const layer of layers) {
     if (layer.kind !== 'objects') continue
     const state = sceneLayerState(layers, layer)
@@ -216,7 +220,7 @@ type SceneDefinition = {
  * the placement (type, role, name). Match scoped IDs on emitted objects.
  * A point optionally narrows area candidates, leaving containment to the player.
  */
-export function createSceneObjectIterator(scene: PintaSceneDocument) {
+export function createSceneObjectIterator(scene: ObjectScene) {
   const definitions = new Map<string, SceneDefinition>()
   const tile = scene.tileSize
   function definition(id: string): SceneDefinition | undefined {
@@ -225,11 +229,19 @@ export function createSceneObjectIterator(scene: PintaSceneDocument) {
     const set = scene.sets?.find((candidate) => candidate.id === id)
     if (!set) return undefined
     const origin = scene.version === 4 && 'origin' in set ? set.origin : undefined
-    const x = (origin?.col ?? 0) * tile,
-      y = (origin?.row ?? 0) * tile
+    const area =
+      'projection' in set
+        ? createPintaProjectionGeometry(set.projection).worldBounds({
+            ...set.origin,
+            cols: set.cols,
+            rows: set.rows,
+          })
+        : null
+    const x = area?.x ?? (origin?.col ?? 0) * tile,
+      y = area?.y ?? (origin?.row ?? 0) * tile
     const value: SceneDefinition = {
-      width: set.cols * tile,
-      height: set.rows * tile,
+      width: area?.width ?? set.cols * tile,
+      height: area?.height ?? set.rows * tile,
       ids: set.layers.flatMap((layer) =>
         layer.kind === 'objects' ? layer.objects.map((object) => object.id) : [],
       ),
@@ -303,14 +315,19 @@ export function createSceneObjectIterator(scene: PintaSceneDocument) {
   }
 }
 
-export function sceneObjects(scene: PintaSceneDocument): PintaSceneObject[] {
+export function sceneObjects(scene: ObjectScene): PintaSceneObject[] {
   return [...createSceneObjectIterator(scene)()]
 }
-export function sceneSpawn(scene: PintaSceneDocument): { x: number; y: number } {
+export function sceneSpawn(scene: ObjectScene): { x: number; y: number } {
   const first = createSceneObjectIterator(scene)(
     (o) => o.role === 'start' || o.type === 'inicio',
   ).next()
   if (!first.done) return { x: first.value.x, y: first.value.y }
+  if (scene.version === 5)
+    return createPintaProjectionGeometry(scene.projection).center(
+      Math.max(scene.origin.col, Math.min(0, scene.origin.col + scene.cols - 1)),
+      Math.max(scene.origin.row, Math.min(0, scene.origin.row + scene.rows - 1)),
+    )
   if (scene.version === 4)
     return {
       x:
