@@ -15,7 +15,13 @@ import { prepareMapRegions } from '../tiles/regionMap'
 import { encodeRegionGalleryBackup } from './regionBackup'
 import { exportPintaRegionScene } from './regionScene'
 import type { ScenePackageTarget } from './scenePackage'
-import { tiledMap, tiledMapXml, tiledSceneWarnings, tiledTilesetXml } from './tiled/export'
+import {
+  TiledSceneCompatibilityError,
+  tiledMap,
+  tiledMapXml,
+  tiledSceneWarnings,
+  tiledTilesetXml,
+} from './tiled/export'
 import { TILED_PACKAGE_LIMITS } from './tiled/package'
 
 type PackageFile = Uint8Array | string
@@ -100,14 +106,26 @@ export function writeRegionPackageImages(world: Prepared) {
   return maps
 }
 
-export async function writeRegionTiledFiles(world: Prepared): Promise<string[]> {
+export async function writeRegionTiledFiles(
+  world: Prepared,
+  target: ScenePackageTarget,
+): Promise<string[]> {
   const reports = [
     'As camadas ortogonais usam chunks de 32×32 com coordenadas assinadas.',
     'As propriedades pinta:* guardam a área autoral, os conjuntos, as ligações e a física. O Tiled edita o mapa, e a execução das portas e colisões depende do jogo que o carrega.',
     'Os objetos extras de conjuntos são cópias para exibição. A definição fica em pinta:sets.',
   ]
   for (const { folder, scene, decoded } of world.maps.values()) {
-    const tiled = await tiledMap(decoded)
+    let tiled: Awaited<ReturnType<typeof tiledMap>>
+    try {
+      tiled = await tiledMap(decoded)
+    } catch (error) {
+      if (!(error instanceof TiledSceneCompatibilityError) || target !== 'pygame') throw error
+      reports.push(
+        `Mapa ${scene.name}. ${error.message} Consulte o cenário completo em cenario.png.`,
+      )
+      continue
+    }
     world.put(`${folder}/mapa.json`, JSON.stringify(tiled))
     world.put(`${folder}/mapa.tmx`, tiledMapXml(tiled, true))
     for (const [i, tileset] of (tiled.tilesets as Record<string, unknown>[]).entries())
@@ -123,17 +141,19 @@ export async function buildRegionScenePackage(
   target: ScenePackageTarget,
   imageOf?: ImageOf,
 ) {
-  if (target !== 'tiled' && target !== 'phaser')
-    throw new Error('Este editor só exporta cenários regionais para o Tiled e o Phaser.')
+  if (target === 'godot')
+    throw new Error('Este editor ainda não exporta cenários regionais para o Godot.')
   const world = await prepareRegionScenePackage(captured, imageOf)
-  await writeRegionTiledFiles(world)
+  await writeRegionTiledFiles(world, target)
   writeRegionPackageImages(world)
   const instructions =
     target === 'phaser'
       ? (await import('./phaser/regionPackage')).writeRegionPhaserFiles(world.put)
-      : [
-          'Abra mapas/mapa-0/mapa.tmx ou mapa.json no Tiled. As folhas TSX e as imagens ficam no pacote.',
-        ]
+      : target === 'pygame'
+        ? await (await import('./pygameRegionProject')).writeRegionPygameFiles(world)
+        : [
+            'Abra mapas/mapa-0/mapa.tmx ou mapa.json no Tiled. As folhas TSX e as imagens ficam no pacote.',
+          ]
   world.put(
     'LEIA-ME.txt',
     [
