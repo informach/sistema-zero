@@ -414,6 +414,10 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   // mil blocos, a comparação pelo texto custava 14 ms de cada gesto. `null` quando o texto veio de
   // um estado que não foi guardado (o que o workspace salvou depois de uma carga).
   const lastAppliedBlocksStateObjectRef = useRef<object | null>(null)
+  // O estado da store que a ÚLTIMA carga pôs no canvas (objeto e texto). O `FINISHED_LOADING` dela
+  // chega depois (um quadro + `setTimeout(0)`): se a store já tem outros blocos nessa hora, a carga
+  // foi superada e a regeneração dela não pode valer (ver `regenerateFromBlocks`).
+  const loadedBlocksStateRef = useRef<{ state: unknown; serialized: string } | null>(null)
   const lastRegeneratedBlocksStateRef = useRef<string>('')
   // One load checkpoint, paired with Blockly's own undo stack (not a second history).
   const loadedGenerationRef = useRef<{
@@ -572,6 +576,21 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
           options.force &&
           (javaScriptProject(s.project)?.bridgeCodeAhead === true ||
             s.bridgeCodeEditEpoch > s.bridgeBlocksSyncedEpoch)
+        )
+          return
+        // Carga SUPERADA: a store recebeu outros blocos depois dela e a carga nova já foi pedida.
+        // É a recuperação da Ponte (o `BlocksMode` refaz os blocos do código digitado) chegando
+        // entre a carga dos blocos velhos e o `FINISHED_LOADING` dela: a trava de cima já não vê o
+        // código à frente, e regenerar daqui gravava arquivos e blocos a partir do canvas VELHO por
+        // cima do código digitado (o canvas ficava vazio; intermitente do `css-learning`, 21/11/2026).
+        // A carga nova regenera quando terminar.
+        const loaded = loadedBlocksStateRef.current
+        const current = javaScriptProject(s.project)?.blocksState ?? null
+        if (
+          options.force &&
+          loaded &&
+          current !== loaded.state &&
+          (jsonStringify(current) ?? '') !== loaded.serialized
         )
           return
       }
@@ -1218,6 +1237,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       // Cerca de carga: `clear()` emite um BLOCK_DELETE por bloco; sem a cerca,
       // cada bloco-mutador varreria o workspace a cada remoção (O(N·M)).
       withWorkspaceLoad(() => workspace.clear())
+      loadedBlocksStateRef.current = null
       // O canvas vazio é o próprio projeto: uma falha de restauração anterior não vale mais.
       if (restoreFailedRef.current) workspace.setIsReadOnly(false)
       restoreFailedRef.current = false
@@ -1263,6 +1283,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       isApplyingStateRef.current = true
       lastAppliedBlocksStateRef.current = serialized
       lastAppliedBlocksStateObjectRef.current = null
+      loadedBlocksStateRef.current = { state: stateToLoad, serialized }
       let deferredLoad: DeferredTailLoad | null | undefined = null
       try {
         // Projeto grande: a cauda de cada área longe da vista nasce sem desenho (fecha no `finally`).
