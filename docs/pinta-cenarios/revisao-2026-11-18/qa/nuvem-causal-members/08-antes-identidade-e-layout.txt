@@ -1,0 +1,49 @@
+bun test v1.3.11 (af24e281)
+
+tests\db\pinta-causal.test.ts:
+{
+  severity_local: "NOTICE",
+  severity: "NOTICE",
+  code: "42P06",
+  message: "schema \"drizzle\" already exists, skipping",
+  file: "schemacmds.c",
+  line: "132",
+  routine: "CreateSchemaCommand",
+}
+{
+  severity_local: "NOTICE",
+  severity: "NOTICE",
+  code: "42P07",
+  message: "relation \"members_migrations\" already exists, skipping",
+  file: "parse_utilcmd.c",
+  line: "207",
+  routine: "transformCreateStmt",
+}
+28 |   try {
+29 |     await p
+30 |   } catch (error) {
+31 |     return error
+32 |   }
+33 |   throw Error('expected rejection')
+             ^
+error: expected rejection
+      at rejection (<worktree>\packages\members\tests\db\pinta-causal.test.ts:33:9)
+      at async <anonymous> (<worktree>\packages\members\tests\db\pinta-causal.test.ts:431:20)
+(fail) Pinta causal over the real migration and existing quota lock > an inverse binds every before/after digest across a disappeared slot and rejects a new consumer [828.00ms]
+28 |   try {
+29 |     await p
+30 |   } catch (error) {
+31 |     return error
+32 |   }
+33 |   throw Error('expected rejection')
+             ^
+error: expected rejection
+      at rejection (<worktree>\packages\members\tests\db\pinta-causal.test.ts:33:9)
+      at async <anonymous> (<worktree>\packages\members\tests\db\pinta-causal.test.ts:455:18)
+(fail) Pinta causal over the real migration and existing quota lock > inverse of a compacted creation cannot delete a recreated identical revision and digest [484.00ms]
+
+ 0 pass
+ 14 filtered out
+ 2 fail
+ 1 expect() calls
+Ran 2 tests across 1 file. [2.16s]

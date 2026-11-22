@@ -1,0 +1,116 @@
+bun test v1.3.11 (af24e281)
+
+tests\db\creation-cleanup.repository.test.ts:
+{
+  severity_local: "NOTICE",
+  severity: "NOTICE",
+  code: "42P06",
+  message: "schema \"members\" already exists, skipping",
+  file: "schemacmds.c",
+  line: "132",
+  routine: "CreateSchemaCommand",
+}
+{
+  severity_local: "NOTICE",
+  severity: "NOTICE",
+  code: "42P07",
+  message: "relation \"creation_cleanup_jobs\" already exists, skipping",
+  file: "parse_utilcmd.c",
+  line: "207",
+  routine: "transformCreateStmt",
+}
+{
+  severity_local: "NOTICE",
+  severity: "NOTICE",
+  code: "42701",
+  message: "column \"user_ids\" of relation \"creation_cleanup_jobs\" already exists, skipping",
+  file: "tablecmds.c",
+  line: "7340",
+  routine: "check_for_column_name_collision",
+}
+{
+  severity_local: "NOTICE",
+  severity: "NOTICE",
+  code: "42P07",
+  message: "relation \"pensa_deletion_jobs\" already exists, skipping",
+  file: "parse_utilcmd.c",
+  line: "207",
+  routine: "transformCreateStmt",
+}
+(pass) fila durável de limpeza de criações > claim é exclusivo; falha libera para retry e complete encerra [78.00ms]
+(pass) fila durável de limpeza de criações > job de PLANO só sai para o worker que declarou o escopo pensa [31.00ms]
+
+tests\db\creations.repository.test.ts:
+{
+  severity_local: "NOTICE",
+  severity: "NOTICE",
+  code: "42P06",
+  message: "schema \"members\" already exists, skipping",
+  file: "schemacmds.c",
+  line: "132",
+  routine: "CreateSchemaCommand",
+}
+{
+  severity_local: "NOTICE",
+  severity: "NOTICE",
+  code: "42710",
+  message: "enum label \"molda\" already exists, skipping",
+  file: "pg_enum.c",
+  line: "286",
+  routine: "AddEnumLabel",
+}
+{
+  severity_local: "NOTICE",
+  severity: "NOTICE",
+  code: "42710",
+  message: "enum label \"lesson-studio\" already exists, skipping",
+  file: "pg_enum.c",
+  line: "286",
+  routine: "AddEnumLabel",
+}
+{
+  severity_local: "NOTICE",
+  severity: "NOTICE",
+  code: "42710",
+  message: "enum label \"lesson-pinta\" already exists, skipping",
+  file: "pg_enum.c",
+  line: "286",
+  routine: "AddEnumLabel",
+}
+{
+  severity_local: "NOTICE",
+  severity: "NOTICE",
+  code: "42P07",
+  message: "relation \"account_deletion_fences\" already exists, skipping",
+  file: "parse_utilcmd.c",
+  line: "207",
+  routine: "transformCreateStmt",
+}
+(pass) índice das criações (Postgres real) > backfill escolhe o maior formato histórico confirmado ou pendente e preserva o piso existente [16.00ms]
+(pass) índice das criações (Postgres real) > a reserva de um mapa 7 protege os outros IDs, inclusive tickets que já fizeram PUT [250.00ms]
+(pass) índice das criações (Postgres real) > a reserva de um mapa 99 protege os outros IDs, inclusive tickets que já fizeram PUT [203.00ms]
+(pass) índice das criações (Postgres real) > reserva substituída por serviço antigo não herda a capacidade da revisão anterior [47.00ms]
+(pass) índice das criações (Postgres real) > commits racing a reservation cannot publish a stale dependency after the floor has been established [109.00ms]
+(pass) índice das criações (Postgres real) > cerca de exclusão recusa reserva mesmo com credencial antiga [16.00ms]
+(pass) índice das criações (Postgres real) > migração conserva registro e chave legados como Kids, invisíveis no adulto [16.00ms]
+(pass) índice das criações (Postgres real) > mesma conta e mesmo item mantêm versões, cotas e exclusões isoladas por público [62.00ms]
+(pass) índice das criações (Postgres real) > manifesto verificado precisa corresponder às partes reservadas dentro da transação [31.00ms]
+(pass) índice das criações (Postgres real) > formato validado deve coincidir com a reserva sob lock, sem promover divergências [63.00ms]
+(pass) índice das criações (Postgres real) > o corte do Studio recusa formato antigo também dentro da transação [15.00ms]
+(pass) índice das criações (Postgres real) > delete confere capacidade contra formato %s confirmado e pendente sob lock [110.00ms]
+(pass) índice das criações (Postgres real) > delete confere capacidade contra formato %s confirmado e pendente sob lock [125.00ms]
+(pass) índice das criações (Postgres real) > delete reavalia formato %s após atualização concorrente sob lock [31.00ms]
+(pass) índice das criações (Postgres real) > delete reavalia formato %s após atualização concorrente sob lock [47.00ms]
+(pass) índice das criações (Postgres real) > delete repetido cancela uma reserva compatível de restauro sem renovar a lápide [94.00ms]
+(pass) índice das criações (Postgres real) > formatos são monotônicos em reservas concorrentes e commits, inclusive reserva legada [125.00ms]
+(pass) índice das criações (Postgres real) > a reserva pendurada de uma página que morreu é trocada pela próxima com a mesma base [62.00ms]
+(pass) índice das criações (Postgres real) > reserva → commit promove os pendentes; commit errado recusado; lixeira; contador nunca volta; idempotência [172.00ms]
+(pass) índice das criações (Postgres real) > quota dentro da transação: total de bytes e itens por ferramenta; reservas concorrentes de item NOVO não dão 500 [172.00ms]
+(pass) índice das criações (Postgres real) > biblioteca de paletas: fora da CONTAGEM de itens (bytes contam), e nunca recusada pelo teto [141.00ms]
+(pass) índice das criações (Postgres real) > PARTES no Postgres real: JSONB vai e volta com `rev`, commit exige as enviadas, idempotência não solta nada, `pending_parts` vira NULL, lixeira e ressurreição [109.00ms]
+(pass) índice das criações (Postgres real) > paginação é estável e compactação remove somente o lote de lápides anterior ao corte [62.00ms]
+
+ 25 pass
+ 0 fail
+ 219 expect() calls
+Ran 25 tests across 2 files. [2.81s]

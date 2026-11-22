@@ -1,0 +1,60 @@
+bun test v1.3.11 (af24e281)
+
+tests\db\pinta-causal.test.ts:
+{
+  severity_local: "NOTICE",
+  severity: "NOTICE",
+  code: "42P06",
+  message: "schema \"drizzle\" already exists, skipping",
+  file: "schemacmds.c",
+  line: "132",
+  routine: "CreateSchemaCommand",
+}
+{
+  severity_local: "NOTICE",
+  severity: "NOTICE",
+  code: "42P07",
+  message: "relation \"members_migrations\" already exists, skipping",
+  file: "parse_utilcmd.c",
+  line: "207",
+  routine: "transformCreateStmt",
+}
+213 |     const {binding} = await db.backfillTicket(a,{epoch:'1',itemId:'pending',revision:3,reader:6})
+214 |     await db.backfillAttest(a,{purpose:'pinta-backfill-content-v1',binding,sha256:old.sha256,manifest:manifest(old)})
+215 |     const next = put('pending',2,'pixel-sprite',3)
+216 |     const op = intent('2',[next])
+217 |     const [ticket] = await reserve(a,op)
+218 |     expect(ticket).toMatchObject({baseRevision:3,revision:10})
+                         ^
+error: expect(received).toMatchObject(expected)
+
+  {
++   "baseEpoch": "2",
+    "baseRevision": 3,
+-   "revision": 10,
++   "baseSha256": "0000000000000000000000000000000000000000000000000000000000000001",
++   "candidateSha256": "0000000000000000000000000000000000000000000000000000000000000002",
++   "expiresAt": "2026-11-22T18:17:54.647Z",
++   "intentHash": "5dd99d6776a32f3d3da34b4df574ee50f1c568fec33b14f29f8f9284fa4ec967",
++   "itemId": "pending",
++   "namespace": {
++     "audience": "kids",
++     "tool": "pinta",
++     "userId": "2995a6af-a2b1-4d80-97a3-927733fd404c",
++   },
++   "nonce": "cfb15a9a-865b-4bb6-8d24-e10cf5185104",
++   "opId": "ddd46c74-d2b2-4e80-99b5-159992d50787",
++   "revision": 4,
+  }
+
+- Expected  - 1
++ Received  + 14
+
+      at <anonymous> (<worktree>\packages\members\tests\db\pinta-causal.test.ts:218:20)
+(fail) Pinta causal over the real migration and existing quota lock > takes the next revision above a legacy pending ticket whose reservation counter fell behind [375.00ms]
+
+ 0 pass
+ 18 filtered out
+ 1 fail
+ 1 expect() calls
+Ran 1 test across 1 file. [1.63s]

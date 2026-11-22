@@ -1,0 +1,45 @@
+bun test v1.3.11 (af24e281)
+
+tests\db\pinta-causal.test.ts:
+{
+  severity_local: "NOTICE",
+  severity: "NOTICE",
+  code: "42P06",
+  message: "schema \"drizzle\" already exists, skipping",
+  file: "schemacmds.c",
+  line: "132",
+  routine: "CreateSchemaCommand",
+}
+{
+  severity_local: "NOTICE",
+  severity: "NOTICE",
+  code: "42P07",
+  message: "relation \"members_migrations\" already exists, skipping",
+  file: "parse_utilcmd.c",
+  line: "207",
+  routine: "transformCreateStmt",
+}
+(pass) Pinta causal over the real migration and existing quota lock > paged intent never publishes prefixes, and a changed index invalidates a later page [1407.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > net quota, compacted tombstone, account deletion fence and expired nonce [562.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > takes the next revision above a legacy pending ticket whose reservation counter fell behind [250.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > legacy numerical ACK after compaction identifies neither the original bytes nor a causal base [656.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > retirement releases only expired exact keys and preserves the confirmed seal [375.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > internal routes require both gateway credentials and reject browser-supplied facts and mixed adult identities [141.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > unknown legacy resource allows proven paint/append but blocks structural changes [734.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > name door cannot silently retarget; a set cannot drop a live external art resource [766.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > an inverse binds every before/after digest across a disappeared slot and rejects a new consumer [1766.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > undo of append drops only the former suffix and preserves later users of the prefix [687.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > inverse of a compacted creation cannot delete a recreated identical revision and digest [922.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > opaque future bytes have an explicit owner archive and cannot be admitted or mutated by reader 7 [219.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > an old SQL commit already waiting on the quota lock observes adoption before its write [531.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > restoring a deleted sheet may recompress only an authoring document proven by the original receipt [828.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > compacting and recreating an ID never revives its previous revision-one object [453.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > account purge fences a first collecting page before any creation row exists [31.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > A,B,C: omitted remote consumer, failed second upload, idempotent promotion and sealed snapshot [719.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > new consumer racing structural change has exactly one visible winner; other actor/audience isolated [406.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > legacy before adoption gets sealed by revision and epoch; pending old writer cannot cross adoption [375.00ms]
+
+ 19 pass
+ 0 fail
+ 124 expect() calls
+Ran 19 tests across 1 file. [12.94s]
