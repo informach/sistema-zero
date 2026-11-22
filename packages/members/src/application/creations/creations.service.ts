@@ -214,6 +214,26 @@ export class ReserveCreationUploadService {
     private readonly adultJourney?: Pick<AdultJourneyService, 'assert'>,
   ) {}
 
+  async assertPersonalWrite(
+    tool: ProductCreationTool,
+    userId: string,
+    accountId: string,
+    privileged: boolean,
+  ) {
+    if (this.creations.audience === 'adult') {
+      if (!this.adultJourney) throw new AccessDeniedError('Jornada adulta indisponível.')
+      await this.adultJourney.assert(userId, tool, privileged)
+    }
+    await assertToolOwned(
+      this.accessCheck,
+      accountId,
+      tool,
+      privileged,
+      this.clock().getTime(),
+      this.creations.audience ?? 'kids',
+    )
+  }
+
   async execute(input: {
     userId: string
     accountId: string
@@ -245,18 +265,7 @@ export class ReserveCreationUploadService {
         blockId: input.itemId,
       })
     } else {
-      if (this.creations.audience === 'adult') {
-        if (!this.adultJourney) throw new AccessDeniedError('Jornada adulta indisponível.')
-        await this.adultJourney.assert(input.userId, input.tool, input.privileged)
-      }
-      await assertToolOwned(
-        this.accessCheck,
-        input.accountId,
-        input.tool,
-        input.privileged,
-        this.clock().getTime(),
-        this.creations.audience ?? 'kids',
-      )
+      await this.assertPersonalWrite(input.tool, input.userId, input.accountId, input.privileged)
     }
     if (
       input.fingerprint !== undefined &&

@@ -113,7 +113,14 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
       created_at timestamptz not null
     )`)
     await conn.sql.unsafe('drop table if exists members.creation_inventory_floors')
-    for (const name of ['0166_pinta_inventory_floor', '0167_backfill_pinta_inventory_floor']) {
+    await conn.sql.unsafe('drop table if exists members.pinta_causal_units')
+    await conn.sql.unsafe('drop function if exists members.pinta_graph_individual_write()')
+    for (const name of [
+      '0166_pinta_inventory_floor',
+      '0167_backfill_pinta_inventory_floor',
+      '0168_pinta_causal_units',
+      '0170_pinta_causal_writer_fence',
+    ]) {
       const migration = await Bun.file(
         new URL(
           `../../src/infrastructure/persistence/drizzle/migrations/${name}.sql`,

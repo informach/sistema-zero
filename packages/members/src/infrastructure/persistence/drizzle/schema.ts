@@ -7,6 +7,16 @@ import type {
   CoursePublicationPreview,
   CoursePublicationStatus,
 } from '@sistemazero/core/course/publication'
+import type {
+  PintaCausalAttestation,
+  PintaCausalAuthoredFingerprint,
+  PintaCausalBackfillBinding,
+  PintaCausalBinding,
+  PintaCausalIntent,
+  PintaCausalManifest,
+  PintaCausalReservePage,
+  PintaCausalResult,
+} from '@sistemazero/core/creations/pinta-causal'
 import type { HelpTutorialDocument } from '@sistemazero/core/help'
 import type {
   AdultCreatorCapability,
@@ -2255,6 +2265,16 @@ export const creations = members.table(
     pendingRevision: integer('pending_revision'),
     pendingFormatVersion: integer('pending_format_version'),
     /** The revision binds the reader even if an older server replaces pending_* during rollout. */
+    causalManifest: jsonb('causal_manifest').$type<PintaCausalManifest>(),
+    causalSha256: varchar('causal_sha256', { length: 64 }),
+    layoutRevision: bigint('layout_revision', { mode: 'bigint' }),
+    pendingUnit: uuid('pending_unit'),
+    pendingBinding: jsonb('pending_binding').$type<PintaCausalBinding>(),
+    pendingAttestation: jsonb('pending_attestation').$type<PintaCausalAttestation>(),
+    backfillTicket: jsonb('backfill_ticket').$type<{
+      binding: PintaCausalBackfillBinding
+      storageRef: string
+    }>(),
     pendingInventoryReader: jsonb('pending_inventory_reader').$type<{
       revision: number
       version: number
@@ -2315,10 +2335,61 @@ export const creationInventoryFloors = members.table(
     audience: text('audience').$type<CourseAudience>().notNull(),
     tool: creationToolEnum('tool').notNull(),
     requiredVersion: integer('required_version').notNull(),
+    graphEpoch: bigint('graph_epoch', { mode: 'bigint' }).notNull().default(sql`0`),
+    requiresCausalRead: boolean('requires_causal_read').notNull().default(false),
   },
   (t) => [
     primaryKey({ columns: [t.userId, t.audience, t.tool] }),
     index('creation_inventory_floors_account_idx').on(t.accountId),
+  ],
+)
+
+/** Idempotency metadata and pending descriptors only. The current document lives in creations. */
+export const pintaCausalUnits = members.table(
+  'pinta_causal_units',
+  {
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    audience: text('audience').$type<CourseAudience>().notNull(),
+    opId: uuid('op_id').notNull(),
+    intentHash: varchar('intent_hash', { length: 64 }).notNull(),
+    state: text('state')
+      .$type<'collecting' | 'reserved' | 'committed' | 'aborted' | 'expired'>()
+      .notNull(),
+    pages: jsonb('pages').$type<PintaCausalReservePage[] | { proofBytes: number }>(),
+    intent: jsonb('intent').$type<PintaCausalIntent>(),
+    result: jsonb('result').$type<{
+      receipt: PintaCausalResult
+      priorDigests: Record<string, string | null>
+      priorAuthored?: Record<string, PintaCausalAuthoredFingerprint>
+    }>(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.audience, t.opId] }),
+    index('pinta_causal_units_expiry_idx').on(t.expiresAt),
+    index('pinta_causal_units_account_idx').on(t.accountId),
+  ],
+)
+
+/** Exact immutable keys awaiting retirement; a live pointer is never eligible. */
+export const pintaCausalObjects = members.table(
+  'pinta_causal_objects',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    audience: text('audience').$type<CourseAudience>().notNull(),
+    itemId: varchar('item_id', { length: 64 }).notNull(),
+    objectKey: text('object_key').notNull(),
+    requiresFence: boolean('requires_fence').notNull(),
+    notBefore: timestamp('not_before', { withTimezone: true }).notNull(),
+    lockedAt: timestamp('locked_at', { withTimezone: true }),
+    attempts: integer('attempts').notNull().default(0),
+  },
+  (t) => [
+    uniqueIndex('pinta_causal_objects_key_uq').on(t.objectKey),
+    index('pinta_causal_objects_due_idx').on(t.notBefore),
   ],
 )
 
@@ -3878,6 +3949,8 @@ export const schema = {
   adultHelpTutorials,
   creations,
   creationInventoryFloors,
+  pintaCausalUnits,
+  pintaCausalObjects,
   accountDeletionFences,
   creationCleanupJobs,
   galleryCopyAttempts,

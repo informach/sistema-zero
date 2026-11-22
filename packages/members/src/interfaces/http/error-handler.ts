@@ -25,6 +25,7 @@ import {
   CreationPartsNeedBytesError,
   CreationStaleBaseError,
 } from '../../domain/creations/creation.errors'
+import { PintaCausalError } from '../../domain/creations/pinta-causal-graph'
 import { HelpTutorialConflictError, HelpTutorialInvalidError } from '../../domain/help/help.errors'
 
 export type { ErrorEnvelope }
@@ -171,6 +172,8 @@ export function buildErrorResponse(input: {
 }): {
   status: number
   body: ErrorEnvelope & {
+    reason?: string
+    itemId?: string
     retryAvailableAt?: string
     details?:
       | { gate: string; missing: string[] }
@@ -242,6 +245,16 @@ export function buildErrorResponse(input: {
   // cliente decide entre reenviar com a revisão autoritativa (exclusão dele, base velha) e
   // restaurar a versão da nuvem (alguém editou depois) SEM precisar baixar o item para
   // descobrir a revisão (06/09/2026).
+  if (error instanceof PintaCausalError) {
+    return {
+      status: error.reason === 'not-found' ? 404 : 409,
+      body: {
+        ...envelope('PINTA_CAUSAL_CONFLICT', error.reason),
+        reason: error.reason,
+        ...(error.itemId ? { itemId: error.itemId } : {}),
+      },
+    }
+  }
   if (error instanceof CreationClientOutdatedError) {
     return {
       status: 409,

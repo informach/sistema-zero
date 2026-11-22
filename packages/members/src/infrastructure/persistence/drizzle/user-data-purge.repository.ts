@@ -47,6 +47,8 @@ import {
   pensaProjectRoles,
   pensaProjects,
   pensaProviderUsage,
+  pintaCausalObjects,
+  pintaCausalUnits,
   privateNarrations,
   profilePreferences,
   quizAttempts,
@@ -505,6 +507,19 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
             inArray(studioSubmissions.userId, userIds),
             eq(studioSubmissions.accountId, accountId),
           ),
+        )
+      await tx
+        .delete(pintaCausalObjects)
+        .where(
+          or(
+            inArray(pintaCausalObjects.userId, userIds),
+            eq(pintaCausalObjects.accountId, accountId),
+          ),
+        )
+      await tx
+        .delete(pintaCausalUnits)
+        .where(
+          or(inArray(pintaCausalUnits.userId, userIds), eq(pintaCausalUnits.accountId, accountId)),
         )
       await tx
         .delete(creationInventoryFloors)

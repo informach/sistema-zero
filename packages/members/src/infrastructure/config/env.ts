@@ -144,6 +144,7 @@ const EnvSchema = z
       .min(16, 'INTERNAL_API_TOKEN deve ter ao menos 16 caracteres')
       .optional(),
     // Dedicated Auth→Members admission credential; missing always denies this private route.
+    PINTA_CAUSAL_CANDIDATE: optionalBool(false).optional(),
     MEMBERS_PROFILE_ADMISSION_TOKEN: z.string().min(16).optional(),
 
     // Carência (dias) somada ao fim do ciclo da assinatura ao calcular `expiresAt`.

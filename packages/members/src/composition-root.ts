@@ -224,6 +224,7 @@ import { DrizzlePensaProjectCommands } from './infrastructure/persistence/drizzl
 import { DrizzlePensaProjectRepository } from './infrastructure/persistence/drizzle/pensa-project.repository'
 import { DrizzlePensaRewardsRepository } from './infrastructure/persistence/drizzle/pensa-rewards.repository'
 import { DrizzlePensaTeamRepository } from './infrastructure/persistence/drizzle/pensa-team.repository'
+import { DrizzlePintaCausalRepository } from './infrastructure/persistence/drizzle/pinta-causal-units.repository'
 import { DrizzleProcessedWebhookRepository } from './infrastructure/persistence/drizzle/processed-webhook.repository'
 import { DrizzleProgressRepository } from './infrastructure/persistence/drizzle/progress.repository'
 import { DrizzleQuizAttemptRepository } from './infrastructure/persistence/drizzle/quiz-attempt.repository'
@@ -1515,6 +1516,9 @@ export async function createApplication(env: Env): Promise<Application> {
       internalToken: env.INTERNAL_API_TOKEN,
     },
     creations: {
+      ...(env.PINTA_CAUSAL_CANDIDATE && env.INTERNAL_API_TOKEN
+        ? { causal: new DrizzlePintaCausalRepository(db, clock) }
+        : {}),
       adult: {
         list: new ListCreationsService(adultCreationsRepo),
         reserveUpload: new ReserveCreationUploadService(

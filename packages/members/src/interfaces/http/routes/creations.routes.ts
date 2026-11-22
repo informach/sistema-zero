@@ -26,6 +26,7 @@ import {
 } from '../dtos'
 
 export interface CreationsRoutesDeps {
+  causal?: import('../../../infrastructure/persistence/drizzle/pinta-causal-units.repository').DrizzlePintaCausalRepository
   list: ListCreationsService
   reserveUpload: ReserveCreationUploadService
   commitUpload: CommitCreationUploadService

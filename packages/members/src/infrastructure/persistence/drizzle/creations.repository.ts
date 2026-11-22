@@ -19,6 +19,7 @@ import {
   PALETTE_LIBRARY_KIND,
   PALETTE_LIBRARY_TOOL,
 } from '../../../domain/creations/palette-library'
+import { PintaCausalError } from '../../../domain/creations/pinta-causal-graph'
 import type {
   CreationCommitResult,
   CreationListPage,
@@ -28,6 +29,8 @@ import type {
   CreationUsage,
 } from '../../../domain/ports/creations-repository.port'
 import type { Database } from './db'
+import { clearPending, expirePintaUnits } from './pinta-causal-leases'
+import { assertIndividualPinta } from './pinta-causal-scope'
 import { accountDeletionFences, creationInventoryFloors, creations } from './schema'
 
 async function inventoryFloor(
@@ -50,7 +53,7 @@ async function inventoryFloor(
   return row?.version ?? 1
 }
 
-async function raiseInventoryFloor(
+export async function raiseInventoryFloor(
   db: Pick<Database, 'insert'>,
   input: { userId: string; accountId: string; tool: CreationTool },
   audience: CourseAudience,
@@ -227,6 +230,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         ),
       )
       .orderBy(desc(creations.itemUpdatedAt))
+    await assertIndividualPinta(this.db, userId, this.audience, tool)
     return rows.map((row) => {
       const summary: CreationSummary = { ...row }
       if (row.deletedAt === null) delete summary.deletedAt
@@ -277,6 +281,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       )
       .orderBy(desc(creations.itemUpdatedAt), desc(creations.itemId))
       .limit(options.limit + 1)
+    await assertIndividualPinta(this.db, userId, this.audience, tool)
     const hasNext = rows.length > options.limit
     const pageRows = hasNext ? rows.slice(0, options.limit) : rows
     const last = pageRows.at(-1)
@@ -292,7 +297,13 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       const doomed = await tx
         .select({ id: creations.id })
         .from(creations)
-        .where(and(isNotNull(creations.deletedAt), lt(creations.deletedAt, cutoff)))
+        .where(
+          and(
+            isNotNull(creations.deletedAt),
+            isNull(creations.pendingUnit),
+            lt(creations.deletedAt, cutoff),
+          ),
+        )
         .orderBy(creations.deletedAt)
         .limit(limit)
         .for('update', { skipLocked: true })
@@ -321,6 +332,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       .from(creations)
       .where(whereItem(userId, tool, itemId, audience))
       .limit(1)
+    await assertIndividualPinta(this.db, userId, audience, tool, itemId)
     return row ? toRecord(row) : null
   }
 
@@ -362,6 +374,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       await tx.execute(
         sql`select pg_advisory_xact_lock(hashtextextended(${`creation-quota:${input.userId}`}, 0))`,
       )
+      await assertIndividualPinta(tx, input.userId, this.audience, input.tool, input.itemId)
       const [deletionFence] = await tx
         .select({ accountId: accountDeletionFences.accountId })
         .from(accountDeletionFences)
@@ -379,6 +392,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
           revision: creations.revision,
           formatVersion: creations.formatVersion,
           pendingFormatVersion: creations.pendingFormatVersion,
+          pendingUnit: creations.pendingUnit,
           lastReservedRevision: creations.lastReservedRevision,
           bytes: creations.bytes,
           storageRef: creations.storageRef,
@@ -391,6 +405,17 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         .limit(1)
         .for('update')
 
+      if (existing?.pendingUnit) {
+        const expired = await expirePintaUnits(
+          tx,
+          { userId: input.userId, accountId: input.accountId, audience: this.audience },
+          input.now,
+          true,
+        )
+        if (!expired.includes(existing.pendingUnit))
+          throw new PintaCausalError('operation-conflict', input.itemId)
+        existing.pendingFormatVersion = null
+      }
       const formatVersion = input.formatVersion ?? 1
       const floor = await inventoryFloor(tx, input.userId, this.audience, input.tool)
       if ((input.maxReadFormatVersion ?? formatVersion) < floor)
@@ -556,6 +581,8 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         .where(whereItem(input.userId, input.tool, input.itemId, this.audience))
         .limit(1)
         .for('update')
+      await assertIndividualPinta(tx, input.userId, this.audience, input.tool, input.itemId)
+      if (row?.pendingUnit) throw new PintaCausalError('operation-conflict', input.itemId)
       if (!row) return { ok: false }
       // Retry de um 200 perdido: a revisão pedida JÁ é a corrente. Idempotente — MESMO com
       // outra reserva em voo (`pending_revision` de outra aba): dizer 409 aqui faria o BFF
@@ -657,6 +684,10 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         .update(creations)
         .set({
           revision: input.revision,
+          causalManifest: null,
+          causalSha256: null,
+          layoutRevision: null,
+          backfillTicket: null,
           formatVersion,
           storageRef: input.storageRef,
           bytes: row.pendingBytes,
@@ -698,11 +729,14 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         await tx.execute(
           sql`select pg_advisory_xact_lock(hashtextextended(${`creation-quota:${userId}`}, 0))`,
         )
+      await assertIndividualPinta(tx, userId, this.audience, tool, itemId)
       const floor = await inventoryFloor(tx, userId, this.audience, tool)
       const [row] = await tx
         .select({
           storageRef: creations.storageRef,
           parts: creations.parts,
+          accountId: creations.accountId,
+          pendingUnit: creations.pendingUnit,
           revision: creations.revision,
           deletedAt: creations.deletedAt,
           formatVersion: creations.formatVersion,
@@ -718,6 +752,18 @@ export class DrizzleCreationsRepository implements CreationsRepository {
           ? { ok: true, deleted: false, storageRef: null, partRefs: [], revision: 0 }
           : { ok: false, reason: 'stale-base', currentRevision: 0 }
       }
+      if (row.pendingUnit) {
+        const expired = await expirePintaUnits(
+          tx,
+          { userId, accountId: row.accountId, audience: this.audience },
+          now,
+          true,
+        )
+        if (!expired.includes(row.pendingUnit))
+          throw new PintaCausalError('operation-conflict', itemId)
+        row.pendingFormatVersion = null
+        row.pendingRevision = null
+      }
       if (baseRevision !== row.revision) {
         return { ok: false, reason: 'stale-base', currentRevision: row.revision }
       }
@@ -732,6 +778,10 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         .update(creations)
         .set({
           deletedAt: row.deletedAt ?? now,
+          causalManifest: null,
+          causalSha256: null,
+          layoutRevision: null,
+          backfillTicket: null,
           // Cancela a reserva em voo (o commit dela cai em 409); o contador NÃO volta.
           ...clearPending(),
           // O blob (e as partes) saem da linha — e do R2, pelo BFF: apagado não ocupa espaço
@@ -788,22 +838,6 @@ export function resolveParts(
   return { all, missing, unsized }
 }
 
-/** Zera a reserva em voo (a lixeira e a recusa por quota no commit fazem isso). */
-function clearPending() {
-  return {
-    pendingParts: null,
-    pendingRevision: null,
-    pendingFormatVersion: null,
-    pendingInventoryReader: null,
-    pendingBytes: null,
-    pendingName: null,
-    pendingKind: null,
-    pendingItemUpdatedAt: null,
-    pendingThumb: null,
-    pendingContentFingerprint: null,
-  }
-}
-
 /**
  * Uso do perfil: só itens vivos e JÁ CONFIRMADOS (reserva sem upload não ocupa vaga nem byte).
  * A biblioteca de paletas do Pinta (kind `palette-library`, item especial do canal) fica FORA da
@@ -812,7 +846,7 @@ function clearPending() {
  * que ocupa o R2, e a aritmética `totalBytes - currentBytes + novos` assume a própria linha
  * dentro do total.
  */
-async function usageWith(
+export async function usageWith(
   db: Pick<Database, 'select'>,
   userId: string,
   audience: CourseAudience,

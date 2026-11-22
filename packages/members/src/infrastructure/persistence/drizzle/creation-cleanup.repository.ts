@@ -6,6 +6,7 @@ import type {
 } from '../../../domain/ports/creation-cleanup-repository.port'
 import type { Database } from './db'
 import { DrizzleGalleryCopyRepository } from './gallery-copy.repository'
+import { DrizzlePintaRetirementRepository } from './pinta-causal-retirement'
 import { creationCleanupJobs, pensaDeletionJobs } from './schema'
 
 export class DrizzleCreationCleanupRepository implements CreationCleanupRepository {
@@ -89,8 +90,15 @@ export class DrizzleCreationCleanupRepository implements CreationCleanupReposito
         })
       : null
     if (planJob) return planJob
-    return scopes.includes('gallery')
-      ? new DrizzleGalleryCopyRepository(this.db).claimDue(now, leaseExpiredBefore)
+    if (scopes.includes('gallery')) {
+      const gallery = await new DrizzleGalleryCopyRepository(this.db).claimDue(
+        now,
+        leaseExpiredBefore,
+      )
+      if (gallery) return gallery
+    }
+    return scopes.includes('pinta')
+      ? new DrizzlePintaRetirementRepository(this.db).claim(now, leaseExpiredBefore)
       : null
   }
 
@@ -106,7 +114,11 @@ export class DrizzleCreationCleanupRepository implements CreationCleanupReposito
       .set({ completedAt: now, lockedAt: null, lastError: null, updatedAt: now })
       .where(and(eq(pensaDeletionJobs.id, id), isNull(pensaDeletionJobs.completedAt)))
       .returning({ id: pensaDeletionJobs.id })
-    return plans.length === 1 || new DrizzleGalleryCopyRepository(this.db).complete(id, now)
+    return (
+      plans.length === 1 ||
+      (await new DrizzleGalleryCopyRepository(this.db).complete(id, now)) ||
+      new DrizzlePintaRetirementRepository(this.db).complete(id)
+    )
   }
 
   async fail(id: string, error: string, now: Date, retryAt: Date): Promise<boolean> {
@@ -122,7 +134,9 @@ export class DrizzleCreationCleanupRepository implements CreationCleanupReposito
       .where(and(eq(pensaDeletionJobs.id, id), isNull(pensaDeletionJobs.completedAt)))
       .returning({ id: pensaDeletionJobs.id })
     return (
-      plans.length === 1 || new DrizzleGalleryCopyRepository(this.db).fail(id, error, now, retryAt)
+      plans.length === 1 ||
+      (await new DrizzleGalleryCopyRepository(this.db).fail(id, error, now, retryAt)) ||
+      new DrizzlePintaRetirementRepository(this.db).fail(id, retryAt)
     )
   }
 }

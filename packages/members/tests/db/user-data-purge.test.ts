@@ -100,6 +100,10 @@ describe.skipIf(!target)('Purga de dados do usuário no Postgres real', () => {
       authCursor = owner.userId
     }
     await addEntitlement(accountId, entitlementId)
+    await conn.sql`insert into members.pinta_causal_units(user_id,account_id,audience,op_id,intent_hash,state,expires_at)
+      values(${profileId},${accountId},'kids',${randomUUID()},repeat('1',64),'reserved',now())`
+    await conn.sql`insert into members.pinta_causal_objects(id,user_id,account_id,audience,item_id,object_key,requires_fence,not_before)
+      values(${randomUUID()},${profileId},${accountId},'kids','example','owned-object',false,now())`
     await conn.sql`insert into members.creation_inventory_floors(user_id,account_id,audience,tool,required_version) values (${profileId},${accountId},'kids','pinta',7)`
     await conn.sql`insert into members.kids_journey_earned(user_id,account_id,level,capabilities,policy_version,updated_at)
       values (${profileId},${accountId},'coder','["studio","pinta"]'::jsonb,0,now())`
@@ -151,6 +155,8 @@ describe.skipIf(!target)('Purga de dados do usuário no Postgres real', () => {
       'creations',
       'teacher_threads',
       'creation_inventory_floors',
+      'pinta_causal_units',
+      'pinta_causal_objects',
       'pensa_projects',
       'ai_usage_daily',
       'parent_reports_sent',
