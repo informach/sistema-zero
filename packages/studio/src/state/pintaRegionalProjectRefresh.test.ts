@@ -232,6 +232,30 @@ test('regional preflight cannot drop ordinary materials to make room for a large
   )
 })
 
+test('edits made after capture cannot grow the admitted list or swap material bytes', async () => {
+  const scope = privateRegionalProjectScope('changed-admission')
+  const project = { ...createEmptyProject('immutable-admission', 'Mapa'), assets: [image] }
+  await persistProject(project, {}, scope)
+  const { assets: observed } = await loadProjectAssetsSnapshotById(project.id, scope)
+  const attempt = async (candidate: Array<ProjectAsset | (ProjectAsset & Capture)>) => {
+    const proof = await admitRegionalProjectAssets(candidate)
+    const materials = sanitizeProjectAssets(candidate, { regionalMaterials: proof })
+    return persistProjectAssets(project.id, materials, scope, observed)
+  }
+  const regional = { ...image, ...before }
+  const companion = { ...image, id: 'other', name: 'fundo', proPath: 'public/assets/fundo.png' }
+  const growing = [regional, companion]
+  const append = attempt(growing)
+  growing.push({ ...companion, id: 'late', name: 'exemplo' })
+  await expect(append).rejects.toThrow('O original foi preservado')
+
+  const changing = [regional, companion]
+  const replaceBytes = attempt(changing)
+  companion.dataUrl = url(png(64, 32, '#dd5522'))
+  await expect(replaceBytes).rejects.toThrow('O original foi preservado')
+  expect((await loadProjectAssetsSnapshotById(project.id, scope)).assets).toEqual([image])
+})
+
 test('ordinary server admission refuses a complete regional source and sees only the program in the old parts envelope', async () => {
   const base = createEmptyProject('cloud-capability-probe', 'Mapa')
   const source = { ...base, assets: [{ ...image, ...before }] }

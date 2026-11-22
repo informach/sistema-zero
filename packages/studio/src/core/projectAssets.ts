@@ -12,10 +12,12 @@ import { courseModelDataUrl, isCourseModelStub } from './courseModels'
 import { readPintaImageAssetMetadata } from './pintaImageAsset'
 import {
   admittedRegionalMarker,
+  assertRegionalProjectAssetProof,
   type PintaRegionalProjectAdmissions,
 } from './pintaRegionalProjectAdmission'
 import { hasRegionalPintaReference, UNSUPPORTED_PINTA_REGION } from './pintaRegionalReference'
 import { validProMaterialPath } from './proAssetPaths'
+import { MAX_ASSETS_COUNT, MAX_ASSETS_TOTAL_CHARS } from './projectAssetBudget'
 import {
   isScene3DAssetKind,
   isValidScene3DDataUrl,
@@ -229,11 +231,6 @@ const MAX_MODEL3D_DATA_URL_CHARS = 7_000_000
  * título) têm de 20 a 400 KB; uma fonte com milhares de glifos não tem lugar aqui.
  */
 const MAX_FONT_DATA_URL_CHARS = 2_000_000
-/** Orçamento total de assets do projeto (~24 MB de binário inflado em base64;
- * subido de ~8 MB em 2026-07 p/ caber sons importados de até ~5 MB). */
-const MAX_ASSETS_TOTAL_CHARS = 33_000_000
-/** Teto de quantidade de assets por projeto (defesa anti-DoS no load). */
-const MAX_ASSETS_COUNT = 128
 /** Tetos do metadado (anti-DoS; o metadado NÃO conta na cota de `dataUrl`). */
 const MAX_SPRITE_ANIMS = 32
 const MAX_TILESET_SOLID = 64
@@ -591,6 +588,7 @@ export function sanitizeProjectAssets(
     warnings?: string[]
   } = {},
 ): ProjectAsset[] {
+  if (options.regionalMaterials) assertRegionalProjectAssetProof(raw, options.regionalMaterials)
   if (!Array.isArray(raw)) return []
   const materialPath = options.materialPath ?? validProMaterialPath
   const dataLimits = options.dataLimits ?? PROJECT_ASSET_LIMITS
