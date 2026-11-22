@@ -239,10 +239,7 @@ describe('remapTilemapCells: a arte dos objetos (`art.tile`) acompanha a peça',
     if (chao.kind === 'objects' || chao.kind === 'group') throw new Error('Camada sem peças')
     const antes = {
       ...original,
-      layers: [
-        { ...chao, cells: Int16Array.from([CELL_FLIP_H, 1]) },
-        ...original.layers.slice(1),
-      ],
+      layers: [{ ...chao, cells: Int16Array.from([CELL_FLIP_H, 1]) }, ...original.layers.slice(1)],
     }
     const objetos = (map: TilemapAsset) => map.layers.find(isObjectLayer)!.objects
     const implicita = objetos(antes)[4]!

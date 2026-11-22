@@ -754,7 +754,8 @@ function visitPintaAssetReferences(asset: ReferenceAsset, visit: ReferenceVisito
   if (map) {
     add(map.tilesetId, 'default-sheet')
     for (const layer of map.layers) {
-      if (isTileLayer<TilemapCells>(layer) && layer.tilesetId !== undefined) add(layer.tilesetId, 'layer-sheet')
+      if (isTileLayer<TilemapCells>(layer) && layer.tilesetId !== undefined)
+        add(layer.tilesetId, 'layer-sheet')
     }
     for (const layer of map.layers) {
       addProperties(layer.properties)
