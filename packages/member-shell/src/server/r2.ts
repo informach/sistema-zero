@@ -340,12 +340,12 @@ export async function r2HeadObjectPrivate(key: string): Promise<R2PrivateHead | 
 
 /** Sobe um objeto no bucket PRIVADO (cache de PDFs com marca d'água por aluno). */
 export async function r2PutObjectPrivate(input: R2PutObjectInput): Promise<void> {
-  await putPrivateObject(input, false)
+  await putRestrictedObject(requirePrivateR2Config(), input, false)
 }
 
 /** Atomic creation: a concurrent writer or a retained tombstone wins over this PUT. */
 export async function r2CreateObjectPrivate(input: R2PutObjectInput): Promise<boolean> {
-  return putPrivateObject(input, true)
+  return putRestrictedObject(requirePrivateR2Config(), input, true)
 }
 
 /** Replace only the exact object whose ownership/content was checked by the caller. */
@@ -355,15 +355,16 @@ export async function r2ReplaceObjectPrivate(
 ): Promise<boolean> {
   const normalized = etag.replace(/^"|"$/g, '')
   if (!normalized || /["\r\n]/.test(normalized)) throw new Error('Versão do objeto inválida.')
-  return putPrivateObject(input, false, `"${normalized}"`)
+  return putRestrictedObject(requirePrivateR2Config(), input, false, `"${normalized}"`)
 }
 
-async function putPrivateObject(
+async function putRestrictedObject(
+  cfg: R2PrivateConfig,
   input: R2PutObjectInput,
   onlyIfAbsent: boolean,
   etag?: string,
+  signal?: AbortSignal,
 ): Promise<boolean> {
-  const cfg = requirePrivateR2Config()
   const key = normalizeKey(input.key)
   try {
     await getClient(cfg).send(
@@ -378,6 +379,7 @@ async function putPrivateObject(
         ...(onlyIfAbsent ? { IfNoneMatch: '*' } : {}),
         ...(etag ? { IfMatch: etag } : {}),
       }),
+      { abortSignal: signal },
     )
     return true
   } catch (error) {
@@ -392,7 +394,7 @@ async function putPrivateObject(
       error.$metadata.httpStatusCode === 412
     )
       return false
-    console.error('[r2] putObjectPrivate falhou', { key, error })
+    console.error('[r2] putRestrictedObject falhou', { key, error })
     throw new Error('Falha ao gravar o arquivo no armazenamento.', { cause: error })
   }
 }
@@ -487,6 +489,7 @@ export async function r2PresignPutUgc(input: {
   contentType: string
   contentLength: number
   expiresInSeconds?: number
+  signingDate?: Date
   /** Arquivos por hash: uma URL de envio não pode substituir conteúdo já confirmado. */
   criarUmaVez?: boolean
 }): Promise<string> {
@@ -502,6 +505,7 @@ export async function r2PresignPutUgc(input: {
     }),
     {
       expiresIn: input.expiresInSeconds ?? 300,
+      ...(input.signingDate ? { signingDate: input.signingDate } : {}),
       signableHeaders: new Set([
         'content-type',
         'content-length',
@@ -586,6 +590,14 @@ export async function r2ReadCreationJson(key: string): Promise<unknown> {
   const compressed = await bufferFromStream(object.Body.transformToWebStream(), 40 * 1024 * 1024)
   const json = gunzipSync(compressed, { maxOutputLength: 128 * 1024 * 1024 }).toString('utf8')
   return JSON.parse(json)
+}
+
+/** The sealed Pinta prefix has no browser PUT. A concurrent seal cannot replace an object. */
+export async function r2CreateObjectUgc(
+  input: R2PutObjectInput,
+  signal?: AbortSignal,
+): Promise<boolean> {
+  return putRestrictedObject(requireUgcR2Config(), input, true, undefined, signal)
 }
 
 export async function r2PutObjectUgc(input: R2PutObjectInput): Promise<void> {

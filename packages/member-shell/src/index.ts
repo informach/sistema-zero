@@ -10,6 +10,7 @@ import { createCenariosRoutes } from './routes/cenarios'
 import { createCertificateRoutes } from './routes/certificate'
 import { createCreationCleanupWorkerRoutes } from './routes/creation-cleanup'
 import { createCreationsRoutes } from './routes/creations'
+import { createPintaCausalRoutes } from './routes/pinta-causal'
 import { createHelpdeskRoutes } from './routes/helpdesk'
 import { createHubRoutes } from './routes/hub'
 import { createLiveRoutes } from './routes/live'
@@ -108,6 +109,7 @@ export function createShell(cfg: ShellConfig) {
     ...createPensaRoutes({ members, session, audience: cfg.audience }),
     ...createPrivateNarrationRoutes({ members, session, audience: cfg.audience }),
     ...createCreationsRoutes({ members, session }),
+    ...createPintaCausalRoutes({ gateway, session }),
     ...createCenariosRoutes({ gateway, session }),
     ...createCreationCleanupWorkerRoutes({ gateway }),
     ...createVoiceRoutes({ session, auth, members, audience: cfg.audience }),

@@ -199,3 +199,54 @@ describe('worker durável de limpeza das criações', () => {
     expect(paths.filter((path) => path.endsWith('/rewards/work'))).toHaveLength(1)
   })
 })
+
+test.each([
+  false,
+  true,
+])('causal cleanup advertises the scope only when enabled (%s)', async (enabled) => {
+  const paths: string[] = []
+  const claimBodies: unknown[] = []
+  const keys = [
+    'creations/11111111-1111-4111-8111-111111111111/pinta/vila/units/22222222-2222-4222-8222-222222222222/1.sealed.gz',
+  ]
+  const deleted: (readonly string[])[] = []
+  const gateway = {
+    async gatewayFetchHmac(path: string, options?: { body?: unknown }) {
+      paths.push(path)
+      if (!path.endsWith('/claim')) return { status: 200, body: {} }
+      claimBodies.push(options?.body)
+      if (!enabled || claimBodies.length > 1) return { status: 204, body: null }
+      return {
+        status: 200,
+        body: {
+          job: {
+            id: 'pinta-unit',
+            scope: 'pinta',
+            accountId: 'owner',
+            attempts: 1,
+            userIds: [],
+            prefixes: [],
+            objectKeys: keys,
+          },
+        },
+      }
+    },
+  } as unknown as GatewayModule
+  const route = createCreationCleanupWorkerRoutes({
+    gateway,
+    pintaCausalEnabled: () => enabled,
+    deletePrefixes: async () => {
+      throw new Error('A prova não entrega prefixos')
+    },
+    deleteObjects: async (objects) => {
+      deleted.push(objects)
+    },
+  }).creationCleanupWorker
+  expect((await route.POST(request())).status).toBe(200)
+  expect(claimBodies[0]).toEqual({
+    scopes: enabled ? ['pensa', 'gallery', 'pinta'] : ['pensa', 'gallery'],
+  })
+  expect(deleted).toEqual(enabled ? [keys] : [])
+  expect(paths.includes('/members/internal/creation-cleanups/pinta-unit/complete')).toBe(enabled)
+  expect(paths.some((path) => path.includes('account-deletion'))).toBe(false)
+})
