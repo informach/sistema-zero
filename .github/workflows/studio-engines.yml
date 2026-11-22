@@ -8,7 +8,9 @@ name: Studio engines (GPU cycles, off-screen drawing and devtools cost)
 # abas Desempenho e Investigar no processo do jogo (`devtools-cost.spec.ts`, meta da proposta:
 # abaixo de 5% do quadro). Desde o lote 7 da conclusão, também as regiões no motor com o jogo E
 # (`engine-regions.spec.ts`): o cenário é montado e compilado no navegador pela oficina e o Estúdio
-# o importa antes da prova. A evidência vai nos artefatos com o SHA.
+# o importa antes da prova. Desde o lote 8, também o jogo D (`jogo-d.flow.ts`): o 2D de grande
+# porte, com o desempenho por quadro, a sessão de 10 minutos pelas regiões e portas, a volta com o
+# estado, a cama que guarda e o destino quebrado. A evidência vai nos artefatos com o SHA.
 on:
   push:
     branches: ['staging']
@@ -19,6 +21,15 @@ on:
       - 'packages/studio/e2e/engine-2d-offscreen.spec.ts'
       - 'packages/studio/e2e/devtools-cost.spec.ts'
       - 'packages/studio/e2e/engine-regions.spec.ts'
+      - 'packages/studio/e2e/jogo-d.flow.ts'
+      - 'packages/studio/playwright.jogo-d.config.ts'
+      - 'packages/studio/scripts/serve-jogo-d-proof.ts'
+      - 'packages/studio/scripts/gen-jogo-d.ts'
+      - 'packages/studio/scripts/jogo-d/**'
+      - 'packages/studio/src/examples/jogoD*'
+      - 'packages/studio/src/examples/__gen_jogoD.ts'
+      - 'packages/studio/src/official-extensions/map-2d/**'
+      - 'packages/core/src/studio/pinta-scene-player.ts'
       - 'packages/studio/playground/cenarios-integration/preparar-jogo-e.ts'
       - 'packages/molda-cenarios/playground/jogo-e/**'
       - 'packages/molda-cenarios/playground/oficina/qa-jogo-e.ts'
@@ -48,7 +59,7 @@ concurrency:
 jobs:
   engines:
     runs-on: ubuntu-24.04
-    timeout-minutes: 100
+    timeout-minutes: 130
     defaults:
       run:
         shell: bash
@@ -81,6 +92,14 @@ jobs:
       - name: GPU in 10 restarts, off-screen sprites, devtools cost and regions
         timeout-minutes: 80
         run: bunx playwright test --config playwright.engines.config.ts
+      - name: Jogo D (materiais em dia, desempenho, sessão de 10 minutos, estado e destino quebrado)
+        if: ${{ !cancelled() }}
+        timeout-minutes: 25
+        env:
+          JOGO_D_SESSAO_MS: '600000'
+        run: |
+          bun run check:jogo-d
+          bunx playwright test --config playwright.jogo-d.config.ts
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -93,3 +112,4 @@ jobs:
             packages/studio/.cache/mission/devtools-cost.json
             output/cenarios-reforma/jogo-e/medidas.json
             packages/studio/.cache/engines-results
+            packages/studio/.cache/mission/jogo-d-results

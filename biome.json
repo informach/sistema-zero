@@ -18,6 +18,7 @@
       "!packages/studio/src/three/scene3dProRuntime.generated.ts",
       "!packages/studio/src/monaco/pro/defaultLibraries.json",
       "!packages/studio/src/arte/ilha-farol-scene.generated.ts",
+      "!packages/studio/src/examples/jogoD.generated.ts",
       "!packages/studio/src/examples/python/pygame/*/desenhos.pinta.json",
       "!packages/studio/playground/moldaDemoAssets.json",
       "!packages/studio-runtime/runtime/portable-path.generated.mjs",

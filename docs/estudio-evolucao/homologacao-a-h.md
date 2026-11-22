@@ -71,7 +71,7 @@ atualizado no fim do lote 8, depois da homologação integral em `d2f238b62` e d
 | A. Cadê Todo Mundo? | feito | CI Linux, CI Windows, Windows local, staging logado |
 | B. Desafio do Primeiro Jogo | feito | CI Linux, CI Windows, Windows local, staging logado |
 | C. Clássico com milhares de blocos | parcial | CI Linux, CI Windows, Windows local, emulado; três itens não verificados |
-| D. Jogo 2D de grande porte | não feito | só peças isoladas, listadas na seção D |
+| D. Jogo 2D de grande porte | feito no Windows local; CI no lote 9 | Windows local (testes, navegador e editor); a sessão de 10 minutos roda no `studio-engines.yml` |
 | E. Jogo 3D de exploração | não feito | só peças isoladas, listadas na seção E |
 | F. Projeto Pro grande | parcial | CI Linux, CI Windows, Windows local, emulado |
 | G. Python | parcial | CI Linux, staging logado; os custos separados não foram medidos |
@@ -144,24 +144,24 @@ Fixtures: o dia 3 do Farol com os eventos repetidos até o tamanho pedido (`/aul
 
 ## D. Jogo 2D de grande porte
 
-**Não feito.** O jogo pedido (vila, floresta, cavernas, interiores, centenas de entidades, regiões,
-transições, persistência e carregamento progressivo) depende do carregamento por regiões da seção
-8.3, que nenhum motor 2D tem ([`motores-inventario.md`](motores-inventario.md)). A proposta das
-regiões foi aprovada em 21/11: a parte 2D é o recorte do desenho dos objetos do Pinta (`719fade30`,
-com o conserto dos conjuntos em `78f854bae`), sem bloco nem carregamento por regiões; a parte 3D
-está especificada em [`regioes-3d-especificacao.md`](regioes-3d-especificacao.md) e depende do
-formato da frente do Molda.
+**Feito no lote 8 da conclusão (22/11/2026), conferido no Windows local; a rodada do CI entra no
+lote 9.** O jogo D é o exemplo "Mundo das Portas": um mundo do Pinta de 96 × 72 peças com seis
+regiões, três cavernas e quatro casas ligadas por 14 portas, 603 entidades, sons e músicas, tudo
+feito por código, e um programa só com blocos que já existem no Jogo 2D. Detalhe e números em
+[`evidencias/jogo-d-2026-11-22/`](evidencias/jogo-d-2026-11-22/README.md).
 
-O que já existe e o jogo D vai usar:
-
-| Peça | Prova | Onde foi conferido |
+| Item pedido | Prova | Onde foi conferido |
 |---|---|---|
-| Uma cena real do Pinta como dados no Jogo 2D: "A Vila e a Floresta" roda na prévia e no site exportado, sem rede, com o tamanho, os objetos e a porta da cabana conferidos pelo próprio motor | `packages/studio/e2e/scene2d-export.flow.ts` | CI Linux, nas três engines (44904766980) |
-| Mundos ligados do Pinta (portas que levam a outros lugares), com dois leitores históricos congelados | `packages/studio/playwright.pinta-world.config.ts` | CI Linux (44860362872) |
-| Os tetos dos motores avisam em vez de cortar calados (400 sprites por grupo, partículas, faíscas) | `game-2d/__tests__/limitWarnings.test.ts`, `game-2d-advanced/__tests__/runtime.test.ts` | Windows local (lote 4) |
-| O custo de desenhar sprites fora do palco: de 0,28 a 0,45 ms por quadro com um grupo de 400 sprites inteiro fora | `packages/studio/e2e/engine-2d-offscreen.spec.ts`; `evidencias/motores-gpu-2026-11-21/sprites-fora-do-palco-windows.json` | Windows local; CI Linux (`studio-engines.yml`, 44944417041) |
-
-Sessões prolongadas, retorno a regiões anteriores, áudio e efeitos num mundo grande: não verificado.
+| Vila, floresta, cavernas e interiores, centenas de entidades | `src/examples/jogoD.test.ts` (cenas no leitor do Pinta, tetos, 603 entidades) | Windows local |
+| Regiões: só a região e as vizinhas ficam ativas (no máximo 300) | `jogoD.test.ts` (rodada no motor: 225 vivas na Vila) e `e2e/jogo-d.flow.ts` (recibo) | Windows local |
+| Transições pelas portas, chegada certa, 70 passagens sem aviso | `jogoD.test.ts` e a sessão longa do `jogo-d.flow.ts` (pior passagem 6,9 ms) | Windows local |
+| Persistência: o que foi pego continua pego; a cama guarda e o jogo volta depois de recarregar | `jogoD.test.ts` e `jogo-d.flow.ts` (site exportado) | Windows local |
+| Carregamento progressivo: os destinos das portas prontos antes de passar, cache das cenas | `map-2d/__tests__/scenePlayerCache.test.ts` (lote 8, parte 2) | CI Linux e Windows local |
+| Sprites fora do palco quase de graça | `game-2d/__tests__/offscreenCulling.test.ts`, `e2e/engine-2d-offscreen.spec.ts` | CI Linux e Windows local |
+| 60 quadros por segundo: p95 ≤ 8 ms, p99 ≤ 16,7 ms, ≤ 1% acima de 20 ms | `jogo-d.flow.ts` (2,0 / 2,5 ms, 0%) | Windows local |
+| Sessão longa: memória e imagens estáveis, sem aviso | `jogo-d.flow.ts` (10 minutos no CI; 30 s no Windows local) | Windows local |
+| Destino quebrado: o herói fica e o aviso sai uma vez | `jogoD.test.ts` e `jogo-d.flow.ts` | Windows local |
+| Abre nos blocos e roda na prévia | `jogo-d.flow.ts` (importado no Estúdio do playground) | Windows local |
 
 ## E. Jogo 3D de exploração
 
@@ -255,8 +255,8 @@ voo).
    (`evidencias/a3-depois-2026-11-21-ci/`).
 3. Feito no lote 8: Verificar e Enviar com a casca ligada, Cadê adulto (2 de 2 e enviado) e Desafio
    no Kids (enviado; os 6 de 6 da parte 4 com a casca ficaram sem conferir).
-4. Os jogos D e E inteiros, que dependem das regiões e do streaming (proposta, e no 3D a entrega da
-   frente do Molda).
+4. O jogo D está feito (lote 8 da conclusão, Windows local; a rodada do CI entra no lote 9). O
+   jogo E está na seção E.
 5. No C: trocar de modo, executar e "Virar profissional" com milhares de blocos.
 6. No F: o build hospedado com dependências reais e Meus testes do Pro no navegador (o Histórico
    do projeto já passou no CI, na homologação de `d2f238b62`).
