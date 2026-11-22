@@ -10,7 +10,7 @@ export const PINTA_HEX_CELL_FLAGS = Object.freeze({
   rotate60: 0x20000000,
   rotate120: 0x10000000,
 })
-const reserved = 0x0ffff000
+export const PINTA_HEX_RESERVED_BITS = 0x0ffff000
 type Transform = Readonly<{
   flipX?: boolean
   flipY?: boolean
@@ -22,7 +22,7 @@ export function isPintaHexCell(cell: number): boolean {
     Number.isInteger(cell) &&
     cell >= 0 &&
     cell <= PINTA_HEX_EMPTY_CELL &&
-    (cell === PINTA_HEX_EMPTY_CELL || (cell & reserved) === 0)
+    (cell === PINTA_HEX_EMPTY_CELL || (cell & PINTA_HEX_RESERVED_BITS) === 0)
   )
 }
 

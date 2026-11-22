@@ -1,4 +1,5 @@
 import { godotPhysicsFor } from './physics'
+import { godotProjection } from './projection'
 import { godotRegions } from './regions'
 
 export const godotProject = `config_version=5
@@ -18,7 +19,7 @@ export const godotScene = `[gd_scene load_steps=2 format=3]
 [node name="MeuMapa" type="Node2D"]
 script = ExtResource("1")
 `
-const buildGodotScript = (regional: boolean) => `extends Node2D
+const buildGodotScript = (regional: boolean, projected = false) => `extends Node2D
 var scene_data: Dictionary
 var maps: Dictionary
 var world: Node2D
@@ -33,13 +34,15 @@ ${
     ? `var platform_motion: bool = false
 var can_jump: bool = false
 var door_entered: bool = false
+var world_extent: Rect2
 `
     : ''
 }
 ${godotPhysicsFor(regional)}
 ${
   regional
-    ? `${godotRegions(true)}
+    ? `${godotRegions(true, projected)}
+${godotProjection}
 `
     : ''
 }
@@ -160,7 +163,9 @@ ${
 ${
   regional
     ? `    var area := Rect2i(_grid_origin(scene_data),Vector2i(scene_data.cols,scene_data.rows))
-    _layers(scene_data.layers,world,area,{})
+    var layout: Dictionary = scene_data.get("projectionLayout",{})
+    world_extent = _layout_bounds(layout,area)
+    _layers(scene_data.layers,world,area,layout,{})
 `
     : `    _layers(scene_data.layers, world, int(scene_data.cols), int(scene_data.rows), {})
 `
@@ -168,7 +173,7 @@ ${
     player.name = "Jogador"
 ${
   regional
-    ? `    if scene_data.get("version",1) == 4 and not platform_motion:
+    ? `    if scene_data.get("version",1) >= 4 and not platform_motion:
         player.motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
 `
     : ''
@@ -190,6 +195,9 @@ ${
 ${
   regional
     ? `    player.position = (Vector2(area.position) + Vector2(0.5,0.5)) * scene_data.tileSize
+    if not layout.is_empty():
+        var fallback := Vector2i.ZERO.clamp(area.position,area.end - Vector2i.ONE)
+        player.position = _layout_center(layout,fallback.x,fallback.y)
 `
     : `    player.position = Vector2(scene_data.tileSize / 2,scene_data.tileSize / 2)
 `
@@ -201,7 +209,7 @@ ${
 
 ${
   regional
-    ? `func _layers(layers: Array, parent: Node2D, area: Rect2i, inherited: Dictionary, prefix: String = "", local_ids: Dictionary = {}) -> void:
+    ? `func _layers(layers: Array, parent: Node2D, area: Rect2i, layout: Dictionary, inherited: Dictionary, prefix: String = "", local_ids: Dictionary = {}) -> void:
 `
     : `func _layers(layers: Array, parent: Node2D, cols: int, rows: int, inherited: Dictionary, prefix: String = "", local_ids: Dictionary = {}) -> void:
 `
@@ -231,14 +239,37 @@ ${
 ${
   regional
     ? `            if _precise_physics():
-                solid_tile_layers.append({"node":node,"layer":layer,"area":area,"tileset":ts})
+                solid_tile_layers.append({"node":node,"layer":layer,"area":area,"layout":layout,"tileset":ts})
 `
     : `            if scene_data.get("version",1) >= 3:
                 solid_tile_layers.append({"node":node,"layer":layer,"cols":cols,"rows":rows,"tileset":ts})
 `
-}            var tile_set := TileSet.new()
+}${
+  regional
+    ? `            var size: int = int(scene_data.tileSize)
+            var check_platform: bool = scene_data.get("version",1) >= 4 and node.is_visible_in_tree() and not layer.get("collision",false) and not ts.platform.is_empty()
+            if not layout.is_empty() and (layout.projection.kind != "orthogonal" or _pair(layout.size) != Vector2.ONE * size):
+                if check_platform and not platform_motion:
+                    platform_motion = _visit_cells(layer,area,area,func(cell: int,_col: int,_row: int) -> bool:
+                        var index := cell & 4095
+                        return index in ts.platform and not index in ts.solid
+                    )
+                if not layer.get("collision",false):
+                    var canvas := ProjectedTiles.new()
+                    var texture := _texture(ts.image)
+                    canvas.z_index = 20 if layer.get("front",false) else 0
+                    canvas.set_meta("pintaProjection",layout.projection.kind)
+                    canvas.continuous = not ts.get("animations",{}).is_empty()
+                    canvas.paint = func(target: ProjectedTiles) -> void:
+                        _draw_projected(target,layer,ts,texture,area,layout)
+                    node.add_child(canvas)
+                continue
+            var tile_set := TileSet.new()
+`
+    : `            var tile_set := TileSet.new()
             var size: int = int(scene_data.tileSize)
-            tile_set.tile_size = Vector2i(size,size)
+`
+}            tile_set.tile_size = Vector2i(size,size)
             tile_set.add_physics_layer()
             var source := TileSetAtlasSource.new()
             source.texture = _texture(ts.image)
@@ -259,7 +290,7 @@ ${
                     td.set_collision_polygon_points(0,0,PackedVector2Array([Vector2(-h,-h),Vector2(h,-h),Vector2(h,h),Vector2(-h,h)]))
 ${
   regional
-    ? `                    if index in ts.platform and (scene_data.get("version",1) != 4 or not layer.get("collision",false) and not index in ts.solid):
+    ? `                    if index in ts.platform and (scene_data.get("version",1) < 4 or not layer.get("collision",false) and not index in ts.solid):
 `
     : `                    if index in ts.platform:
 `
@@ -271,7 +302,7 @@ ${
             node.add_child(tile_layer)
 ${
   regional
-    ? `            if scene_data.get("version",1) == 4:
+    ? `            if scene_data.get("version",1) >= 4:
                 tile_layer.collision_enabled = not _precise_physics() and node.is_visible_in_tree()
             _visit_cells(layer,area,area,func(cell: int,col: int,row: int) -> bool:
 `
@@ -292,7 +323,7 @@ ${
                     animated_cells.append({"layer":tile_layer,"position":position,"frames":ts.animations[str(tile)],"columns":int(ts.columns),"flags":cell & 28672})
 ${
   regional
-    ? `                if scene_data.get("version",1) == 4 and node.is_visible_in_tree() and not layer.get("collision",false) and tile in ts.platform and not tile in ts.solid:
+    ? `                if check_platform and tile in ts.platform and not tile in ts.solid:
                     platform_motion = true
                 return false
             )
@@ -363,14 +394,22 @@ ${
                     for definition in scene_data.get("sets",[]):
                         if definition.id == object.setId:
                             var instance := Node2D.new()
-                            var sx: float = object.width / (definition.cols * scene_data.tileSize)
-                            var sy: float = object.height / (definition.rows * scene_data.tileSize)
-                            instance.position = Vector2(object.width if object.get("flipX",false) else 0,object.height if object.get("flipY",false) else 0)
-                            instance.scale = Vector2(-sx if object.get("flipX",false) else sx,-sy if object.get("flipY",false) else sy)
 ${
   regional
     ? `                            var child_area := Rect2i(_grid_origin(definition),Vector2i(definition.cols,definition.rows))
-                            instance.position -= Vector2(child_area.position) * scene_data.tileSize * instance.scale
+                            var child_layout: Dictionary = definition.get("projectionLayout",{})
+                            var child_frame := _layout_bounds(child_layout,child_area)
+                            var sx: float = object.width / child_frame.size.x
+                            var sy: float = object.height / child_frame.size.y
+`
+    : `                            var sx: float = object.width / (definition.cols * scene_data.tileSize)
+                            var sy: float = object.height / (definition.rows * scene_data.tileSize)
+`
+}                            instance.position = Vector2(object.width if object.get("flipX",false) else 0,object.height if object.get("flipY",false) else 0)
+                            instance.scale = Vector2(-sx if object.get("flipX",false) else sx,-sy if object.get("flipY",false) else sy)
+${
+  regional
+    ? `                            instance.position -= child_frame.position * instance.scale
 `
     : ''
 }                            item.add_child(instance)
@@ -380,7 +419,7 @@ ${
                                     child_ids[str(child.id)] = true
 ${
   regional
-    ? `                            _layers(definition.layers,instance,child_area,{},str(object.id) + "/",child_ids)
+    ? `                            _layers(definition.layers,instance,child_area,child_layout,{},str(object.id) + "/",child_ids)
 `
     : `                            _layers(definition.layers,instance,int(definition.cols),int(definition.rows),{},str(object.id) + "/",child_ids)
 `
@@ -468,11 +507,9 @@ ${
   regional
     ? `        else:
             player.move_and_slide()
-            if scene_data.get("version",1) == 4:
+            if scene_data.get("version",1) >= 4:
                 var half: Vector2 = Vector2.ONE * scene_data.tileSize * 0.325
-                var top: Vector2 = Vector2(_grid_origin(scene_data)) * scene_data.tileSize
-                var bottom: Vector2 = top + Vector2(scene_data.cols,scene_data.rows) * scene_data.tileSize
-                player.global_position = player.global_position.clamp(top + half,bottom - half)
+                player.global_position = player.global_position.clamp(world_extent.position + half,world_extent.end - half)
             if platform_motion:
                 can_jump = player.is_on_floor()
         var on_door := false
@@ -496,7 +533,7 @@ ${
 ${
   regional
     ? `                on_door = true
-                if scene_data.get("version",1) == 4 and door_entered:
+                if scene_data.get("version",1) >= 4 and door_entered:
                     continue
 `
     : ''
@@ -544,7 +581,7 @@ func _door_key(destination: Variant) -> String:
     for key in maps:
         if maps[key].id == destination:
             return key
-        if scene_data.get("version",1) == 4 and maps[key].name == destination:
+        if scene_data.get("version",1) >= 4 and maps[key].name == destination:
             if not named.is_empty():
                 return ""
             named = key
@@ -555,3 +592,4 @@ func _door_key(destination: Variant) -> String:
 
 export const godotScript = buildGodotScript(false)
 export const godotRegionalScript = buildGodotScript(true)
+export const godotProjectedScript = buildGodotScript(true, true)

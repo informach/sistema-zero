@@ -71,6 +71,20 @@ mudança de projeção ao passar pela porta com a seta. A mesma prova abre o
 pacote regional ortogonal. Rode
 `bun scripts/homologacao/verify-region-phaser.ts --projected` em `packages/pinta`.
 
+O Godot 4.7.2 importou e executou a Vila isométrica e a Cabana hexagonal.
+As camadas projetadas desenham os chunks no CanvasItem nativo e usam a
+base afim e a pegada do Core para consulta de colisores. O jogador pousou
+no diamante a y=-133,2, depois de subir pela plataforma. A Cabana abriu
+pela porta com o índice hexagonal de 32 bits intacto. Na grade ortogonal,
+o adaptador mantém `TileMapLayer`.
+[Godot CanvasItem](https://docs.godotengine.org/en/stable/classes/class_canvasitem.html)
+
+`projections.json` é derivado da projeção e da extensão em `maps.json`. O
+projeto confere a correspondência ao abrir. Exporte o pacote novamente ao
+alterar a projeção ou os limites. A prova usa
+`bun scripts/homologacao/verify-region-godot.ts --projected` com
+`PINTA_GODOT_BIN` apontando para o executável.
+
 ## Integração
 
 1. Admitir o documento projetado e aplicar crescimento e pintura na mesma

@@ -73,8 +73,7 @@ func bloqueado(rect: Rect2) -> bool:
         return false
 ${
   regional
-    ? `    var area := Rect2(Vector2(_grid_origin(scene_data)) * scene_data.tileSize,Vector2(scene_data.cols,scene_data.rows) * scene_data.tileSize)
-    if not area.encloses(rect):
+    ? `    if not world_extent.encloses(rect):
 `
     : `    if rect.position.x < 0 or rect.position.y < 0 or rect.end.x > scene_data.cols * scene_data.tileSize or rect.end.y > scene_data.rows * scene_data.tileSize:
 `
@@ -83,8 +82,15 @@ ${
         if entry.data.get("collision",false) and entry.node.is_visible_in_tree() and entry.node.global_transform.determinant() != 0:
             if _outline_hits(entry.data,_local_body(entry.node,rect)):
                 return true
-    return _visit_tiles(rect,false,func(_entry: Dictionary,col: int,row: int,query: PackedVector2Array) -> bool:
-        var local_query := PackedVector2Array()
+${
+  regional
+    ? `    return _visit_tiles(rect,false,func(entry: Dictionary,col: int,row: int,query: PackedVector2Array) -> bool:
+        if not entry.layout.is_empty():
+            return _outline_hits({"shape":"polygon","points":_tile_footprint(entry.layout,col,row)},query)
+`
+    : `    return _visit_tiles(rect,false,func(_entry: Dictionary,col: int,row: int,query: PackedVector2Array) -> bool:
+`
+}        var local_query := PackedVector2Array()
         var size: float = scene_data.tileSize
         for point in query:
             local_query.append(point - Vector2(col * size,row * size))
@@ -106,6 +112,8 @@ ${
         var end := Vector2i(ceili((bounds.end.x + 1e-7) / size),ceili((bounds.end.y + 1e-7) / size))
         var area: Rect2i = entry.area
         var view := Rect2i(start,end - start).intersection(area)
+        if not entry.layout.is_empty():
+            view = _layout_view(entry.layout,area,bounds.grow(1e-7))
         if _visit_cells(entry.layer,area,view,func(cell: int,col: int,row: int) -> bool:
             var index: int = cell & ${CELL_MAX_TILES - 1}
             var solid: bool = entry.layer.get("collision",false) or index in entry.tileset.solid
@@ -170,9 +178,19 @@ func pouso(previous: Rect2, desired: Rect2, gravity: float = 1) -> Variant:
     _visit_tiles(previous.merge(desired).grow(epsilon),true,func(entry: Dictionary,col: int,row: int,_query: PackedVector2Array) -> bool:
         var size: float = scene_data.tileSize
         var points := PackedVector2Array()
-        for offset in [Vector2.ZERO,Vector2(size,0),Vector2(size,size),Vector2(0,size)]:
+${
+  regional
+    ? `        if entry.layout.is_empty():
+            for offset in [Vector2.ZERO,Vector2(size,0),Vector2(size,size),Vector2(0,size)]:
+                points.append(entry.node.to_global(Vector2(col * size,row * size) + offset))
+        else:
+            for point in _tile_footprint(entry.layout,col,row):
+                points.append(entry.node.to_global(point))
+`
+    : `        for offset in [Vector2.ZERO,Vector2(size,0),Vector2(size,size),Vector2(0,size)]:
             points.append(entry.node.to_global(Vector2(col * size,row * size) + offset))
-        var floor: Variant = _platform_surface(points,desired,direction)
+`
+}        var floor: Variant = _platform_surface(points,desired,direction)
         if floor == null:
             return false
         var old_floor: Variant = _platform_surface(points,previous,direction)
@@ -197,8 +215,13 @@ func mover_corpo(rect: Rect2, displacement: Vector2) -> Rect2:
     if not displacement.is_finite():
         return rect
     for axis in range(2):
-        var limit: float = (scene_data.cols if axis == 0 else scene_data.rows) * scene_data.tileSize
-        var delta := clampf(displacement[axis],-limit,limit)
+${
+  regional
+    ? `        var limit: float = world_extent.size[axis]
+`
+    : `        var limit: float = (scene_data.cols if axis == 0 else scene_data.rows) * scene_data.tileSize
+`
+}        var delta := clampf(displacement[axis],-limit,limit)
         if delta == 0:
             continue
         var endpoint := rect

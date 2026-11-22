@@ -1,17 +1,33 @@
 import {
+  PINTA_HEX_EMPTY_CELL,
+  PINTA_HEX_REGION_CHUNK_BASE64_CHARS,
+  PINTA_HEX_REGION_CHUNK_BYTES,
+  PINTA_HEX_REGION_MAX_CHUNKS,
+  PINTA_HEX_RESERVED_BITS,
   PINTA_REGION_CHUNK_BASE64_CHARS,
   PINTA_REGION_CHUNK_BYTES,
   PINTA_REGION_LIMITS,
   PINTA_REGION_SIDE,
 } from '@sistemazero/core/creations'
 import { PINTA_IMAGE_WORLD_LIMITS } from '@sistemazero/core/studio/pinta-image'
+import { PINTA_PROJECTED_SCENE_MAX_INDEX_BYTES } from '@sistemazero/core/studio/pinta-projected-scene'
 import { PINTA_REGION_SCENE_MAX_INDEX_BYTES } from '@sistemazero/core/studio/pinta-region-scene'
 import { CELL_MAX_TILES } from '../../tiles/cell'
 import { TILED_PACKAGE_LIMITS } from '../tiled/package'
 
-export const godotRegions = (regional: boolean) => `
+const readProjectionLayouts = `    var layouts := FileAccess.open("res://projections.json",FileAccess.READ)
+    if layouts == null or layouts.get_length() > ${TILED_PACKAGE_LIMITS.fileBytes}:
+        return false
+    var value: Variant = JSON.parse_string(layouts.get_as_text())
+    if not value is Dictionary:
+        return false
+    projection_layouts = value
+`
+
+export const godotRegions = (regional: boolean, projected: boolean) => `
 const REGION_SIDE := ${PINTA_REGION_SIDE}
 const REGION_BYTES := ${PINTA_REGION_CHUNK_BYTES}
+const HEX_REGION_BYTES := ${PINTA_HEX_REGION_CHUNK_BYTES}
 
 func _integer_in(value: Variant, low: int, high: int) -> bool:
     return (value is int or value is float) and is_finite(value) and floorf(value) == value and value >= low and value <= high
@@ -24,18 +40,21 @@ func _read_package() -> bool:
     if not parsed is Dictionary or parsed.size() > ${PINTA_IMAGE_WORLD_LIMITS.maps}:
         return false
     maps = parsed
-    var jobs: Array = []
+${projected ? readProjectionLayouts : ''}    var jobs: Array = []
     for id in maps:
         var data: Variant = maps[id]
         if not data is Dictionary:
             return false
-        if data.get("version",1) != 4:
+        var version: int = data.get("version",1)
+        if version == 5 and not ${projected}:
+            return false
+        if version != 4 and version != 5:
             ${regional ? 'return false' : 'continue'}
         if not data.get("tilesets") is Array or not data.get("sets",[]) is Array or data.get("sets",[]).size() > 64:
             return false
         if data.get("id") != id:
             return false
-        var map_chunks := 0
+        var map_bytes := 0
         var counts: Dictionary = {}
         for tileset in data.tilesets:
             counts[tileset.id] = int(tileset.count)
@@ -51,6 +70,20 @@ func _read_package() -> bool:
                 return false
             if grid.layers.size() > ${PINTA_REGION_LIMITS.maxLayers}:
                 return false
+            var hex := false
+            if version == 5:
+                var map_layout: Dictionary = projection_layouts.get(id,{})
+                var layout: Dictionary = map_layout.get("root",{}) if grid == data else map_layout.get("sets",{}).get(grid.id,{})
+                var authorial := {"col":grid.origin.col,"row":grid.origin.row,"cols":grid.cols,"rows":grid.rows}
+                if layout.is_empty() or layout.get("projection") != grid.get("projection") or layout.get("area") != authorial:
+                    return false
+                if data.get("physics") == "legacy" and (layout.projection.kind != "orthogonal" or _pair(layout.size) != Vector2.ONE * data.tileSize):
+                    return false
+                grid["projectionLayout"] = layout
+                hex = layout.projection.kind == "hexagonal"
+            var stride := 4 if hex else 2
+            var expected_bytes := HEX_REGION_BYTES if hex else REGION_BYTES
+            var expected_chars := ${PINTA_HEX_REGION_CHUNK_BASE64_CHARS} if hex else ${PINTA_REGION_CHUNK_BASE64_CHARS}
             var grid_chunks := 0
             for layer in grid.layers:
                 if not layer is Dictionary:
@@ -60,11 +93,11 @@ func _read_package() -> bool:
                 if not layer.get("cells") is Dictionary:
                     return false
                 var wire: Dictionary = layer.cells
-                if wire.get("kind") != "regions" or wire.get("version") != 1 or wire.get("side") != REGION_SIDE or wire.get("encoding") != "i16le-base64-v1" or not wire.get("chunks") is Array:
+                if wire.get("kind") != ("hex-regions" if hex else "regions") or wire.get("version") != 1 or wire.get("side") != REGION_SIDE or wire.get("encoding") != ("u32le-base64-v1" if hex else "i16le-base64-v1") or not wire.get("chunks") is Array:
                     return false
                 grid_chunks += wire.chunks.size()
-                map_chunks += wire.chunks.size()
-                if grid_chunks > ${PINTA_REGION_LIMITS.maxChunks} or map_chunks * REGION_BYTES > ${PINTA_REGION_SCENE_MAX_INDEX_BYTES}:
+                map_bytes += wire.chunks.size() * expected_bytes
+                if grid_chunks > (${PINTA_HEX_REGION_MAX_CHUNKS} if hex else ${PINTA_REGION_LIMITS.maxChunks}) or map_bytes > (${PINTA_PROJECTED_SCENE_MAX_INDEX_BYTES} if version == 5 else ${PINTA_REGION_SCENE_MAX_INDEX_BYTES}):
                     return false
                 var seen: Dictionary = {}
                 var count: int = counts.get(layer.tilesetId,0)
@@ -80,31 +113,32 @@ func _read_package() -> bool:
                         return false
                     if not area.intersects(Rect2i(coord * REGION_SIDE,Vector2i.ONE * REGION_SIDE)):
                         return false
-                    if not chunk.data is String or chunk.data.length() != ${PINTA_REGION_CHUNK_BASE64_CHARS}:
+                    if not chunk.data is String or chunk.data.length() != expected_chars:
                         return false
                     seen[coord] = true
-                jobs.append({"layer":layer,"area":area,"count":count})
+                jobs.append({"layer":layer,"area":area,"count":count,"bytes":expected_bytes,"stride":stride})
     # Every map and set has passed the limits before decoding the first chunk.
     for job in jobs:
         var indexed: Dictionary = {}
         for chunk in job.layer.cells.chunks:
             var coord := Vector2i(chunk.col,chunk.row)
             var bytes := Marshalls.base64_to_raw(chunk.data)
-            if bytes.size() != REGION_BYTES or Marshalls.raw_to_base64(bytes) != chunk.data:
+            if bytes.size() != job.bytes or Marshalls.raw_to_base64(bytes) != chunk.data:
                 return false
             var occupied := false
             for index in range(REGION_SIDE * REGION_SIDE):
-                var cell := bytes.decode_s16(index * 2)
+                var cell := _region_cell(bytes,index,job.stride)
                 if cell == -1:
                     continue
                 var position := coord * REGION_SIDE + Vector2i(index % REGION_SIDE,index / REGION_SIDE)
-                if cell < 0 or (cell & ${CELL_MAX_TILES - 1}) >= job.count or not job.area.has_point(position):
+                if cell < 0 or (job.stride == 4 and cell & ${PINTA_HEX_RESERVED_BITS}) or (cell & ${CELL_MAX_TILES - 1}) >= job.count or not job.area.has_point(position):
                     return false
                 occupied = true
             if not occupied:
                 return false
             indexed[coord] = bytes
         job.layer["regionIndex"] = indexed
+        job.layer["regionStride"] = job.stride
     return true
 
 func _grid_origin(grid: Dictionary) -> Vector2i:
@@ -112,7 +146,13 @@ func _grid_origin(grid: Dictionary) -> Vector2i:
     return Vector2i(origin.get("col",0),origin.get("row",0))
 
 func _precise_physics() -> bool:
-    return scene_data.get("physics","precise") == "precise" if scene_data.get("version",1) == 4 else scene_data.get("version",1) >= 3
+    return scene_data.get("physics","precise") == "precise" if scene_data.get("version",1) >= 4 else scene_data.get("version",1) >= 3
+
+func _region_cell(bytes: PackedByteArray, index: int, stride: int) -> int:
+    if stride == 2:
+        return bytes.decode_s16(index * 2)
+    var cell := bytes.decode_u32(index * 4)
+    return -1 if cell == ${PINTA_HEX_EMPTY_CELL} else cell
 
 func _visit_cells(layer: Dictionary, area: Rect2i, view: Rect2i, visit: Callable) -> bool:
     if view.size.x <= 0 or view.size.y <= 0:
@@ -145,7 +185,7 @@ func _visit_cells(layer: Dictionary, area: Rect2i, view: Rect2i, visit: Callable
         for row in range(intersection.position.y,intersection.end.y):
             for col in range(intersection.position.x,intersection.end.x):
                 var offset := (row - start.y) * REGION_SIDE + col - start.x
-                var cell := bytes.decode_s16(offset * 2)
+                var cell := _region_cell(bytes,offset,layer.regionStride)
                 if cell >= 0 and visit.call(cell,col,row):
                     return true
     return false

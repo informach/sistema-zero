@@ -200,16 +200,45 @@ export async function writeRegionTiledFiles(
   return reports
 }
 
-async function writeRegionGodotFiles(put: Prepared['put']): Promise<string[]> {
-  const { godotProject, godotScene, godotRegionalScript } = await import('./godot/project')
-  put('project.godot', godotProject)
-  put('main.tscn', godotScene)
-  put('pinta.gd', godotRegionalScript)
+async function writeRegionGodotFiles(world: Prepared): Promise<string[]> {
+  const { godotProject, godotScene, godotRegionalScript, godotProjectedScript } = await import(
+    './godot/project'
+  )
+  world.put('project.godot', godotProject)
+  world.put('main.tscn', godotScene)
+  const projected = [...world.maps.values()].flatMap(({ scene }) =>
+    scene.version === 5 ? [scene] : [],
+  )
+  world.put('pinta.gd', projected.length ? godotProjectedScript : godotRegionalScript)
+  if (projected.length) {
+    const { godotProjectionLayout } = await import('./godot/projection')
+    world.put(
+      'projections.json',
+      JSON.stringify(
+        Object.fromEntries(
+          projected.map((scene) => [
+            scene.id,
+            {
+              root: godotProjectionLayout(scene),
+              sets: Object.fromEntries(
+                (scene.sets ?? []).map((set) => [set.id, godotProjectionLayout(set)]),
+              ),
+            },
+          ]),
+        ),
+      ),
+    )
+  }
   return [
     'Importe project.godot no Godot 4.7.2 e execute a cena principal.',
-    'O jogo cria TileMapLayer com suas células assinadas e instancia objetos e conjuntos.',
+    'O jogo cria camadas nativas com células assinadas e instancia objetos e conjuntos.',
     'As setas movem o jogador. ↑ pula nos mapas com plataformas.',
     'Consulte propriedades com objeto_por_id, recurso_imagem, propriedade_camada e propriedade_peca.',
+    ...(projected.length
+      ? [
+          'projections.json guarda as bases de desenho e colisão calculadas de maps.json. Exporte novamente ao alterar a projeção ou os limites.',
+        ]
+      : []),
   ]
 }
 
@@ -219,16 +248,12 @@ export async function buildRegionScenePackage(
   imageOf?: ImageOf,
 ) {
   const world = await prepareRegionScenePackage(captured, imageOf)
-  if (
-    (target === 'pygame' || target === 'godot') &&
-    [...world.maps.values()].some(({ scene }) => scene.version === 5)
-  )
+  if (target === 'pygame' && [...world.maps.values()].some(({ scene }) => scene.version === 5))
     throw new Error('Este destino ainda precisa de um adaptador de projeção.')
   if (target === 'godot') {
     // The Godot script materializes every set instance; charge that fan-out first.
     const { assertGodotRegionWork } = await import('./godot/regionWork')
-    for (const { decoded } of world.maps.values())
-      if (decoded.version === 4) assertGodotRegionWork(decoded)
+    for (const { decoded } of world.maps.values()) assertGodotRegionWork(decoded)
   }
   await writeRegionTiledFiles(world, target)
   writeRegionPackageImages(world)
@@ -238,7 +263,7 @@ export async function buildRegionScenePackage(
       : target === 'pygame'
         ? await (await import('./pygameRegionProject')).writeRegionPygameFiles(world)
         : target === 'godot'
-          ? await writeRegionGodotFiles(world.put)
+          ? await writeRegionGodotFiles(world)
           : [
               'Abra mapas/mapa-0/mapa.tmx ou mapa.json no Tiled. As folhas TSX e as imagens ficam no pacote.',
             ]

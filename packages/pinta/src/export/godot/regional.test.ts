@@ -1,10 +1,11 @@
 import { expect, test } from 'bun:test'
 import type { PintaRegionSceneWire } from '@sistemazero/core/studio/pinta-region-scene'
 import { nativeImageOf } from '../../../scripts/homologacao/generate'
+import { projectedVila } from '../../testing/projectedVila'
 import { regionVilaPlatform } from '../../testing/regionVilaPlatform'
 import { exportPintaRegionScene } from '../regionScene'
 import { buildScenePackage } from '../scenePackage'
-import { godotRegionalScript, godotScript } from './project'
+import { godotProjectedScript, godotRegionalScript, godotScript } from './project'
 import { assertGodotRegionWork, GODOT_REGION_WORK } from './regionWork'
 
 test('the regional Godot package carries the region reader, Scene4 maps and the start ID', async () => {
@@ -77,4 +78,24 @@ test('set instances are charged before the Godot package is written', async () =
       layers: [...scene.layers, { ...objects, objects: [instance(0)] }],
     }),
   ).not.toThrow()
+})
+
+test('a projected world goes to Godot with the projected reader, its layouts and no native backup', async () => {
+  const { map, cabana, assets } = projectedVila()
+  const files = await buildScenePackage(map, assets, 'godot', { imageOf: nativeImageOf })
+  expect(files['pinta.gd']).toBe(godotProjectedScript)
+  expect(godotProjectedScript).not.toBe(godotRegionalScript)
+  const layouts = JSON.parse(String(files['projections.json'])) as Record<
+    string,
+    { root: { projection: { kind: string } } }
+  >
+  expect(layouts[map.id]?.root.projection.kind).toBe('isometric')
+  expect(layouts[cabana.id]?.root.projection.kind).toBe('hexagonal')
+  const maps = JSON.parse(String(files['maps.json'])) as Record<string, { version: number }>
+  expect(Object.values(maps).map((scene) => scene.version)).toEqual([5, 5])
+  expect(files['desenhos.pinta.json']).toBeUndefined()
+  expect(String(files['LEIA-ME.txt'])).toContain('projections.json')
+  await expect(buildScenePackage(map, assets, 'pygame', { imageOf: nativeImageOf })).rejects.toThrow(
+    'adaptador de projeção',
+  )
 })
