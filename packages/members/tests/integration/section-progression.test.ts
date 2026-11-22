@@ -80,6 +80,27 @@ function setup() {
 }
 
 describe('section gates across HTTP and persistence', () => {
+  test.each([
+    'adult',
+    'kids',
+  ] as const)('%s conserva a parte escolhida para revisar uma atividade já cumprida', async (audience) => {
+    const ctx = setup()
+    const course = ctx.courses.courses.find((c) => c.id === ctx.course.courseId)
+    const first = ctx.sections[0]
+    if (!course || !first) throw new Error('Missing review fixture')
+    course.audience = audience
+    course.learner = 'child'
+    expect((await ctx.attempt(0)).status).toBe(200)
+    expect(
+      (await ctx.request(`/lessons/${ctx.lessonId}/navigation`, 'PUT', { sectionId: first.id }))
+        .status,
+    ).toBe(200)
+    expect((await json(ctx.read())).sectionProgress.sections[0]?.status).toBe('completed')
+    expect((await json(ctx.read())).learningProgress.sectionId).toBe(first.id)
+    expect((await ctx.attempt(1)).status).toBe(200)
+    expect((await ctx.attempt(2)).status).toBe(200)
+    expect((await json(ctx.read())).learningProgress.sectionId).toBe(first.id)
+  })
   test('o responsável retoma a primeira parte pendente sem repetir as concluídas', async () => {
     const ctx = setup()
     const course = ctx.courses.courses.find((c) => c.id === ctx.course.courseId)
