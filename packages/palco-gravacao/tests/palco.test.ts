@@ -5,8 +5,8 @@ import { enviada } from '../src/lib/aula-enviada'
 import { bffAnswer } from '../src/lib/bff'
 import { lessonPathOf } from '../src/lib/lesson-address'
 import type { PaginaDoPalco } from '../src/lib/pagina'
-import { projetoDaParte } from '../src/lib/projeto-da-parte'
-import { projetoAntes } from '../src/lib/projeto-gravado'
+import { escolherProjeto, projetoDaAula, projetoDaParte } from '../src/lib/projeto-da-parte'
+import { projetoAntes, tomadaAntes } from '../src/lib/projeto-gravado'
 import { safeReturn } from '../src/lib/safe-return'
 import { staffFromClaims } from '../src/lib/staff'
 import {
@@ -848,6 +848,24 @@ describe('rotas da aula no palco', () => {
     expect(projetoAntes(gravados, 3)).toBeNull()
   })
 
+  test('a tomada antiga não passa na frente do projeto da aula que já tem as partes depois dela', () => {
+    // Ilha do Farol, Aula 2: palco reiniciado, a parte 2 regravada; a parte 6 abria do fim da 2,
+    // sem o encontro que as partes 4 e 5 montam.
+    const da2 = { parte: 2, project: { de: 'tomada da 2' } }
+    const da5 = { parte: 5, project: { de: 'tomada da 5' } }
+    const entradaDa6 = { parte: 5, project: { de: 'entrada da 6' } }
+    expect(escolherProjeto(da2, entradaDa6)).toEqual({ de: 'entrada da 6' })
+    // A tomada da parte logo antes vale (é o que a gravação deixou de verdade).
+    expect(escolherProjeto(da5, entradaDa6)).toEqual({ de: 'tomada da 5' })
+    // Só um dos dois: vale o que houver.
+    expect(escolherProjeto(da2, null)).toEqual({ de: 'tomada da 2' })
+    expect(escolherProjeto(null, entradaDa6)).toEqual({ de: 'entrada da 6' })
+    expect(escolherProjeto(null, null)).toBeNull()
+    // A tomada que a escolha usa diz a parte dela.
+    const g = (parte: number, at: number) => ({ parte, at, project: { de: `${parte}@${at}` } })
+    expect(tomadaAntes([g(2, 9), g(4, 1)], 6)).toEqual(g(4, 1))
+  })
+
   test('sem tomada de antes, a parte abre no projeto de entrada dela ou na solução de antes', () => {
     const aula2 = JSON.parse(
       readFileSync(
@@ -878,6 +896,9 @@ describe('rotas da aula no palco', () => {
     expect(projetoDaParte(publicada, ids, 3)).toEqual(studio.examples[entrada])
     expect(projetoDaParte(publicada, ids, 4)).toEqual(studio.examples[solucao])
     expect(projetoDaParte(publicada, ids, 5)).toEqual(studio.examples[solucao])
+    // De que parte é o estado: a entrada da 3 vale como depois da 2; a solução da 3, depois da 3.
+    expect(projetoDaAula(publicada, ids, 3)?.parte).toBe(2)
+    expect(projetoDaAula(publicada, ids, 4)?.parte).toBe(3)
     expect(projetoDaParte(publicada, ids, 2)).toBeNull()
     expect(projetoDaParte(publicada, ids, ids.length + 1)).toBeNull()
     expect(projetoDaParte(publicada, ids, Number.MAX_SAFE_INTEGER)).toBeNull()
