@@ -141,11 +141,74 @@ describe('o piloto de "Meus testes"', () => {
     expect(variables.cliques).toBe(1)
   })
 
-  it('o jogo não tira o foco: o pedido de foco dentro do palco escondido não faz nada', async () => {
+  it('o jogo não tira o foco da página: o pedido de foco dentro do palco escondido não move nada', async () => {
     document.body.innerHTML = '<button>Jogar</button>'
     await runDriver({ steps: [], target: { kind: 'value', path: 'x' } }, { x: 1 })
     document.querySelector('button')?.focus()
     expect(document.activeElement).toBe(document.body)
+  })
+
+  it('a tecla do teste vai para o elemento que o jogo quis focar, como o foco faria', async () => {
+    const variables: Record<string, unknown> = { teclas: 0 }
+    document.body.innerHTML = '<canvas tabindex="0"></canvas>'
+    const canvas = document.querySelector('canvas') as HTMLCanvasElement
+    // O jogo foca o próprio canvas e ouve a tecla nele (não na janela).
+    canvas.addEventListener('keydown', () => {
+      variables.teclas = Number(variables.teclas) + 1
+    })
+    setTimeout(() => canvas.focus(), 0)
+    const { message } = await runDriver(
+      { steps: [{ action: 'press', key: 'Space' }], target: { kind: 'value', path: 'teclas' } },
+      variables,
+    )
+    expect(message.observation).toMatchObject({ final: { found: true, value: encoded(1) } })
+    expect(document.activeElement).toBe(document.body)
+  })
+
+  it('o menu que a criança montou: aperta só o "Jogar", nunca o primeiro botão', async () => {
+    const variables: Record<string, unknown> = { ajuda: 0, jogando: false }
+    document.body.innerHTML =
+      '<div class="szgk-panel szgk-active" data-szgk-screen="menu"><button>Como jogar</button><button> Jogar </button></div>'
+    const [comoJogar, jogar] = document.querySelectorAll('button')
+    comoJogar?.addEventListener('click', () => {
+      variables.ajuda = Number(variables.ajuda) + 1
+    })
+    jogar?.addEventListener('click', () => {
+      variables.jogando = true
+    })
+    await runDriver({ steps: [], target: { kind: 'value', path: 'ajuda' } }, variables)
+    expect(variables).toEqual({ ajuda: 0, jogando: true })
+  })
+
+  it('menu sem o "Jogar" (a criança trocou os botões): nada é apertado', async () => {
+    const variables: Record<string, unknown> = { cliques: 0 }
+    document.body.innerHTML =
+      '<div class="szgk-panel szgk-active" data-szgk-screen="menu"><button>Começar aventura</button></div>'
+    document.querySelector('button')?.addEventListener('click', () => {
+      variables.cliques = Number(variables.cliques) + 1
+    })
+    await runDriver({ steps: [], target: { kind: 'value', path: 'cliques' } }, variables)
+    expect(variables.cliques).toBe(0)
+  })
+
+  it('espera o "carregando" do motor sair e só então aperta o "Jogar"', async () => {
+    const variables: Record<string, unknown> = { jogando: false }
+    document.body.innerHTML =
+      '<div class="szgk-panel szgk-active" data-szgk-screen="carregando"></div>' +
+      '<div class="szgk-panel" data-szgk-screen="menu"><button>Jogar</button></div>'
+    document.querySelector('button')?.addEventListener('click', () => {
+      variables.jogando = true
+    })
+    // As imagens e os sons chegam depois que o piloto já começou a olhar.
+    setTimeout(() => {
+      document.querySelector('[data-szgk-screen="carregando"]')?.classList.remove('szgk-active')
+      document.querySelector('[data-szgk-screen="menu"]')?.classList.add('szgk-active')
+    }, 400)
+    const { message } = await runDriver(
+      { steps: [], target: { kind: 'value', path: 'jogando' } },
+      variables,
+    )
+    expect(message.observation).toMatchObject({ initial: { found: true, value: encoded(true) } })
   })
 
   it('outra tela do Jogo 2D Avançado (o fim) não é apertada', async () => {

@@ -138,18 +138,18 @@ for (const program of PROGRAMS)
     for (let round = 0; round < ROUNDS; round++) {
       await start(page, program.fixture, false)
       await page.waitForTimeout(WARMUP_MS)
-      samples.push({
-        arm: 'fechada',
-        round,
-        cpuMsPerSecond: await rendererCpuPerSecond(page, session),
-      })
-      await page.evaluate(() => globalThis.pythonControllerProbe.measure('custo', true))
-      await page.waitForTimeout(600)
-      samples.push({
-        arm: 'desempenho',
-        round,
-        cpuMsPerSecond: await rendererCpuPerSecond(page, session),
-      })
+      // A ordem alterna por rodada (revisão do lote 3): a deriva do programa no tempo não entra
+      // sempre do mesmo lado da conta.
+      const medir = async (ligada: boolean) => {
+        await page.evaluate((on) => globalThis.pythonControllerProbe.measure('custo', on), ligada)
+        await page.waitForTimeout(600)
+        samples.push({
+          arm: ligada ? 'desempenho' : 'fechada',
+          round,
+          cpuMsPerSecond: await rendererCpuPerSecond(page, session),
+        })
+      }
+      for (const ligada of round % 2 === 0 ? [false, true] : [true, false]) await medir(ligada)
       await page.evaluate(() => globalThis.pythonControllerProbe.measure('custo', false))
       slices += await page.evaluate(
         () => globalThis.pythonControllerProbe.read('custo').perf.length,

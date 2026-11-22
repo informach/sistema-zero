@@ -24,8 +24,11 @@ conhecido, cada teste pela régua do Pro (`isRunnableStudentTestRule(rule, 'java
 texto, mensagens, estado do kit ou função exportada de `src`) e roda no MESMO
 `ProjectExecutionChecker` do "Verificar projeto" (`requester` = o perfil). UM lote por pedido
 (`studentTestServerBatches` do core: até 8 testes e 40 s de espera); mais que isso é 400 (o
-Estúdio manda em sequência). A recusa do executor (não compila) volta como 400 com o motivo, a
-criança lê; fora do ar e ocupado seguem 424/429. Nada é guardado. Corpo até o teto do Estúdio
+Estúdio manda em sequência). O projeto que NÃO COMPILA não é recusa: o executor responde 200 com
+nada passando ("O projeto não compilou: …"), e o Estúdio mostra "o jogo deu erro durante o teste",
+a frase do JavaScript clássico e do Python (22/11/2026). A recusa de verdade (projeto grande
+demais, forma que o executor não aceita) volta como 400 com o motivo; fora do ar e ocupado seguem
+424/429. Nada é guardado. Corpo até o teto do Estúdio
 (`bodyLimitForPath`). Teste: `tests/unit/studio-student-tests.service.test.ts`.
 
 ## Identidade pública e certificado (full review da Aula 7, 19/11/2026)

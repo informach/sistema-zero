@@ -42,7 +42,8 @@ test.use({ channel: 'chromium' })
 const FRAME_MS = 1000 / 60
 const LIMIT = 0.05
 const ROUNDS = Number(process.env.STUDIO_DEVTOOLS_COST_ROUNDS ?? 3)
-const WARMUP_MS = 2500
+// Acima dos 2,5 s da primeira foto da capa (`preview/snapshotBridge.ts`): ela cai antes da janela.
+const WARMUP_MS = 3000
 const WINDOW_MS = 4000
 
 const GAMES = [
@@ -84,6 +85,9 @@ type Arm = 'fechada' | 'desempenho' | 'investigar'
 interface Sample {
   arm: Arm
   round: number
+  /** As mensagens que a ponte mandou ao editor na janela: a prova de que a aba trabalhou. */
+  perfMessages: number
+  stateMessages: number
   frames: number
   taskMsPerFrame: number
   scriptMsPerFrame: number
@@ -157,9 +161,12 @@ async function measureWindow(page: Page, frame: Frame, arm: Arm, round: number):
       }
       raf.call(window, tick)
     })
+    const messagesBefore = await devtoolsMessages(page)
     const before = await read()
     await page.waitForTimeout(WINDOW_MS)
     const after = await read()
+    const messagesAfter = await devtoolsMessages(page)
+    const delta = (type: string) => (messagesAfter[type] ?? 0) - (messagesBefore[type] ?? 0)
     const times = await frame.evaluate(() => {
       const target = window as typeof window & { __szCostTimes?: number[]; __szCostOn?: boolean }
       target.__szCostOn = false
@@ -172,6 +179,8 @@ async function measureWindow(page: Page, frame: Frame, arm: Arm, round: number):
     return {
       arm,
       round,
+      perfMessages: delta('sz:devtools:perf'),
+      stateMessages: delta('sz:devtools:state'),
       frames,
       taskMsPerFrame: frames ? task / frames : Number.NaN,
       scriptMsPerFrame: frames ? script / frames : Number.NaN,
@@ -183,13 +192,33 @@ async function measureWindow(page: Page, frame: Frame, arm: Arm, round: number):
   }
 }
 
-/** Guarda o `requestAnimationFrame` do navegador em todo documento, antes dos scripts dele. */
+/**
+ * Guarda o `requestAnimationFrame` do navegador em todo documento, antes dos scripts dele, e, na
+ * página do editor, conta as mensagens das abas que chegam da prévia (a medida e o Investigar).
+ */
 async function keepNativeFrameClock(page: Page) {
   await page.addInitScript(() => {
-    ;(window as typeof window & { __szCostRaf?: typeof requestAnimationFrame }).__szCostRaf =
-      window.requestAnimationFrame
+    const target = window as typeof window & {
+      __szCostRaf?: typeof requestAnimationFrame
+      __szCostMessages?: Record<string, number>
+    }
+    target.__szCostRaf = window.requestAnimationFrame
+    if (window !== window.top) return
+    const counts: Record<string, number> = {}
+    target.__szCostMessages = counts
+    window.addEventListener('message', (event) => {
+      const type = (event.data as { type?: unknown } | null)?.type
+      if (typeof type === 'string' && type.startsWith('sz:devtools'))
+        counts[type] = (counts[type] ?? 0) + 1
+    })
   })
 }
+
+const devtoolsMessages = (page: Page) =>
+  page.evaluate(() => ({
+    ...((window as typeof window & { __szCostMessages?: Record<string, number> })
+      .__szCostMessages ?? {}),
+  }))
 
 /** Custo de cada braço: mediana das rodadas de (com − fechada da mesma rodada) ÷ 16,7 ms. */
 function costs(samples: Sample[]) {
@@ -266,10 +295,16 @@ async function markDocument(page: Page) {
 }
 
 /** Começa a partida quando o jogo abre numa tela de Jogar (a mesma conta nos três braços). */
+/** Começa a partida quando o jogo abre numa tela de Jogar (a mesma conta nos três braços). */
 async function startMatch(frame: Frame) {
   const play = frame.getByRole('button', { name: 'Jogar', exact: true })
-  if (await play.isVisible({ timeout: 1500 }).catch(() => false))
-    await play.click({ timeout: 3000 }).catch(() => {})
+  try {
+    await play.waitFor({ state: 'visible', timeout: 3000 })
+  } catch {
+    return
+  }
+  await play.click({ timeout: 3000 })
+  await play.waitFor({ state: 'hidden', timeout: 5000 })
 }
 
 async function setArm(page: Page, arm: Arm) {
@@ -283,6 +318,9 @@ async function setArm(page: Page, arm: Arm) {
     // medir um documento que acabou de começar.
     if ((await srcdoc(page)) === before)
       await page.locator('[data-live-target="studio-run"]').click()
+    // A gaveta aberta numa aba neutra: o palco fica do mesmo tamanho dos braços medidos (o Jogo 3D
+    // desenha pelo tamanho do canvas na tela; revisão do lote 3).
+    await page.getByRole('tab', { name: /^Mensagens do jogo/ }).click()
   } else if (arm === 'desempenho') {
     await page.getByRole('tab', { name: 'Desempenho' }).click()
     const toggle = page.getByRole('switch', { name: 'Medir o desempenho' })
@@ -352,8 +390,18 @@ for (const game of GAMES)
     }
     saveRow(row)
     console.log(`[custo] ${game.engine}: ${JSON.stringify(row.costs)}`)
-    // Toda janela teve quadros (senão a conta não diz nada).
+    // Toda janela teve quadros (senão a conta não diz nada), e cada aba trabalhou de verdade: a
+    // medida manda uma fatia a cada meio segundo e o Investigar o estado a cada meio segundo; a
+    // gaveta fechada não manda nada (revisão do lote 3: só o texto da ponte no documento não prova).
     expect(samples.every((sample) => sample.frames > 10)).toBe(true)
+    for (const sample of samples) {
+      if (sample.arm === 'desempenho')
+        expect(sample.perfMessages, 'fatias da medida').toBeGreaterThan(3)
+      if (sample.arm === 'investigar')
+        expect(sample.stateMessages, 'estados do Investigar').toBeGreaterThan(3)
+      if (sample.arm === 'fechada')
+        expect(sample.perfMessages + sample.stateMessages, 'gaveta fechada').toBe(0)
+    }
     if (emulated) {
       test.info().annotations.push({
         type: 'emulado',

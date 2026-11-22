@@ -48,6 +48,21 @@ em porcentagem do quadro de 16,7 ms:
 | Jogo 3D Avançado | Defesa da Torre Profissional | 0,36% | 0,64% | 1,23 a 1,62 |
 | Pro (JavaScript) | canvas sintético com a ponte do Pro | 0,35% | não se aplica | 0,60 a 0,81 |
 
+### O que cada ambiente cobra (revisão do lote 3)
+
+- **Jogo 2D, 2D Avançado e Pro:** reprovam acima de 5% em qualquer máquina, inclusive no CI.
+- **Jogo 3D, Mundo 3D e 3D Avançado:** cobrados só com placa de vídeo. No `studio-engines.yml`
+  (Linux sem placa, SwiftShader), o tempo por quadro variou de −40% a +45% entre rodadas com a
+  gaveta fechada dos dois lados: o teste reconhece a GPU emulada pelo nome do renderizador e
+  registra os números sem cobrar (regra 4 do guia, "emulado é emulado"). A prova dos 3D é a
+  tabela acima, medida com placa de vídeo.
+- **Pro:** a ponte de verdade da prévia do Pro sobre um jogo de canvas sintético, não a prévia
+  real (o playground não abre o Pro sem o WebContainer).
+- **Python:** cobrado na suíte da homologação; o número entra aqui quando ela rodar.
+- **Toda janela prova que a aba trabalhou:** o braço do Desempenho recebe as fatias da medida e o
+  do Investigar recebe os estados, contados na página do editor; a gaveta fechada não recebe nada.
+  O palco tem o mesmo tamanho nos três braços (no fechado, a gaveta abre na aba Mensagens).
+
 Números negativos são ruído: a diferença entre duas janelas da gaveta fechada da mesma rodada chega
 a 0,3 ms por quadro (2% do quadro) nos jogos 3D. Mesmo assim, nenhum motor chegou perto da meta.
 

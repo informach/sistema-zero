@@ -503,10 +503,11 @@ test('Meus testes no Python: o programa que não compila conta o erro, e o que t
   // O mesmo caminho do JavaScript: o teste não passa e a observação traz o erro do programa (a aba
   // diz "o jogo deu erro durante o teste").
   expect(quebrado.status).toBe('failed')
-  if (quebrado.status === 'failed')
-    expect(
-      Boolean(quebrado.observation.error) || (quebrado.observation.errors?.length ?? 0) > 0,
-    ).toBe(true)
+  if (quebrado.status === 'failed') {
+    // `errors` e nada em `error`: com `error`, a aba diria "o teste não terminou (…)" com o erro cru.
+    expect(quebrado.observation.error).toBeUndefined()
+    expect(quebrado.observation.errors?.length ?? 0).toBeGreaterThan(0)
+  }
   const travado = await studentTest(page, 'classic-pgzeroTrava', ponto)
   expect(travado.status).toBe('timeout')
   expect(await page.locator('iframe[title="Teste do programa"]').count()).toBe(0)

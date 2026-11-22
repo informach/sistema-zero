@@ -298,6 +298,31 @@ async function startGame(page, probe) {
     const start = page.locator('#start')
     if (await start.isVisible().catch(() => false)) await start.click({ timeout: 3_000 })
   }
+  // O Jogo 2D Avançado abre sempre no menu dele: o teste espera o "carregando" do motor sair e
+  // aperta o "Jogar" de fábrica, como a criança faria (o mesmo do piloto de "Meus testes",
+  // `studentTests/driver.ts`). Menu trocado pela criança, sem o "Jogar", fica como está.
+  const menuUntil = Date.now() + KIT_READY_MS
+  let screen = 'none'
+  while (Date.now() < menuUntil) {
+    screen = await probe
+      .main(() =>
+        document.querySelector('[data-szgk-screen="carregando"].szgk-active')
+          ? 'loading'
+          : document.querySelector('[data-szgk-screen="menu"].szgk-active')
+            ? 'menu'
+            : 'none',
+      )
+      .catch(() => 'none')
+    if (screen !== 'loading') break
+    await page.waitForTimeout(100)
+  }
+  if (screen === 'menu') {
+    const play = page
+      .locator('[data-szgk-screen="menu"].szgk-active button')
+      .filter({ hasText: /^\s*Jogar\s*$/ })
+      .first()
+    if (await play.isVisible().catch(() => false)) await play.click({ timeout: 3_000 })
+  }
   await probe
     .main(
       () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
