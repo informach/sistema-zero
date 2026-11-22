@@ -577,6 +577,51 @@ describe.skipIf(!url)('Pinta causal over the real migration and existing quota l
       entries: [{ revision: 1, sha256: doc.sha256 }],
     })
   })
+  test('self doors by ID and name use the proven map PUT; external and shadowed selectors still require their target', async () => {
+    const a = actor(),
+      home = { ...put('home', 1, 'tilemap'), name: 'vila' },
+      sheet = put('sheet', 2, 'tileset')
+    const refs: PintaCausalManifest['refs'] = [
+      { id: 'home', roles: ['property'] },
+      { id: 'sheet', roles: ['default-sheet'] },
+    ]
+    const start = manifest(home, { doorSelectors: ['home', 'vila'], refs })
+    const sheetRead: PintaCausalRead = { source: 'unit', consumerId: 'home', targetId: 'sheet' }
+    await complete(a, intent('0', [home, sheet], [sheetRead]), [
+      start,
+      manifest(sheet, { sheet: { tileSize: 8, count: 1 } }),
+    ])
+    expect((await visible(a)).entries.map((e) => e.itemId)).toEqual(['home', 'sheet'])
+    const other = put('other', 3, 'tilemap')
+    await complete(a, intent('1', [other]), [manifest(other)])
+    const edit = {
+      ...home,
+      baseRevision: 1,
+      sha256: sha(4),
+      operation: { type: 'update' as const },
+    }
+    const read: PintaCausalRead = {
+      source: 'snapshot',
+      consumerId: 'home',
+      targetId: 'sheet',
+      revision: 1,
+      sha256: sheet.sha256,
+      layoutRevision: '1',
+    }
+    const needsOther = manifest(edit, { refs, doorSelectors: ['other'] })
+    const unwitnessed = intent('2', [edit], [read])
+    expect(await rejection(complete(a, unwitnessed, [needsOther]))).toMatchObject({
+      reason: 'layout-stale',
+      itemId: 'other',
+    })
+    await db.abort(a, unwitnessed)
+    const newcomer = put('vila', 5)
+    // ID-first lookup now sees a sprite, even though the name also matches the original map.
+    expect(
+      await rejection(complete(a, intent('2', [newcomer]), [manifest(newcomer)])),
+    ).toMatchObject({ reason: 'missing-consumer', itemId: 'home' })
+    expect((await visible(a)).epoch).toBe('2')
+  })
   test('opaque future bytes have an explicit owner archive and cannot be admitted or mutated by reader 7', async () => {
     const a = actor()
     await conn.sql`insert into members.creations(id,user_id,account_id,tool,item_id,kind,name,item_updated_at,revision,format_version,storage_ref,bytes,created_at,synced_at)

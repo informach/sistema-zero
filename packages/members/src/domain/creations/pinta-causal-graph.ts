@@ -190,6 +190,8 @@ export function verifyPintaGraph(
       throw new PintaCausalError('layout-stale', read.targetId)
   }
   const requireRead = (owner: string, target: string) => {
+    // Its verified PUT already pins this target to the author's exact output in the same unit.
+    if (owner === target && writes.get(owner)?.action === 'put') return
     const read = reads.get(`${owner}~${target}`)
     if (!read || (writes.has(target) && read.source !== 'unit'))
       throw new PintaCausalError('layout-stale', target)
