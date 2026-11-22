@@ -734,45 +734,62 @@ export function tilemapOfAsset(
   return asset.kind === 'tilemap' ? asset : asset.kind === 'map-set' ? asset.map : null
 }
 
+export type PintaAssetReferenceRole = 'default-sheet' | 'layer-sheet' | 'art' | 'set' | 'property'
+
+type ReferenceAsset = PintaAsset | RegionTilemapAsset | RegionMapSetAsset
+type ReferenceVisitor = (id: string, role: PintaAssetReferenceRole) => void
+
 /** Dependências diretas visuais e tipadas. A travessia e a transação pertencem ao adaptador. */
-export function pintaAssetReferenceIds(
-  asset: PintaAsset | RegionTilemapAsset | RegionMapSetAsset,
-): string[] {
-  const map = tilemapOfAsset(asset)
-  const ids = new Set<string>(map ? tilemapTilesetIds(map) : [])
-  const addProperties = (properties: Record<string, TilemapObjectPropertyValue> | undefined) => {
-    for (const value of Object.values(properties ?? {}))
-      if (typeof value === 'object' && value.type === 'asset' && typeof value.value === 'string')
-        ids.add(value.value)
+function visitPintaAssetReferences(asset: ReferenceAsset, visit: ReferenceVisitor): void {
+  const add: ReferenceVisitor = (id, role) => {
+    if (id !== asset.id) visit(id, role)
   }
-  if (map)
+  const addProperties = (properties: Record<string, TilemapObjectPropertyValue> | undefined) => {
+    for (const value of Object.values(properties ?? {})) {
+      if (typeof value === 'object' && value.type === 'asset' && typeof value.value === 'string')
+        add(value.value, 'property')
+    }
+  }
+  const map = tilemapOfAsset(asset)
+  if (map) {
+    add(map.tilesetId, 'default-sheet')
+    for (const layer of map.layers) {
+      if (isTileLayer(layer) && layer.tilesetId !== undefined) add(layer.tilesetId, 'layer-sheet')
+    }
     for (const layer of map.layers) {
       addProperties(layer.properties)
       if (isObjectLayer(layer))
         for (const object of layer.objects) {
-          if (object.art) ids.add(object.art.assetId)
-          if (object.setId) ids.add(object.setId)
+          if (object.art) add(object.art.assetId, 'art')
+          if (object.setId) add(object.setId, 'set')
           addProperties(object.properties)
         }
     }
+  }
   if (isTilesetKind(asset))
     for (const properties of Object.values(asset.tileProperties ?? {})) addProperties(properties)
-  // Referência a si mesmo já está no documento raiz; não é uma dependência externa que deva
-  // impedir apagar esse mesmo desenho. As propriedades continuam preservadas no documento.
-  ids.delete(asset.id)
+}
+
+export function pintaAssetReferenceIds(asset: ReferenceAsset): string[] {
+  const ids = new Set<string>()
+  visitPintaAssetReferences(asset, (id) => ids.add(id))
   return [...ids]
 }
 
 /** Dependências externas: versões autocontidas não exigem um registro mutável na galeria. */
-export function pintaAssetDependencyIds(
-  asset: PintaAsset | RegionTilemapAsset | RegionMapSetAsset,
-): string[] {
-  const map = tilemapOfAsset(asset)
-  const ids = new Set(pintaAssetReferenceIds(asset))
-  for (const version of map?.resources ?? [])
-    for (const id of pintaAssetReferenceIds(version.asset)) ids.add(id)
-  for (const version of map?.resources ?? []) ids.delete(version.asset.id)
-  ids.delete(asset.id)
+export function visitPintaAssetDependencies(asset: ReferenceAsset, visit: ReferenceVisitor): void {
+  const versions = tilemapOfAsset(asset)?.resources ?? []
+  const privateIds = new Set(versions.map((version) => version.asset.id))
+  const external: ReferenceVisitor = (id, role) => {
+    if (id !== asset.id && !privateIds.has(id)) visit(id, role)
+  }
+  visitPintaAssetReferences(asset, external)
+  for (const version of versions) visitPintaAssetReferences(version.asset, external)
+}
+
+export function pintaAssetDependencyIds(asset: ReferenceAsset): string[] {
+  const ids = new Set<string>()
+  visitPintaAssetDependencies(asset, (id) => ids.add(id))
   return [...ids]
 }
 

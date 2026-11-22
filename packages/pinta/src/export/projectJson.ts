@@ -59,6 +59,10 @@ const READABLE_VERSIONS: ReadonlySet<unknown> = new Set([
   RESOURCE_SCENE_VERSION,
   COLLISION_SCENE_VERSION,
 ])
+export function canReadPintaBackupEnvelope(version: unknown): version is number {
+  return READABLE_VERSIONS.has(version)
+}
+
 const UTF8 = new TextEncoder()
 
 /**
@@ -560,7 +564,7 @@ export function importPintaJson(text: string): PintaImportResult {
   if (doc.format !== FORMAT || !Array.isArray(doc.assets)) {
     return { assets: [], warnings: ['O arquivo não parece um backup do Pinta.'] }
   }
-  if (!READABLE_VERSIONS.has(doc.version)) {
+  if (!canReadPintaBackupEnvelope(doc.version)) {
     return {
       assets: [],
       warnings: ['A versão deste backup não é compatível com esta versão do Pinta.'],
