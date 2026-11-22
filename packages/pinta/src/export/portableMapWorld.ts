@@ -3,12 +3,12 @@ import {
   PINTA_IMAGE_WORLD_LIMITS,
   type PintaImageTargetLimits,
 } from '@sistemazero/core/studio/pinta-image'
+import { WORLD_BUDGET_MESSAGE } from '@sistemazero/core/studio/pinta-region-image-limits'
 import type { PintaScene } from '@sistemazero/core/studio/pinta-scene'
 import { isTileLayer, type PintaAsset, type TilemapAsset } from '../core/project'
 import { sceneMapClosure } from '../core/sceneMapClosure'
 
-export const WORLD_BUDGET_MESSAGE =
-  'Este cenário ficou grande demais para este ambiente. Diminua a escala ou use desenhos menores.'
+export { WORLD_BUDGET_MESSAGE } from '@sistemazero/core/studio/pinta-region-image-limits'
 
 /** Counts the actual expanded scene definitions, including a set shared by several maps. */
 export function pintaImageSceneCells(scene: PintaScene): number {

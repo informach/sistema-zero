@@ -16,19 +16,9 @@
  * de saída em qualquer navegador), e é isso que deixa a SHA da imagem derivada estável.
  */
 
-const CRC_TABLE = Uint32Array.from({ length: 256 }, (_, value) => {
-  let crc = value
-  for (let bit = 0; bit < 8; bit++) crc = (crc >>> 1) ^ (crc & 1 ? 0xedb88320 : 0)
-  return crc >>> 0
-})
+import { pngCrc32 } from '@sistemazero/core/studio/pinta-png-binary'
 
-/** CRC-32 do PNG (ISO 3309), sobre `bytes[start, end)`. */
-export function pngCrc32(bytes: Uint8Array, start = 0, end = bytes.length): number {
-  let crc = 0xffffffff
-  for (let index = start; index < end; index++)
-    crc = (crc >>> 8) ^ CRC_TABLE[(crc ^ bytes[index]!) & 0xff]!
-  return (crc ^ 0xffffffff) >>> 0
-}
+export { pngCrc32 } from '@sistemazero/core/studio/pinta-png-binary'
 
 const PNG_SIGNATURE = [137, 80, 78, 71, 13, 10, 26, 10]
 /** Assinatura (8) + IHDR inteiro (4 tamanho + 4 tipo + 13 dados + 4 CRC). */
