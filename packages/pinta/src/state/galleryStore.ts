@@ -5,10 +5,7 @@
  * mensagem gentil no estado (a UI oferece retry) — nunca lançam.
  */
 import { createStore, type StoreApi } from 'zustand/vanilla'
-import type {PintaMemoryAsset} from '../core/assetMemory'
-import {pintaWorkshopBody,attachWorkshopBook} from '../export/workshopDocument'
-import {rebindCopiedAutomapBook} from '../tiles/automapping/native'
-import {isPintaAuthoredMap} from '../tiles/automapping/model'
+import type { PintaMemoryAsset } from '../core/assetMemory'
 import { COPY } from '../core/copy'
 import type { PintaResourceObservation } from '../core/localAssetOrigin'
 import { embeddedTilesetOf } from '../core/mapResourceVersions'
@@ -25,7 +22,9 @@ import {
   sanitizeProjectRef,
 } from '../core/project'
 import { observePintaReferences } from '../core/sceneMapClosure'
+import { pintaWorkshopBody } from '../core/workshopAsset'
 import { findTemplate } from '../templates/catalog'
+import { isPintaAuthoredMap } from '../tiles/automapping/model'
 import { cloneWithNewIds, planImport, uniqueName } from './importPlan'
 import {
   createPintaPersistence,
@@ -326,13 +325,21 @@ export function createGalleryStore(
         return null
       }
       try {
-        let copy:PintaMemoryAsset=cloneWithNewIds(pintaWorkshopBody(asset),name)
-        if(isPintaAuthoredMap(asset)){
-          if(copy.kind!=='tilemap')throw Error(COPY.editor.saveError)
-          const book=await rebindCopiedAutomapBook(pintaWorkshopBody(asset),copy,asset.automapping,assets,[...assets,copy])
-          const bound=book&&attachWorkshopBook(copy,book)
-          if(!bound)throw Error(COPY.editor.saveError)
-          copy=bound
+        let copy: PintaMemoryAsset = cloneWithNewIds(pintaWorkshopBody(asset), name)
+        if (isPintaAuthoredMap(asset)) {
+          const { rebindCopiedAutomapBook } = await import('../tiles/automapping/native')
+          const { attachWorkshopBook } = await import('../export/workshopDocument')
+          if (copy.kind !== 'tilemap') throw Error(COPY.editor.saveError)
+          const book = await rebindCopiedAutomapBook(
+            pintaWorkshopBody(asset),
+            copy,
+            asset.automapping,
+            assets,
+            [...assets, copy],
+          )
+          const bound = book && attachWorkshopBook(copy, book)
+          if (!bound) throw Error(COPY.editor.saveError)
+          copy = bound
         }
         await persistOne(copy)
         set((state) => ({ assets: upsertSorted(state.assets, copy), mutateError: null }))
@@ -421,27 +428,36 @@ export function createGalleryStore(
 
       const restoredPairs = plan.pairs
       const restored = restoredPairs.map(({ restored: asset }) => asset)
-      const authored=eligible.filter(isPintaAuthoredMap)
-      if(authored.length){
-        try{
-          if(skipped)throw Error(COPY.editor.saveError)
-          const byId=new Map(restored.map((asset,i)=>[asset.id,i]))
-          for(const asset of authored){
-            const id=idMap.get(asset.id),i=id===undefined?undefined:byId.get(id)
-            if(i===undefined)throw Error(COPY.editor.saveError)
-            const copy=restored[i]
-            if(copy?.kind!=='tilemap')throw Error(COPY.editor.saveError)
-            const book=await rebindCopiedAutomapBook(pintaWorkshopBody(asset),copy,asset.automapping,[...current,...eligible],[...current,...restored])
-            const bound=book&&attachWorkshopBook(copy,book)
-            if(!bound)throw Error(COPY.editor.saveError)
-            restored[i]=bound
+      const authored = eligible.filter(isPintaAuthoredMap)
+      if (authored.length) {
+        try {
+          const { rebindCopiedAutomapBook } = await import('../tiles/automapping/native')
+          const { attachWorkshopBook } = await import('../export/workshopDocument')
+          if (skipped) throw Error(COPY.editor.saveError)
+          const byId = new Map(restored.map((asset, i) => [asset.id, i]))
+          for (const asset of authored) {
+            const id = idMap.get(asset.id),
+              i = id === undefined ? undefined : byId.get(id)
+            if (i === undefined) throw Error(COPY.editor.saveError)
+            const copy = restored[i]
+            if (copy?.kind !== 'tilemap') throw Error(COPY.editor.saveError)
+            const book = await rebindCopiedAutomapBook(
+              pintaWorkshopBody(asset),
+              copy,
+              asset.automapping,
+              [...current, ...eligible],
+              [...current, ...restored],
+            )
+            const bound = book && attachWorkshopBook(copy, book)
+            if (!bound) throw Error(COPY.editor.saveError)
+            restored[i] = bound
           }
-        }catch{
-          set({mutateError:COPY.editor.saveError})
-          return {added:0,skipped:incoming.length}
+        } catch {
+          set({ mutateError: COPY.editor.saveError })
+          return { added: 0, skipped: incoming.length }
         }
       }
-      if (options.atomic||authored.length) {
+      if (options.atomic || authored.length) {
         try {
           await persistMany(restored)
           set((state) => ({

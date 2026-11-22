@@ -1,39 +1,64 @@
 import { createStore } from 'zustand/vanilla'
+import type { PintaMemoryAsset } from '../core/assetMemory'
 import { COPY } from '../core/copy'
 import type { PintaAsset } from '../core/project'
 import type { PintaEditorState, PintaEditorStore } from './editorStore'
 
 /** A view of the outer editor, sharing its history and persistence authority. */
 export function createMapSetEditorStore(outer: PintaEditorStore) {
-  const outerOf = new WeakMap<PintaAsset, PintaAsset>(),
-    innerOf = new WeakMap<PintaAsset, PintaAsset>()
-  const unwrap = (asset: PintaAsset): PintaAsset => {
-    if (asset.kind !== 'map-set') return asset
+  return createMapSetLens<PintaAsset>(
+    outer,
+    (asset) => (asset.kind === 'map-set' ? asset.map : null),
+    (set, map) => {
+      if (set.kind !== 'map-set' || map.kind !== 'tilemap') throw Error(COPY.scene.conjuntoInvalido)
+      return { ...set, map }
+    },
+  )
+}
+export function createRegionalMapSetEditorStore(outer: PintaEditorStore<PintaMemoryAsset>) {
+  return createMapSetLens<PintaMemoryAsset>(
+    outer,
+    (asset) => (asset.kind === 'map-set' ? asset.map : null),
+    (set, map) => {
+      if (set.kind !== 'map-set' || map.kind !== 'tilemap') throw Error(COPY.scene.conjuntoInvalido)
+      if ('origin' in set.map && 'origin' in map && map.schema === 8)
+        return { ...set, schema: 8, map }
+      if (!('origin' in set.map) && !('origin' in map)) return { ...set, map }
+      throw Error(COPY.scene.conjuntoInvalido)
+    },
+  )
+}
+function createMapSetLens<Asset extends PintaMemoryAsset>(
+  outer: PintaEditorStore<Asset>,
+  innerMap: (asset: Asset) => Asset | null,
+  replaceMap: (set: Asset, map: Asset) => Asset,
+) {
+  const outerOf = new WeakMap<Asset, Asset>(),
+    innerOf = new WeakMap<Asset, Asset>()
+  const unwrap = (asset: Asset): Asset => {
+    const source = innerMap(asset)
+    if (!source) return asset
     let map = innerOf.get(asset)
     if (!map) {
-      // Every outer revision has its own view identity, even if only its name
-      // changed and it deliberately reused the same map value.
-      map = { ...asset.map }
+      map = { ...source }
       innerOf.set(asset, map)
       outerOf.set(map, asset)
     }
     return map
   }
-  const wrap = (asset: PintaAsset): PintaAsset => {
+  const wrap = (asset: Asset): Asset => {
     const current = outer.getState().asset
-    if (current.kind !== 'map-set' || asset.kind !== 'tilemap')
-      throw new Error(COPY.scene.conjuntoInvalido)
-    return outerOf.get(asset) ?? (current.map === asset ? current : { ...current, map: asset })
+    return (
+      outerOf.get(asset) ?? (innerMap(current) === asset ? current : replaceMap(current, asset))
+    )
   }
-  const changed = (asset: PintaAsset): PintaAsset | null => {
+  const changed = (asset: Asset): Asset | null => {
     const current = outer.getState().asset
-    if (current.kind !== 'map-set' || asset.kind !== 'tilemap')
-      throw new Error(COPY.scene.conjuntoInvalido)
-    return current.map === asset || outerOf.get(asset) === current
+    return innerMap(current) === asset || outerOf.get(asset) === current
       ? null
-      : { ...current, map: asset }
+      : replaceMap(current, asset)
   }
-  const read = (): PintaEditorState => {
+  const read = (): PintaEditorState<Asset> => {
     const state = outer.getState()
     return {
       ...state,
@@ -56,8 +81,9 @@ export function createMapSetEditorStore(outer: PintaEditorStore) {
         return written ? unwrap(written) : null
       },
       commitGesture: (asset) => outer.getState().commitGesture(wrap(asset)),
-      commitLinked: (asset, linked) => outer.getState().commitLinked(wrap(asset), linked),
+      commitLinked: (asset, linked, indices) =>
+        outer.getState().commitLinked(wrap(asset), linked, indices),
     }
   }
-  return { store: createStore<PintaEditorState>(() => read()), read }
+  return { store: createStore<PintaEditorState<Asset>>(() => read()), read }
 }

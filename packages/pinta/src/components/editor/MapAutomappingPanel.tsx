@@ -1,7 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { COPY } from '../../core/copy'
 import { newId } from '../../core/id'
-import { type AnyTilesetAsset, isTileLayer, type TilemapAsset } from '../../core/project'
+import {
+  type AnyTilesetAsset,
+  isTileLayer,
+  type RegionTilemapAsset,
+  type TilemapAsset,
+  type TilemapCells,
+} from '../../core/project'
 import { triggerDownload } from '../../export/download'
 import {
   AUTOMAP_LIMITS,
@@ -37,22 +43,39 @@ const messages: Record<AutomapFailure, string> = {
 }
 const field = 'min-h-11 w-full rounded-xl border-2 border-pin-border bg-pin-surface px-2 text-sm'
 const initialRect = { col: 0, row: 0, cols: 1, rows: 1 }
-export function MapAutomappingPanel({
+type RuleMap<Grid extends import('../../tiles/mapCellEdits').AuthorMap> = Grid & {
+  schema: 9
+  automapping: AutomapBook
+}
+type AutomapPanelProps<Grid extends import('../../tiles/mapCellEdits').AuthorMap> = {
+  map: RuleMap<Grid>
+  selection: CellRect | null
+  sheets: readonly AnyTilesetAsset[]
+  showPreview: (base: Grid, shown: Grid | null) => void
+  registerStroke: (stage: import('./mapTools/tileGestures').StageBrush<Grid> | undefined) => void
+}
+interface RuleEditor<Grid extends import('../../tiles/mapCellEdits').AuthorMap> {
+  getState(): { asset: unknown; commit(next: RuleMap<Grid>): boolean }
+}
+export function MapAutomappingPanel(props: AutomapPanelProps<TilemapAsset>) {
+  const { editor } = useEditorStores()
+  return <AutomappingControls<TilemapAsset> {...props} editor={editor} />
+}
+export function RegionAutomappingPanel(
+  props: AutomapPanelProps<RegionTilemapAsset> & { editor: RuleEditor<RegionTilemapAsset> },
+) {
+  return <AutomappingControls<RegionTilemapAsset> {...props} />
+}
+function AutomappingControls<Grid extends import('../../tiles/mapCellEdits').AuthorMap>({
   map,
   selection,
   sheets,
   showPreview,
   registerStroke,
-}: {
-  map: AutomapEditorMap
-  selection: CellRect | null
-  sheets: readonly AnyTilesetAsset[]
-  showPreview: (base: TilemapAsset, shown: TilemapAsset | null) => void
-  registerStroke: (stage: import('./mapTools/tileGestures').StageBrush | undefined) => void
-}) {
-  const { editor } = useEditorStores()
+  editor,
+}: AutomapPanelProps<Grid> & { editor: RuleEditor<Grid> }) {
   const book = map.automapping,
-    layers = map.layers.filter(isTileLayer)
+    layers = map.layers.filter(isTileLayer<TilemapCells>)
   const [sheetIndex, setSheetIndex] = useState<Map<string, SheetIdentity> | null>(null)
   const [chosen, setChosen] = useState<string[]>([layers[0]?.id ?? ''])
   const [rect, setRect] = useState<CellRect>(initialRect)
@@ -66,11 +89,9 @@ export function MapAutomappingPanel({
   const [ignoreEmpty, setIgnoreEmpty] = useState(false)
   const [armed, setArmed] = useState(false)
   const [message, setMessage] = useState('')
-  const [preview, setPreview] = useState<{ base: AutomapEditorMap; next: AutomapEditorMap } | null>(
-    null,
-  )
+  const [preview, setPreview] = useState<{ base: RuleMap<Grid>; next: RuleMap<Grid> } | null>(null)
   const [incoming, setIncoming] = useState<{
-    base: AutomapEditorMap
+    base: RuleMap<Grid>
     book: AutomapBook
     selected: Map<string, string>
   } | null>(null)
@@ -166,7 +187,7 @@ export function MapAutomappingPanel({
       return false
     }
     cancel()
-    const ok = editor.getState().commit({ ...map, automapping: parsed } as AutomapEditorMap)
+    const ok = editor.getState().commit({ ...map, automapping: parsed })
     setMessage(ok ? COPY.automap.saved : COPY.automap.stale)
     return ok
   }

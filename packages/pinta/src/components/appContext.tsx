@@ -70,6 +70,9 @@ export interface PintaAppContextValue {
    * `PintaHandle` — ler o desenho vivo, forçar o salvamento, trocar o desenho — sem que o
    * `EditorScreen` precise receber ref por prop em todo o caminho.
    */
+  onWorkshopEditorReady?(
+    editor: PintaEditorStore<import('../core/assetMemory').PintaMemoryAsset> | null,
+  ): void
   onEditorReady?(editor: PintaEditorStore | null): void
 }
 

@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { COPY } from '../../core/copy'
 import { embeddedTilesetOf } from '../../core/mapResourceVersions'
 import { isObjectLayer, isTilesetKind, type PintaAsset } from '../../core/project'
+import { isLocalRegionAsset } from '../../state/localRegionAssetAuthority'
 import { createObjectTemplate } from '../../tiles/objectTemplate'
 import { detachMapSet } from '../../tiles/sets'
 import { usePintaApp, usePintaGallery } from '../appContext'
@@ -29,7 +30,8 @@ export function MapLibraryPanel({
   const { gallery } = usePintaApp(),
     { showToast } = useToast()
   const [search, setSearch] = useState('')
-  const find = (id: string): PintaAsset | null => assets.find((a) => a.id === id) ?? null
+  const find = (id: string): PintaAsset | null =>
+    assets.find((a): a is PintaAsset => a.id === id && !isLocalRegionAsset(a)) ?? null
   const chosen = editor.getState().asset
   const selected =
     chosen.kind === 'tilemap'
@@ -117,7 +119,8 @@ export function MapLibraryPanel({
       <div className="mt-2 grid max-h-52 grid-cols-3 gap-1 overflow-auto">
         {assets
           .filter(
-            (a) =>
+            (a): a is PintaAsset =>
+              !isLocalRegionAsset(a) &&
               a.kind !== 'tilemap' &&
               (allowSets || a.kind !== 'map-set') &&
               a.name.toLowerCase().includes(search.toLowerCase()),

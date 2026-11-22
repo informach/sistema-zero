@@ -1,4 +1,4 @@
-import { type JSX, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { type JSX, lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from 'zustand'
 import type { PintaMemoryAsset } from '../../core/assetMemory'
 import { COPY } from '../../core/copy'
@@ -39,6 +39,9 @@ import { TilePicker } from './TilePicker'
 import { useMediaQuery } from './useMediaQuery'
 import { SessionZoomControls } from './ZoomControls'
 
+const RegionalRules = lazy(async () => ({
+  default: (await import('./MapAutomappingPanel')).RegionAutomappingPanel,
+}))
 interface CompleteRegionMapWorkspaceProps {
   editor: PintaEditorStore<PintaMemoryAsset>
   session: PintaSessionStore
@@ -157,9 +160,21 @@ function RegionalMapStage({
     },
     [cellPx, pad, tileSize, tilesetById, sheets.sheetOf, cache, collision],
   )
+  const preview = useRef<{ base: RegionTilemapAsset; shown: RegionTilemapAsset } | null>(null)
+  const [stageBrush, setStageBrush] =
+    useState<import('./mapTools/tileGestures').StageBrush<RegionTilemapAsset>>()
+  const registerStroke = useCallback((next: typeof stageBrush) => setStageBrush(() => next), [])
+  const showPreview = useCallback(
+    (base: RegionTilemapAsset, shown: RegionTilemapAsset | null) => {
+      if (editor.getState().asset !== base) return
+      preview.current = shown ? { base, shown } : null
+      repaint(shown ?? base)
+    },
+    [editor, repaint],
+  )
   const paintCurrent = useCallback(() => {
     const current = mapOf(editor.getState().asset)
-    if (current) repaint(current)
+    if (current) repaint(preview.current?.base === current ? preview.current.shown : current)
   }, [editor, repaint])
   const animate = useCallback(
     (at: number) => {
@@ -207,6 +222,7 @@ function RegionalMapStage({
       session,
       tool,
       tilemap: map,
+      stageBrush,
       layerId: layer?.id ?? '',
       tileset: tileset || null,
       selectedTile,
@@ -351,6 +367,18 @@ function RegionalMapStage({
                 ))}
             </select>
           </Panel>
+          {map.schema === 9 && map.automapping ? (
+            <Suspense fallback={null}>
+              <RegionalRules
+                map={map}
+                editor={editor}
+                sheets={tilesets}
+                selection={null}
+                registerStroke={registerStroke}
+                showPreview={showPreview}
+              />
+            </Suspense>
+          ) : null}
           {objectLayer ? (
             <MapObjectPanel
               layer={objectLayer}

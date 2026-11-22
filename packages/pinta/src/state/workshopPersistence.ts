@@ -23,11 +23,14 @@ import {
   sanitizeLocalRegionAsset,
   stampLocalRegionAsset,
 } from './localRegionAssetAuthority'
+import { persistLocalRegionRevision } from './localRegionEditing'
 import {
   captureLocalPintaAssetForImage,
   createLocalPintaPersistence,
+  getPintaStorageNamespace,
   type LocalPersistenceFormat,
   type PintaCaptureOptions,
+  type PintaPersistence,
 } from './persistence'
 import { createWorkshopStorageCodec } from './workshopStorageCodec'
 
@@ -99,7 +102,22 @@ function workshopPolicy(): LocalPersistenceFormat<PintaMemoryAsset> {
 export function createWorkshopPintaPersistence(
   options: { namespace?: string; guardCausalWrites?: boolean } = {},
 ) {
-  return {...createLocalPintaPersistence(options, workshopPolicy()),workshopReader:true as const}
+  const namespace = options.namespace ?? getPintaStorageNamespace()
+  const local = createLocalPintaPersistence({ ...options, namespace }, workshopPolicy())
+  const persistRevision: NonNullable<
+    PintaPersistence<PintaMemoryAsset>['persistRevision']
+  > = async (previous, asset, resources) => {
+    if (
+      isLocalRegionAsset(previous) &&
+      isLocalRegionAsset(asset) &&
+      previous.schema === 8 &&
+      asset.schema === 8 &&
+      (await persistLocalRegionRevision(namespace, previous, asset, resources))
+    )
+      return
+    await local.persistAsset(asset, { resources })
+  }
+  return { ...local, workshopReader: true as const, observesReferences: true, persistRevision }
 }
 export function captureWorkshopPintaAssetForImage(id: string, options: PintaCaptureOptions = {}) {
   return captureLocalPintaAssetForImage(

@@ -222,8 +222,11 @@ export function ExportDialog({
     }
   }
 
-  function downloadEditable(): void {
-    const json = assetBundleToJson(asset, gallery.getState().assets)
+  async function downloadEditable(): Promise<void> {
+    const json = await (await import('../../export/workshopDocument')).workshopAssetBundleToJson(
+      asset,
+      gallery.getState().assets,
+    )
     if (!json) {
       showToast(COPY.exportDialog.editableMissingTileset)
       return
@@ -369,7 +372,15 @@ export function ExportDialog({
                   downloadAsyncPng(
                     exportPintaScene(
                       tilemap,
-                      (id) => gallery.getState().assets.find((a) => a.id === id) ?? null,
+                      (id) =>
+                        gallery
+                          .getState()
+                          .assets.find(
+                            (a): a is PintaAsset =>
+                              a.id === id &&
+                              !(a.kind === 'tilemap' && 'origin' in a) &&
+                              !(a.kind === 'map-set' && 'origin' in a.map),
+                          ) ?? null,
                     )
                       .then((s) => scenePng(s, scale))
                       .then((p) => p?.dataUrl ?? null),

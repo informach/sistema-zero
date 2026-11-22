@@ -8,6 +8,7 @@
 import { clsx } from 'clsx'
 import type { JSX } from 'react'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import type { PintaMemoryAsset } from '../../core/assetMemory'
 import { COPY } from '../../core/copy'
 import {
   type AnyTilesetAsset,
@@ -18,6 +19,7 @@ import {
   type VectorFrame,
 } from '../../core/project'
 import { paintBitmap } from '../../pixel/render'
+import { isLocalRegionAsset } from '../../state/localRegionAssetAuthority'
 import { remapTilesetConsumers } from '../../tiles/tilesetConsumers'
 import {
   addTile,
@@ -129,7 +131,7 @@ const COLLISION_LABEL: Record<TileCollision, string> = {
 }
 
 export function TileStrip({ className }: { className?: string }): JSX.Element | null {
-  const { editor, session } = useEditorStores()
+  const { editor, session, workshopEditor } = useEditorStores()
   const { gallery, persistence } = usePintaApp()
   const { showToast } = useToast()
   const asset = useEditor((state) => state.asset)
@@ -171,13 +173,13 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
       if (limitToast) showToast(limitToast)
       return
     }
-    const apply = (catalog: readonly PintaAsset[]): void => {
+    const apply = (catalog: readonly PintaMemoryAsset[]): void => {
       if (!active.current || editor.getState().asset !== current) return
       let accepted: boolean
       if (remap) {
         const linked = remapTilesetConsumers(
           catalog,
-          editor.getState().linkedAssets ?? [],
+          (workshopEditor ?? editor).getState().linkedAssets ?? [],
           current.id,
           remap,
         )
@@ -185,9 +187,21 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
           showToast(COPY.tiles.remapRefused(linked.assetName))
           return
         }
-        accepted = editor
-          .getState()
-          .commitLinked(next, { before: linked.before, after: linked.after }, remap)
+        if (workshopEditor)
+          accepted = workshopEditor
+            .getState()
+            .commitLinked(next, { before: linked.before, after: linked.after }, remap)
+        else if (
+          linked.before.every((asset): asset is PintaAsset => !isLocalRegionAsset(asset)) &&
+          linked.after.every((asset): asset is PintaAsset => !isLocalRegionAsset(asset))
+        )
+          accepted = editor
+            .getState()
+            .commitLinked(next, { before: linked.before, after: linked.after }, remap)
+        else {
+          showToast(COPY.tiles.remapRefused(current.name))
+          return
+        }
       } else {
         accepted = editor.getState().commit(next)
       }

@@ -29,28 +29,9 @@ import {
 } from './projectJson'
 import { decodeRegionGalleryBackup, encodeRegionGalleryBackup } from './regionBackup'
 
-export function isWorkshopRegion(asset: PintaMemoryAsset): boolean {
-  return (
-    (asset.kind === 'tilemap' && 'origin' in asset) ||
-    (asset.kind === 'map-set' && 'origin' in asset.map)
-  )
-}
-export function isLegacyWorkshopAsset(asset: PintaMemoryAsset): asset is PintaAsset {
-  return (
-    !isWorkshopRegion(asset) && (!('schema' in asset) || (asset.schema ?? 0) <= PINTA_MAX_SCHEMA)
-  )
-}
-export function pintaWorkshopBody(asset: PintaAuthoredMap): AuthorMap
-export function pintaWorkshopBody(asset: PintaMemoryAsset): PintaMemoryAsset
-export function pintaWorkshopBody(asset: PintaMemoryAsset): PintaMemoryAsset {
-  if (!isPintaAuthoredMap(asset)) return asset
-  if ('origin' in asset) {
-    const { automapping: _book, schema: _schema, ...body } = asset
-    return { ...body, schema: 8 }
-  }
-  const { automapping: _book, schema: _schema, ...body } = asset
-  return withPintaSchemaStamp(body)
-}
+export { isLegacyWorkshopAsset, isWorkshopRegion, pintaWorkshopBody } from '../core/workshopAsset'
+
+import { isLegacyWorkshopAsset, pintaWorkshopBody } from '../core/workshopAsset'
 export function attachWorkshopBook(asset: AuthorMap, book: AutomapBook): PintaAuthoredMap | null {
   if (
     !book.rules.every((rule) =>
@@ -166,4 +147,15 @@ export function pintaWorkshopAssetFromJson(text: string): PintaMemoryAsset | nul
   } catch {
     return null
   }
+}
+
+export async function workshopAssetBundleToJson(
+  asset: PintaMemoryAsset,
+  catalog: readonly PintaMemoryAsset[],
+) {
+  const { collectAssetBundle } = await import('./assetJson')
+  const byId = new Map(catalog.map((item) => [item.id, item]))
+  byId.set(asset.id, asset)
+  const graph = collectAssetBundle(asset, byId, new Map())
+  return graph ? pintaWorkshopBackup(graph) : null
 }

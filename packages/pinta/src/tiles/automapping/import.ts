@@ -1,4 +1,4 @@
-import { isTileLayer, tileLayerTilesetId } from '../../core/project'
+import { isTileLayer, type TilemapCells, tileLayerTilesetId } from '../../core/project'
 import type { AuthorMap } from '../mapCellEdits'
 import type { AutomapBook, SheetIndex } from './book'
 import { checkAutomapBindings } from './engine'
@@ -20,7 +20,7 @@ export function automapImportLayers(book: AutomapBook, map: AuthorMap, sheets: S
     id,
     rule: binding.rule,
     choices: map.layers
-      .filter(isTileLayer)
+      .filter(isTileLayer<TilemapCells>)
       .filter((layer) => sheets.get(tileLayerTilesetId(map, layer))?.sha256 === binding.sha256)
       .map((layer) => ({ id: layer.id, name: layer.name, sheet: tileLayerTilesetId(map, layer) })),
   }))

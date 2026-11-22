@@ -220,7 +220,7 @@ export function captureAutomapExample(
 }
 
 /** Exact cells changed by a dense editing gesture, including the shift when its left/top edge grew. */
-export function previewAutomapStroke<M extends import('../../core/project').TilemapAsset>(
+export function previewAutomapStroke<M extends AuthorMap>(
   before: M,
   painted: M,
   layer: string,
@@ -228,25 +228,71 @@ export function previewAutomapStroke<M extends import('../../core/project').Tile
   sheets: SheetIndex,
   shift = { col: 0, row: 0 },
 ): AutomapPreview<M> {
-  if (before.id !== painted.id || painted.cols * painted.rows > AUTOMAP_LIMITS.writes)
-    return { ok: false, reason: 'work-budget' }
+  if (before.id !== painted.id) return { ok: false, reason: 'invalid-area' }
   const old = createMapLayerCellReader(before, layer),
     current = createMapLayerCellReader(painted, layer)
   if (!old || !current) return { ok: false, reason: 'missing-layer' }
+  const bounds = mapCellBounds(painted),
+    priorBounds = mapCellBounds(before)
   const changed = new Set<number>()
-  let minX = painted.cols,
-    minY = painted.rows,
-    maxX = -1,
-    maxY = -1
-  for (let row = 0; row < painted.rows; row++)
-    for (let col = 0; col < painted.cols; col++) {
-      if (old.at(col - shift.col, row - shift.row) === current.at(col, row)) continue
-      changed.add(row * painted.cols + col)
-      minX = Math.min(minX, col)
-      minY = Math.min(minY, row)
-      maxX = Math.max(maxX, col)
-      maxY = Math.max(maxY, row)
+  let minX = Infinity,
+    minY = Infinity,
+    maxX = -Infinity,
+    maxY = -Infinity,
+    work = 0
+  function compare(col: number, row: number) {
+    if (
+      col < bounds.col ||
+      row < bounds.row ||
+      col >= bounds.col + bounds.cols ||
+      row >= bounds.row + bounds.rows
+    )
+      return
+    if (old!.at(col - shift.col, row - shift.row) === current!.at(col, row)) return
+    changed.add((row - bounds.row) * bounds.cols + col - bounds.col)
+    minX = Math.min(minX, col)
+    minY = Math.min(minY, row)
+    maxX = Math.max(maxX, col)
+    maxY = Math.max(maxY, row)
+  }
+  if ('origin' in painted && 'origin' in before) {
+    if (
+      shift.col ||
+      shift.row ||
+      priorBounds.col < bounds.col ||
+      priorBounds.row < bounds.row ||
+      priorBounds.col + priorBounds.cols > bounds.col + bounds.cols ||
+      priorBounds.row + priorBounds.rows > bounds.row + bounds.rows
+    )
+      return { ok: false, reason: 'invalid-area' }
+    const oldLayer = before.layers.find((item) => item.id === layer),
+      nextLayer = painted.layers.find((item) => item.id === layer)
+    if (!oldLayer || !nextLayer || !isTileLayer(oldLayer) || !isTileLayer(nextLayer))
+      return { ok: false, reason: 'missing-layer' }
+    const prior = new Map(oldLayer.cells.chunks.map((part) => [part.col + ',' + part.row, part]))
+    const touched = nextLayer.cells.chunks.filter((part) => {
+      const key = part.col + ',' + part.row,
+        previous = prior.get(key)
+      prior.delete(key)
+      return previous?.cells !== part.cells
+    })
+    for (const part of [...touched, ...prior.values()]) {
+      work += part.cells.length
+      if (work > AUTOMAP_LIMITS.comparisons) return { ok: false, reason: 'work-budget' }
+      for (let i = 0; i < part.cells.length; i++)
+        compare(part.col * 32 + (i % 32), part.row * 32 + Math.floor(i / 32))
+      if (changed.size > AUTOMAP_LIMITS.writes) return { ok: false, reason: 'work-budget' }
     }
+  } else {
+    if (
+      'origin' in painted ||
+      'origin' in before ||
+      painted.cols * painted.rows > AUTOMAP_LIMITS.writes
+    )
+      return { ok: false, reason: 'work-budget' }
+    for (let row = 0; row < painted.rows; row++)
+      for (let col = 0; col < painted.cols; col++) compare(col, row)
+  }
   if (!changed.size)
     return { ok: true, base: before, map: painted, matches: 0, changes: 0, comparisons: 0 }
   const result = previewAutomapping(
@@ -264,8 +310,8 @@ export function previewAutomapStroke<M extends import('../../core/project').Tile
     let total = result.changes
     const final = createMapLayerCellReader(result.map, layer)!
     for (const at of changed) {
-      const col = at % painted.cols,
-        row = Math.floor(at / painted.cols),
+      const col = bounds.col + (at % painted.cols),
+        row = bounds.row + Math.floor(at / painted.cols),
         cell = final.at(col, row)
       if (cell !== current.at(col, row)) total--
       if (cell !== old.at(col - shift.col, row - shift.row)) total++

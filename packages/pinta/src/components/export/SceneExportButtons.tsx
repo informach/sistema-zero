@@ -1,11 +1,18 @@
 import { type JSX, useState } from 'react'
+import type { PintaMemoryAsset } from '../../core/assetMemory'
 import { COPY } from '../../core/copy'
-import type { PintaAsset, TilemapAsset } from '../../core/project'
+import type { RegionTilemapAsset, TilemapAsset } from '../../core/project'
 import { triggerDownload } from '../../export/download'
 import { usePintaApp } from '../appContext'
 import { Button } from '../ui/Button'
 import { useToast } from '../ui/Toast'
-export function SceneExportButtons({ map }: { map: TilemapAsset }): JSX.Element {
+
+type Props =
+  | { map: TilemapAsset; inventory?: never }
+  | { map: RegionTilemapAsset; inventory: readonly PintaMemoryAsset[] }
+
+export function SceneExportButtons(props: Props): JSX.Element {
+  const { map } = props
   const { gallery } = usePintaApp(),
     { showToast } = useToast(),
     [busy, setBusy] = useState(false)
@@ -13,14 +20,27 @@ export function SceneExportButtons({ map }: { map: TilemapAsset }): JSX.Element 
     setBusy(true)
     try {
       const { buildScenePackage, scenePackageBlob } = await import('../../export/scenePackage')
-      const assets: PintaAsset[] = [
-        ...gallery.getState().assets.filter((a) => a.id !== map.id),
+      const catalog = [
+        ...(props.inventory ?? gallery.getState().assets).filter((asset) => asset.id !== map.id),
         map,
       ]
-      triggerDownload(
-        await scenePackageBlob(await buildScenePackage(map, assets, target)),
-        `${map.name}-${target}.zip`,
-      )
+      const { pintaWorkshopBody, isLegacyWorkshopAsset } = await import('../../core/workshopAsset')
+      const { sceneMapClosure } = await import('../../core/sceneMapClosure')
+      const body = pintaWorkshopBody(map)
+      if (body.kind !== 'tilemap') throw Error(COPY.scene.naoFoiPossivelPrepararOPacote)
+      const closure = sceneMapClosure(body, catalog.map(pintaWorkshopBody))
+      let files: Awaited<ReturnType<typeof buildScenePackage>>
+      if (!('origin' in body) && closure.assets.every(isLegacyWorkshopAsset)) {
+        files = await buildScenePackage(body, closure.assets, target)
+      } else {
+        const prepared =
+          'origin' in body
+            ? { ok: true as const, map: body }
+            : (await import('../../tiles/regionMap')).prepareMapRegions(body)
+        if (!prepared.ok) throw Error(COPY.scene.naoFoiPossivelPrepararOPacote)
+        files = await buildScenePackage(prepared.map, closure.assets, target)
+      }
+      triggerDownload(await scenePackageBlob(files), `${map.name}-${target}.zip`)
       showToast(COPY.scene.oPacoteDoCenarioEstaPronto)
     } catch (e) {
       showToast(e instanceof Error ? e.message : COPY.scene.naoFoiPossivelPrepararOPacote)

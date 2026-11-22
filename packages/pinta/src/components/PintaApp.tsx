@@ -131,7 +131,7 @@ function InitialCanvasOpener({
 
 export interface PintaCompletionControl {
   /** Salva o desenho aberto; `null` indica que a galeria está aberta. */
-  flush(): Promise<PintaAsset | null>
+  flush(): Promise<import('../core/assetMemory').PintaMemoryAsset | null>
 }
 
 export function PintaApp({
@@ -194,10 +194,21 @@ export function PintaApp({
   // ⚠️ A identidade tem que ser estável: o `EditorScreen` tem `onEditorReady` nas
   // deps do efeito que se anuncia, e uma função nova por render o faria
   // desanunciar e reanunciar a cada volta do `useMemo` do contexto.
-  const editorRef = useRef<PintaEditorStore | null>(null)
-  const handleEditorReady = useCallback((editor: PintaEditorStore | null) => {
-    editorRef.current = editor
-  }, [])
+  const editorRef = useRef<Pick<
+    PintaEditorStore<import('../core/assetMemory').PintaMemoryAsset>,
+    'getState'
+  > | null>(null)
+  const handleEditorReady = useCallback(
+    (
+      editor: Pick<
+        PintaEditorStore<import('../core/assetMemory').PintaMemoryAsset>,
+        'getState'
+      > | null,
+    ) => {
+      editorRef.current = editor
+    },
+    [],
+  )
 
   useEffect(() => {
     if (!onCompletionControlChange) return
@@ -299,6 +310,7 @@ export function PintaApp({
         return id
       },
       onEditorReady: handleEditorReady,
+      onWorkshopEditorReady: handleEditorReady,
     }),
     [
       resolvedAdapter,

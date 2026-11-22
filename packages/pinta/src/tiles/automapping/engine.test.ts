@@ -237,3 +237,30 @@ test('o teto de um gesto inclui a pincelada e desconta a casa que as regras sobr
   expect(ok.ok && cellAt(ok.map, 'chao', 255, 255)).toBe(2)
   expect(cellAt(base, 'frente', 255, 255)).toBe(-1)
 })
+
+test('o gesto regional visita o chunk tocado em coordenada negativa numa extensão de 100 milhões de casas', () => {
+  const region = prepareMapRegions(fixture())
+  if (!region.ok) throw Error(region.reason)
+  const expanded = expandRegionMap(region.map, { col: -2048, row: -2048, cols: 10000, rows: 10000 })
+  if (!expanded.ok) throw Error(expanded.reason)
+  const source = expanded.map,
+    painted = setCell(source, 'chao', -1025, -1025, 0)
+  const rule = {
+    ...book,
+    rules: [
+      {
+        id: 'r',
+        name: 'r',
+        width: 1,
+        height: 1,
+        input: [plane('chao', [0])],
+        outputs: [[plane('enfeite', [2])]],
+      },
+    ],
+  }
+  const r = previewAutomapStroke(source, painted, 'chao', rule, sheets)
+  expect(r.ok && cellAt(r.map, 'enfeite', -1025, -1025)).toBe(2)
+  expect(r.ok && r.matches).toBe(1)
+  expect(cellAt(source, 'enfeite', -1025, -1025)).toBe(-1)
+  expect(r.ok && r.comparisons).toBeLessThan(8)
+})

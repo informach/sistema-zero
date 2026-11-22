@@ -51,7 +51,7 @@ export interface PaletteLibraryState {
 export type PaletteLibraryStore = ReturnType<typeof createPaletteLibraryStore>
 
 export function createPaletteLibraryStore(
-  persistence: PintaPersistence,
+  persistence: Pick<PintaPersistence, 'loadPaletteLibrary' | 'savePaletteLibrary' | 'subscribe'>,
   options: { disabled?: boolean; now?: () => number } = {},
 ) {
   const now = options.now ?? (() => Date.now())

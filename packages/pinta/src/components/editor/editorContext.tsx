@@ -9,6 +9,7 @@ import type { PintaSessionState, PintaSessionStore } from '../../state/sessionSt
 
 export interface PintaEditorContextValue {
   editor: PintaEditorStore
+  workshopEditor?: PintaEditorStore<import('../../core/assetMemory').PintaMemoryAsset>
   session: PintaSessionStore
   /**
    * Curadoria da caixa de ferramentas vinda do HOST (o bloco de aula). Ausente ou vazia = nada

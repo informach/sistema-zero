@@ -1,5 +1,8 @@
 import { type JSX, useEffect, useMemo } from 'react'
-import { createMapSetEditorStore } from '../../state/mapSetEditorStore'
+import {
+  createMapSetEditorStore,
+  createRegionalMapSetEditorStore,
+} from '../../state/mapSetEditorStore'
 import { PintaEditorProvider, useEditorStores } from './editorContext'
 import { TilemapEditor } from './TilemapEditor'
 
@@ -16,4 +19,17 @@ export function MapSetEditor(): JSX.Element {
       <TilemapEditor setEditor />
     </PintaEditorProvider>
   )
+}
+
+export function RegionalSetEditor({
+  workspace,
+}: {
+  workspace: import('./RegionMapWorkspace').RegionMapWorkspaceProps
+}): JSX.Element {
+  const inner = useMemo(() => createRegionalMapSetEditorStore(workspace.editor), [workspace.editor])
+  useEffect(
+    () => workspace.editor.subscribe(() => inner.store.setState(inner.read(), true)),
+    [workspace.editor, inner],
+  )
+  return <TilemapEditor setEditor regional={{ ...workspace, editor: inner.store }} />
 }

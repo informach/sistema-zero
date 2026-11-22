@@ -1,9 +1,9 @@
 import type { ActiveFrameRef } from '../core/assetEdit'
+import type { PintaMemoryAsset } from '../core/assetMemory'
 import { COPY } from '../core/copy'
-import type {PintaMemoryAsset} from '../core/assetMemory'
-import {isLegacyWorkshopAsset,pintaWorkshopBody,isWorkshopRegion} from './workshopDocument'
 import { sceneMapClosure } from '../core/sceneMapClosure'
 import type { PintaExportedAsset } from '../core/types'
+import { isLegacyWorkshopAsset, isWorkshopRegion, pintaWorkshopBody } from '../core/workshopAsset'
 import { buildStudioPayload, validateStudioPayloadSize } from './studioBridge'
 
 export class StudioMapBundleError extends Error {
@@ -26,17 +26,24 @@ export async function buildStudioMapBundle(
       : null
   const byId = new Map((closure?.assets ?? assets).map((a) => [a.id, pintaWorkshopBody(a)]))
   byId.set(source.id, pintaWorkshopBody(source))
-  const regional=(closure?.assets??[source]).some(isWorkshopRegion)
+  const regional = (closure?.assets ?? [source]).some(isWorkshopRegion)
   const targets = closure?.maps ?? [source]
   const prepared: Array<Omit<PintaExportedAsset, 'maps'>> = []
   for (const target of targets) {
-    const body=pintaWorkshopBody(target)
-    const payload=regional && body.kind==='tilemap'
-      ?await (await import('./regionStudioPayload')).regionStudioPayload(body,byId)
-      :isLegacyWorkshopAsset(body)?await buildStudioPayload(body,(id)=>{
-        const asset=byId.get(id)
-        return asset&&isLegacyWorkshopAsset(asset)?asset:null
-      },target.id === source.id ? frame : { animationId: null, frameIndex: 0 }):null
+    const body = pintaWorkshopBody(target)
+    const payload =
+      regional && body.kind === 'tilemap'
+        ? await (await import('./regionStudioPayload')).regionStudioPayload(body, byId)
+        : isLegacyWorkshopAsset(body)
+          ? await buildStudioPayload(
+              body,
+              (id) => {
+                const asset = byId.get(id)
+                return asset && isLegacyWorkshopAsset(asset) ? asset : null
+              },
+              target.id === source.id ? frame : { animationId: null, frameIndex: 0 },
+            )
+          : null
     if (!payload) return null
     const size = validateStudioPayloadSize(payload)
     if (size !== 'ok') throw new StudioMapBundleError(size)

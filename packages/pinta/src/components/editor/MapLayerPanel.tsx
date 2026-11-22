@@ -4,6 +4,7 @@ import {
   effectiveLayer,
   isObjectLayer,
   isTileLayer,
+  isTilesetKind,
   layerAncestors,
   type TilemapAsset,
   type TilemapLayer,
@@ -85,7 +86,13 @@ export function MapLayerPanel({
     if (result.ok) commitIfChanged(state, result.map)
     else showToast(RESOURCE_VERSION_MESSAGES[result.reason])
   }
-  const find = (id: string) => gallery.getState().assets.find((asset) => asset.id === id) ?? null
+  const find = (id: string) =>
+    gallery
+      .getState()
+      .assets.find(
+        (asset): asset is import('../../core/project').AnyTilesetAsset =>
+          asset.id === id && isTilesetKind(asset),
+      ) ?? null
   const commit = (edit: (map: TilemapAsset) => TilemapAsset): void => {
     const state = editor.getState()
     if (state.asset.kind === 'tilemap') commitIfChanged(state, edit(state.asset))
