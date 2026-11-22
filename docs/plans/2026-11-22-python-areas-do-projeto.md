@@ -93,16 +93,29 @@ linha 1 ou 2, `pythonModuleHeaderEnd`). Comentário de área = linha inteira, co
 em outra linha em branco sai junto. Só comentário da coluna 0 cola na primeira linha da área: um
 comentário recuado que fecha uma função fica com ela. Numa linha com dois comandos (`A = 1; b = 2`)
 não cabe comentário entre eles; se uma área começa no segundo, o comentário dela vai para a
-próxima linha própria da área.
+próxima linha própria da área. Quando um comentário de área sai do meio de uma área com código
+logo embaixo, a linha em branco de cima (a separação que ele trouxe) sai junto, a não ser que
+outro comentário de área entre ali: trocar a primeira linha de uma área e desfazer não deixa
+linha em branco a mais.
 
 A transação visual (`visualTransaction.ts`) ganhou a fase 2: depois de aplicar e conferir o
 gesto, acerta os comentários de área e confere de novo (comentários preservados, árvore igual). As
 proteções de comentário só aceitam soltar um comentário de área. Mover uma linha para dentro de
 uma função deixa o comentário de área no módulo (`statementTransfers.ts`). Uma linha nova de uma
-área anterior entra no fim da área dela (`statementInsertions.ts`).
+área anterior entra no fim da área dela (`statementInsertions.ts`); antes da PRIMEIRA linha do
+arquivo, ela entra logo acima do comentário de área dela (o título do arquivo fica no topo), com
+uma linha em branco antes do comentário.
+
+O planejador de movimento (`statementMoves.ts`) trata os comandos que dividem uma linha
+(`A = 1; b = 2`) como uma peça só: eles andam juntos e na mesma ordem, e só esse planejador
+desiste se o plano os separa (antes, uma linha assim reescrevia o arquivo inteiro). Um `;` sozinho
+no fim (`x = 1;`) não prende a linha. Os comentários de uma linha que sai do programa ficam onde
+estavam, antes da próxima linha que fica (antes iam para o topo, e o desfazer não os devolvia).
 
 Prova com o analisador de verdade: `python/language/areas.transaction.test.ts` (codificação na
-linha 2, ida para dentro de função, espaço no fim, organizar e desfazer, excluir a última área).
+linha 2, ida para dentro de função, espaço no fim, organizar e desfazer, excluir a última área,
+`;` no fim e linha com dois comandos, comentário de linha que vai para os rascunhos, primeira
+linha trocada e de volta, linha nova embaixo do título).
 
 ## O editor
 
@@ -113,13 +126,21 @@ linha 2, ida para dentro de função, espaço no fim, organizar e desfazer, excl
 - `blockly.ts`: `pythonVisualToWorkspace(…, { areas })` monta uma corrente por área;
   `pythonWorkspaceToVisual` lê na ordem do arquivo; `pythonBlockStatement` lê um bloco sozinho.
 - Persistência: o programa são as áreas com linhas; áreas vazias e blocos soltos são rascunho e
-  sobrevivem à Ponte. Rascunho com área vazia repetida reabre com uma só; o que não reabre fica de
-  lado sem travar o arquivo; o rascunho da área "Programa" conta como ausente.
+  sobrevivem à Ponte. Rascunho com área vazia repetida reabre com uma só; o rascunho da área
+  "Programa" conta como ausente. O rascunho solto que não reabre não trava o arquivo e NÃO some:
+  `preparePythonScratchRestoreKeeping` reabre bloco a bloco, e os que não reabrem ficam crus
+  (`keptScratch`) e voltam em toda gravação (`capturePythonWorkspace(…, kept)`).
 - `areaConnectionChecker.ts`: a regra do arraste (`doDragChecks` só no arraste).
-- `areaGuards.ts`: área repetida vira rascunho (como no JavaScript); o bloco que liga o jogo volta
-  ao fim quando o GESTO o tirou de lá; "guardar" que entra em 🎛️ ganha MAIÚSCULAS (e ao terminar
-  de digitar o nome lá dentro), só se o nome não é usado em outro lugar. Tudo no passo de desfazer
-  do gesto; a carga e o desfazer não disparam as guardas.
+- `areaGuards.ts`: área repetida vira rascunho (como no JavaScript). O fim do jogo (o primeiro
+  bloco que liga ou desliga o jogo e a cauda dele, o que vinha depois sem mexer no gesto) vai para
+  o fim da última área quando o gesto mexeu nele ou pôs uma LINHA depois dele; a pilha que caiu
+  embaixo do fim volta para cima, e o resto que o Blockly religou embaixo dela fica com o fim.
+  Mexer dentro de uma linha que já estava depois do fim não conta (o `def on_key_down` depois do
+  `pgzrun.go()` de um programa aberto do código). Os eventos do organizar
+  (`PYTHON_ORGANIZE_GROUPS`) não passam por essa guarda. "guardar" que entra em 🎛️ ganha
+  MAIÚSCULAS (e ao terminar de digitar o nome lá dentro), só se o nome não aparece em outro bloco,
+  nem já em MAIÚSCULAS (juntaria duas variáveis). Tudo no passo de desfazer do gesto; a carga e o
+  desfazer não disparam as guardas.
 - `areaOrganize.ts`: organizar (religa os blocos na ordem planejada, um passo de desfazer), as
   notas (aviso do Blockly com id `python-area`) e o item `sz_py_organize` ("Organizar blocos"; o
   `sz_organize` do JavaScript some no Python). `areaContextMenu.ts`: "Levar para", "Mover para
@@ -127,7 +148,14 @@ linha 2, ida para dentro de função, espaço no fim, organizar e desfazer, excl
 - `programNavigation.ts`: o "Ir para" lista as áreas e, dentro delas, funções, classes e os blocos
   de evento e de laço; "Fechar as funções" fecha também esses blocos.
 - `PythonBlocklyEditor.tsx`: liga tudo; o organizar fica pendente depois de cada carga vinda do
-  código e roda no primeiro `pointerup`/`focusin` nos blocos, só para quem edita.
+  código e roda no primeiro `pointerup`/`focusin` nos blocos, só para quem edita, nunca com um
+  campo aberto (`WidgetDiv`/`DropDownDiv`). O pedido só é gasto quando organizou de fato
+  (`organizeNow` devolve falso com o programa incompleto, `incomplete` no resultado).
+- A linha que divide a linha do arquivo com outro comando ganha a nota `fixed` ("ponha cada
+  comando na sua própria linha"); a linha segurada por ela ganha `fixedNeighbor` (é a do caminho
+  que divide a linha, não ela).
+- O "repetir a cada" do Turtle confere a tela no escopo da chamada `ontimer`, dentro da função
+  (`bindingScopeNode` no contrato do codec): um `tela = …` local não passa pela tela de fora.
 
 e2e: `e2e-python-editor/program-areas.spec.ts` e `workspace-layout.spec.ts` (no job
 `python-browser-isolation` do `studio-mission.yml`). No Windows, o servidor de provas exige Bun 1.4.3;
@@ -152,10 +180,8 @@ o cliente do Playwright roda no Node.
 
 ## O que falta (22/11/2026)
 
-- Lote 5: o bloco `sz_py_turtle_every` está pronto e testado, guardado como patch fora do
-  repositório; entra junto com a requalificação do Turtle (o catálogo novo muda o
-  `codecOrderSha256` dos recibos).
-- Lote 6: a reestruturação do Turtle, a requalificação e a geração.
+- Lotes 5 e 6 entraram em `d99a00d32` (bloco "repetir a cada", os 104 exemplos e os recibos);
+  os achados do full review do modelo em `5ddcc8dca` e os do editor em `c0c2460c1`.
 - Lote 8: a versão nova do motor e a lista de blocos aprovados, uma vez só, com a frente
   "Evolução do Estúdio" (blocos de região do Raylib 3D) e a do Pinta (cenários 2D).
 - A suíte inteira `playwright.python-bridge.config.ts` (fora do CI) tem ~25 reprovações que parecem

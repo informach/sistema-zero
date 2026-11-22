@@ -432,15 +432,20 @@ test('o código que veio de fora se organiza no primeiro clique nos blocos, e o 
 test('com um campo aberto o organizar espera: ele vem no gesto seguinte, com o campo fechado', async ({
   page,
 }) => {
+  // Janela larga: o número cabe nos blocos sem arrastar o fundo (o arraste já seria o gesto que
+  // organiza, antes do clique no campo).
+  await page.setViewportSize({ width: 1800, height: 1000 })
   await page.goto('/')
   await page.waitForFunction(() => !!globalThis.pythonBridgeProbe)
   await page.evaluate(() => pythonBridgeProbe.create())
   const typed = 'print(1)\ndef pular():\n    pass\n'
   await page.evaluate((value) => pythonBridgeProbe.replaceSavedSource(value), typed)
   const source = () => page.evaluate(() => pythonBridgeProbe.state().source)
-  const number = page.locator('.sz_py_integer .blocklyEditableText').first()
+  const number = page.locator('.blocklyTextInputField').filter({ hasText: /^1$/ }).first()
   await expect(number).toBeVisible({ timeout: 20_000 })
-  await showInsideBlocks(page, number)
+  const area = (await page.locator(BLOCKS_SVG).boundingBox())!
+  const box = (await number.boundingBox())!
+  expect(box.x + box.width).toBeLessThan(area.x + area.width - 24)
   // O primeiro gesto nos blocos abre o campo do número: organizar agora fecharia o campo.
   await number.click()
   await expect(page.locator('.blocklyWidgetDiv .blocklyHtmlInput')).toBeVisible()

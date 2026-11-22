@@ -396,6 +396,7 @@ const probes = {
 const games = VISUAL_REFERENCE_GAMES.map((game) => ({
   directory: game.key,
   name: game.name,
+  description: game.description,
   sounds: game.sounds.map(({ path }) => path),
   ...(probes[game.key] as Probe),
 }))
@@ -723,9 +724,11 @@ for (const game of games)
         await gallery
           .locator('select[name="kit-language"]')
           .selectOption('python', { timeout: 5_000 })
+        // O Pygame-ce também tem um "Pong": a descrição separa os dois cards.
         const card = gallery
           .getByRole('button')
           .filter({ has: page.getByText(name, { exact: true }) })
+          .filter({ hasText: game.description })
         await expect(card).toBeEnabled({ timeout: 30_000 })
         await card.click()
         await expect
