@@ -302,6 +302,20 @@ print("antes")
 class Heroi(Personagem):
     pass
 `,
+  'laço que tenta de novo até dar certo (termina)': `
+def sortear():
+    tentativas = 0
+    while True:
+        tentativas += 1
+        if tentativas > 2:
+            break
+    print('sorteou em', tentativas)
+print('antes')
+sortear()
+def depois():
+    print('depois')
+depois()
+`,
   'registro com função que ainda não existe': `
 import turtle
 turtle.onkey(pular, 'a')

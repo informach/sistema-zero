@@ -29,6 +29,8 @@ import { pythonVisualToAST } from './projection'
 export interface PythonAreaBlockNote {
   block: Blockly.Block
   wanted: PythonAreaKind
+  /** A área em que ela ficou (o Ao iniciar, ou a de uma linha antes dela que não pode descer). */
+  shown?: PythonAreaKind
   conflict?: PythonCommuteConflict
 }
 
@@ -84,6 +86,7 @@ export function organizePythonWorkspace(
   const notes = plan.notes.map((note) => ({
     block: blocks[plan.order[note.statement]!]!,
     wanted: note.wanted,
+    shown: plan.areas[note.statement],
     ...(note.conflict ? { conflict: note.conflict } : {}),
   }))
   if (same || options.apply === false) return { changed: false, notes }
@@ -116,9 +119,11 @@ const wantedOf = new WeakMap<Blockly.Block, PythonAreaKind>()
 export const pythonWantedArea = (block: Blockly.Block) => wantedOf.get(block)
 
 /** Por que a linha ficou fora da área dela, em palavras de criança. */
-export function pythonAreaNoteText(note: Pick<PythonAreaBlockNote, 'wanted' | 'conflict'>) {
+export function pythonAreaNoteText(
+  note: Pick<PythonAreaBlockNote, 'wanted' | 'conflict' | 'shown'>,
+) {
   const wanted = PYTHON_AREA_BY_KIND.get(note.wanted)!.title
-  const start = PYTHON_AREA_BY_KIND.get('start')!.title
+  const shown = PYTHON_AREA_BY_KIND.get(note.shown ?? 'start')!.title
   const conflict = note.conflict
   const reason =
     conflict?.reason === 'name'
@@ -132,7 +137,7 @@ export function pythonAreaNoteText(note: Pick<PythonAreaBlockNote, 'wanted' | 'c
             : conflict?.reason === 'pinned'
               ? 'O começo do arquivo fica sempre no topo.'
               : 'Mudar o lugar dela mudaria o que o programa faz.'
-  return `Este bloco é de ${wanted}, mas ficou em ${start} para o programa continuar igual.\n${reason}`
+  return `Este bloco é de ${wanted}, mas ficou em ${shown} para o programa continuar igual.\n${reason}`
 }
 
 /** Mostra as notas (aviso do Blockly com id próprio) e tira as que não valem mais. */

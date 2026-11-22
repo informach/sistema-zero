@@ -765,6 +765,27 @@ function truthyConstant(value: PythonValue | undefined) {
   return false
 }
 
+/** O laço tem como sair: `break` dele (não de um laço de dentro), `return` ou `raise`. */
+function loopCanExit(loop: PythonNode): boolean {
+  const visit = (value: PythonValue | undefined, nested: boolean): boolean => {
+    if (Array.isArray(value)) return value.some((item) => visit(item, nested))
+    if (!isNode(value)) return false
+    if (value.kind === 'Break') return !nested
+    if (value.kind === 'Return' || value.kind === 'Raise') return true
+    if (
+      value.kind === 'FunctionDef' ||
+      value.kind === 'AsyncFunctionDef' ||
+      value.kind === 'ClassDef' ||
+      value.kind === 'Lambda'
+    )
+      return false
+    const inner =
+      nested || value.kind === 'For' || value.kind === 'While' || value.kind === 'AsyncFor'
+    return Object.values(value.fields).some((field) => visit(field, inner))
+  }
+  return visit(loop.fields.body, false)
+}
+
 function isBlockingCall(call: PythonNode) {
   const called = calleeName(call)
   if (!called) return false
@@ -962,7 +983,10 @@ function bodyFacts(
         break
       }
       case 'While':
-        if (truthyConstant(child(value, 'test')?.fields.value)) facts.barrier = true
+        // `while True` sem saída prende o programa; com `break`, `return` ou `raise` é um laço que
+        // tenta de novo até dar certo (sortear sem repetir) e termina.
+        if (truthyConstant(child(value, 'test')?.fields.value) && !loopCanExit(value))
+          facts.barrier = true
         break
     }
     if (COMPREHENSION_KINDS.has(value.kind)) {
@@ -1766,7 +1790,10 @@ export function analyzePythonModuleAreas(
   })
   const terminal = new Set<number>()
   for (let index = body.length - 1; index >= 0; index--) {
-    if (!isTerminalKind(body[index]!, codecIds[index], index > lastLoop && lastLoop >= 0)) break
+    // Depois do laço do jogo, tudo só roda quando a janela fecha (`enable_cursor()`, um
+    // `print('fim')`): é o fim do jogo, preso no lugar, como o bloco que desliga.
+    const afterLoop = lastLoop >= 0 && index > lastLoop
+    if (!afterLoop && !isTerminalKind(body[index]!, codecIds[index], false)) break
     terminal.add(index)
   }
   const settings = new Map<string, SafeValue>()
