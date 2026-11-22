@@ -94,7 +94,9 @@ export function createLocalRegionAssetAuthority() {
       const size = (assets: readonly PintaMemoryAsset[]) =>
         assets.some(isLocalRegionAsset)
           ? sizing.byteLength(assets)
-          : galleryBackupByteLength(assets.filter((asset): asset is PintaAsset => !regional(asset)))
+          : galleryBackupByteLength(
+              assets.filter((asset): asset is PintaAsset => !isLocalRegionAsset(asset)),
+            )
       const projected = size(after) + (bytes?.after ?? 0)
       if (projected <= MAX_BACKUP_FILE_BYTES) return
       if (projected < size(before) + (bytes?.before ?? 0)) return
