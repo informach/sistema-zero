@@ -129,8 +129,8 @@ export function createGameStorageRepository(
   }
 
   /** Pro awaits a confirmed write. Capture the profile scope once, before async work. */
-  function session(projectId: string) {
-    const scope = getScope()
+  function session(projectId: string, storageScope?: ProjectStorageScope) {
+    const scope = storageScope ?? getScope()
     return {
       async load(): Promise<Record<string, string>> {
         if (!scope || !projectId) throw new Error('Armazenamento indisponível.')

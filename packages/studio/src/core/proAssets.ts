@@ -4,6 +4,11 @@ import {
   projectAssetFileExtension,
 } from './assetBinary'
 import { courseModelDataUrl, preloadCourseModels } from './courseModels'
+import {
+  assertRegionalProjectAssetProof,
+  type PintaRegionalProjectAdmissions,
+} from './pintaRegionalProjectAdmission'
+import { assertLegacyStudioProjectMaterials } from './pintaRegionalReference'
 import { PRO_ASSET_DIRECTORY, PRO_ASSET_MANIFEST, validProMaterialPath } from './proAssetPaths'
 import {
   asset3DManifest,
@@ -120,8 +125,11 @@ function materialize(asset: ProjectAsset) {
 export async function buildProAssetBundle(
   assets: readonly ProjectAsset[] = [],
   tree?: ProjectTree,
-  options: { legacyRuntime?: boolean } = {},
+  options: { legacyRuntime?: boolean; regionalMaterials?: PintaRegionalProjectAdmissions } = {},
 ): Promise<ProAssetBundle> {
+  const proof = options.regionalMaterials
+  if (proof) assertRegionalProjectAssetProof(assets, proof)
+  else assertLegacyStudioProjectMaterials({ assets })
   if (
     assets.length > PROJECT_ASSET_LIMITS.maxAssetsCount ||
     assets.reduce((n, asset) => n + asset.dataUrl.length, 0) >
@@ -148,20 +156,20 @@ export async function buildProAssetBundle(
   const manifest = { version: 1 as const, assets: entries }
   files.set(PRO_ASSET_MANIFEST, new TextEncoder().encode(JSON.stringify(manifest, null, 2)))
   if (options.legacyRuntime) {
-    let runtime = legacyCache.get(assets)
+    let runtime = proof ? undefined : legacyCache.get(assets)
     if (!runtime) {
       runtime = import('../preview/assetsBridge').then(({ buildAssetsRuntime }) =>
         new TextEncoder().encode(
           buildAssetsRuntime(
-            assetManifest(assets),
-            assetMetaManifest(assets),
+            assetManifest(assets, proof),
+            assetMetaManifest(assets, undefined, proof),
             soundManifest(assets),
             asset3DManifest(assets),
             criarTransporteDeCenas3D(assets),
           ),
         ),
       )
-      legacyCache.set(assets, runtime)
+      if (!proof) legacyCache.set(assets, runtime)
       void runtime.catch(() => legacyCache.delete(assets))
     }
     files.set('public/sz-assets.js', await runtime)

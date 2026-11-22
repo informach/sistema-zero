@@ -3,12 +3,14 @@ import { buildProRuntimeBridgeScript } from '@sistemazero/core/studio/pro-runtim
 import { type JSX, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ProStageState } from '../../components/preview/ProStageState'
 import { javaScriptProject } from '../../core/editableProject'
+import { PRIVATE_REGIONAL_PROJECT } from '../../core/pintaRegionalReference'
 import { createGameStorageSession } from '../../state/gameStorage'
 import { useLogsStore } from '../../state/logsStore'
 import { captureProjectStorageScope } from '../../state/projectStorageRuntime'
 import { useProjectStore } from '../../state/projectStore'
 import { type ProRunActions, type ProRunState, useProRunApi } from '../../state/proRun'
 import { useT } from '../../studio/i18n'
+import { useStudioExecution } from '../../studio/observation'
 import type { StudioProRuntimeAdapter, StudioProRuntimeBuildResult } from '../../studio/pro-runtime'
 import { ProArtifactPreview } from './ProArtifactPreview'
 import { isProConsoleMessage, proPageLoadedAt } from './proConsoleBridge'
@@ -32,6 +34,7 @@ export function RemoteProPreview({
   active?: boolean
 }): JSX.Element | null {
   const t = useT()
+  const regionalScope = useStudioExecution()[PRIVATE_REGIONAL_PROJECT]
   const proRun = useProRunApi()
   const [started, setStarted] = useState(active)
   // Parar da criança: a volta de `active` (fechar a proposta do construtor) não religa sozinha.
@@ -61,6 +64,7 @@ export function RemoteProPreview({
   const [builtRevision, setBuiltRevision] = useState<number | null>(null)
   const projectId = project?.id ?? null
   const currentRevision = project?.updatedAt ?? null
+  const privateMaterials = regionalScope ? project?.assets : undefined
   const [revoked, setRevoked] = useState<StudioProRuntimeAdapter | null>(null)
   const authorized = !runtime.signal?.aborted && revoked !== runtime
   const result =
@@ -121,6 +125,7 @@ export function RemoteProPreview({
       .build({ project: snapshot, signal })
       .then((result) => {
         if (signal.aborted) return
+        if (regionalScope && latestProjectRef.current?.assets !== snapshot.assets) return
         setCompiled({
           projectId: snapshot.id,
           runtime,
@@ -148,7 +153,7 @@ export function RemoteProPreview({
       })
 
     return () => controller.abort()
-  }, [projectId, attempt, runtime, started, authorized])
+  }, [projectId, attempt, runtime, started, authorized, regionalScope, privateMaterials])
 
   useEffect(() => {
     if (!active) return

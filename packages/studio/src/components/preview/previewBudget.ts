@@ -13,6 +13,8 @@ export interface PreviewBudgetInput {
   css: string
   js: string
   extensionScripts?: readonly string[]
+  /** Private host-admitted passive bytes already charged to the project material budget. */
+  regionalWireChars?: number
   extraFiles?: readonly PreviewBudgetFile[]
 }
 
@@ -26,6 +28,7 @@ export function estimatePreviewInputChars(input: PreviewBudgetInput): number {
     input.css.length +
     base64InflatedChars(input.js.length)
   for (const script of input.extensionScripts ?? []) total += script.length
+  total -= input.regionalWireChars ?? 0
   for (const file of input.extraFiles ?? []) total += estimateExtraFileChars(file)
   return total
 }

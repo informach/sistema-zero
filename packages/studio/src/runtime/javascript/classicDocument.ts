@@ -1,10 +1,15 @@
-import { loadExtensionBootstrapScripts, uniqueExtensionIds } from '../../extensions/runtime'
+import {
+  loadExtensionBootstrapScript,
+  loadExtensionBootstrapScripts,
+  uniqueExtensionIds,
+} from '../../extensions/runtime'
 import type { ExtensionBootstrapContext, ExtensionPermission } from '../../extensions/types'
 import { findExtension } from '../../official-extensions'
 import { type GameUiFontId, loadGameUiFont } from '../../official-extensions/gameUiFont'
 import { type BuildPreviewDocInput, buildPreviewDoc } from '../../preview/bootstrap'
 import { withCoreImports } from '../../preview/coreImports'
 import { carregarModuloDeCenas3D, type ModuloDeCenas3D } from '../../three/scene3dResources'
+import type { JavaScriptRegionalMaterials } from './pintaRegionalMaterials'
 
 /** Host-owned JavaScript catalog metadata; it does not load extension code. */
 export function resolveJavaScriptClassicExtensions(ids: readonly string[]) {
@@ -39,10 +44,19 @@ export async function loadJavaScriptClassicResources(
   fontId: GameUiFontId,
   bootstrapContext?: ExtensionBootstrapContext,
   comCenas3D = false,
+  regional?: JavaScriptRegionalMaterials,
 ): Promise<JavaScriptClassicResources> {
   const context = resolveJavaScriptClassicExtensions(extensionIds)
   const [extensionScripts, gameUiFont, cenas3d] = await Promise.all([
-    loadExtensionBootstrapScripts(context.extensions, bootstrapContext),
+    regional
+      ? Promise.all(
+          context.extensions.map((extension) =>
+            extension.manifest.id === regional.extensionId
+              ? regional.script
+              : loadExtensionBootstrapScript(extension, bootstrapContext),
+          ),
+        )
+      : loadExtensionBootstrapScripts(context.extensions, bootstrapContext),
     context.extensions.length ? loadGameUiFont(fontId) : undefined,
     comCenas3D ? carregarModuloDeCenas3D() : undefined,
   ])

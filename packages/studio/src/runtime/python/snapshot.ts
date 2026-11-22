@@ -1,10 +1,20 @@
 import { sha256Hex } from '@sistemazero/core/creations'
+import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
 import { pythonExternalDependenciesIssue } from '@sistemazero/core/studio/python-dependency-policy'
 import { studioPythonExecutionRevision } from '@sistemazero/core/studio/python-execution-content'
 import { STUDIO_PYTHON_MATERIAL_LIMITS } from '@sistemazero/core/studio/python-material-policy'
 import { digestAssetBytes } from '../../core/assetBinary'
+import type { PintaRegionalProjectAdmissions } from '../../core/pintaRegionalProjectAdmission'
+import {
+  hasRegionalPintaReference,
+  PRIVATE_REGIONAL_PROJECT,
+  type PrivateRegionalProjectReadOptions,
+  UNSUPPORTED_PINTA_REGION,
+} from '../../core/pintaRegionalReference'
+import { isDocumentRecord } from '../../core/projectDocument'
 import { buildPythonAssetBundle } from '../../core/pythonAssets'
 import { assertPythonVisualDraftSettled } from '../../python/blocks/workspaceDraft'
+import { isPrivateRegionalProjectScope } from '../../state/projectStorageRuntime'
 import {
   type PythonProjectDocument,
   pythonFilesToTree,
@@ -12,6 +22,10 @@ import {
 } from '../../state/pythonProjectValidation'
 import { refinePythonProProjectDocument } from '../../state/pythonProProjectValidation'
 import type { PythonExecutionSnapshot } from './protocol'
+
+const snapshotsWithPintaScenes = new WeakSet<PythonExecutionSnapshot>()
+export const requiresAdmittedPythonPintaScenes = (snapshot: PythonExecutionSnapshot) =>
+  snapshotsWithPintaScenes.has(snapshot)
 
 /** Does not approve a release, execute source or install extensions/dependencies. */
 export async function preparePythonProExecutionSnapshot(
@@ -24,12 +38,42 @@ export async function preparePythonProExecutionSnapshot(
 /** Same execution recipe for Classic, Pro, editor and anonymous player. */
 export async function preparePythonExecutionSnapshot(
   raw: unknown,
+  options: PrivateRegionalProjectReadOptions & { signal?: AbortSignal } = {},
 ): Promise<PythonExecutionSnapshot> {
-  return snapshotFromDocument(await refinePythonProjectDocument(raw))
+  if (
+    !isDocumentRecord(raw) ||
+    !Array.isArray(raw.assets) ||
+    !raw.assets.some(hasRegionalPintaReference)
+  )
+    return snapshotFromDocument(await refinePythonProjectDocument(raw))
+
+  const scope = options[PRIVATE_REGIONAL_PROJECT]
+  if (!scope || !isPrivateRegionalProjectScope(scope)) throw new Error(UNSUPPORTED_PINTA_REGION)
+  const { signal } = options
+  const lifetime =
+    signal && scope.signal ? AbortSignal.any([signal, scope.signal]) : (signal ?? scope.signal)
+  lifetime?.throwIfAborted()
+  const captured = copyStudioProjectJson(raw)
+  if (!isDocumentRecord(captured)) throw new Error('O projeto Python é inválido.')
+  const [{ admitRegionalProjectAssets }, { checkRegionalProjectPixels }] = await Promise.all([
+    import('../../core/pintaRegionalProjectAdmission'),
+    import('../../core/pintaRegionalProjectPixels'),
+  ])
+  const regionalMaterials = await admitRegionalProjectAssets(
+    captured.assets,
+    lifetime,
+    (_id, world) => checkRegionalProjectPixels(world, lifetime),
+  )
+  const project = await refinePythonProjectDocument(captured, { regionalMaterials })
+  const snapshot = await snapshotFromDocument(project, regionalMaterials)
+  lifetime?.throwIfAborted()
+  snapshotsWithPintaScenes.add(snapshot)
+  return snapshot
 }
 
 async function snapshotFromDocument(
   project: PythonProjectDocument,
+  regionalMaterials?: PintaRegionalProjectAdmissions,
 ): Promise<PythonExecutionSnapshot> {
   assertPythonVisualDraftSettled(project)
   const tree = project.kind === 'pro' ? project.tree : pythonFilesToTree(project.files)
@@ -50,10 +94,11 @@ async function snapshotFromDocument(
   const directories = Object.entries(tree)
     .flatMap(([path, node]) => (node.kind === 'dir' ? [path] : []))
     .sort()
-  const bundle = await buildPythonAssetBundle(project.assets, {
-    files: source.map((file) => file.path),
-    directories,
-  })
+  const bundle = await buildPythonAssetBundle(
+    project.assets,
+    { files: source.map((file) => file.path), directories },
+    regionalMaterials,
+  )
   const files: PythonExecutionSnapshot['files'] = []
   const encoder = new TextEncoder()
   for (const { path, content } of source) {

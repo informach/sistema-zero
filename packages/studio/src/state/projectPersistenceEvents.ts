@@ -1,4 +1,8 @@
-import { captureProjectStorageScope, type ProjectStorageScope } from './projectStorageRuntime'
+import {
+  captureProjectStorageScope,
+  isPrivateRegionalProjectScope,
+  type ProjectStorageScope,
+} from './projectStorageRuntime'
 
 /** Evento de janela disparado quando uma miniatura termina de gravar. */
 export const PROJECT_THUMB_UPDATED_EVENT = 'sz:project-thumb-updated'
@@ -52,7 +56,8 @@ export function setStudioCloudMirror(mirror: StudioCloudMirror | null): void {
 }
 
 /** Best-effort: um espelho que lança nunca derruba a gravação local. */
-export function notifyMirrorChanged(id: string): void {
+export function notifyMirrorChanged(id: string, scope = captureProjectStorageScope()): void {
+  if (isPrivateRegionalProjectScope(scope)) return
   try {
     cloudMirror?.onChanged(id)
   } catch {
@@ -60,7 +65,8 @@ export function notifyMirrorChanged(id: string): void {
   }
 }
 
-export function notifyMirrorDeleted(id: string): void {
+export function notifyMirrorDeleted(id: string, scope = captureProjectStorageScope()): void {
+  if (isPrivateRegionalProjectScope(scope)) return
   try {
     cloudMirror?.onDeleted(id)
   } catch {
@@ -68,7 +74,8 @@ export function notifyMirrorDeleted(id: string): void {
   }
 }
 
-export function notifyMirrorThumbChanged(id: string): void {
+export function notifyMirrorThumbChanged(id: string, scope = captureProjectStorageScope()): void {
+  if (isPrivateRegionalProjectScope(scope)) return
   try {
     cloudMirror?.onThumbChanged?.(id)
   } catch {
@@ -88,7 +95,7 @@ export function notifyThumbUpdated(id: string): void {
 export function notifyRecoveredProjects(scope: ProjectStorageScope, ids: readonly string[]): void {
   if (scope.identity !== captureProjectStorageScope().identity) return
   for (const id of new Set(ids)) {
-    notifyMirrorChanged(id)
+    notifyMirrorChanged(id, scope)
     notifyProjectChanged(id)
   }
 }

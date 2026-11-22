@@ -33,7 +33,7 @@ import {
   ProjectWriteConflict,
   readLocalRevision,
 } from './projectStorageRevision'
-import type { ProjectStorageScope } from './projectStorageRuntime'
+import { type ProjectStorageScope, regionalProjectReadOptions } from './projectStorageRuntime'
 import { toProjectSummary } from './projectSummary'
 
 /** Kept when conflicting; recovery never replaces a newer writer's document. */
@@ -56,6 +56,7 @@ export async function recoverIndexedProjectWrites(
   const { nativeRecovery, recoverySourceIdentity } = await import('./projectRecoveryGuards')
   const { localSnapshotsEqual } = await import('../project-migrations/localTransaction')
   const { prepareEditableStudioProject } = await import('./editableProjectValidation')
+  const readOptions = regionalProjectReadOptions(scope)
   const valid: RecoveryWrite[] = []
   for (const [index, value] of values.entries()) {
     try {
@@ -63,7 +64,7 @@ export async function recoverIndexedProjectWrites(
       if (projectId !== undefined && recovery.projectId !== projectId) continue
       // Validate the whole document before promoting raw partitions over a
       // readable save. Preparation runs outside the conditional transaction.
-      if (await prepareEditableStudioProject(projectFromRecovery(recovery, version)))
+      if (await prepareEditableStudioProject(projectFromRecovery(recovery, version), readOptions))
         valid.push(recovery)
     } catch {
       // Keep incompatible originals pending; never execute their writes.
@@ -150,7 +151,8 @@ export async function loadRecoverableProjectDraft(
   try {
     const raw = projectFromRecovery(draft)
     const { prepareEditableStudioProject } = await import('./editableProjectValidation')
-    const project = raw && (await prepareEditableStudioProject(raw))
+    const project =
+      raw && (await prepareEditableStudioProject(raw, regionalProjectReadOptions(scope)))
     if (!project) return null
     installLocalRevision(project, scope.identity, head)
     const stamp = readLocalRevision(project)!
@@ -211,7 +213,7 @@ async function copyConflictingRecovery(
   const raw = projectFromRecovery(recovery, version)
   if (!raw) return
   const { prepareEditableStudioProject } = await import('./editableProjectValidation')
-  const project = await prepareEditableStudioProject(raw)
+  const project = await prepareEditableStudioProject(raw, regionalProjectReadOptions(scope))
   if (!project) return
   const id = `recuperado-${source.slice(0, 28)}-${recovery.head.token.replaceAll('-', '').slice(0, 24)}`
   const copy = { ...project, id, name: `${project.name.slice(0, 176)} (edição recuperada)` }

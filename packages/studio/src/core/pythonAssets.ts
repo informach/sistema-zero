@@ -10,6 +10,7 @@ import {
 } from '@sistemazero/core/studio/python-material-policy'
 import { decodeProjectAsset, digestAssetBytes, pythonAssetFileExtension } from './assetBinary'
 import { assertPintaImageAssetBytes } from './pintaImageAsset'
+import type { PintaRegionalProjectAdmissions } from './pintaRegionalProjectAdmission'
 import { type ProjectAsset, sanitizeProjectAssets } from './projectAssets'
 import { assertProjectContentPreserved } from './projectDocumentGuards'
 import { isPythonMaterialPath } from './scene3d/assets'
@@ -44,10 +45,14 @@ export interface PythonAssetBundle {
 }
 
 /** Callers still compare input/output to reject any lossy normalization. */
-export function sanitizePythonProjectAssets(assets: unknown) {
+export function sanitizePythonProjectAssets(
+  assets: unknown,
+  regionalMaterials?: PintaRegionalProjectAdmissions,
+) {
   return sanitizeProjectAssets(assets, {
     materialPath: isPythonMaterialPath,
     dataLimits: STUDIO_PYTHON_MATERIAL_DATA_LIMITS,
+    regionalMaterials,
   })
 }
 
@@ -59,12 +64,13 @@ export function sanitizePythonProjectAssets(assets: unknown) {
 export async function buildPythonAssetBundle(
   assets: readonly ProjectAsset[] = [],
   layout: { files: readonly string[]; directories?: readonly string[] } = { files: [] },
+  regionalMaterials?: PintaRegionalProjectAdmissions,
 ): Promise<PythonAssetBundle> {
   const input = copyStudioProjectJson({ assets, layout }) as {
     assets: ProjectAsset[]
     layout: { files: string[]; directories?: string[] }
   }
-  const validated = sanitizePythonProjectAssets(input.assets)
+  const validated = sanitizePythonProjectAssets(input.assets, regionalMaterials)
   assertProjectContentPreserved({ assets: input.assets }, { assets: validated })
   await assertScene3DAssets(validated)
   const directories = input.layout.directories ?? []

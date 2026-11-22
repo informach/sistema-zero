@@ -2,7 +2,7 @@ import type { EditableStudioProject } from '../core/editableProject'
 import {
   assertLegacyStudioProjectMaterials,
   hasRegionalPintaReference,
-  type RegionalJsProjectReadOptions,
+  type PrivateRegionalProjectReadOptions,
 } from '../core/pintaRegionalReference'
 import type { ProjectAsset } from '../core/projectAssets'
 import {
@@ -54,11 +54,12 @@ import {
   projectToStateRecord,
   type StoredProjectRecord,
 } from './projectStorageRecords'
-import { copyLocalRevision, readLocalRevision } from './projectStorageRevision'
+import { copyLocalRevision, localHead, readLocalRevision } from './projectStorageRevision'
 import {
   captureProjectStorageScope,
   fenceGameStorageDelete,
   gameStorageKey,
+  isPrivateRegionalProjectScope,
   type ProjectStorageScope,
   type RequestedProjectWrite,
   runSerializedProjectWrite,
@@ -197,6 +198,7 @@ export async function persistProject(
       'Converta o projeto antes de guardar nesta versão.',
     )
   const captured = storageScope ?? captureProjectStorageScope()
+  if (!isPrivateRegionalProjectScope(captured)) assertLegacyStudioProjectMaterials(project)
   const generation = conditionalGeneration(captured.identity)
   const requestWrite = async (scope: ProjectStorageScope) => {
     const id = project.id
@@ -279,7 +281,7 @@ export async function persistProject(
   }
   await runSerializedWrite(project.id, requestWrite, captured)
   if (captured.identity !== captureProjectStorageScope().identity) return
-  if (!options.silent) notifyMirrorChanged(project.id)
+  if (!options.silent) notifyMirrorChanged(project.id, captured)
   notifyProjectChanged(project.id)
   if (validThumbDataUrl(options.thumb)) notifyThumbUpdated(project.id)
 }
@@ -380,7 +382,7 @@ export async function loadProjectAssetsById(
 export async function loadProjectAssetsSnapshotById(
   id: string,
   storageScope?: ProjectStorageScope,
-  options?: RegionalJsProjectReadOptions,
+  options?: PrivateRegionalProjectReadOptions,
 ): Promise<{
   assets: ProjectAsset[]
   environment: Pick<ProjectSummary, 'programmingLanguage' | 'kind' | 'runtime'>
@@ -413,8 +415,21 @@ export async function persistProjectAssets(
   storageScope?: ProjectStorageScope,
   expectedAssets?: ProjectAsset[],
   canWrite?: () => boolean,
+  liveProject?: EditableStudioProject,
 ): Promise<boolean> {
   const captured = storageScope ?? captureProjectStorageScope()
+  if (!isPrivateRegionalProjectScope(captured)) assertLegacyStudioProjectMaterials({ assets })
+  const stamp = liveProject && readLocalRevision(liveProject)
+  if (
+    liveProject &&
+    (!isPrivateRegionalProjectScope(captured) ||
+      !stamp ||
+      stamp.lineage.scope !== captured.identity ||
+      liveProject.id !== id ||
+      !expectedAssets ||
+      !canWrite)
+  )
+    return false
   const expectedToken = expectedAssets ? assetReadHeads.get(expectedAssets) : undefined
   if (expectedAssets && expectedToken === undefined) return false
   if (isProjectOpening(captured, id)) return false
@@ -442,11 +457,12 @@ export async function persistProjectAssets(
           return {
             puts: [
               [projectAssetsKey(id), { id, assets }],
-              [projectMetaKey(id), { ...meta, updatedAt: Date.now() }],
+              [projectMetaKey(id), { ...meta, updatedAt: liveProject?.updatedAt ?? Date.now() }],
             ],
           }
         },
         expectedToken,
+        stamp && localHead(stamp),
       )
         .catch((error: unknown) => {
           if (error === revoked) return false
@@ -457,7 +473,10 @@ export async function persistProjectAssets(
           // `persistProject`. Gravamos por fora dele: manter a referência antiga
           // registrada faria o Map mentir sobre o que está no disco. Esquecer o id
           // é o lado seguro — no máximo custa uma reescrita da partição.
-          if (changed) lastPersistedAssetsRef.delete(scopedProjectIdentity(scope, id))
+          if (changed) {
+            lastPersistedAssetsRef.delete(scopedProjectIdentity(scope, id))
+            if (stamp) stamp.lineage.durableToken = stamp.token
+          }
           written = changed
         })
       return { done }
@@ -468,7 +487,7 @@ export async function persistProjectAssets(
   // Uma varredura iniciada no perfil A pode terminar depois de o host ativar B. Os bytes
   // continuam no scope capturado de A, mas eventos/espelho globais já pertencem a B.
   if (captureProjectStorageScope().identity !== captured.identity) return true
-  if (!assets.some(hasRegionalPintaReference)) notifyMirrorChanged(id)
+  if (!assets.some(hasRegionalPintaReference)) notifyMirrorChanged(id, captured)
   notifyProjectChanged(id)
   return true
 }
@@ -521,7 +540,10 @@ export async function deleteProject(
         assertLegacyStudioProjectMaterials(protectedMaterials)
         if (remoteDelete) fenceDeletion()
         builderDeletion =
-          isRecord(currentMeta) && currentMeta.kind === 'pro' && options.notifyCloudMirror !== false
+          !isPrivateRegionalProjectScope(scope) &&
+          isRecord(currentMeta) &&
+          currentMeta.kind === 'pro' &&
+          options.notifyCloudMirror !== false
         const nextBudget = isRecord(oldBudget) ? { ...oldBudget } : {}
         delete nextBudget[id]
         return {
@@ -578,7 +600,7 @@ export async function deleteProject(
   })
   if (builderDeletion) notifyProBuilderDeletion(scope)
   if (scope.identity !== captureProjectStorageScope().identity) return
-  if (options.notifyCloudMirror !== false) notifyMirrorDeleted(id)
+  if (options.notifyCloudMirror !== false) notifyMirrorDeleted(id, scope)
   notifyProjectChanged(id, true)
 }
 

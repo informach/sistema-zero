@@ -47,6 +47,7 @@ interface WatchedArea {
   checking: boolean
 }
 interface RunningScene {
+  world: RunningWorld
   scene: Scene
   query: ReturnType<typeof createRegionSceneQueries>
   spawn: Point
@@ -54,6 +55,12 @@ interface RunningScene {
   started: number
   collide: (sprite: unknown) => void
   areas: WatchedArea[]
+}
+
+interface RunningWorld {
+  root: Scene
+  byId: Map<string, Scene>
+  byName: Map<string, Scene>
 }
 
 function restoreWorld(payload: RegionWorldPayload): Map<string, Scene> {
@@ -98,10 +105,15 @@ function restoreWorld(payload: RegionWorldPayload): Map<string, Scene> {
  */
 export function createRegionMap2D(host: Host, legacy: Api, serialized: string) {
   const legacyDoor = legacy.useMapDoor
-  const data = JSON.parse(serialized) as RegionWorldPayload
-  const regions = restoreWorld(data)
-  const names = new Map<string, Scene>()
-  for (const scene of regions.values()) if (!names.has(scene.name)) names.set(scene.name, scene)
+  const data = JSON.parse(serialized) as RegionWorldPayload | RegionWorldPayload[]
+  const worlds = new Map<string, RunningWorld>()
+  for (const payload of Array.isArray(data) ? data : [data]) {
+    const byId = restoreWorld(payload)
+    const byName = new Map<string, Scene>()
+    for (const scene of byId.values()) if (!byName.has(scene.name)) byName.set(scene.name, scene)
+    worlds.set(payload.rootAssetName, { root: byId.get(payload.rootId)!, byId, byName })
+  }
+  const directWorld = Array.isArray(data) ? undefined : worlds.get(data.rootAssetName)
   const maps = new Map<string, RunningScene>()
   const pictures = new Map<string, HTMLImageElement>()
   const warnings = new Set<string>()
@@ -109,7 +121,7 @@ export function createRegionMap2D(host: Host, legacy: Api, serialized: string) {
   let active = ''
   let watching = false
 
-  function install(name: string, scene: Scene) {
+  function install(name: string, world: RunningWorld, scene: Scene) {
     const query = createRegionSceneQueries(scene)
     const art = new Map<string, string>()
     for (const resource of [...scene.tilesets, ...(scene.art ?? [])]) {
@@ -131,6 +143,7 @@ export function createRegionMap2D(host: Host, legacy: Api, serialized: string) {
                 query.platformLanding(previous, desired, gravity),
             )
     const map = {
+      world,
       scene,
       query,
       spawn: query.spawn(),
@@ -142,12 +155,6 @@ export function createRegionMap2D(host: Host, legacy: Api, serialized: string) {
     maps.set(name, map)
     active = name
     return map
-  }
-  function choose(asset: string, byId = false) {
-    if (byId && regions.has(asset)) return regions.get(asset)
-    return asset === data.rootAssetName
-      ? regions.get(data.rootId)
-      : (regions.get(asset) ?? names.get(asset))
   }
   function matchesType(type: string) {
     return type
@@ -220,8 +227,12 @@ export function createRegionMap2D(host: Host, legacy: Api, serialized: string) {
       active = ''
     },
     createMapScene(name, asset) {
-      const scene = choose(String(asset))
-      if (scene) install(String(name), scene)
+      const label = String(asset)
+      const world = worlds.get(label) ?? directWorld
+      const scene = worlds.has(label)
+        ? world?.root
+        : (world?.byId.get(label) ?? world?.byName.get(label))
+      if (world && scene) install(String(name), world, scene)
       else {
         legacy.createMapScene(name, asset)
         if ([1, 2, 3].includes(host.meta(asset, false)?.scene?.version ?? 0)) {
@@ -316,14 +327,17 @@ export function createRegionMap2D(host: Host, legacy: Api, serialized: string) {
       watch()
     },
     useMapDoor(name, sprite, object) {
-      if (!maps.has(name)) return legacyDoor(name, sprite, object)
+      const map = maps.get(name)
+      if (!map) return legacyDoor(name, sprite, object)
       if (!legacy.mapInArea(sprite, object)) return
       const o = object as PintaSceneObject
       const key = legacy.mapObjectProperty(o, 'destino') ? 'destino' : 'destination'
       const destination = legacy.mapObjectProperty(o, key)
       if (typeof destination !== 'string') return
       const reference = o.properties[key]
-      const next = choose(destination, typeof reference === 'object' && reference.type === 'asset')
+      const byId = typeof reference === 'object' && reference.type === 'asset'
+      const next =
+        map.world.byId.get(destination) ?? (byId ? undefined : map.world.byName.get(destination))
       if (!next) {
         if (!warnings.has(destination)) {
           warnings.add(destination)
@@ -331,7 +345,7 @@ export function createRegionMap2D(host: Host, legacy: Api, serialized: string) {
         }
         return
       }
-      const start = install(name, next).spawn
+      const start = install(name, map.world, next).spawn
       host.teleport(sprite, start.x, start.y)
       const body = (sprite as Body).body
       if (typeof body?.reset === 'function') body.reset(start.x, start.y)

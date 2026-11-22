@@ -1,6 +1,6 @@
 import {
-  PRIVATE_REGIONAL_JS_PROJECT,
-  type RegionalJsProjectReadOptions,
+  PRIVATE_REGIONAL_PROJECT,
+  type PrivateRegionalProjectReadOptions,
 } from '../core/pintaRegionalReference'
 import type { ProjectAsset } from '../core/projectAssets'
 import { ProjectDocumentError } from '../core/projectDocument'
@@ -16,7 +16,7 @@ import {
 } from './projectStorageKeys'
 import { assembleProjectRecord, type StoredProjectRecord } from './projectStorageRecords'
 import { installLocalRevision, isLocalHead } from './projectStorageRevision'
-import type { ProjectStorageScope } from './projectStorageRuntime'
+import { isPrivateRegionalProjectScope, type ProjectStorageScope } from './projectStorageRuntime'
 import { type ProjectSummary, projectEnvironmentSummary } from './projectSummary'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -138,7 +138,7 @@ export async function readProjectAssetsSnapshot(
   id: string,
   scope: ProjectStorageScope,
   prepareHistorical: () => Promise<void>,
-  options: RegionalJsProjectReadOptions = {},
+  options: PrivateRegionalProjectReadOptions = {},
 ): Promise<{
   assets: ProjectAsset[]
   environment: Pick<ProjectSummary, 'programmingLanguage' | 'kind' | 'runtime'>
@@ -174,16 +174,18 @@ export async function readProjectAssetsSnapshot(
     ? projectEnvironmentSummary(meta)
     : { programmingLanguage: 'unknown' as const }
   if (!isRecord(record)) return { assets: [], environment }
-  const privateRead = options[PRIVATE_REGIONAL_JS_PROJECT] === true
+  const privateRead = options[PRIVATE_REGIONAL_PROJECT]
+  if (privateRead && (privateRead !== scope || !isPrivateRegionalProjectScope(scope)))
+    throw new Error('A captura regional requer um perfil de teste local.')
   if (
     privateRead &&
     (!isRecord(meta) ||
       (meta.formatVersion !== 2 && meta.formatVersion !== 3) ||
-      environment.programmingLanguage !== 'javascript')
+      environment.programmingLanguage === 'unknown')
   )
     throw new ProjectDocumentError(
       'invalid-document',
-      'A captura regional precisa de um projeto JavaScript compatível.',
+      'A captura regional precisa de um projeto compatível.',
     )
   const regionalMaterials = privateRead
     ? await (await import('../core/pintaRegionalProjectAdmission')).admitRegionalProjectAssets(
@@ -193,7 +195,10 @@ export async function readProjectAssetsSnapshot(
     : undefined
   const assets =
     isRecord(meta) && meta.programmingLanguage === 'python'
-      ? (await import('../core/pythonAssets')).sanitizePythonProjectAssets(record.assets)
+      ? (await import('../core/pythonAssets')).sanitizePythonProjectAssets(
+          record.assets,
+          regionalMaterials,
+        )
       : (await import('../core/projectAssets')).sanitizeProjectAssets(record.assets, {
           regionalMaterials,
         })

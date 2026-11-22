@@ -7,12 +7,17 @@ import { ErrorBoundary } from '#ui'
 import { RootErrorFallback } from '../components/layout/ErrorViews'
 import { Shell } from '../components/layout/Shell'
 import { isPythonProject, type EditableStudioProject as Project } from '../core/editableProject'
+import { PRIVATE_REGIONAL_PROJECT } from '../core/pintaRegionalReference'
 import { captureAndStoreProjectThumb } from '../cover/thumbCapture'
 import { createCodeObservationRegistry } from '../monaco/codeObservation'
 import { snapshotProjectWithCurrentAuthority } from '../state/bridgeAuthority'
 import { prepareEditableStudioProject } from '../state/editableProjectValidation'
 import { flushProjectOperations } from '../state/projectOperations'
 import { inheritLocalRevision } from '../state/projectStorageRevision'
+import {
+  captureProjectStorageScope,
+  isPrivateRegionalProjectScope,
+} from '../state/projectStorageRuntime'
 import { useProjectStore, useProjectStoreApi } from '../state/projectStore'
 import { useSettingsStore } from '../state/settingsStore'
 import { StudioStoresContext } from '../state/storesContext'
@@ -273,6 +278,8 @@ function StudioCoreBody({
   const hostPreviewShellUrl = useStudioPreviewShellUrl()
   const isObserver = editingAccess === 'observer' || handoffFrozen
   const sourceProject = replacedProject ?? initialProject
+  const storageScope = captureProjectStorageScope()
+  const regionalScope = isPrivateRegionalProjectScope(storageScope) ? storageScope : undefined
   const projectStoreApi = useProjectStoreApi()
   const persistence = useStudioPersistence()
   const preparationGeneration = useRef(0)
@@ -303,7 +310,10 @@ function StudioCoreBody({
       settled = true
       notifySettled?.({ projectId: sourceProject.id, status })
     }
-    void prepareEditableStudioProject(sourceProject, { proBuildLimits: preparationLimits }).then(
+    void prepareEditableStudioProject(sourceProject, {
+      proBuildLimits: preparationLimits,
+      [PRIVATE_REGIONAL_PROJECT]: regionalScope,
+    }).then(
       (project) => {
         if (!project) settleOpening('error')
         if (active)
@@ -332,7 +342,7 @@ function StudioCoreBody({
       lifetime.abort()
       releaseOpening()
     }
-  }, [sourceProject, preparationLimits, persistence])
+  }, [sourceProject, preparationLimits, persistence, regionalScope])
   const preparedProject = prepared?.source === sourceProject ? prepared.project : null
   const preparationError = prepared?.source === sourceProject ? prepared.error : null
   useEffect(() => {
@@ -644,14 +654,14 @@ function StudioCoreBody({
   }, [blockUnloadWhenDirty, isDirty])
 
   return (
-    <StudioTutorProvider value={tutorValue}>
+    <StudioTutorProvider value={regionalScope ? null : tutorValue}>
       <ProBuilderDeletionReconciler />
       <StudioProRuntimeProvider
-        value={proRuntimeValue}
-        prepareDependencies={prepareProDependencies}
+        value={regionalScope ? null : proRuntimeValue}
+        prepareDependencies={regionalScope ? undefined : prepareProDependencies}
       >
-        <StudioShareProvider value={shareValue}>
-          <StudioCloudSyncProvider value={cloudSyncValue}>
+        <StudioShareProvider value={regionalScope ? null : shareValue}>
+          <StudioCloudSyncProvider value={regionalScope ? null : cloudSyncValue}>
             <StudioOpenProjectProvider value={openProjectValue}>
               <StudioEditDrawingProvider value={editDrawingValue}>
                 <StudioEditCreationProvider value={editCreationValue}>
@@ -671,6 +681,7 @@ function StudioCoreBody({
                                     requireIsolatedPreview,
                                     muted: projectMuted,
                                     writerEpoch,
+                                    [PRIVATE_REGIONAL_PROJECT]: regionalScope,
                                   }}
                                 >
                                   <StudioProCandidatePreviewProvider>

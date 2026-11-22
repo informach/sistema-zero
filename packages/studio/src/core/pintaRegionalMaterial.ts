@@ -1,7 +1,10 @@
 import { awaitWithSignal } from '@sistemazero/core/http'
 import { PINTA_IMAGE_ID_PATTERN } from '@sistemazero/core/studio/pinta-image'
 import { readPngDataUrl, readPngDimensions } from '@sistemazero/core/studio/pinta-png-binary'
-import { PINTA_REGION_IMAGE_PNG_LIMITS as limits } from '@sistemazero/core/studio/pinta-region-image-limits'
+import {
+  PINTA_REGION_IMAGE_PNG_LIMITS as limits,
+  type PintaRegionWorldBudget,
+} from '@sistemazero/core/studio/pinta-region-image-limits'
 import type { readPintaRegionImageWorld } from '@sistemazero/core/studio/pinta-region-image-world'
 import { z } from 'zod'
 import { digestAssetBytes, encodeAssetBase64 } from './assetBinary'
@@ -19,6 +22,11 @@ export type PintaRegionalMarker = Readonly<z.infer<typeof markerSchema>>
 /** Shape only. Do not use the marker alone to admit pixels or a scene. */
 export function readPintaRegionalMarker(value: unknown): PintaRegionalMarker {
   return Object.freeze(markerSchema.parse(value))
+}
+
+/** An asset may carry private provenance; callers still need to admit its PNG. */
+export function pintaRegionalMarkerOf(asset: object): PintaRegionalMarker | undefined {
+  return 'regional' in asset ? readPintaRegionalMarker(asset.regional) : undefined
 }
 
 interface RegionalBinding {
@@ -80,6 +88,7 @@ function capturePng(input: RegionalMaterialInput): {
 export async function admitPintaRegionalMaterial(
   input: RegionalMaterialInput,
   signal?: AbortSignal,
+  remaining?: PintaRegionWorldBudget,
 ): Promise<AdmittedPintaRegionalMaterial> {
   signal?.throwIfAborted()
   const {
@@ -105,6 +114,7 @@ export async function admitPintaRegionalMaterial(
   )
     invalid()
   const marker = regional === undefined ? undefined : readPintaRegionalMarker(regional)
+  const budget = remaining ? { ...remaining } : undefined
   if (marker && marker.sourceId !== sourceId) invalid()
   const captured = capturePng(input)
   if (captured.width !== width || captured.height !== height) invalid()
@@ -117,7 +127,7 @@ export async function admitPintaRegionalMaterial(
     '@sistemazero/core/studio/pinta-region-image-world'
   )
   signal?.throwIfAborted()
-  const world = readPintaRegionImageWorld(captured.bytes)
+  const world = readPintaRegionImageWorld(captured.bytes, budget)
   if (world.rootId !== sourceId) invalid()
   signal?.throwIfAborted()
   const material = {

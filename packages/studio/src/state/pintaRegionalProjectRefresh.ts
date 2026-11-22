@@ -1,23 +1,16 @@
-import type { PintaRegionalMarker } from '../core/pintaRegionalMaterial'
+import { type PintaRegionalMarker, pintaRegionalMarkerOf } from '../core/pintaRegionalMaterial'
 import { admitRegionalProjectAssets } from '../core/pintaRegionalProjectAdmission'
-import {
-  PRIVATE_REGIONAL_JS_PROJECT,
-  UNSUPPORTED_PINTA_REGION,
-} from '../core/pintaRegionalReference'
+import { checkRegionalProjectPixels } from '../core/pintaRegionalProjectPixels'
+import { PRIVATE_REGIONAL_PROJECT, UNSUPPORTED_PINTA_REGION } from '../core/pintaRegionalReference'
 import { sanitizeProjectAssets } from '../core/projectAssets'
 import { assertProjectContentPreserved } from '../core/projectDocumentGuards'
 import { loadProjectAssetsSnapshotById, persistProjectAssets } from './persistence'
-import { getProjectStorageScope, type ProjectStorageScope } from './projectStorageRuntime'
+import { projectPersistence } from './projectOperations'
+import { advanceLocalRevision, readLocalRevision } from './projectStorageRevision'
+import { isPrivateRegionalProjectScope, type ProjectStorageScope } from './projectStorageRuntime'
+import type { ProjectStoreApi } from './projectStore'
 
-// Cloud adapters use authenticated viewer IDs. This namespace is local and has no account mirror.
-const PRIVATE_SCOPE_PREFIX = 'pinta-regional-local:'
-const PRIVATE_SCOPE = /^pinta-regional-local:[a-z0-9-]{1,48}$/
-
-export function privateRegionalProjectScope(profile: string): ProjectStorageScope {
-  const namespace = PRIVATE_SCOPE_PREFIX + profile
-  if (!PRIVATE_SCOPE.test(namespace)) throw new Error('Perfil de teste local inválido.')
-  return getProjectStorageScope(namespace)
-}
+export { privateRegionalProjectScope } from './projectStorageRuntime'
 
 /** Private local-only refresh. No program, project ID, source path or block is rewritten. */
 export async function refreshPrivateRegionalProjectAsset(options: {
@@ -26,12 +19,16 @@ export async function refreshPrivateRegionalProjectAsset(options: {
   assetId: string
   capture: { dataUrl: string; width: number; height: number; regional: PintaRegionalMarker }
   signal?: AbortSignal
+  /** The mounted local editor feeds its latest authored material list through the same disk CAS. */
+  store?: ProjectStoreApi
+  stillCurrent?: () => boolean
 }): Promise<boolean> {
-  const { scope, projectId, assetId, signal } = options
-  if (
-    !PRIVATE_SCOPE.test(scope.namespace) ||
-    scope.identity !== getProjectStorageScope(scope.namespace).identity
-  )
+  const { scope, projectId, assetId, store, stillCurrent } = options
+  const signal =
+    scope.signal && options.signal
+      ? AbortSignal.any([scope.signal, options.signal])
+      : (scope.signal ?? options.signal)
+  if (!isPrivateRegionalProjectScope(scope))
     throw new Error('A captura regional requer um perfil de teste local.')
   const capture = {
     dataUrl: options.capture.dataUrl,
@@ -40,18 +37,32 @@ export async function refreshPrivateRegionalProjectAsset(options: {
     regional: { ...options.capture.regional },
   }
   signal?.throwIfAborted()
-  scope.signal?.throwIfAborted()
-  const { assets, environment } = await loadProjectAssetsSnapshotById(projectId, scope, {
-    [PRIVATE_REGIONAL_JS_PROJECT]: true,
-  })
-  const original = assets.find((asset) => asset.id === assetId)
+  const initial = store?.getState().project
+  const open = initial?.id === projectId ? initial : undefined
+  const localAdapter = store && projectPersistence(store)
+  const revision = open && readLocalRevision(open)
   if (
-    environment.programmingLanguage !== 'javascript' ||
+    open &&
+    (!localAdapter?.localScope ||
+      localAdapter.localScope.identity !== scope.identity ||
+      revision?.lineage.scope !== scope.identity ||
+      store?.getState().editingAccess !== 'author')
+  )
+    return false
+  const { assets: observed, environment } = await loadProjectAssetsSnapshotById(projectId, scope, {
+    [PRIVATE_REGIONAL_PROJECT]: scope,
+  })
+  const assets = open?.assets ?? observed
+  const original = assets.find((asset) => asset.id === assetId)
+  const currentMarker = original && pintaRegionalMarkerOf(original)
+  if (
+    !['javascript', 'python'].includes(environment.programmingLanguage) ||
     !original ||
     original.kind !== 'image' ||
     original.source === 'lesson-art' ||
     original.libOrigin === 'molda' ||
     original.pintaImage ||
+    (currentMarker && currentMarker.sourceId !== capture.regional.sourceId) ||
     (original.libId && original.libId !== `personal:${capture.regional.sourceId}`)
   )
     throw new Error(UNSUPPORTED_PINTA_REGION)
@@ -73,14 +84,48 @@ export async function refreshPrivateRegionalProjectAsset(options: {
         }
       : asset,
   )
-  const admitted = await admitRegionalProjectAssets(next, signal)
-  const materials = sanitizeProjectAssets(next, { regionalMaterials: admitted })
+  const admitted = await admitRegionalProjectAssets(next, signal, (_id, world) =>
+    checkRegionalProjectPixels(world, signal),
+  )
+  const materials =
+    environment.programmingLanguage === 'python'
+      ? (await import('../core/pythonAssets')).sanitizePythonProjectAssets(next, admitted)
+      : sanitizeProjectAssets(next, { regionalMaterials: admitted })
   assertProjectContentPreserved({ assets: next }, { assets: materials })
-  return persistProjectAssets(
+  const version =
+    open && advanceLocalRevision(open, { ...open, assets: materials, updatedAt: Date.now() })
+  const ownsEditor = () =>
+    !open ||
+    (store?.getState().project?.id === projectId &&
+      store.getState().editingAccess === 'author' &&
+      projectPersistence(store) === localAdapter &&
+      readLocalRevision(store.getState().project!)?.lineage === revision?.lineage)
+  const written = await persistProjectAssets(
     projectId,
     materials,
     scope,
-    assets,
-    () => !signal?.aborted && !scope.signal?.aborted,
+    observed,
+    () =>
+      !signal?.aborted &&
+      stillCurrent?.() !== false &&
+      ownsEditor() &&
+      (!store ||
+        (open ? store.getState().project === open : store.getState().project?.id !== projectId)),
+    version,
   )
+  if (written && open && version && store && ownsEditor() && !signal?.aborted) {
+    const current = store.getState().project
+    if (current === open) store.setState({ project: version })
+    else if (current?.assets?.includes(original)) {
+      // Work begun after the transaction started still owns its code and any other assets.
+      const merged = current.assets.map((asset) =>
+        asset === original ? materials.find(({ id }) => id === assetId)! : asset,
+      )
+      store.setState({
+        project: advanceLocalRevision(current, { ...current, assets: merged }),
+        isDirty: true,
+      })
+    }
+  }
+  return written
 }

@@ -32,11 +32,8 @@ export function packRegionWorld(
   world: AdmittedRegionWorld,
   rootAssetName: string,
 ): RegionWorldPayload {
-  if (
-    !world.maps.has(world.rootId) ||
-    (rootAssetName !== world.rootId && world.maps.has(rootAssetName))
-  )
-    throw new Error('O mundo precisa de uma raiz e um nome sem conflito.')
+  if (!world.maps.has(world.rootId) || !rootAssetName)
+    throw new Error('O mundo precisa de uma raiz e um nome de material.')
   const packMap = (map: PintaRegionSceneMap): WireMap => {
     const grids = encodePintaRegionLayers(
       map.layers.flatMap((layer) => (layer.kind === 'tiles' ? [layer.cells] : [])),

@@ -3,6 +3,7 @@ import {
   StudioProjectIdSchema,
 } from '@sistemazero/core/studio/project-document'
 import { assertPintaImageAssets } from '../core/pintaImageAsset'
+import type { PintaRegionalProjectAdmissions } from '../core/pintaRegionalProjectAdmission'
 import {
   assertProjectContentPreserved,
   ProjectDocumentError,
@@ -30,7 +31,11 @@ export { pythonFilesToTree } from './pythonProjectLayout'
  */
 export async function refinePythonProjectDocument(
   raw: unknown,
-  options: { requestedId?: string; kind?: 'classic' | 'pro' } = {},
+  options: {
+    requestedId?: string
+    kind?: 'classic' | 'pro'
+    regionalMaterials?: PintaRegionalProjectAdmissions
+  } = {},
 ): Promise<PythonProjectDocument> {
   const document = StudioProjectDocumentSchema.parse(raw)
   if (document.programmingLanguage !== 'python' || (options.kind && document.kind !== options.kind))
@@ -46,7 +51,7 @@ export async function refinePythonProjectDocument(
     options.requestedId === undefined
       ? document.id
       : StudioProjectIdSchema.parse(options.requestedId)
-  const assets = sanitizePythonProjectAssets(document.assets)
+  const assets = sanitizePythonProjectAssets(document.assets, options.regionalMaterials)
   const project = copyLocalRevision(raw as { id: string }, { ...document, id, assets })
   assertProjectContentPreserved(document, project)
   try {

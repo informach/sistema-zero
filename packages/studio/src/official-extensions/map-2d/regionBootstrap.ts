@@ -22,7 +22,17 @@ export async function mapTwoDRegionBootstrap(
   world: AdmittedRegionWorld,
   rootAssetName = world.rootId,
 ): Promise<string> {
-  const data = JSON.stringify(packRegionWorld(world, rootAssetName))
+  if (rootAssetName !== world.rootId && world.maps.has(rootAssetName))
+    throw new Error('O nome de abertura avulsa conflita com outro lugar do mundo.')
+  return composeRegionBootstrap(target, JSON.stringify(packRegionWorld(world, rootAssetName)))
+}
+
+/** Bounded, already captured wire strings for separate material worlds. */
+export function mapTwoDRegionalMaterialsBootstrap(target: MapTarget, worlds: readonly string[]) {
+  return composeRegionBootstrap(target, `[${worlds.join(',')}]`)
+}
+
+async function composeRegionBootstrap(target: MapTarget, data: string) {
   // An admitted scene can still contain HTML-sensitive text in its properties.
   const literal = JSON.stringify(data).replaceAll('<', '\\u003c')
   const source = await composeMapTwoDBootstrap(target, true, {

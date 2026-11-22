@@ -585,6 +585,7 @@ export function mutateProjectRecord(
   extraKeys: readonly IDBValidKey[],
   mutation: (meta: Record<string, unknown>, values: unknown[]) => IdbWrite,
   expectedToken?: string | null,
+  liveHead?: LocalHead,
 ): Promise<boolean> {
   return conditionalWrite(
     scope.store,
@@ -599,6 +600,7 @@ export function mutateProjectRecord(
         (expectedToken === null ? rawHead != null : head?.token !== expectedToken)
       )
         throw new ProjectWriteConflict()
+      if (liveHead && !acceptsLocalHead(head, liveHead)) throw new ProjectWriteConflict()
       const write = mutation(meta as Record<string, unknown>, values)
       return {
         write: {
@@ -607,13 +609,14 @@ export function mutateProjectRecord(
             ...(write.puts ?? []),
             [
               projectHeadKey(id),
-              {
-                version: 1,
-                token: crypto.randomUUID(),
-                writer: crypto.randomUUID(),
-                base: head?.token ?? null,
-                sequence: 0,
-              } satisfies LocalHead,
+              liveHead ??
+                ({
+                  version: 1,
+                  token: crypto.randomUUID(),
+                  writer: crypto.randomUUID(),
+                  base: head?.token ?? null,
+                  sequence: 0,
+                } satisfies LocalHead),
             ],
           ],
         },

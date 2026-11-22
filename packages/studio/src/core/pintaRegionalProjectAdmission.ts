@@ -1,5 +1,6 @@
-import { PINTA_IMAGE_WORLD_LIMITS } from '@sistemazero/core/studio/pinta-image'
+import { PINTA_REGION_WORLD_BUDGET } from '@sistemazero/core/studio/pinta-region-image-limits'
 import {
+  type AdmittedPintaRegionalMaterial,
   admitPintaRegionalMaterial,
   type PintaRegionalMarker,
   readPintaRegionalMarker,
@@ -114,6 +115,11 @@ export function admittedRegionalMarker(
 export async function admitRegionalProjectAssets(
   assets: unknown,
   signal?: AbortSignal,
+  visitWorld?: (
+    id: string,
+    world: AdmittedPintaRegionalMaterial['world'],
+    name: string,
+  ) => void | Promise<void>,
 ): Promise<PintaRegionalProjectAdmissions> {
   signal?.throwIfAborted()
   if (Array.isArray(assets) && assets.length > MAX_ASSETS_COUNT)
@@ -128,16 +134,19 @@ export async function admitRegionalProjectAssets(
     return proof
   }
   const paths = new Map<string, number>()
+  const names = new Map<string, number>()
   const ids = new Set<string>()
   let chars = 0
   for (const binding of materials) {
     if (!binding) continue
-    const { id, dataUrl, proPath } = binding
+    const { id, name, dataUrl, proPath } = binding
     if (typeof id === 'string') {
       if (ids.has(id)) throw new Error('Dois materiais usam o mesmo identificador.')
       ids.add(id)
     }
     if (typeof dataUrl === 'string') chars += dataUrl.length
+    if (binding.kind === 'image' && typeof name === 'string')
+      names.set(name, (names.get(name) ?? 0) + 1)
     if (typeof proPath === 'string') {
       const key = proPath.toLowerCase()
       paths.set(key, (paths.get(key) ?? 0) + 1)
@@ -146,15 +155,23 @@ export async function admitRegionalProjectAssets(
   if (chars > MAX_ASSETS_TOTAL_CHARS)
     throw new Error('Os materiais excedem o espaço do projeto. Os originais foram preservados.')
 
-  let imagePixels = 0
+  const remaining = { ...PINTA_REGION_WORLD_BUDGET }
+  const worlds: Array<{
+    id: string
+    name: string
+    world: AdmittedPintaRegionalMaterial['world']
+  }> = []
   for (const binding of materials) {
     if (!binding?.regional) continue
     signal?.throwIfAborted()
-    const { id, dataUrl, width, height, proPath, libId, libOrigin, kind, source, regional } =
+    const { id, name, dataUrl, width, height, proPath, libId, libOrigin, kind, source, regional } =
       binding
     if (
       typeof id !== 'string' ||
       !id ||
+      typeof name !== 'string' ||
+      !name ||
+      names.get(name) !== 1 ||
       typeof dataUrl !== 'string' ||
       typeof width !== 'number' ||
       typeof height !== 'number' ||
@@ -171,14 +188,20 @@ export async function admitRegionalProjectAssets(
     const admitted = await admitPintaRegionalMaterial(
       { sourceId: regional.sourceId, regional, dataUrl, width, height },
       signal,
+      remaining,
     )
-    imagePixels += admitted.world.imagePixels
-    if (imagePixels > PINTA_IMAGE_WORLD_LIMITS.totalImagePixels)
-      throw new Error(
-        'Os cenários excedem o limite de imagens do projeto. Os originais foram preservados.',
-      )
+    remaining.imagePixels -= admitted.world.imagePixels
+    remaining.indexBytes -= admitted.world.indexBytes
+    remaining.metadataBytes -= admitted.world.metadataBytes
+    if (visitWorld) worlds.push({ id, name, world: admitted.world })
     markers.set(id, admitted.regional)
   }
+  if (visitWorld)
+    for (const { id, name, world } of worlds) {
+      signal?.throwIfAborted()
+      await visitWorld(id, world, name)
+    }
+  signal?.throwIfAborted()
   verified.set(proof, { materials, markers })
   return proof
 }

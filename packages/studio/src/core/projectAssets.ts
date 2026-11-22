@@ -728,11 +728,14 @@ export function projectAssetBudgetChars(asset: { dataUrl: string; scene?: unknow
  */
 export function assetManifest(
   assets: readonly ProjectAsset[] | undefined | null,
+  regionalMaterials?: PintaRegionalProjectAdmissions,
 ): Record<string, string> {
   const out: Record<string, string> = Object.create(null)
   if (!assets) return out
+  if (regionalMaterials) assertRegionalProjectAssetProof(assets, regionalMaterials)
   for (const a of assets) {
-    if (hasRegionalPintaReference(a)) throw new Error(UNSUPPORTED_PINTA_REGION)
+    if (hasRegionalPintaReference(a) && !regionalMaterials)
+      throw new Error(UNSUPPORTED_PINTA_REGION)
     if (a && a.kind === 'image' && typeof a.name === 'string' && typeof a.dataUrl === 'string') {
       out[a.name] = a.dataUrl
     }
@@ -810,12 +813,18 @@ export function asset3DManifest(
 export function assetMetaManifest(
   assets: readonly ProjectAsset[] | undefined | null,
   context?: { code: string },
+  regionalMaterials?: PintaRegionalProjectAdmissions,
 ): Record<string, ProjectAssetPreviewMeta> {
   const out: Record<string, ProjectAssetPreviewMeta> = {}
   if (!assets) return out
+  if (regionalMaterials) assertRegionalProjectAssetProof(assets, regionalMaterials)
   const sendScene = !context || codeUsesPintaScenePlayer(context.code)
   for (const a of assets) {
-    if (hasRegionalPintaReference(a)) throw new Error(UNSUPPORTED_PINTA_REGION)
+    if (hasRegionalPintaReference(a)) {
+      if (!regionalMaterials) throw new Error(UNSUPPORTED_PINTA_REGION)
+      out[a.name] = { hasScene: true }
+      continue
+    }
     if (a?.kind !== 'image' || typeof a.name !== 'string') continue
     const hitbox = a.sprite?.hitbox
     // Named animation is resolved by the engine, so its geometry travels with it.

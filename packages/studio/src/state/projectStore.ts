@@ -119,7 +119,9 @@ import {
 import {
   captureProjectStorageScope,
   getProjectStorageScope,
+  isPrivateRegionalProjectScope,
   type ProjectStorageScope,
+  regionalProjectReadOptions,
 } from './projectStorageRuntime'
 import {
   getAllowedBlocklyBlockTypes,
@@ -440,9 +442,10 @@ export async function loadSanitizedProjectById(
   storageScope?: ProjectStorageScope,
   recoverDraft = false,
 ): Promise<Project | null> {
-  const raw = await loadProjectById(id, storageScope, { recoverDraft })
+  const scope = storageScope ?? captureProjectStorageScope()
+  const raw = await loadProjectById(id, scope, { recoverDraft })
   if (!raw) return null
-  const sanitized = await prepareEditableStudioProject(raw)
+  const sanitized = await prepareEditableStudioProject(raw, regionalProjectReadOptions(scope))
   if (sanitized && sanitized.id !== id) throw new Error('O projeto salvo tem outra identidade.')
   return sanitized
 }
@@ -451,17 +454,21 @@ export async function loadSanitizedProjectShellById(
   id: string,
   storageScope?: ProjectStorageScope,
 ): Promise<Project | null> {
-  const shell = await loadProjectShellById(id, storageScope)
+  const scope = storageScope ?? captureProjectStorageScope()
+  const shell = await loadProjectShellById(id, scope)
   if (!shell) return null
   // A migração precisa do documento inteiro antes de separar suas partições.
-  if (projectFormatVersion(shell) === SUPPORTED_PROJECT_FORMAT_VERSION) {
+  if (
+    projectFormatVersion(shell) === SUPPORTED_PROJECT_FORMAT_VERSION ||
+    isPrivateRegionalProjectScope(scope)
+  ) {
     // Python source is authoritative; its derived visual partition stays opaque.
-    const prepared = await prepareEditableStudioProject(shell)
+    const prepared = await prepareEditableStudioProject(shell, regionalProjectReadOptions(scope))
     if (prepared && prepared.id !== id) throw new Error('O projeto salvo tem outra identidade.')
     return prepared
   }
   if (projectFormatVersion(shell) !== CURRENT_PROJECT_FORMAT_VERSION)
-    return loadSanitizedProjectById(id, storageScope)
+    return loadSanitizedProjectById(id, scope)
   const sanitized = sanitizeStoredProject(shell, id)
   return sanitized ? copyLocalRevision(shell, sanitized) : null
 }

@@ -1,4 +1,8 @@
 import { createStore } from 'idb-keyval'
+import {
+  PRIVATE_REGIONAL_PROJECT,
+  type PrivateRegionalProjectReadOptions,
+} from '../core/pintaRegionalReference'
 import { captureExitJournalStorage } from './synchronousExitJournalProbe'
 
 export const GAME_STORAGE_KEY_PREFIX = 'sz:game-storage:'
@@ -38,6 +42,26 @@ export function getProjectStorageScope(namespace: string): ProjectStorageScope {
     scopesByNamespace.set(normalized, scope)
   }
   return scope
+}
+
+const PRIVATE_REGIONAL_SCOPE = /^pinta-regional-local:[a-z0-9-]{1,48}$/
+
+export function isPrivateRegionalProjectScope(scope: ProjectStorageScope) {
+  return (
+    PRIVATE_REGIONAL_SCOPE.test(scope.namespace) && scope.identity === databaseName(scope.namespace)
+  )
+}
+
+export function regionalProjectReadOptions(
+  scope: ProjectStorageScope,
+): PrivateRegionalProjectReadOptions {
+  return isPrivateRegionalProjectScope(scope) ? { [PRIVATE_REGIONAL_PROJECT]: scope } : {}
+}
+
+export function privateRegionalProjectScope(profile: string): ProjectStorageScope {
+  const namespace = `pinta-regional-local:${profile}`
+  if (!PRIVATE_REGIONAL_SCOPE.test(namespace)) throw new Error('Perfil de teste local inválido.')
+  return getProjectStorageScope(namespace)
 }
 
 /** Cria um scope imutável sem depender do perfil global ativo. */

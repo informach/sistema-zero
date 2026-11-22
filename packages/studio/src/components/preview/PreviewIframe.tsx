@@ -34,6 +34,11 @@ import {
 } from '#preview'
 import { Button } from '#ui'
 import { javaScriptProject } from '../../core/editableProject'
+import {
+  hasRegionalPintaReference,
+  PRIVATE_REGIONAL_PROJECT,
+  UNSUPPORTED_PINTA_REGION,
+} from '../../core/pintaRegionalReference'
 import { criarTransporteDeCenas3D } from '../../core/scene3d/transporte'
 import { resolveCoverAsset } from '../../cover/coverAsset'
 import { rememberProjectSnapshot } from '../../cover/latestSnapshot'
@@ -44,6 +49,7 @@ import {
   buildJavaScriptClassicDocument,
   resolveJavaScriptClassicExtensions,
 } from '../../runtime/javascript/classicDocument'
+import type { JavaScriptRegionalMaterials } from '../../runtime/javascript/pintaRegionalMaterials'
 import { glossErrorMessage } from '../../state/errorGloss'
 import { loadGameStorage, writeGameStorage } from '../../state/gameStorage'
 import { useHighlightStoreApi } from '../../state/highlightStore'
@@ -108,6 +114,7 @@ type DevtoolsBridgeModule = typeof import('../../preview/devtoolsBridge')
 
 export function PreviewIframe(): JSX.Element {
   const execution = useStudioExecution()
+  const regionalScope = execution[PRIVATE_REGIONAL_PROJECT]
   // As abas Desempenho e Investigar: o jogo é montado com a ponte (e recomeça ao ligar/desligar).
   const measuring = useUIStore((s) => s.measuring)
   const investigating = useUIStore((s) => s.investigating)
@@ -117,7 +124,12 @@ export function PreviewIframe(): JSX.Element {
   // Casca em outro site (lote 3.2): o jogo roda num `srcdoc` dentro de uma página de outra
   // origem. Desligada sem `shellUrl`; nunca junto do adaptador de origem nem da sala isolada.
   const configuredShell = useMemo(() => {
-    if (!execution.shellUrl || execution.originAdapter || execution.requireIsolatedPreview)
+    if (
+      regionalScope ||
+      !execution.shellUrl ||
+      execution.originAdapter ||
+      execution.requireIsolatedPreview
+    )
       return null
     if (typeof window === 'undefined') return null
     try {
@@ -126,7 +138,7 @@ export function PreviewIframe(): JSX.Element {
     } catch {
       return null
     }
-  }, [execution.shellUrl, execution.originAdapter, execution.requireIsolatedPreview])
+  }, [regionalScope, execution.shellUrl, execution.originAdapter, execution.requireIsolatedPreview])
   // A casca que não avisa que está pronta (rota sem as origens, origem barrada, rede) não pode
   // deixar o palco mudo com a barra dizendo "rodando" (revisão da missão, achado E5): depois de
   // `SHELL_READY_TIMEOUT_MS` a prévia volta ao documento direto e avisa no console do jogo.
@@ -464,6 +476,9 @@ export function PreviewIframe(): JSX.Element {
     status: 'loading' | 'ready' | 'error'
     scripts: string[]
     cenas3d?: ModuloDeCenas3D
+    materials?: JavaScriptRegionalMaterials
+    regionalRequest?: object
+    error?: string
   }>({ key: '', status: 'ready', scripts: [] })
 
   const extensionContext = useMemo(
@@ -510,6 +525,13 @@ export function PreviewIframe(): JSX.Element {
   // Com uma aba da gaveta ligada (e a ponte já baixada), os motores 3D vêm na variante
   // `investigar`, que só a ponte sabe pedir (`loadDevtoolsExtensionScripts`).
   const devtoolsEngines = devtoolsOn && devtoolsBridge ? devtoolsBridge : null
+  const regionalRequest = useMemo(
+    () =>
+      assets.some(hasRegionalPintaReference)
+        ? { assets, installedExtensions, regionalScope }
+        : undefined,
+    [assets, installedExtensions, regionalScope],
+  )
   const runtimeKey = useMemo(
     () =>
       `${debouncedIds}|${extensionBootstrapVariantsKey(extensionContext.extensions, bootstrapContext)}|cenas:${comCenas3D}|abas:${devtoolsEngines !== null}`,
@@ -519,29 +541,81 @@ export function PreviewIframe(): JSX.Element {
   useEffect(() => {
     void runtimeAttempt
     const { extensions } = extensionContext
-    if (extensions.length === 0 && !comCenas3D) {
+    if (extensions.length === 0 && !comCenas3D && !regionalRequest) {
       setExtensionRuntimeState({ key: runtimeKey, status: 'ready', scripts: [] })
       return
     }
-    let active = true
-    setExtensionRuntimeState({ key: runtimeKey, status: 'loading', scripts: [] })
+    const lifetime = new AbortController()
+    setExtensionRuntimeState({
+      key: runtimeKey,
+      status: 'loading',
+      scripts: [],
+      regionalRequest,
+    })
     void Promise.all([
       devtoolsEngines
         ? devtoolsEngines.loadDevtoolsExtensionScripts(extensions, bootstrapContextRef.current)
         : loadExtensionBootstrapScripts(extensions, bootstrapContextRef.current),
       comCenas3D ? carregarModuloDeCenas3D() : undefined,
+      regionalRequest
+        ? import('../../runtime/javascript/pintaRegionalMaterials').then(
+            ({ prepareJavaScriptRegionalMaterials }) => {
+              if (execution.requireIsolatedPreview) throw new Error(UNSUPPORTED_PINTA_REGION)
+              return prepareJavaScriptRegionalMaterials(
+                regionalRequest.assets,
+                regionalRequest.installedExtensions,
+                regionalScope,
+                lifetime.signal,
+              )
+            },
+          )
+        : undefined,
     ]).then(
-      ([scripts, cenas3d]) => {
-        if (active) setExtensionRuntimeState({ key: runtimeKey, status: 'ready', scripts, cenas3d })
+      ([scripts, cenas3d, materials]) => {
+        if (lifetime.signal.aborted) return
+        if (
+          materials &&
+          !extensions.some((extension) => extension.manifest.id === materials.extensionId)
+        )
+          return
+        const projected = materials
+          ? extensions.map((extension, index) =>
+              extension.manifest.id === materials.extensionId ? materials.script : scripts[index]!,
+            )
+          : scripts
+        setExtensionRuntimeState({
+          key: runtimeKey,
+          status: 'ready',
+          scripts: projected,
+          cenas3d,
+          materials,
+          regionalRequest,
+        })
       },
-      () => {
-        if (active) setExtensionRuntimeState({ key: runtimeKey, status: 'error', scripts: [] })
+      (cause: unknown) => {
+        if (!lifetime.signal.aborted)
+          setExtensionRuntimeState({
+            key: runtimeKey,
+            status: 'error',
+            scripts: [],
+            regionalRequest,
+            error: regionalRequest && cause instanceof Error ? cause.message : undefined,
+          })
       },
     )
     return () => {
-      active = false
+      lifetime.abort()
     }
-  }, [runtimeKey, runtimeAttempt, extensionContext, comCenas3D, devtoolsEngines])
+  }, [
+    runtimeKey,
+    runtimeAttempt,
+    extensionContext,
+    comCenas3D,
+    devtoolsEngines,
+    regionalRequest,
+    regionalScope,
+    execution.requireIsolatedPreview,
+  ])
 
   // ⚠️ A escolha sai do JS JÁ DEBOUNCED, não da IR: varrer a árvore do Reino Zero
   // (32 grades) a cada tecla seria caro, e o script gerado é a mesma verdade — o
@@ -568,12 +642,20 @@ export function PreviewIframe(): JSX.Element {
 
   const gameUiFontReady = gameUiFontState.key === `${debouncedIds}|${gameUiFontId}`
 
+  const ownsMaterials =
+    extensionRuntimeState.regionalRequest === regionalRequest && !regionalScope?.signal?.aborted
   const extensionRuntimesReady =
-    extensionRuntimeState.key === runtimeKey && extensionRuntimeState.status === 'ready'
+    ownsMaterials &&
+    extensionRuntimeState.key === runtimeKey &&
+    extensionRuntimeState.status === 'ready'
   const extensionRuntimeFailed =
-    extensionRuntimeState.key === runtimeKey && extensionRuntimeState.status === 'error'
+    ownsMaterials &&
+    extensionRuntimeState.key === runtimeKey &&
+    extensionRuntimeState.status === 'error'
   const extensionRuntimesLoading =
-    extensionRuntimeState.key === runtimeKey && extensionRuntimeState.status === 'loading'
+    ownsMaterials &&
+    extensionRuntimeState.key === runtimeKey &&
+    extensionRuntimeState.status === 'loading'
   const extensionScripts = extensionRuntimesReady ? extensionRuntimeState.scripts : []
   const moduloDeCenas = extensionRuntimesReady ? extensionRuntimeState.cenas3d : undefined
 
@@ -583,13 +665,18 @@ export function PreviewIframe(): JSX.Element {
   // lista de assets muda (add/remover/renomear) — não a cada tecla. Não entra no
   // orçamento de render: assets são dados PASSIVOS (decode de imagem), não custo de
   // CPU do código do aluno, então não devem disparar o "preview pausado".
-  const assetsManifest = useMemo(() => assetManifest(assets), [assets])
+  const proof = ownsMaterials ? extensionRuntimeState.materials?.proof : undefined
+  const assetsManifest = useMemo(
+    () => (regionalRequest && !proof ? undefined : assetManifest(assets, proof)),
+    [assets, proof, regionalRequest],
+  )
   // Metadados de preview (mapa de tiles do Pinta/fatiador) — mesmo ciclo de vida
   // do manifesto; ENTRA nas deps do doc: reenviar um mapa alterado tem que
   // atualizar o preview sem reload manual.
   const assetsMeta = useMemo(
-    () => assetMetaManifest(assets, bootstrapContext),
-    [assets, bootstrapContext],
+    () =>
+      regionalRequest && !proof ? undefined : assetMetaManifest(assets, bootstrapContext, proof),
+    [assets, bootstrapContext, proof, regionalRequest],
   )
   // Manifesto de sons (nome → dataUrl de áudio) — mesmo ciclo de vida do de imagem.
   const soundsManifest = useMemo(() => soundManifest(assets), [assets])
@@ -648,6 +735,9 @@ export function PreviewIframe(): JSX.Element {
       extensionScripts: moduloDeCenas
         ? [moduloDeCenas.script, ...extensionScripts]
         : extensionScripts,
+      regionalWireChars: extensionRuntimesReady
+        ? extensionRuntimeState.materials?.wireChars
+        : undefined,
       gameUiFont: gameUiFontState.bundle ?? undefined,
       extraFiles: debouncedExtraFiles,
     }),
@@ -656,6 +746,8 @@ export function PreviewIframe(): JSX.Element {
       debouncedCss,
       debouncedJs,
       extensionScripts,
+      extensionRuntimesReady,
+      extensionRuntimeState.materials?.wireChars,
       moduloDeCenas,
       gameUiFontState.bundle,
       debouncedExtraFiles,
@@ -930,33 +1022,35 @@ export function PreviewIframe(): JSX.Element {
   // can leave Chromium showing the intervening blank document. Only commit a
   // complete replacement. Stop, project/access changes and budget pauses still
   // install the blank document immediately.
-  const committedDoc = useRef({ projectId, document: PAUSED_PREVIEW_DOC })
+  const committedDoc = useRef({ projectId, regionalScope, document: PAUSED_PREVIEW_DOC })
   const waitingForDocumentResources =
     !documentResourcesReady &&
     currentProjectHasRun &&
     !previewPaused &&
-    !extensionRuntimeFailed &&
+    (!extensionRuntimeFailed || !!regionalRequest) &&
     !courseModelError &&
     execution.editingAccess !== 'observer'
   const doc = heldPreviewDocument({
     holding:
       previewRunning &&
       (preparingRun || preparationError !== null || waitingForDocumentResources) &&
-      committedDoc.current.projectId === projectId,
+      committedDoc.current.projectId === projectId &&
+      committedDoc.current.regionalScope === regionalScope &&
+      !regionalScope?.signal?.aborted,
     held: committedDoc.current.document,
     stuck: stuckDocumentRef.current,
     candidate: candidateDoc,
   })
   useLayoutEffect(() => {
-    committedDoc.current = { projectId, document: doc }
-  }, [doc, projectId])
+    committedDoc.current = { projectId, regionalScope, document: doc }
+  }, [doc, projectId, regionalScope])
 
   const [remoteDocument, setRemoteDocument] = useState<{
     document: string
     url: string | null
     error: string | null
   } | null>(null)
-  const originAdapter = execution.originAdapter
+  const originAdapter = regionalScope ? undefined : execution.originAdapter
   const projectForOrigin = useRef(fullProject)
   projectForOrigin.current = fullProject
   useEffect(() => {
@@ -1527,7 +1621,7 @@ export function PreviewIframe(): JSX.Element {
           </div>
         </div>
       )}
-      {extensionRuntimeState.key === runtimeKey && extensionRuntimeState.status === 'error' && (
+      {extensionRuntimeFailed && (
         <div
           role="alert"
           className="absolute inset-0 flex items-center justify-center bg-sz-panel/95 p-6 text-center"
@@ -1537,7 +1631,8 @@ export function PreviewIframe(): JSX.Element {
               Não consegui carregar o motor do jogo
             </p>
             <p className="mt-2 text-xs text-sz-fg-soft">
-              O projeto ficou parado para não executar sem a extensão instalada.
+              {extensionRuntimeState.error ??
+                'O projeto ficou parado para não executar sem a extensão instalada.'}
             </p>
             <Button
               className="mt-3"

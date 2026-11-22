@@ -12,7 +12,7 @@ import {
   projectBackupKey,
   projectRecoveryKey,
 } from './projectStorageKeys'
-import type { ProjectStorageScope } from './projectStorageRuntime'
+import { type ProjectStorageScope, regionalProjectReadOptions } from './projectStorageRuntime'
 import { ExitJournalError } from './synchronousExitJournalProbe'
 import { readSynchronousExitJournal } from './synchronousExitJournalRead'
 
@@ -91,7 +91,12 @@ export async function prepareRecoverySources(
       throw new ExitJournalError(
         'A origem da recuperação não corresponde ao projeto. Ela foi preservada.',
       )
-    if (!(await prepareEditableStudioProject(projectFromRecovery(parent, version))))
+    if (
+      !(await prepareEditableStudioProject(
+        projectFromRecovery(parent, version),
+        regionalProjectReadOptions(scope),
+      ))
+    )
       throw new ExitJournalError('Uma origem da recuperação não pode ser lida. Ela foi preservada.')
   }
   for (const source of sources) {

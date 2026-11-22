@@ -6,8 +6,8 @@ import {
 import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
 import type { EditableStudioProject } from '../core/editableProject'
 import {
-  PRIVATE_REGIONAL_JS_PROJECT,
-  type RegionalJsProjectReadOptions,
+  PRIVATE_REGIONAL_PROJECT,
+  type PrivateRegionalProjectReadOptions,
 } from '../core/pintaRegionalReference'
 import {
   isDocumentRecord,
@@ -16,26 +16,29 @@ import {
 } from '../core/projectDocument'
 import { assertScene3DAssets } from '../core/scene3d/validacao'
 import { copyLocalRevision } from './projectStorageRevision'
+import { isPrivateRegionalProjectScope } from './projectStorageRuntime'
 import { prepareProjectForHost } from './projectValidation'
 
 /** One language dispatch for storage, host snapshots and recovery; never guesses Python as JS. */
 export async function prepareEditableStudioProject(
   raw: unknown,
-  options: { proBuildLimits?: StudioProBuildLimits } & RegionalJsProjectReadOptions = {},
+  options: { proBuildLimits?: StudioProBuildLimits } & PrivateRegionalProjectReadOptions = {},
 ): Promise<EditableStudioProject | null> {
   if (raw == null) return null
   const proBuildLimits = options.proBuildLimits ? { ...options.proBuildLimits } : undefined
-  const privateRead = options[PRIVATE_REGIONAL_JS_PROJECT] === true
+  const scope = options[PRIVATE_REGIONAL_PROJECT]
+  if (scope && !isPrivateRegionalProjectScope(scope))
+    throw new Error('A captura regional requer um perfil de teste local.')
   const version = projectFormatVersion(raw)
   const captured = copyStudioProjectJson(raw)
   if (!isDocumentRecord(captured) || !isDocumentRecord(raw)) throw new Error('Documento inválido.')
   const regionalMaterials =
-    privateRead &&
-    captured.programmingLanguage !== 'python' &&
+    scope &&
     (version === STUDIO_PROJECT_FORMAT_VERSION ||
       version === STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION)
       ? await (await import('../core/pintaRegionalProjectAdmission')).admitRegionalProjectAssets(
           captured.assets,
+          scope.signal,
         )
       : undefined
   const policy = { proBuildLimits, regionalMaterials }
@@ -51,7 +54,7 @@ export async function prepareEditableStudioProject(
   if (captured.programmingLanguage === 'python') {
     // Python-specific validation/hash code is absent from the legacy JS load path.
     const { refinePythonProjectDocument } = await import('./pythonProjectValidation')
-    return refinePythonProjectDocument(snapshot)
+    return refinePythonProjectDocument(snapshot, { regionalMaterials })
   }
   const { refineJavaScriptProjectDocument } = await import('./javaScriptProjectValidation')
   const project = refineJavaScriptProjectDocument(snapshot, policy)

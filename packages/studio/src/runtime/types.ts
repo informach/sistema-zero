@@ -8,6 +8,7 @@ import type {
   StudioPythonMissionProbe,
 } from '@sistemazero/core/studio/python-mission-observation'
 import type { StudioRuntimeImage } from '@sistemazero/core/studio/runtime-image'
+import type { PrivateRegionalProjectReadOptions } from '../core/pintaRegionalReference'
 
 export type { StudioRuntimeImage } from '@sistemazero/core/studio/runtime-image'
 
@@ -114,7 +115,7 @@ export interface StudioRuntimeSession {
   ): Promise<void>
 }
 
-export interface StudioRuntimePrepareInput {
+export interface StudioRuntimePrepareInput extends PrivateRegionalProjectReadOptions {
   pythonMission?: true
   /** Host validation result for an admitted regional Pinta material. */
   requirePintaScenes?: true

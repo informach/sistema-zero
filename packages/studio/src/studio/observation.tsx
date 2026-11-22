@@ -1,7 +1,8 @@
 import { createContext, useContext } from 'react'
 import type { StudioPlayerOriginAdapter } from '../components/preview/playerOriginAdapter'
+import type { PrivateRegionalProjectReadOptions } from '../core/pintaRegionalReference'
 
-export interface StudioExecutionPolicy {
+export interface StudioExecutionPolicy extends PrivateRegionalProjectReadOptions {
   editingAccess: 'author' | 'observer'
   autoRun: boolean
   originAdapter?: StudioPlayerOriginAdapter

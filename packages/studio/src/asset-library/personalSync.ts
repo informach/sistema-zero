@@ -72,6 +72,7 @@ function sameDrawingContent(asset: DrawingContent, drawing: DrawingContent): boo
 import { ulid } from 'ulid'
 import { PROJECT_ASSET_LIMITS, type ProjectAsset, projectAssetBudgetChars } from '#core'
 import { perfSpanAsync } from '../core/perf'
+import { PRIVATE_REGIONAL_PROJECT } from '../core/pintaRegionalReference'
 import { idsDosRecursosDeCena3D } from '../core/scene3d/referencias'
 import {
   listProjectSummariesLight,
@@ -81,6 +82,7 @@ import {
 import { preparePintaMapBundle } from '../state/pintaMapBundle'
 import {
   captureProjectStorageScope,
+  isPrivateRegionalProjectScope,
   type ProjectStorageScope,
 } from '../state/projectStorageRuntime'
 import type { ProjectStoreApi } from '../state/projectStore'
@@ -519,6 +521,12 @@ async function sweepUnmeasured(
   detail: Record<string, unknown> = {},
 ): Promise<DrawingSyncResult> {
   const result = emptyResult()
+  if (isPrivateRegionalProjectScope(context.storageScope)) {
+    // The private library and the open editor must belong to the same local profile.
+    if (context.namespace === context.storageScope.namespace && context.canonicalChanged)
+      await syncPrivateRegionalDrawings(storeApi, context, result, changeToken)
+    return result
+  }
   const drawings = new Map<string, PersonalAsset | null>()
   let canonicalWritesCompleted = true
 
@@ -725,6 +733,83 @@ async function sweepUnmeasured(
     context.state.didInitialSweep = true
   }
   return result
+}
+
+async function syncPrivateRegionalDrawings(
+  store: ProjectStoreApi,
+  context: DrawingSyncContext,
+  result: DrawingSyncResult,
+  changeToken: string,
+) {
+  const { storageScope: scope, namespace } = context
+  const signal = context.python?.signal ?? context.callerSignal
+  const [
+    { readPersonalRegionalMap, PINTA_REGIONAL_PERSONAL_CAPTURE },
+    { refreshPrivateRegionalProjectAsset },
+    { pintaRegionalMarkerOf },
+  ] = await Promise.all([
+    import('./personalRegional'),
+    import('../state/pintaRegionalProjectRefresh'),
+    import('../core/pintaRegionalMaterial'),
+  ])
+  const live = store.getState().project
+  const projects = await listProjectSummariesLight(scope)
+  const captured = new Map<string, Awaited<ReturnType<typeof readPersonalRegionalMap>>>()
+  for (const summary of projects) {
+    if (signal?.aborted || !isContextActive(context)) return
+    const open = live?.id === summary.id ? live : undefined
+    try {
+      const assets =
+        open?.assets ??
+        (
+          await loadProjectAssetsSnapshotById(summary.id, scope, {
+            [PRIVATE_REGIONAL_PROJECT]: scope,
+          })
+        ).assets
+      for (const asset of assets) {
+        const sourceId = personalIdOf(asset)
+        if (!sourceId || asset.kind !== 'image' || asset.libOrigin === 'molda' || asset.pintaImage)
+          continue
+        if (signal?.aborted || !isContextActive(context)) return
+        if (!captured.has(sourceId))
+          captured.set(
+            sourceId,
+            await readPersonalRegionalMap(sourceId, {
+              namespace,
+              capability: PINTA_REGIONAL_PERSONAL_CAPTURE,
+            }),
+          )
+        const row = captured.get(sourceId)
+        if (!row || pintaRegionalMarkerOf(asset)?.sha256 === row.sha256) continue
+        const updated = await refreshPrivateRegionalProjectAsset({
+          scope,
+          store,
+          projectId: summary.id,
+          assetId: asset.id,
+          signal,
+          stillCurrent: () =>
+            isContextActive(context) &&
+            (!changeToken || personalAssetsChangeToken(namespace) === changeToken),
+          capture: {
+            width: row.width,
+            height: row.height,
+            dataUrl: row.dataUrl,
+            regional: { dataVersion: 5, sourceId, sha256: row.sha256 },
+          },
+        })
+        if (updated) {
+          if (open) result.updatedInOpenProject++
+          else result.updatedInOtherProjects++
+        } else context.canonicalWriteRefused = true
+      }
+    } catch (error) {
+      if (!signal?.aborted && isContextActive(context)) worldFailure(context, result, error)
+    }
+  }
+  if (!context.canonicalWriteRefused && !signal?.aborted && isContextActive(context)) {
+    context.state.didInitialSweep = true
+    context.state.lastSyncToken = changeToken
+  }
 }
 
 /** Reconcilia o projeto que está no editor, pela store (caminho de uma edição). */

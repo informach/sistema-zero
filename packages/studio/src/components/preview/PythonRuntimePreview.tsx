@@ -1,6 +1,10 @@
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { Button } from '#ui'
 import type { PythonProjectDocument } from '../../core/editableProject'
+import {
+  hasRegionalPintaReference,
+  PRIVATE_REGIONAL_PROJECT,
+} from '../../core/pintaRegionalReference'
 import type { StudioRuntimeCapture } from '../../runtime/capture'
 import type { StudioRuntimeEnvironment } from '../../runtime/environment'
 import { pythonProjectNeedsAudioGesture } from '../../runtime/python/audio/activation'
@@ -12,6 +16,7 @@ import {
 } from '../../runtime/python/controller'
 import type { StudioRuntimeEvent } from '../../runtime/types'
 import { useT } from '../../studio/i18n'
+import { useStudioExecution } from '../../studio/observation'
 import { ProStageState } from './ProStageState'
 import { pythonExecuting, pythonPreviewIsStale, pythonRunState } from './pythonRunState'
 
@@ -73,6 +78,8 @@ const isCancelled = (error: unknown) => error instanceof DOMException && error.n
 /** The same isolated surface is used in an editor and on the public play page. */
 export function PythonRuntimePreview(props: PythonRuntimePreviewProps) {
   const t = useT()
+  const regionalScope = useStudioExecution()[PRIVATE_REGIONAL_PROJECT]
+  const latestRegionalScope = useRef(regionalScope)
   const root = useRef<HTMLDivElement>(null)
   const mount = useRef<HTMLDivElement>(null)
   const latest = useRef(props)
@@ -88,9 +95,25 @@ export function PythonRuntimePreview(props: PythonRuntimePreviewProps) {
     controller?.getSnapshot ?? idleSnapshot,
     idleSnapshot,
   )
+  const privateMaterialRevision = regionalScope && props.project.assets
+  const previousMaterials = useRef(privateMaterialRevision)
+  useEffect(() => {
+    const previous = previousMaterials.current
+    previousMaterials.current = privateMaterialRevision
+    if (
+      controller &&
+      props.canExecute &&
+      previous &&
+      previous !== privateMaterialRevision &&
+      privateMaterialRevision?.some(hasRegionalPintaReference) &&
+      executing(controller.getSnapshot().status)
+    )
+      void controller.run().catch(() => {})
+  }, [controller, privateMaterialRevision, props.canExecute])
 
   useLayoutEffect(() => {
     latest.current = props
+    latestRegionalScope.current = regionalScope
     currentController.current?.syncAudioPreference()
   })
   useLayoutEffect(() => {
@@ -101,17 +124,25 @@ export function PythonRuntimePreview(props: PythonRuntimePreviewProps) {
       environment: () => latest.current.environment,
       canExecute: () => latest.current.canExecute && (latest.current.canExecuteNow?.() ?? true),
       writerEpoch: () => latest.current.writerEpoch ?? null,
+      regionalScope: () => latestRegionalScope.current,
       audioMuted: () => latest.current.muted ?? false,
       observation: () => latest.current.observation === true,
       onEvent: (event) => latest.current.onEvent?.(event),
-      mountFrame: () => {
+      mountFrame: (staging) => {
         if (!mount.current) throw new Error('A área de execução foi fechada.')
         const frame = document.createElement('iframe')
         frame.title = 'Pré-visualização Python'
         frame.className = 'h-full w-full flex-1 border-0 bg-white'
+        frame.hidden = staging === true
         // The provider adds the sandbox and approved origin before loading any runtime bytes.
         mount.current.append(frame)
-        return { frame, release: () => frame.remove() }
+        return {
+          frame,
+          release: () => frame.remove(),
+          present: () => {
+            frame.hidden = false
+          },
+        }
       },
     })
     currentController.current = instance
@@ -143,7 +174,14 @@ export function PythonRuntimePreview(props: PythonRuntimePreviewProps) {
   // biome-ignore lint/correctness/useExhaustiveDependencies: these host values are the invalidation keys of a running generation.
   useLayoutEffect(() => {
     if (controller) void controller.stop()
-  }, [controller, props.project.id, props.environment, props.canExecute, props.writerEpoch])
+  }, [
+    controller,
+    props.project.id,
+    props.environment,
+    props.canExecute,
+    props.writerEpoch,
+    regionalScope,
+  ])
 
   useEffect(() => {
     if (!controller || !props.capture) return

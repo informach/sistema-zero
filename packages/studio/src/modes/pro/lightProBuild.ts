@@ -207,15 +207,28 @@ function viteConfigIsTheTemplate(tree: ProjectTree): boolean {
   return true
 }
 
-function plan(project: Project, limits?: Partial<StudioProBuildLimits>): LightProPlan {
+export interface PrivateProPlanProjection {
+  /** The host compared this platform artifact byte for byte, outside the author's source budget. */
+  verifiedEnginePath: string
+  /** Captured generated scripts to overlay at their existing public paths. */
+  scripts: ReadonlyMap<string, string>
+  /** Existing asset-bundle paths mapped to the exact project bytes for the isolated iframe. */
+  media: ReadonlyMap<string, string>
+}
+
+function plan(
+  project: Project,
+  limits?: Partial<StudioProBuildLimits>,
+  projection?: PrivateProPlanProjection,
+): LightProPlan {
   if (project.kind !== 'pro' || !project.tree) return hosted('não é um projeto Pro')
-  if (project.assets?.length) return hosted('o projeto tem materiais')
+  if (project.assets?.length && !projection) return hosted('o projeto tem materiais')
   const tree = project.tree
   // As cotas do compilador do servidor valem aqui também: nada roda no navegador que o servidor
   // recusaria pelo tamanho (ele é quem dá a mensagem certa).
   const files: Record<string, string> = {}
   for (const [path, node] of Object.entries(tree))
-    if (node.kind === 'file') files[path] = node.content
+    if (node.kind === 'file' && path !== projection?.verifiedEnginePath) files[path] = node.content
   if (studioProBuildFileLimitError(files, limits)) return hosted('passa das cotas do compilador')
   if (!viteConfigIsTheTemplate(tree)) return hosted('vite.config diferente do modelo')
   const manifest = fileText(tree, 'package.json')
@@ -284,12 +297,34 @@ function plan(project: Project, limits?: Partial<StudioProBuildLimits>): LightPr
 
   if (document.querySelector('base')) return hosted('<base> no index.html')
   const handled = new Set<Element>()
+  const projected = new Set<string>()
   for (const script of document.querySelectorAll('script')) {
     const type = (script.getAttribute('type') ?? '').trim().toLowerCase()
     const src = script.getAttribute('src')
     if (type === 'importmap') return hosted('mapa de importação no index.html')
     if (type !== 'module') {
-      if (src !== null && localTarget(src) !== null) return hosted('script comum com arquivo local')
+      if (src !== null && localTarget(src) !== null) {
+        if (!projection) return hosted('script comum com arquivo local')
+        const path = normalize(src)
+        const file = path ? `public/${path}` : ''
+        const overlay = projection.scripts.get(file)
+        const source = overlay ?? fileText(tree, file)
+        // A local script with scheduling/integrity attributes cannot be inlined with the same
+        // behavior. The project can keep it and run on the full Pro host when supported.
+        if (
+          source === null ||
+          !/\.js$/i.test(file) ||
+          ['async', 'defer', 'integrity'].some((attr) => script.hasAttribute(attr))
+        )
+          return hosted(`script local incompatível: ${src}`)
+        if (overlay !== undefined) {
+          if (projected.has(file)) return hosted(`script projetado em duplicidade: ${src}`)
+          projected.add(file)
+        }
+        script.removeAttribute('src')
+        script.textContent = source.replace(/<\/script/gi, '<\\/script')
+        handled.add(script)
+      }
       continue
     }
     if (src === null) return hosted('script de módulo escrito dentro do index.html')
@@ -304,6 +339,8 @@ function plan(project: Project, limits?: Partial<StudioProBuildLimits>): LightPr
     script.replaceWith(replacement)
     handled.add(replacement)
   }
+  if (projection && projected.size !== projection.scripts.size)
+    return hosted('os scripts do cenário não estão ligados ao index.html')
   if (!handled.size) return hosted('sem script de módulo')
   for (const link of document.querySelectorAll('link')) {
     const href = link.getAttribute('href')
@@ -312,7 +349,10 @@ function plan(project: Project, limits?: Partial<StudioProBuildLimits>): LightPr
     const rel = (link.getAttribute('rel') ?? '').trim().toLowerCase()
     if (rel !== 'stylesheet') return hosted(`link local que o Vite reescreveria: ${local}`)
     const path = normalize(local)
-    const text = path === null ? null : fileText(tree, path)
+    const text =
+      path === null
+        ? null
+        : (fileText(tree, path) ?? (projection ? fileText(tree, `public/${path}`) : null))
     if (path === null || text === null) return hosted(`folha de estilo não encontrada: ${local}`)
     const style = document.createElement('style')
     style.textContent = checkCss(path, text)
@@ -328,8 +368,12 @@ function plan(project: Project, limits?: Partial<StudioProBuildLimits>): LightPr
     if (handled.has(element)) continue
     for (const name of ['src', 'href', 'srcset', 'poster', 'data']) {
       const value = element.getAttribute(name)
-      if (value !== null && localTarget(value) !== null)
+      if (value === null || localTarget(value) === null) continue
+      const path = normalize(value)
+      const media = path && projection?.media.get(`public/${path}`)
+      if (!media || !['src', 'poster'].includes(name))
         return hosted(`referência local no index.html: ${value}`)
+      element.setAttribute(name, media)
     }
   }
 
@@ -360,9 +404,10 @@ function plan(project: Project, limits?: Partial<StudioProBuildLimits>): LightPr
 export function planLightProBuild(
   project: Project,
   limits?: Partial<StudioProBuildLimits>,
+  projection?: PrivateProPlanProjection,
 ): LightProPlan {
   try {
-    return plan(project, limits)
+    return plan(project, limits, projection)
   } catch (error) {
     if (error instanceof Hosted) return { kind: 'hosted', reason: error.message }
     throw error

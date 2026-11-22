@@ -4,6 +4,10 @@ export {
   UNSUPPORTED_PINTA_REGION,
 } from '@sistemazero/core/studio/pinta-regional-reference'
 
-/** In-process option for a private JS reader only. Never a document, request or catalog field. */
-export const PRIVATE_REGIONAL_JS_PROJECT = Symbol('private-regional-js-project')
-export type RegionalJsProjectReadOptions = { [PRIVATE_REGIONAL_JS_PROJECT]?: true }
+import type { ProjectStorageScope } from '../state/projectStorageRuntime'
+
+/** In-process scope for the private reader. Never a document, request or catalog field. */
+export const PRIVATE_REGIONAL_PROJECT = Symbol('private-regional-project')
+export type PrivateRegionalProjectReadOptions = {
+  [PRIVATE_REGIONAL_PROJECT]?: ProjectStorageScope
+}
