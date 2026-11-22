@@ -11,11 +11,13 @@ import {
   pintaCausalBlobKey,
 } from '@sistemazero/core/creations/pinta-causal'
 import { assetToJson, createAsset, isTileLayer } from '@sistemazero/pinta/assets'
+import { SignJWT } from 'jose'
 import type { SessionUser } from '../src/lib/types'
 
 mock.module('server-only', () => ({}))
 const { createPintaCausalRoutes } = await import('../src/routes/pinta-causal')
 const { readPintaCausalBlob } = await import('../src/server/pinta-causal-content')
+const { createSessionModule } = await import('../src/server/session')
 
 const userId = '11111111-1111-4111-8111-111111111111'
 const accountId = '22222222-2222-4222-8222-222222222222'
@@ -86,7 +88,14 @@ const upload = pintaCausalBlobKey(binding, 'upload')
 const sealed = pintaCausalBlobKey(binding, 'sealed')
 
 function fixture(
-  options: { enabled?: boolean; actor?: SessionUser; audience?: 'adult' | 'kids' } = {},
+  options: {
+    enabled?: boolean
+    actor?: SessionUser
+    audience?: 'adult' | 'kids'
+    access?: string
+    renewal?: Awaited<ReturnType<Dependencies['gateway']['refreshSession']>>
+    verify?: Dependencies['session']['verifyAccessToken']
+  } = {},
 ) {
   const calls: { path: string; body: unknown }[] = []
   const objects = new Map<string, Uint8Array>()
@@ -133,7 +142,12 @@ function fixture(
     entries: [entry],
     nextCursor: null,
   })
+  let refreshCalls = 0
   const gateway: Dependencies['gateway'] = {
+    async refreshSession() {
+      refreshCalls++
+      return options.renewal ?? { state: 'invalid' }
+    },
     async gatewayFetchHmac<T = unknown>(path: string, opts?: { body?: unknown }) {
       calls.push({ path, body: opts?.body })
       const endpoint = path.replace('/members/internal/creations/pinta/', '')
@@ -146,7 +160,10 @@ function fixture(
     gateway,
     session: {
       audience: options.audience ?? 'kids',
-      getSession: async () => options.actor ?? sessionUser,
+      getAccessToken: async () => options.access ?? 'qa-access',
+      getRefreshToken: async () => 'qa-refresh',
+      verifyAccessToken:
+        options.verify ?? (async () => ({ ok: true, user: options.actor ?? sessionUser })),
     },
     enabled: () => options.enabled ?? true,
     storage: {
@@ -179,7 +196,16 @@ function fixture(
       },
     },
   })
-  return { routes, calls, objects, responses, signing, historical, downloads }
+  return {
+    routes,
+    calls,
+    objects,
+    responses,
+    signing,
+    historical,
+    downloads,
+    refreshCalls: () => refreshCalls,
+  }
 }
 
 test('the private route scope rejects profile and audience drift before any upstream call', async () => {
@@ -392,6 +418,114 @@ test('the adult namespace signs the account actor and derives privilege from its
     privileged: true,
     payload: { reader: 7 },
   })
+})
+
+test('the adult causal route requires a currently valid access token before signing HMAC calls', async () => {
+  const strict = createSessionModule(
+    { accessCookie: 'qa-access', refreshCookie: 'qa-refresh' },
+    'qa-palette',
+  )
+  const key = new TextEncoder().encode(process.env.JWT_HS256_SECRET!)
+  const issued = Math.floor(Date.now() / 1000)
+  const token = (expiresAt: number, role: string, subject = userId) =>
+    new SignJWT({ sub: subject, role, status: 'active' })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuedAt(issued - 60)
+      .setExpirationTime(expiresAt)
+      .sign(key)
+  const stale = await token(issued - 30, 'staff')
+  const denied = fixture({ audience: 'adult', access: stale, verify: strict.verifyAccessToken })
+  const graph = () => new Request(`${link}/graph?reader=7`)
+  expect((await denied.routes.pintaCausalGraph.GET(graph())).status).toBe(401)
+  expect(denied.refreshCalls()).toBe(1)
+  expect(denied.calls).toEqual([])
+  expect(denied.signing).toEqual([])
+
+  const renewed = fixture({
+    audience: 'adult',
+    access: stale,
+    renewal: { state: 'renewed', accessToken: await token(issued + 60, 'customer') },
+    verify: strict.verifyAccessToken,
+  })
+  expect((await renewed.routes.pintaCausalGraph.GET(graph())).status).toBe(200)
+  expect(renewed.refreshCalls()).toBe(1)
+  expect(renewed.calls[0]?.body).toEqual({
+    userId,
+    accountId: userId,
+    audience: 'adult',
+    payload: { reader: 7 },
+  })
+})
+
+test('an adult refresh rechecks the current actor and an unavailable refresh preserves the session', async () => {
+  const strict = createSessionModule(
+    { accessCookie: 'qa-access', refreshCookie: 'qa-refresh' },
+    'qa-palette',
+  )
+  const key = new TextEncoder().encode(process.env.JWT_HS256_SECRET!)
+  const issued = Math.floor(Date.now() / 1000)
+  const access = (subject: string, expiresAt: number) =>
+    new SignJWT({ sub: subject, role: 'customer', status: 'active' })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setExpirationTime(expiresAt)
+      .sign(key)
+  const stale = await access(userId, issued - 30)
+  const graph = () =>
+    new Request(`${link}/graph?reader=7`, {
+      headers: { 'x-sz-viewer': userId, 'x-sz-viewer-audience': 'adult' },
+    })
+  const changed = fixture({
+    audience: 'adult',
+    access: stale,
+    verify: strict.verifyAccessToken,
+    renewal: { state: 'renewed', accessToken: await access(accountId, issued + 60) },
+  })
+  const response = await changed.routes.pintaCausalGraph.GET(graph())
+  expect(response.status).toBe(409)
+  expect(await response.json()).toEqual({ reason: 'viewer-mismatch' })
+  expect(changed.refreshCalls()).toBe(1)
+  expect(changed.calls).toEqual([])
+
+  const offline = fixture({
+    audience: 'adult',
+    access: stale,
+    verify: strict.verifyAccessToken,
+    renewal: { state: 'unavailable' },
+  })
+  expect((await offline.routes.pintaCausalGraph.GET(graph())).status).toBe(503)
+  expect(offline.refreshCalls()).toBe(1)
+  expect(offline.calls).toEqual([])
+})
+
+test('a Kids write binds the document proof to the verified learner session', async () => {
+  const kids = { kind: 'student', sessionId: nonce, deviceId: userId, grantId: opId } as const
+  const { routes, calls, responses } = fixture({ actor: { ...sessionUser, kids } })
+  responses.set('units/commit', {
+    status: { state: 'expired', opId, intentHash: binding.intentHash },
+    uploadBytes: {},
+  })
+  const commit = (headers: HeadersInit) =>
+    new Request(`${link}/units/${opId}/commit`, { method: 'POST', headers })
+  expect((await routes.pintaCausalCommit.POST(commit({}), context)).status).toBe(409)
+  expect(
+    (await routes.pintaCausalCommit.POST(commit({ 'x-sz-session': opId }), context)).status,
+  ).toBe(409)
+  expect(calls).toEqual([])
+  expect(
+    (await routes.pintaCausalCommit.POST(commit({ 'x-sz-session': nonce }), context)).status,
+  ).toBe(200)
+  expect(calls).toHaveLength(1)
+})
+
+test('a Kids session verification outage returns unavailable without signing a call', async () => {
+  const unavailable = fixture({
+    verify: async () => ({ ok: false, expired: false, unavailable: true }),
+  })
+  expect(
+    (await unavailable.routes.pintaCausalGraph.GET(new Request(`${link}/graph?reader=7`))).status,
+  ).toBe(503)
+  expect(unavailable.refreshCalls()).toBe(0)
+  expect(unavailable.calls).toEqual([])
 })
 
 test('recovery includes opaque future items only through the explicit attachment path', async () => {

@@ -211,25 +211,32 @@ export function createGatewayModule(session: SessionModule) {
    * single-flight garante que a PRÓXIMA request, ainda com o cookie antigo,
    * receba os MESMOS tokens — sem revogar a família).
    */
-  async function tryRefresh(): Promise<string | null> {
+  async function refreshSession(): Promise<
+    { state: 'renewed'; accessToken: string } | { state: 'invalid' | 'unavailable' }
+  > {
     const refreshToken = await session.getRefreshToken()
-    if (!refreshToken) return null
+    if (!refreshToken) return { state: 'invalid' }
     const result = await refreshTokens(refreshToken, await clientForwardHeaders())
-    if (result === 'unavailable') return null
+    if (result === 'unavailable') return { state: 'unavailable' }
     if (result === 'invalid') {
       try {
         await session.clearSessionCookies()
       } catch {
         // Server Component: sem escrita de cookie — o proxy limpa na próxima request.
       }
-      return null
+      return { state: 'invalid' }
     }
     try {
       await session.setSessionCookies(result)
     } catch {
       // Server Component: idem — o proxy persiste os cookies na próxima request.
     }
-    return result.accessToken
+    return { state: 'renewed', accessToken: result.accessToken }
+  }
+
+  async function tryRefresh(): Promise<string | null> {
+    const result = await refreshSession()
+    return result.state === 'renewed' ? result.accessToken : null
   }
 
   /**
@@ -450,6 +457,7 @@ export function createGatewayModule(session: SessionModule) {
   }
 
   return {
+    refreshSession,
     tryRefresh,
     gatewayFetch,
     gatewayFetchDual,

@@ -166,8 +166,11 @@ export function createPintaCausalRoutes({
   storage = liveStorage,
   enabled = candidateReady,
 }: {
-  gateway: Pick<GatewayModule, 'gatewayFetchHmac'>
-  session: Pick<SessionModule, 'getSession' | 'audience'>
+  gateway: Pick<GatewayModule, 'gatewayFetchHmac' | 'refreshSession'>
+  session: Pick<
+    SessionModule,
+    'getAccessToken' | 'getRefreshToken' | 'verifyAccessToken' | 'audience'
+  >
   storage?: Storage
   enabled?: () => boolean
 }) {
@@ -177,28 +180,49 @@ export function createPintaCausalRoutes({
     operation: (actor: PintaCausalActor, readOnly: boolean) => Promise<NextResponse>,
   ): Promise<NextResponse> {
     if (!enabled()) return error(404, 'not-found')
-    const user = await session.getSession().catch(() => undefined)
-    if (!user) return error(401, 'unauthenticated')
-    if (user.status !== 'active' || user.kids?.kind === 'parent') return error(403, 'forbidden')
-    const claimed = req.headers.get('x-sz-viewer')
-    const claimedAudience = req.headers.get('x-sz-viewer-audience')
-    if (
-      (claimed && claimed !== user.id) ||
-      (claimedAudience && claimedAudience !== session.audience)
-    )
-      return error(409, 'viewer-mismatch')
-    const readOnly = isReadonlyImpersonation(user)
-    if (write && readOnly) return error(403, 'impersonation-readonly')
-    const actor = PintaCausalActorSchema.safeParse({
-      userId: user.id,
-      accountId: user.activeProfile?.accountId ?? user.id,
-      audience: session.audience,
-      ...(isPrivilegedRole(user.role) ? { privileged: true } : {}),
-    })
-    if (!actor.success) return error(401, 'unauthenticated')
-    if (actor.data.audience === 'adult' && actor.data.accountId !== actor.data.userId)
-      return error(403, 'forbidden')
     try {
+      // HMAC authenticates Member Shell, so the user token needs strict verification here.
+      const [access, refresh] = await Promise.all([
+        session.getAccessToken(),
+        session.getRefreshToken(),
+      ])
+      if (!access || !refresh) return error(401, 'unauthenticated')
+      let verified = await session.verifyAccessToken(access)
+      if (!verified.ok && verified.expired) {
+        const renewed = await gateway.refreshSession()
+        if (renewed.state === 'unavailable') return error(503, 'unavailable')
+        if (renewed.state === 'renewed')
+          verified = await session.verifyAccessToken(renewed.accessToken)
+      }
+      if (!verified.ok)
+        return verified.unavailable ? error(503, 'unavailable') : error(401, 'unauthenticated')
+      const user = verified.user
+      if (user.status !== 'active' || user.kids?.kind === 'parent') return error(403, 'forbidden')
+      const claimed = req.headers.get('x-sz-viewer')
+      const claimedAudience = req.headers.get('x-sz-viewer-audience')
+      if (
+        (claimed && claimed !== user.id) ||
+        (claimedAudience && claimedAudience !== session.audience)
+      )
+        return error(409, 'viewer-mismatch')
+      const documentSession = req.headers.get('x-sz-session')
+      if (
+        user.kids &&
+        ((documentSession && documentSession !== user.kids.sessionId) ||
+          (write && documentSession !== user.kids.sessionId))
+      )
+        return error(409, 'viewer-mismatch')
+      const readOnly = isReadonlyImpersonation(user)
+      if (write && readOnly) return error(403, 'impersonation-readonly')
+      const actor = PintaCausalActorSchema.safeParse({
+        userId: user.id,
+        accountId: user.activeProfile?.accountId ?? user.id,
+        audience: session.audience,
+        ...(isPrivilegedRole(user.role) ? { privileged: true } : {}),
+      })
+      if (!actor.success) return error(401, 'unauthenticated')
+      if (actor.data.audience === 'adult' && actor.data.accountId !== actor.data.userId)
+        return error(403, 'forbidden')
       return await operation(actor.data, readOnly)
     } catch (failure) {
       if (failure instanceof UpstreamFailure) return failure.response

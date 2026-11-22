@@ -111,8 +111,22 @@ test('Pinta commits the real gzip only after BFF, Gateway, Members and PostgreSQ
     firstName: 'QA',
     lastName: 'Pinta',
     activeProfile: { accountId: randomUUID(), name: 'Pinta QA' },
+    kids: {
+      kind: 'student' as const,
+      sessionId: randomUUID(),
+      deviceId: randomUUID(),
+      grantId: randomUUID(),
+    },
   }
-  const session = { audience: 'kids', getSession: async () => user } as unknown as SessionModule
+  const accessToken = randomUUID()
+  const refreshToken = randomUUID()
+  const session = {
+    audience: 'kids',
+    getAccessToken: async () => accessToken,
+    getRefreshToken: async () => refreshToken,
+    verifyAccessToken: async (token: string) =>
+      token === accessToken ? { ok: true, user } : { ok: false, expired: false },
+  } as unknown as SessionModule
 
   const members = await createMembers(
     membersEnv({
@@ -212,7 +226,11 @@ test('Pinta commits the real gzip only after BFF, Gateway, Members and PostgreSQ
     })
 
     const root = `http://127.0.0.1:${bffPort}/api/pinta/causal`
-    const headers = { 'x-sz-viewer': user.id, 'x-sz-viewer-audience': 'kids' }
+    const headers = {
+      'x-sz-viewer': user.id,
+      'x-sz-viewer-audience': 'kids',
+      'x-sz-session': user.kids.sessionId,
+    }
     const get = (path: string) => fetch(root + path, { headers })
     const post = (path: string, body?: unknown) =>
       fetch(root + path, {
