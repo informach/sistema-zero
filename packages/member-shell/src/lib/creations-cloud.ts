@@ -62,6 +62,7 @@ export interface CloudSyncState {
   lastSavedAt: number | null
   /** Recado na linguagem da criança (nunca a mensagem crua do servidor). */
   lastError: string | null
+  deviceOnly?: true
 }
 
 /**
@@ -159,7 +160,7 @@ export interface CreationsCloud {
   readonly pintaCausal?: PintaCausalCloud
   reportPintaQueue?(
     ids: readonly string[],
-    status: 'saving' | 'offline' | 'error' | 'saved' | 'idle',
+    status: 'saving' | 'offline' | 'error' | 'saved' | 'device-only',
     error?: string,
   ): void
   /** A nuvem funciona neste navegador? (`CompressionStream`; sem ele, tudo vira no-op). */
@@ -607,6 +608,7 @@ export function createCreationsCloud(options: {
     if (
       next.status === state.status &&
       next.pending === state.pending &&
+      next.deviceOnly === state.deviceOnly &&
       next.lastError === state.lastError &&
       next.lastSavedAt === state.lastSavedAt
     ) {
@@ -1337,21 +1339,23 @@ export function createCreationsCloud(options: {
           pintaCausal,
           reportPintaQueue(
             ids: readonly string[],
-            status: 'saving' | 'offline' | 'error' | 'saved' | 'idle',
+            status: 'saving' | 'offline' | 'error' | 'saved' | 'device-only',
             error?: string,
           ) {
             if (
               disposed ||
-              (!ids.length &&
-                !pintaPending.size &&
-                !(status === 'idle' && state.status === 'saved'))
+              (!ids.length && !pintaPending.size && !state.deviceOnly && status !== 'device-only')
             )
               return
             pintaPending = new Set(ids)
-            pintaQueueStatus = { status, lastError: error ?? null }
+            pintaQueueStatus = {
+              status: status === 'device-only' ? 'idle' : status,
+              lastError: error ?? null,
+            }
             for (const id of ids) seen.add(id)
             setState({
               ...pintaQueueStatus,
+              deviceOnly: status === 'device-only' ? true : undefined,
               ...(status === 'saved' ? { lastSavedAt: now() } : {}),
             })
             signalProgress()

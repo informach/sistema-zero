@@ -404,7 +404,7 @@ export function createCloudMirroredPintaPersistence(options: {
         return
       }
     }
-    if (!ids.size) cloud.reportPintaQueue([], recovered?.size ? 'idle' : 'saved')
+    if (!ids.size) cloud.reportPintaQueue([], recovered?.size ? 'device-only' : 'saved')
     else if (typeof navigator !== 'undefined' && !navigator.onLine)
       cloud.reportPintaQueue([...ids], 'offline')
     else if (error)

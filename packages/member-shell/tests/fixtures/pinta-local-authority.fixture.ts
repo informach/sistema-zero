@@ -24,6 +24,7 @@ import { freezeMapTilesets, freezeObjectResource } from '../../../pinta/src/tile
 import { addObjectLayer } from '../../../pinta/src/tiles/tilemapOps'
 import { remapTilesetConsumers } from '../../../pinta/src/tiles/tilesetConsumers'
 import { addTile, removeTile } from '../../../pinta/src/tiles/tilesetOps'
+import { cloudStatusView } from '../../src/lib/cloud-status'
 import type {
   CloudCreationSummary,
   CreationsCloud,
@@ -644,7 +645,16 @@ test('um escritor antigo pode editar depois do candidato e as duas versões são
     expect((await local.loadAssetById(sheet.id))?.name).toBe('pecas')
     expect((await local.loadAssetById(map.id))?.name).toBe('guardada')
     expect((await local.causal.inspect()).recovered?.size).toBe(2)
-    expect(reports.at(-1)).toEqual({ ids: [], status: 'idle' })
+    expect(reports.at(-1)).toEqual({ ids: [], status: 'device-only' })
+    expect(
+      cloudStatusView({
+        status: 'idle',
+        deviceOnly: true,
+        pending: 0,
+        lastSavedAt: null,
+        lastError: null,
+      })?.label,
+    ).toBe('Neste aparelho')
     expect(queued).toEqual([])
   } finally {
     wrapper.dispose?.()
