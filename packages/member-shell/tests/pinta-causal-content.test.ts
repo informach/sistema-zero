@@ -1,7 +1,9 @@
 import { expect, mock, test } from 'bun:test'
 import { createHash } from 'node:crypto'
 import { crc32, gzipSync } from 'node:zlib'
-import { assetToJson, createAsset } from '@sistemazero/pinta/assets'
+import { PINTA_CAUSAL_LIMITS } from '@sistemazero/core/creations/pinta-causal'
+import { assetToJson, createAsset, createMapObject } from '@sistemazero/pinta/assets'
+import { inspectPintaCausalDocument } from '@sistemazero/pinta/assets/causal'
 
 mock.module('server-only', () => ({}))
 
@@ -118,4 +120,51 @@ test('pre-abort cancels the blob body and never reports an invalid native docume
     readPintaCausalBlob(source, { ...identity, bytes: gzip.length }, AbortSignal.abort(reason)),
   ).rejects.toBe(reason)
   expect(source.canceled()).toBe(true)
+})
+
+test('the full manifest including its authored digest must fit the proof budget', async () => {
+  const map = createAsset({
+    kind: 'tilemap',
+    name: 'mapa-extenso',
+    tilesetId: 'ground',
+    cols: 1,
+    rows: 1,
+  })
+  if (map.kind !== 'tilemap') throw new Error('Fixture sem mapa')
+  const expected = { itemId: map.id, kind: map.kind, formatVersion: 6 }
+  const empty = inspectPintaCausalDocument(assetToJson(map), expected)!.manifest
+  const baseBytes = Buffer.byteLength(JSON.stringify(empty))
+  const entryOverhead = Buffer.byteLength(JSON.stringify({ id: '', roles: ['property'] })) + 1
+  const goal = PINTA_CAUSAL_LIMITS.manifestBytes - baseBytes - 5
+  const width = entryOverhead + 128
+  const count = Math.floor(goal / width)
+  const remainder = goal - count * width - entryOverhead
+  const lengths = Array<number>(count).fill(128)
+  if (remainder >= 8) lengths.push(remainder)
+  const objects = []
+  for (let offset = 0; offset < lengths.length; offset += 16)
+    objects.push(
+      createMapObject({
+        properties: Object.fromEntries(
+          lengths.slice(offset, offset + 16).map((length, index) => {
+            const prefix = `r${String(offset + index).padStart(5, '0')}`
+            return [`asset${index}`, { type: 'asset', value: prefix.padEnd(length, 'x') }]
+          }),
+        ),
+      }),
+    )
+  map.layers.push({ kind: 'objects', id: 'props', name: 'Objetos', visible: true, objects })
+  const encoded = assetToJson(map)
+  const admitted = inspectPintaCausalDocument(encoded, expected)!.manifest
+  expect(
+    PINTA_CAUSAL_LIMITS.manifestBytes - Buffer.byteLength(JSON.stringify(admitted)),
+  ).toBeLessThan(50)
+  const bytes = gzipSync(encoded)
+  await expect(
+    readPintaCausalBlob(blob(bytes, { step: 4096 }), {
+      ...expected,
+      bytes: bytes.length,
+      sha256: sha(bytes),
+    }),
+  ).rejects.toThrow('orçamento do manifesto')
 })

@@ -1,4 +1,5 @@
 import {
+  type PintaCausalAttestation,
   type PintaCausalManifest,
   type PintaCausalOperation,
   pintaCausalMaskFits,
@@ -10,6 +11,7 @@ import {
   type AnyTilesetAsset,
   isObjectLayer,
   isTilesetKind,
+  pintaAssetDependencyIds,
   remapTilemapTilesetIds,
   type TilemapResourceVersion,
   tilemapOfAsset,
@@ -17,6 +19,7 @@ import {
 import type { AuthorMap } from '../tiles/mapCellEdits'
 import { mapResourceSnapshotAsset } from '../tiles/resourceVersions'
 import { remapTileMetadata, tryRemapTilemapIndices } from '../tiles/tilesetOps'
+import { provePintaCausalRemovals } from './pintaCausalDetach'
 
 type RemapOperation = Extract<PintaCausalOperation, { type: 'remap' }>
 type Art = { assetId: string; tile?: number; animationId?: string }
@@ -239,12 +242,17 @@ export function provePintaCausalConsumerRemaps(
   after: PintaMemoryAsset,
   remaps: readonly SheetRemap[],
   pinBases: ReadonlyMap<string, AnyTilesetAsset> = new Map(),
-): { sheetId: string; mode: 'mapped' | 'pinned' }[] | null {
+): PintaCausalAttestation['transitions'] | null {
   const affected = affectedRemaps(before, remaps)
   if (!affected.length) return []
   let expected = tilemapOfAsset(before.asset)
   const proposed = tilemapOfAsset(after)
   if (!expected || !proposed) return null
+
+  const changes = new Map(affected.map(({ sheetId, operation }) => [sheetId, operation.oldToNew]))
+  const removals = provePintaCausalRemovals(expected, proposed, changes)
+  if (!removals) return null
+  expected = removals.map
 
   const snapshots = newSnapshotVersions(before.asset, after)
   const reserved = new Set([
@@ -254,10 +262,17 @@ export function provePintaCausalConsumerRemaps(
   ])
   const recognized = new Set<string>()
   const added = new Set<TilemapResourceVersion>()
-  const verified: { sheetId: string; mode: 'mapped' | 'pinned' }[] = []
+  // A new private id must not capture a property link from any sheet entering this map.
+  for (const sheet of pinBases.values())
+    for (const id of pintaAssetDependencyIds(sheet)) reserved.add(id)
+  const verified: PintaCausalAttestation['transitions'] = []
   for (const { sheetId, operation } of affected) {
     const source = pinBases.get(sheetId)
     recognized.add(sheetId)
+    if (removals.detached.has(sheetId)) {
+      verified.push({ sheetId, mode: 'detached' })
+      continue
+    }
     if (!source) {
       const result: ReturnType<typeof tryRemapTilemapIndices> = tryRemapTilemapIndices(
         expected,

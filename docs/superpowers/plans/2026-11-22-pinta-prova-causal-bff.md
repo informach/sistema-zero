@@ -23,7 +23,7 @@
 - [x] Provar apêndice pelo prefixo de posições, metadados e regras de animação existentes. Pintura usa posições declaradas na intenção e conserva a topologia. Verificar que dois arquivos com a mesma cardinalidade ou o mesmo conjunto de índices referenciados não certificam um remapeamento.
 - [x] Comparar `[A,B,C] → [B,C]` e um consumidor que desenha B. Exercitar uma transição incorreta com o mesmo bitset e o mesmo tamanho do resultado para a qual a prova deve falhar.
 
-- [x] Aplicar o remapeamento composto aos buffers e à arte com o mesmo redutor. Uma máscara declara quais posições finais sobreviventes receberam pintura. Uma versão privada só comprova a operação quando reproduz a folha-base selada e a troca canônica das referências. O modo de desligamento sem versão ainda requer sua própria prova.
+- [x] Aplicar o remapeamento composto aos buffers e à arte com o mesmo redutor. Uma máscara declara quais posições finais sobreviventes receberam pintura. Uma versão privada só comprova a operação quando reproduz a folha-base selada e a troca canônica das referências. A remoção de uma camada ou objeto consumidor usa o redutor do editor e respeita as travas do documento. O mapa restante ainda precisa corresponder integralmente à composição com o remapeamento.
 - [x] No desfazer, conferir o recibo histórico da unidade e o SHA exato da base atual. Conferir o gzip anterior ou a impressão autoral v1 do desenho reaberto, com timestamp de atualização raiz e embalagem de transporte fora da comparação.
 
 ## 4. Ligar cópia imutável, hash e atestado

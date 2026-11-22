@@ -9,9 +9,9 @@ import {
   type TilemapCells,
 } from '../core/project'
 import { CELL_FLIP_H, makeCell } from '../tiles/cell'
-import { createMapObject } from '../tiles/mapObjects'
+import { createMapObject, removeMapObject } from '../tiles/mapObjects'
 import { freezeMapTilesets } from '../tiles/resourceVersions'
-import { addLayer, addObjectLayer } from '../tiles/tilemapOps'
+import { addLayer, addObjectLayer, removeLayer } from '../tiles/tilemapOps'
 import { addTile, duplicateTile, remapTilemapCells, removeTile } from '../tiles/tilesetOps'
 import { assetToJson } from './assetJson'
 import { inspectPintaCausalDocument } from './pintaCausalManifest'
@@ -225,4 +225,111 @@ test('a composed move through another slot keeps art at effective zero', () => {
       },
     ]),
   ).toEqual([{ sheetId: tiles.id, mode: 'mapped' }])
+})
+
+test('proves removal of an identified layer or artwork while preserving other content', () => {
+  const tiles = sheet()
+  const source = addObjectLayer(
+    addLayer(
+      createTilemapAsset({ name: 'vila', tilesetId: tiles.id, cols: 2, rows: 1 }),
+      'consumidora',
+    ),
+    'Objetos',
+  )
+  const layer = source.layers.filter(isTileLayer)[1]!
+  layer.cells.set([makeCell(1, CELL_FLIP_H), -1])
+  const objects = source.layers.find(isObjectLayer)!
+  objects.objects.push(
+    createMapObject({ id: 'consumidor', shape: 'art', art: { assetId: tiles.id } }),
+    createMapObject({ id: 'visita', name: 'Visita', role: 'start' }),
+  )
+  const spec = { itemId: source.id, kind: source.kind, formatVersion: 6 }
+  const base = inspectPintaCausalDocument(assetToJson(source), spec)!
+  const remaps = [{ sheetId: tiles.id, operation: removeFirst }]
+  const withoutLayer = removeLayer(source, layer.id)
+  const detached = removeMapObject(withoutLayer, objects.id, 'consumidor')
+  expect(provePintaCausalConsumerRemaps(base, detached, remaps)).toEqual([
+    { sheetId: tiles.id, mode: 'detached' },
+  ])
+  expect(detached.layers.find(isObjectLayer)?.objects.map(({ id }) => id)).toEqual(['visita'])
+  expect(detached.tilesetId).toBe(tiles.id)
+
+  const mapped = remapTilemapCells(withoutLayer, { removedAt: 0 }, tiles.id)
+  expect(provePintaCausalConsumerRemaps(base, mapped, remaps)).toEqual([
+    { sheetId: tiles.id, mode: 'mapped' },
+  ])
+  expect(provePintaCausalConsumerRemaps(base, withoutLayer, remaps)).toBeNull()
+
+  const erased = structuredClone(source)
+  erased.layers.filter(isTileLayer)[1]!.cells.fill(-1)
+  erased.layers.find(isObjectLayer)!.objects.shift()
+  expect(provePintaCausalConsumerRemaps(base, erased, remaps)).toBeNull()
+
+  const wrong = structuredClone(detached)
+  wrong.layers.find(isObjectLayer)!.objects[0]!.x = 17
+  expect(provePintaCausalConsumerRemaps(base, wrong, remaps)).toBeNull()
+})
+
+test('a locked layer cannot become detached by omitting the authored object or layer', () => {
+  const tiles = sheet()
+  const map = addObjectLayer(
+    addLayer(
+      createTilemapAsset({ name: 'vila', tilesetId: tiles.id, cols: 2, rows: 1 }),
+      'consumidora',
+    ),
+    'Objetos',
+  )
+  const layer = map.layers.filter(isTileLayer)[1]!
+  layer.cells.set([1, -1])
+  layer.locked = true
+  const objects = map.layers.find(isObjectLayer)!
+  objects.locked = true
+  objects.objects.push(
+    createMapObject({ id: 'arte', shape: 'art', art: { assetId: tiles.id, tile: 1 } }),
+  )
+  const spec = { itemId: map.id, kind: map.kind, formatVersion: 6 }
+  const base = inspectPintaCausalDocument(assetToJson(map), spec)!
+  const remaps = [{ sheetId: tiles.id, operation: removeFirst }]
+  const withoutLayer = { ...map, layers: map.layers.filter(({ id }) => id !== layer.id) }
+  expect(provePintaCausalConsumerRemaps(base, withoutLayer, remaps)).toBeNull()
+  const withoutObject = structuredClone(map)
+  withoutObject.layers.find(isObjectLayer)!.objects.length = 0
+  expect(provePintaCausalConsumerRemaps(base, withoutObject, remaps)).toBeNull()
+})
+
+test('pinning refuses a private id that would capture a property link from the verified sheet', () => {
+  const tiles = sheet()
+  tiles.tileProperties = { 0: { treasure: { type: 'asset', value: 'recurso-publico' } } }
+  const map = createTilemapAsset({ name: 'vila', tilesetId: tiles.id, cols: 2, rows: 1 })
+  map.layers.find(isTileLayer)!.cells.set([1, -1])
+  const mapSpec = { itemId: map.id, kind: map.kind, formatVersion: 6 }
+  const source = inspectPintaCausalDocument(assetToJson(map), mapSpec)!
+  const oldSheet = inspectPintaCausalDocument(assetToJson(tiles), {
+    itemId: tiles.id,
+    kind: tiles.kind,
+    formatVersion: 6,
+  })?.asset
+  if (oldSheet?.kind !== 'tileset') throw new Error('Folha inválida')
+  const pin = {
+    ...map,
+    tilesetId: 'recurso-publico',
+    resources: [
+      {
+        capturedAt: 7,
+        sourceId: tiles.id,
+        asset: { ...tiles, id: 'recurso-publico' },
+      },
+    ],
+  }
+  const candidate = inspectPintaCausalDocument(assetToJson(pin), mapSpec)!
+  const remaps = [{ sheetId: tiles.id, operation: removeFirst }]
+  expect(candidate.manifest.refs).toEqual([])
+  expect(
+    provePintaCausalConsumerRemaps(
+      source,
+      candidate.asset,
+      remaps,
+      new Map([[tiles.id, oldSheet]]),
+    ),
+  ).toBeNull()
 })

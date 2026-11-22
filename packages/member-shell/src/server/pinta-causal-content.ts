@@ -2,7 +2,10 @@ import 'server-only'
 import { createHash } from 'node:crypto'
 import { crc32, createInflateRaw } from 'node:zlib'
 import { canonicalJson } from '@sistemazero/core/creations'
-import { PINTA_CAUSAL_LIMITS } from '@sistemazero/core/creations/pinta-causal'
+import {
+  PINTA_CAUSAL_LIMITS,
+  PintaCausalManifestSchema,
+} from '@sistemazero/core/creations/pinta-causal'
 import {
   inspectPintaCausalDocument,
   MAX_PINTA_CAUSAL_DOCUMENT_BYTES,
@@ -167,5 +170,8 @@ export async function readPintaCausalBlob(
       .update(canonicalJson({ version: 1, pinta: authorial }))
       .digest('hex'),
   }
-  return { asset, manifest: { ...manifest, authoredFingerprint }, sha256, gzip }
+  const complete = PintaCausalManifestSchema.safeParse({ ...manifest, authoredFingerprint })
+  if (!complete.success)
+    throw new PintaCausalUnverifiedContent('A prova do desenho excede o orçamento do manifesto.')
+  return { asset, manifest: complete.data, sha256, gzip }
 }
