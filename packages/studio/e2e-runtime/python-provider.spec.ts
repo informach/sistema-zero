@@ -489,7 +489,11 @@ test('Meus testes no Pygame Zero: chave, porta, vida, placar e fim', async ({ pa
   test.setTimeout(300_000)
   for (const item of PYTHON_CASES) {
     const outcome = await studentTest(page, 'classic-pgzeroCasos', item)
-    expect(outcome.status, item.name).toBe(item.status)
+    // O resultado inteiro no recado: esta suíte só roda no CI (o servidor de provas exige Bun 1.4
+    // no Windows), e "failed" sozinho não diz o que o programa fez.
+    expect(outcome.status, `${item.name}: ${JSON.stringify(outcome).slice(0, 800)}`).toBe(
+      item.status,
+    )
   }
   expect(await page.locator('iframe[title="Teste do programa"]').count()).toBe(0)
 })
@@ -500,6 +504,7 @@ test('Meus testes no Python: o programa que não compila conta o erro, e o que t
   test.setTimeout(240_000)
   const ponto = PYTHON_CASES[4]
   const quebrado = await studentTest(page, 'classic-pgzeroErroDeEscrita', ponto)
+  console.log(`[casos python] erro de escrita: ${JSON.stringify(quebrado).slice(0, 600)}`)
   // O mesmo caminho do JavaScript: o teste não passa e a observação traz o erro do programa (a aba
   // diz "o jogo deu erro durante o teste").
   expect(quebrado.status).toBe('failed')
@@ -509,7 +514,7 @@ test('Meus testes no Python: o programa que não compila conta o erro, e o que t
     expect(quebrado.observation.errors?.length ?? 0).toBeGreaterThan(0)
   }
   const travado = await studentTest(page, 'classic-pgzeroTrava', ponto)
-  expect(travado.status).toBe('timeout')
+  expect(travado.status, JSON.stringify(travado).slice(0, 800)).toBe('timeout')
   expect(await page.locator('iframe[title="Teste do programa"]').count()).toBe(0)
 })
 
