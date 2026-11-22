@@ -1,5 +1,7 @@
 import 'server-only'
 import {
+  PintaCausalArchiveItemSchema,
+  PintaCausalArchivePageSchema,
   PintaCausalAttestationSchema,
   PintaCausalBackfillAttestationSchema,
   PintaCausalReservePageSchema,
@@ -66,6 +68,14 @@ const EntryQuery = z.strictObject({
 const ReserveBody = PintaCausalReservePageSchema.refine(
   ({ reader }) => causalReader.safeParse(reader).success,
 )
+const ArchiveQuery = z
+  .strictObject({
+    epoch: causalEpoch.optional(),
+    cursor: causalItem.optional(),
+  })
+  .refine(({ epoch, cursor }) => !cursor || !!epoch)
+const ArchiveItemQuery = EntryQuery.omit({ reader: true })
+
 const StatusQuery = z.strictObject({ cursor: causalItem.optional() })
 const VerifyBody = z.strictObject({ itemId: causalItem })
 const BackfillBody = z.strictObject({
@@ -314,6 +324,49 @@ export function createPintaCausalRoutes({
             responseContentType: CREATION_BLOB_CONTENT_TYPE,
           })
           return reply({ entry, downloadUrl })
+        }),
+    },
+    pintaCausalArchive: {
+      GET: (req: Request) =>
+        authorized(req, false, async (actor) => {
+          const scope = query(req, ArchiveQuery)
+          if (!scope) return invalid()
+          const page = checked(
+            PintaCausalArchivePageSchema,
+            await internal(actor, 'graph/page', { ...scope, mode: 'archive' }),
+          )
+          if (scope.epoch !== undefined && page.archive.epoch !== scope.epoch) return wrongReply()
+          return reply(page)
+        }),
+    },
+    pintaCausalArchiveItem: {
+      GET: (req: Request, ctx: ItemContext) =>
+        authorized(req, false, async (actor) => {
+          const scope = query(req, ArchiveItemQuery)
+          const item = ActorItem.safeParse(await ctx.params)
+          if (!scope || !item.success) return invalid()
+          const { itemId } = item.data
+          const {
+            archive: { entry, storageRef },
+          } = checked(
+            PintaCausalArchiveItemSchema,
+            await internal(actor, 'graph/item', { ...scope, itemId, mode: 'archive' }),
+          )
+          if (
+            entry.itemId !== itemId ||
+            entry.revision !== scope.revision ||
+            !isPintaPointer(storageRef, actor, entry, true)
+          )
+            return wrongReply()
+          const download = await storage.presignGet(storageRef, {
+            expiresInSeconds: CREATION_GET_TTL_SECONDS,
+            responseContentType: CREATION_BLOB_CONTENT_TYPE,
+            responseContentDisposition: `attachment; filename="${itemId}-r${entry.revision}.pinta.json.gz"`,
+          })
+          return NextResponse.redirect(download, {
+            status: 303,
+            headers: { 'cache-control': 'private, no-store' },
+          })
         }),
     },
     pintaCausalReserve: {

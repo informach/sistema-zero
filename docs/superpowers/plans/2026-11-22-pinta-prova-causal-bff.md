@@ -21,11 +21,15 @@
 
 - [x] Com os dois desenhos validados, comprovar a mudança da folha e o efeito canônico no consumidor por `tryRemapTilemapCells`. A comparação inclui células, flags, arte e identidade do conjunto. A intenção vem do pedido preso à revisão e recebe prova apenas quando o resultado corresponde ao redutor. A leitura do histórico aplica o mesmo contrato.
 - [x] Provar apêndice pelo prefixo de posições, metadados e regras de animação existentes. Pintura usa posições declaradas na intenção e conserva a topologia. Verificar que dois arquivos com a mesma cardinalidade ou o mesmo conjunto de índices referenciados não certificam um remapeamento.
-- [ ] Comparar `[A,B,C] → [B,C]` e um consumidor que desenha B. Exercitar uma transição incorreta com o mesmo bitset e o mesmo tamanho do resultado para a qual a prova deve falhar.
+- [x] Comparar `[A,B,C] → [B,C]` e um consumidor que desenha B. Exercitar uma transição incorreta com o mesmo bitset e o mesmo tamanho do resultado para a qual a prova deve falhar.
 
 ## 4. Ligar cópia imutável, hash e atestado
 
 - [x] Em `packages/member-shell/src/server/pinta-causal-content.ts`, ler com `r2GetObjectUgc` somente uma chave devolvida pelo Members para a sessão. Conferir o comprimento da reserva, limitar a leitura, calcular SHA-256 do gzip e descomprimir com limite e UTF-8 fatal. Distinguir erro temporário do storage e revisão inválida/opaca.
-- [x] Em `packages/member-shell/src/routes/creations.ts` e na camada de cliente interno, assinar PUT de chave única com `criarUmaVez` e devolver os cabeçalhos obrigatórios. Obter bases e candidatas presas ao ticket. Usar HMAC para o atestado com namespace, opId, intentHash, nonce, revisões, chave, expiração, hash e resultado da extração. Recusar campos de confiança do navegador.
+- [x] Em `packages/member-shell/src/routes/pinta-causal.ts` e na camada de cliente interno, assinar PUT de chave única com `criarUmaVez` e devolver os cabeçalhos obrigatórios. Obter bases e candidatas presas ao ticket. Usar HMAC para o atestado com namespace, opId, intentHash, nonce, revisões, chave, expiração, hash e resultado da extração. Recusar campos de confiança do navegador.
 - [x] No backfill, só concluir quando o ponteiro corrente puder ser confirmado contra a cópia imutável da revisão. Para uma chave histórica gravável, selar exatamente o gzip verificado em chave privada e trocar o ponteiro sob CAS, ou comprovar que não restam URLs históricas de PUT válidas. O armazenamento da via causal mantém a reserva viva durante a prova e só recolhe chaves de tentativas descartadas.
 - [ ] Exercitar o fluxo com storage real antes de ativar. Intercalar a reserva, revogar o ticket, repetir o PUT com bytes iguais e diferentes e tentar confirmar com digest incorreto, posse divergente ou chave vencida. Com qualquer recusa, conferir que o ponteiro visível continua íntegro.
+
+## 5. Recuperar arquivos opacos
+
+- [x] Separar `GET /api/pinta/causal/archive` e `GET /api/pinta/causal/archive/items/:id` da captura normal. O primeiro devolve metadados sem atestar capacidade de leitura. O segundo assina exclusivamente o download do gzip original como anexo, com confirmação de sessão, epoch, item, revisão e chave da própria galeria. A recuperação não altera a revisão nem as marcas de sincronização.

@@ -90,6 +90,10 @@ function fixture(
   const calls: { path: string; body: unknown }[] = []
   const objects = new Map<string, Uint8Array>()
   const signing: Parameters<NonNullable<Dependencies['storage']>['presignPut']>[0][] = []
+  const downloads: {
+    key: string
+    options: Parameters<NonNullable<Dependencies['storage']>['presignGet']>[1]
+  }[] = []
   const responses = new Map<string, unknown>()
   const historical = creationStorageKey(userId, 'pinta', member.itemId, entry.revision)
   responses.set('units/reserve', {
@@ -166,10 +170,13 @@ function fixture(
         signing.push(input)
         return 'https://storage.example/put'
       },
-      presignGet: async () => 'https://storage.example/get',
+      presignGet: async (key, options) => {
+        downloads.push({ key, options })
+        return 'https://storage.example/get'
+      },
     },
   })
-  return { routes, calls, objects, responses, signing, historical }
+  return { routes, calls, objects, responses, signing, historical, downloads }
 }
 
 test('the private route scope rejects profile and audience drift before any upstream call', async () => {
@@ -382,4 +389,56 @@ test('the adult namespace signs the account actor and derives privilege from its
     privileged: true,
     payload: { reader: 7 },
   })
+})
+
+test('recovery includes opaque future items only through the explicit attachment path', async () => {
+  const { routes, responses, calls, historical, downloads } = fixture()
+  const future = { ...entry, formatVersion: 99, coverage: 'unknown' }
+  responses.set('graph/page', {
+    archive: { epoch: '8', requiredFormat: 99, nextCursor: null, entries: [future] },
+  })
+  responses.set('graph/item', { archive: { entry: future, storageRef: historical } })
+
+  const noDowngrade = await routes.pintaCausalGraph.GET(
+    new Request(`${link}/graph?reader=7&mode=archive`),
+  )
+  expect(noDowngrade.status).toBe(400)
+  expect(calls).toEqual([])
+
+  const page = await routes.pintaCausalArchive.GET(
+    new Request(`${link}/archive?epoch=8`, {
+      headers: { 'x-sz-viewer': userId, 'x-sz-viewer-audience': 'kids' },
+    }),
+  )
+  expect(page.status).toBe(200)
+  expect(await page.json()).toEqual({
+    archive: { epoch: '8', requiredFormat: 99, nextCursor: null, entries: [future] },
+  })
+  expect(calls[0]?.body).toMatchObject({ payload: { mode: 'archive', epoch: '8' } })
+
+  const request = () =>
+    routes.pintaCausalArchiveItem.GET(
+      new Request(`${link}/archive/items/${entry.itemId}?epoch=8&revision=1`),
+      { params: Promise.resolve({ itemId: entry.itemId }) },
+    )
+  const attachment = await request()
+  expect(attachment.status).toBe(303)
+  expect(attachment.headers.get('location')).toBe('https://storage.example/get')
+  expect(attachment.headers.get('cache-control')).toBe('private, no-store')
+  expect(downloads).toEqual([
+    {
+      key: historical,
+      options: {
+        expiresInSeconds: 300,
+        responseContentType: 'application/gzip',
+        responseContentDisposition: `attachment; filename="${entry.itemId}-r1.pinta.json.gz"`,
+      },
+    },
+  ])
+
+  responses.set('graph/item', {
+    archive: { entry: future, storageRef: creationStorageKey(accountId, 'pinta', entry.itemId, 1) },
+  })
+  expect((await request()).status).toBe(502)
+  expect(downloads).toHaveLength(1)
 })
