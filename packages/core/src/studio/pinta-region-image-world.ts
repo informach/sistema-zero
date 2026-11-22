@@ -4,6 +4,10 @@ import { pngBytes, readPngDimensions } from './pinta-png-binary'
 import { type PintaRegionImageData, readPintaRegionImageWorldMetadata } from './pinta-region-image'
 import {
   PINTA_REGION_IMAGE_PNG_LIMITS as limits,
+  PINTA_REGION_WORLD_BUDGET,
+  type PintaRegionImageMetadataBudget,
+  type PintaRegionWorldBudget,
+  validPintaRegionImageMetadataBudget,
   WORLD_BUDGET_MESSAGE,
 } from './pinta-region-image-limits'
 import { readPintaPngText } from './pinta-region-png-text'
@@ -30,32 +34,54 @@ function invalid(): never {
  * Complete metadata/index admission and encoded-image pixel budgets precede any engine allocation.
  * Source + scaled geometry must fit; the total counts each retained URL once, as runtime caches do.
  */
-export function readPintaRegionImageWorld(source: Uint8Array): {
+export function readPintaRegionImageWorld(
+  source: Uint8Array,
+  budget: PintaRegionWorldBudget = PINTA_REGION_WORLD_BUDGET,
+): {
   rootId: string
   maps: ReadonlyMap<string, PintaRegionWorldMap>
   images: ReadonlyMap<string, PintaRegionWorldImage>
   imagePixels: number
+  metadataBytes: number
+  indexBytes: number
 } {
-  const root = readPintaPngText(source)
+  const { imagePixels: maxImagePixels, ...metadata } = budget
+  if (
+    !validPintaRegionImageMetadataBudget(metadata) ||
+    !Number.isSafeInteger(maxImagePixels) ||
+    maxImagePixels < 0 ||
+    maxImagePixels > limits.totalImagePixels
+  )
+    throw new Error(WORLD_BUDGET_MESSAGE)
+  const root = readPintaPngText(source, metadata.metadataBytes)
   const covers = new Map<string, ReturnType<typeof readPintaPngText>>()
   let imagePixels = root.width * root.height
+  if (imagePixels > maxImagePixels) throw new Error(WORLD_BUDGET_MESSAGE)
   const countPixels = (pixels: number) => {
     imagePixels += pixels
-    if (imagePixels > limits.totalImagePixels) throw new Error(WORLD_BUDGET_MESSAGE)
+    if (imagePixels > maxImagePixels) throw new Error(WORLD_BUDGET_MESSAGE)
   }
   let sourceFailure: unknown
-  const data = readPintaRegionImageWorldMetadata(root.text, (descriptor, remaining) => {
-    try {
-      const captured = readPintaPngText(pngBytes(descriptor.png, limits), remaining)
-      countPixels(captured.width * captured.height)
-      covers.set(descriptor.id, captured)
-      return captured.text
-    } catch (error) {
-      sourceFailure = error
-      return null
-    }
-  })
-  if (!data) {
+  let usage: PintaRegionImageMetadataBudget | undefined
+  const data = readPintaRegionImageWorldMetadata(
+    root.text,
+    (descriptor, remaining) => {
+      try {
+        const captured = readPintaPngText(pngBytes(descriptor.png, limits), remaining)
+        countPixels(captured.width * captured.height)
+        covers.set(descriptor.id, captured)
+        return captured.text
+      } catch (error) {
+        sourceFailure = error
+        return null
+      }
+    },
+    metadata,
+    (reported) => {
+      usage = reported
+    },
+  )
+  if (!data || !usage) {
     if (sourceFailure !== undefined) throw sourceFailure
     invalid()
   }
@@ -94,5 +120,5 @@ export function readPintaRegionImageWorld(source: Uint8Array): {
       if (image.width !== art.width || image.height !== art.height) invalid()
     }
   }
-  return { rootId, maps, images, imagePixels }
+  return { rootId, maps, images, imagePixels, ...usage }
 }

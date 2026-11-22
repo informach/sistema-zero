@@ -56,6 +56,30 @@ test('captures a real two-map PNG world with signed regions and deduplicated res
   expect(result.maps.get('vila')!.png.buffer).not.toBe(original.buffer)
 })
 
+test('remaining world quotas accept the exact size and refuse the header before restoring cells', async () => {
+  const original = await embed()
+  const { metadataBytes, indexBytes, imagePixels } = readPintaRegionImageWorld(original)
+  const exact = { metadataBytes, indexBytes, imagePixels }
+  expect(readPintaRegionImageWorld(original, exact)).toMatchObject(exact)
+  for (const key of Object.keys(exact) as Array<keyof typeof exact>)
+    expect(() => readPintaRegionImageWorld(original, { ...exact, [key]: exact[key] - 1 })).toThrow()
+  for (const invalid of [-1, Number.NaN, Number.POSITIVE_INFINITY, Number.MAX_SAFE_INTEGER])
+    expect(() => readPintaRegionImageWorld(original, { ...exact, indexBytes: invalid })).toThrow()
+  const payload = scene().layers[0]!.cells.chunks[0]!.data
+  const atob = globalThis.atob
+  let indexDecodes = 0
+  globalThis.atob = (value) => {
+    if (value === payload) indexDecodes++
+    return atob(value)
+  }
+  try {
+    expect(() => readPintaRegionImageWorld(original, { ...exact, indexBytes: 0 })).toThrow()
+    expect(indexDecodes).toBe(0)
+  } finally {
+    globalThis.atob = atob
+  }
+})
+
 test('a corrupt late linked PNG refuses before decoding root cells and preserves its CRC failure', async () => {
   const root = scene(),
     child = await embed(scene('cabana')),

@@ -1,12 +1,16 @@
 /** Private PNG-5 metadata reader. Public recipes/runtime feature declarations stay unchanged. */
 import { z } from 'zod'
 import { PINTA_IMAGE_WORLD_LIMITS, PintaImageWorldSchema } from './pinta-image'
+import {
+  PINTA_REGION_WORLD_BUDGET,
+  type PintaRegionImageMetadataBudget,
+  validPintaRegionImageMetadataBudget,
+} from './pinta-region-image-limits'
 import { type PintaRegionScene, preparePintaRegionScene } from './pinta-region-scene'
 
 export const PINTA_REGION_IMAGE_DATA_VERSION = 5
-export const PINTA_REGION_IMAGE_MAX_JSON_BYTES = PINTA_IMAGE_WORLD_LIMITS.metadataBytes
-export const PINTA_REGION_IMAGE_MAX_INDEX_BYTES =
-  PINTA_IMAGE_WORLD_LIMITS.cells * Int16Array.BYTES_PER_ELEMENT
+export const PINTA_REGION_IMAGE_MAX_JSON_BYTES = PINTA_REGION_WORLD_BUDGET.metadataBytes
+export const PINTA_REGION_IMAGE_MAX_INDEX_BYTES = PINTA_REGION_WORLD_BUDGET.indexBytes
 
 const header = z.strictObject({
   format: z.literal('pinta'),
@@ -123,27 +127,34 @@ export function readPintaRegionImageWorldMetadata(
     map: Readonly<{ id: string; name: string; png: string }>,
     remainingMetadataBytes: number,
   ) => string | null,
+  budget: PintaRegionImageMetadataBudget = PINTA_REGION_WORLD_BUDGET,
+  reportUsage?: (usage: PintaRegionImageMetadataBudget) => void,
 ): ReadonlyMap<string, PintaRegionImageData> | null {
   try {
+    const { metadataBytes: maxMetadataBytes, indexBytes: maxIndexBytes } = budget
+    if (
+      !validPintaRegionImageMetadataBudget({
+        metadataBytes: maxMetadataBytes,
+        indexBytes: maxIndexBytes,
+      })
+    )
+      return null
     let metadataBytes = 0
     const admitText = (text: string): boolean => {
-      const remaining = PINTA_REGION_IMAGE_MAX_JSON_BYTES - metadataBytes
+      const remaining = maxMetadataBytes - metadataBytes
       if (typeof text !== 'string' || text.length > remaining) return false
       metadataBytes += new TextEncoder().encode(text).byteLength
-      return metadataBytes <= PINTA_REGION_IMAGE_MAX_JSON_BYTES
+      return metadataBytes <= maxMetadataBytes
     }
     if (!admitText(rootText)) return null
-    const root = preparePintaRegionImageData(rootText)
+    const root = preparePintaRegionImageData(rootText, maxIndexBytes)
     if (!root) return null
     const plans = [root]
     let indexBytes = root.indexBytes
     for (const descriptor of root.world?.maps ?? []) {
-      const text = resolveLinked(descriptor, PINTA_REGION_IMAGE_MAX_JSON_BYTES - metadataBytes)
+      const text = resolveLinked(descriptor, maxMetadataBytes - metadataBytes)
       if (text === null || !admitText(text)) return null
-      const plan = preparePintaRegionImageData(
-        text,
-        PINTA_REGION_IMAGE_MAX_INDEX_BYTES - indexBytes,
-      )
+      const plan = preparePintaRegionImageData(text, maxIndexBytes - indexBytes)
       if (
         !plan ||
         plan.world ||
@@ -161,6 +172,7 @@ export function readPintaRegionImageWorldMetadata(
       if (!data) return null
       result.set(plan.id, data)
     }
+    reportUsage?.({ metadataBytes, indexBytes })
     return result
   } catch {
     return null

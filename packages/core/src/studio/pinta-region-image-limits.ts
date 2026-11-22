@@ -12,3 +12,28 @@ export const PINTA_REGION_IMAGE_PNG_LIMITS = Object.freeze({
 
 export const WORLD_BUDGET_MESSAGE =
   'Este cenário ficou grande demais para este ambiente. Diminua a escala ou use desenhos menores.'
+
+export interface PintaRegionImageMetadataBudget {
+  metadataBytes: number
+  indexBytes: number
+}
+export interface PintaRegionWorldBudget extends PintaRegionImageMetadataBudget {
+  imagePixels: number
+}
+
+export const PINTA_REGION_WORLD_BUDGET: Readonly<PintaRegionWorldBudget> = Object.freeze({
+  metadataBytes: PINTA_IMAGE_WORLD_LIMITS.metadataBytes,
+  indexBytes: PINTA_IMAGE_WORLD_LIMITS.cells * Int16Array.BYTES_PER_ELEMENT,
+  imagePixels: PINTA_IMAGE_WORLD_LIMITS.totalImagePixels,
+})
+
+export function validPintaRegionImageMetadataBudget(
+  budget: PintaRegionImageMetadataBudget,
+): boolean {
+  return (['metadataBytes', 'indexBytes'] as const).every(
+    (key) =>
+      Number.isSafeInteger(budget[key]) &&
+      budget[key] >= 0 &&
+      budget[key] <= PINTA_REGION_WORLD_BUDGET[key],
+  )
+}
