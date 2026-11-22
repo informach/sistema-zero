@@ -1,18 +1,8 @@
 import * as Blockly from 'blockly/core'
-import {
-  appendToPythonAreaFrame,
-  ensurePythonAreaFrame,
-  isPythonAreaFrame,
-  pythonAreaFrames,
-} from './areaFrames'
+import { pythonAreaAcceptsStack } from './areaConnectionChecker'
+import { ensurePythonAreaFrame, isPythonAreaFrame, pythonAreaFrames } from './areaFrames'
+import { appendBeforePythonGameSwitch, pythonWantedArea } from './areaOrganize'
 import { PYTHON_AREA_BY_KIND, PYTHON_AREAS, type PythonAreaKind } from './areas'
-
-/** Quais áreas aceitam esta pilha solta (o editor dá a regra de arraste; sem ela, só o Ao iniciar). */
-export type PythonAreaAcceptance = (block: Blockly.Block, kind: PythonAreaKind) => boolean
-let acceptance: PythonAreaAcceptance = (_block, kind) => kind === 'start'
-export function setPythonAreaAcceptance(rule: PythonAreaAcceptance) {
-  acceptance = rule
-}
 
 function grouped(run: () => void) {
   const group = Blockly.Events.getGroup()
@@ -25,8 +15,9 @@ function grouped(run: () => void) {
 }
 
 /**
- * "Mover este bloco para Rascunhos" dentro das áreas; "Inserir no final de <área>" numa pilha
- * solta. Os dois são um passo só de desfazer.
+ * "Levar para <área>" no bloco que ficou fora da área dele (a nota explica por quê); "Mover
+ * este bloco para Rascunhos" dentro das áreas; "Inserir no final de <área>" numa pilha solta.
+ * Todos são um passo só de desfazer e entram antes do bloco que liga ou desliga o jogo.
  */
 export function pythonAreaContextMenu(
   block: Blockly.BlockSvg,
@@ -35,6 +26,21 @@ export function pythonAreaContextMenu(
   const workspace = block.workspace
   if (workspace.isReadOnly() || !block.isEditable() || isPythonAreaFrame(block)) return
   const root = block.getRootBlock()
+  const wanted = pythonWantedArea(block)
+  if (wanted && isPythonAreaFrame(block.getSurroundParent())) {
+    options.push({
+      scope: { block, focusedNode: block },
+      weight: 104,
+      enabled: true,
+      text: `Levar para ${PYTHON_AREA_BY_KIND.get(wanted)!.title}`,
+      callback() {
+        grouped(() => {
+          block.unplug(true)
+          appendBeforePythonGameSwitch(ensurePythonAreaFrame(workspace, wanted), block)
+        })
+      },
+    })
+  }
   if (isPythonAreaFrame(root)) {
     options.push({
       scope: { block, focusedNode: block },
@@ -61,7 +67,7 @@ export function pythonAreaContextMenu(
     return
   }
   PYTHON_AREAS.forEach((area, index) => {
-    if (!acceptance(block, area.kind)) return
+    if (!pythonAreaAcceptsStack(block, area.kind)) return
     options.push({
       scope: { block, focusedNode: block },
       weight: 105 + index / 10,
@@ -70,7 +76,7 @@ export function pythonAreaContextMenu(
       callback() {
         grouped(() => {
           const frame = frames.get(area.kind) ?? ensurePythonAreaFrame(workspace, area.kind)
-          appendToPythonAreaFrame(frame, block)
+          appendBeforePythonGameSwitch(frame, block)
         })
       },
     })

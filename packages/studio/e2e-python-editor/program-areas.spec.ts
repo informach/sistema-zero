@@ -23,6 +23,25 @@ const drafts = (page: Page, count: number) =>
   page.getByRole('button', { name: new RegExp(`^Rascunhos ${count}\\.`) })
 const closeFunctions = (page: Page) =>
   page.getByRole('button', { name: 'Fechar as funções', exact: true })
+/** Espera o arquivo parar de mudar (o organizar e o commit dele terminaram). */
+async function settle(read: () => Promise<string | undefined>) {
+  let last: string | undefined
+  await expect
+    .poll(
+      async () => {
+        const now = await read()
+        const same = now !== undefined && now === last
+        last = now
+        return same
+      },
+      { intervals: [700], timeout: 30_000 },
+    )
+    .toBe(true)
+}
+const START = '# ⚙️ Ao iniciar'
+const MOLDS = '# 🧩 Meus moldes'
+const blocksSurface = (page: Page) =>
+  page.locator('section[aria-label="Editor de blocos Python"] .blocklySvg')
 
 test('program scratch survives Monaco edits and source undo with its identity and fields intact', async ({
   page,
@@ -82,7 +101,7 @@ test('program index opens a secondary scratch class and nested functions without
   await drafts(page, 2).click()
   await expect(jumpButton(page)).toBeVisible()
   await jumpButton(page).click()
-  await page.getByRole('searchbox', { name: 'Procurar uma função ou classe' }).fill('passo')
+  await page.getByRole('searchbox', { name: 'Procurar uma área, função ou classe' }).fill('passo')
   await goTo(page, 'Rascunho · Função passo')
   const literal = page.locator('.blocklyTextInputField').filter({ hasText: /^73$/ })
   await expect(literal).toBeVisible()
@@ -129,6 +148,10 @@ test('Pac-Man program areas reveal editable functions and persist non-executable
         throw new Error('Expected Python classic')
       return project.files['main.py']!
     })
+  // O exemplo se organiza pelas áreas no primeiro clique nos blocos (22/11/2026): a régua é o
+  // arquivo depois disso (com os exemplos já convertidos, o clique não muda nada).
+  await blocksSurface(page).click({ position: { x: 10, y: 200 } })
+  await settle(source)
   const original = await source()
   const savedProgram = () => page.evaluate(() => studioFreeProbe.savedProgramArea('main.py'))
   // Opening an example alone persists the areas (22/11/2026: the six `sz_py_area_<kind>` replaced
@@ -152,7 +175,9 @@ test('Pac-Man program areas reveal editable functions and persist non-executable
   await expect.poll(async () => (await state()).mounted).toBe(overview)
   await expect.poll(source).toBe(original)
   await jumpButton(page).click()
-  await page.getByRole('searchbox', { name: 'Procurar uma função ou classe' }).fill('atualizar')
+  await page
+    .getByRole('searchbox', { name: 'Procurar uma área, função ou classe' })
+    .fill('atualizar')
   // "Programa inteiro" fica sempre na lista; a busca deixa só a função que casa.
   await expect(jumpList(page).getByRole('button')).toHaveCount(2)
   await goTo(page, 'Função atualizar(tempo)')
@@ -235,18 +260,19 @@ test('program statements move to scratch and back with undo and redo', async ({ 
   const assignment = seven.locator('xpath=ancestor::*[@data-id][2]')
   await assignment.click({ button: 'right', position: { x: 8, y: 10 } })
   await page.getByRole('menuitem', { name: 'Mover este bloco para Rascunhos', exact: true }).click()
-  await expect.poll(source).toBe('print(x)\n')
+  // Todo gesto escreve o comentário da área que tem linhas (áreas do projeto, 22/11/2026).
+  await expect.poll(source).toBe(`${START}\nprint(x)\n`)
   await expect(drafts(page, 1)).toBeEnabled()
   await page.keyboard.press('Control+z')
-  await expect.poll(source).toBe('x = 7\nprint(x)\n')
+  await expect.poll(source).toBe(`${START}\nx = 7\nprint(x)\n`)
   await page.keyboard.press('Control+Shift+z')
-  await expect.poll(source).toBe('print(x)\n')
+  await expect.poll(source).toBe(`${START}\nprint(x)\n`)
   await drafts(page, 1).click()
   await assignment.click({ button: 'right', position: { x: 8, y: 10 } })
   await page
     .getByRole('menuitem', { name: 'Inserir no final de ⚙️ Ao iniciar', exact: true })
     .click()
-  await expect.poll(source).toBe('print(x)\nx = 7\n')
+  await expect.poll(source).toBe(`${START}\nprint(x)\nx = 7\n`)
   await expect(drafts(page, 0)).toBeDisabled()
 })
 
@@ -261,7 +287,8 @@ test('program navigation and Ponte reveal nested class and function bodies witho
   await page.evaluate((source) => pythonBridgeProbe.replaceSavedSource(source), source)
   await expect(jumpButton(page)).toBeVisible({ timeout: 20_000 })
   await jumpButton(page).click()
-  await expect(jumpList(page).getByRole('button')).toHaveCount(4)
+  // Programa inteiro, 🧩 Meus moldes (Classe Nave, Função mover, Função passo) e ⚙️ Ao iniciar.
+  await expect(jumpList(page).getByRole('button')).toHaveCount(6)
   await page.keyboard.press('Escape')
   const literal = page.locator('.blocklyTextInputField').filter({ hasText: /^73$/ })
   await expect(literal).toHaveCount(0)
@@ -295,4 +322,49 @@ test('program navigation and Ponte reveal nested class and function bodies witho
   const header = page.getByRole('group', { name: 'Arquivo e partes do programa' })
   expect(await header.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true)
   await page.screenshot({ path: testInfo.outputPath('nested-program-narrow.png') })
+})
+
+test('o código que veio de fora se organiza no primeiro clique nos blocos, e o desfazer volta', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await page.waitForFunction(() => !!globalThis.pythonBridgeProbe)
+  await page.evaluate(() => pythonBridgeProbe.create())
+  const typed = 'print(1)\ndef pular():\n    pass\n'
+  await page.evaluate((value) => pythonBridgeProbe.replaceSavedSource(value), typed)
+  const source = () => page.evaluate(() => pythonBridgeProbe.state().source)
+  await expect(page.locator('.sz_py_area_start')).toBeVisible({ timeout: 20_000 })
+  // Enquanto a criança não volta para os blocos, o arquivo fica como ela escreveu.
+  expect(await source()).toBe(typed)
+  await blocksSurface(page).click({ position: { x: 10, y: 200 } })
+  await expect
+    .poll(source)
+    .toMatch(new RegExp(`^${MOLDS}\ndef pular\\(\\):\n {4}pass\n+${START}\nprint\\(1\\)\n$`))
+  await page.keyboard.press('Control+z')
+  await expect.poll(source).toBe(`${START}\n${typed}`)
+  // "Organizar blocos" no menu do espaço dos blocos faz o mesmo, a qualquer hora.
+  await blocksSurface(page).click({ button: 'right', position: { x: 10, y: 200 } })
+  await page.getByRole('menuitem', { name: 'Organizar blocos', exact: true }).click()
+  await expect.poll(source).toMatch(new RegExp(`^${MOLDS}\ndef pular`))
+})
+
+test('a linha que não pode ir para a área dela fica no Ao iniciar, com nota e "Levar para"', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await page.waitForFunction(() => !!globalThis.pythonBridgeProbe)
+  await page.evaluate(() => pythonBridgeProbe.create())
+  // A classe usa `largura` logo que é criada: subir para Meus moldes mudaria o programa.
+  const typed = 'largura = int(input())\nclass Nave:\n    x = largura\n'
+  await page.evaluate((value) => pythonBridgeProbe.replaceSavedSource(value), typed)
+  const source = () => page.evaluate(() => pythonBridgeProbe.state().source)
+  const klass = page.locator('.sz_py_class').first()
+  await expect(klass).toBeVisible({ timeout: 20_000 })
+  await blocksSurface(page).click({ position: { x: 10, y: 200 } })
+  // A nota (aviso do Blockly) explica por quê; o arquivo não muda.
+  await expect(klass.locator('.blocklyIconGroup')).toHaveCount(1)
+  expect(await source()).toBe(typed)
+  await klass.click({ button: 'right', position: { x: 8, y: 10 } })
+  await page.getByRole('menuitem', { name: 'Levar para 🧩 Meus moldes', exact: true }).click()
+  await expect.poll(source).toMatch(new RegExp(`^${MOLDS}\nclass Nave:`))
 })

@@ -181,7 +181,12 @@ function registerOrganizeContextMenu(): void {
     scopeType: Blockly.ContextMenuRegistry.ScopeType.WORKSPACE,
     displayText: () => 'Organizar blocos',
     preconditionFn: (scope) =>
-      (scope.workspace?.getTopBlocks(false).length ?? 0) > 0 ? 'enabled' : 'disabled',
+      // O editor Python tem o próprio "Organizar blocos" (pelas áreas do projeto Python).
+      (scope.workspace as { __szOrganizePython?: unknown } | undefined)?.__szOrganizePython
+        ? 'hidden'
+        : (scope.workspace?.getTopBlocks(false).length ?? 0) > 0
+          ? 'enabled'
+          : 'disabled',
     callback: (scope) => organizeBlocks(scope.workspace),
   })
 }

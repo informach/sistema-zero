@@ -116,6 +116,38 @@ test('editar outra linha não mexe num programa que já vinha com algo depois do
   expect(JSON.stringify(program())).toBe(before)
 })
 
+test('o "guardar" que entra em Configurações com nome minúsculo ganha MAIÚSCULAS', async () => {
+  open([expression(call(name('print'), [integer('1')]))], ['start'])
+  Blockly.Events.disable()
+  let stack: Blockly.Block
+  try {
+    pythonVisualToWorkspace(
+      pythonASTToVisual(
+        moduleNode([
+          node('Assign', {
+            targets: [name('vidas', 'Store')],
+            value: integer('3'),
+            type_comment: null,
+          }),
+        ]),
+      ),
+      ws,
+    )
+    stack = ws.getTopBlocks(false).find((block) => block.type === 'sz_py_assign')!
+  } finally {
+    Blockly.Events.enable()
+  }
+  appendToPythonAreaFrame(ensurePythonAreaFrame(ws, 'settings'), stack)
+  await tick()
+  await tick()
+  expect(String(stack.getInputTargetBlock('TARGET')!.getFieldValue('NAME'))).toBe('VIDAS')
+  // Trocar o nome dentro de Configurações: ao terminar de digitar, MAIÚSCULAS de novo.
+  stack.getInputTargetBlock('TARGET')!.setFieldValue('tempo', 'NAME')
+  await tick()
+  await tick()
+  expect(String(stack.getInputTargetBlock('TARGET')!.getFieldValue('NAME'))).toBe('TEMPO')
+})
+
 test('a guarda ignora a carga (blocos criados sem evento)', async () => {
   open([show(1)], ['start'])
   Blockly.Events.disable()

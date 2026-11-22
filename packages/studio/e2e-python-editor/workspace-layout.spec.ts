@@ -39,6 +39,23 @@ test('Pac-Man layout drag, undo, redo and reopen preserve the exact Python sourc
         throw new Error('Expected Python Classic')
       return project.files['main.py']
     })
+  // O exemplo se organiza pelas áreas no primeiro clique nos blocos (22/11/2026): a régua é o
+  // arquivo depois disso (com os exemplos já convertidos, o clique não muda nada).
+  await page
+    .locator('section[aria-label="Editor de blocos Python"] .blocklySvg')
+    .click({ position: { x: 10, y: 200 } })
+  let last: string | undefined
+  await expect
+    .poll(
+      async () => {
+        const now = await source()
+        const same = now !== undefined && now === last
+        last = now
+        return same
+      },
+      { intervals: [700], timeout: 30_000 },
+    )
+    .toBe(true)
   const original = await source()
   const id = await page.evaluate(() => studioFreeProbe.focusProgramRoot())
   const root = page.locator(`[data-id="${id}"]`)

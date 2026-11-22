@@ -1,5 +1,11 @@
 import * as Blockly from 'blockly/core'
-import { orderedPythonAreaFrames, PYTHON_AREA_INPUT, pythonScratchRoots } from './areaFrames'
+import {
+  orderedPythonAreaFrames,
+  PYTHON_AREA_INPUT,
+  pythonAreaKindOf,
+  pythonScratchRoots,
+} from './areaFrames'
+import { PYTHON_AREA_BY_KIND, PYTHON_COLLAPSIBLE_HAT_CODECS } from './areas'
 
 const definitions = new Set([
   'sz_py_def',
@@ -8,6 +14,25 @@ const definitions = new Set([
   'sz_py_decorated_function',
   'sz_py_decorated_class',
 ])
+/** O laço do Pygame-ce (`while` de topo na área do laço) também abre e fecha como um chapéu. */
+const LOOP_STATEMENTS = new Set(['sz_py_forever', 'sz_py_while'])
+
+/**
+ * Abre e fecha como as funções ("Fechar as funções", o "Ir para"): definições e os blocos de
+ * evento e de laço das áreas do projeto.
+ */
+function isCollapsible(block: Blockly.Block) {
+  if (definitions.has(block.type) || PYTHON_COLLAPSIBLE_HAT_CODECS.has(block.type)) return true
+  return LOOP_STATEMENTS.has(block.type) && pythonAreaKindOf(block.getSurroundParent()) === 'loops'
+}
+
+/** O nome de um chapéu de evento ou de laço na lista: o título do bloco e o nome, se tiver. */
+function hatLabel(block: Blockly.Block) {
+  const title = String(block.getFieldValue('PYTHON_TITLE') ?? '').trim()
+  const name = String(block.getFieldValue('NAME') ?? '').trim()
+  return [title || 'bloco', name].filter(Boolean).join(' ')
+}
+
 export interface PythonProgramEntry {
   id: string
   label: string
@@ -30,7 +55,7 @@ export function createPythonProgramNavigation(
   let revision = 0
   let revealRevision = 0
   let lastState = ''
-  const blocks = () => workspace.getAllBlocks(false).filter((block) => definitions.has(block.type))
+  const blocks = () => workspace.getAllBlocks(false).filter(isCollapsible)
   function restore() {
     revealRevision++
     for (const [id, { svg, parent }] of detached) {
@@ -53,6 +78,14 @@ export function createPythonProgramNavigation(
     const visit = (first: Blockly.Block | null, depth: number, scratch = false) => {
       for (let block = first; block; block = block.getNextBlock()) {
         const definition = definitions.has(block.type)
+        const hat = !definition && isCollapsible(block)
+        if (hat)
+          entries.push({
+            id: block.id,
+            depth,
+            label: `${scratch ? 'Rascunho · ' : ''}${hatLabel(block)}`,
+            expanded: !block.isCollapsed(),
+          })
         if (definition) {
           const name = String(
             block.getFieldValue('NAME') ?? block.getFieldValue('name') ?? '',
@@ -67,10 +100,24 @@ export function createPythonProgramNavigation(
         }
         for (const input of block.inputList)
           if (input.type === Blockly.inputs.inputTypes.STATEMENT)
-            visit(input.connection?.targetBlock() ?? null, depth + (definition ? 1 : 0), scratch)
+            visit(
+              input.connection?.targetBlock() ?? null,
+              depth + (definition || hat ? 1 : 0),
+              scratch,
+            )
       }
     }
-    for (const frame of frames) visit(frame.getInputTargetBlock(PYTHON_AREA_INPUT), 0)
+    // Cada área (na ordem do arquivo) e, dentro dela, as funções, classes e chapéus.
+    for (const frame of frames) {
+      const kind = pythonAreaKindOf(frame)
+      entries.push({
+        id: frame.id,
+        depth: 0,
+        label: kind ? PYTHON_AREA_BY_KIND.get(kind)!.title : 'Área',
+        expanded: !frame.isCollapsed(),
+      })
+      visit(frame.getInputTargetBlock(PYTHON_AREA_INPUT), 1)
+    }
     const scratch = pythonScratchRoots(workspace)
     for (const root of scratch) visit(root, 0, true)
     const state = { entries, scratch: scratch.length }
@@ -91,7 +138,7 @@ export function createPythonProgramNavigation(
         continue
       }
       const parent = block?.getSurroundParent()
-      if (!parent || !definitions.has(parent.type) || !parent.isCollapsed()) {
+      if (!parent || !isCollapsible(parent) || !parent.isCollapsed()) {
         if (!item.svg.parentNode)
           (block.getParent()?.getSvgRoot() ?? workspace.getCanvas()).appendChild(item.svg)
         detached.delete(id)
@@ -117,7 +164,7 @@ export function createPythonProgramNavigation(
     const target = id ? workspace.getBlockById(id) : undefined
     const open = new Set<string>()
     for (let block: Blockly.Block | null = target ?? null; block; block = block.getSurroundParent())
-      if (definitions.has(block.type)) open.add(block.id)
+      if (isCollapsible(block)) open.add(block.id)
     Blockly.Events.disable()
     try {
       for (const block of blocks()) block.setCollapsed(!open.has(block.id))

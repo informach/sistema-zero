@@ -86,6 +86,24 @@ function isTerminal(block: Blockly.Block, rules: AreaRules) {
   return value
 }
 
+/** O bloco do nome de um "guardar" com nome minúsculo (o que vira MAIÚSCULO em 🎛️). */
+export function pythonSettingNameBlock(block: Blockly.Block): Blockly.Block | undefined {
+  if (block.type !== 'sz_py_assign') return undefined
+  const target = block.getInputTargetBlock('TARGET')
+  const name = target?.getField('NAME') ? String(target.getFieldValue('NAME')) : ''
+  return target && name && name !== name.toUpperCase() ? target : undefined
+}
+
+export function pythonNameUsedElsewhere(target: Blockly.Block) {
+  const name = String(target.getFieldValue('NAME'))
+  return target.workspace
+    .getAllBlocks(false)
+    .some(
+      (other) =>
+        other !== target && other.getField('NAME') && String(other.getFieldValue('NAME')) === name,
+    )
+}
+
 /** O bloco cabe nesta área? (O nome de uma configuração ganha maiúsculas ao entrar.) */
 function blockFits(block: Blockly.Block, kind: PythonAreaKind, rules: AreaRules): boolean {
   if (kind === 'start') return true
@@ -93,7 +111,13 @@ function blockFits(block: Blockly.Block, kind: PythonAreaKind, rules: AreaRules)
   const cached = rules.cache.get(key)
   if (cached !== undefined) return cached
   let statement = pythonBlockStatement(block, rules.codecs)
-  // "guardar" de nome minúsculo entra em 🎛️ (o editor troca o nome para maiúsculas).
+  // "guardar" de nome minúsculo entra em 🎛️ (o editor troca o nome para maiúsculas), mas só se
+  // o nome não for usado em outro lugar: trocar só ele mudaria o programa.
+  const settingName = pythonSettingNameBlock(block)
+  if (kind === 'settings' && settingName && pythonNameUsedElsewhere(settingName)) {
+    rules.cache.set(key, false)
+    return false
+  }
   if (kind === 'settings' && statement?.kind === 'Assign') {
     const target = Array.isArray(statement.fields.targets) ? statement.fields.targets[0] : undefined
     if (target && typeof target === 'object' && 'kind' in target && target.kind === 'Name') {
@@ -114,6 +138,15 @@ function blockFits(block: Blockly.Block, kind: PythonAreaKind, rules: AreaRules)
     })
   rules.cache.set(key, fits)
   return fits
+}
+
+/** A pilha que começa em `first` cabe inteira nesta área? (Sem a regra ligada: só o Ao iniciar.) */
+export function pythonAreaAcceptsStack(first: Blockly.Block, kind: PythonAreaKind): boolean {
+  const rules = rulesOf.get(first.workspace)
+  if (!rules) return kind === 'start'
+  for (let block: Blockly.Block | null = first; block; block = block.getNextBlock())
+    if (!blockFits(block, kind, rules)) return false
+  return true
 }
 
 /** A área em que a conexão alvo põe a pilha, ou undefined fora das áreas (rascunho, função). */

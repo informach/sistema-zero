@@ -11,7 +11,11 @@
  */
 import * as Blockly from 'blockly/core'
 import { isWorkspaceLoading } from '../../blockly/loadFence'
-import { isPythonGameSwitchBlock } from './areaConnectionChecker'
+import {
+  isPythonGameSwitchBlock,
+  pythonNameUsedElsewhere,
+  pythonSettingNameBlock,
+} from './areaConnectionChecker'
 import {
   appendToPythonAreaFrame,
   executablePythonAreaFrames,
@@ -72,12 +76,39 @@ export function keepPythonGameSwitchAtTheEnd(workspace: Blockly.Workspace): bool
   return true
 }
 
+/**
+ * O "guardar" que entrou em 🎛️ Configurações com nome minúsculo ganha o nome em MAIÚSCULAS (o
+ * arraste só deixa entrar quando o nome não é usado em outro lugar). Devolve se trocou algum.
+ */
+export function uppercasePythonSettingNames(
+  workspace: Blockly.Workspace,
+  ids: ReadonlySet<string>,
+) {
+  let changed = false
+  const visit = (block: Blockly.Block) => {
+    const target = pythonSettingNameBlock(block)
+    if (!target || pythonNameUsedElsewhere(target)) return
+    target.setFieldValue(String(target.getFieldValue('NAME')).toUpperCase(), 'NAME')
+    changed = true
+  }
+  for (const id of ids) {
+    let block = workspace.getBlockById(id)
+    // O nome digitado: o bloco do nome dentro do "guardar".
+    if (block && block.getParent()?.type === 'sz_py_assign') block = block.getParent()
+    if (!block || pythonAreaKindOf(block.getSurroundParent()) !== 'settings') continue
+    for (let current: Blockly.Block | null = block; current; current = current.getNextBlock())
+      visit(current)
+  }
+  return changed
+}
+
 /** Liga as guardas neste workspace; devolve como desligar. */
 export function attachPythonAreaGuards(workspace: Blockly.Workspace): () => void {
   let active = true
   let queued = false
   let group = ''
   let moved = new Set<string>()
+  let renamed = new Set<string>()
   /** O gesto mexeu num bloco que liga ou desliga o jogo (ele ou alguém da pilha dele)? */
   const movedSwitch = (ids: ReadonlySet<string>) =>
     [...ids].some((id) => {
@@ -93,11 +124,14 @@ export function attachPythonAreaGuards(workspace: Blockly.Workspace): () => void
     if ((workspace as Partial<Blockly.WorkspaceSvg>).isDragging?.()) return
     const ids = moved
     moved = new Set()
+    const names = renamed
+    renamed = new Set()
     const previous = Blockly.Events.getGroup()
     // O conserto entra no MESMO passo de desfazer do gesto que o pediu.
     Blockly.Events.setGroup(group || true)
     try {
       enforceUniquePythonAreas(workspace)
+      uppercasePythonSettingNames(workspace, new Set([...ids, ...names]))
       if (movedSwitch(ids)) keepPythonGameSwitchAtTheEnd(workspace)
     } finally {
       Blockly.Events.setGroup(previous)
@@ -105,10 +139,18 @@ export function attachPythonAreaGuards(workspace: Blockly.Workspace): () => void
   }
   const listener = (event: Blockly.Events.Abstract) => {
     if (event.isUiEvent || !event.recordUndo || isWorkspaceLoading()) return
-    if (event.type !== Blockly.Events.BLOCK_CREATE && event.type !== Blockly.Events.BLOCK_MOVE)
-      return
     const blockId = (event as Blockly.Events.BlockBase).blockId
-    if (blockId) moved.add(blockId)
+    if (event.type === Blockly.Events.BLOCK_CHANGE) {
+      // A criança terminou de digitar o nome de um "guardar" (ele vira MAIÚSCULO em 🎛️).
+      const change = event as Blockly.Events.BlockChange
+      if (change.element !== 'field' || change.name !== 'NAME' || !blockId) return
+      renamed.add(blockId)
+    } else if (
+      event.type === Blockly.Events.BLOCK_CREATE ||
+      event.type === Blockly.Events.BLOCK_MOVE
+    ) {
+      if (blockId) moved.add(blockId)
+    } else return
     group = event.group
     if (queued) return
     queued = true

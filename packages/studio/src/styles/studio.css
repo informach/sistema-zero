@@ -2485,7 +2485,8 @@
 }
 /* A área amarela ("Quando acontecer", #eab308) com letra escura: branco sobre amarelo dava ~2:1.
    O tipo do bloco é classe do SVG dele; o `>` pega só o cabeçalho, não os blocos de dentro. */
-.sz_frame_events > .blocklyLabelField > .blocklyText {
+.sz_frame_events > .blocklyLabelField > .blocklyText,
+.sz_py_area_events > .blocklyLabelField > .blocklyText {
   fill: #3a2a00;
 }
 /* A grade segue o tema também quando ele muda com o editor aberto (a cor da injeção fica). */

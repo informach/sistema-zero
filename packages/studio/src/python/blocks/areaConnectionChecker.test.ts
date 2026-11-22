@@ -77,6 +77,13 @@ test('"guardar" com nome minúsculo e valor fixo cabe em Configurações; com va
   expect(drop(loose(assign('vidas', call(name('input')))), areaInput('settings'))).toBe(false)
 })
 
+test('"guardar" de nome minúsculo usado em outro lugar não entra em Configurações', () => {
+  // Trocar só este nome para maiúsculas desligaria o `print(vidas)`.
+  open([show(name('vidas'))], ['start'])
+  expect(drop(loose(assign('vidas', integer('3'))), areaInput('settings'))).toBe(false)
+  expect(drop(loose(assign('VIDAS', integer('3'))), areaInput('settings'))).toBe(true)
+})
+
 test('a pilha inteira precisa caber, não só o primeiro bloco', () => {
   open([show(integer('1'))], ['start'])
   const first = loose(imp('math'))

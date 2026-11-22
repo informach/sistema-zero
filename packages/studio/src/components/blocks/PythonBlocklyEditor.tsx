@@ -1,6 +1,7 @@
 import * as Blockly from 'blockly/core'
 import * as PtBr from 'blockly/msg/pt-br'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { type OrganizerWorkspace, patchContextMenuWords } from '../../blockly/contextMenuWords'
 import { installCornerSpacer } from '../../blockly/cornerSpacer'
 import { blocklyPortalsInside } from '../../blockly/dialogPortals'
 import { jsonPlainCopy, jsonStringify } from '../../blockly/jsonPlainCopy'
@@ -39,9 +40,16 @@ import {
 } from '../../python/blocks/areaFrames'
 import { attachPythonAreaGuards } from '../../python/blocks/areaGuards'
 import {
+  applyPythonAreaNotes,
+  organizePythonWorkspace,
+  type PythonOrganizerWorkspace,
+  registerPythonOrganizeMenu,
+} from '../../python/blocks/areaOrganize'
+import {
   analyzePythonModuleAreas,
   PYTHON_AREA_BY_KIND,
   PYTHON_AREA_FRAME_TYPES,
+  type PythonAreaContext,
   type PythonAreaKind,
   pythonDisplayAreas,
   pythonOfferedAreas,
@@ -99,6 +107,8 @@ import {
 import { createPythonAnalysisController } from '../../python/language/controller'
 import type { PythonAnalysisSession } from '../../python/language/session'
 import { pythonPositionToOffset } from '../../python/language/sourceEdits'
+import { indexPythonSourceLines } from '../../python/language/sourceLines'
+import { pythonStatementLines } from '../../python/language/statementMoves'
 import type {
   PythonNode,
   PythonParsedDocument,
@@ -380,6 +390,9 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
     registerPythonBlocks(props.codecs)
     registerPythonAreaFrames()
     registerPythonAreaChecker()
+    registerPythonOrganizeMenu()
+    // As palavras de criança no menu (e o "Arrumar blocos" nativo fora, como no JavaScript).
+    patchContextMenuWords()
     // "Procurar um bloco" é a categoria de busca do Estúdio, com o resolvedor do Python.
     registerPtSearchCategory()
     registerMoreBlocksItem()
@@ -464,6 +477,11 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
     let parsedModules = new Map<string, PythonNode | null>()
     let modulesStale = false
     let committing = false
+    /** O código mudou por fora (abrir, Ponte, Código): organiza no primeiro gesto nos blocos. */
+    let organizePending = false
+    let sourceLines:
+      | { source: string; lines: ReturnType<typeof indexPythonSourceLines> }
+      | undefined
     const instanceId = crypto.randomUUID()
     const currentProject = () => {
       const project = store.getState().project
@@ -571,6 +589,72 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
         presentWorkspace(workspace, tree, origins, props.codecs, props.officialModules)
       }
     }
+    /** O que as áreas precisam saber do projeto (o que `from … import *` cria, os módulos dele). */
+    const areaContext = (): PythonAreaContext => ({
+      starExports: knownStarExports,
+      projectModules: new Set(
+        Object.keys(currentProject()?.files ?? {})
+          .filter((path) => path.endsWith('.py') && path !== props.path)
+          .map((path) => path.slice(0, -3).split('/')[0]!),
+      ),
+    })
+    /** A linha que divide a linha do arquivo com outro comando (`;`) não sai do lugar. */
+    const movable = (block: Blockly.Block) => {
+      const node = origins.get(block.id)
+      if (!node || !parsed?.tree) return true
+      if (sourceLines?.source !== parsed.source)
+        sourceLines = { source: parsed.source, lines: indexPythonSourceLines(parsed.source) }
+      return !!pythonStatementLines(parsed, node, sourceLines.lines)
+    }
+    /** As notas das linhas que ficaram fora da área delas (sem mexer em nada). */
+    function refreshAreaNotes() {
+      const { notes } = organizePythonWorkspace(workspace, props.codecs, {
+        context: areaContext(),
+        movable,
+        apply: false,
+      })
+      Blockly.Events.disable()
+      try {
+        applyPythonAreaNotes(workspace, notes)
+      } finally {
+        Blockly.Events.enable()
+      }
+    }
+    /** Organiza as áreas (um passo de desfazer); o commit normal grava o arquivo. */
+    function organizeNow(arrange: boolean) {
+      if (
+        disposed ||
+        applying ||
+        committing ||
+        offer ||
+        observer ||
+        store.getState().editingAccess !== 'author' ||
+        workspace.isDragging() ||
+        !parsed?.tree ||
+        loadedSource !== parsed.source
+      )
+        return false
+      const group = Blockly.Events.getGroup()
+      if (!group) Blockly.Events.setGroup(true)
+      try {
+        if (arrange) layoutPythonAreaFrames(workspace)
+        const { notes } = organizePythonWorkspace(workspace, props.codecs, {
+          context: areaContext(),
+          movable,
+        })
+        applyPythonAreaNotes(workspace, notes)
+      } finally {
+        if (!group) Blockly.Events.setGroup(false)
+      }
+      return true
+    }
+    ;(workspace as unknown as PythonOrganizerWorkspace & OrganizerWorkspace).__szOrganizes = true
+    ;(workspace as unknown as PythonOrganizerWorkspace).__szOrganizePython = observer
+      ? undefined
+      : () => {
+          organizePending = false
+          organizeNow(true)
+        }
     function load(document: PythonParsedDocument, draft?: PythonWorkspaceDraft) {
       if (!document.tree) return
       const restored = draft
@@ -618,6 +702,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
             analyzePythonModuleAreas(
               document.tree,
               projection.body.map((value) => (value.kind === 'block' ? value.codecId : undefined)),
+              areaContext(),
             ).statements,
           )
           rootIds = pythonVisualToWorkspace(projection, workspace, props.codecs, { areas })
@@ -648,9 +733,13 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
         )
         // Uma projeção nova abre com as funções fechadas (o rascunho guarda o que a criança abriu).
         void navigation.initialize(!restored)
+        refreshAreaNotes()
         const saved = savePythonWorkspace(workspace, origins)
         fingerprint = jsonStringify(saved) ?? ''
         loadedSource = document.source
+        // Quem pode editar vê o arquivo organizado pelas áreas no primeiro gesto nos blocos (nunca
+        // enquanto digita na Ponte: a carga vem de cada mudança do código).
+        organizePending = !observer && store.getState().editingAccess === 'author'
         // Gallery examples start as Python files. Save their initial Program
         // area as soon as projection succeeds, without requiring a user gesture.
         // A recovery offer must remain pending until its source transaction.
@@ -837,6 +926,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
               props.officialModules,
               projectModules,
             )
+            refreshAreaNotes()
             // A star import the gesture added is read from the other files afterwards.
             if (!projectModules && importsStar(document.tree!)) modulesStale = true
             if (modulesStale) schedule()
@@ -926,6 +1016,15 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
     const activate = () => history?.markActive('blocks')
     element.addEventListener('pointerdown', activate)
     element.addEventListener('focusin', activate)
+    // Depois do clique (ou do arraste) nos blocos, não no meio dele: organiza o que veio do código.
+    const organizeOnReturn = () => {
+      if (!organizePending) return
+      setTimeout(() => {
+        if (organizePending && organizeNow(false)) organizePending = false
+      }, 0)
+    }
+    element.addEventListener('pointerup', organizeOnReturn)
+    element.addEventListener('focusin', organizeOnReturn)
     const resize = new ResizeObserver(() => Blockly.svgResize(workspace))
     resize.observe(element)
     let previousSource = currentProject()?.files[props.path]
@@ -1130,6 +1229,8 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
       element.removeEventListener('focusout', leave)
       document.removeEventListener('pointerdown', leave, true)
       element.removeEventListener('focusin', activate)
+      element.removeEventListener('pointerup', organizeOnReturn)
+      element.removeEventListener('focusin', organizeOnReturn)
       workspace.removeChangeListener(changed)
       detachCallLabels()
       detachLiteralTint()
