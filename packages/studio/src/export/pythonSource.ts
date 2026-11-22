@@ -1,7 +1,12 @@
 import { studioPortableFileConflict } from '@sistemazero/core/studio/project-environment'
-import type { StudioRuntimeCatalog } from '@sistemazero/core/studio/runtime-catalog'
+import {
+  createStudioRuntimeCatalog,
+  type StudioRuntimeCatalog,
+  selectStudioRuntimeRelease,
+} from '@sistemazero/core/studio/runtime-catalog'
 import { buildPythonAssetBundle } from '../core/pythonAssets'
 import { assertPythonVisualDraftSettled } from '../python/blocks/workspaceDraft'
+import { supportsPythonPintaScenes } from '../runtime/python/pintaScenesContract'
 import { hasPygameExtension } from '../runtime/python/pygame/contract'
 import { hasTurtleExtension } from '../runtime/python/turtle/contract'
 import { TURTLE_PINTA_SHAPES_SOURCES } from '../runtime/python/turtle/formasDoPinta.generated'
@@ -21,6 +26,11 @@ export async function buildPythonSourceFiles(
 ): Promise<SourceFilesResult> {
   const runtimeCatalog = captureSourceExportCatalog(catalog)
   const project = await refinePythonProjectDocument(raw)
+  const release = await resolveSourceRelease(project, runtimeCatalog)
+  const canvas = supportsPythonPintaScenes(
+    project.installedExtensions,
+    release?.manifest.python?.features,
+  )
   assertPythonVisualDraftSettled(project)
   const tree = project.kind === 'pro' ? project.tree : pythonFilesToTree(project.files)
   const sourceFiles: Record<string, string> = Object.fromEntries(
@@ -69,9 +79,31 @@ export async function buildPythonSourceFiles(
       files[path] = TURTLE_PINTA_SHAPES_SOURCES['formas_do_pinta.py']!
   }
   let pygameFiles: string[] = []
+  const pintaSceneFiles: string[] = []
+  if (canvas && canvas !== 'python-pygame') {
+    const entrypoint = project.python.entrypoint
+    const path = `${entrypoint.slice(0, entrypoint.lastIndexOf('/') + 1)}pinta.py`
+    if (!studioPortableFileConflict([...Object.keys(files), path], directories)) {
+      const { buildPythonPintaScenesModule } = await import('../runtime/python/pintaScenesModule')
+      files[path] = buildPythonPintaScenesModule({ canvas, environment: 'native' })
+      pintaSceneFiles.push(path)
+    }
+  }
   if (hasPygameExtension(project.installedExtensions)) {
     const { buildPygameDesktopFiles } = await import('./pygameDesktop')
+    let pintaSource: string | undefined
+    if (canvas === 'python-pygame') {
+      const [{ buildPythonPintaScenesModule }, { PYGAME_DESKTOP_SOURCES }] = await Promise.all([
+        import('../runtime/python/pintaScenesModule'),
+        import('../runtime/python/pygame/desktopSources.generated'),
+      ])
+      pintaSource = buildPythonPintaScenesModule({
+        canvas,
+        legacySource: PYGAME_DESKTOP_SOURCES['pinta.py'],
+      })
+    }
     const desktop = buildPygameDesktopFiles({
+      pintaSource,
       occupied: Object.keys(files),
       directories,
       entrypoint: project.python.entrypoint,
@@ -85,12 +117,32 @@ export async function buildPythonSourceFiles(
     directories,
     assets: bundle.manifest,
     occupiedFiles: Object.keys(files),
-    runtimeCatalog,
+    release,
     pgzero,
     raylib,
     pygameFiles,
+    pintaSceneFiles,
   })
   Object.assign(files, metadata.files)
   for (const path of directories) files[`${path}/`] = new Uint8Array()
   return { files, warnings: metadata.warnings }
+}
+
+async function resolveSourceRelease(
+  project: Awaited<ReturnType<typeof refinePythonProjectDocument>>,
+  catalog: StudioRuntimeCatalog | null,
+) {
+  if (catalog) {
+    try {
+      const release = selectStudioRuntimeRelease(
+        await createStudioRuntimeCatalog(catalog),
+        project.runtime,
+      )
+      if (release?.manifest.python?.version === project.python.dependencyLock.pythonVersion)
+        return release
+    } catch {
+      // Rescuing authored files remains possible without runtime metadata.
+    }
+  }
+  return null
 }

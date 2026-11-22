@@ -10,8 +10,12 @@ for (const scale of [1, 2])
     await page.goto('/provider')
     await page.waitForFunction(() => !!globalThis.providerProbe)
     await page.evaluate(
-      (scale) => globalThis.providerProbe.prepare('game', `pinta-regional-pygame-${scale}x`),
-      scale,
+      ({ scale, supplied }) =>
+        globalThis.providerProbe.prepare(
+          'game',
+          `pinta-regional-pygame-${scale}x${supplied ? '-fornecido' : ''}`,
+        ),
+      { scale, supplied: process.env.PYTHON_PROBE_PINTA_SCENES === '1' },
     )
     expect(await page.evaluate(() => globalThis.providerProbe.read('game').status)).toBe('ready')
     await page.locator('iframe').evaluate((frame) => {
@@ -79,6 +83,8 @@ for (const scale of [1, 2])
     expect(state.status).toBe('running')
     const stdout = await output(),
       facts = JSON.parse(stdout.split('regional-runtime ')[1]!.split('\n')[0]!)
+    if (process.env.PYTHON_PROBE_PINTA_SCENES === '1')
+      expect(stdout).toContain('Pinta fornecido /studio/extensions/python-pygame-')
     expect(facts).toMatchObject({
       platform: 'emscripten',
       scale,

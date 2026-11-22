@@ -1,12 +1,7 @@
 import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
 import { studioPortableFileConflict } from '@sistemazero/core/studio/project-environment'
 import { SZ_AUDIO_MODULE_DESCRIPTOR } from '@sistemazero/core/studio/python-provided-modules-sz-audio'
-import {
-  createStudioRuntimeCatalog,
-  type StudioRuntimeCatalog,
-  type StudioRuntimeRelease,
-  selectStudioRuntimeRelease,
-} from '@sistemazero/core/studio/runtime-catalog'
+import type { StudioRuntimeRelease } from '@sistemazero/core/studio/runtime-catalog'
 import type { PythonAssetBundle } from '../core/pythonAssets'
 import type { PythonProjectDocument } from '../core/pythonProject'
 import { buildPythonAudioNativeBundle } from '../runtime/python/audio/nativeExport'
@@ -22,7 +17,8 @@ export async function buildPythonSourceMetadata(input: {
   directories: string[]
   assets: PythonAssetBundle['manifest']
   occupiedFiles: string[]
-  runtimeCatalog: StudioRuntimeCatalog | null
+  release: StudioRuntimeRelease | null
+  pintaSceneFiles?: readonly string[]
   /** Pygame Zero projects: the requirements file and the PNGs made from SVG images. */
   pgzero?: {
     requirementsPath: string
@@ -63,17 +59,7 @@ export async function buildPythonSourceMetadata(input: {
     ? allocate((index) => `requisitos-pygame-ce${index === 1 ? '' : `-${index}`}.txt`)
     : null
   if (pygameRequirementsPath) files[pygameRequirementsPath] = `pygame-ce==${PYGAME_CE_VERSION}\n`
-  let release: StudioRuntimeRelease | null = null
-  try {
-    if (input.runtimeCatalog) {
-      const catalog = await createStudioRuntimeCatalog(input.runtimeCatalog)
-      const selected = selectStudioRuntimeRelease(catalog, project.runtime)
-      if (selected?.manifest.python?.version === project.python.dependencyLock.pythonVersion)
-        release = selected
-    }
-  } catch {
-    // Rescuing authored files must remain possible without verified runtime metadata.
-  }
+  const release = input.release
   if (!release)
     warnings.push(
       'Nesta exportação, não foi possível conferir a release exata do projeto. Seus arquivos e materiais foram preservados, mas nenhuma biblioteca fornecida pelo estúdio foi anexada por suposição. Confira os imports e as dependências antes de executar no computador.',
@@ -222,6 +208,7 @@ dependencies = ${pygame ? `["pygame-ce==${PYGAME_CE_VERSION}"]` : '[]'}
       ...(input.raylib?.generated ?? []),
       ...(pygameRequirementsPath ? [pygameRequirementsPath] : []),
       ...(input.pygameFiles ?? []),
+      ...(input.pintaSceneFiles ?? []),
     ].sort(),
     warnings,
   }

@@ -14,7 +14,7 @@ import { documentFixture } from '../../packages/studio/src/state/fixtures/projec
 import { pythonFilesToTree } from '../../packages/studio/src/state/pythonProjectValidation'
 
 export function isPintaBrowser2dFixture(name: string) {
-  return name === 'pinta-regional-pgzero' || name === 'pinta-regional-raylib2d'
+  return /^pinta-regional-(?:pgzero|raylib2d)(?:-fornecido)?$/.test(name)
 }
 
 function pngUrl(bytes: Uint8Array) {
@@ -67,19 +67,19 @@ async function worlds() {
   return Promise.all([world(child.json), world(broken)])
 }
 
-const setup = `import json,sys
+const setup = (supplied: boolean) => `import json,sys,struct,zlib
 from pathlib import Path
 assert sys.platform == 'emscripten'
 initial=bytearray(Path('assets/mundo.png').read_bytes())
-root=Backend(initial)
+root=${supplied ? "pinta.carregar_cenario('mundo')" : 'Backend(initial)'}
 initial[:]=bytes(len(initial))
 owner=root._renderizador._owner
 assert owner > 0 and root.limites[2:]==(160000,160000)
 bad=Path('assets/recusa.png').read_bytes()
-bad_registry=ler_mundo_png(bad)
+bad_registry=${supplied ? 'pinta.ler_mundo_png' : 'ler_mundo_png'}(bad)
 assert len(bad_registry['maps'])==2
 try:
-    root.substituir(bad)
+    root.substituir(${supplied ? "'recusa'" : 'bad'})
 except ValueError as error:
     assert 'imagem do cenário' in str(error), str(error)
 else:
@@ -95,7 +95,7 @@ def tile_png():
     return (b'\\x89PNG\\r\\n\\x1a\\n'+chunk(b'IHDR',struct.pack('>2I5B',4,2,8,6,0,0,0))
             +chunk(b'IDAT',zlib.compress(b'\\0'+pixels))+chunk(b'IEND',b''))
 
-overlay=_PintaBrowserAffine({'atlas':{'png':tile_png(),'width':4,'height':2}},transport)
+overlay=${supplied ? 'pinta._PintaBrowserAffine' : '_PintaBrowserAffine'}({'atlas':{'png':tile_png(),'width':4,'height':2}},transport)
 assert overlay._owner==owner+1
 current=root
 retire_overlay=False
@@ -118,7 +118,7 @@ def reload_world():
     if current is not root: current.descartar()
     current=root
     previous=root._renderizador
-    root.substituir(Path('assets/mundo.png').read_bytes())
+    root.substituir(${supplied ? "'mundo'" : "Path('assets/mundo.png').read_bytes()"})
     assert previous._owner is None and root._renderizador._owner > owner+1
     print('Pinta substituição concluída',flush=True)
 
@@ -133,11 +133,18 @@ print('Pinta pronta',json.dumps({'platform':sys.platform,'world':root.cena.mapa_
       'width':root.limites[2],'rollback':True,'owner':owner}),flush=True)
 `
 
-const pgzero = `
+function moduleImport(extension: 'python-pgzero' | 'python-raylib') {
+  return `import pinta
+assert pinta.__file__.startswith('/studio/extensions/${extension}-'), pinta.__file__
+print('Pinta fornecido',pinta.__file__,flush=True)
+`
+}
+
+const pgzero = (supplied: boolean) => `
 from pgzero import _sz as transport
-Backend=CenarioRegionalPygameZero
+${supplied ? moduleImport('python-pgzero') : 'Backend=CenarioRegionalPygameZero'}
 WIDTH,HEIGHT=320,240
-${setup}
+${setup(supplied)}
 
 def draw():
     screen.fill((0,0,0))
@@ -154,13 +161,13 @@ def on_key_down(key):
     if key==keys.R: reload_world()
 `
 
-const raylib = `
+const raylib = (supplied: boolean) => `
 import pyray as ray
 from _szraylib import _rt as transport
-Backend=CenarioRegionalRaylib2D
+${supplied ? moduleImport('python-raylib') : 'Backend=CenarioRegionalRaylib2D'}
 ray.init_window(320,240,'Cenário do Pinta')
 ray.set_target_fps(30)
-${setup}
+${setup(supplied)}
 
 while not ray.window_should_close():
     if ray.is_key_pressed(ray.KEY_ENTER): place()
@@ -183,7 +190,8 @@ ray.close_window()
 let captured: ReturnType<typeof worlds> | undefined
 export async function pintaBrowser2dProject(name: string) {
   if (!isPintaBrowser2dFixture(name)) throw Error('Fixture regional desconhecida')
-  const isPgzero = name === 'pinta-regional-pgzero'
+  const isPgzero = name.startsWith('pinta-regional-pgzero')
+  const supplied = name.endsWith('-fornecido')
   const extension = isPgzero ? PGZERO_EXTENSION : RAYLIB_2D_EXTENSION
   const project = documentFixture('python', 'pro')
   if (project.programmingLanguage !== 'python' || project.kind !== 'pro') throw Error('fixture')
@@ -209,8 +217,8 @@ export async function pintaBrowser2dProject(name: string) {
       height,
     }
   })
-  project.tree = pythonFilesToTree({
-    'main.py': `${isPgzero ? pythonPintaPgzeroBrowser : pythonPintaRaylib2dBrowser}\n${isPgzero ? pgzero : raylib}`,
-  })
+  const source = isPgzero ? pgzero(supplied) : raylib(supplied)
+  const composed = isPgzero ? pythonPintaPgzeroBrowser : pythonPintaRaylib2dBrowser
+  project.tree = pythonFilesToTree({ 'main.py': supplied ? source : `${composed}\n${source}` })
   return project
 }

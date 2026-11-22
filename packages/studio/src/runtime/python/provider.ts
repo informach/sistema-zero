@@ -168,6 +168,7 @@ export function createPythonRuntimeProvider(options: {
         hostAudio: input.hostAudio,
         ...(activity ? { activity } : {}),
         ...(input.pythonMission ? { mission: true } : {}),
+        ...(input.requirePintaScenes ? { requirePintaScenes: true } : {}),
         ...(background ? { background: true as const } : {}),
       })
     },

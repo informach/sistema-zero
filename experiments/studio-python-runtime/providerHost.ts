@@ -101,6 +101,7 @@ const api = {
       const snapshot = await preparePythonExecutionSnapshot(project)
       const session = await provider.prepare({
         ...(background ? { pythonBackground: true as const } : {}),
+        ...(fixture.endsWith('-fornecido') ? { requirePintaScenes: true as const } : {}),
         project,
         signal: entry.abort.signal,
         frame,

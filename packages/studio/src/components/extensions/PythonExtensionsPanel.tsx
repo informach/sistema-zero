@@ -3,6 +3,7 @@ import { Badge, Button, Modal } from '#ui'
 import { isPythonProject, type PythonProjectDocument } from '../../core/editableProject'
 import { PYTHON_EXTENSIONS } from '../../python/extensions/catalog'
 import {
+  activePythonPintaSceneExtension,
   changePythonExtension,
   pythonExtensionCodeCheck,
   pythonExtensionInstallIssue,
@@ -89,7 +90,14 @@ export function PythonExtensionsPanel({ open, onClose }: ExtensionsPanelProps) {
       let analysis:
         | Pick<import('../../python/language/controller').PythonAnalysisController, 'run'>
         | undefined
-      if (pythonExtensionCodeCheck(expected.installedExtensions, extension, action)) {
+      if (
+        pythonExtensionCodeCheck(
+          expected.installedExtensions,
+          extension,
+          action,
+          activePythonPintaSceneExtension(expected, policy.environment),
+        )
+      ) {
         const { createPythonAnalysisController } = await import('../../python/language/controller')
         if (owner.cancelled) throw new Error('O contexto da análise mudou. Tente novamente.')
         const controller = createPythonAnalysisController({

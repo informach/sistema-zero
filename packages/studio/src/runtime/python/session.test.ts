@@ -5,6 +5,7 @@ import { createStudioRuntimeRelease } from '@sistemazero/core/studio/runtime-cat
 import { pythonEnvironmentFixture } from '../../state/fixtures/pythonEnvironment'
 import type { StudioRuntimeSession } from '../types'
 import type { PythonFrameCommand, PythonFrameInitialization } from './frameProtocol'
+import { PYGAME_EXTENSION } from './pygame/contract'
 import { preparePythonFrameSession } from './session'
 import { preparePythonExecutionSnapshot } from './snapshot'
 import { pythonWebBytesSha256 } from './webFiles'
@@ -27,7 +28,12 @@ const isFramePort = (value: unknown): value is FramePort =>
   'close' in value &&
   typeof value.close === 'function'
 
-async function fixture(mission = false, background = false, supportsBackground = false) {
+async function fixture(
+  mission = false,
+  background = false,
+  supportsBackground = false,
+  requirePintaScenes = false,
+) {
   const { project, environment } = await pythonEnvironmentFixture('classic')
   const original = environment.catalog.releases[0]
   if (!original?.manifest.python) throw new Error('Missing inert Python release')
@@ -60,6 +66,7 @@ async function fixture(mission = false, background = false, supportsBackground =
     artifacts: distribution.files.map(({ path, sha256 }) => ({ path, sha256 })),
   })
   const snapshot = await preparePythonExecutionSnapshot(project)
+  if (requirePintaScenes) snapshot.configuration.extensions = [PYGAME_EXTENSION]
   snapshot.configuration.runtime = {
     profileId: release.profileId,
     releaseId: release.releaseId,
@@ -144,6 +151,7 @@ async function fixture(mission = false, background = false, supportsBackground =
   })
   const preparation = preparePythonFrameSession({
     ...(mission ? { mission: true } : {}),
+    ...(requirePintaScenes ? { requirePintaScenes: true as const } : {}),
     ...(background ? { background: true as const } : {}),
     frame,
     frameURL: new URL(`https://runtime.test/v1/runtimes/${release.manifestSha256}/frame.html`),
@@ -561,4 +569,16 @@ test('an occupied iframe rejects another owner before starting another metadata 
   await expect(f.duplicate()).rejects.toMatchObject({ reasonCode: 'frame-in-use' })
   expect(f.calls).toHaveLength(1)
   expect(f.transfers).toEqual([])
+})
+
+test('an admitted Pinta world never hands a snapshot to a release without its module', async () => {
+  const probe = await fixture(false, false, false, true)
+  probe.complete()
+  probe.hello()
+  const result = await probe.preparation
+  expect(result.error).toMatchObject({
+    message: 'Escolha um ambiente Python 2D que abra os cenários deste projeto.',
+  })
+  expect(probe.transfers).toEqual([])
+  expect(probe.opens()).toBe(0)
 })

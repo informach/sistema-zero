@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { PYTHON_PINTA_REGIONS_FEATURE } from '@sistemazero/core/studio/python-runtime-features'
 import { isPythonProject } from '../../core/editableProject'
 import { createStudioRuntimeAuthority } from '../../runtime/authority'
 import { PGZERO_EXTENSION } from '../../runtime/python/pgzero/contract'
@@ -590,4 +591,66 @@ describe('Python extension actions', () => {
     await undoProApplication(store, project.id, records[0]!.record.operationId)
     expect(await captureProRevision(store.getState().project!)).toEqual(before)
   })
+})
+
+test('supplied pinta references protect PGZero removal and the Raylib 2D to 3D swap', async () => {
+  const { project, environment } = await pythonEnvironmentFixture('classic', [
+    PYTHON_PINTA_REGIONS_FEATURE,
+  ])
+  const store = createProjectStore()
+  const policy = () => ({
+    environment: {
+      ...environment,
+      access: () => ({
+        ...environment.access(project),
+        grantedExtensionIds: [PGZERO_EXTENSION.id, RAYLIB_2D_EXTENSION.id, RAYLIB_3D_EXTENSION.id],
+      }),
+    },
+  })
+  // In real operations the environment identity remains fixed until permissions change.
+  const fixed = policy()
+  const analysis = removalAnalysis({
+    kind: 'Module',
+    fields: {
+      body: [
+        {
+          kind: 'Import',
+          fields: { names: [{ kind: 'alias', fields: { name: 'pinta', asname: 'arte' } }] },
+        },
+      ],
+    },
+  })
+  for (const extension of [PGZERO_EXTENSION, RAYLIB_2D_EXTENSION]) {
+    store
+      .getState()
+      .setProject({ ...project, installedExtensions: [{ ...extension, installedAt: 1 }] })
+    store.getState().setPythonFile(project.python.entrypoint, 'import pinta as arte\n')
+    const expected = store.getState().project!
+    if (!isPythonProject(expected)) throw new Error('Projeto esperado')
+    const input = { store, expected, policy: () => fixed, analysis }
+    await expect(changePythonExtension({ ...input, extension, action: 'remove' })).rejects.toThrow(
+      'main.py:1',
+    )
+    if (extension.id === RAYLIB_2D_EXTENSION.id)
+      await expect(
+        changePythonExtension({ ...input, extension: RAYLIB_3D_EXTENSION, action: 'install' }),
+      ).rejects.toThrow('main.py:1')
+    expect(store.getState().project).toBe(expected)
+  }
+
+  const previous = store.getState().project!
+  if (!isPythonProject(previous) || previous.kind !== 'classic') throw new Error('Projeto esperado')
+  const owned = { ...previous, files: { ...previous.files, 'pinta.py': 'MARCA = "meu arquivo"\n' } }
+  store.getState().setProject(owned)
+  await changePythonExtension({
+    store,
+    expected: owned,
+    policy: () => fixed,
+    analysis,
+    extension: RAYLIB_3D_EXTENSION,
+    action: 'install',
+  })
+  expect(store.getState().project?.installedExtensions.map(({ id }) => id)).toEqual([
+    RAYLIB_3D_EXTENSION.id,
+  ])
 })

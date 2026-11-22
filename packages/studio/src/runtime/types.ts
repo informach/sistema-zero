@@ -116,6 +116,8 @@ export interface StudioRuntimeSession {
 
 export interface StudioRuntimePrepareInput {
   pythonMission?: true
+  /** Host validation result for an admitted regional Pinta material. */
+  requirePintaScenes?: true
   /** Host presentation only; never part of the learner's document or execution digest. */
   pythonBackground?: true
   /** Trusted host UI preference. Never supplied by learner source or frame messages. */

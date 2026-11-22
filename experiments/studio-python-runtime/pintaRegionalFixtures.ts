@@ -23,7 +23,7 @@ const moduleSource = [
   pythonPygameRegional,
 ].join('\n')
 export function isPintaRegionalFixture(name: string) {
-  return name === 'pinta-regional-pygame-1x' || name === 'pinta-regional-pygame-2x'
+  return /^pinta-regional-pygame-[12]x(?:-fornecido)?$/.test(name)
 }
 const captures = new Map<number, ReturnType<typeof capture>>()
 async function capture(scale: number) {
@@ -50,7 +50,8 @@ async function capture(scale: number) {
 }
 export async function pintaRegionalProject(name: string) {
   if (!isPintaRegionalFixture(name)) throw Error('Unknown regional Pinta fixture')
-  const scale = name.endsWith('-2x') ? 2 : 1
+  const scale = name.includes('-2x') ? 2 : 1
+  const supplied = name.endsWith('-fornecido')
   let pending = captures.get(scale)
   if (!pending) {
     pending = capture(scale)
@@ -95,14 +96,18 @@ export async function pintaRegionalProject(name: string) {
     'main.py': `import sys,json,tempfile,pygame,pinta
 from pathlib import Path
 assert sys.platform=='emscripten', sys.platform
-_imagem_em_memoria=pinta._imagem_em_memoria
-${moduleSource}
+${
+  supplied
+    ? "assert pinta.__file__.startswith('/studio/extensions/python-pygame-'), pinta.__file__\nprint('Pinta fornecido',pinta.__file__,flush=True)"
+    : `_imagem_em_memoria=pinta._imagem_em_memoria
+${moduleSource}`
+}
 pygame.init()
 tela=pygame.display.set_mode((640,480))
 clock=pygame.time.Clock()
 for direction in (1,-1):
     asset='platform-positive' if direction>0 else 'platform-negative'
-    with CenarioRegionalPygame(Path(pinta._caminho(asset)).read_bytes()) as platform:
+    with ${supplied ? 'pinta.carregar_cenario(asset)' : 'CenarioRegionalPygame(Path(pinta._caminho(asset)).read_bytes())'} as platform:
         previous=pygame.FRect(2,99990 if direction>0 else -99996,4,6)
         desired=pygame.FRect(2,99997 if direction>0 else -100003,4,6)
         landed=platform.pouso(previous,desired,direction)
@@ -112,7 +117,7 @@ for direction in (1,-1):
             assert abs(landed.y-expected)<0.01
             landed=platform.pouso(landed,landed.move(0,direction*0.05),direction)
             assert landed is not None, 'Float32 lost distant platform support'
-root=CenarioRegionalPygame(Path(pinta._caminho('vila-regional')).read_bytes())
+root=${supplied ? "pinta.carregar_cenario('vila-regional')" : "CenarioRegionalPygame(Path(pinta._caminho('vila-regional')).read_bytes())"}
 assert root.cena.fisica=='legacy'
 assert len(root.cena._scene['layers'])==18
 assert tuple(root.ponto_inicial())==(${32 * scale},${32 * scale})

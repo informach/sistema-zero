@@ -176,10 +176,10 @@ export async function runtimeFixtureProject(
   if (isRaylibExampleFixture(name)) return raylibExampleProject(name)
   const { isPygameExampleFixture, pygameExampleProject } = await import('./pygameFixtures')
   if (isPygameExampleFixture(name)) return pygameExampleProject(name)
-  if (name === 'pinta-regional-pgzero' || name === 'pinta-regional-raylib2d') {
-    const { pintaBrowser2dProject } = await import('./pintaBrowser2dFixtures')
-    return pintaBrowser2dProject(name)
-  }
+  const { isPintaBrowser2dFixture, pintaBrowser2dProject } = await import(
+    './pintaBrowser2dFixtures'
+  )
+  if (isPintaBrowser2dFixture(name)) return pintaBrowser2dProject(name)
   const { isPintaWorldFixture, pintaWorldProject } = await import('./pintaWorldFixtures')
   if (isPintaWorldFixture(name)) return pintaWorldProject(name)
   const { isPintaRegionalFixture, pintaRegionalProject } = await import('./pintaRegionalFixtures')

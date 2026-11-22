@@ -5,6 +5,15 @@ export const PYTHON_PROJECT_MISSION_FEATURE = 'project-missions-v1' as const
 export const PYTHON_PINTA_WORLD_FEATURE = 'pinta-map-world-v1' as const
 /** Complete PNG-4 reader, including the earlier map/world formats and scene-3 physics. */
 export const PYTHON_PINTA_PHYSICS_FEATURE = 'pinta-scene-physics-v1' as const
+/** Complete Pinta worlds supplied with the three 2D extensions. */
+export const PYTHON_PINTA_REGIONS_FEATURE = 'pinta-scene-regions-v1' as const
+export const PYTHON_PINTA_SCENE_MODULE_PATHS = Object.freeze({
+  'python-pygame': 'pinta-scenes/pygame/pinta.py',
+  'python-pgzero': 'pinta-scenes/pgzero/pinta.py',
+  'python-raylib-2d': 'pinta-scenes/raylib-2d/pinta.py',
+} as const)
+/** Bound candidate code separately from the project PNG and boot-resource quotas. */
+export const PYTHON_PINTA_SCENE_MODULE_MAX_BYTES = 256 * 1024
 export const PYTHON_MOLDA_SCENE_FEATURE = 'molda-scene-assets-v1' as const
 /**
  * O `cenario.py` com regiões (lote 7b da conclusão do plano do Estúdio, 22/11/2026): a carga por
@@ -19,6 +28,7 @@ export const STUDIO_PYTHON_RUNTIME_FEATURES = [
   PYTHON_PROJECT_MISSION_FEATURE,
   PYTHON_PINTA_WORLD_FEATURE,
   PYTHON_PINTA_PHYSICS_FEATURE,
+  PYTHON_PINTA_REGIONS_FEATURE,
   PYTHON_MOLDA_SCENE_FEATURE,
   PYTHON_BACKGROUND_FOCUS_FEATURE,
   PYTHON_MOLDA_REGIONS_FEATURE,

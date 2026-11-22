@@ -14,6 +14,7 @@ export function buildPygameDesktopFiles(input: {
   occupied: readonly string[]
   directories: readonly string[]
   entrypoint?: string
+  pintaSource?: string
 }): { files: ExportFileMap; generated: string[] } {
   const occupied = [...input.occupied]
   const files: ExportFileMap = {}
@@ -25,7 +26,7 @@ export function buildPygameDesktopFiles(input: {
     files[path] = bytes
     occupied.push(path)
   }
-  add('pinta.py', PYGAME_DESKTOP_SOURCES['pinta.py'])
+  add('pinta.py', input.pintaSource ?? PYGAME_DESKTOP_SOURCES['pinta.py'])
   for (const [path, dataUrl] of Object.entries(PYGAME_DESKTOP_FONTS))
     add(
       path,

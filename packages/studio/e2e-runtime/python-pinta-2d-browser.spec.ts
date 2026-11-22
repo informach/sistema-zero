@@ -144,8 +144,12 @@ for (const engine of ['pgzero', 'raylib2d']) {
     await page.goto('/provider')
     await page.waitForFunction(() => !!globalThis.providerProbe)
     await page.evaluate(
-      (engine) => globalThis.providerProbe.prepare('game', `pinta-regional-${engine}`),
-      engine,
+      ({ engine, supplied }) =>
+        globalThis.providerProbe.prepare(
+          'game',
+          `pinta-regional-${engine}${supplied ? '-fornecido' : ''}`,
+        ),
+      { engine, supplied: process.env.PYTHON_PROBE_PINTA_SCENES === '1' },
     )
     const ready = await page.evaluate(() => globalThis.providerProbe.read('game'))
     expect(ready.status, JSON.stringify(ready)).toBe('ready')
@@ -226,6 +230,8 @@ for (const engine of ['pgzero', 'raylib2d']) {
     expect(state.status).toBe('running')
     expect(state.events.filter((event) => event.type === 'diagnostic')).toEqual([])
     const logs = await output()
+    if (process.env.PYTHON_PROBE_PINTA_SCENES === '1')
+      expect(logs).toContain('Pinta fornecido /studio/extensions/python-')
     expect(logs).toContain('"platform": "emscripten"')
     expect(logs).toContain('"rollback": true')
     await info.attach('pixels-e-saida', {

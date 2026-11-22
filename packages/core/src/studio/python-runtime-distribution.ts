@@ -5,7 +5,12 @@ import {
   StudioPythonProvidedModulesSchema,
   studioPythonProvidedModuleArtifactIssue,
 } from './python-provided-modules'
-import { StudioPythonRuntimeFeaturesSchema } from './python-runtime-features'
+import {
+  PYTHON_PINTA_REGIONS_FEATURE,
+  PYTHON_PINTA_SCENE_MODULE_MAX_BYTES,
+  PYTHON_PINTA_SCENE_MODULE_PATHS,
+  StudioPythonRuntimeFeaturesSchema,
+} from './python-runtime-features'
 import {
   createStudioRuntimeRelease,
   StudioRuntimeReleaseSchema,
@@ -70,6 +75,20 @@ export const StudioPythonDistributionSchema = z
       })
     const paths = new Set(value.files.map((file) => file.path))
     const files = new Map(value.files.map((file) => [file.path, file]))
+    const hasPintaScenes = value.features.includes(PYTHON_PINTA_REGIONS_FEATURE)
+    for (const path of Object.values(PYTHON_PINTA_SCENE_MODULE_PATHS)) {
+      const file = files.get(path)
+      if (
+        hasPintaScenes
+          ? !file || file.bytes <= 0 || file.bytes > PYTHON_PINTA_SCENE_MODULE_MAX_BYTES
+          : file !== undefined
+      )
+        context.addIssue({
+          code: 'custom',
+          path: ['files'],
+          message: `Módulo de cenários Pinta incompatível com a distribuição: ${path}.`,
+        })
+    }
     for (const [index, module] of value.providedModules.entries()) {
       const issue = studioPythonProvidedModuleArtifactIssue(module, value.files)
       if (issue)

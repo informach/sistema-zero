@@ -28,6 +28,7 @@ import missionSource from './mission-observer.py'
 import { PGZERO_EXTENSION } from './pgzero/contract'
 import { loadPgzeroModuleSources } from './pgzero/moduleSources'
 import { isPintaTextureRequest, pintaTextureAttachments } from './pintaRegionProtocol'
+import { loadBrowserPintaScenesModule } from './pintaScenesModuleBrowser'
 import type { PythonConsoleStream, PythonExecutionSnapshot, PythonGraphicsReply } from './protocol'
 import { PYGAME_EXTENSION } from './pygame/contract'
 import { loadPygameModuleSources } from './pygame/moduleSources'
@@ -181,21 +182,40 @@ type ExtensionResources =
       value: Awaited<ReturnType<typeof loadRaylibResources>>
     }
 function loadCanvasResources(kind: PythonCanvasExtension, base: URL, scope: AbortController) {
+  async function withPinta<T extends { sources: ReadonlyMap<string, Uint8Array<ArrayBuffer>> }>(
+    ordinary: Promise<T>,
+  ): Promise<T> {
+    try {
+      const [value, regional] = await Promise.all([
+        ordinary,
+        loadBrowserPintaScenesModule(kind, base, scope.signal),
+      ])
+      scope.signal.throwIfAborted()
+      return regional
+        ? { ...value, sources: new Map([...value.sources, ['pinta.py', regional]]) }
+        : value
+    } catch (error) {
+      scope.abort(error)
+      throw error
+    }
+  }
   switch (kind) {
     case 'python-turtle':
       return loadTurtleResources(base, scope).then(
         (value): ExtensionResources => ({ kind: 'python-turtle', value }),
       )
     case 'python-pgzero':
-      return loadPgzeroResources(base, scope).then(
+      return withPinta(loadPgzeroResources(base, scope)).then(
         (value): ExtensionResources => ({ kind: 'python-pgzero', value }),
       )
     case 'python-pygame':
-      return loadPygameResources(base, scope).then(
+      return withPinta(loadPygameResources(base, scope)).then(
         (value): ExtensionResources => ({ kind: 'python-pygame', value }),
       )
     default:
-      return loadRaylibResources(base, scope).then((value): ExtensionResources => ({ kind, value }))
+      return withPinta(loadRaylibResources(base, scope)).then(
+        (value): ExtensionResources => ({ kind, value }),
+      )
   }
 }
 

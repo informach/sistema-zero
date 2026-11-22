@@ -19,6 +19,8 @@ class _PintaSceneOwner:
 class _PintaSceneBackend:
     """Uma cena aberta mantém seus recursos até descartar a última referência."""
 
+    _ler_mundo = staticmethod(ler_mundo_png)
+
     def __init__(self, source, mapa_id=None):
         self._owner = None
         self.cena = None
@@ -113,7 +115,7 @@ class _PintaSceneBackend:
 
     def substituir(self, source, mapa_id=None):
         """Admite um PNG e seus recursos gráficos antes de trocar o mundo aberto."""
-        mundo = ler_mundo_png(source)
+        mundo = self._ler_mundo(source)
         cena = CenaRegional(mundo, mundo['rootId'] if mapa_id is None else mapa_id)
         renderizador = self._criar_renderizador(mundo['images'])
         anterior = self._owner

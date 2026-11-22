@@ -39,7 +39,10 @@ async function prepareDistribution() {
   const recipe = process.env.PYTHON_PROBE_STDLIB_RECIPE
   if (directory === undefined && expectedHash === undefined) {
     const standardLibrary = recipe === undefined ? undefined : await Bun.file(recipe).json()
-    return buildPythonRuntimeDistribution({ standardLibrary })
+    return buildPythonRuntimeDistribution({
+      standardLibrary,
+      ...(process.env.PYTHON_PROBE_PINTA_SCENES === '1' ? { pintaScenes: true } : {}),
+    })
   }
   if (!directory || !expectedHash || !/^[a-f0-9]{64}$/.test(expectedHash) || recipe !== undefined)
     throw new Error('A distribuição pré-compilada exige diretório e SHA-256, sem outra receita.')

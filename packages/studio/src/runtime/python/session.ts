@@ -31,6 +31,7 @@ import {
   type PythonRuntimePayload,
   samePythonExecutionIdentity,
 } from './frameProtocol'
+import { supportsPythonPintaScenes } from './pintaScenesContract'
 import type { PythonExecutionSnapshot } from './protocol'
 import type { PythonSavedFileChange } from './savedFiles'
 import { isPythonRequestId } from './workerEvents'
@@ -53,6 +54,8 @@ export function preparePythonFrameSession(options: {
   activity?: StudioPythonActivity
   mission?: true
   background?: true
+  /** Host declares an admitted regional material; ordinary PNGs in Python remain opaque. */
+  requirePintaScenes?: true
   hostAudio?: StudioHostAudioPreference
   /**
    * A file the program saved; the host keeps it for the next run (savedFiles.ts). A deleted
@@ -63,6 +66,7 @@ export function preparePythonFrameSession(options: {
   const { frame, signal } = options
   const identity = Object.freeze({ ...options.identity })
   const background = options.background === true
+  const requirePintaScenes = options.requirePintaScenes === true
   const activity =
     options.activity === undefined ? undefined : StudioPythonActivitySchema.parse(options.activity)
   if (activity) assertStudioPythonActivityScope(activity, options.snapshot.configuration)
@@ -431,6 +435,14 @@ export function preparePythonFrameSession(options: {
             'background-focus-unsupported',
             'Atualize o ambiente Python para rodar testes sem tirar o foco da oficina.',
           )
+        if (
+          requirePintaScenes &&
+          !supportsPythonPintaScenes(options.snapshot.configuration.extensions, host.features)
+        )
+          throw new StudioRuntimeUnavailableError(
+            'pinta-scenes-unsupported',
+            'Escolha um ambiente Python 2D que abra os cenários deste projeto.',
+          )
         if (!active || closed || bootSignal.aborted) {
           channel.port2.close()
           return
@@ -464,7 +476,7 @@ export function preparePythonFrameSession(options: {
         resourcePort?.close()
         fail(
           error instanceof StudioRuntimeUnavailableError &&
-            error.reasonCode === 'background-focus-unsupported'
+            ['background-focus-unsupported', 'pinta-scenes-unsupported'].includes(error.reasonCode)
             ? error.message
             : 'Não foi possível preparar o canal Python.',
         )

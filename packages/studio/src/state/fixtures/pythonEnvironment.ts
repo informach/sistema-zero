@@ -1,3 +1,4 @@
+import type { StudioPythonRuntimeFeature } from '@sistemazero/core/studio/python-runtime-features'
 import {
   createStudioRuntimeCatalog,
   createStudioRuntimeRelease,
@@ -12,7 +13,10 @@ import { createStudioRuntimeRegistry } from '../../runtime/registry'
 import { refinePythonProjectDocument } from '../pythonProjectValidation'
 
 /** Host fixture approves only inert test bytes; it can never start an interpreter. */
-export async function pythonEnvironmentFixture(kind: 'classic' | 'pro') {
+export async function pythonEnvironmentFixture(
+  kind: 'classic' | 'pro',
+  features: StudioPythonRuntimeFeature[] = [],
+) {
   const release = await createStudioRuntimeRelease({
     manifestVersion: 1,
     profileId: 'python-test',
@@ -31,7 +35,7 @@ export async function pythonEnvironmentFixture(kind: 'classic' | 'pro') {
     sourceTargets: ['browser', 'desktop'],
     requiredBrowserFeatures: [],
     artifacts: [{ path: 'test.txt', sha256: 'a'.repeat(64) }],
-    python: { version: '3.14.2', packages: [], providedModules: [], features: [] },
+    python: { version: '3.14.2', packages: [], providedModules: [], features },
   })
   const catalog = await createStudioRuntimeCatalog({
     releases: [release],

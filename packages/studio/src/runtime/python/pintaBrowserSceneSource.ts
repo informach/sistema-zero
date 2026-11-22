@@ -2,10 +2,7 @@ import { pythonRegionWorld } from '../../../../pinta/src/export/pythonRegionWorl
 import { pythonSceneBackend } from '../../../../pinta/src/export/pythonSceneBackend'
 import { pythonSceneRuntime } from '../../../../pinta/src/export/pythonSceneRuntime'
 
-const common = `${pythonRegionWorld}
-${pythonSceneRuntime}
-${pythonSceneBackend}
-
+const affine = `
 class _PintaBrowserAffine:
     def __init__(self, images, transporte):
         self._transporte = transporte
@@ -32,8 +29,7 @@ class _PintaBrowserAffine:
         self._indices.clear()
 `
 
-/** Opt-in composition for a browser Pygame Zero project using the regional world. */
-export const pythonPintaPgzeroBrowser = `${common}
+export const pythonPintaPgzeroBrowserAdapter = `${affine}
 from pgzero import _sz as _pinta_pgzero_transport
 
 
@@ -49,8 +45,7 @@ class CenarioRegionalPygameZero(_PintaSceneBackend):
                            self.tempo_decorrido if tempo is None else tempo)
 `
 
-/** Opt-in composition for a browser Raylib 2D project using the regional world. */
-export const pythonPintaRaylib2dBrowser = `${common}
+export const pythonPintaRaylib2dBrowserAdapter = `${affine}
 from _szraylib import _rt as _pinta_raylib_transport
 
 
@@ -71,3 +66,12 @@ class CenarioRegionalRaylib2D(_PintaSceneBackend):
         self.cena.desenhar(renderizador.desenhar, viewport, camera, frente,
                            self.tempo_decorrido if tempo is None else tempo)
 `
+
+const common = `${pythonRegionWorld}
+${pythonSceneRuntime}
+${pythonSceneBackend}
+`
+
+/** Private compositions retained for programs used to exercise the bridge in isolation. */
+export const pythonPintaPgzeroBrowser = common + pythonPintaPgzeroBrowserAdapter
+export const pythonPintaRaylib2dBrowser = common + pythonPintaRaylib2dBrowserAdapter
