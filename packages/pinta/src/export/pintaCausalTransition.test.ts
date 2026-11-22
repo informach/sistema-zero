@@ -19,6 +19,7 @@ import {
   removeTile,
   tryRemapTilemapIndices,
 } from '../tiles/tilesetOps'
+import { makeRect } from '../vector/shapes'
 import { assetToJson } from './assetJson'
 import { inspectPintaCausalDocument } from './pintaCausalManifest'
 import {
@@ -106,23 +107,32 @@ test('the remap proof compares cells and flags even with identical manifest indi
 
 test('vector duplicate allows only fresh identities for the duplicated artwork', () => {
   const before = addTile(createVectorTilesetAsset({ name: 'vetor', tileSize: 16 }), 0)
-  before.tiles[0]!.push({
-    id: 'original',
-    motionId: 'motion-orig',
-    type: 'rect',
-    x: 1,
-    y: 2,
-    w: 3,
-    h: 4,
+  const style = {
     fill: '#112233',
-  })
+    stroke: { color: '#ffffff', width: 0.5 },
+    opacity: 0.75,
+  }
+  const shape = makeRect({ x: 1, y: 2 }, { x: 4, y: 6 }, style, 1)
+  before.tiles[0]!.push(shape)
   const operation = {
     type: 'remap',
     oldToNew: [0, 2],
     count: 3,
   } as const satisfies PintaCausalOperation
   const candidate = duplicateTile(before, 0)
-  expect(candidate.tiles[1]?.[0]).toMatchObject({ type: 'rect', x: 1, y: 2, w: 3, h: 4 })
+  const duplicated = candidate.tiles[1]![0]!
+  expect(duplicated).toMatchObject({
+    type: 'rect',
+    x: 1,
+    y: 2,
+    w: 3,
+    h: 4,
+    rx: 1,
+    rotation: 0,
+    ...style,
+  })
+  expect(duplicated.id).not.toBe(shape.id)
+  expect(duplicated.motionId).not.toBe(shape.motionId)
   expect(provePintaCausalMutation(before, candidate, operation)).toBe(true)
   const alias = { ...candidate, tiles: [before.tiles[0]!, before.tiles[0]!, before.tiles[1]!] }
   expect(provePintaCausalMutation(before, alias, operation)).toBe(false)
