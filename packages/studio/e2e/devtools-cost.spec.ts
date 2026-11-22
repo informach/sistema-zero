@@ -28,6 +28,13 @@ test.use({ channel: 'chromium' })
  * medida não recarrega o jogo, e o Investigar é o mesmo ouvinte de erro da prévia de sempre). O
  * Python é medido na suíte do runtime (`e2e-runtime/python-devtools-cost.spec.ts`).
  *
+ * Emulado é emulado (`docs/estudio-evolucao/guia-desempenho-e-depuracao.md`, regra 4): com a GPU
+ * emulada (SwiftShader, o CI sem placa de vídeo), o tempo por quadro dos jogos 3D varia de uma
+ * janela para outra muito mais que 5% (medido no `studio-engines.yml` em 22/11/2026: de −40% a
+ * +45% entre rodadas, com a gaveta fechada dos dois lados). Ali os números dos 3D ficam
+ * registrados, marcados como emulados, e não são cobrados; os 2D e o Pro são cobrados em qualquer
+ * máquina. A prova dos 3D é a medida com placa de vídeo (a evidência local).
+ *
  * Fora da suíte que barra o merge: roda no `studio-engines.yml` e localmente com
  * `bunx playwright test --config playwright.engines.config.ts e2e/devtools-cost.spec.ts`.
  */
@@ -39,17 +46,38 @@ const WARMUP_MS = 2500
 const WINDOW_MS = 4000
 
 const GAMES = [
-  { key: 'jogo-2d', engine: 'Jogo 2D', name: 'Pegue a moeda', twoD: true },
-  { key: 'jogo-2d-avancado', engine: 'Jogo 2D Avançado', name: 'Pong Profissional', twoD: false },
-  { key: 'jogo-3d', engine: 'Jogo 3D', name: 'Desvie dos blocos', twoD: false },
-  { key: 'mundo-3d', engine: 'Mundo 3D', name: 'Meu Mundo', twoD: false },
+  { key: 'jogo-2d', engine: 'Jogo 2D', name: 'Pegue a moeda', twoD: true, threeD: false },
+  {
+    key: 'jogo-2d-avancado',
+    engine: 'Jogo 2D Avançado',
+    name: 'Pong Profissional',
+    twoD: false,
+    threeD: false,
+  },
+  { key: 'jogo-3d', engine: 'Jogo 3D', name: 'Desvie dos blocos', twoD: false, threeD: true },
+  { key: 'mundo-3d', engine: 'Mundo 3D', name: 'Meu Mundo', twoD: false, threeD: true },
   {
     key: 'jogo-3d-avancado',
     engine: 'Jogo 3D Avançado',
     name: 'Defesa da Torre Profissional',
     twoD: false,
+    threeD: true,
   },
 ] as const
+
+/** O renderizador do WebGL desta máquina (SwiftShader = GPU emulada). */
+async function webglRenderer(page: Page): Promise<string> {
+  return page.evaluate(() => {
+    const gl = document.createElement('canvas').getContext('webgl')
+    if (!gl) return 'sem WebGL'
+    const info = gl.getExtension('WEBGL_debug_renderer_info')
+    return String(
+      info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER),
+    )
+  })
+}
+
+const isEmulatedGpu = (renderer: string) => /swiftshader|llvmpipe|software/i.test(renderer)
 
 type Arm = 'fechada' | 'desempenho' | 'investigar'
 
@@ -294,10 +322,15 @@ for (const game of GAMES)
         samples.push(await measureWindow(page, frame, arm, round))
       }
     const result = costs(samples)
+    const renderer = await webglRenderer(page)
+    const emulated = game.threeD && isEmulatedGpu(renderer)
     const row = {
       key: game.key,
       engine: game.engine,
       game: game.name,
+      gpu: renderer,
+      // Com a GPU emulada, os 3D ficam registrados sem cobrança (regra 4 do guia).
+      judged: !emulated,
       frameMs: round2(FRAME_MS),
       limit: LIMIT,
       costs: Object.fromEntries(
@@ -321,6 +354,13 @@ for (const game of GAMES)
     console.log(`[custo] ${game.engine}: ${JSON.stringify(row.costs)}`)
     // Toda janela teve quadros (senão a conta não diz nada).
     expect(samples.every((sample) => sample.frames > 10)).toBe(true)
+    if (emulated) {
+      test.info().annotations.push({
+        type: 'emulado',
+        description: `${game.engine}: GPU emulada (${renderer}); números registrados, sem cobrança.`,
+      })
+      return
+    }
     expect(result.desempenho?.costP50).toBeLessThan(LIMIT)
     expect(result.investigar?.costP50).toBeLessThan(LIMIT)
   })
