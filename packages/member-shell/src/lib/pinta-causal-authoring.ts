@@ -5,12 +5,14 @@ import type {
 import type { PintaCausalLocalPort, PintaEditorWriteContext } from '@sistemazero/pinta'
 import {
   assetFromJson,
+  isObjectLayer,
   isTilesetKind,
   MAX_BACKUP_FILE_BYTES,
   observePintaReferences,
   type PintaAsset,
   pintaLocalRevisionOf,
   pintaValuesEqual,
+  tilemapTilesetIds,
 } from '@sistemazero/pinta/assets'
 import { pintaCausalChangedSurvivingSlots } from '@sistemazero/pinta/assets/causal'
 import type { PintaCausalCloud, PintaCloudSnapshot } from './pinta-causal-cloud'
@@ -21,13 +23,105 @@ type Transition = Draft['transitions'][number]
 type Unit = Awaited<ReturnType<PintaCausalLocalPort['stage']>>
 type QueueState = Awaited<ReturnType<PintaCausalLocalPort['inspect']>>
 type Read = Draft['readSet'][number]
+type RemapEntry = Pick<PintaCausalEntry, 'revision' | 'sha256' | 'layoutRevision' | 'coverage'>
 
 export interface PintaCausalRemapBase {
-  snapshot: PintaCloudSnapshot
+  epoch: string
   source: PintaAsset
-  entries: ReadonlyMap<string, PintaCausalEntry>
+  entries: ReadonlyMap<string, RemapEntry>
   verifiedConsumers: ReadonlySet<string>
   assets: readonly PintaAsset[]
+}
+
+function frozenOrigins(state: QueueState, epoch: string) {
+  const origins = new Map<string, { opId: string; localRevision: string; sha256: string | null }>()
+  const record = (unit: Unit, puts: ReadonlyMap<string, string>) => {
+    if (unit.baseEpoch !== epoch) return
+    for (const { itemId, localRevision } of unit.members)
+      origins.set(itemId, { opId: unit.opId, localRevision, sha256: puts.get(itemId) ?? null })
+  }
+  if (state.sealed)
+    record(
+      state.sealed.local,
+      new Map(
+        state.sealed.intent.members.flatMap((member) =>
+          member.action === 'put' ? [[member.itemId, member.sha256] as const] : [],
+        ),
+      ),
+    )
+  for (const pending of state.pending) {
+    const candidate = state.prepared?.get(pending.opId)
+    if (candidate)
+      record(pending, new Map(candidate.puts.map(({ itemId, sha256 }) => [itemId, sha256])))
+  }
+  return origins
+}
+
+function embeddedUses(asset: PintaAsset | null | undefined): string[] {
+  const map = asset?.kind === 'map-set' ? asset.map : asset?.kind === 'tilemap' ? asset : null
+  if (!map?.resources?.length) return []
+  const embedded = new Set(map.resources.map((version) => version.asset.id))
+  return [
+    ...tilemapTilesetIds(map).map((id) => ['grid', id] as const),
+    ...map.layers
+      .filter(isObjectLayer)
+      .flatMap((layer) =>
+        layer.objects.flatMap((obj) => (obj.art ? [[obj.id, obj.art.assetId] as const] : [])),
+      ),
+  ]
+    .filter(([, id]) => embedded.has(id))
+    .map(([role, id]) => `${role}\u0000${id}`)
+}
+
+export function pintaPinBoundary(
+  before: PintaAsset | null | undefined,
+  after: PintaAsset,
+): boolean {
+  const prior = new Set(embeddedUses(before))
+  return embeddedUses(after).some((use) => !prior.has(use))
+}
+
+/** Complete verified local index, advanced only by this device's contiguous receipts. */
+export function preparePintaOfflineRemap(
+  source: PintaAsset,
+  assets: readonly PintaAsset[],
+  state: QueueState,
+): PintaCausalRemapBase {
+  const epoch = state.writeEpoch ?? state.epoch
+  if (epoch === null) throw Error('Ainda não consegui conferir a conta.')
+  const catalog = new Map(assets.map((asset) => [asset.id, asset]))
+  if (pintaLocalRevisionOf(catalog.get(source.id) ?? source) !== pintaLocalRevisionOf(source))
+    throw Error('A folha aberta mudou desde a sua última leitura.')
+  const frozen = frozenOrigins(state, epoch)
+  const entries = new Map<string, RemapEntry>()
+  const verifiedConsumers = new Set<string>()
+  for (const [id, mark] of state.confirmed) {
+    if (mark.deleted) continue
+    const current = catalog.get(id)
+    const revision = current && pintaLocalRevisionOf(current)
+    const prior = frozen.get(id)
+    if (prior && !prior.sha256 && !current) continue
+    if (
+      !mark.sha256 ||
+      !current ||
+      (mark.localRevision !== revision && prior?.localRevision !== revision)
+    )
+      throw Error('Preciso conferir os desenhos da conta antes de mudar estas peças.')
+    entries.set(id, { ...mark, coverage: 'certified' })
+    if (id !== source.id && (current.kind === 'tilemap' || current.kind === 'map-set'))
+      verifiedConsumers.add(id)
+  }
+  for (const [id, prior] of frozen) {
+    const current = catalog.get(id)
+    if (
+      prior.sha256 &&
+      current &&
+      pintaLocalRevisionOf(current) === prior.localRevision &&
+      (current.kind === 'tilemap' || current.kind === 'map-set')
+    )
+      verifiedConsumers.add(id)
+  }
+  return { epoch, source: catalog.get(source.id) ?? source, entries, verifiedConsumers, assets }
 }
 
 export async function preparePintaCausalRemap(options: {
@@ -41,6 +135,7 @@ export async function preparePintaCausalRemap(options: {
   const { source, snapshot, localState, cloud, signal } = options
   const entries = new Map(snapshot.entries.map((entry) => [entry.itemId, entry]))
   const catalog = new Map(options.local.map((asset) => [asset.id, asset]))
+  const frozen = frozenOrigins(localState, snapshot.epoch)
   const verifiedConsumers = new Set<string>()
   let sourceBase = catalog.get(source.id) ?? source
   const budget = { remaining: MAX_BACKUP_FILE_BYTES }
@@ -49,6 +144,16 @@ export async function preparePintaCausalRemap(options: {
     signal.throwIfAborted()
     const known = localState.confirmed.get(entry.itemId)
     const local = catalog.get(entry.itemId)
+    const prior = frozen.get(entry.itemId)
+    if (prior && !prior.sha256 && !local) continue
+    if (prior?.sha256 && local && prior.localRevision === pintaLocalRevisionOf(local)) {
+      if (entry.itemId === source.id) {
+        if (pintaLocalRevisionOf(local) !== pintaLocalRevisionOf(source))
+          throw Error('A folha aberta mudou desde a sua última leitura.')
+        sourceBase = local
+      } else verifiedConsumers.add(entry.itemId)
+      continue
+    }
     if (
       local &&
       entry.coverage === 'certified' &&
@@ -85,8 +190,24 @@ export async function preparePintaCausalRemap(options: {
     } else verifiedConsumers.add(entry.itemId)
     catalog.set(asset.id, local ?? asset)
   }
+  for (const [id, prior] of frozen) {
+    const local = catalog.get(id)
+    if (
+      prior.sha256 &&
+      local &&
+      prior.localRevision === pintaLocalRevisionOf(local) &&
+      (local.kind === 'tilemap' || local.kind === 'map-set')
+    )
+      verifiedConsumers.add(id)
+  }
   await cloud.verifyEpoch(snapshot.epoch, signal)
-  return { snapshot, source: sourceBase, entries, verifiedConsumers, assets: [...catalog.values()] }
+  return {
+    epoch: snapshot.epoch,
+    source: sourceBase,
+    entries,
+    verifiedConsumers,
+    assets: [...catalog.values()],
+  }
 }
 
 function slotMask(indices: readonly number[]): string {
@@ -176,10 +297,11 @@ export async function stagePintaCausalWrite(options: {
   remapBase?: PintaCausalRemapBase
   queuedSlots?: PintaQueuedSlots
   inverseOf?: string
+  independent?: true
 }): Promise<{ pending: Unit; slots?: PintaQueuedSlots }> {
   const { local, context, remapBase, queuedSlots, deletion } = options
   const state = await local.inspect()
-  const epoch = remapBase?.snapshot.epoch ?? state.writeEpoch ?? state.epoch
+  const epoch = remapBase?.epoch ?? state.writeEpoch ?? state.epoch
   if (epoch === null) throw Error('Ainda estou conferindo os desenhos guardados na conta.')
   const output = new Map((options.assets ?? []).map((asset) => [asset.id, asset]))
   const authoredIds = new Set(output.keys())
@@ -206,6 +328,7 @@ export async function stagePintaCausalWrite(options: {
   const replaces: { opId: string; preparation: string }[] = []
   const carriedReads: Read[] = []
   for (const group of state.pending) {
+    if (state.prepared?.has(group.opId)) continue
     if (group.baseEpoch !== epoch)
       throw Error('Há uma versão anterior para conferir antes desta mudança.')
     const previous = await local.prepare(group.opId)
@@ -237,16 +360,14 @@ export async function stagePintaCausalWrite(options: {
     replaces.some((unit) => unit.opId === queuedSlots.opId)
       ? queuedSlots
       : undefined
-  const predecessor = state.sealed?.intent.baseEpoch === epoch ? state.sealed : null
+  const predecessor =
+    state.pending
+      .filter(({ opId, baseEpoch }) => baseEpoch === epoch && state.prepared?.has(opId))
+      .at(-1) ?? (state.sealed?.intent.baseEpoch === epoch ? state.sealed.local : undefined)
+  const origins = frozenOrigins(state, epoch)
   function observedPredecessor(id: string, revision: string | null | undefined) {
-    const local = predecessor?.local.members.find((member) => member.itemId === id)
-    const sent = predecessor?.intent.members.find((member) => member.itemId === id)
-    if (!predecessor || !local || !sent || local.localRevision !== revision) return undefined
-    return {
-      opId: predecessor.local.opId,
-      localRevision: local.localRevision,
-      sha256: sent.action === 'put' ? sent.sha256 : null,
-    }
+    const source = origins.get(id)
+    return source?.localRevision === revision ? source : undefined
   }
   const localRevs = new Map(bases.map((base) => [base.id, base.beforeRevision]))
   const originals = new Map(remapBase?.assets.map((asset) => [asset.id, asset]))
@@ -310,6 +431,19 @@ export async function stagePintaCausalWrite(options: {
             readSet.push({ source: 'unit', consumerId: after.id, targetId: ref.id })
             continue
           }
+          const sent = observedPredecessor(
+            ref.id,
+            observed.get(ref.id) ?? (plannedReferences.has(ref.id) ? ref.localRevision : undefined),
+          )
+          if (sent?.sha256) {
+            readSet.push({
+              source: 'predecessor',
+              consumerId: after.id,
+              targetId: ref.id,
+              base: sent,
+            })
+            continue
+          }
           const pinned = plannedReferences.has(ref.id) ? remapBase?.entries.get(ref.id) : undefined
           if (pinned?.coverage === 'certified' && pinned.sha256) {
             readSet.push({
@@ -319,16 +453,6 @@ export async function stagePintaCausalWrite(options: {
               revision: pinned.revision,
               sha256: pinned.sha256,
               ...(pinned.layoutRevision ? { layoutRevision: pinned.layoutRevision } : {}),
-            })
-            continue
-          }
-          const sent = observedPredecessor(ref.id, observed.get(ref.id))
-          if (sent?.sha256) {
-            readSet.push({
-              source: 'predecessor',
-              consumerId: after.id,
-              targetId: ref.id,
-              base: sent,
             })
             continue
           }
@@ -365,7 +489,8 @@ export async function stagePintaCausalWrite(options: {
     transitions,
     readSet,
     replaces,
-    ...(predecessor ? { follows: predecessor.local.opId } : {}),
+    ...(predecessor ? { follows: predecessor.opId } : {}),
+    ...(options.independent ? { independent: true as const } : {}),
     ...(options.inverseOf ? { inverseOf: options.inverseOf } : {}),
     requireKnownInventory: !!remapBase || !!deletion,
   })

@@ -2,6 +2,8 @@ import {
   PINTA_CAUSAL_LIMITS,
   type PintaCausalIntent,
   PintaCausalIntentSchema,
+  type PintaCausalMember,
+  PintaCausalMemberSchema,
   type PintaCausalOperation,
   PintaCausalOperationSchema,
   type PintaCausalRead,
@@ -56,6 +58,7 @@ export interface PintaCausalLocalDraft<Asset extends PintaMemoryAsset> {
   /** Exact queued preparations this draft supersedes. Every member must follow. */
   replaces?: readonly { opId: string; preparation: string }[]
   requireKnownInventory?: boolean
+  independent?: true
 }
 
 interface PintaLocalUnbasedRead {
@@ -89,7 +92,22 @@ export interface PintaCausalPending {
   inverseOf?: string
   readSet: readonly PintaLocalCausalRead[]
   follows?: string
+  independent?: true
   members: readonly PintaCausalPendingMember[]
+}
+
+export type PintaPreparedPut = Omit<
+  Extract<PintaCausalMember, { action: 'put' }>,
+  'action' | 'baseRevision' | 'operation'
+>
+
+export interface PintaCausalPrepared {
+  puts: readonly PintaPreparedPut[]
+  bytes: number
+}
+
+export function localPreparedKey(opId: string): string {
+  return `pinta:sync:prepared:${opId}`
 }
 
 export interface PintaCausalSealed {
@@ -129,6 +147,7 @@ export interface LocalCausalState {
   unbased?: PintaLocalUnbased
   /** Exact revisions of recovery copies that still live only in this gallery. */
   recovered?: Map<string, string>
+  prepared?: Map<string, PintaCausalPrepared>
   pending: PintaCausalPending[]
   sealed: PintaCausalSealed | null
   confirmed: Map<string, PintaCausalConfirmed>
@@ -166,6 +185,7 @@ function pendingState(value: unknown): value is PintaCausalPending {
     !pintaCausalOpIdSchema.safeParse(value.preparation).success ||
     !pintaCausalEpochSchema.safeParse(value.baseEpoch).success ||
     (value.follows !== undefined && !pintaCausalOpIdSchema.safeParse(value.follows).success) ||
+    (value.independent !== undefined && value.independent !== true) ||
     (value.inverseOf !== undefined && !pintaCausalOpIdSchema.safeParse(value.inverseOf).success) ||
     !Array.isArray(value.readSet) ||
     value.readSet.length > PINTA_CAUSAL_LIMITS.readEdges ||
@@ -183,11 +203,7 @@ function pendingState(value: unknown): value is PintaCausalPending {
     if (!id.success || !base.success || !localRevision(raw.localRevision) || memberIds.has(id.data))
       return false
     memberIds.add(id.data)
-    if (
-      raw.baseAfter !== undefined &&
-      (!predecessor(raw.baseAfter) || raw.baseAfter.opId !== value.follows)
-    )
-      return false
+    if (raw.baseAfter !== undefined && (!predecessor(raw.baseAfter) || !value.follows)) return false
     if (raw.action === 'delete') {
       if ((base.data === 0 && !raw.baseAfter) || raw.operation !== undefined) return false
       continue
@@ -212,10 +228,7 @@ function pendingState(value: unknown): value is PintaCausalPending {
     const consumerId = consumer.data
     const targetId = target.data
     const source = data.source
-    if (
-      !edge.success &&
-      (source !== 'predecessor' || !predecessor(data.base) || data.base.opId !== value.follows)
-    )
+    if (!edge.success && (source !== 'predecessor' || !predecessor(data.base) || !value.follows))
       return false
     const key = `${consumerId}/${targetId}`
     if (!puts.has(consumerId) || (source === 'unit' && !puts.has(targetId)) || edges.has(key))
@@ -322,6 +335,36 @@ function recoveryState(value: unknown): value is Map<string, string> {
   return true
 }
 
+function preparedState(
+  value: unknown,
+  groups: readonly PintaCausalPending[],
+): value is Map<string, PintaCausalPrepared> {
+  if (!(value instanceof Map) || value.size > groups.length) return false
+  for (const [index, group] of groups.entries()) {
+    if (!value.has(group.opId)) return index === value.size
+    const candidate: unknown = value.get(group.opId)
+    if (!object(candidate) || !Array.isArray(candidate.puts)) return false
+    const putIds = new Set(
+      group.members.filter((member) => member.action === 'put').map(({ itemId }) => itemId),
+    )
+    let sum = 0
+    for (const put of candidate.puts) {
+      if (!object(put)) return false
+      const wire = PintaCausalMemberSchema.safeParse({
+        ...put,
+        action: 'put',
+        operation: { type: 'update' },
+        baseRevision: 1,
+      })
+      if (!wire.success || wire.data.action !== 'put' || !putIds.delete(wire.data.itemId))
+        return false
+      sum += wire.data.bytes
+    }
+    if (putIds.size || candidate.bytes !== sum) return false
+  }
+  return true
+}
+
 export function readLocalCausalState(records: ReadonlyMap<string, unknown>): LocalCausalState {
   const value = records.get(PINTA_CAUSAL_OUTBOX_KEY)
   if (value === undefined)
@@ -345,18 +388,21 @@ export function readLocalCausalState(records: ReadonlyMap<string, unknown>): Loc
     !Array.isArray(value.pending) ||
     value.pending.length > PINTA_CAUSAL_LIMITS.members ||
     !value.pending.every(pendingState) ||
+    (value.prepared !== undefined && !preparedState(value.prepared, value.pending)) ||
     (value.sealed !== null && !sealedState(value.sealed)) ||
     !confirmedState(value.confirmed)
   )
     invalid()
   const ids = new Set<string>()
-  const owners = new Set<string>()
+  const mutableOwners = new Set<string>()
   for (const unit of value.pending) {
     if (ids.has(unit.opId) || unit.opId === value.sealed?.local.opId) invalid()
     ids.add(unit.opId)
-    for (const member of unit.members) {
-      if (owners.has(member.itemId)) invalid()
-      owners.add(member.itemId)
+    if (!value.prepared?.has(unit.opId)) {
+      for (const member of unit.members) {
+        if (mutableOwners.has(member.itemId)) invalid()
+        mutableOwners.add(member.itemId)
+      }
     }
   }
   return {
@@ -366,6 +412,7 @@ export function readLocalCausalState(records: ReadonlyMap<string, unknown>): Loc
     ...(typeof value.writeEpoch === 'string' ? { writeEpoch: value.writeEpoch } : {}),
     ...(unbasedState(value.unbased) ? { unbased: value.unbased } : {}),
     ...(recoveryState(value.recovered) ? { recovered: value.recovered } : {}),
+    ...(preparedState(value.prepared, value.pending) ? { prepared: value.prepared } : {}),
     pending: value.pending,
     sealed: value.sealed,
     confirmed: value.confirmed,
@@ -430,8 +477,13 @@ export function localCausalBytes(records: ReadonlyMap<string, unknown>): number 
     ...state,
     confirmed: [...state.confirmed],
     ...(state.recovered ? { recovered: [...state.recovered] } : {}),
+    ...(state.prepared ? { prepared: [...state.prepared] } : {}),
   })
-  return new TextEncoder().encode(metadata).length + (state.sealed?.bytes ?? 0)
+  return (
+    new TextEncoder().encode(metadata).length +
+    (state.sealed?.bytes ?? 0) +
+    [...(state.prepared?.values() ?? [])].reduce((total, entry) => total + entry.bytes, 0)
+  )
 }
 
 function saveState(records: Map<string, unknown>, state: LocalCausalState): void {
@@ -684,7 +736,9 @@ export function stageLocalCausalDraft<Asset extends PintaMemoryAsset>(
   const items = new Set(draft.transitions.map(({ id }) => id))
   if (items.size === 0 || draft.opId === state.sealed?.local.opId) invalid()
   const replacing = state.pending.filter(
-    (unit) => unit.opId === draft.opId || unit.members.some((member) => items.has(member.itemId)),
+    (unit) =>
+      !state.prepared?.has(unit.opId) &&
+      (unit.opId === draft.opId || unit.members.some((member) => items.has(member.itemId))),
   )
   const expected = new Map(draft.replaces?.map((unit) => [unit.opId, unit.preparation]))
   if (
@@ -696,20 +750,23 @@ export function stageLocalCausalDraft<Asset extends PintaMemoryAsset>(
     )
   )
     invalid()
-  if (
-    draft.follows &&
-    (state.sealed?.local.opId !== draft.follows ||
-      state.sealed.intent.baseEpoch !== draft.baseEpoch)
-  )
+  if (state.prepared?.has(draft.opId)) invalid()
+  const tail =
+    state.pending.filter(({ opId }) => state.prepared?.has(opId)).at(-1) ?? state.sealed?.local
+  if (draft.follows && (tail?.opId !== draft.follows || tail.baseEpoch !== draft.baseEpoch))
     invalid()
   const hasBasis = (id: string, base: PintaCausalPredecessor) => {
-    const source = state.sealed?.local.members.find((member) => member.itemId === id)
-    const sent = state.sealed?.intent.members.find((member) => member.itemId === id)
+    const frozen = state.prepared?.get(base.opId)
+    const sealed = state.sealed?.local.opId === base.opId ? state.sealed : null
+    const source = (
+      frozen ? state.pending.find(({ opId }) => opId === base.opId) : sealed?.local
+    )?.members.find((member) => member.itemId === id)
+    const put =
+      frozen?.puts.find((member) => member.itemId === id) ??
+      sealed?.intent.members.find((member) => member.itemId === id && member.action === 'put')
     return (
       source?.localRevision === base.localRevision &&
-      base.opId === state.sealed?.local.opId &&
-      sent !== undefined &&
-      base.sha256 === (sent.action === 'put' ? sent.sha256 : null)
+      base.sha256 === (put && 'sha256' in put ? put.sha256 : null)
     )
   }
   for (const member of draft.transitions) {
@@ -749,6 +806,7 @@ export function stageLocalCausalDraft<Asset extends PintaMemoryAsset>(
     baseEpoch: draft.baseEpoch,
     ...(draft.inverseOf ? { inverseOf: draft.inverseOf } : {}),
     ...(draft.follows ? { follows: draft.follows } : {}),
+    ...(draft.independent ? { independent: true as const } : {}),
     readSet: draft.readSet,
     members,
   }
@@ -764,6 +822,63 @@ export function stageLocalCausalDraft<Asset extends PintaMemoryAsset>(
   return { snapshot, pending }
 }
 
+export function freezeLocalCausalDraft(
+  records: Map<string, unknown>,
+  opId: string,
+  preparation: string,
+  puts: readonly PintaPreparedPut[],
+  blobs: ReadonlyMap<string, Blob>,
+  matchesRevision: (member: PintaCausalPendingMember) => boolean,
+): boolean {
+  const state = readLocalCausalState(records)
+  const prepared = new Map(state.prepared)
+  const head = state.pending[prepared.size]
+  if (
+    !head ||
+    head.opId !== opId ||
+    head.preparation !== preparation ||
+    !head.members.every(matchesRevision)
+  )
+    return false
+  const bytes = puts.reduce((sum, member) => sum + member.bytes, 0)
+  prepared.set(opId, { puts, bytes })
+  if (!preparedState(prepared, state.pending)) invalid()
+  readCandidateBlobs(blobs, puts, bytes)
+  records.set(localPreparedKey(opId), new Map(blobs))
+  saveState(records, { ...state, prepared })
+  return true
+}
+
+function readCandidateBlobs(
+  stored: unknown,
+  puts: readonly PintaPreparedPut[],
+  expectedBytes: number,
+): ReadonlyMap<string, Blob> {
+  if (!(stored instanceof Map)) invalid()
+  const blobs = new Map<string, Blob>()
+  let bytes = 0
+  for (const member of puts) {
+    const blob: unknown = stored.get(member.itemId)
+    if (!(blob instanceof Blob) || blob.size !== member.bytes) invalid()
+    blobs.set(member.itemId, blob)
+    bytes += blob.size
+  }
+  if (stored.size !== blobs.size || bytes !== expectedBytes) invalid()
+  return blobs
+}
+
+export function readLocalCausalPrepared(
+  records: ReadonlyMap<string, unknown>,
+  opId: string,
+): { puts: readonly PintaPreparedPut[]; blobs: ReadonlyMap<string, Blob> } | null {
+  const candidate = readLocalCausalState(records).prepared?.get(opId)
+  if (!candidate) return null
+  return {
+    puts: candidate.puts,
+    blobs: readCandidateBlobs(records.get(localPreparedKey(opId)), candidate.puts, candidate.bytes),
+  }
+}
+
 export function sealLocalCausalDraft(
   records: Map<string, unknown>,
   preparation: string,
@@ -773,12 +888,13 @@ export function sealLocalCausalDraft(
   matchesRevision: (member: PintaCausalPendingMember) => boolean,
 ): boolean {
   const state = readLocalCausalState(records)
-  const local = state.pending.find((pending) => pending.opId === intent.opId)
-  if (state.sealed || !local || local.preparation !== preparation) return false
+  const local = state.pending[0]
+  if (state.sealed || !local || local.opId !== intent.opId || local.preparation !== preparation)
+    return false
   if (local.follows) return false
   if (!PintaCausalIntentSchema.safeParse(intent).success) invalid()
   if (
-    !local.members.every(matchesRevision) ||
+    (!state.prepared?.has(local.opId) && !local.members.every(matchesRevision)) ||
     intent.baseEpoch !== local.baseEpoch ||
     intent.inverseOf !== local.inverseOf ||
     intent.members.length !== local.members.length ||
@@ -788,11 +904,17 @@ export function sealLocalCausalDraft(
   let bytes = 0
   const members = new Map(local.members.map((member) => [member.itemId, member]))
   let blobCount = 0
+  const frozen = readLocalCausalPrepared(records, local.opId)
+  const frozenPuts = new Map(frozen?.puts.map((put) => [put.itemId, put]))
   for (const member of intent.members) {
     const current = members.get(member.itemId)
     if (current?.action !== member.action || current.baseRevision !== member.baseRevision) invalid()
     if (member.action === 'put') {
       const blob = blobs.get(member.itemId)
+      if (frozen) {
+        const { action: _action, operation: _operation, baseRevision: _revision, ...put } = member
+        if (!pintaValuesEqual(put, frozenPuts.get(member.itemId))) invalid()
+      }
       if (
         !blob ||
         blob.size !== member.bytes ||
@@ -805,12 +927,15 @@ export function sealLocalCausalDraft(
     members.delete(member.itemId)
   }
   if (blobs.size !== blobCount || members.size !== 0) invalid()
+  const prepared = new Map(state.prepared)
+  if (prepared.delete(local.opId)) records.delete(localPreparedKey(local.opId))
   saveState(records, {
     ...state,
+    ...(state.prepared ? { prepared } : {}),
     pending: state.pending.filter((pending) => pending !== local),
     sealed: { local, intent, intentHash, bytes },
   })
-  records.set(PINTA_CAUSAL_BLOBS_KEY, new Map(blobs))
+  records.set(PINTA_CAUSAL_BLOBS_KEY, new Map(frozen?.blobs ?? blobs))
   return true
 }
 
@@ -861,17 +986,19 @@ export function renewLocalCausalUpload(
   )
     invalid()
   const pending = state.pending.map((unit) => {
-    if (unit.follows !== opId) return unit
     return {
       ...unit,
-      follows: renewed,
+      ...(unit.follows === opId ? { follows: renewed } : {}),
+      ...(unit.inverseOf === opId ? { inverseOf: renewed } : {}),
       members: unit.members.map((member) =>
-        member.baseAfter
+        member.baseAfter?.opId === opId
           ? { ...member, baseAfter: { ...member.baseAfter, opId: renewed } }
           : member,
       ),
       readSet: unit.readSet.map((edge) =>
-        edge.source === 'predecessor' ? { ...edge, base: { ...edge.base, opId: renewed } } : edge,
+        edge.source === 'predecessor' && edge.base.opId === opId
+          ? { ...edge, base: { ...edge.base, opId: renewed } }
+          : edge,
       ),
     }
   })
@@ -895,7 +1022,7 @@ function followVerifiedReceipt(
   confirmed: Map<string, PintaCausalConfirmed>,
 ): PintaCausalPending {
   if (
-    pending.follows !== receipt.opId ||
+    !pending.follows ||
     pending.baseEpoch !== sealed.intent.baseEpoch ||
     BigInt(receipt.epoch) !== BigInt(pending.baseEpoch) + 1n
   )
@@ -930,14 +1057,22 @@ function followVerifiedReceipt(
       members.push(member)
       continue
     }
+    if (baseAfter.opId !== receipt.opId) {
+      members.push({ ...member, baseAfter })
+      continue
+    }
     const mark = resultOf(member.itemId, baseAfter)
     if (!mark || member.operation?.type === 'create') return pending
     members.push({ ...member, baseRevision: mark.revision })
   }
-  const readSet: PintaCausalRead[] = []
+  const readSet: PintaLocalCausalRead[] = []
   for (const edge of pending.readSet) {
     if (edge.source !== 'predecessor') {
       if (edge.source === 'snapshot' && touched.has(edge.targetId)) return pending
+      readSet.push(edge)
+      continue
+    }
+    if (edge.base.opId !== receipt.opId) {
       readSet.push(edge)
       continue
     }
@@ -953,7 +1088,15 @@ function followVerifiedReceipt(
     })
   }
   const { follows: _previous, ...rest } = pending
-  return { ...rest, baseEpoch: receipt.epoch, preparation: crypto.randomUUID(), members, readSet }
+  const updated = {
+    ...rest,
+    ...(pending.follows === receipt.opId ? {} : { follows: pending.follows }),
+    baseEpoch: receipt.epoch,
+    preparation: crypto.randomUUID(),
+    members,
+    readSet,
+  }
+  return pendingState(updated) ? updated : pending
 }
 
 /** Acknowledges the revision sent, even when a successor is already on disk. */
@@ -977,11 +1120,17 @@ export function acknowledgeLocalCausalDraft(
   for (const member of receipt.members) {
     const snapshot = local.get(member.itemId)
     const written = sent.get(member.itemId)
+    const previous = confirmed.get(member.itemId)
+    const newIdentity =
+      previous?.deleted &&
+      written?.action === 'put' &&
+      written.baseRevision === 0 &&
+      written.operation.type === 'create'
     if (
       !snapshot ||
       !written ||
       member.revision <= written.baseRevision ||
-      (confirmed.get(member.itemId)?.revision ?? 0) >= member.revision ||
+      (!newIdentity && (previous?.revision ?? 0) >= member.revision) ||
       member.deleted !== (written.action === 'delete') ||
       member.sha256 !== (written.action === 'put' ? written.sha256 : null)
     )

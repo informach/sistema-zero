@@ -82,12 +82,14 @@ import { perfSpanAsync } from './perf'
 import {
   type PintaCausalRemapBase,
   type PintaQueuedSlots,
+  pintaPinBoundary,
   preparePintaCausalRemap,
+  preparePintaOfflineRemap,
   stagePintaCausalWrite,
 } from './pinta-causal-authoring'
 import { PintaCausalRequestError } from './pinta-causal-cloud'
 import { discoverPintaCausalSnapshot, readPintaCausalJson } from './pinta-causal-pull'
-import { flushPintaCausalOutbox } from './pinta-causal-queue'
+import { flushPintaCausalOutbox, freezePintaCausalPending } from './pinta-causal-queue'
 import { syncPintaCausalAccount } from './pinta-causal-sync'
 
 /** O que o wrapper avisa ao pacote (espelho estrutural de `PintaPersistenceEvent`). */
@@ -371,6 +373,7 @@ export function createCloudMirroredPintaPersistence(options: {
   const causalCloud = cloud.pintaCausal
   const causalSession = new AbortController()
   let lastRemap: PintaCausalRemapBase | undefined
+  let lastRemapChain = ''
   let queuedSlots: PintaQueuedSlots | undefined
   let knownLegacy = false
   let causalTimer: ReturnType<typeof setTimeout> | null = null
@@ -389,7 +392,12 @@ export function createCloudMirroredPintaPersistence(options: {
         [...ids],
         'error',
         error instanceof PintaCausalRequestError &&
-          ['operation-expired', 'operation-aborted', 'not-found'].includes(error.reason)
+          [
+            'operation-expired',
+            'operation-aborted',
+            'not-found',
+            'unresolved-predecessor',
+          ].includes(error.reason)
           ? 'Seus desenhos estão neste aparelho. Uma nova versão da conta precisa ser conferida.'
           : 'Seus desenhos estão neste aparelho. Não consegui guardá-los na conta agora.',
       )
@@ -405,20 +413,69 @@ export function createCloudMirroredPintaPersistence(options: {
     knownLegacy = snapshot === null
     return snapshot
   }
+  function queueChain(current: Awaited<ReturnType<PintaCausalLocalPort['inspect']>>): string {
+    return [current.sealed?.local.opId, ...(current.prepared?.keys() ?? [])].join('/')
+  }
+  async function freezeBeforeBoundary(
+    rootId: string | undefined,
+    remapping: boolean,
+    pinning: boolean,
+  ) {
+    if (!causalLocal) return
+    let current = await causalLocal.inspect()
+    for (const group of current.pending) {
+      if (current.prepared?.has(group.opId)) continue
+      const otherRemap = group.members.some(
+        (member) => member.operation?.type === 'remap' && member.itemId !== rootId,
+      )
+      const sameRemap = group.members.some(
+        (member) => member.operation?.type === 'remap' && member.itemId === rootId,
+      )
+      const changesOtherDocuments = group.members.some((member) => member.itemId !== rootId)
+      const touchesPriorGroup = group.members.some((member) => member.itemId === rootId)
+      if (
+        !group.independent &&
+        !pinning &&
+        !(otherRemap && (remapping || touchesPriorGroup)) &&
+        !(remapping && !sameRemap && changesOtherDocuments)
+      )
+        continue
+      const frozen = await freezePintaCausalPending(causalLocal, group.opId, causalSession.signal)
+      current = await causalLocal.inspect()
+      if (
+        !frozen &&
+        !current.prepared?.has(group.opId) &&
+        current.pending.some(({ opId }) => opId === group.opId)
+      )
+        throw Error('Uma das mudanças guardadas foi atualizada em outra janela.')
+    }
+  }
   async function prepareTileRemap(source: PintaAsset): Promise<readonly PintaAsset[]> {
     if (!causalLocal || !causalCloud) return local.listAllAssets()
+    await freezeBeforeBoundary(source.id, true, false)
     const state = await causalLocal.inspect()
     if (!knownLegacy && state.epoch === null && state.writeEpoch === undefined)
       return local.listAllAssets()
     if (
       lastRemap?.source.id === source.id &&
-      (state.pending.some((unit) => unit.opId === queuedSlots?.opId) ||
-        (lastRemap.snapshot.epoch === (state.writeEpoch ?? state.epoch) &&
+      lastRemapChain === queueChain(state) &&
+      (state.pending.some(
+        (unit) => unit.opId === queuedSlots?.opId && !state.prepared?.has(unit.opId),
+      ) ||
+        (lastRemap.epoch === (state.writeEpoch ?? state.epoch) &&
           pintaLocalRevisionOf(lastRemap.source) === pintaLocalRevisionOf(source)))
     )
       return lastRemap.assets
-    const snapshot = await probeCausal()
     const catalog = await local.listAllAssets()
+    let snapshot: Awaited<ReturnType<typeof probeCausal>>
+    try {
+      snapshot = await probeCausal()
+    } catch (error) {
+      if (causalSession.signal.aborted || !(error instanceof TypeError)) throw error
+      lastRemap = preparePintaOfflineRemap(source, catalog, state)
+      lastRemapChain = queueChain(state)
+      return lastRemap.assets
+    }
     if (!snapshot) {
       if (await cloud.peek(source.id))
         throw Error('Ainda não consegui conferir a conta para mudar a ordem das peças.')
@@ -428,10 +485,11 @@ export function createCloudMirroredPintaPersistence(options: {
       source,
       snapshot,
       local: catalog,
-      localState: await causalLocal.inspect(),
+      localState: state,
       cloud: causalCloud,
       signal: causalSession.signal,
     })
+    lastRemapChain = queueChain(state)
     return lastRemap.assets
   }
   function wakeCausal(): void {
@@ -454,16 +512,23 @@ export function createCloudMirroredPintaPersistence(options: {
     deletion?: { id: string; before?: PintaAsset },
   ): Promise<boolean> {
     if (!causalLocal || !causalCloud) return false
-    const state = await causalLocal.inspect()
+    let state = await causalLocal.inspect()
     const structure = !!deletion || !!context?.layout?.oldToNew.some((next, old) => next !== old)
     if (!state.protocolKnown && knownLegacy && !state.unbased) return false
     const root = assets[0]
+    const independent = root && pintaPinBoundary(await local.loadAssetById(root.id), root)
+    if (state.writeEpoch !== undefined || state.epoch !== null) {
+      await freezeBeforeBoundary(root?.id, structure, !!independent)
+      state = await causalLocal.inspect()
+    }
     const remap =
       root &&
       lastRemap?.source.id === root.id &&
       context?.layout &&
-      (lastRemap.snapshot.epoch === (state.writeEpoch ?? state.epoch) ||
-        state.pending.some((unit) => unit.opId === queuedSlots?.opId))
+      (lastRemap.epoch === (state.writeEpoch ?? state.epoch) ||
+        state.pending.some(
+          (unit) => unit.opId === queuedSlots?.opId && !state.prepared?.has(unit.opId),
+        ))
         ? lastRemap
         : undefined
     const sentId = root && state.confirmed.get(root.id)?.opId
@@ -515,6 +580,7 @@ export function createCloudMirroredPintaPersistence(options: {
       remapBase: undo ? undefined : remap,
       queuedSlots,
       inverseOf: undo,
+      ...(independent ? { independent: true as const } : {}),
     })
     if (staged.slots) queuedSlots = staged.slots
     await reportCausalQueue().catch(() => {})

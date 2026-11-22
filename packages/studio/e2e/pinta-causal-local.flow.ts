@@ -232,6 +232,202 @@ test('a sealed IndexedDB upload survives restart and acknowledges only the origi
   expect(result.successor).not.toBe(result.confirmed)
 })
 
+test('three local candidates survive beside one remote seal, with atomic quota and receipt order', async ({
+  page,
+  context,
+}) => {
+  await proof(page)
+  const staged = await page.evaluate(async () => {
+    const p = window.pinta026
+    const namespace = crypto.randomUUID()
+    const { causal } = p.createPintaCausalPersistence({ namespace })
+    const sprite = p.createPixelSpriteAsset({ name: 'nuvem', frameSize: 8 })
+    await causal.applyPull({ fromEpoch: null, epoch: '1', transitions: [] }, () => true)
+    let predecessor: { opId: string; localRevision: string; sha256: string } | undefined
+    const orderedIds: string[] = []
+    let failedLastWrite = false
+    let refusedQuota = false
+    for (let i = 0; i < 4; i++) {
+      const [base] = await causal.capture([sprite.id])
+      if (!base) throw Error('Base absent')
+      const after = { ...(base.before ?? sprite), name: `camada-${i}` }
+      const opId = crypto.randomUUID()
+      orderedIds.push(opId)
+      const staged = await causal.stage({
+        opId,
+        baseEpoch: '1',
+        readSet: [],
+        ...(predecessor ? { follows: predecessor.opId } : {}),
+        transitions: [
+          {
+            ...base,
+            after,
+            baseRevision: 0,
+            operation: { type: i === 0 ? 'create' : 'update' },
+            ...(predecessor ? { baseAfter: predecessor } : {}),
+          },
+        ],
+      })
+      const gzip = await new Response(
+        new Blob([after.name]).stream().pipeThrough(new CompressionStream('gzip')),
+      ).blob()
+      const bytes = new Uint8Array(await crypto.subtle.digest('SHA-256', await gzip.arrayBuffer()))
+      const sha256 = [...bytes].map((byte) => byte.toString(16).padStart(2, '0')).join('')
+      const put = {
+        itemId: sprite.id,
+        bytes: gzip.size,
+        sha256,
+        kind: sprite.kind,
+        name: after.name,
+        itemUpdatedAt: new Date(sprite.updatedAt).toISOString(),
+        formatVersion: 1,
+      }
+      const blobs = new Map([[sprite.id, gzip]])
+      const member = staged.members[0]
+      if (!member) throw Error('Candidate absent')
+      predecessor = { opId, localRevision: member.localRevision, sha256 }
+      if (i === 0) {
+        const intent: PintaCausalIntent = {
+          opId,
+          protocol: 1,
+          reader: 6,
+          baseEpoch: '1',
+          readSet: [],
+          members: [{ ...put, action: 'put', operation: { type: 'create' }, baseRevision: 0 }],
+        }
+        if (!(await causal.seal(staged.preparation, intent, '1'.repeat(64), blobs)))
+          throw Error('Seal refused')
+        continue
+      }
+      if (i === 3) {
+        const large = new Blob([new Uint8Array(32 * 1024 * 1024)])
+        refusedQuota = await causal
+          .freeze(
+            opId,
+            staged.preparation,
+            [{ ...put, bytes: large.size }],
+            new Map([[sprite.id, large]]),
+          )
+          .then(
+            () => false,
+            (error) => String(error).includes('espaço') || String(error).includes('MiB'),
+          )
+        const original = IDBObjectStore.prototype.put
+        IDBObjectStore.prototype.put = function (value, key) {
+          if (key === `pinta:sync:prepared:${opId}`) throw Error('último registro preparado')
+          return original.call(this, value, key)
+        }
+        try {
+          await causal.freeze(opId, staged.preparation, [put], blobs)
+        } catch (error) {
+          failedLastWrite = String(error).includes('último registro preparado')
+        } finally {
+          IDBObjectStore.prototype.put = original
+        }
+        if (await causal.prepared(opId)) throw Error('Partial write appeared')
+      }
+      if (!(await causal.freeze(opId, staged.preparation, [put], blobs)))
+        throw Error('Preparation refused')
+    }
+    const state = await causal.inspect()
+    return {
+      namespace,
+      itemId: sprite.id,
+      orderedIds,
+      failedLastWrite,
+      refusedQuota,
+      localCandidates: state.prepared?.size,
+      activeId: state.sealed?.local.opId,
+    }
+  })
+  expect(staged).toMatchObject({
+    failedLastWrite: true,
+    refusedQuota: true,
+    localCandidates: 3,
+    activeId: staged.orderedIds[0],
+  })
+  await page.close()
+  const reopened = await context.newPage()
+  await proof(reopened)
+  const finished = await reopened.evaluate(async ({ namespace, itemId, orderedIds }) => {
+    const { causal } = window.pinta026.createPintaCausalPersistence({ namespace })
+    const order: string[] = []
+    const texts: string[] = []
+    for (let i = 0; i < orderedIds.length; i++) {
+      const opId = orderedIds[i]!
+      if (i > 0) {
+        const head = (await causal.inspect()).pending[0]
+        const candidate = await causal.prepared(opId)
+        const put = candidate?.puts[0]
+        if (
+          !head ||
+          head.opId !== opId ||
+          !candidate ||
+          !put ||
+          head.follows ||
+          head.baseEpoch !== String(i + 1) ||
+          head.members[0]?.baseRevision !== i
+        )
+          throw Error('Unproven successor')
+        const intent: PintaCausalIntent = {
+          opId,
+          protocol: 1,
+          reader: 6,
+          baseEpoch: head.baseEpoch,
+          readSet: [],
+          members: [{ ...put, action: 'put', baseRevision: i, operation: { type: 'update' } }],
+        }
+        if (!(await causal.seal(head.preparation, intent, '2'.repeat(64), candidate.blobs)))
+          throw Error('Frozen candidate disappeared')
+      }
+      const upload = await causal.inFlight()
+      const member = upload?.sealed.intent.members[0]
+      const blob = upload?.blobs.get(itemId)
+      if (!upload || !blob || member?.action !== 'put') throw Error('Gzip absent')
+      texts.push(
+        await new Response(blob.stream().pipeThrough(new DecompressionStream('gzip'))).text(),
+      )
+      order.push(upload.sealed.intent.opId)
+      if (
+        !(await causal.acknowledge({
+          opId,
+          epoch: String(i + 2),
+          intentHash: upload.sealed.intentHash,
+          members: [
+            {
+              itemId,
+              revision: i + 1,
+              deleted: false,
+              sha256: member.sha256,
+              layoutRevision: null,
+            },
+          ],
+        }))
+      )
+        throw Error('ACK did not settle')
+    }
+    const final = await causal.inspect()
+    return {
+      order,
+      texts,
+      epoch: final.epoch,
+      writeEpoch: final.writeEpoch,
+      pending: final.pending.length,
+      prepared: final.prepared?.size,
+      sealed: final.sealed,
+    }
+  }, staged)
+  expect(finished).toEqual({
+    order: staged.orderedIds,
+    texts: ['camada-0', 'camada-1', 'camada-2', 'camada-3'],
+    epoch: '1',
+    writeEpoch: '5',
+    pending: 0,
+    prepared: 0,
+    sealed: null,
+  })
+})
+
 test('an editor in another tab defers the complete delta before the final local CAS', async ({
   page,
   context,

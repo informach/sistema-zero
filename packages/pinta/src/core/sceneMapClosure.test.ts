@@ -1,7 +1,9 @@
 import { expect, it } from 'bun:test'
 import { vilaEFloresta } from '../../scripts/homologacao/fixture'
-import { createTilemapAsset, createTilesetAsset, type PintaAsset } from './project'
-import { sceneMapClosure } from './sceneMapClosure'
+import { createMapObject } from '../tiles/mapObjects'
+import { addObjectLayer } from '../tiles/tilemapOps'
+import { createTilemapAsset, createTilesetAsset, isObjectLayer, type PintaAsset } from './project'
+import { observePintaReferences, sceneMapClosure } from './sceneMapClosure'
 
 it('keeps the world behind named doors, cycles and the resources of both maps', () => {
   const { map, cabana, assets } = vilaEFloresta()
@@ -44,4 +46,24 @@ it('follows typed references through tile properties and refuses a world beyond 
   expect(sceneMapClosure(maps[0]!, assets).maps).toHaveLength(16)
   tileset.tileProperties = { 0: { prize: { type: 'asset', value: 'missing' } } }
   expect(() => sceneMapClosure(maps[0]!, assets)).toThrow('desenho')
+})
+
+it('observes a valid new door even when another door has an absent historical target', () => {
+  const sheet = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+  const cabin = createTilemapAsset({ name: 'cabana', tilesetId: sheet.id, cols: 2, rows: 2 })
+  const map = addObjectLayer(
+    createTilemapAsset({ name: 'vila', tilesetId: sheet.id, cols: 2, rows: 2 }),
+    'Portas',
+  )
+  map.layers
+    .find(isObjectLayer)!
+    .objects.push(
+      createMapObject({ id: 'falta', role: 'door', properties: { destino: 'ausente' } }),
+      createMapObject({ id: 'cabana', role: 'door', properties: { destino: cabin.id } }),
+    )
+  expect(observePintaReferences(map, [sheet, cabin]).map(({ id }) => id)).toEqual([
+    sheet.id,
+    cabin.id,
+  ])
+  expect(() => sceneMapClosure(map, [sheet, cabin])).toThrow('porta')
 })

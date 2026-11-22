@@ -8,13 +8,18 @@ import {
 import { pintaLocalRevisionOf } from '../../../pinta/src/core/localAssetOrigin'
 import type { PintaAsset } from '../../../pinta/src/core/project'
 import {
+  createPixelSpriteAsset,
   createTilemapAsset,
   createTilesetAsset,
+  isObjectLayer,
   isTileLayer,
   withPintaSchemaStamp,
 } from '../../../pinta/src/core/project'
 import { assetFromJson, assetToJson } from '../../../pinta/src/export/assetJson'
 import { clearIdbMock } from '../../../pinta/src/testing/idbMock'
+import { createMapObject } from '../../../pinta/src/tiles/mapObjects'
+import { freezeMapTilesets, freezeObjectResource } from '../../../pinta/src/tiles/resourceVersions'
+import { addObjectLayer } from '../../../pinta/src/tiles/tilemapOps'
 import { remapTilesetConsumers } from '../../../pinta/src/tiles/tilesetConsumers'
 import { addTile, removeTile } from '../../../pinta/src/tiles/tilesetOps'
 import type {
@@ -849,4 +854,284 @@ test('a primeira descida recupera folha e mapa locais como uma cópia religada',
   } finally {
     wrapper.dispose?.()
   }
+})
+
+test('fixação de duas folhas, remap, pintura e fixação de arte conservam os gestos offline', async () => {
+  const namespace = 'cloud-prepared-pins'
+  const local = createPintaCausalPersistence({ namespace })
+  const a = addTile(createTilesetAsset({ name: 'folha-a', tileSize: 16 }), 0)
+  const b = createTilesetAsset({ name: 'folha-b', tileSize: 16 })
+  const map = addObjectLayer(
+    createTilemapAsset({ name: 'vila', tilesetId: a.id, cols: 2, rows: 2 }),
+    'Arte',
+  )
+  const grid = map.layers.find(isTileLayer)!
+  grid.cells[0] = 1
+  map.layers.push({
+    ...grid,
+    id: 'folha-b-layer',
+    tilesetId: b.id,
+    cells: new Int16Array([0, -1, -1, -1]),
+  })
+  const objects = map.layers.find(isObjectLayer)!
+  objects.objects.push(createMapObject({ id: 'porta', art: { assetId: a.id, tile: 1 } }))
+  const initial = await Promise.all(
+    [a, b, map].map((asset) => cloudAsset(asset, 1, asset.kind === 'tileset' ? '1' : null)),
+  )
+  expect(
+    await local.causal.applyPull(
+      {
+        fromEpoch: null,
+        epoch: '1',
+        transitions: [a, b, map].map((after, i) => ({
+          id: after.id,
+          before: null,
+          beforeRevision: null,
+          after,
+          remote: initial[i]!.entry,
+        })),
+      },
+      () => true,
+    ),
+  ).toBe(true)
+  const { cloud, queued } = fakeCloud(map, 1)
+  const unused = async (): Promise<never> => {
+    throw Error('Operação não solicitada')
+  }
+  let uploads = 0
+  const transport: PintaCausalCloud = {
+    snapshot: async () => {
+      throw new TypeError('Failed to fetch')
+    },
+    verifyEpoch: unused,
+    download: unused,
+    backfill: unused,
+    upload: async () => {
+      uploads++
+      throw Error('sem rede')
+    },
+  }
+  const wrapper = createCloudMirroredPintaPersistence({
+    local,
+    cloud: { ...cloud, pintaCausal: transport },
+    viewerId: 'pins',
+    causal: {
+      local: local.causal,
+      holdOpen: async () => () => {},
+      withClosed: (_, apply) => apply(),
+    },
+  })
+  try {
+    const sprite = createPixelSpriteAsset({ name: 'lua', frameSize: 8 })
+    await wrapper.persistAsset(sprite, { resources: [] })
+    await expect(
+      flushPintaCausalOutbox({
+        local: local.causal,
+        cloud: transport,
+        reader: 6,
+        signal: new AbortController().signal,
+      }),
+    ).rejects.toThrow('sem rede')
+    const beforePin = await local.loadAssetById(map.id)
+    const sheetA = await local.loadAssetById(a.id)
+    const sheetB = await local.loadAssetById(b.id)
+    if (beforePin?.kind !== 'tilemap' || sheetA?.kind !== 'tileset' || sheetB?.kind !== 'tileset')
+      throw Error('Acervo incompleto')
+    const pin = freezeMapTilesets(beforePin, (id) =>
+      id === a.id ? sheetA : id === b.id ? sheetB : null,
+    )
+    if (!pin.ok) throw Error('Versões da grade não foram guardadas')
+    const observe = (asset: PintaAsset) => ({
+      id: asset.id,
+      localRevision: pintaLocalRevisionOf(asset) ?? null,
+    })
+    await wrapper.persistAsset(pin.map, { resources: [observe(sheetA)] })
+    const catalog = await wrapper.prepareTileRemap!(sheetA)
+    const remap = remapTilesetConsumers(catalog, [], a.id, { removedAt: 0 })
+    if (!remap.ok || remap.after.length !== 1) throw Error('Remap de arte ausente')
+    await wrapper.persistAssets([removeTile(sheetA, 0), ...remap.after], {
+      resources: [],
+      layout: { oldToNew: [-1, 0], count: 1 },
+    })
+    const afterRemap = await local.loadAssetById(map.id)
+    const resultingA = await local.loadAssetById(a.id)
+    if (afterRemap?.kind !== 'tilemap' || resultingA?.kind !== 'tileset')
+      throw Error('Mapa ausente')
+    expect(afterRemap.tilesetId).toBe(pin.map.tilesetId)
+    expect(afterRemap.layers.find(isObjectLayer)?.objects[0]?.art).toEqual({
+      assetId: a.id,
+      tile: 0,
+    })
+    const painting = {
+      ...afterRemap,
+      layers: afterRemap.layers.map((layer) =>
+        layer.id === grid.id ? { ...layer, opacity: 0.5 } : layer,
+      ),
+    }
+    await wrapper.persistAsset(painting, { resources: [observe(resultingA)] })
+    const beforePinArt = await local.loadAssetById(map.id)
+    if (beforePinArt?.kind !== 'tilemap') throw Error('Mapa ausente')
+    const pinArt = freezeObjectResource(beforePinArt, objects.id, 'porta', (id) =>
+      id === a.id ? resultingA : null,
+    )
+    if (!pinArt.ok) throw Error('Arte não foi guardada')
+    await wrapper.persistAsset(pinArt.map, { resources: [] })
+    const reopened = createPintaCausalPersistence({ namespace })
+    const before = await reopened.causal.inspect()
+    expect(before.prepared?.size).toBe(3)
+    expect(before.pending).toHaveLength(4)
+    expect(before.sealed?.intent.members.map((member) => member.itemId)).toEqual([sprite.id])
+    expect(uploads).toBe(1)
+    expect(queued).toEqual([])
+    const order: string[][] = []
+    const memberRevisions = new Map([
+      [a.id, 1],
+      [b.id, 1],
+      [map.id, 1],
+    ])
+    let epoch = 1
+    await flushPintaCausalOutbox({
+      local: reopened.causal,
+      reader: 6,
+      signal: new AbortController().signal,
+      cloud: {
+        upload: async ({ intent, intentHash, blobs }) => {
+          expect(intent.baseEpoch).toBe(String(epoch))
+          order.push(intent.members.map((member) => member.itemId).sort())
+          const mapMember = intent.members.find((member) => member.itemId === map.id)
+          if (mapMember?.action === 'put') {
+            const gzip = blobs.get(map.id)
+            if (!gzip) throw Error('Gzip ausente')
+            const json = await new Response(
+              gzip.stream().pipeThrough(new DecompressionStream('gzip')),
+            ).text()
+            const saved = assetFromJson(json).asset
+            if (saved?.kind !== 'tilemap') throw Error('Mapa inválido')
+            const art = saved.layers.find(isObjectLayer)?.objects[0]?.art
+            if (order.length === 2) expect(art).toEqual({ assetId: a.id, tile: 1 })
+            if (order.length === 3) expect(art).toEqual({ assetId: a.id, tile: 0 })
+            if (order.length === 4)
+              expect(intent.readSet).toContainEqual(
+                expect.objectContaining({
+                  source: 'snapshot',
+                  consumerId: map.id,
+                  targetId: a.id,
+                  revision: 2,
+                }),
+              )
+            if (order.length === 5) {
+              expect(art?.assetId).not.toBe(a.id)
+              expect(saved.layers.find((layer) => layer.id === grid.id)?.opacity).toBe(0.5)
+            }
+          }
+          return {
+            opId: intent.opId,
+            intentHash,
+            epoch: String(++epoch),
+            members: intent.members.map((member) => {
+              const revision = (memberRevisions.get(member.itemId) ?? 0) + 1
+              memberRevisions.set(member.itemId, revision)
+              return member.action === 'put'
+                ? {
+                    itemId: member.itemId,
+                    revision,
+                    deleted: false,
+                    sha256: member.sha256,
+                    layoutRevision: member.itemId === a.id ? String(epoch) : null,
+                  }
+                : {
+                    itemId: member.itemId,
+                    revision,
+                    deleted: true,
+                    sha256: null,
+                    layoutRevision: null,
+                  }
+            }),
+          }
+        },
+      },
+    })
+    expect(order).toEqual([[sprite.id], [map.id], [a.id, map.id].sort(), [map.id], [map.id]])
+    const done = await reopened.causal.inspect()
+    expect(done.writeEpoch).toBe('6')
+    expect(done.epoch).toBe('1')
+    expect(done.pending).toEqual([])
+    expect(done.prepared?.size).toBe(0)
+    expect(done.sealed).toBeNull()
+  } finally {
+    wrapper.dispose?.()
+  }
+})
+
+test('recibo de criação após compactar lápide pode confirmar a nova revisão 1', async () => {
+  const local = createPintaCausalPersistence({ namespace: 'cloud-compact-tombstone' })
+  const sprite = createPixelSpriteAsset({ name: 'lua', frameSize: 8 })
+  const remote = (await cloudAsset(sprite, 7)).entry
+  expect(
+    await local.causal.applyPull(
+      {
+        fromEpoch: null,
+        epoch: '1',
+        transitions: [{ id: sprite.id, before: null, beforeRevision: null, after: sprite, remote }],
+      },
+      () => true,
+    ),
+  ).toBe(true)
+  const [base] = await local.causal.capture([sprite.id])
+  if (!base) throw Error('Arte ausente')
+  expect(
+    await local.causal.applyPull(
+      {
+        fromEpoch: '1',
+        epoch: '2',
+        transitions: [{ ...base, after: null, remote: null }],
+      },
+      () => true,
+    ),
+  ).toBe(true)
+  const [gone] = await local.causal.capture([sprite.id])
+  if (!gone) throw Error('Lápide ausente')
+  const opId = crypto.randomUUID()
+  await local.causal.stage({
+    opId,
+    baseEpoch: '2',
+    readSet: [],
+    transitions: [
+      {
+        ...gone,
+        after: { ...sprite, name: 'lua-nova' },
+        baseRevision: 0,
+        operation: { type: 'create' },
+      },
+    ],
+  })
+  await flushPintaCausalOutbox({
+    local: local.causal,
+    reader: 6,
+    signal: new AbortController().signal,
+    cloud: {
+      upload: async ({ intent, intentHash }) => {
+        const [put] = intent.members
+        if (put?.action !== 'put') throw Error('Operação ausente')
+        expect(put.baseRevision).toBe(0)
+        return {
+          opId,
+          intentHash,
+          epoch: '3',
+          members: [
+            {
+              itemId: sprite.id,
+              revision: 1,
+              deleted: false,
+              sha256: put.sha256,
+              layoutRevision: null,
+            },
+          ],
+        }
+      },
+    },
+  })
+  const state = await local.causal.inspect()
+  expect(state.confirmed.get(sprite.id)).toMatchObject({ opId, revision: 1, deleted: false })
+  expect(state.sealed).toBeNull()
 })

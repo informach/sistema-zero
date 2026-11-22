@@ -100,12 +100,8 @@ export function observePintaReferences<Asset extends PintaMemoryAsset>(
   const byId = new Map(catalog.map((item) => [item.id, item]))
   byId.set(asset.id, asset)
   const references = new Set(pintaAssetDependencyIds(asset))
-  try {
-    for (const id of pintaDoorDependencyIds(asset, byId)) references.add(id)
-  } catch (error) {
-    // A legacy door may still be unresolved. The server admits the actual change.
-    if (!(error instanceof SceneMapClosureError)) throw error
-  }
+  for (const { binding } of pintaDoorBindings(asset, byId))
+    if (binding.type === 'target') references.add(binding.id)
   references.delete(asset.id)
   return [...references].map((id) => {
     const target = byId.get(id)

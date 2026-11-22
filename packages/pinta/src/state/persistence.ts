@@ -52,10 +52,12 @@ import {
 } from './localAssetAuthority'
 import {
   acknowledgeLocalCausalDraft,
+  freezeLocalCausalDraft,
   installLocalCausalPull,
   type LocalCausalState,
   localCausalBytes,
   localCausalPullImpact,
+  localPreparedKey,
   ownsLocalCausalMember,
   PINTA_CAUSAL_BLOBS_KEY,
   PINTA_CAUSAL_OUTBOX_KEY,
@@ -65,6 +67,8 @@ import {
   PintaCausalPullDeferred,
   type PintaCausalSealed,
   type PintaLocalUnbasedDraft,
+  type PintaPreparedPut,
+  readLocalCausalPrepared,
   readLocalCausalState,
   readLocalCausalUpload,
   rememberLocalCausalProtocol,
@@ -453,6 +457,13 @@ export interface PintaCausalLocalPort<Asset extends PintaMemoryAsset = PintaAsse
   stageUnbased(draft: PintaLocalUnbasedDraft<Asset>): Promise<void>
   stage(draft: PintaCausalLocalDraft<Asset>): Promise<PintaCausalPending>
   prepare(opId: string): Promise<{ pending: PintaCausalPending; assets: Asset[] } | null>
+  freeze(
+    opId: string,
+    preparation: string,
+    puts: readonly PintaPreparedPut[],
+    blobs: ReadonlyMap<string, Blob>,
+  ): Promise<boolean>
+  prepared(opId: string): Promise<ReturnType<typeof readLocalCausalPrepared>>
   seal(
     preparation: string,
     intent: PintaCausalIntent,
@@ -721,21 +732,52 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
         }
         return { pending, assets }
       }, causalMembers(opId)),
-    seal: (preparation, intent, intentHash, blobs) =>
+    freeze: (opId, preparation, puts, blobs) =>
       transaction((records) => {
         const before = localCausalBytes(records)
         const snapshot = resolveLocalRecords(records, false)
-        const sealed = sealLocalCausalDraft(
+        const frozen = freezeLocalCausalDraft(
           records,
+          opId,
           preparation,
-          intent,
-          intentHash,
+          puts,
           blobs,
           (member) => snapshot.documents.get(member.itemId)?.revision === member.localRevision,
         )
-        if (sealed) checkCombined(records, snapshot, before)
-        return sealed
-      }, causalInventory),
+        if (frozen) checkCombined(records, snapshot, before)
+        return frozen
+      }),
+    prepared: (opId) =>
+      transaction(
+        (records) => readLocalCausalPrepared(records, opId),
+        () => [PINTA_CAUSAL_OUTBOX_KEY, localPreparedKey(opId)],
+      ),
+    seal: (preparation, intent, intentHash, blobs) =>
+      transaction(
+        (records) => {
+          const before = localCausalBytes(records)
+          const snapshot = resolveLocalRecords(records, false)
+          const sealed = sealLocalCausalDraft(
+            records,
+            preparation,
+            intent,
+            intentHash,
+            blobs,
+            (member) => snapshot.documents.get(member.itemId)?.revision === member.localRevision,
+          )
+          if (sealed) checkCombined(records, snapshot, before)
+          return sealed
+        },
+        (records) => {
+          const key = localPreparedKey(intent.opId)
+          if (
+            !records.has(PINTA_CAUSAL_OUTBOX_KEY) ||
+            (readLocalCausalState(records).prepared?.has(intent.opId) && !records.has(key))
+          )
+            return [PINTA_CAUSAL_OUTBOX_KEY, key]
+          return null
+        },
+      ),
     inFlight: () =>
       transaction(readLocalCausalUpload, () => [PINTA_CAUSAL_OUTBOX_KEY, PINTA_CAUSAL_BLOBS_KEY]),
     renew: (previous, next, intentHash, ready) =>
