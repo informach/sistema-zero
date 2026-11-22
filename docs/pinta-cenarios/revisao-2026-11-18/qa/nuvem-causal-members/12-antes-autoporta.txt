@@ -1,0 +1,41 @@
+bun test v1.3.11 (af24e281)
+
+tests\db\pinta-causal.test.ts:
+{
+  severity_local: "NOTICE",
+  severity: "NOTICE",
+  code: "42P06",
+  message: "schema \"drizzle\" already exists, skipping",
+  file: "schemacmds.c",
+  line: "132",
+  routine: "CreateSchemaCommand",
+}
+{
+  severity_local: "NOTICE",
+  severity: "NOTICE",
+  code: "42P07",
+  message: "relation \"members_migrations\" already exists, skipping",
+  file: "parse_utilcmd.c",
+  line: "207",
+  routine: "transformCreateStmt",
+}
+190 |       throw new PintaCausalError('layout-stale', read.targetId)
+191 |   }
+192 |   const requireRead = (owner: string, target: string) => {
+193 |     const read = reads.get(`${owner}~${target}`)
+194 |     if (!read || (writes.has(target) && read.source !== 'unit'))
+195 |       throw new PintaCausalError('layout-stale', target)
+                  ^
+error: layout-stale
+ reason: "layout-stale",
+ itemId: "home",
+
+      at requireRead (<worktree>\packages\members\src\domain\creations\pinta-causal-graph.ts:195:13)
+      at verifyPintaGraph (<worktree>\packages\members\src\domain\creations\pinta-causal-graph.ts:234:30)
+      at <anonymous> (<worktree>\packages\members\src\infrastructure\persistence\drizzle\pinta-causal-units.repository.ts:568:21)
+(fail) Pinta causal over the real migration and existing quota lock > self doors by ID and name use the proven map PUT; external and shadowed selectors still require their target [125.00ms]
+
+ 0 pass
+ 19 filtered out
+ 1 fail
+Ran 1 test across 1 file. [493.00ms]

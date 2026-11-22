@@ -12,6 +12,8 @@ O candidato `fdb196192efaad0ed303c7c2ba2d0104232c9355` passou nos ensaios de pub
 | Purga de dados pessoais | 4 testes e 42 asserções |
 | HTTP legado e serviço de limpeza | 64 testes e 593 asserções |
 
+A revisão posterior em `b88d228776104ceedc59f802700362703ef9d999` passou em 21 testes SQL e 132 asserções. Ela inclui portas para o próprio mapa por ID e por nome e os dois encadeamentos entre congelar a grade multifolha e remapear a arte que continuou vinculada. Os arquivos 12 e 13 registram a falha da autoporta e o resultado após a correção.
+
 O [índice](indice.json) registra o commit, o comando, o alvo, o código de saída e o SHA-256 de cada log. Os arquivos usam UTF-8 e LF. Caminhos absolutos do worktree foram substituídos por `<worktree>`. O índice inclui também o hash de cada log original. Os arquivos 08 a 10 registram os casos que falharam antes das correções. O arquivo 11 registra três timeouts sob carga simultânea. A repetição sequencial preservou o limite de cinco segundos de cada teste e passou nos 19 casos.
 
 Execute os comandos de Members a partir de `packages/members`. Os testes de banco exigem URLs locais explicitamente descartáveis nas variáveis do índice. O harness causal aplica as migrações reais de forma aditiva e recusa um banco já ocupado. A purga trunca os dados de seu banco de teste, e o fixture legado prepara as próprias tabelas. Use bancos separados para cada variável. A execução documentada usou quatro bancos locais na porta 55553.
