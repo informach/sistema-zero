@@ -121,7 +121,7 @@ describe('o piloto de "Meus testes"', () => {
     // A tela do menu do motor (`makeScreen('menu', …)` + `makeButton`), aberta.
     const variables: Record<string, unknown> = { jogando: false, cliques: 0 }
     document.body.innerHTML =
-      '<div class="szgk-panel szgk-active" data-szgk-screen="menu"><h1>Meu Jogo</h1><button>Jogar</button><button>Ajuda</button></div>'
+      '<div class="szgk-panel szgk-active" data-szgk-screen="menu"><h1>Meu Jogo</h1><button data-szgk-start>Jogar</button><button>Ajuda</button></div>'
     const buttons = document.querySelectorAll('button')
     buttons[0]?.addEventListener('click', () => {
       variables.jogando = true
@@ -165,10 +165,10 @@ describe('o piloto de "Meus testes"', () => {
     expect(document.activeElement).toBe(document.body)
   })
 
-  it('o menu que a criança montou: aperta só o "Jogar", nunca o primeiro botão', async () => {
+  it('o menu que a criança montou: aperta só o "Jogar" de fábrica, nunca o primeiro botão', async () => {
     const variables: Record<string, unknown> = { ajuda: 0, jogando: false }
     document.body.innerHTML =
-      '<div class="szgk-panel szgk-active" data-szgk-screen="menu"><button>Como jogar</button><button> Jogar </button></div>'
+      '<div class="szgk-panel szgk-active" data-szgk-screen="menu"><button>Como jogar</button><button data-szgk-start> Jogar </button></div>'
     const [comoJogar, jogar] = document.querySelectorAll('button')
     comoJogar?.addEventListener('click', () => {
       variables.ajuda = Number(variables.ajuda) + 1
@@ -178,6 +178,32 @@ describe('o piloto de "Meus testes"', () => {
     })
     await runDriver({ steps: [], target: { kind: 'value', path: 'ajuda' } }, variables)
     expect(variables).toEqual({ ajuda: 0, jogando: true })
+  })
+
+  it('o "Jogar" de fábrica com outro texto (a criança trocou o texto): aperta pela marca', async () => {
+    const variables: Record<string, unknown> = { jogando: false }
+    document.body.innerHTML =
+      '<div class="szgk-panel szgk-active" data-szgk-screen="menu"><button data-szgk-start>Correr</button></div>'
+    document.querySelector('button')?.addEventListener('click', () => {
+      variables.jogando = true
+    })
+    await runDriver({ steps: [], target: { kind: 'value', path: 'jogando' } }, variables)
+    expect(variables.jogando).toBe(true)
+  })
+
+  it('um botão "Jogar" que a criança fez não é o de fábrica: só o marcado é apertado', async () => {
+    const variables: Record<string, unknown> = { dela: 0, fabrica: 0 }
+    document.body.innerHTML =
+      '<div class="szgk-panel szgk-active" data-szgk-screen="menu"><button>Jogar</button><button data-szgk-start>Correr</button></div>'
+    const [dela, fabrica] = document.querySelectorAll('button')
+    dela?.addEventListener('click', () => {
+      variables.dela = Number(variables.dela) + 1
+    })
+    fabrica?.addEventListener('click', () => {
+      variables.fabrica = Number(variables.fabrica) + 1
+    })
+    await runDriver({ steps: [], target: { kind: 'value', path: 'dela' } }, variables)
+    expect(variables).toEqual({ dela: 0, fabrica: 1 })
   })
 
   it('menu sem o "Jogar" (a criança trocou os botões): nada é apertado', async () => {
@@ -195,7 +221,7 @@ describe('o piloto de "Meus testes"', () => {
     const variables: Record<string, unknown> = { jogando: false }
     document.body.innerHTML =
       '<div class="szgk-panel szgk-active" data-szgk-screen="carregando"></div>' +
-      '<div class="szgk-panel" data-szgk-screen="menu"><button>Jogar</button></div>'
+      '<div class="szgk-panel" data-szgk-screen="menu"><button data-szgk-start>Jogar</button></div>'
     document.querySelector('button')?.addEventListener('click', () => {
       variables.jogando = true
     })
@@ -215,7 +241,7 @@ describe('o piloto de "Meus testes"', () => {
     const variables: Record<string, unknown> = { cliques: 0 }
     document.body.innerHTML =
       '<div class="szgk-panel szgk-active" data-szgk-screen="fim"><button>Jogar de novo</button></div>' +
-      '<div class="szgk-panel" data-szgk-screen="menu"><button>Jogar</button></div>'
+      '<div class="szgk-panel" data-szgk-screen="menu"><button data-szgk-start>Jogar</button></div>'
     for (const button of document.querySelectorAll('button'))
       button.addEventListener('click', () => {
         variables.cliques = Number(variables.cliques) + 1

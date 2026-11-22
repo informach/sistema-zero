@@ -197,16 +197,15 @@ export function buildStudentTestDriver(options: StudentTestDriverOptions): strin
     // O Jogo 2D Avançado abre sempre no menu dele, e a partida só começa pelo botão (o Enter
     // sintético não aperta o botão focado). O teste espera o "carregando" do motor sair (imagens
     // e sons) e aperta o "Jogar" DE FÁBRICA do menu, como a criança faria; o executor do servidor
-    // faz o mesmo (\`check-objectives.mjs\`, \`startGame\`). Menu que a criança trocou (sem o
-    // "Jogar") e as outras telas (fim, vitória, pausa) ficam como estão: apertar outro botão seria
-    // adivinhar.
+    // faz o mesmo (\`check-objectives.mjs\`, \`startGame\`). O botão de fábrica é o que tem a
+    // marca \`data-szgk-start\` (com qualquer texto); um "Jogar" que a criança fez não é ele. Menu
+    // sem o botão de fábrica e as outras telas (fim, vitória, pausa) ficam como estão: apertar
+    // outro botão seria adivinhar.
     var until = Date.now() + ${MENU_WAIT_MS};
     while (Date.now() < until && document.querySelector('[data-szgk-screen="carregando"].szgk-active')) await wait(100);
     var menu = document.querySelector('[data-szgk-screen="menu"].szgk-active');
     if (!menu) return;
-    var buttons = menu.querySelectorAll('button'), play = null;
-    for (var i = 0; i < buttons.length && !play; i++)
-      if (String(buttons[i].textContent || '').trim() === 'Jogar') play = buttons[i];
+    var play = menu.querySelector('button[data-szgk-start]');
     if (!play) return;
     play.click();
     await frame();
