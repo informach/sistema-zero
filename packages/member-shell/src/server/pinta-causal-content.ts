@@ -1,6 +1,7 @@
 import 'server-only'
 import { createHash } from 'node:crypto'
 import { crc32, createInflateRaw } from 'node:zlib'
+import { canonicalJson } from '@sistemazero/core/creations'
 import { PINTA_CAUSAL_LIMITS } from '@sistemazero/core/creations/pinta-causal'
 import {
   inspectPintaCausalDocument,
@@ -19,7 +20,7 @@ export interface PintaCausalBlobExpectation extends PintaCausalDocumentExpectati
   sha256?: string
 }
 
-export interface VerifiedPintaCausalBlob extends PintaCausalDocument {
+export interface VerifiedPintaCausalBlob extends Pick<PintaCausalDocument, 'asset' | 'manifest'> {
   sha256: string
   gzip: Buffer
 }
@@ -159,5 +160,12 @@ export async function readPintaCausalBlob(
   const document = inspectPintaCausalDocument(text, expected)
   if (!document)
     throw new PintaCausalUnverifiedContent('A revisão do desenho não pode ser conferida.')
-  return { ...document, sha256, gzip }
+  const { asset, authorial, manifest } = document
+  const authoredFingerprint = {
+    version: 1 as const,
+    sha256: createHash('sha256')
+      .update(canonicalJson({ version: 1, pinta: authorial }))
+      .digest('hex'),
+  }
+  return { asset, manifest: { ...manifest, authoredFingerprint }, sha256, gzip }
 }

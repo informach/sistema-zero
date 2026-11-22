@@ -6,8 +6,10 @@ import {
   type PintaCausalEntry,
   pintaCausalBlobKey,
 } from '@sistemazero/core/creations/pinta-causal'
+import type { AnyTilesetAsset } from '@sistemazero/pinta/assets'
 import {
   type PintaCausalDocument,
+  pintaCausalPinSourceIds,
   provePintaCausalConsumerRemaps,
   provePintaCausalMutation,
 } from '@sistemazero/pinta/assets/causal'
@@ -92,7 +94,7 @@ async function readBase(
   actor: PintaCausalActor,
   plan: PintaMemberPlan,
   signal: AbortSignal,
-): Promise<PintaCausalDocument | null> {
+): Promise<Pick<PintaCausalDocument, 'asset' | 'manifest'> | null> {
   const { baseEntry: entry, baseStorageRef, binding } = plan
   if (binding.baseRevision === 0 || (!entry && !baseStorageRef && binding.baseSha256 === null))
     return null
@@ -117,6 +119,7 @@ export async function attestPintaMember(
   storage: PintaCausalStorage,
   actor: PintaCausalActor,
   plan: PintaMemberPlan,
+  loadRelated: (itemId: string) => Promise<PintaMemberPlan>,
   signal: AbortSignal,
 ): Promise<PintaCausalAttestation> {
   const { binding, member } = plan
@@ -128,13 +131,15 @@ export async function attestPintaMember(
     plan.inverseOf &&
     (!inverse ||
       inverse.baseRevision !== binding.baseRevision ||
-      inverse.baseSha256 !== binding.baseSha256 ||
-      inverse.restoredSha256 !== binding.candidateSha256)
+      inverse.baseSha256 !== binding.baseSha256)
   )
     throw new PintaCausalUnverifiedContent('A unidade de desfazer precisa da prova histórica.')
 
   if (member.action === 'delete') {
-    if (inverse && !(await readBase(storage, actor, plan, signal)))
+    if (
+      inverse &&
+      (inverse.restoredSha256 !== null || !(await readBase(storage, actor, plan, signal)))
+    )
       throw new PintaCausalUnverifiedContent('A revisão que será removida não foi conferida.')
     return { purpose: 'pinta-unit-content-v1', binding, manifest: null, transitions: [] }
   }
@@ -152,6 +157,20 @@ export async function attestPintaMember(
     ? await readPintaCausalBlob(existing, expected, signal)
     : await read(storage, pintaCausalBlobKey(binding, 'upload'), expected, signal)
   const before = await readBase(storage, actor, plan, signal)
+  if (inverse) {
+    const historical = inverse.restoredAuthoredFingerprint
+    const actual = proposed.manifest.authoredFingerprint
+    const equivalent =
+      actual &&
+      historical &&
+      actual.version === historical.version &&
+      actual.sha256 === historical.sha256
+    if (
+      inverse.restoredSha256 === null ||
+      (inverse.restoredSha256 !== proposed.sha256 && !equivalent)
+    )
+      throw new PintaCausalUnverifiedContent('O desenho não corresponde à revisão histórica.')
+  }
   if (
     proposed.manifest.name !== member.name ||
     (!inverse && !provePintaCausalMutation(before?.asset ?? null, proposed.asset, member.operation))
@@ -160,7 +179,33 @@ export async function attestPintaMember(
 
   let transitions: PintaCausalAttestation['transitions'] = []
   if (!inverse && before && plan.remaps.length) {
-    const proof = provePintaCausalConsumerRemaps(before, proposed.asset, plan.remaps)
+    let proof = provePintaCausalConsumerRemaps(before, proposed.asset, plan.remaps)
+    if (!proof) {
+      const pinBases = new Map<string, AnyTilesetAsset>()
+      for (const id of pintaCausalPinSourceIds(before, proposed.asset, plan.remaps)) {
+        const related = await loadRelated(id)
+        const other = related.binding
+        if (
+          !belongsToPintaActor(other.namespace, actor) ||
+          related.member.itemId !== id ||
+          related.member.action !== 'put' ||
+          related.member.operation.type !== 'remap' ||
+          other.opId !== binding.opId ||
+          other.intentHash !== binding.intentHash ||
+          other.baseEpoch !== binding.baseEpoch ||
+          Date.parse(other.expiresAt) <= Date.now()
+        )
+          throw new PintaCausalUnverifiedContent('A folha reservada pertence a outra revisão.')
+        const baseSheet = (await readBase(storage, actor, related, signal))?.asset
+        if (!baseSheet || (baseSheet.kind !== 'tileset' && baseSheet.kind !== 'vector-tileset'))
+          throw new PintaCausalUnverifiedContent(
+            'A folha de origem da versão privada não foi conferida.',
+          )
+        pinBases.set(id, baseSheet)
+      }
+      if (pinBases.size)
+        proof = provePintaCausalConsumerRemaps(before, proposed.asset, plan.remaps, pinBases)
+    }
     if (!proof)
       throw new PintaCausalUnverifiedContent('O desenho vinculado não acompanha o remapeamento.')
     transitions = proof

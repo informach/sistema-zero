@@ -2,6 +2,7 @@ import 'server-only'
 import { PINTA_INVENTORY_READER_VERSION } from '@sistemazero/core/creations'
 import {
   PINTA_CAUSAL_LIMITS,
+  PintaCausalAuthoredFingerprintSchema,
   PintaCausalBackfillBindingSchema,
   PintaCausalBindingSchema,
   PintaCausalEntrySchema,
@@ -58,6 +59,7 @@ export const PintaMemberPlan = z
         baseRevision: causalRevision,
         baseSha256: hash.nullable(),
         restoredSha256: hash.nullable(),
+        restoredAuthoredFingerprint: PintaCausalAuthoredFingerprintSchema.optional(),
       })
       .nullable()
       .optional(),

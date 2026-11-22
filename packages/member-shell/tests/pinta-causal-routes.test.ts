@@ -10,11 +10,12 @@ import {
   type PintaCausalMember,
   pintaCausalBlobKey,
 } from '@sistemazero/core/creations/pinta-causal'
-import { assetToJson, createAsset } from '@sistemazero/pinta/assets'
+import { assetToJson, createAsset, isTileLayer } from '@sistemazero/pinta/assets'
 import type { SessionUser } from '../src/lib/types'
 
 mock.module('server-only', () => ({}))
 const { createPintaCausalRoutes } = await import('../src/routes/pinta-causal')
+const { readPintaCausalBlob } = await import('../src/server/pinta-causal-content')
 
 const userId = '11111111-1111-4111-8111-111111111111'
 const accountId = '22222222-2222-4222-8222-222222222222'
@@ -136,7 +137,9 @@ function fixture(
     async gatewayFetchHmac<T = unknown>(path: string, opts?: { body?: unknown }) {
       calls.push({ path, body: opts?.body })
       const endpoint = path.replace('/members/internal/creations/pinta/', '')
-      return { status: 200, body: responses.get(endpoint) as T }
+      const payload = (opts?.body as { payload?: { itemId?: string } } | undefined)?.payload
+      const override = payload?.itemId && responses.get(`${endpoint}:${payload.itemId}`)
+      return { status: 200, body: (override ?? responses.get(endpoint)) as T }
     },
   }
   const routes = createPintaCausalRoutes({
@@ -441,4 +444,172 @@ test('recovery includes opaque future items only through the explicit attachment
   })
   expect((await request()).status).toBe(502)
   expect(downloads).toHaveLength(1)
+})
+
+test('historical authored fingerprint allows reserialization and a new updatedAt but detects altered pixels', async () => {
+  const { routes, objects, responses, calls } = fixture()
+  const historical = await readPintaCausalBlob(
+    {
+      body: new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(gzip)
+          controller.close()
+        },
+      }),
+      contentType: 'application/gzip',
+      contentLength: gzip.byteLength,
+    },
+    {
+      itemId: current.id,
+      kind: current.kind,
+      formatVersion: 6,
+      bytes: gzip.byteLength,
+      sha256,
+    },
+  )
+  const inverse = {
+    baseRevision: 2,
+    baseSha256: null,
+    restoredSha256: sha256,
+    restoredAuthoredFingerprint: historical.manifest.authoredFingerprint,
+  }
+  const attempt = async (altered: boolean) => {
+    const drawing = { ...structuredClone(current), updatedAt: current.updatedAt + 5000 }
+    if (altered && drawing.kind === 'tileset') drawing.tiles[0]!.data[0] = 2
+    const encoded = gzipSync(assetToJson(drawing), { level: 1 })
+    const sha = createHash('sha256').update(encoded).digest('hex')
+    expect(sha).not.toBe(sha256)
+    const candidate = { ...binding, baseRevision: 2, revision: 3, candidateSha256: sha }
+    const uploadKey = pintaCausalBlobKey(candidate, 'upload')
+    objects.set(uploadKey, encoded)
+    responses.set('units/member', {
+      member: {
+        ...member,
+        baseRevision: 2,
+        operation: { type: 'update' },
+        sha256: sha,
+        bytes: encoded.length,
+        itemUpdatedAt: new Date(drawing.updatedAt).toISOString(),
+      },
+      binding: candidate,
+      baseStorageRef: null,
+      baseEntry: null,
+      remapSheetIds: [],
+      remaps: [],
+      inverseOf: '55555555-5555-4555-8555-555555555555',
+      inverse,
+    })
+    return routes.pintaCausalVerify.POST(json('/units/verify', { itemId: member.itemId }), context)
+  }
+  expect((await attempt(true)).status).toBe(409)
+  expect(calls.some((call) => call.path.endsWith('/units/attest'))).toBe(false)
+  expect((await attempt(false)).status).toBe(200)
+  const receipt = PintaCausalAttestationSchema.parse(
+    (calls.at(-1)?.body as { payload: unknown }).payload,
+  )
+  expect(receipt.binding.candidateSha256).not.toBe(sha256)
+  expect(receipt.manifest?.authoredFingerprint).toEqual(historical.manifest.authoredFingerprint)
+})
+
+test('a pin fallback reads only the related certified sheet in the same unit', async () => {
+  const { routes, calls, objects, responses } = fixture()
+  if (current.kind !== 'tileset') throw new Error('Fixture sem folha')
+  const added = structuredClone(current.tiles[0]!)
+  added.data[0] = 2
+  const original = {
+    ...current,
+    tiles: [...current.tiles, added],
+    solid: [false, false],
+    platform: [false, false],
+  }
+  const map = createAsset({
+    kind: 'tilemap',
+    name: 'vila-pin',
+    tilesetId: original.id,
+    cols: 2,
+    rows: 1,
+  })
+  if (map.kind !== 'tilemap') throw new Error('Fixture sem mapa')
+  const tileLayer = map.layers[0]!
+  if (!isTileLayer(tileLayer)) throw new Error('Camada inicial sem grade')
+  tileLayer.cells.set([1, 1])
+  const sample = (asset: typeof map | typeof original) => {
+    const bytes = gzipSync(assetToJson(asset))
+    return { bytes, sha: createHash('sha256').update(bytes).digest('hex') }
+  }
+  const oldMap = sample(map)
+  const oldSheet = sample(original)
+  const pinned = sample({
+    ...map,
+    tilesetId: 'snapshot',
+    resources: [{ sourceId: original.id, capturedAt: 1, asset: { ...original, id: 'snapshot' } }],
+  })
+  const newSheet = sample({ ...original, tiles: [added], solid: [false], platform: [false] })
+  const operation = { type: 'remap' as const, oldToNew: [-1, 0], count: 1 }
+  const plan = (
+    asset: typeof map | typeof original,
+    before: ReturnType<typeof sample>,
+    after: ReturnType<typeof sample>,
+    op: Extract<PintaCausalMember, { action: 'put' }>['operation'],
+  ) => {
+    const value = {
+      ...binding,
+      itemId: asset.id,
+      revision: 2,
+      baseRevision: 1,
+      baseSha256: before.sha,
+      candidateSha256: after.sha,
+    }
+    const baseKey = pintaCausalBlobKey({ ...value, revision: 1 }, 'sealed')
+    objects.set(baseKey, before.bytes)
+    objects.set(pintaCausalBlobKey(value, 'upload'), after.bytes)
+    return {
+      binding: value,
+      member: {
+        ...member,
+        itemId: asset.id,
+        kind: asset.kind,
+        name: asset.name,
+        baseRevision: 1,
+        bytes: after.bytes.byteLength,
+        sha256: after.sha,
+        operation: op,
+      },
+      baseEntry: {
+        ...entry,
+        itemId: asset.id,
+        kind: asset.kind,
+        name: asset.name,
+        coverage: 'certified',
+        sha256: before.sha,
+        bytes: before.bytes.byteLength,
+      },
+      baseStorageRef: baseKey,
+      remapSheetIds: [],
+      remaps: [],
+    }
+  }
+  const mapped = plan(map, oldMap, pinned, { type: 'update' })
+  responses.set(`units/member:${map.id}`, {
+    ...mapped,
+    remapSheetIds: [original.id],
+    remaps: [{ sheetId: original.id, operation }],
+  })
+  const sheetPlan = plan(original, oldSheet, newSheet, operation)
+  responses.set(`units/member:${original.id}`, {
+    ...sheetPlan,
+    binding: { ...sheetPlan.binding, intentHash: 'c'.repeat(64) },
+  })
+  const verify = () =>
+    routes.pintaCausalVerify.POST(json('/units/verify', { itemId: map.id }), context)
+  expect((await verify()).status).toBe(409)
+  expect(objects.has(pintaCausalBlobKey(mapped.binding, 'sealed'))).toBe(false)
+
+  responses.set(`units/member:${original.id}`, sheetPlan)
+  expect((await verify()).status).toBe(200)
+  const proof = PintaCausalAttestationSchema.parse(
+    (calls.at(-1)?.body as { payload: unknown }).payload,
+  )
+  expect(proof.transitions).toEqual([{ sheetId: original.id, mode: 'pinned' }])
+  expect(proof.manifest?.refs).toEqual([])
 })

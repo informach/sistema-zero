@@ -196,3 +196,33 @@ test('the pin alternative needs the same frozen sheet bytes and its canonical sl
     provePintaCausalConsumerRemaps(base, corrupted, remaps, new Map([[before.id, admittedBefore]])),
   ).toBeNull()
 })
+
+test('a composed move through another slot keeps art at effective zero', () => {
+  const tiles = sheet()
+  const map = addObjectLayer(
+    createTilemapAsset({ name: 'vila', tilesetId: tiles.id, cols: 2, rows: 1 }),
+    'Objetos',
+  )
+  map.layers.find(isTileLayer)!.cells.set([1, -1])
+  map.layers.find(isObjectLayer)!.objects.push(
+    createMapObject({
+      id: 'arte',
+      shape: 'art',
+      art: { assetId: tiles.id },
+    }),
+  )
+  const expectation = { itemId: map.id, kind: map.kind, formatVersion: 6 }
+  const base = inspectPintaCausalDocument(assetToJson(map), expectation)!
+  const shifted = remapTilemapCells(map, { insertedAt: 0 }, tiles.id)
+  const returned = remapTilemapCells(shifted, { removedAt: 0 }, tiles.id)
+  const candidate = remapTilemapCells(returned, { insertedAt: 1 }, tiles.id)
+  expect(candidate.layers.find(isObjectLayer)?.objects[0]?.art?.tile).toBe(0)
+  expect(
+    provePintaCausalConsumerRemaps(base, candidate, [
+      {
+        sheetId: tiles.id,
+        operation: { type: 'remap', oldToNew: [0, 2, 3], count: 4 },
+      },
+    ]),
+  ).toEqual([{ sheetId: tiles.id, mode: 'mapped' }])
+})

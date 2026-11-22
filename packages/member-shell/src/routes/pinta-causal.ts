@@ -399,13 +399,21 @@ export function createPintaCausalRoutes({
           const unit = ActorUnit.safeParse(await ctx.params)
           if (!params || !unit.success) return invalid()
           const { opId } = unit.data
-          const plan = checked(
-            PintaMemberPlan,
-            await internal(actor, 'units/member', { opId, itemId: params.itemId }),
+          const load = async (itemId: string) => {
+            const plan = checked(
+              PintaMemberPlan,
+              await internal(actor, 'units/member', { opId, itemId }),
+            )
+            if (plan.binding.opId !== opId || plan.binding.itemId !== itemId) return wrongReply()
+            return plan
+          }
+          const receipt = await attestPintaMember(
+            storage,
+            actor,
+            await load(params.itemId),
+            load,
+            req.signal,
           )
-          if (plan.binding.opId !== opId || plan.binding.itemId !== params.itemId)
-            return wrongReply()
-          const receipt = await attestPintaMember(storage, actor, plan, req.signal)
           await internal(actor, 'units/attest', checked(PintaCausalAttestationSchema, receipt))
           return reply({ verified: true })
         }),

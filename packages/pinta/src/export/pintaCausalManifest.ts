@@ -268,6 +268,8 @@ function decodeDocument(
 export interface PintaCausalDocument {
   asset: PintaMemoryAsset
   manifest: PintaCausalManifest
+  /** Canonical native values used only while hashing a verified revision on the server. */
+  authorial: Readonly<JsonRecord>
 }
 
 export interface PintaCausalDocumentExpectation {
@@ -350,7 +352,8 @@ export function inspectPintaCausalDocument(
           }
         : {}),
     })
-    return result.success ? { asset, manifest: result.data } : null
+    const { updatedAt: _updatedAt, ...authorial } = encoded
+    return result.success ? { asset, manifest: result.data, authorial } : null
   } catch {
     return null
   }
