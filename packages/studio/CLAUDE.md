@@ -1,5 +1,44 @@
 # @sistemazero/studio
 
+## Regiões 3D e os exemplos grandes da galeria (22/11/2026)
+
+Lotes 5 a 7b e 9 da conclusão do plano (especificação em
+`docs/estudio-evolucao/regioes-3d-especificacao.md`; o jogo E em
+`docs/estudio-evolucao/evidencias/jogo-e-regioes-2026-11-22/`). O que não pode regredir:
+
+- **Pertença conferida na leitura.** A cena compilada traz `regioes` com as listas `nos`,
+  `colisoes` e `aguas` de cada região; o compilador e o leitor usam a MESMA função pura
+  (`calcularPertencaDasRegioes`/`conferirPertencaDasRegioes`, `molda-cenarios-core/src/compilar/schema-regioes.ts`):
+  lista velha ou incompleta é recusada antes de desenhar. Fixture congelada nova
+  `testing/contracts/molda-scene3d-regioes-v1.json`; a v1 sem regiões continua abrindo.
+- **A carga por regiões mora no motor dos cenários e no SDK, nunca nos motores.** `carga: 'tudo' |
+  'regioes'` (padrão `'tudo'`: o Arquipélago, o GLB único e a exportação portátil não mudam); o
+  SDK do Estúdio (`three/scene3d.ts`) pede `'regioes'`. As regras são as de `REGRAS_DA_CARGA`
+  (`compilar/carga-das-regioes.ts`): 0,5 m de tolerância, região segura, vizinhas sempre, pré-carga
+  até `max(40 m, câmera)`, descarte além de +20 m depois de 2 s, 48 malhas e 128 MiB por janela,
+  novas tentativas em 1, 4 e 15 s, `estadoDasRegioes()`. O estado do jogo (moedas, placar) nunca
+  descarrega; onde a região não carregou, vale o relevo global (ninguém cai).
+- **O bloco** "Quando … entrar na região" é o valor `event: 'regiao'` da regra `onGame` (não um
+  membro novo da união, pelo TS2590) e o `SZGame3D.onEnterRegion` nos três motores 3D, pago com o
+  `fisica.apoio` do SDK (`three/scene3dPhysics.ts`) no lugar do laço de apoio de cada motor. O campo
+  `FieldSceneRegionPicker` lê as regiões da cena trazida e guarda o NOME.
+- **Python:** o `cenario.py` carrega por regiões com as mesmas regras (casos compartilhados com o
+  TypeScript em `runtime/python/raylib/__tests__/regioes-casos.json`, gerados por
+  `scripts/gen-raylib-region-cases.ts`); os blocos de cenário do Raylib 3D só ligam com o recurso
+  `molda-scene-regions-v1` da distribuição (`core/src/studio/python-runtime-features.ts`).
+- **Ordem segura:** leitores em todo lugar antes do escritor; o interruptor `CENARIOS_REGIOES` do
+  Members (desligado por padrão) mostra a ferramenta Regiões e deixa o servidor aceitar `regioes`.
+- **Exemplos grandes na galeria** (`examples/bigExamples.ts`): entram no grupo do motor com nome,
+  descrição e capa, e o jogo só carrega no clique. O jogo D vem num pedaço do pacote; o jogo E
+  (20 MB) mora no R2 do ambiente (`estudio-exemplos/jogo-e/<sha256>.json`, gerado por
+  `scripts/gen-jogo-e-galeria.ts`) e chega pela rota do host (`exampleFilesBaseUrl`, no Kids e no
+  adulto `/api/studio/example-files`, ligada por `STUDIO_EXAMPLES_ORIGIN`); sem o endereço o card
+  não aparece, e o arquivo só abre com o tamanho e o hash certos. ⚠️ A galeria continua só para a
+  equipe nos dois apps (decisão dela).
+- Provas: `e2e/engine-regions.spec.ts` (no `studio-engines.yml`), `moldaFullScenario.contract.test.ts`,
+  os testes do bloco nos três motores, `__tests__/cenario_test.py`, `e2e-runtime/python-raylib.spec.ts`
+  e `examples/bigExamples.test.ts`. O mundo do jogo E tem 384 m (1 km passa dos tetos de hoje).
+
 ## O jogo D: o 2D de grande porte (22/11/2026)
 
 O exemplo "Mundo das Portas" (lote 8 da conclusão do plano; detalhe e números em
