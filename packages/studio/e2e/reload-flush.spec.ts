@@ -235,18 +235,25 @@ async function dragAreaFromFlyout(page: Page, label: string): Promise<void> {
   if (!(await source.isVisible())) await category.click()
   await expect(source).toBeVisible()
   const sourceBox = await source.boundingBox()
-  const target = await page.evaluate(() => {
-    const background = document.querySelector('.blocklyMainBackground')?.getBoundingClientRect()
-    if (!background) return null
-    for (let y = background.bottom - 64; y > background.top + 64; y -= 32) {
-      for (let x = background.right - 64; x > background.left + 64; x -= 32) {
-        if (document.elementFromPoint(x, y)?.classList.contains('blocklyMainBackground')) {
-          return { x, y }
+  const freeSpot = () =>
+    page.evaluate(() => {
+      const background = document.querySelector('.blocklyMainBackground')?.getBoundingClientRect()
+      if (!background) return null
+      for (let y = background.bottom - 64; y > background.top + 64; y -= 32) {
+        for (let x = background.right - 64; x > background.left + 64; x -= 32) {
+          if (document.elementFromPoint(x, y)?.classList.contains('blocklyMainBackground')) {
+            return { x, y }
+          }
         }
       }
-    }
-    return null
-  })
+      return null
+    })
+  // O workspace pode estar se rearrumando (a área anterior acabou de cair): espera um ponto livre.
+  let target = await freeSpot()
+  for (let tentativa = 0; tentativa < 50 && !target; tentativa++) {
+    await page.waitForTimeout(100)
+    target = await freeSpot()
+  }
   if (!sourceBox || !target) throw new Error('Área ou workspace sem ponto interativo')
   await page.mouse.move(sourceBox.x + 5, sourceBox.y + 5)
   await page.mouse.down()
