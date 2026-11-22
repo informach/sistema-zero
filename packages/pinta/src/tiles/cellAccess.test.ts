@@ -56,6 +56,10 @@ const CONFERIDOS: Record<string, string> = {
     'percorre células inteiras; o gid sai de cellTile e cellFlags (cellToGid) e o giro de cellMatrix',
   'export/tiled/import.ts':
     'confere referências da cena importada por cellTile antes de restaurar a contagem do atlas; não recorta peças novas usadas no Tiled',
+  'export/tiled/regionGrid.ts':
+    'grava células inteiras retornadas por gidCell em chunks assinados e usa o encoder canônico para preservar os bits',
+  'export/phaser/regionPlayer.generated.ts':
+    'pacote gerado inclui os leitores de região, a geometria do Core e o compositor existente; as células inteiras são lidas sob demanda',
   'export/sceneDrawing.ts': 'percorre as células da cena e lê o índice por cellTile',
   'components/editor/mapTools/mapLevels.ts':
     'só pergunta se alguma célula está virada, por cellFlags',

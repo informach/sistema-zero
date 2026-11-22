@@ -349,11 +349,13 @@ async function restoreAtlasCounts(
     for (const layer of owner.layers) {
       if (layer.kind === 'tiles' && eligible.has(layer.tilesetId)) {
         let maximum = -1
-        const parts = Array.isArray(layer.cells)
-          ? [layer.cells]
-          : layer.cells.chunks.map((chunk) => chunk.cells)
-        for (const part of parts)
-          for (const cell of part) if (cell >= 0) maximum = Math.max(maximum, cellTile(cell))
+        if (Array.isArray(layer.cells)) {
+          for (const cell of layer.cells) if (cell >= 0) maximum = Math.max(maximum, cellTile(cell))
+        } else {
+          for (const chunk of layer.cells.chunks)
+            for (const cell of chunk.cells)
+              if (cell >= 0) maximum = Math.max(maximum, cellTile(cell))
+        }
         mark(layer.tilesetId, maximum)
       } else if (layer.kind === 'objects')
         for (const object of layer.objects)
