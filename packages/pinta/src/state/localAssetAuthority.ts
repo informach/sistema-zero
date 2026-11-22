@@ -12,6 +12,12 @@ import {
 } from '../core/project'
 import { galleryBackupByteLength, MAX_BACKUP_FILE_BYTES } from '../export/projectJson'
 import { planImport } from './importPlan'
+import {
+  type LocalCompatibilityIsolation,
+  readCompatibilityIsolation,
+  sameCompatibilityIsolation,
+  sealCompatibilityInventory,
+} from './localCompatibilityIsolation'
 
 export {
   PintaLocalConflictError,
@@ -27,6 +33,7 @@ export interface LocalDocument {
   capability: number
   revision: string
   asset: PintaAsset | null
+  isolation?: LocalCompatibilityIsolation
 }
 export type LocalReadIssue = { id: string; name: string; status: 'unsupported'; version: number }
 
@@ -61,7 +68,14 @@ function document(raw: unknown): LocalDocument | null {
     return null
   const asset = raw.asset === null ? null : sanitizePintaAsset(raw.asset)
   if (raw.asset !== null && !asset) return null
-  return { version: 1, capability: raw.capability, revision: raw.revision, asset }
+  const isolation = 'isolation' in raw ? readCompatibilityIsolation(raw.isolation) : undefined
+  return {
+    version: 1,
+    capability: raw.capability,
+    revision: raw.revision,
+    asset,
+    ...(isolation ? { isolation } : {}),
+  }
 }
 function unsupported(raw: unknown): number | null {
   if (!raw || typeof raw !== 'object') return null
@@ -76,13 +90,17 @@ function unsupported(raw: unknown): number | null {
     return raw.schema
   return null
 }
-const checkpoint = (asset: PintaAsset | null): LocalDocument => ({
+const checkpoint = (
+  asset: PintaAsset | null,
+  isolation?: LocalCompatibilityIsolation,
+): LocalDocument => ({
   version: 1,
   // O protocolo transacional v1 exige o leitor 5. Só conteúdo novo exige uma capacidade maior.
   // Publicar um leitor 6 não precisa bloquear abas 5 que ainda editam documentos compatíveis.
   capability: Math.max(5, asset ? pintaAssetSchema(asset) : 0),
   revision: crypto.randomUUID(),
   asset,
+  ...(isolation ? { isolation } : {}),
 })
 
 /** Normal reads visit only the dependency closure; a fork expands for atomic budgeting. */
@@ -209,8 +227,9 @@ export function protectAsset(
   records: Map<string, unknown>,
   snapshot: LocalSnapshot,
   asset: PintaAsset,
+  isolation = snapshot.documents.get(asset.id)?.isolation,
 ): void {
-  const doc = checkpoint(asset)
+  const doc = checkpoint(asset, isolation)
   records.set(authorityKey(asset.id), doc)
   records.set(mirrorKey(asset.id), asset)
   snapshot.assets.set(asset.id, asset)
@@ -223,6 +242,29 @@ export function checkLocalBudget(
   const projected = galleryBackupByteLength([...after])
   if (projected > MAX_BACKUP_FILE_BYTES && projected >= galleryBackupByteLength([...before]))
     throw new PintaStorageBudgetError(projected)
+}
+function compatibilityContext(
+  records: Map<string, unknown>,
+  snapshot: LocalSnapshot,
+): LocalCompatibilityIsolation | undefined {
+  return sealCompatibilityInventory(
+    records,
+    snapshot.issues.map((issue) => {
+      const raw = records.get(authorityKey(issue.id))
+      const futureAuthority =
+        unsupported(raw) !== null ||
+        (raw && typeof raw === 'object' && 'asset' in raw && unsupported(raw.asset) !== null)
+      const revision =
+        raw && typeof raw === 'object'
+          ? Object.getOwnPropertyDescriptor(raw, 'revision')?.value
+          : null
+      return {
+        id: issue.id,
+        revision: futureAuthority && typeof revision === 'string' && revision ? revision : null,
+      }
+    }),
+    PINTA_MAX_SCHEMA,
+  )
 }
 export function writeLocalRecords(
   records: Map<string, unknown>,
@@ -238,10 +280,18 @@ export function writeLocalRecords(
     const revision = origin ? origin.revision : observed.get(a.id)
     return doc && revision !== doc.revision && !localValuesEqual(doc.asset, a)
   })
-  if (incoming.some((a) => snapshot.issues.some((i) => i.id === a.id)))
-    throw new PintaLocalStorageError('Atualize a página antes de alterar este desenho.')
+  const isolation = compatibilityContext(records, snapshot)
+  const unknownConsumer =
+    snapshot.issues.length > 0 &&
+    incoming.some(
+      (asset) =>
+        snapshot.issues.some((issue) => issue.id === asset.id) ||
+        ((snapshot.assets.has(asset.id) || snapshot.documents.has(asset.id)) &&
+          !localValuesEqual(snapshot.assets.get(asset.id), asset) &&
+          !sameCompatibilityIsolation(snapshot.documents.get(asset.id)?.isolation, isolation)),
+    )
   const forks = new Map<string, PintaAsset>()
-  if (stale.length) {
+  if (stale.length || unknownConsumer) {
     const plan = planImport(
       incoming,
       new Set(),
@@ -252,7 +302,7 @@ export function writeLocalRecords(
       throw new PintaLocalStorageError('Não consegui guardar a cópia das suas mudanças.')
     for (const [index, pair] of plan.pairs.entries()) {
       const asset = withPintaSchemaStamp(pair.restored)
-      protectAsset(records, snapshot, asset)
+      protectAsset(records, snapshot, asset, isolation)
       snapshot.recovered.push(asset)
       const source = incoming[index]
       if (source) forks.set(source.id, asset)
@@ -281,12 +331,19 @@ export function deleteLocalRecord(
   if (snapshot.issues.some((i) => i.id === id))
     throw new PintaLocalStorageError('Atualize a página antes de apagar este desenho.')
   const current = snapshot.documents.get(id)
+  if (
+    snapshot.issues.length &&
+    !sameCompatibilityIsolation(current?.isolation, compatibilityContext(records, snapshot))
+  )
+    throw new PintaLocalStorageError(
+      'Não consegui conferir onde este desenho é usado. Atualize a página antes de apagar.',
+    )
   const origin = base?.id === id ? pintaLocalOriginOf(base, database) : undefined
   if (current?.asset && (origin ? origin.revision : observed.get(id)) !== current.revision)
     throw new PintaLocalStorageError(
       'Este desenho mudou em outra janela. Abra de novo antes de apagar.',
     )
-  const tombstone = checkpoint(null)
+  const tombstone = checkpoint(null, current?.isolation)
   records.set(authorityKey(id), tombstone)
   records.delete(mirrorKey(id))
   snapshot.assets.delete(id)

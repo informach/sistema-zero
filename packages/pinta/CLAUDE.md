@@ -249,6 +249,15 @@ linhagem, nunca a última listagem. Falha/quota aborta tudo. Não comparar por m
 ou horário, nem remover checkpoint para caber. Captura e exportação usam a mesma autoridade.
 Saves protegidos têm custo O(galeria); só sprites mantêm o inventário incremental.
 
+Leitores atualizados recuperam também RAM compatível quando a autoridade passa
+a um formato ilegível: lote inteiro vira cópias religadas, com originais intactos.
+Um consumidor futuro sob outro ID também impede alterar/apagar suas possíveis
+artes vivas. O selo `pinta:local:compatibility:<readerSchema>` compara inventário
+exato de IDs/revisões para permitir continuar a cópia; mudanças revogam a exceção.
+Sem revisão confiável ou selo válido não há exceção. Envelope físico 2 e lápide
+conservam o selo na mesma transação. Não inferir proteção de código histórico já
+carregado ou inventário parcial de nuvem. Provas: `qa/recuperacao-de-formatos-futuros-2026-11-21/`.
+
 **Chunks locais (etapa 8a):** mapas/conjuntos com pelo menos 32.768 células
 usam envelope físico 2 (`storage: 'pinta-cells-32-v1'`) e chunks de 32 × 32
 sob `pinta:local:chunk:`. O IO `assetAuthorityDb.ts` reconstrói o envelope

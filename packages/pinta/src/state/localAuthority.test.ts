@@ -244,9 +244,12 @@ for (const future of [{ version: 2 }, { capability: PINTA_MAX_SCHEMA + 1 }])
     const r = client()
     expect(await r.loadAssetById(m.id)).toBeNull()
     expect(r.getReadIssues?.()).toHaveLength(1)
-    await expect(r.persistAsset(m)).rejects.toThrow('Atualize')
+    await expect(r.persistAsset(m)).rejects.toBeInstanceOf(PintaLocalConflictError)
     await expect(r.deleteAsset(m.id)).rejects.toThrow('Atualize')
-    expect(db()).toEqual(before)
+    for (const [key, value] of before) expect(db().get(key)).toEqual(value)
+    const copies = await client().listAllAssets()
+    expect(copies).toHaveLength(1)
+    expect(copies[0]!.id).not.toBe(m.id)
   })
 
 test('checkpoint inválido não é trocado silenciosamente pelo espelho', async () => {
@@ -374,7 +377,7 @@ test('reinício observa lápide e pode restaurar deliberadamente a sua revisão'
   expect(await client().listAllAssets()).toHaveLength(1)
 })
 
-test('lote com formato futuro aborta todos os outros membros', async () => {
+test('lote com formato futuro conserva todos os originais e recupera o lote em cópias', async () => {
   const a = client(),
     m = map(),
     second = map()
@@ -382,10 +385,13 @@ test('lote com formato futuro aborta todos os outros membros', async () => {
   const raw = db().get(LOCAL_ASSET_PREFIX + second.id) as Record<string, unknown>
   db().set(LOCAL_ASSET_PREFIX + second.id, { ...raw, capability: PINTA_MAX_SCHEMA + 1 })
   const before = structuredClone(db())
-  await expect(a.persistAssets([{ ...m, name: 'nao-confirma' }, second])).rejects.toThrow(
-    'Atualize',
+  await expect(a.persistAssets([{ ...m, name: 'nao-confirma' }, second])).rejects.toBeInstanceOf(
+    PintaLocalConflictError,
   )
-  expect(db()).toEqual(before)
+  for (const [key, value] of before) expect(db().get(key)).toEqual(value)
+  const assets = await client().listAllAssets()
+  expect(assets.find((asset) => asset.id === m.id)?.name).toBe(m.name)
+  expect(assets.filter((asset) => asset.id !== m.id && asset.id !== second.id)).toHaveLength(2)
 })
 
 test('cópias contam nos32MiB; recusa conserva ambas e apagar libera espaço atomicamente', async () => {

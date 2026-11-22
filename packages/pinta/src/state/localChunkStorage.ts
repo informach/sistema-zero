@@ -179,6 +179,7 @@ export function decodeLocalChunkDocument(
     version: 1,
     capability: doc.capability,
     revision: doc.revision,
+    ...(doc.isolation !== undefined ? { isolation: doc.isolation } : {}),
     asset: replaceLayers(info, layers),
   }
 }
@@ -248,6 +249,7 @@ export function encodeLocalChunkDocument(
       storage: STORAGE,
       capability: doc.capability,
       revision: doc.revision,
+      ...(doc.isolation !== undefined ? { isolation: doc.isolation } : {}),
       asset: replaceLayers(info, layers),
     },
     chunks,

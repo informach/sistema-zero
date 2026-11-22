@@ -123,6 +123,14 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    navegador; formatos públicos preservados. A quota da galeria fora do lote
    continua no inventário/host e precisa da integração regional. Seguir ao
    físico 3, proteção dos dependentes, transporte e adaptadores; manter o item aberto.
+   Recuperação local diante de formatos futuros verificada em
+   `qa/recuperacao-de-formatos-futuros-2026-11-21/`: RAM compatível ganha cópia
+   persistente sem tocar o mapa ilegível; edição de peças com consumidor futuro
+   isola o lote inteiro e religa as cópias. Selo exato do inventário permite
+   continuar a cópia e é revogado se uma revisão opaca mudar. Suíte 2.688,
+   61 focados e 24 ensaios Chromium/IndexedDB real, incluindo oficina e CPU 4×.
+   O código protege leitores atualizados; não modifica binários históricos nem
+   cobre inventário parcial da nuvem. Esses critérios e físico 3 seguem abertos.
 
 Na promoção do store, conferir também os orçamentos globais de metadados e JSON
 antes do histórico/autosave. A soma de objetos/propriedades em várias camadas
