@@ -162,16 +162,20 @@ export function NewProjectModal({
   const inputRef = useRef<HTMLInputElement | null>(null)
   const pythonOffered = pythonEnvironments.length > 0 || Boolean(pythonDiscovery)
 
-  // Reseta os campos SÓ na transição fechado→aberto. `defaultName`/`templates`
-  // mudam de REFERÊNCIA a cada render do pai (default `[]`, lista recarregada);
-  // com eles nas deps, o efeito re-disparava a cada tecla e engolia a digitação.
-  const openedRef = useRef(false)
   const jsPreset = () =>
     Object.keys(JS_STARTING_POINTS).find(
       (id) => defaultStartingExtensions.includes(id) && javascriptStartingExtensions.includes(id),
     ) ?? 'blank'
-  useEffect(() => {
-    if (open && !openedRef.current) {
+  // Reseta os campos SÓ na transição fechado→aberto, e DURANTE a renderização (estado ajustado
+  // quando a prop muda), nunca num efeito: o primeiro quadro com a janela já sai na linguagem certa.
+  // Num efeito, esse quadro mostrava a escolha de linguagem por um instante, e na lista (janela
+  // carregada sob demanda, fora do `act`) o teste via esse quadro e não achava "Com código".
+  // `defaultName`/`templates` mudam de REFERÊNCIA a cada render do pai (default `[]`, lista
+  // recarregada): só a transição conta, senão cada tecla resetaria o nome digitado.
+  const [openedFor, setOpenedFor] = useState(false)
+  if (open !== openedFor) {
+    setOpenedFor(open)
+    if (open) {
       setName(defaultName)
       // Com uma linguagem só, a janela já abre nela; com as duas, a criança escolhe (estado 1).
       const only: Language | null =
@@ -188,8 +192,7 @@ export function NewProjectModal({
       setCreationError(null)
       setCategory('all')
     }
-    openedRef.current = open
-  })
+  }
 
   useEffect(() => {
     if (!open) return

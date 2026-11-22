@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'bun:test'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { useLayoutEffect } from 'react'
 import type { PythonProjectCreationEnvironment } from '../../core/freeProjectOptions'
 import { pythonEnvironmentFixture } from '../../state/fixtures/pythonEnvironment'
 import { NewProjectModal } from './NewProjectModal'
@@ -381,5 +382,44 @@ it('com uma linguagem só, a janela já abre nela e mostra o padrão do host', (
   expect(screen.queryByRole('radio', { name: /^JavaScript/ })).toBeNull()
   expect((screen.getByRole('radio', { name: /^Jogo 2D/ }) as HTMLInputElement).checked).toBe(true)
   expect((screen.getByText('Criar e abrir') as HTMLButtonElement).disabled).toBe(false)
+  view.unmount()
+})
+
+it('o primeiro quadro da janela já está na linguagem única, antes de qualquer efeito', () => {
+  // Na lista, a janela chega por `lazy` e aparece fora do `act`: entre o quadro que mostra a janela e
+  // os efeitos, a criança (e o `findByRole` do teste) via a escolha de linguagem que logo sumia.
+  // A sonda lê a página no quadro em que a janela aparece (efeito de layout, antes dos passivos;
+  // `hidden: true` porque o `<dialog>` só abre no efeito do `Modal`).
+  const seen: { code: boolean; javascript: boolean }[] = []
+  function FirstFrameProbe() {
+    useLayoutEffect(() => {
+      seen.push({
+        code: screen.queryByRole('radio', { name: /^Com código/, hidden: true }) !== null,
+        javascript: screen.queryByRole('radio', { name: /^JavaScript/, hidden: true }) !== null,
+      })
+    }, [])
+    return null
+  }
+  const kit = {
+    id: 'canvas-survival',
+    name: 'Arena',
+    description: '2D',
+    devScript: 'dev',
+    engine: 'canvas',
+  } as const
+  const view = render(
+    <>
+      <NewProjectModal
+        open
+        defaultName="Meu jogo"
+        professionalAvailable
+        templates={[kit]}
+        onClose={noop}
+        onCreate={noop}
+      />
+      <FirstFrameProbe />
+    </>,
+  )
+  expect(seen).toEqual([{ code: true, javascript: false }])
   view.unmount()
 })
