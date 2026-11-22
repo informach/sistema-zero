@@ -111,3 +111,17 @@ test('CRC-valid files still reject partial, extra, and corrupt raster streams', 
   corrupt[43] = corrupt[43]! ^ 1
   expect(() => check(corrupt)).toThrow('Integridade PNG')
 })
+
+test('rejects out-of-range palette indices after reversing scanline filters', () => {
+  const onlyBlack = { palette: Uint8Array.of(0, 0, 0) }
+  const indexed = (...bytes: number[]) => [deflateSync(Uint8Array.from(bytes))]
+  expect(() => check(png(1, 1, 3, 1, indexed(0, 0b10000000), onlyBlack))).toThrow('pixels')
+  expect(() => check(png(1, 1, 3, 1, indexed(0, 0b01111111), onlyBlack))).not.toThrow()
+  // Sub predicts 0x11 for the last pixel's byte. Residual 0x10 reconstructs 0x21 (index 2).
+  const twoColors = { palette: Uint8Array.of(0, 0, 0, 255, 255, 255) }
+  expect(() => check(png(3, 1, 3, 4, indexed(1, 0x11, 0x10), twoColors))).toThrow('pixels')
+  expect(() => check(png(3, 1, 3, 4, indexed(1, 0x11, 0), twoColors))).not.toThrow()
+  // Up predicts 0b01111111 in the second row. The same residual is invalid only after filtering.
+  expect(() => check(png(1, 2, 3, 1, indexed(0, 0b01111111, 2, 1), onlyBlack))).toThrow('pixels')
+  expect(() => check(png(1, 2, 3, 1, indexed(0, 0b01111111, 2, 0), onlyBlack))).not.toThrow()
+})
