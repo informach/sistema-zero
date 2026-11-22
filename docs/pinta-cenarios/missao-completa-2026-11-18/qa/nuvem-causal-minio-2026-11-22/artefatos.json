@@ -36,7 +36,7 @@
   "artifactSha256": {
     "Dockerfile": "f70a05f387a2187999d88f6e3bd13a55934d62831f0c1a82434d538ccde52c74",
     "README.md": "41c6404e930f2e2aa510b297d1bdd8a10b486477feedc767826171bf5be63f74",
-    "probe.ts": "84e623bdf6c1781bfb26bab7ae41b3db42ed74a3a7fb14b61f1fa1b19fed7fba",
+    "probe.ts": "0f6a759a19213f9657a462156cd159d97157de631d4383284d43c907843f9725",
     "run.ps1": "ac9104765dd9d5d478e2a82728519a958c1a9f8ed8b8cbc86f8a9004adb6c385",
     "minio.log": "8509b84b1e01cbf7ea6906e8dbf837932021ce13ac5041c700d42d8d95c4dc64",
     "probe-journey.ts": "6cf0cb03ed7d5ed3b0ec3c942dd9c05fcb3f14a8e32acc75bff81e531d3a3547",
@@ -71,5 +71,15 @@
     "failed": 0,
     "assertions": 66,
     "session": "Effective Kids student session supplied by the loopback harness"
+  },
+  "runnerFormattingReview": {
+    "date": "2026-11-22",
+    "previousProbeSha256": "84e623bdf6c1781bfb26bab7ae41b3db42ed74a3a7fb14b61f1fa1b19fed7fba",
+    "formattedProbeSha256": "0f6a759a19213f9657a462156cd159d97157de631d4383284d43c907843f9725",
+    "testedProductCommit": "86b3909e94070e173d653928dba25b13d2656693",
+    "tests": 1,
+    "failed": 0,
+    "assertions": 19,
+    "historicalLogsRetained": true
   }
 }

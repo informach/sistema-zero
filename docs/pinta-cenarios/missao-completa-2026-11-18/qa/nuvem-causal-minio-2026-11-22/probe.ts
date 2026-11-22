@@ -5,12 +5,9 @@ import { CreateBucketCommand, S3Client } from '@aws-sdk/client-s3'
 import { assetToJson, createAsset } from '@sistemazero/pinta/assets'
 
 mock.module('server-only', () => ({}))
-const {
-  r2CreateObjectUgc,
-  r2GetObjectUgc,
-  r2PresignGetUgc,
-  r2PresignPutUgc,
-} = await import('../src/server/r2')
+const { r2CreateObjectUgc, r2GetObjectUgc, r2PresignGetUgc, r2PresignPutUgc } = await import(
+  '../src/server/r2'
+)
 const { readPintaCausalBlob } = await import('../src/server/pinta-causal-content')
 
 const endpoint = process.env.R2_S3_ENDPOINT
@@ -42,7 +39,14 @@ test('conditional presigned upload, CORS preflight, retained gzip and server-onl
       bytes: gzip.byteLength,
       sha256: createHash('sha256').update(gzip).digest('hex'),
     }
-    const prefix = ['creations', crypto.randomUUID(), 'pinta', sheet.id, 'units', crypto.randomUUID()].join('/')
+    const prefix = [
+      'creations',
+      crypto.randomUUID(),
+      'pinta',
+      sheet.id,
+      'units',
+      crypto.randomUUID(),
+    ].join('/')
     const uploadKey = prefix + '/1.upload.gz'
     const sealedKey = prefix + '/1.sealed.gz'
     const url = await r2PresignPutUgc({
@@ -64,17 +68,31 @@ test('conditional presigned upload, CORS preflight, retained gzip and server-onl
     const methods = preflight.headers.get('access-control-allow-methods')?.toLowerCase() ?? ''
     const headers = preflight.headers.get('access-control-allow-headers')?.toLowerCase() ?? ''
     expect(methods).toContain('put')
-    expect(headers === '*' || (headers.includes('content-type') && headers.includes('if-none-match'))).toBe(true)
+    expect(
+      headers === '*' || (headers.includes('content-type') && headers.includes('if-none-match')),
+    ).toBe(true)
 
     const send = async (body: Buffer, conditional: boolean) => {
       const response = await fetch(url, {
         method: 'PUT',
-        headers: { origin, 'content-type': format, ...(conditional ? { 'if-none-match': '*' } : {}) },
+        headers: {
+          origin,
+          'content-type': format,
+          ...(conditional ? { 'if-none-match': '*' } : {}),
+        },
         body,
       })
       const responseBody = await response.text()
-      if (response.status >= 400) console.log('S3 disposition', response.status, /<Code>([^<]+)<\/Code>/.exec(responseBody)?.[1])
-      return { status: response.status, allowOrigin: response.headers.get('access-control-allow-origin') }
+      if (response.status >= 400)
+        console.log(
+          'S3 disposition',
+          response.status,
+          /<Code>([^<]+)<\/Code>/.exec(responseBody)?.[1],
+        )
+      return {
+        status: response.status,
+        allowOrigin: response.headers.get('access-control-allow-origin'),
+      }
     }
     expect((await send(gzip, false)).status).toBeGreaterThanOrEqual(400)
     expect(await r2GetObjectUgc(uploadKey)).toBeNull()
@@ -91,8 +109,12 @@ test('conditional presigned upload, CORS preflight, retained gzip and server-onl
     expect(verified.sha256).toBe(expected.sha256)
     expect(verified.manifest.sheet).toEqual({ tileSize: 16, count: 1 })
 
-    expect(await r2CreateObjectUgc({ key: sealedKey, body: verified.gzip, contentType: format })).toBe(true)
-    expect(await r2CreateObjectUgc({ key: sealedKey, body: different, contentType: format })).toBe(false)
+    expect(
+      await r2CreateObjectUgc({ key: sealedKey, body: verified.gzip, contentType: format }),
+    ).toBe(true)
+    expect(await r2CreateObjectUgc({ key: sealedKey, body: different, contentType: format })).toBe(
+      false,
+    )
     const download = await r2PresignGetUgc(sealedKey, {
       responseContentType: format,
       responseContentDisposition: 'attachment; filename="terra-qa.pinta.json.gz"',
@@ -100,8 +122,14 @@ test('conditional presigned upload, CORS preflight, retained gzip and server-onl
     const attached = await fetch(download, { headers: { origin } })
     expect(attached.status).toBe(200)
     expect(attached.headers.get('access-control-allow-origin')).toBe(origin)
-    expect(attached.headers.get('content-disposition')).toBe('attachment; filename="terra-qa.pinta.json.gz"')
-    expect(createHash('sha256').update(Buffer.from(await attached.arrayBuffer())).digest('hex')).toBe(expected.sha256)
+    expect(attached.headers.get('content-disposition')).toBe(
+      'attachment; filename="terra-qa.pinta.json.gz"',
+    )
+    expect(
+      createHash('sha256')
+        .update(Buffer.from(await attached.arrayBuffer()))
+        .digest('hex'),
+    ).toBe(expected.sha256)
   } finally {
     s3.destroy()
   }
