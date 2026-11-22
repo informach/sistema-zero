@@ -314,7 +314,14 @@ describe.skipIf(!url)('Pinta causal over the real migration and existing quota l
               error instanceof Error && /consumer|token|gateway/i.test(error.message) ? 401 : 403,
           }),
       )
-      .use(pintaCausalRoutes({ causal: db, internalToken: token, reserveUpload }))
+      .use(
+        pintaCausalRoutes({
+          causal: db,
+          internalToken: token,
+          reserveUpload,
+          causalQaProfiles: [a],
+        }),
+      )
       .compile()
     const call = (path: string, body: unknown, headers: Record<string, string> = {}) =>
       app.handle(
@@ -325,6 +332,9 @@ describe.skipIf(!url)('Pinta causal over the real migration and existing quota l
         }),
       )
     const gateway = { 'x-internal-token': token, 'x-consumer-id': 'member-shell' }
+    expect((await call('graph/page', { ...actor(), payload: { reader: 6 } }, gateway)).status).toBe(
+      404,
+    )
     expect(
       (await call('graph/page', { ...a, payload: { reader: 6 } }, { 'x-internal-token': token }))
         .status,

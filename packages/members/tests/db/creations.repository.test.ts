@@ -115,11 +115,15 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
     await conn.sql.unsafe('drop table if exists members.creation_inventory_floors')
     await conn.sql.unsafe('drop table if exists members.pinta_causal_units')
     await conn.sql.unsafe('drop function if exists members.pinta_graph_individual_write()')
+    await conn.sql.unsafe('drop function if exists members.pinta_palette_write_fence()')
+    await conn.sql.unsafe('drop function if exists members.pinta_palette_generation_fence()')
     for (const name of [
       '0166_pinta_inventory_floor',
       '0167_backfill_pinta_inventory_floor',
       '0168_pinta_causal_units',
       '0170_pinta_causal_writer_fence',
+      '0171_pinta_palette_write_authority',
+      '0172_pinta_palette_write_fence',
     ]) {
       const migration = await Bun.file(
         new URL(

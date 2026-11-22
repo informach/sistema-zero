@@ -166,9 +166,12 @@ export function MoldaClient({
 
   const loadMolda = useCallback(async () => {
     const revision = ++loadRevision.current
-    paletteBridgeCleanup.current?.()
-    paletteBridgeCleanup.current = null
-    renewPalettes.current = null
+    const resetPaletteBridge = () => {
+      paletteBridgeCleanup.current?.()
+      paletteBridgeCleanup.current = null
+      renewPalettes.current = null
+    }
+    resetPaletteBridge()
     setMod(null)
     setLoadError(false)
     setCloud(null)
@@ -257,9 +260,7 @@ export function MoldaClient({
       setMod(m)
     } catch {
       if (revision !== loadRevision.current) return
-      paletteBridgeCleanup.current?.()
-      paletteBridgeCleanup.current = null
-      renewPalettes.current = null
+      resetPaletteBridge()
       setLoadError(true)
     }
   }, [viewerId, localNamespace, audience])

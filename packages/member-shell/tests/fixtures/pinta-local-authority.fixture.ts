@@ -2208,8 +2208,11 @@ test.each([
       if (retainedSheet?.kind !== 'tileset') throw Error('Folha histórica ausente')
       expect(retainedSheet.tiles[0]?.data[0]).toBe(0)
       const artistLeaf = assets
-        .filter((asset) => asset.kind === 'tileset' && asset.name.startsWith('pecas'))
-        .map((asset) => asset.tiles[0]?.data[0])
+        .flatMap((asset) =>
+          asset.kind === 'tileset' && asset.name.startsWith('pecas')
+            ? [asset.tiles[0]?.data[0]]
+            : [],
+        )
         .sort()
       expect(artistLeaf).toEqual([0, 5, 7])
       expect(assets.find((asset) => asset.id === map.id)?.name).toBe('vila')

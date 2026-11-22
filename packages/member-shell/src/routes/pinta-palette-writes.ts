@@ -117,7 +117,7 @@ function parsePalette(text: string, updatedAt: string): void {
     if (!palette || !Array.isArray(raw.palettes) || !Array.isArray(raw.removed))
       throw new Error('Paleta inválida')
     const sortById = (entries: unknown[]) =>
-      entries.toSorted((left, right) =>
+      [...entries].sort((left, right) =>
         String((left as { id?: unknown } | null)?.id).localeCompare(
           String((right as { id?: unknown } | null)?.id),
         ),
