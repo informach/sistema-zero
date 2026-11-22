@@ -120,8 +120,17 @@ describe.skipIf(!url)(
         audience: 'kids',
         learner: 'parents',
         status: 'published',
+        createdAt: now,
+        updatedAt: now,
       })
-      await db.insert(modules).values({ id: m, courseId: c, title: 'Módulo', sortOrder: 0 })
+      await db.insert(modules).values({
+        id: m,
+        courseId: c,
+        title: 'Módulo',
+        sortOrder: 0,
+        createdAt: now,
+        updatedAt: now,
+      })
       await db.insert(lessons).values({
         id: l,
         courseId: c,
@@ -130,6 +139,8 @@ describe.skipIf(!url)(
         title: 'Aula',
         sortOrder: 0,
         isPublished: true,
+        createdAt: now,
+        updatedAt: now,
       })
       const parts = [1, 2, 3].map((n) => defaultLessonSection(randomUUID(), `Parte ${n}`, []))
       const [first, second, third] = parts
