@@ -37,10 +37,11 @@ export const MAP_TWO_D_FULL_BOOTSTRAP_MAX_CHARS = { g2d: 397_000, gk: 437_000 } 
 // buscas por id num ajudante só (com o conjunto fora do recorte e as imagens pedidas ao criar o
 // cenário) deixaram 26.471 / 26.467, e o teto desceu de 26.600.
 export const MAP_TWO_D_FRAGMENT_MAX_CHARS = 26_500
-function host(target: 'g2d' | 'gk'): string {
+function host(target: 'g2d' | 'gk', regional?: MapTwoDPrivateSource): string {
   const basic = target === 'g2d'
+  const factory = regional ? 'createPrivateMap2D' : 'createMap2D'
   return `
-  var _map2d=createMap2D({
+  var _map2d=${factory}({${regional?.hostFields ?? ''}
     meta:function(name,byId){var all=Object.values(ASSET_META);if(byId){var id=all.find(function(m){return m.scene&&m.scene.id===name;});if(id)return id;}if(Object.prototype.hasOwnProperty.call(ASSET_META,name)&&ASSET_META[name].scene)return ASSET_META[name];return all.find(function(m){return m.scene&&(m.scene.id===name||m.scene.name===name);})||null;},
     context:${basic ? 'ensureStage' : 'function(){return ctx2d;}'},
     width:${basic ? 'stageWidth' : 'function(){return config.w;}'},height:${basic ? 'stageHeight' : 'function(){return config.h;}'},
@@ -69,7 +70,7 @@ function host(target: 'g2d' | 'gk'): string {
       if(support){sprite.vy=0;${basic ? '_confirmGroundSupport(sprite,null);' : 'sprite.onGround=true;'}}
       ${basic ? '_refreshRecordedMotionAfterCollision(sprite,previous);' : 'sprite._prevX=sprite.x;sprite._prevY=sprite.y;'}
     }
-  });
+  }${regional ? `,{${regional.sharedGeometry.join(',')}}` : ''});
   _registerRuntimeDomain('map-2d',{${basic ? 'reset' : 'resetProject'}:_map2d.reset});
   `
 }
@@ -77,6 +78,7 @@ interface MapTwoDPrivateSource {
   fragment: string
   hostFields: string
   engine(source: string): string
+  sharedGeometry: readonly string[]
 }
 
 function withMapTwoD(
@@ -88,11 +90,11 @@ function withMapTwoD(
   const source = regional ? regional.engine(engine) : engine
   if (!source.includes('// MAP_2D_RUNTIME_SLOT') || !source.includes('// MAP_2D_API_SLOT'))
     throw new Error('O motor não declarou os pontos de composição do mapa 2D.')
-  const bridge = regional
-    ? host(target).replace('createMap2D({', `createPrivateMap2D({${regional.hostFields}`)
-    : host(target)
   return source
-    .replace('// MAP_2D_RUNTIME_SLOT', () => fragment + (regional?.fragment ?? '') + bridge)
+    .replace(
+      '// MAP_2D_RUNTIME_SLOT',
+      () => fragment + (regional?.fragment ?? '') + host(target, regional),
+    )
     .replace(
       '// MAP_2D_API_SLOT',
       MAP_TWO_D_API_KEYS.map((key) => `${key}:_map2d.${key},`).join('\n'),

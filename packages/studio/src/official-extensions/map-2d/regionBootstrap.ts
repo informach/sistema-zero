@@ -4,13 +4,14 @@ import {
   regionEngineSource,
   regionHostFields,
   regionWorldData,
+  sharedRegionGeometry,
 } from './regionHostSource'
 import { regionMap2DRuntime } from './regionRuntime.generated'
 import { type AdmittedRegionWorld, packRegionWorld } from './regionWire'
 
 const factorySlot = '/* __SZ_PRIVATE_PINTA_FACTORY__ */'
-// Bun 1.3.11, before asset data: 419,533 / 461,774 chars, 420,092 / 463,279
-// UTF-8 bytes and 114,693 / 142,419 gzip bytes. The public budgets are independent.
+// Bun 1.3.11, before asset data: 414,873 / 457,114 chars, 415,432 / 458,619
+// UTF-8 bytes and 113,321 / 141,029 gzip bytes. The public budgets are independent.
 const runtimeMaxChars = { g2d: 422_000, gk: 464_000 } satisfies Record<MapTarget, number>
 
 /** Private fixture/host entry point; callers must admit PNG bytes or scene JSON first.
@@ -26,10 +27,11 @@ export async function mapTwoDRegionBootstrap(
   const literal = JSON.stringify(data).replaceAll('<', '\\u003c')
   const source = await composeMapTwoDBootstrap(target, true, {
     fragment: `
-function createPrivateMap2D(host){${factorySlot}return _pintaRegionFactory(host,createMap2D(host),${regionWorldData});}
+function createPrivateMap2D(host,_pintaSharedSceneGeometry){${factorySlot}return _pintaRegionFactory(host,createMap2D(host),${regionWorldData});}
 `,
     hostFields: regionHostFields(target),
     engine: (source) => regionEngineSource(source, target),
+    sharedGeometry: sharedRegionGeometry,
   })
   const runtime = source.replace(factorySlot, () => regionMap2DRuntime)
   if (

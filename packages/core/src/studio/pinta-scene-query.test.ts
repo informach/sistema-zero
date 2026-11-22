@@ -234,6 +234,37 @@ describe('consultas regionais em contexto de runtime', () => {
     )
     expect(query.objects()[1]?.properties.next).toEqual({ type: 'object', value: 'instance/child' })
   })
+  test('a consulta filtra filhos por definição e só posiciona os candidatos da área', () => {
+    const source = withSet()
+    const instances = source.layers[1]!
+    const definition = source.sets![0]!.layers[1]!
+    if (instances.kind !== 'objects' || definition.kind !== 'objects')
+      throw Error('Expected objects')
+    const instance = instances.objects[0]!
+    for (let i = 0; i < 32; i++)
+      instances.objects.push({ ...instance, id: `far-${i}`, x: 512 + i * 32 })
+    definition.objects[0] = { ...definition.objects[0]!, role: 'trigger' }
+    const query = createRegionSceneQueries(regional(source))
+    let visits = 0
+    const found = [
+      ...query.iterateObjects((obj) => {
+        if (obj.id === 'child') visits++
+        return obj.role === 'trigger'
+      }),
+    ]
+    expect(visits).toBe(1)
+    expect(found).toHaveLength(33)
+    const first = found[0]!
+    expect([
+      ...query.iterateObjects((obj) => obj.role === 'trigger', { x: first.x + 0.9, y: first.y }),
+    ]).toEqual([first])
+    expect(
+      [...query.iterateObjects(undefined, { x: first.x + 1.1, y: first.y })].some(
+        (object) => object.id === first.id,
+      ),
+    ).toBe(false)
+    expect([...query.iterateObjects()]).toEqual(query.objects())
+  })
   test('giros, reflexos e escala de conjuntos usam a mesma geometria densa', () => {
     for (const rotation of [0, 37, 90])
       for (const flipX of [false, true])

@@ -9,7 +9,13 @@ import {
   sceneMoveBox,
   scenePlatformLanding,
 } from './pinta-scene-geometry'
-import { moveSceneCharacter, sceneObjects, sceneSolidAt, sceneSpawn } from './pinta-scene-runtime'
+import {
+  createSceneObjectIterator,
+  moveSceneCharacter,
+  sceneObjects,
+  sceneSolidAt,
+  sceneSpawn,
+} from './pinta-scene-runtime'
 
 export type PintaSceneDocument = PintaScene | PintaRegionScene
 export type PintaRegionSceneQuery = PintaRegionScene & {
@@ -37,6 +43,7 @@ export function createRegionSceneQueries(scene: PintaRegionScene) {
   return {
     context,
     objects: () => sceneObjects(context),
+    iterateObjects: createSceneObjectIterator(context),
     spawn: () => sceneSpawn(context),
     solidAt: (x: number, y: number) => sceneSolidAt(context, x, y),
     moveCharacter: (position: { x: number; y: number }, dx: number, dy: number, radius?: number) =>

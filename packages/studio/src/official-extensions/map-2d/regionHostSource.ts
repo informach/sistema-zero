@@ -1,6 +1,12 @@
 export type MapTarget = 'g2d' | 'gk'
 
 export const regionWorldData = '__SZ_PRIVATE_PINTA_WORLD_DATA__'
+/** Stable aliases published by the Core portable scene fragment in this closure. */
+export const sharedRegionGeometry = [
+  'sceneIntersectsBox',
+  'sceneMoveBox',
+  'scenePlatformLanding',
+] as const
 
 /** Accesses the existing engine internals only in the private composition. */
 export function regionHostFields(target: MapTarget): string {

@@ -44,11 +44,11 @@ interface WatchedArea {
   type: string
   callback: (object: PintaSceneObject) => void
   inside: Set<string>
+  checking: boolean
 }
 interface RunningScene {
   scene: Scene
   query: ReturnType<typeof createRegionSceneQueries>
-  objects: PintaSceneObject[]
   spawn: Point
   art: Map<string, string>
   started: number
@@ -130,11 +130,9 @@ export function createRegionMap2D(host: Host, legacy: Api, serialized: string) {
               (_scene, previous, desired, gravity) =>
                 query.platformLanding(previous, desired, gravity),
             )
-    const objects = structuredClone(query.objects())
     const map = {
       scene,
       query,
-      objects,
       spawn: query.spawn(),
       started: host.now(),
       art,
@@ -151,20 +149,53 @@ export function createRegionMap2D(host: Host, legacy: Api, serialized: string) {
       ? regions.get(data.rootId)
       : (regions.get(asset) ?? names.get(asset))
   }
-  function isType(object: PintaSceneObject, type: string) {
-    return !type || object.type === type || object.role === type
+  function matchesType(type: string) {
+    return type
+      ? (object: PintaSceneObject) => object.type === type || object.role === type
+      : undefined
+  }
+  function center(sprite: unknown): Point | undefined {
+    if (!sprite || typeof sprite !== 'object') return undefined
+    const body = sprite as Partial<Point> & {
+      w?: number
+      h?: number
+      width?: number
+      height?: number
+    }
+    if (typeof body.x !== 'number' || typeof body.y !== 'number') return undefined
+    const x = body.x + (body.w || body.width || 0) / 2,
+      y = body.y + (body.h || body.height || 0) / 2
+    if (Number.isFinite(x) && Number.isFinite(y)) return { x, y }
+  }
+  function pickObject(
+    map: RunningScene,
+    candidate: (object: PintaSceneObject) => boolean,
+    matches = candidate,
+  ) {
+    for (const object of map.query.iterateObjects(candidate))
+      if (matches(object)) return structuredClone(object)
+    return null
   }
   function areas(name: string, map: RunningScene) {
-    for (const event of map.areas.slice())
-      for (const object of map.objects) {
-        if (maps.get(name) !== map) return
-        if (!isType(object, event.type)) continue
-        if (legacy.mapInArea(event.sprite, object)) {
-          if (event.inside.has(object.id)) continue
-          event.inside.add(object.id)
-          event.callback(object)
-        } else event.inside.delete(object.id)
+    for (const event of map.areas.slice()) {
+      if (event.checking) continue
+      event.checking = true
+      try {
+        const previous = event.inside
+        const current = new Set<string>()
+        event.inside = current
+        const point = center(event.sprite)
+        if (!point) continue
+        for (const object of map.query.iterateObjects(matchesType(event.type), point)) {
+          if (maps.get(name) !== map) return
+          if (current.has(object.id) || !legacy.mapInArea(event.sprite, object)) continue
+          current.add(object.id)
+          if (!previous.has(object.id)) event.callback(structuredClone(object))
+        }
+      } finally {
+        event.checking = false
       }
+    }
   }
   function watch() {
     if (watching) return
@@ -235,20 +266,26 @@ export function createRegionMap2D(host: Host, legacy: Api, serialized: string) {
     mapObjects(name, type) {
       const map = maps.get(name)
       return map
-        ? map.objects.filter((object) => isType(object, type))
+        ? Array.from(map.query.iterateObjects(matchesType(type)), (object) =>
+            structuredClone(object),
+          )
         : legacy.mapObjects(name, type)
     },
     mapObjectNamed(name, label) {
       const map = maps.get(name)
       return map
-        ? (map.objects.find((object) => object.name === label) ?? null)
+        ? pickObject(map, (object) => object.name === label)
         : legacy.mapObjectNamed(name, label)
     },
     mapObjectById(name, id) {
       const map = maps.get(name)
-      return map
-        ? (map.objects.find((object) => object.id === id) ?? null)
-        : legacy.mapObjectById(name, id)
+      if (!map) return legacy.mapObjectById(name, id)
+      if (typeof id !== 'string') return null
+      return pickObject(
+        map,
+        (object) => object.id === id || id.endsWith(`/${object.id}`),
+        (object) => object.id === id,
+      )
     },
     mapResourceImage(name, id) {
       const map = maps.get(name)
@@ -275,7 +312,7 @@ export function createRegionMap2D(host: Host, legacy: Api, serialized: string) {
       const map = maps.get(name)
       if (!map) return legacy.mapArea(name, sprite, type, callback)
       if (typeof callback !== 'function') return
-      map.areas.push({ sprite, type, callback, inside: new Set() })
+      map.areas.push({ sprite, type, callback, inside: new Set(), checking: false })
       watch()
     },
     useMapDoor(name, sprite, object) {

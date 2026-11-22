@@ -3,10 +3,10 @@ import { mapTwoDBootstrap } from '../bootstrap'
 import type { MapTwoDApi } from '../contract'
 import { mapTwoDRegionBootstrap } from '../regionBootstrap'
 
-import { admit, image, pngWorld, regional } from './regionFixture'
+import { admit, image, pngWorld, regional, repeatedRegionalObjects } from './regionFixture'
 
 type Target = 'g2d' | 'gk'
-function boot(target: Target, source: string) {
+function boot(target: Target, source: string, object = Object) {
   const queue: Array<(ms: number) => void> = []
   const images: string[] = []
   const win: Record<string, unknown> = {
@@ -19,10 +19,11 @@ function boot(target: Target, source: string) {
       images.push(url)
     }
   }
-  new Function('window', 'requestAnimationFrame', 'Image', source)(
+  new Function('window', 'requestAnimationFrame', 'Image', 'Object', source)(
     win,
     (callback: (ms: number) => void) => queue.push(callback),
     Image,
+    object,
   )
   return {
     api: win[target === 'g2d' ? 'SZGame2D' : 'SZGameKit'] as MapTwoDApi & {
@@ -40,6 +41,43 @@ function body(x: number, from: number, to: number, w = 4) {
 }
 
 for (const target of ['g2d', 'gk'] as const) {
+  test(`${target} bounds automatic queries in a 512-by-512 object expansion`, async () => {
+    let transforms = 0
+    const tracker = new Proxy(Object, {
+      get(object, key, receiver) {
+        if (key !== 'fromEntries') return Reflect.get(object, key, receiver)
+        return (entries: Parameters<typeof Object.fromEntries>[0]) => {
+          if (++transforms > 8) throw new Error('Expanded offstage set objects')
+          return Object.fromEntries(entries)
+        }
+      },
+    })
+    const source = await mapTwoDRegionBootstrap(target, admit(repeatedRegionalObjects()))
+    const { api, frame } = boot(target, source, tracker)
+    api.createMapScene('mapa', 'vila')
+    expect(api.mapSpawn('mapa', 'x')).toBe(-508)
+    expect(api.mapObjectById('mapa', 'door')?.id).toBe('door')
+    expect(api.mapObjectNamed('mapa', 'door')?.id).toBe('door')
+    expect(transforms).toBe(0)
+    const entered: string[] = []
+    const actor = body(-512, -512, -512)
+    api.mapArea('mapa', actor, 'trigger', (o) => entered.push(o.id))
+    frame()
+    expect(entered).toEqual(['area'])
+    actor.x = -408
+    actor.y = -430
+    frame()
+    frame()
+    expect(entered).toEqual(['area', 'spill/touch'])
+    actor.x = -390
+    frame()
+    actor.x = -408
+    frame()
+    expect(entered).toEqual(['area', 'spill/touch', 'spill/touch'])
+    expect(transforms).toBeLessThanOrEqual(8)
+    expect(api.mapObjects('mapa', 'door').map((object) => object.id)).toEqual(['door'])
+  })
+
   test(`${target} uses signed sparse tiles, known worlds and explicit physics in the actual engine`, async () => {
     for (const mode of ['legacy', 'precise'] as const) {
       const source = await mapTwoDRegionBootstrap(target, admit(regional(mode)), 'desenho')

@@ -65,6 +65,34 @@ estrito (`true` ou ausência), sem afrouxar o leitor.
   verificadores oficiais dos gerados JavaScript/Python aprovados. O gerado
   Python não mudou.
 
+## Consultas de objetos nos dois motores JavaScript
+
+A abertura de cena 4, a busca do início e os eventos de área usam um iterador
+em ordem autoral. O índice conserva os filhos de cada definição uma vez. O filtro
+de tipo ou papel corre antes de transformar os filhos. A área compara primeiro
+o ponto ao alcance conservador da definição e dos seus filhos, preservando
+conteúdo além da caixa nominal, origem assinada, giros e reflexos. Cada evento
+guarda apenas os IDs sob o personagem. A consulta explícita de lista mantém o
+array de snapshots.
+
+Uma cena admitida com 512 instâncias de uma definição de 512 objetos falhou nos
+dois motores anteriores na nona transformação, durante a abertura. Nos dois
+motores revistos, abrir a cena e procurar a primeira porta e o início usa zero
+transformações de filhos. O mesmo ensaio dispara entrada e reentrada no objeto
+fora da caixa nominal de um conjunto girado e mantém o custo em até oito
+transformações no percurso completo.
+
+O primeiro passe de Playwright após corrigir o percurso esparso encontrou o
+teto privado no Avançado em Node. A composição privada passou a receber os
+três aliases estáveis de geometria que o fragmento já embute. O gerador exige
+esses aliases e confere que o bundle usa a ligação. Os tetos privados e
+públicos conservam seus valores, e os quatro scripts públicos mantêm os hashes.
+Antes dos dados do mapa, a fonte privada mede 414.873 caracteres no Jogo 2D
+e 457.114 no Avançado (113.321 e 141.029 bytes gzip).
+Depois da ligação, os quatro casos Playwright passaram nos dois motores em
+desktop e toque emulado. Também passaram 52 testes do Studio, 51 do Core,
+tipos focados incluindo a fixture de navegador, Biome e os dois geradores.
+
 ## Limites e sequência
 
 `physics` não é escolhido por estes métodos geométricos. A física de cena 4

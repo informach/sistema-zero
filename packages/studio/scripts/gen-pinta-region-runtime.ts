@@ -1,4 +1,6 @@
 import { fileURLToPath } from 'node:url'
+import { sceneObjectTransformSource } from '@sistemazero/core/studio/pinta-scene-runtime'
+import { sharedRegionGeometry } from '../src/official-extensions/map-2d/regionHostSource'
 
 const output = new URL(
   '../src/official-extensions/map-2d/regionRuntime.generated.ts',
@@ -7,6 +9,10 @@ const output = new URL(
 const runtime = fileURLToPath(
   new URL('../src/official-extensions/map-2d/regionRuntime.ts', import.meta.url),
 )
+for (const name of sharedRegionGeometry)
+  if (!sceneObjectTransformSource.includes(`var ${name}=`))
+    throw new Error(`O Core não forneceu a função portátil ${name}.`)
+let linkedGeometry = false
 const built = await Bun.build({
   entrypoints: ['pinta-region-runtime'],
   format: 'iife',
@@ -16,6 +22,19 @@ const built = await Bun.build({
     {
       name: 'pinta-region-factory',
       setup(build) {
+        build.onResolve({ filter: /^\.\/pinta-scene-geometry$/ }, () => ({
+          path: 'pinta-scene-geometry',
+          namespace: 'pinta-region-shared',
+        }))
+        build.onLoad({ filter: /.*/, namespace: 'pinta-region-shared' }, () => {
+          linkedGeometry = true
+          return {
+            contents: sharedRegionGeometry
+              .map((key) => `export const ${key}=_pintaSharedSceneGeometry.${key};`)
+              .join(''),
+            loader: 'js',
+          }
+        })
         build.onResolve({ filter: /^pinta-region-runtime$/ }, () => ({
           path: 'pinta-region-runtime',
           namespace: 'pinta-region-factory',
@@ -28,7 +47,7 @@ const built = await Bun.build({
     },
   ],
 })
-if (!built.success || built.outputs.length !== 1)
+if (!built.success || built.outputs.length !== 1 || !linkedGeometry)
   throw new Error('Falha ao compor o runtime regional dos jogos 2D.', { cause: built.logs })
 const source = `var _pintaRegionFactory;${(await built.outputs[0]!.text()).trim()}`
 const literal = `'${JSON.stringify(source)

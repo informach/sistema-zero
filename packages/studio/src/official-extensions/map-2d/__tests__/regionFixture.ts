@@ -186,10 +186,83 @@ export function regional(physics: Physics, id = 'vila', x = -508) {
   }
 }
 
-export function admit(source: ReturnType<typeof regional>): AdmittedRegionWorld {
+export function admit(source: unknown): AdmittedRegionWorld {
   const scene = readPintaRegionScene(JSON.stringify(source))
   if (!scene) throw new Error('Fixture de cena 4 inválida.')
   return { rootId: scene.id, maps: new Map([[scene.id, { data: { scene } }]]) }
+}
+
+export function repeatedRegionalObjects() {
+  const source = regional('precise')
+  const layer = (id: string, objects: unknown[]) => ({
+    id,
+    name: id,
+    kind: 'objects',
+    visible: true,
+    objects,
+  })
+  const obj = (id: string, x: number, y: number) => ({
+    id,
+    name: id,
+    type: '',
+    x,
+    y,
+    width: 8,
+    height: 8,
+    properties: {},
+  })
+  return {
+    ...source,
+    layers: [
+      layer('first', [
+        { ...obj('start', -508, -508), role: 'start' },
+        { ...obj('door', -480, -512), role: 'door' },
+        { ...obj('area', -512, -512), role: 'trigger' },
+        {
+          ...obj('spill', -400, -496),
+          width: 16,
+          height: 16,
+          rotation: 90,
+          shape: 'set',
+          setId: 'spill-def',
+        },
+      ]),
+      layer(
+        'far',
+        Array.from({ length: 512 }, (_, i) => ({
+          ...obj(`copy-${i}`, 10_000 + i * 32, 10_000),
+          width: 16,
+          height: 16,
+          shape: 'set',
+          setId: 'many-def',
+        })),
+      ),
+    ],
+    sets: [
+      {
+        id: 'many-def',
+        origin: { col: 0, row: 0 },
+        cols: 1,
+        rows: 1,
+        layers: [
+          layer(
+            'many-points',
+            Array.from({ length: 512 }, (_, i) => ({
+              ...obj(`point-${i}`, i, i),
+              role: 'trigger',
+            })),
+          ),
+        ],
+      },
+      {
+        id: 'spill-def',
+        origin: { col: -1, row: 0 },
+        cols: 1,
+        rows: 1,
+        layers: [layer('spill-points', [{ ...obj('touch', 48, 0), role: 'trigger' }])],
+      },
+    ],
+  }
 }
 
 export async function pngWorld() {

@@ -181,43 +181,136 @@ export function transformSceneSetObject(
     flipY: child.flipY,
   }
 }
-export function sceneObjects(scene: PintaSceneDocument): PintaSceneObject[] {
-  const direct = (layers: PintaSceneDocument['layers']) =>
-    layers.flatMap((l) => {
-      if (l.kind !== 'objects') return []
-      const e = sceneLayerState(layers, l)
-      return e.visible
-        ? l.objects.map((o) => ({ ...o, x: o.x + e.offsetX, y: o.y + e.offsetY }))
-        : []
-    })
-  return direct(scene.layers).flatMap((o) => {
-    const set = scene.sets?.find((s) => s.id === o.setId)
-    if (!set) return [o]
-    const nested = direct(set.layers)
-    const ids = set.layers.flatMap((l) => (l.kind === 'objects' ? l.objects.map((o) => o.id) : []))
-    return [
-      o,
-      ...nested.map((n) =>
-        transformSceneSetObject(
-          o,
-          scene.version === 4 && 'origin' in set
-            ? {
-                ...n,
-                x: n.x - set.origin.col * scene.tileSize,
-                y: n.y - set.origin.row * scene.tileSize,
-              }
-            : n,
-          set.cols * scene.tileSize,
-          set.rows * scene.tileSize,
-          ids,
-        ),
+type ScenePoint = { x: number; y: number }
+type ObjectMatch = (object: PintaSceneObject) => boolean
+
+function* directSceneObjects(layers: PintaSceneDocument['layers']) {
+  for (const layer of layers) {
+    if (layer.kind !== 'objects') continue
+    const state = sceneLayerState(layers, layer)
+    if (!state.visible) continue
+    for (const object of layer.objects)
+      yield { ...object, x: object.x + state.offsetX, y: object.y + state.offsetY }
+  }
+}
+
+function objectReach(object: PintaSceneObject): number {
+  let radius = Math.hypot(object.width, object.height)
+  for (const point of object.points ?? []) radius = Math.max(radius, Math.hypot(point.x, point.y))
+  return radius
+}
+
+type SceneDefinition = {
+  children: { object: PintaSceneObject; radius: number }[]
+  ids: string[]
+  width: number
+  height: number
+  left: number
+  right: number
+  top: number
+  bottom: number
+}
+
+/** Traverse authored order without expanding a definition for every placement.
+ * A predicate sees the local, visible object and may match fields preserved by
+ * the placement (type, role, name). Match scoped IDs on emitted objects.
+ * A point optionally narrows area candidates, leaving containment to the player.
+ */
+export function createSceneObjectIterator(scene: PintaSceneDocument) {
+  const definitions = new Map<string, SceneDefinition>()
+  const tile = scene.tileSize
+  function definition(id: string): SceneDefinition | undefined {
+    const cached = definitions.get(id)
+    if (cached) return cached
+    const set = scene.sets?.find((candidate) => candidate.id === id)
+    if (!set) return undefined
+    const origin = scene.version === 4 && 'origin' in set ? set.origin : undefined
+    const x = (origin?.col ?? 0) * tile,
+      y = (origin?.row ?? 0) * tile
+    const value: SceneDefinition = {
+      width: set.cols * tile,
+      height: set.rows * tile,
+      ids: set.layers.flatMap((layer) =>
+        layer.kind === 'objects' ? layer.objects.map((object) => object.id) : [],
       ),
-    ]
-  })
+      children: [],
+      left: Infinity,
+      right: -Infinity,
+      top: Infinity,
+      bottom: -Infinity,
+    }
+    for (const child of directSceneObjects(set.layers)) {
+      const object = { ...child, x: child.x - x, y: child.y - y }
+      const radius = objectReach(object)
+      value.children.push({ object, radius })
+      value.left = Math.min(value.left, object.x - radius)
+      value.right = Math.max(value.right, object.x + radius)
+      value.top = Math.min(value.top, object.y - radius)
+      value.bottom = Math.max(value.bottom, object.y + radius)
+    }
+    definitions.set(id, value)
+    return value
+  }
+
+  return function* iterateObjects(
+    matches?: ObjectMatch,
+    near?: ScenePoint,
+  ): Generator<PintaSceneObject, void> {
+    const selections = new Map<SceneDefinition, SceneDefinition['children']>()
+    for (const object of directSceneObjects(scene.layers)) {
+      if (!matches || matches(object)) {
+        if (!near || Math.hypot(near.x - object.x, near.y - object.y) <= objectReach(object) + 1)
+          yield object
+      }
+      const set = object.setId ? definition(object.setId) : undefined
+      if (!set?.children.length) continue
+      const sx = object.width / set.width,
+        sy = object.height / set.height
+      // Use the player's one-pixel contact tolerance after placement.
+      let local: ScenePoint | undefined
+      if (near) {
+        const a = ((object.rotation ?? 0) * Math.PI) / 180,
+          c = Math.cos(a),
+          s = Math.sin(a),
+          dx = near.x - object.x,
+          dy = near.y - object.y,
+          x = dx * c + dy * s,
+          y = -dx * s + dy * c
+        local = { x: object.flipX ? object.width - x : x, y: object.flipY ? object.height - y : y }
+        if (
+          local.x < set.left * sx - 1 ||
+          local.x > set.right * sx + 1 ||
+          local.y < set.top * sy - 1 ||
+          local.y > set.bottom * sy + 1
+        )
+          continue
+      }
+      let children = selections.get(set)
+      if (!children) {
+        children = matches ? set.children.filter((child) => matches(child.object)) : set.children
+        selections.set(set, children)
+      }
+      for (const child of children) {
+        if (
+          local &&
+          (Math.abs(local.x - child.object.x * sx) > child.radius * sx + 1 ||
+            Math.abs(local.y - child.object.y * sy) > child.radius * sy + 1)
+        )
+          continue
+        yield transformSceneSetObject(object, child.object, set.width, set.height, set.ids)
+      }
+    }
+  }
+}
+
+export function sceneObjects(scene: PintaSceneDocument): PintaSceneObject[] {
+  return [...createSceneObjectIterator(scene)()]
 }
 export function sceneSpawn(scene: PintaSceneDocument): { x: number; y: number } {
-  const start = sceneObjects(scene).find((o) => o.role === 'start' || o.type === 'inicio')
-  if (start) return { x: start.x, y: start.y }
+  const first = createSceneObjectIterator(scene)(
+    (o) => o.role === 'start' || o.type === 'inicio',
+  ).next()
+  if (!first.done) return { x: first.value.x, y: first.value.y }
   if (scene.version === 4)
     return {
       x:

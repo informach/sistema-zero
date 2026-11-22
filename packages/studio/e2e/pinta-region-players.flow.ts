@@ -5,6 +5,12 @@ import { pngWorld } from '../src/official-extensions/map-2d/__tests__/regionFixt
 import type { MapTwoDApi } from '../src/official-extensions/map-2d/contract'
 import { mapTwoDRegionBootstrap } from '../src/official-extensions/map-2d/regionBootstrap'
 
+declare const window: Window & {
+  SZGame2D?: GameTwoDRuntimeApi & MapTwoDApi
+  SZGameKit?: GameKitRuntimeApi & MapTwoDApi
+  regionClock?: number
+}
+
 for (const engine of ['g2d', 'gk'] as const) {
   test(`${engine}: PNG regional no motor real com pixels, câmera assinada e porta`, async ({
     page,
@@ -15,37 +21,32 @@ for (const engine of ['g2d', 'gk'] as const) {
       '<!doctype html><html><head><title>Pinta</title></head><body></body></html>',
     )
     await page.evaluate(() => {
-      const host = window as Window & { regionClock: number }
-      host.regionClock = 0
-      Date.now = () => host.regionClock
-      Object.defineProperty(performance, 'now', { value: () => host.regionClock })
+      window.regionClock = 0
+      const now = () => window.regionClock ?? 0
+      Date.now = now
+      Object.defineProperty(performance, 'now', { value: now })
     })
     await page.addScriptTag({
       content: await mapTwoDRegionBootstrap(engine, await pngWorld(), 'desenho'),
     })
     const result = await page.evaluate(async (engine) => {
-      const host = window as Window & {
-        SZGame2D: GameTwoDRuntimeApi & MapTwoDApi
-        SZGameKit: GameKitRuntimeApi & MapTwoDApi
-        regionClock: number
-      }
-      if (engine === 'g2d') host.SZGame2D.setupStage(64, 64, '#000')
+      const api = engine === 'g2d' ? window.SZGame2D : window.SZGameKit
+      if (!api || window.regionClock === undefined) throw new Error('Motor regional indisponível')
+      if ('setupStage' in api) api.setupStage(64, 64, '#000')
       else {
-        host.SZGameKit.setup({ width: 64, height: 64 })
-        host.SZGameKit.start()
+        api.setup({ width: 64, height: 64 })
+        api.start()
       }
-      const api = engine === 'g2d' ? host.SZGame2D : host.SZGameKit
       api.createMapScene('mapa', 'desenho')
       const x = api.mapSpawn('mapa', 'x'),
         y = api.mapSpawn('mapa', 'y')
       const w = api.mapSize('mapa', 'width'),
         h = api.mapSize('mapa', 'height')
-      if (engine === 'g2d')
-        host.SZGame2D.cameraFollow(host.SZGame2D.createSprite({ x, y, w: 4, h: 4 }), w, h)
+      if ('setupStage' in api) api.cameraFollow(api.createSprite({ x, y, w: 4, h: 4 }), w, h)
       else {
-        const character = host.SZGameKit.createCharacter({ w: 4, h: 4 })
-        host.SZGameKit.placeCharacter(character, x, y)
-        host.SZGameKit.cameraFollow(character, w, h)
+        const character = api.createCharacter({ w: 4, h: 4 })
+        api.placeCharacter(character, x, y)
+        api.cameraFollow(character, w, h)
       }
       const ready = new Image()
       ready.src = api.mapResourceImage('mapa', 'chao')!
@@ -78,7 +79,7 @@ for (const engine of ['g2d', 'gk'] as const) {
       api.drawMapScene('mapa', 'front')
       const front = pixel(20, 4)
       const drawnFront = calls - drawnBack
-      host.regionClock = 120
+      window.regionClock = 120
       api.drawMapScene('mapa', 'back')
       const animated = pixel(4, 4)
       const fall = { x: -508, y: -465, w: 4, h: 4, vx: 0, vy: 9, _prevX: -508, _prevY: -474 }
