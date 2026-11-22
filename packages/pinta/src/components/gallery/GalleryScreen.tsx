@@ -170,6 +170,7 @@ export function GalleryScreen(): JSX.Element {
   const loaded = usePintaGallery((state) => state.loaded)
   const syncing = usePintaGallery((state) => state.syncing)
   const readIssues = usePintaGallery((state) => state.readIssues)
+  const needsRetainedRecovery = usePintaGallery((state) => state.needsRetainedRecovery)
   // Medição: do início da leitura da galeria até a primeira renderização com os cards.
   useEffect(() => {
     if (loaded) perfMeasure('pinta:gallery:rendered', 'pinta:gallery:load:start')
@@ -662,7 +663,7 @@ export function GalleryScreen(): JSX.Element {
                   </Button>
                 </div>
               ) : null}
-              {persistence.needsRetainedRecovery?.() ? (
+              {needsRetainedRecovery ? (
                 <div
                   role="alert"
                   className="mb-5 flex flex-wrap items-center gap-3 rounded-xl border-2 border-pin-accent bg-pin-surface px-4 py-3"

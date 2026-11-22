@@ -1,4 +1,4 @@
-import { mkdir, symlink, writeFile } from 'node:fs/promises'
+import { mkdir, writeFile } from 'node:fs/promises'
 import { dirname, extname, join, relative, resolve, sep } from 'node:path'
 
 export const AUTHORITY_BASELINE = '567b93f95'
@@ -52,10 +52,6 @@ export async function prepareAuthorityBaseline(
   await copyModule('packages/pinta/src/state/persistence.ts')
   await copyModule('packages/pinta/src/core/project.ts')
   await copyModule('packages/pinta/src/state/clipboardStore.ts')
-  await symlink(
-    join(root, 'packages/pinta/node_modules'),
-    join(extracted, 'packages/pinta/node_modules'),
-    process.platform === 'win32' ? 'junction' : 'dir',
-  )
+  // The extraction lives inside packages/pinta/.cache and resolves the same installed modules.
   return { extracted, count: copied.size }
 }

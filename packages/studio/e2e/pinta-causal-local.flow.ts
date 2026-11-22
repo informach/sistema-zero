@@ -9,6 +9,7 @@ import { openPintaAuthorityProof as proof } from './helpers/pintaAuthorityRealm'
 declare global {
   interface Window {
     releaseCausalEditor?: () => void
+    pintaCausalRecovery: typeof import('../../pinta/scripts/causal-recovery-proof')
     mountPintaRecoveryGallery(namespace: string): void
   }
 }
@@ -457,29 +458,24 @@ test('terminal snapshot keeps seal and prepared Blobs until the complete copy co
     if (!base?.before) throw Error('Documento ausente')
     const opId = crypto.randomUUID()
     const intentHash = 'b'.repeat(64)
+    const firstEdit = { ...base.before, name: 'rascunho' }
+    const signal = new AbortController().signal
+    const shadow = await causal.encodeCandidates([firstEdit], signal)
+    const candidate = shadow.puts[0]!
     const sealed = await causal.stage({
       opId,
       baseEpoch: '1',
+      shadow,
       readSet: [],
       transitions: [
         {
           ...base,
-          after: { ...base.before, name: 'rascunho' },
+          after: firstEdit,
           baseRevision: 1,
           operation: { type: 'update' },
         },
       ],
     })
-    const archive = new Blob(['rascunho'])
-    const candidate = {
-      itemId: id,
-      kind: first.kind,
-      name: 'rascunho',
-      formatVersion: 1,
-      bytes: archive.size,
-      sha256: 'c'.repeat(64),
-      itemUpdatedAt: new Date(first.updatedAt).toISOString(),
-    }
     const intent: PintaCausalIntent = {
       protocol: 1,
       reader: 6,
@@ -488,19 +484,22 @@ test('terminal snapshot keeps seal and prepared Blobs until the complete copy co
       readSet: [],
       members: [{ ...candidate, action: 'put', baseRevision: 1, operation: { type: 'update' } }],
     }
-    if (!(await causal.seal(sealed.preparation, intent, intentHash, new Map([[id, archive]]))))
+    if (!(await causal.seal(sealed.preparation, intent, intentHash, shadow.blobs)))
       throw Error('Selo ausente')
     const [nextBase] = await causal.capture([id])
     if (!nextBase?.before) throw Error('Documento ausente')
+    const secondEdit = { ...nextBase.before, name: 'minha-edicao' }
+    const nextShadow = await causal.encodeCandidates([secondEdit], signal)
     const next = await causal.stage({
       opId: crypto.randomUUID(),
       baseEpoch: '1',
       follows: opId,
+      shadow: nextShadow,
       readSet: [],
       transitions: [
         {
           ...nextBase,
-          after: { ...nextBase.before, name: 'minha-edicao' },
+          after: secondEdit,
           baseRevision: 1,
           operation: { type: 'update' },
           baseAfter: {
@@ -511,22 +510,7 @@ test('terminal snapshot keeps seal and prepared Blobs until the complete copy co
         },
       ],
     })
-    const latest = new Blob(['minha-edicao'])
-    if (
-      !(await causal.freeze(
-        next.opId,
-        next.preparation,
-        [
-          {
-            ...candidate,
-            name: 'minha-edicao',
-            bytes: latest.size,
-            sha256: 'd'.repeat(64),
-          },
-        ],
-        new Map([[id, latest]]),
-      ))
-    )
+    if (!(await causal.freeze(next.opId, next.preparation, nextShadow.puts, nextShadow.blobs)))
       throw Error('Sucessor ausente')
     return {
       namespace,
@@ -537,6 +521,13 @@ test('terminal snapshot keeps seal and prepared Blobs until the complete copy co
     }
   })
   const other = await context.newPage()
+  await proof(other, 'pre-causal')
+  await other.evaluate(async ({ namespace, id }) => {
+    const legacy = window.pinta026.createPintaPersistence({ namespace })
+    const observed = await legacy.loadAssetById(id)
+    if (observed?.name !== 'minha-edicao') throw Error('O escritor anterior não viu o mesmo banco')
+    await legacy.persistAsset({ ...observed, name: 'outra-instalacao' })
+  }, work)
   await proof(other)
   await other.evaluate(async ({ namespace, id }) => {
     window.releaseCausalEditor = await window.pintaPhysicalRegions.holdPintaEditorLock(
@@ -550,10 +541,40 @@ test('terminal snapshot keeps seal and prepared Blobs until the complete copy co
         const p = window.pinta026
         const local = p.createPintaCausalPersistence({ namespace })
         const [base] = await local.causal.capture([id])
-        if (!base?.before) throw Error('Documento ausente')
+        if (base?.before?.name !== 'outra-instalacao')
+          throw Error('A edição da outra instalação não chegou ao mesmo banco')
+        async function decode(blob: Blob) {
+          const json = await new Response(
+            blob.stream().pipeThrough(new DecompressionStream('gzip')),
+          ).text()
+          const asset = local.causal.decodeCandidate(json)
+          if (!asset) throw Error('Arquivo durável inválido')
+          return asset
+        }
+        const sealed = await local.causal.inFlight()
+        const successor = await local.causal.prepared(pending[0]!.opId)
+        if (!sealed || !successor) throw Error('Arquivos duráveis ausentes')
+        const stateBefore = await local.causal.inspect()
+        const firstPut = sealed.sealed.intent.members[0]!
+        if (firstPut.action !== 'put') throw Error('PUT em voo ausente')
+        const archived = [
+          {
+            opId,
+            localRevision: sealed.sealed.local.members[0]!.localRevision,
+            sha256: firstPut.sha256,
+            asset: await decode(sealed.blobs.get(id)!),
+          },
+          {
+            opId: pending[0]!.opId,
+            localRevision: stateBefore.pending[0]!.members[0]!.localRevision,
+            sha256: successor.puts[0]!.sha256,
+            asset: await decode(successor.blobs.get(id)!),
+          },
+        ]
         const pull = {
           fromEpoch: '1',
           epoch: '2',
+          archived,
           transitions: [
             {
               ...base,
@@ -570,7 +591,10 @@ test('terminal snapshot keeps seal and prepared Blobs until the complete copy co
             if (
               typeof key === 'string' &&
               key.startsWith('pinta:asset:') &&
-              key !== `pinta:asset:${id}`
+              value &&
+              typeof value === 'object' &&
+              'name' in value &&
+              value.name === 'minha-edicao-copia'
             )
               throw Error('Última cópia interrompida')
             return put.call(this, value, key)
@@ -591,12 +615,13 @@ test('terminal snapshot keeps seal and prepared Blobs until the complete copy co
         }
         const state = await local.causal.inspect()
         const queued = await local.causal.prepared(pending[0]!.opId)
+        const stored = queued?.blobs.get(id)
         return {
           applied,
           failed,
           epoch: state.epoch,
           opId: state.sealed?.intent.opId,
-          prepared: await queued?.blobs.get(id)?.text(),
+          prepared: stored ? (await decode(stored)).name : undefined,
           names: (await local.listAllAssets()).map(({ name }) => name).sort(),
         }
       },
@@ -609,7 +634,7 @@ test('terminal snapshot keeps seal and prepared Blobs until the complete copy co
     epoch: '1',
     opId: work.opId,
     prepared: 'minha-edicao',
-    names: ['minha-edicao'],
+    names: ['outra-instalacao'],
   })
   await other.evaluate(() => window.releaseCausalEditor?.())
   expect(await recover(true)).toMatchObject({
@@ -618,7 +643,7 @@ test('terminal snapshot keeps seal and prepared Blobs until the complete copy co
     epoch: '1',
     opId: work.opId,
     prepared: 'minha-edicao',
-    names: ['minha-edicao'],
+    names: ['outra-instalacao'],
   })
   expect(await recover()).toEqual({
     applied: true,
@@ -626,8 +651,68 @@ test('terminal snapshot keeps seal and prepared Blobs until the complete copy co
     epoch: '2',
     opId: undefined,
     prepared: undefined,
-    names: ['da-conta-agora', 'minha-edicao-copia'],
+    names: ['da-conta-agora', 'minha-edicao-copia', 'outra-instalacao-copia', 'rascunho-copia'],
   })
+})
+
+test('gallery downloads the original gzip when an exact historical resource is missing', async ({
+  page,
+}) => {
+  await proof(page)
+  const work = await page.evaluate(() => window.pintaCausalRecovery.prepareRetainedRecovery())
+  await proof(page, 'pre-causal')
+  await page.evaluate(async ({ namespace, sheetId }) => {
+    const legacy = window.pinta026.createPintaPersistence({ namespace })
+    const sheet = await legacy.loadAssetById(sheetId)
+    if (sheet?.name !== 'pecas') throw Error('Folha base não apareceu no leitor anterior')
+    await legacy.persistAsset({ ...sheet, name: 'pecas-do-aparelho' })
+  }, work)
+
+  await proof(page)
+  const inspect = () =>
+    page.evaluate(async ({ namespace, mapId, sheetId }) => {
+      const local = window.pinta026.createPintaCausalPersistence({ namespace })
+      const seal = await local.causal.inFlight()
+      const candidate = seal?.blobs.get(mapId)
+      return {
+        catalogue: (await local.listAllAssets()).map(({ name }) => name).sort(),
+        revisions: (await local.causal.capture([mapId, sheetId])).map(
+          ({ beforeRevision }) => beforeRevision,
+        ),
+        epoch: (await local.causal.inspect()).epoch,
+        opId: seal?.sealed.intent.opId,
+        bytes: candidate && [...new Uint8Array(await candidate.arrayBuffer())],
+      }
+    }, work)
+  const before = await inspect()
+  expect(before).toMatchObject({
+    catalogue: ['pecas-do-aparelho', 'vila-autoral'],
+    epoch: '1',
+    opId: work.opId,
+  })
+  await page.evaluate(
+    (state) => window.pintaCausalRecovery.mountRetainedRecoveryGallery(state),
+    work,
+  )
+  const action = page.getByRole('button', { name: 'Baixar edições guardadas' })
+  await expect(action).toBeVisible()
+  const downloading = page.waitForEvent('download')
+  await action.click()
+  const download = await downloading
+  expect(download.suggestedFilename()).toBe('edicoes-guardadas-pinta.zip')
+  const zip = unzipSync(await readFile(await download.path()))
+  const gzip = zip[`${work.opId}/${work.mapId}.pinta.json.gz`]!
+  expect(createHash('sha256').update(gzip).digest('hex')).toBe(work.sha256)
+  expect([...gzip]).toEqual(before.bytes)
+  const decodedName = await page.evaluate(
+    ({ namespace, json }) =>
+      window.pinta026.createPintaCausalPersistence({ namespace }).causal.decodeCandidate(json)
+        ?.name,
+    { namespace: work.namespace, json: gunzipSync(gzip).toString() },
+  )
+  expect(decodedName).toBe('vila-autoral')
+  expect(zip[`${work.opId}/revisoes-e-vinculos.json`]).toBeDefined()
+  expect(await inspect()).toEqual(before)
 })
 
 test('an editor in another tab defers the complete delta before the final local CAS', async ({

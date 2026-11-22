@@ -6,6 +6,7 @@
  */
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { gzipSync, strToU8, unzipSync } from 'fflate'
 import { COPY } from '../../core/copy'
 import type { PintaAsset } from '../../core/project'
 import {
@@ -333,5 +334,46 @@ describe('modo de seleção da galeria (pack)', () => {
       await screen.findByRole('button', { name: /Abrir fase/ })
       expect(screen.queryByRole('button', { name: COPY.gallery.downloadSelection })).toBeNull()
     })
+  })
+})
+
+it('baixa os gzip originais e seus vínculos quando a recuperação depende de uma peça anterior', async () => {
+  await withDownloadCapture(async ({ downloads, names }) => {
+    const listeners = new Set<(event: PintaPersistenceEvent) => void>()
+    const gzip = gzipSync(strToU8('{"name":"vila"}'))
+    const files = new Map([
+      ['op/vila.pinta.json.gz', new Blob([gzip.slice().buffer])],
+      ['op/revisoes-e-vinculos.json', new Blob(['{"authority":{"itemId":"vila"}}'])],
+    ])
+    let needsFiles = false
+    const persistence: PintaPersistence = {
+      persistAsset: async () => {},
+      persistAssets: async () => {},
+      deleteAsset: async () => {},
+      loadAssetById: async () => null,
+      listAllAssets: async () => [],
+      subscribe: (listener) => {
+        listeners.add(listener)
+        return () => listeners.delete(listener)
+      },
+      needsRetainedRecovery: () => needsFiles,
+      loadRetainedRecoveryFiles: async () => files,
+    }
+    render(<PintaApp persistence={persistence} />)
+    expect(screen.queryByRole('button', { name: COPY.gallery.downloadRetainedRecovery })).toBeNull()
+    await act(async () => {
+      needsFiles = true
+      for (const listener of listeners) listener({ type: 'sync-end' })
+    })
+    fireEvent.click(
+      await screen.findByRole('button', { name: COPY.gallery.downloadRetainedRecovery }),
+    )
+    await waitFor(() => expect(downloads).toHaveLength(1))
+    expect(names).toEqual(['edicoes-guardadas-pinta.zip'])
+    const zip = unzipSync(new Uint8Array(await downloads[0]!.arrayBuffer()))
+    expect(zip['op/vila.pinta.json.gz']).toEqual(gzip)
+    expect(zip['op/revisoes-e-vinculos.json']).toBeDefined()
+    expect(zip['LEIA-ME.txt']).toBeDefined()
+    expect(screen.getByRole('button', { name: COPY.gallery.downloadRetainedRecovery })).toBeTruthy()
   })
 })

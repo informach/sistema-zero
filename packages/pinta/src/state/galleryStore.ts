@@ -48,6 +48,7 @@ export interface PintaGalleryState {
    * entram em `assets`: a galeria só avisa e oferece atualizar a página.
    */
   readIssues: PintaReadIssue[]
+  needsRetainedRecovery: boolean
   /**
    * Liga a escuta do armazenamento (`persistence.subscribe?`): `sync-start`/`changed`/`sync-end`.
    * Idempotente; devolve o desligar. Sem `subscribe` na persistência, não faz nada.
@@ -159,6 +160,7 @@ export function createGalleryStore(
     loading: false,
     syncing: false,
     readIssues: [],
+    needsRetainedRecovery: persistence.needsRetainedRecovery?.() ?? false,
     attachPersistence: () => () => {},
     loadError: null,
     mutateError: null,
@@ -480,13 +482,16 @@ export function createGalleryStore(
   // Só troca o estado quando a lista muda de fato: o aviso chega a cada desenho que desce.
   const refreshReadIssues = () => {
     const next = persistence.getReadIssues?.() ?? []
-    const current = store.getState().readIssues
+    const state = store.getState()
+    const current = state.readIssues
+    const needsRetainedRecovery = persistence.needsRetainedRecovery?.() ?? false
     if (
+      needsRetainedRecovery === state.needsRetainedRecovery &&
       next.length === current.length &&
       next.every((issue, i) => issue.id === current[i]?.id && issue.version === current[i]?.version)
     )
       return
-    store.setState({ readIssues: next })
+    store.setState({ readIssues: next, needsRetainedRecovery })
   }
   store.setState({
     attachPersistence: () => {

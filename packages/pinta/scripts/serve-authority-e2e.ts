@@ -12,6 +12,7 @@ const temporary = await mkdtemp(join(pinta, '.cache/authority-'))
 const { extracted } = await prepareAuthorityBaseline(root, temporary)
 const { extracted: previous } = await prepareAuthorityBaseline(root, temporary, '899d2596f')
 const { extracted: denseReader } = await prepareAuthorityBaseline(root, temporary, 'ec4e58066')
+const { extracted: preCausal } = await prepareAuthorityBaseline(root, temporary, '64c197d53')
 const proof = join(temporary, 'proof')
 await mkdir(proof)
 for (const [version, src] of [
@@ -19,6 +20,7 @@ for (const [version, src] of [
   ['old', join(extracted, 'packages/pinta/src')],
   ['previous', join(previous, 'packages/pinta/src')],
   ['dense-reader', join(denseReader, 'packages/pinta/src')],
+  ['pre-causal', join(preCausal, 'packages/pinta/src')],
 ]) {
   const entry = join(temporary, `${version}.ts`)
   const modulePath = (file: string) => JSON.stringify(join(src!, file).replaceAll('\\', '/'))
@@ -28,7 +30,8 @@ for (const [version, src] of [
 import * as project from ${modulePath('core/project.ts')};
 import * as clipboard from ${modulePath('state/clipboardStore.ts')};
 Object.assign(window, { pinta026: { ...persistence, ...project, ...clipboard } });
-${version === 'current' ? `import * as physicalRegions from ${JSON.stringify(join(pinta, 'scripts/physical-region-proof.ts').replaceAll('\\', '/'))}; window.pintaPhysicalRegions = physicalRegions;` : ''}`,
+${version === 'current' ? `import * as physicalRegions from ${JSON.stringify(join(pinta, 'scripts/physical-region-proof.ts').replaceAll('\\', '/'))}; window.pintaPhysicalRegions = physicalRegions;` : ''}
+${version === 'current' ? `import * as recovery from ${JSON.stringify(join(pinta, 'scripts/causal-recovery-proof.tsx').replaceAll('\\', '/'))}; window.pintaCausalRecovery = recovery;` : ''}`,
   )
   const result = await Bun.build({ entrypoints: [entry], target: 'browser', outdir: proof })
   if (!result.success) throw new AggregateError(result.logs, 'Não compilou a prova')
