@@ -20,6 +20,7 @@
     "./course/module-animation": "./src/course/module-animation.ts",
     "./creations": "./src/creations/index.ts",
     "./creations/pinta-causal": "./src/creations/pinta-causal.ts",
+    "./creations/pinta-palette-writer": "./src/creations/pinta-palette-writer.ts",
     "./security": "./src/security/index.ts",
     "./logging": "./src/logging/index.ts",
     "./errors": "./src/errors/index.ts",
