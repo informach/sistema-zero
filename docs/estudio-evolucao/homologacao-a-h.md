@@ -39,8 +39,16 @@ atualizado no fim do lote 8, depois da homologação integral em `d2f238b62` e d
   shard 1 do Chromium (o intermitente que já tinha reprovado em `1dd1f51c6` e passou em
   `d2f238b62`) e, no `contracts` do Linux, um caso do `ProjectList.creationScope` (a janela de
   projeto novo sem a opção "Com código" na abertura; passa 3 de 3 localmente e não tinha falhado
-  antes). Os dois ficam como intermitentes observados, pendentes de investigação. O CI do
-  `7b00717b6` passou no lint, nos testes do Estúdio e no typecheck de todos os pacotes.
+  antes). O CI do `7b00717b6` passou no lint, nos testes do Estúdio e no typecheck de todos os
+  pacotes. Os dois intermitentes foram investigados e consertados pela causa: a janela de projeto
+  novo escolhia a linguagem num efeito (`ff230c579`), e o `css-learning` era perda de código na troca
+  da Ponte para os Blocos (`4eddccb1b`, com o e2e `bridge-blocks-race.spec.ts`; detalhe em
+  `../qa/2026-11-21-studio-lote8-staging.md`). **Homologação final, 44972735574 em `4eddccb1b`
+  (22/11, 01:42 UTC): os 12 jobs verdes**, inclusive o shard 1 do Chromium no Linux, o `contracts`
+  do Linux e do Windows, o Firefox, o WebKit, o Windows, o `hosted-runtime`, o Python e a medida de
+  isolamento. No mesmo SHA, o CI do monorepo (44969118148) passou no lint, nos testes de todos os
+  pacotes, nos testes do Estúdio, no typecheck de todos os pacotes e nos e2e do Estúdio (três shards
+  do Chromium, Firefox, WebKit e o armazenamento no macOS).
 - **CI do monorepo (`.github/workflows/ci.yml`, a cada push na staging).** Desde `61ef65f2d`
   nenhuma rodada terminou inteira: as seguintes foram canceladas por pushes novos ou ainda estavam
   rodando. O job `ci` reprova no lint (`biome ci`) por arquivos de outras frentes
@@ -241,8 +249,8 @@ voo).
 
 ## O que falta para fechar a seção 17
 
-1. Uma homologação integral com os consertos do full review final (a de `d2f238b62` teve 11 de 12
-   verdes; a falha foi um teste consertado em `b182d1313`).
+1. Feito no fecho do plano: a homologação integral com os consertos do full review final e da
+   conferência no staging, 44972735574 em `4eddccb1b`, com os 12 jobs verdes.
 2. Feito no lote 8: as capturas de depois das mudanças de 20 e 21/11 nas 13 partes
    (`evidencias/a3-depois-2026-11-21-ci/`).
 3. Feito no lote 8: Verificar e Enviar com a casca ligada, Cadê adulto (2 de 2 e enviado) e Desafio
