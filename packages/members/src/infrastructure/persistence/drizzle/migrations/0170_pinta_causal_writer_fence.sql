@@ -39,7 +39,14 @@ BEGIN
       IS DISTINCT FROM (NEW.revision,NEW.storage_ref,NEW.name,NEW.kind,NEW.bytes,NEW.format_version,NEW.item_updated_at);
   END IF;
   IF TG_OP <> 'DELETE' THEN
-    data_floor := greatest(NEW.format_version,coalesce(NEW.pending_format_version,1));
+    -- Same producer kinds and pending-revision requirement as the 0167 backfill.
+    data_floor := greatest(
+      CASE WHEN NEW.kind IN ('tilemap','tileset','vector-tileset','map-set')
+           THEN NEW.format_version ELSE 1 END,
+      CASE WHEN NEW.pending_revision IS NOT NULL
+             AND NEW.pending_kind IN ('tilemap','tileset','vector-tileset','map-set')
+           THEN coalesce(NEW.pending_format_version,1) ELSE 1 END
+    );
     IF data_floor < 7 THEN data_floor := 1; END IF;
   END IF;
   IF indexed_change OR data_floor > 1 THEN

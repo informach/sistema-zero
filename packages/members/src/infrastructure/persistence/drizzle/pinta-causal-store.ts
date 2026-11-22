@@ -68,6 +68,11 @@ export const entry = (r: EntryRow): PintaCausalEntry => ({
 })
 
 export async function lock(tx: Tx, a: Actor) {
+  // Purge takes the exclusive account lock before enumerating and draining profile writers.
+  // A first collecting page can precede the first creation row for this profile.
+  await tx.execute(
+    sql`select pg_advisory_xact_lock_shared(hashtextextended(${`members-account:${a.accountId}`},0))`,
+  )
   await tx.execute(
     sql`select pg_advisory_xact_lock(hashtextextended(${`creation-quota:${a.userId}`},0))`,
   )

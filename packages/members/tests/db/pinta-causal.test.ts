@@ -462,6 +462,7 @@ describe.skipIf(!url)('Pinta causal over the real migration and existing quota l
         name: 'queued',
         itemUpdatedAt: new Date(time),
         bytes: 5,
+        thumb: null,
         now: new Date(time),
         limits: CREATION_LIMITS,
         formatVersion: 6,
@@ -494,28 +495,17 @@ describe.skipIf(!url)('Pinta causal over the real migration and existing quota l
       await unlocked
     })
     const pid = await locked
-    const waiters = async (n: number) => {
-      const until = Date.now() + 2_000
-      while (Date.now() < until) {
-        const [r] =
-          await conn.sql`select count(*)::int as count from pg_locks mine join pg_locks waiter using(locktype,classid,objid,objsubid)
-       where mine.locktype='advisory' and mine.pid=${pid} and mine.granted and not waiter.granted`
-        if (Number(r?.count) >= n) return
-        await Bun.sleep(5)
-      }
-      throw Error(`Expected queued PostgreSQL advisory-lock waiters: ${n}`)
-    }
     const commit = db.commit(a, i)
     let oldWriter: Promise<unknown> | undefined
     try {
-      await waiters(1)
+      await waitForAdvisoryWaiters(pid, 1)
       oldWriter =
         conn.sql`update members.creations set revision=pending_revision,storage_ref='old-upload.gz',pending_revision=null
       where user_id=${a.userId} and audience='kids' and tool='pinta' and item_id='queued' and pending_revision=2`.then(
           () => null,
           (error) => error,
         )
-      await waiters(2)
+      await waitForAdvisoryWaiters(pid, 2)
     } finally {
       release()
       await holder
@@ -613,7 +603,52 @@ describe.skipIf(!url)('Pinta causal over the real migration and existing quota l
     expect(current.storageRef).toBe(pintaCausalBlobKey(two!, 'sealed'))
     expect(current.entry.sha256).toBe(fresh.sha256)
   })
+  async function waitForAdvisoryWaiters(pid: number, n: number) {
+    const until = Date.now() + 2_000
+    while (Date.now() < until) {
+      const [r] =
+        await conn.sql`select count(*)::int as count from pg_locks mine join pg_locks waiter using(locktype,classid,objid,objsubid)
+       where mine.locktype='advisory' and mine.pid=${pid} and mine.granted and not waiter.granted`
+      if (Number(r?.count) >= n) return
+      await Bun.sleep(5)
+    }
+    throw Error(`Expected queued PostgreSQL advisory-lock waiters: ${n}`)
+  }
   const visible = (a: ReturnType<typeof actor>) => db.page(a, { reader: 6 })
+
+  test('account purge fences a first collecting page before any creation row exists', async () => {
+    const a = actor(),
+      i = intent('0', [put('first', 1)])
+    let acquired!: (pid: number) => void, release!: () => void
+    const locked = new Promise<number>((r) => {
+        acquired = r
+      }),
+      unlocked = new Promise<void>((r) => {
+        release = r
+      })
+    const holder = conn.sql.begin(async (tx) => {
+      const [owner] =
+        await tx`select pg_backend_pid() as pid,pg_advisory_xact_lock(hashtextextended(${`members-account:${a.accountId}`},0))`
+      await tx`insert into members.account_deletion_fences(account_id,created_at) values (${a.accountId},now())`
+      acquired(Number(owner!.pid))
+      await unlocked
+    })
+    const pid = await locked
+    const pending = db.reserve(a, { ...(await reservePage(i)), pages: 2 }).then(
+      () => null,
+      (e) => e,
+    )
+    try {
+      await waitForAdvisoryWaiters(pid, 1)
+    } finally {
+      release()
+      await holder
+    }
+    expect(await pending).toMatchObject({ reason: 'account-deleting' })
+    expect(
+      await conn.sql`select op_id from members.pinta_causal_units where user_id=${a.userId}`,
+    ).toHaveLength(0)
+  })
   test('A,B,C: omitted remote consumer, failed second upload, idempotent promotion and sealed snapshot', async () => {
     const a = actor(),
       s = put('sheet', 1, 'tileset'),
@@ -752,6 +787,7 @@ describe.skipIf(!url)('Pinta causal over the real migration and existing quota l
         name: 'old',
         itemUpdatedAt: new Date(time),
         bytes: 5,
+        thumb: null,
         now: new Date(time),
         limits: CREATION_LIMITS,
         formatVersion: 6,
