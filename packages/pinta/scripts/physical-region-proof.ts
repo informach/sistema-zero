@@ -52,6 +52,14 @@ export {
   verifyRegionalAuthoringAbortAndCausalFence,
 } from './region-authoring-view-proof'
 export {
+  focalRegionalCamera,
+  focalRegionalPoint,
+  inspectFocalRegionalCells,
+  measuredFocalRegionalGesture,
+  measureNextFocalRegionalGesture,
+  openFocalRegionalAuthoring,
+} from './region-focal-proof'
+export {
   compareStoredVilaViewports,
   measureRegionalIo,
   profileFullRegionalIo,

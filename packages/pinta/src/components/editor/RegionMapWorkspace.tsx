@@ -13,6 +13,7 @@ import {
   tilemapTilesetIds,
 } from '../../core/project'
 import type { PintaEditorStore } from '../../state/editorStore'
+import type { LocalRegionAuthorSession } from '../../state/localRegionAuthorSession'
 import { isMapObjectTool, type PintaSessionStore } from '../../state/sessionStore'
 import type { CellPos } from '../../tiles/cellGeometry'
 import { type MapViewport, TileChunkCache } from '../../tiles/chunks'
@@ -20,6 +21,7 @@ import { resolveMapTilesets } from '../../tiles/mapTilesets'
 import { expandRegionMap } from '../../tiles/regionMap'
 import { Panel } from '../ui/Panel'
 import { useToast } from '../ui/Toast'
+import { FocalRegionMapStage } from './FocalRegionMapStage'
 import { MapObjectPanel } from './MapObjectPanel'
 import { MapEditorObjectsOverlay } from './MapObjectsOverlay'
 import { MapPaper } from './MapStage'
@@ -37,11 +39,17 @@ import { TilePicker } from './TilePicker'
 import { useMediaQuery } from './useMediaQuery'
 import { SessionZoomControls } from './ZoomControls'
 
-export interface RegionMapWorkspaceProps {
+interface CompleteRegionMapWorkspaceProps {
   editor: PintaEditorStore<PintaMemoryAsset>
   session: PintaSessionStore
   gallery: readonly PintaMemoryAsset[]
 }
+export type RegionMapWorkspaceProps =
+  | CompleteRegionMapWorkspaceProps
+  | {
+      focal: LocalRegionAuthorSession
+      session: PintaSessionStore
+    }
 
 const mapOf = (asset: PintaMemoryAsset): RegionTilemapAsset | null =>
   asset.kind === 'tilemap' && 'origin' in asset ? asset : null
@@ -62,6 +70,11 @@ const MAP_TOOLS: readonly MapTool[] = [
 ]
 
 export function RegionMapWorkspace(props: RegionMapWorkspaceProps): JSX.Element | null {
+  if ('focal' in props) return <FocalRegionMapStage {...props} />
+  return <CompleteRegionMapWorkspace {...props} />
+}
+
+function CompleteRegionMapWorkspace(props: CompleteRegionMapWorkspaceProps): JSX.Element | null {
   const map = useStore(props.editor, (state) => mapOf(state.asset))
   if (!map) return null
   return <RegionalMapStage key={map.id} {...props} map={map} />
@@ -72,7 +85,7 @@ function RegionalMapStage({
   session,
   gallery,
   map,
-}: RegionMapWorkspaceProps & { map: RegionTilemapAsset }): JSX.Element {
+}: CompleteRegionMapWorkspaceProps & { map: RegionTilemapAsset }): JSX.Element {
   const { showToast } = useToast()
   const wide = useMediaQuery('(min-width: 768px)')
   const tool = useStore(session, (state) => state.tool) as MapTool

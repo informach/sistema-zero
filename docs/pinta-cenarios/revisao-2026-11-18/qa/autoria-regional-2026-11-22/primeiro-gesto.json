@@ -1,0 +1,12 @@
+{
+  "ranAt": "2026-11-22T21:29:44.460Z",
+  "project": "desktop",
+  "fixture": "2 signed maps, 2048 occupied chunks each",
+  "open": { "chunks": 0, "bytes": 0, "records": 7, "inventories": 1, "ms": 50 },
+  "camera": { "chunks": 4, "bytes": 8192, "records": 10, "inventories": 0, "ms": 92.6 },
+  "movedCamera": { "chunks": 6, "bytes": 12288, "records": 10, "inventories": 0, "ms": 53.4 },
+  "firstGesture": { "chunks": 2, "bytes": 4096, "records": 9, "inventories": 1, "ms": 182.8 },
+  "offlineOpen": { "chunks": 0, "bytes": 0, "records": 7, "inventories": 1, "ms": 40.4 },
+  "offlineCamera": { "chunks": 8, "bytes": 16384, "records": 16, "inventories": 0, "ms": 56.1 },
+  "oldRevisionGesture": { "chunks": 0, "accepted": false }
+}

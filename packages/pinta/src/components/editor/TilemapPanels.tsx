@@ -135,9 +135,9 @@ interface TilemapToolbarProps {
   showCollision: boolean
   snapObjects: boolean
   onSelectTool: (tool: MapTool) => void
-  onToggleAutoExpand: () => void
+  onToggleAutoExpand?: () => void
   onToggleCollision: () => void
-  onToggleSnapObjects: () => void
+  onToggleSnapObjects?: () => void
 }
 
 export function TilemapToolbar({
@@ -194,18 +194,22 @@ export function TilemapToolbar({
   // colisões e encaixar objetos é assunto de quem monta jogo, não de quem está desenhando a aula.
   const extraNodes = filterTools(
     [
-      {
-        id: 'autoExpand',
-        node: (
-          <ToolButton
-            tone="quiet"
-            icon={Maximize}
-            label={COPY.tiles.autoExpand}
-            active={autoExpand}
-            onClick={onToggleAutoExpand}
-          />
-        ),
-      },
+      ...(onToggleAutoExpand
+        ? [
+            {
+              id: 'autoExpand',
+              node: (
+                <ToolButton
+                  tone="quiet"
+                  icon={Maximize}
+                  label={COPY.tiles.autoExpand}
+                  active={autoExpand}
+                  onClick={onToggleAutoExpand}
+                />
+              ),
+            },
+          ]
+        : []),
       {
         id: 'showCollision',
         node: (
@@ -218,7 +222,7 @@ export function TilemapToolbar({
           />
         ),
       },
-      ...(mode === 'objects'
+      ...(mode === 'objects' && onToggleSnapObjects
         ? [
             {
               id: 'snapObjects',

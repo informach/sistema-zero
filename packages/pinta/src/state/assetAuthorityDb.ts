@@ -16,7 +16,7 @@ export function withAssetTransaction<T>(
   plan: (records: Map<string, unknown>) => T,
   select?: AssetRecordSelection,
   codec: LocalStorageCodec | null = localDenseStorageCodec,
-  inspectKeys?: (keys: readonly string[]) => void,
+  inspectKeys?: (keys: readonly string[], allKeys: readonly IDBValidKey[]) => void,
 ): Promise<T> {
   return transactAssetRecords(
     openStore,
@@ -34,8 +34,9 @@ export function withPhysicalAssetUpdate<T>(
   plan: (records: Map<string, unknown>) => T,
   select: AssetRecordSelection,
   inspectKeys: (keys: readonly string[], allKeys: readonly IDBValidKey[]) => void,
+  signal?: AbortSignal,
 ): Promise<T> {
-  return transactAssetRecords(openStore, plan, 'readwrite', null, select, inspectKeys)
+  return transactAssetRecords(openStore, plan, 'readwrite', null, select, inspectKeys, signal)
 }
 
 function transactAssetRecords<T>(
@@ -45,6 +46,7 @@ function transactAssetRecords<T>(
   codec: LocalStorageCodec | null,
   select?: AssetRecordSelection,
   inspectKeys?: (keys: readonly string[], allKeys: readonly IDBValidKey[]) => void,
+  signal?: AbortSignal,
 ): Promise<T> {
   return openStore(
     mode,
@@ -58,13 +60,25 @@ function transactAssetRecords<T>(
           physical = new Map<string, unknown>(),
           visited = new Set<string>(),
           decoded = new Set<string>()
-        tx.oncomplete = () => resolve(result)
-        tx.onabort = tx.onerror = () =>
-          reject(failure ?? tx.error ?? new Error('A gravação foi interrompida.'))
         const abort = (error: unknown) => {
           failure = error
           tx.abort()
         }
+        const onCancel = () => abort(signal?.reason)
+        const cleanup = () => signal?.removeEventListener('abort', onCancel)
+        tx.oncomplete = () => {
+          cleanup()
+          resolve(result)
+        }
+        tx.onabort = tx.onerror = () => {
+          cleanup()
+          reject(failure ?? tx.error ?? new Error('A gravação foi interrompida.'))
+        }
+        if (signal?.aborted) {
+          onCancel()
+          return
+        }
+        signal?.addEventListener('abort', onCancel, { once: true })
         const run = () => {
           try {
             if (mode === 'readonly') {

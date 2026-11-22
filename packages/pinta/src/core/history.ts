@@ -12,6 +12,8 @@ export interface HistoryApi<T> {
   record(snapshot: T): void
   undo(current: T): T | null
   redo(current: T): T | null
+  peekUndo(): T | null
+  peekRedo(): T | null
   canUndo(): boolean
   canRedo(): boolean
   clear(): void
@@ -110,6 +112,8 @@ export function createHistory<T>(options: {
     },
     canUndo: () => past.length > 0,
     canRedo: () => future.length > 0,
+    peekUndo: () => past.at(-1)?.snapshot ?? null,
+    peekRedo: () => future.at(-1) ?? null,
     clear() {
       past.length = 0
       future.length = 0

@@ -1,4 +1,5 @@
 import { PINTA_REGION_CHUNK_BYTES } from '@sistemazero/core/creations'
+import { pintaValuesEqual } from '../../../core/assetEquality'
 import { type AnyTilesetAsset, isTilesetKind, tilemapTilesetIds } from '../../../core/project'
 import { authorityKey, mirrorKey } from '../../../state/localAssetAuthority'
 import {
@@ -46,7 +47,12 @@ function sameView(left: MapViewport, right: MapViewport): boolean {
 /** Complete directory admission before payloads; only the drawn chunks reach the painter. */
 export async function readStoredRegionMapViewport(
   id: string,
-  options: ViewOptions & { namespace?: string; revision?: string; signal?: AbortSignal },
+  options: ViewOptions & {
+    namespace?: string
+    revision?: string
+    tilesetPins?: ReadonlyMap<string, AnyTilesetAsset>
+    signal?: AbortSignal
+  },
 ): Promise<StoredRegionMapViewport | null> {
   const { stage, pad, cellPx, showCollision, namespace, revision, signal } = options
   signal?.throwIfAborted()
@@ -104,6 +110,16 @@ export async function readStoredRegionMapViewport(
       for (const [index, id] of ids.entries()) {
         const sheet = sheets[index]
         if (sheet) tilesets.set(id, sheet)
+      }
+      if (
+        options.tilesetPins &&
+        (tilesets.size !== options.tilesetPins.size ||
+          [...tilesets].some(
+            ([id, source]) => !pintaValuesEqual(source, options.tilesetPins!.get(id)),
+          ))
+      ) {
+        selected = null
+        return []
       }
       const viewport = mapCanvasViewport(
         (map.cols + 2 * pad) * cellPx,

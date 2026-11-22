@@ -1800,6 +1800,81 @@ test('regional autosave rolls back the last chunk put and respects confirmed cau
   })
 })
 
+test('cold map editor admits viewport and first gesture without hydrating either large document', async ({
+  page,
+  context,
+}, info) => {
+  test.skip(info.project.name !== 'desktop', 'Uma prova funcional em Chromium')
+  await proof(page)
+  const seed = await page.evaluate(() => window.pintaPhysicalRegions.seedRegionalIoProfile())
+  const cold = await page.evaluate(
+    (seed) => window.pintaPhysicalRegions.openFocalRegionalAuthoring(seed),
+    seed,
+  )
+  expect(cold).toMatchObject({ metadataOnly: true, open: { chunks: 0, bytes: 0 } })
+  expect(cold.camera.chunks).toBeGreaterThan(0)
+  expect(cold.camera.chunks).toBeLessThanOrEqual(8)
+  const moved = await page.evaluate(() =>
+    window.pintaPhysicalRegions.focalRegionalCamera(1640, 670),
+  )
+  expect(moved.chunks).toBeLessThanOrEqual(8)
+  await page.evaluate(() => window.pintaPhysicalRegions.focalRegionalCamera(0, 0))
+  await context.setOffline(true)
+  const point = (col: number, row: number) =>
+    page.evaluate(({ col, row }) => window.pintaPhysicalRegions.focalRegionalPoint(col, row), {
+      col,
+      row,
+    })
+  const startMeasure = () =>
+    page.evaluate(() => window.pintaPhysicalRegions.measureNextFocalRegionalGesture())
+  const measured = () =>
+    page.evaluate(() => window.pintaPhysicalRegions.measuredFocalRegionalGesture())
+  const cells = () =>
+    page.evaluate((seed) => window.pintaPhysicalRegions.inspectFocalRegionalCells(seed), seed)
+  const left = await point(-33, -55)
+  const right = await point(-32, -55)
+  await startMeasure()
+  await page.mouse.move(left.x, left.y)
+  await page.mouse.down()
+  await page.mouse.move(right.x, right.y, { steps: 4 })
+  await page.mouse.up()
+  const first = await measured()
+  expect(first).toMatchObject({ value: true, chunks: 2, bytes: 4096 })
+  expect(await cells()).toEqual([-1, -1, 0, 0])
+
+  await startMeasure()
+  await page.getByRole('button', { name: 'Desfazer', exact: true }).click()
+  expect(await measured()).toMatchObject({ value: true, chunks: 2 })
+  expect(await cells()).toEqual([0, 0, 0, 0])
+  await startMeasure()
+  await page.getByRole('button', { name: 'Refazer', exact: true }).click()
+  expect(await measured()).toMatchObject({ value: true, chunks: 2 })
+  const reopened = await page.evaluate(
+    (seed) => window.pintaPhysicalRegions.openFocalRegionalAuthoring(seed),
+    seed,
+  )
+  expect(reopened.open.chunks).toBe(0)
+  expect(reopened.revision).not.toBe(cold.revision)
+  expect(await cells()).toEqual([-1, -1, 0, 0])
+  await context.setOffline(false)
+  const other = await context.newPage()
+  await proof(other)
+  await other.evaluate(
+    (seed) => window.pintaPhysicalRegions.inspectFocalRegionalCells(seed, true),
+    seed,
+  )
+  await other.close()
+  const stale = await point(-33, -53)
+  await startMeasure()
+  await page.mouse.click(stale.x, stale.y)
+  expect(await measured()).toMatchObject({ value: false, chunks: 0 })
+  expect(await cells()).toEqual([-1, -1, 0, 12])
+  await info.attach('regional-first-gesture', {
+    body: JSON.stringify({ cold, moved, first, reopened }, null, 2),
+    contentType: 'application/json',
+  })
+})
+
 test('stored map view refuses a foreign namespace, changed revision and corrupt selected chunk', async ({
   page,
 }) => {

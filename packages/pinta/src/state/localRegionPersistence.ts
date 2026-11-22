@@ -9,6 +9,7 @@ import {
   isLocalRegionAsset,
   stampLocalRegionAsset,
 } from './localRegionAssetAuthority'
+import { openLocalRegionAuthorSession } from './localRegionAuthorSession'
 import { readRegionCaptureSnapshot } from './localRegionCapture'
 import { localRegionStorageCodec } from './localRegionChunkStorage'
 import { persistLocalRegionRevision } from './localRegionEditing'
@@ -57,6 +58,7 @@ export function createRegionPintaPersistence(
   return {
     ...local,
     observesReferences: true,
+    openRegionSession: (id, signal) => openLocalRegionAuthorSession(namespace, id, signal),
     async persistRevision(previous, asset, resources) {
       if (
         isLocalRegionAsset(previous) &&

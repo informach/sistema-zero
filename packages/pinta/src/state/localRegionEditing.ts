@@ -1,4 +1,5 @@
 import { pintaValuesEqual } from '../core/assetEquality'
+import type { PintaMemoryAsset } from '../core/assetMemory'
 import {
   type PintaResourceObservation,
   pintaLocalOriginOf,
@@ -11,6 +12,7 @@ import {
   pintaAssetDependencyIds,
   type RegionTilemapAsset,
 } from '../core/project'
+import { pintaDoorBindings } from '../core/sceneMapClosure'
 import { PINTA_CAUSAL_OUTBOX_KEY } from './assetAuthorityKeys'
 import { authorityKey, LOCAL_ASSET_PREFIX, mirrorKey } from './localAssetAuthority'
 import { localPreparedKey, PINTA_CAUSAL_BLOBS_KEY } from './localCausalOutbox'
@@ -27,19 +29,25 @@ import {
   patchLocalRegionDocument,
   prepareLocalRegionDocument,
 } from './localRegionChunkStorage'
-import { dbNameFor, getPintaStorageNamespace, updateLocalPintaRecords } from './persistence'
+import {
+  dbNameFor,
+  getPintaStorageNamespace,
+  readLocalPintaRecords,
+  updateLocalPintaRecords,
+} from './persistence'
 
 type RegionAsset = PreparedRegionDocument['empty']
 const mapOf = (asset: RegionAsset) => (asset.kind === 'map-set' ? asset.map : asset)
 const assetWithMap = (asset: RegionAsset, map: RegionTilemapAsset): RegionAsset =>
   asset.kind === 'map-set' ? { ...asset, map } : map
 
-interface LocalRegionEditBase {
+export interface LocalRegionEditBase {
   id: string
   namespace: string
   revision: string
   /** Confirmed revisions of the live references used during the gesture. */
   resources: readonly PintaResourceObservation[]
+  inlineResources?: ReadonlyMap<string, PintaAsset>
 }
 
 class PintaRegionalEditUnavailable extends PintaLocalStorageError {
@@ -97,7 +105,73 @@ function inspectInventory(
   return { directories, assets, documents: snapshot.documents }
 }
 
-function commitRegional<T>(
+function assertRegionalLocalState(
+  records: ReadonlyMap<string, unknown>,
+  physicalKeys: ReadonlySet<IDBValidKey>,
+): void {
+  if (
+    records.get(PINTA_CAUSAL_OUTBOX_KEY) !== undefined ||
+    physicalKeys.has(PINTA_CAUSAL_BLOBS_KEY) ||
+    [...physicalKeys].some((key) => typeof key === 'string' && key.startsWith(localPreparedKey('')))
+  )
+    throw new PintaLocalStorageError('Abra o cenário pela sua conta para guardar as mudanças.')
+}
+
+/** Directory and dependencies only. The incomplete domain values stay in the authority module. */
+export async function readLocalRegionEditBase(namespace: string, id: string, signal?: AbortSignal) {
+  let headers: readonly string[] = []
+  let physicalKeys: ReadonlySet<IDBValidKey> = new Set()
+  return readLocalPintaRecords(
+    namespace,
+    () => {
+      signal?.throwIfAborted()
+      return [...new Set([...headers, PINTA_CAUSAL_OUTBOX_KEY])]
+    },
+    (records) => {
+      signal?.throwIfAborted()
+      if (namespace !== getPintaStorageNamespace()) throw new PintaRegionalEditConflict()
+      if (
+        prepareLocalRegionDocument(authorityKey(id), records.get(authorityKey(id)))?.empty.kind !==
+        'tilemap'
+      )
+        return null
+      assertRegionalLocalState(records, physicalKeys)
+      const { directories, assets, documents } = inspectInventory(records, headers, physicalKeys)
+      const directory = directories.get(id)
+      if (directory?.empty.kind !== 'tilemap') return null
+      const catalog = new Map<string, PintaMemoryAsset>(assets)
+      for (const [id, entry] of directories) catalog.set(id, entry.empty)
+      const required = new Set(pintaAssetDependencyIds(directory.empty))
+      for (const { binding } of pintaDoorBindings(directory.empty, catalog))
+        if (binding.type === 'target' && binding.id !== id) required.add(binding.id)
+      const resources: PintaResourceObservation[] = []
+      const inlineResources = new Map<string, PintaAsset>()
+      for (const id of required) {
+        const revision = directories.get(id)?.revision ?? documents.get(id)?.revision
+        if (revision && catalog.has(id)) resources.push({ id, localRevision: revision })
+        else {
+          const asset = assets.get(id)
+          if (!asset) return null
+          inlineResources.set(id, asset)
+        }
+      }
+      return {
+        base: { id, namespace, revision: directory.revision, resources, inlineResources },
+        directory,
+        assets: [...assets.values()].filter((asset) => required.has(asset.id)),
+      }
+    },
+    (keys, allKeys) => {
+      headers = keys
+      physicalKeys = new Set(allKeys)
+    },
+  ).catch((error) => {
+    if (error instanceof PintaRegionalEditUnavailable) return null
+    throw error
+  })
+}
+
+export function commitLocalRegionChange<T>(
   base: LocalRegionEditBase,
   selectChunks: (directory: PreparedRegionDocument) => ReadonlySet<string>,
   mutate: (asset: RegionAsset) => { asset: RegionAsset; value: T },
@@ -121,17 +195,7 @@ function commitRegional<T>(
       if (!inventory) {
         if (!records.has(PINTA_CAUSAL_OUTBOX_KEY) || headers.some((key) => !records.has(key)))
           return [...new Set([...headers, PINTA_CAUSAL_OUTBOX_KEY])]
-        // The account's canonical writer owns the candidates, including an unbased shadow.
-        if (
-          records.get(PINTA_CAUSAL_OUTBOX_KEY) !== undefined ||
-          physicalKeys.has(PINTA_CAUSAL_BLOBS_KEY) ||
-          [...physicalKeys].some(
-            (key) => typeof key === 'string' && key.startsWith(localPreparedKey('')),
-          )
-        )
-          throw new PintaLocalStorageError(
-            'Abra o cenário pela sua conta para guardar as mudanças.',
-          )
+        assertRegionalLocalState(records, physicalKeys)
         const current = prepareLocalRegionDocument(key, records.get(key))
         if (!current || current.revision !== base.revision) throw new PintaRegionalEditUnavailable()
         inventory = inspectInventory(records, headers, physicalKeys)
@@ -142,6 +206,9 @@ function commitRegional<T>(
               (inventory!.directories.get(id)?.revision ??
                 (inventory!.assets.has(id) ? inventory!.documents.get(id)?.revision : null)) !==
                 localRevision,
+          ) ||
+          [...(base.inlineResources ?? [])].some(
+            ([id, resource]) => !pintaValuesEqual(resource, inventory!.assets.get(id)),
           )
         )
           throw new PintaRegionalEditConflict()
@@ -187,6 +254,7 @@ function commitRegional<T>(
       headers = keys
       physicalKeys = new Set(allKeys)
     },
+    signal,
   )
 }
 
@@ -270,7 +338,7 @@ export async function persistLocalRegionRevision(
   const oldScope = assetChunkLayout(previous, selection)
   const newScope = assetChunkLayout(next, selection)
   try {
-    const committed = await commitRegional(
+    const committed = await commitLocalRegionChange(
       {
         id: previous.id,
         namespace,

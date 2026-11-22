@@ -104,6 +104,7 @@ import {
   PALETTE_ACCOUNT_KEY,
   PALETTE_LIBRARY_KEY,
 } from './localPaletteAccount'
+import type { LocalRegionAuthorSession } from './localRegionAuthorSession'
 
 export {
   PintaLocalConflictError,
@@ -151,7 +152,7 @@ export function readLocalPintaRecords<T>(
   namespace: string | undefined,
   select: AssetRecordSelection,
   read: (records: ReadonlyMap<string, unknown>) => T,
-  inspectKeys?: (keys: readonly string[]) => void,
+  inspectKeys?: (keys: readonly string[], allKeys: readonly IDBValidKey[]) => void,
 ): Promise<T> {
   return withAssetTransaction(getStoreHandle(namespace), read, select, null, inspectKeys)
 }
@@ -326,6 +327,7 @@ export function updateLocalPintaRecords<T>(
   select: AssetRecordSelection,
   write: (records: Map<string, unknown>) => { value: T; changed: boolean },
   inspectKeys: (keys: readonly string[], allKeys: readonly IDBValidKey[]) => void,
+  signal?: AbortSignal,
 ): Promise<T> {
   const storeHandle = getStoreHandle(namespace)
   return runSerializedWrite(storeHandle, async () => {
@@ -334,6 +336,7 @@ export function updateLocalPintaRecords<T>(
       write,
       select,
       inspectKeys,
+      signal,
     )
     if (changed) {
       backupSizeCaches.get(storeHandle)?.invalidate([id])
@@ -433,6 +436,7 @@ export interface PintaPersistence<Asset extends PintaMemoryAsset = PintaAsset> {
     asset: Asset,
     resources: readonly PintaResourceObservation[],
   ): Promise<void>
+  openRegionSession?(id: string, signal?: AbortSignal): Promise<LocalRegionAuthorSession | null>
   deleteAsset(id: string, base?: Asset): Promise<void>
   loadAssetById(id: string): Promise<Asset | null>
   listAllAssets(): Promise<Asset[]>

@@ -100,7 +100,7 @@ function requireRegion(asset: PintaMemoryAsset | null): RegionTilemapAsset {
   return asset
 }
 
-export async function openRegionalAuthoringView(seed: Seed) {
+export async function loadRegionalProofStyles() {
   if (!document.head.querySelector('link[rel="stylesheet"]')) {
     const markup = new DOMParser().parseFromString(await (await fetch('/')).text(), 'text/html')
     for (const style of markup.querySelectorAll('link[rel="stylesheet"]')) {
@@ -116,6 +116,10 @@ export async function openRegionalAuthoringView(seed: Seed) {
       })
     }
   }
+}
+
+export async function openRegionalAuthoringView(seed: Seed) {
+  await loadRegionalProofStyles()
   setPintaStorageNamespace(seed.namespace)
   const local = createRegionPintaPersistence({ namespace: seed.namespace })
   const asset = requireRegion(await local.loadAssetById(seed.id))
