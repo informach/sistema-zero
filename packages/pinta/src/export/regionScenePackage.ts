@@ -123,17 +123,24 @@ export async function buildRegionScenePackage(
   target: ScenePackageTarget,
   imageOf?: ImageOf,
 ) {
-  if (target !== 'tiled') throw new Error('Este editor só exporta cenários regionais para o Tiled.')
+  if (target !== 'tiled' && target !== 'phaser')
+    throw new Error('Este editor só exporta cenários regionais para o Tiled e o Phaser.')
   const world = await prepareRegionScenePackage(captured, imageOf)
   await writeRegionTiledFiles(world)
   writeRegionPackageImages(world)
+  const instructions =
+    target === 'phaser'
+      ? (await import('./phaser/regionPackage')).writeRegionPhaserFiles(world.put)
+      : [
+          'Abra mapas/mapa-0/mapa.tmx ou mapa.json no Tiled. As folhas TSX e as imagens ficam no pacote.',
+        ]
   world.put(
     'LEIA-ME.txt',
     [
       'Cenário regional do Pinta',
       '',
       `Mapa inicial: ${world.rootName}`,
-      'Abra mapas/mapa-0/mapa.tmx ou mapa.json no Tiled. As folhas TSX e as imagens ficam no pacote.',
+      ...instructions,
       'desenhos.pinta.json conserva os desenhos originais editáveis.',
       'maps.json conserva os dados do cenário e start.json indica o ID do mapa inicial.',
       'Leia COMPATIBILIDADE-TILED.txt para conferir o que o editor e o runtime interpretam.',
