@@ -297,6 +297,21 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    ainda faltam superfícies/compositores e gameplay dos motores. Seguir à base
    Python independente do motor e seus três adaptadores, sem ativar os formatos
    ou alterar catálogos/versão comum antes da qualificação coordenada.
+   Lote verificado: extrair a geometria Python já entregue pelo compositor, com
+   conservação exata do texto gerado, e preparar o codec de células regional
+   independente de motor. O leitor admite todos os cabeçalhos antes do base64,
+   captura os payloads imutáveis, oferece uma tentativa de decode e mantém
+   índices por contexto, sem materializar a extensão lógica. Comparar o resultado
+   com o Core em CPython real. Isso não admite cenas completas ou PNGs Python,
+   nem seleciona física, imagens ou distribuição nas três extensões. Catálogos,
+   recibos e versão única do motor permanecem para a integração coordenada.
+   Provas em `qa/base-python-geometria-e-regioes-2026-11-22/`: 2.776 testes
+   completos Pinta, 22 focados, 79 ensaios de navegador, tipos dos três pacotes,
+   lint e geradores aprovados. Geometria/animações comparadas com o Core em
+   CPython sem imports gráficos; o compositor entregue conserva seu hash.
+   A revisão corrigiu consultas com metadados extras e registrou a auditoria de
+   células inteiras na guarda existente. Seguir à admissão Python de cenas e
+   mundos, depois aos três adaptadores, sem promover contratos por esse lote.
 
 Na promoção do store, conferir também os orçamentos globais de metadados e JSON
 antes do histórico/autosave. A soma de objetos/propriedades em várias camadas

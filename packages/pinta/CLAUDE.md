@@ -4108,3 +4108,15 @@ Retorna bytes/dados admitidos; IDAT e superfícies são decodificados pelos moto
 Ainda faltam os adaptadores e seus tetos temporários, inclusive os três destinos
 Python, antes de ativar receitas/formatos públicos. Provas:
 `docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-png-de-mundos-regionais-2026-11-22/`.
+
+## Base Python independente do motor (22/11/2026)
+
+`export/pythonSceneGeometry.ts` é a fonte única das funções Python de contorno,
+animação e transformação afim. O compositor existente as embute com o mesmo
+texto entregue; conferir `studio/scripts/gen-pinta-scene-python.ts --check`.
+`export/pythonSceneRegions.ts` prepara somente células wire: cabeçalhos e teto
+por mapa antes de base64, snapshot próprio, tentativa única e arrays i16 por
+contexto. Cenas, referências, mundo, imagens e física ainda exigem seus leitores.
+Não ativar formatos/receitas por essa base nem tratá-la como suporte completo em
+Pygame, Pygame Zero ou Raylib 2D. Provas CPython e escopo em
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/base-python-geometria-e-regioes-2026-11-22/`.
