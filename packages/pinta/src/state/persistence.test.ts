@@ -225,7 +225,9 @@ describe('authority of the causal gallery', () => {
     const cabinCopy = [...catalog.values()].find((a) => a.name === 'cabana-copia-2')
     if (homeCopy?.kind !== 'tilemap' || cabinCopy?.kind !== 'tilemap')
       throw Error('Cópias ausentes')
-    expect(homeCopy.tilesetId).toBe(homeCopy.resources?.[0]?.asset.id)
+    const privateSheetId = homeCopy.resources?.[0]?.asset.id
+    if (!privateSheetId) throw Error('A folha privada da cópia está ausente')
+    expect(homeCopy.tilesetId).toBe(privateSheetId)
     expect(homeCopy.tilesetId).not.toBe(cabinCopy.id)
     expect(pintaDoorBindings(homeCopy, catalog)).toEqual([
       { selector: cabinCopy.id, binding: { type: 'target', id: cabinCopy.id } },
