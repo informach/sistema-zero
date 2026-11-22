@@ -1,5 +1,6 @@
 import {
   avaliarOrcamentoDaCena,
+  malhasDaMaiorJanela,
   type PreparoDeExportacao,
 } from '@sistemazero/molda-cenarios-core/compilar'
 import type { ProgressoDaCompilacao } from '@sistemazero/molda-cenarios-motor/compilar'
@@ -62,7 +63,8 @@ async function gerarArquivo(
     },
     orcamento = avaliarOrcamentoDaCena(
       {
-        malhas: medidas.malhas,
+        // Com regiões, o Estúdio carrega uma janela por vez: o orçamento vale pela maior.
+        malhas: malhasDaMaiorJanela(pacote.cena),
         arquivos: pacote.cena.arquivos.map((a) => ({
           caminho: a.caminho,
           bytes: a.bytes,

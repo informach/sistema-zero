@@ -117,3 +117,59 @@ describe('cenário do Molda Cenários (studio-cena3d v1)', () => {
     expect(() => open(withChange)).toThrow(ProjectDocumentError)
   })
 })
+
+describe('cenário do Molda Cenários com regiões (cena compilada com as listas, lote 5)', () => {
+  const regioesDe = (envelope: Record<string, unknown>) =>
+    (envelope.cena as { regioes: Record<string, unknown>[] }).regioes
+
+  test('a versão congelada abre inteira, com as regiões e as listas de cada uma', () => {
+    const assets = fixture('molda-scene3d-regioes-v1') as ProjectAsset[]
+    const scene = sceneEnvelope(assets)
+    expect(isValidScene3DDataUrl(scene.dataUrl, 'scene3d', scene.originalFileName)).toBe(true)
+    expect(open(assets)).toEqual(assets)
+    let regioes: Record<string, unknown>[] = []
+    rewriteEnvelope(scene.dataUrl, (envelope) => {
+      regioes = regioesDe(envelope)
+    })
+    expect(regioes.map((r) => [r.nome, r.vizinhas])).toEqual([
+      ['Vila', ['floresta']],
+      ['Floresta', ['vila']],
+    ])
+  })
+
+  test('a cena sem regiões (a v1) continua abrindo igual', () => {
+    const assets = fixture('molda-scene3d-v1') as ProjectAsset[]
+    expect(open(assets)).toEqual(assets)
+  })
+
+  for (const [caso, mudar] of [
+    [
+      'campo desconhecido dentro de uma região',
+      (regioes: Record<string, unknown>[]) => {
+        regioes[0]!.cor = 'azul'
+      },
+    ],
+    [
+      'lista velha (falta uma peça da região)',
+      (regioes: Record<string, unknown>[]) => {
+        regioes[1]!.nos = (regioes[1]!.nos as string[]).slice(1)
+      },
+    ],
+    [
+      'vizinha sem o par',
+      (regioes: Record<string, unknown>[]) => {
+        regioes[1]!.vizinhas = []
+      },
+    ],
+  ] as const)
+    test(`${caso} é recusado sem perda`, () => {
+      const assets = fixture('molda-scene3d-regioes-v1') as ProjectAsset[]
+      const scene = sceneEnvelope(assets)
+      const changed = rewriteEnvelope(scene.dataUrl, (envelope) => mudar(regioesDe(envelope)))
+      expect(isValidScene3DDataUrl(changed, 'scene3d', scene.originalFileName)).toBe(false)
+      const withChange = assets.map((asset) =>
+        asset === scene ? { ...asset, dataUrl: changed } : asset,
+      )
+      expect(() => open(withChange)).toThrow(ProjectDocumentError)
+    })
+})

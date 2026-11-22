@@ -414,6 +414,27 @@ test('a alternativa de junção usa o agrupador real e conserva a autoria origin
   expect(JSON.stringify(p.cena)).toBe(antes)
 })
 
+test('cena com regiões: o orçamento de malhas vale pela maior janela (lote 5 da conclusão)', async () => {
+  const { calcularPertencaDasRegioes } = await import('@sistemazero/molda-cenarios-core/compilar')
+  const p = await pacote(49)
+  // 49 peças em fila (x de 0 a 48): A leva 25, B leva 24. Sem vizinhas, cada janela cabe em 48.
+  const regioes = [
+    { id: 'a', nome: 'A', caixa: { x0: -0.5, z0: -1, x1: 24.5, z1: 1 }, vizinhas: [] as string[] },
+    { id: 'b', nome: 'B', caixa: { x0: 24.5, z0: -1, x1: 60, z1: 1 }, vizinhas: [] as string[] },
+  ]
+  p.cena.regioes = calcularPertencaDasRegioes(regioes, p.cena)
+  const plano = await prepararImportacaoDeCena3D(createEmptyProject('p', 'Jogo'), p)
+  expect(plano.orcamento.malhas).toBe(25)
+  expect(plano.orcamento.permitido).toBe(true)
+  // Vizinhas uma da outra: a janela de cada uma é a cena inteira (49), e não cabe.
+  regioes[0]!.vizinhas = ['b']
+  regioes[1]!.vizinhas = ['a']
+  p.cena.regioes = calcularPertencaDasRegioes(regioes, p.cena)
+  await expect(prepararImportacaoDeCena3D(createEmptyProject('p', 'Jogo'), p)).rejects.toThrow(
+    /não cabe/,
+  )
+})
+
 test('nome de arquivo compilado longo conserva a procedência sem ultrapassar o nome do asset', async () => {
   const p = await pacote(),
     original = p.cena.arquivos[0]!.caminho,

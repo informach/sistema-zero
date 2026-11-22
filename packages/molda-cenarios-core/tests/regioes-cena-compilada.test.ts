@@ -1,4 +1,10 @@
 import { describe, expect, test } from 'bun:test'
+import {
+  janelasDasRegioes,
+  malhasDaMaiorJanela,
+  malhasPorJanela,
+  memoriaPorJanela,
+} from '../src/compilar/janelas'
 import { lerCenaCompilada } from '../src/compilar/schema'
 import {
   calcularPertencaDasRegioes,
@@ -234,5 +240,65 @@ describe('a cena compilada com regiões', () => {
         regioes: calcularPertencaDasRegioes([longe, FLORESTA], { ...c, entidades: c.entidades }),
       }),
     ).toThrow(/base/)
+  })
+})
+
+describe('as janelas das regiões (o que fica carregado junto)', () => {
+  // Três regiões em fila, A–B–C: a janela de A é A, B e o que é de todas; a de B é tudo.
+  const r = (id: string, x0: number, vizinhas: string[]): RegiaoDeCenario => ({
+    id,
+    nome: id.toUpperCase(),
+    caixa: { x0, z0: -10, x1: x0 + 10, z1: 10 },
+    vizinhas,
+  })
+  const regioes = [r('a', 0, ['b']), r('b', 10, ['a', 'c']), r('c', 20, ['b'])]
+  const itensDaFila: ItensDasRegioes = {
+    entidades: [],
+    nos: [
+      { id: 'na', entidade: null, volume: caixa(2, 3) },
+      { id: 'nb', entidade: null, volume: caixa(12, 13) },
+      { id: 'nc', entidade: null, volume: caixa(22, 23) },
+      { id: 'nc2', entidade: null, volume: caixa(24, 25) },
+      { id: 'ator', entidade: null, volume: caixa(2, 3), preservarHierarquia: true },
+    ],
+    colisoes: [],
+    aguas: [],
+  }
+  const cena = {
+    ...itensDaFila,
+    regioes: calcularPertencaDasRegioes(regioes, itensDaFila),
+    nos: itensDaFila.nos.map((n) => ({ ...n, arquivo: n.id === 'nc2' ? 'grande.glb' : 'm.glb' })),
+    colisoes: [],
+    arquivos: [
+      { caminho: 'm.glb', malhas: 2 },
+      { caminho: 'grande.glb', malhas: 10 },
+    ],
+  }
+
+  test('cada janela leva a região, as vizinhas e o que é de todas, na ordem da cena', () => {
+    expect(janelasDasRegioes(cena).map((j) => [j.regiao, j.nos])).toEqual([
+      ['a', ['na', 'nb', 'ator']],
+      ['b', ['na', 'nb', 'nc', 'nc2', 'ator']],
+      ['c', ['nb', 'nc', 'nc2', 'ator']],
+    ])
+  })
+
+  test('as malhas que contam são as da maior janela', () => {
+    // b: na 2 + nb 2 + nc 2 + nc2 10 + ator 2 = 18; a soma de tudo também é 18 aqui, então
+    // a janela de A (6) prova que o total não é usado em cada uma.
+    expect(malhasPorJanela(cena)).toEqual({ a: 6, b: 18, c: 16 })
+    expect(malhasDaMaiorJanela(cena)).toBe(18)
+    expect(malhasDaMaiorJanela({ ...cena, regioes: undefined })).toBe(18)
+  })
+
+  test('a memória de cada janela soma os arquivos dela e os que são de todas', () => {
+    // m.glb é usado pelo ator (de todas): conta em todas as janelas, como o céu.
+    const memoria = new Map([
+      ['m.glb', 100],
+      ['grande.glb', 1000],
+      ['ceu.png', 5],
+    ])
+    expect(memoriaPorJanela(cena, memoria)).toEqual({ a: 105, b: 1105, c: 1105 })
+    expect(memoriaPorJanela({ ...cena, regioes: undefined }, memoria)).toEqual({})
   })
 })

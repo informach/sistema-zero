@@ -3,6 +3,7 @@ import {
   conferirInventarioCompilado,
   LIMITES_DA_EXPORTACAO,
   lerCenaCompilada,
+  memoriaPorJanela,
 } from '@sistemazero/molda-cenarios-core/compilar'
 import { conferirImagemDeCenario, lerPngDeAlturas } from '@sistemazero/molda-cenarios-core/v2'
 import { inspecionarGlbDaCompilacao, pixelsDasImagensNovas } from './inspecao-glb'
@@ -33,6 +34,9 @@ export async function conferirConteudoCompilado(
     }
   let memoria = 0
   const imagensContadas = new Set<string>()
+  // Com regiões: o que cada arquivo ocupa decodificado, sem dividir imagem com outro arquivo (a
+  // conta por janela fica do lado seguro).
+  const memoriaDoArquivo = new Map<string, number>()
   for (const a of cena.arquivos) {
     sinal?.throwIfAborted()
     const bytes = arquivos.get(a.caminho)!
@@ -67,6 +71,11 @@ export async function conferirConteudoCompilado(
         }
       }
       memoria += r.bytesDeMaterializacao + (await pixelsDasImagensNovas(r.imagens, imagensContadas))
+      if (cena.regioes)
+        memoriaDoArquivo.set(
+          a.caminho,
+          r.bytesDeMaterializacao + (await pixelsDasImagensNovas(r.imagens, new Set())),
+        )
     } else if (a.mime === 'image/png' || a.mime === 'image/webp') {
       if (a.papel === 'alturas') {
         if (a.caminho !== cena.terreno?.pngAlturas)
@@ -76,11 +85,22 @@ export async function conferirConteudoCompilado(
         if (r.largura !== a.largura || r.altura !== a.altura)
           throw Error(`As dimensões reais de “${a.caminho}” não correspondem ao manifesto.`)
         memoria += r.largura * r.altura * 4
+        if (cena.regioes) memoriaDoArquivo.set(a.caminho, r.largura * r.altura * 4)
       }
     } else if (a.caminho !== cena.terreno?.alturas && a.caminho !== cena.terreno?.buracos)
       throw Error('Um campo binário não pertence ao terreno compilado.')
     if (memoria > LIMITES_DA_EXPORTACAO.bytesDoPacote)
       throw Error('Os arquivos decodificados excedem o orçamento de memória do pacote.')
+  }
+  if (cena.regioes) {
+    const relevo = cena.terreno
+    // O campo de alturas é global (o chão onde a região não carregou): conta em toda janela.
+    if (relevo) memoriaDoArquivo.set(relevo.alturas, (relevo.colunas + 1) * (relevo.linhas + 1) * 8)
+    for (const [regiao, bytes] of Object.entries(memoriaPorJanela(cena, memoriaDoArquivo)))
+      if (bytes > LIMITES_DA_EXPORTACAO.janela.bytesDecodificados)
+        throw Error(
+          `A região ${cena.regioes.find((r) => r.id === regiao)?.nome ?? regiao} com as vizinhas excede 128 MiB decodificados.`,
+        )
   }
   const t = cena.terreno
   if (!t) return { cena }

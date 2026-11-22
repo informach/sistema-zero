@@ -5,6 +5,7 @@ import {
   type ArquivoCompilado,
   avaliarOrcamentoDaCena,
   lerCenaCompilada,
+  malhasDaMaiorJanela,
   type OrcamentoDaCena,
   type PacoteCompilado,
 } from '@sistemazero/molda-cenarios-core/compilar'
@@ -263,11 +264,11 @@ export async function prepararImportacaoDeCena3D(
         (a.scene ? new TextEncoder().encode(JSON.stringify(a.scene)).byteLength : 0),
       tipo: a.kind === 'model3d' ? ('modelo' as const) : ('recurso' as const),
     })
-    if (a.kind === 'scene3d') {
-      const d = lerAssetDeCena3D(a),
-        metadados = new Map(d.cena.arquivos.map((f) => [f.caminho, f]))
-      malhas += d.cena.nos.reduce((s, n) => s + metadados.get(n.arquivo)!.malhas!, 0)
-    } else if (a.kind === 'model3d' && !referenciados.has(a.id))
+    if (a.kind === 'scene3d')
+      // Numa cena com regiões vale a maior janela (região, vizinhas e o que é de todas); sem
+      // regiões, a cena inteira (lote 5 da conclusão, 22/11/2026).
+      malhas += malhasDaMaiorJanela(lerAssetDeCena3D(a).cena)
+    else if (a.kind === 'model3d' && !referenciados.has(a.id))
       malhas += malhasDeModeloComum(bytes, inspecionarGlbDaCompilacao)
   }
   const orcamento = avaliarOrcamentoDaCena({ malhas, arquivos }, 'studio')
