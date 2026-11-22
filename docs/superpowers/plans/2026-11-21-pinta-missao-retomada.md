@@ -775,3 +775,24 @@ normal p50 170,2 → 9,2 ms, p95 235,9 → 11,5 ms, 49.216 → 128 blits, 4 MiB 
 CPU 4× e composição sem repetição continuam acima do alvo; não é qualificação
 da oficina, do gesto ou do IO. Seguir aos consumidores restantes de recursos e
 modelo autoral, protocolo físico 3 e adaptadores antes da promoção pública 8.
+
+## Revisão integrada dos jogadores privados — 22/11
+
+Os dois jogadores JavaScript e os três destinos Python compartilham o contrato
+regional sem criar um canvas proporcional ao mundo. Revisão integrada até
+`c34117d6a`, registrada em `qa/integracao-dos-runtimes-regionais-2026-11-22/`:
+Core 3.255, Pinta 2.838 e Studio focado 32 testes, todos sem falhas; 48 ensaios
+reais de navegador, incluindo PyDew Valley e os controles legados. Tipos do Pinta
+e geradores aprovados; Studio completo será conferido após incorporar a staging.
+A revisão corrigiu a organização da matriz visual sem remover comparações ou
+aumentar prazos, além de uma espera por relógio no teste de cancelamento da nuvem.
+O candidato Python foi reconstruído e seus 126 arquivos revalidados por hash.
+Nenhum contrato público, catálogo ou release foi ativado por estas provas.
+
+O piso do inventário protege leitores incapazes, mas não resolve sozinho um
+escritor moderno com uma galeria parcial. Segue em implementação o commit causal
+de folha e consumidores, com blobs selados, snapshot remoto de epoch único,
+outbox no mesmo commit local e recuperação de formatos opacos separada do sync.
+Revisão intermediária exige remapeamentos compostos, desfazer já sincronizado,
+proteção dos consumidores locais offline e orçamento agregado da outbox. Esses
+critérios precedem a promoção regional; as etapas macro 1–9 continuam abertas.

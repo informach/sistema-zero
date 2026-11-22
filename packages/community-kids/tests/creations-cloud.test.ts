@@ -1619,8 +1619,9 @@ describe('createCreationsCloud', () => {
       meta: { name: 'Jogo', kind: 'classic', updatedAt: 1 },
       parts: [a, b],
     }))
-    // Deixa a fila andar até o 1º PUT (que dispara o corte) e o que sobrar assentar.
-    await new Promise((r) => setTimeout(r, 200))
+    // Espera o trabalho real: o 1º PUT dispara o corte e o flush acompanha
+    // o encerramento. Um prazo fixo não prova que a fila chegou até esse evento.
+    await cloud.flush()
     expect(cortou).toBe(true)
     expect(server.calls.some((c) => c.url.endsWith('/commit'))).toBe(false)
 

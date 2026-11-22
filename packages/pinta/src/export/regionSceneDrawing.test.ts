@@ -3,7 +3,10 @@ import { createCanvas } from '@napi-rs/canvas'
 import type { PintaRegionScene } from '@sistemazero/core/studio/pinta-region-scene'
 import { readPintaRegionScene } from '@sistemazero/core/studio/pinta-region-scene'
 import type { PintaScene } from '@sistemazero/core/studio/pinta-scene'
-import { createRegionSceneQueries } from '@sistemazero/core/studio/pinta-scene-query'
+import {
+  createRegionSceneQueries,
+  type PintaRegionSceneQuery,
+} from '@sistemazero/core/studio/pinta-scene-query'
 import { scene4Fixture } from '../../../core/tests/fixtures/pinta-region-scene'
 import { vilaEFloresta } from '../../scripts/homologacao/fixture'
 import type { PintaMemoryAsset } from '../core/assetMemory'
@@ -77,7 +80,7 @@ function pixels(
   art: ReadonlyMap<string, CanvasImageSource>,
   pass: 'back' | 'front',
   time: number,
-  cull = false,
+  context?: PintaRegionSceneQuery,
 ) {
   const canvas = createCanvas(128, 96),
     ctx = canvas.getContext('2d')
@@ -90,25 +93,36 @@ function pixels(
     y: -2.5,
   }
   const view =
-    scene.version === 4 && cull
+    scene.version === 4 && context
       ? {
           x: scene.origin.col * scene.tileSize,
           y: scene.origin.row * scene.tileSize,
           width: canvas.width * 4,
           height: canvas.height * 4,
-          regionCells: createRegionSceneQueries(scene).context.regionCells,
+          regionCells: context.regionCells,
         }
       : undefined
-  drawScene(ctx as unknown as CanvasRenderingContext2D, scene, art, pass, time, camera, view)
+  drawScene(
+    ctx as unknown as CanvasRenderingContext2D,
+    context ?? scene,
+    art,
+    pass,
+    time,
+    camera,
+    view,
+  )
   return Buffer.from(ctx.getImageData(0, 0, 128, 96).data)
 }
 
-test('scene 4 composition preserves dense pixels for all set reflections, rotation, animation, alpha and signed origins', async () => {
-  let comparisons = 0,
-    visible = 0
-  for (const rotation of [0, 90, 180, 270])
-    for (const flipX of [false, true])
-      for (const flipY of [false, true]) {
+// Each authored transform is an independent correctness case, with the same
+// timeout. Keep all 192 dense/regional + 192 viewport comparisons, without
+// forcing the entire expanded matrix into one aggregate deadline.
+for (const rotation of [0, 90, 180, 270])
+  for (const flipX of [false, true])
+    for (const flipY of [false, true])
+      test(`scene 4 composition preserves dense pixels: rotation=${rotation}, flipX=${flipX}, flipY=${flipY}`, async () => {
+        let comparisons = 0,
+          visible = 0
         const { map, assets } = vilaEFloresta()
         const floor = map.layers.find(isTileLayer)
         if (!floor) throw Error('Chão ausente')
@@ -132,6 +146,12 @@ test('scene 4 composition preserves dense pixels for all set reflections, rotati
           async () => 'png',
         )
         const art = images(dense)
+        // Signed conversion does not change this dense scene. Render each
+        // reference once, then compare both origins against those same bytes.
+        const expected = new Map<string, ReturnType<typeof pixels>>()
+        for (const time of [0, 125, 450])
+          for (const pass of ['back', 'front'] as const)
+            expected.set(`${time}/${pass}`, pixels(dense, art, pass, time))
         for (const offset of [0, -32]) {
           const regionalAssets: PintaMemoryAsset[] = assets.map((asset) =>
             asset.kind === 'tilemap'
@@ -147,14 +167,17 @@ test('scene 4 composition preserves dense pixels for all set reflections, rotati
             (id) => regionalAssets.find((asset) => asset.id === id) ?? null,
             async () => 'png',
           )
+          // Players keep one query context for an admitted scene across frames.
+          const context = createRegionSceneQueries(scene).context
           for (const time of [0, 125, 450])
             for (const pass of ['back', 'front'] as const) {
-              const expected = pixels(dense, art, pass, time),
-                actual = pixels(scene, art, pass, time)
+              const actual = pixels(scene, art, pass, time)
+              const reference = expected.get(`${time}/${pass}`)
+              if (!reference) throw Error('Referência visual ausente')
               expect(actual, `${rotation}/${flipX}/${flipY}/${offset}/${time}/${pass}`).toEqual(
-                expected,
+                reference,
               )
-              const culled = pixels(scene, art, pass, time, true)
+              const culled = pixels(scene, art, pass, time, context)
               expect(culled, `${rotation}/${flipX}/${flipY}/${offset}/${time}/${pass}`).toEqual(
                 actual,
               )
@@ -162,10 +185,9 @@ test('scene 4 composition preserves dense pixels for all set reflections, rotati
               comparisons++
             }
         }
-      }
-  expect(comparisons).toBe(192)
-  expect(visible).toBe(192)
-}, 20000)
+        expect(comparisons).toBe(12)
+        expect(visible).toBe(12)
+      }, 20000)
 
 test('sparse composition draws signed cells without materializing the 100-million-cell rectangle', () => {
   const scene = readPintaRegionScene(JSON.stringify(scene4Fixture()))

@@ -45,6 +45,8 @@ const CONFERIDOS: Record<string, string> = {
     'Core confere descritores e o buffer fixo antes do payload; o medidor lê índices por cellTile e delega a codificação integral dos chunks ao Core, preservando flags e reusando resumos numéricos por identidade',
   'export/pythonSceneRegions.ts':
     'codec Python privado consulta células i16 inteiras e preserva todos os bits; valida preenchimento, limites e base64 canônico, sem extrair índice de peça; cabeçalhos e orçamento vêm do contrato regional do Core',
+  'testing/regionPlatformPng.ts':
+    'fixture escreve a célula canônica inteira 0 em um chunk novo e delega a admissão/codificação ao Core; não lê índices nem decodifica flags',
   'export/portableImageRender.ts': 'lê o índice por cellTile',
   'templates/art.ts': 'monta células a partir de índices de peça da arte em texto',
   'core/project.ts':
