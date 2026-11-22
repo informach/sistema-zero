@@ -1,0 +1,187 @@
+import { expect, test } from 'bun:test'
+import { spawnSync } from 'node:child_process'
+import { mkdirSync, mkdtempSync, rmdirSync, unlinkSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import {
+  PYTHON_PINTA_REGIONS_FEATURE,
+  PYTHON_PINTA_SCENE_MODULE_MAX_BYTES,
+} from '@sistemazero/core/studio/python-runtime-features'
+import { pintaBrowser2dProject } from '../../../../../experiments/studio-python-runtime/pintaBrowser2dFixtures'
+import { buildPythonSourceFiles } from '../../export/pythonSource'
+import { pythonOfficialModules } from '../../python/officialModules'
+import { pythonEnvironmentFixture } from '../../state/fixtures/pythonEnvironment'
+import { PGZERO_EXTENSION } from './pgzero/contract'
+import { PYGAME_EXTENSION } from './pygame/contract'
+import { PYGAME_DESKTOP_SOURCES } from './pygame/desktopSources.generated'
+import { RAYLIB_2D_EXTENSION, RAYLIB_3D_EXTENSION } from './raylib/contract'
+
+const features = [PYTHON_PINTA_REGIONS_FEATURE]
+const environment = {
+  ...process.env,
+  PYGAME_HIDE_SUPPORT_PROMPT: '1',
+  SDL_VIDEODRIVER: 'dummy',
+  SDL_AUDIODRIVER: 'dummy',
+}
+const native = process.env.PYTHON ?? 'python'
+const raylib = process.env.PINTA_RAYLIB_PYTHON
+const pygame =
+  spawnSync(native, ['-I', '-c', 'import pygame, pgzero.screen'], {
+    env: environment,
+    timeout: 5000,
+  }).status === 0
+
+const shared = `from pathlib import Path
+import pinta
+assert Path(pinta.__file__).resolve() == Path('pinta.py').resolve()
+assert pinta.carregar_cenario.__module__ == 'pinta'
+game = pinta.carregar_cenario('mundo')
+assert game.limites == (-1024, -1024, 160000, 160000)
+assert game.ponto_inicial() == (32,32)
+old = game.cena
+renderer = game._renderizador
+try:
+    game.substituir(Path('assets/recusa.png'))
+except ValueError:
+    pass
+else:
+    raise AssertionError('recurso quebrado substituiu a cena')
+assert game.cena is old and game._renderizador is renderer
+with game.abrir_destino(game.objeto_por_id('door')) as outro:
+    assert outro.cena.mapa_id == 'cabana'
+    assert outro._renderizador is renderer
+    assert pixel(outro,48,32) == (105,76,56)
+    assert pixel(outro,49,33) == (161,135,82)
+    with outro.abrir_destino(outro.objeto_por_id('cabana-saida')) as volta:
+        assert volta.cena.mapa_id == game.cena.mapa_id
+    with pinta.carregar_cenario('mundo', lugar='cabana') as by_id:
+        assert pixel(by_id,48,32) == (105,76,56)
+game.descartar()
+print('Módulo nativo verificado',pinta.__file__)
+`
+function sdl(ce: boolean) {
+  return `import pygame
+${ce ? '' : 'from pgzero.screen import Screen'}
+def pixel(cena,x,y):
+    surface = pygame.Surface((160,96),pygame.SRCALPHA)
+    target = ${ce ? 'surface' : 'Screen(surface)'}
+    cena.desenhar(target,tempo=135)
+    cena.desenhar(target,frente=True,tempo=135)
+    return tuple(surface.get_at((x,y)))[:3]
+
+${shared}
+${ce ? 'assert callable(pinta.carregar_mapa) and callable(pinta.fonte)' : "assert not hasattr(pinta,'carregar_mapa')"}
+`
+}
+const ray = `import pyray as ray
+ray.set_config_flags(ray.FLAG_WINDOW_HIDDEN)
+ray.init_window(160,96,'prova do módulo Pinta')
+target = ray.load_render_texture(160,96)
+
+def pixel(cena,x,y):
+    ray.begin_texture_mode(target)
+    ray.clear_background(ray.BLACK)
+    cena.desenhar(tempo=135,viewport=(160,96))
+    cena.desenhar(frente=True,tempo=135,viewport=(160,96))
+    ray.end_texture_mode()
+    image = ray.load_image_from_texture(target.texture)
+    try:
+        c=ray.get_image_color(image,x,95-y)
+        return c.r,c.g,c.b
+    finally:
+        ray.unload_image(image)
+
+try:
+${shared
+  .split('\n')
+  .map((line) => `    ${line}`)
+  .join('\n')}
+finally:
+    ray.unload_render_texture(target)
+    ray.close_window()
+`
+
+async function projectFor(extension: { id: string; version: string }, body: string) {
+  const project = await pintaBrowser2dProject('pinta-regional-pgzero-fornecido')
+  const { project: approved, environment } = await pythonEnvironmentFixture('pro', features)
+  project.runtime = approved.runtime
+  project.python.dependencyLock = approved.python.dependencyLock
+  project.installedExtensions = [{ ...extension, installedAt: project.createdAt }]
+  project.tree = { 'main.py': { kind: 'file', content: body } }
+  return { project, catalog: environment.catalog }
+}
+
+test('the desktop module is selected only by the pinned release and exact active 2D extension', async () => {
+  for (const extension of [
+    PYGAME_EXTENSION,
+    PGZERO_EXTENSION,
+    RAYLIB_2D_EXTENSION,
+    RAYLIB_3D_EXTENSION,
+  ]) {
+    const { project, catalog } = await projectFor(extension, 'import pinta\n')
+    const known = await buildPythonSourceFiles(project, catalog)
+    const unsupported = await buildPythonSourceFiles(project)
+    expect(known.files['main.py']).toBe('import pinta\n')
+    expect(unsupported.files['pinta.py']).toBe(
+      extension.id === PYGAME_EXTENSION.id ? PYGAME_DESKTOP_SOURCES['pinta.py'] : undefined,
+    )
+    const official = pythonOfficialModules(project, features)
+    expect(official.has('pinta')).toBe(extension.id !== RAYLIB_3D_EXTENSION.id)
+    const source = known.files['pinta.py']
+    if (extension.id === RAYLIB_3D_EXTENSION.id) expect(source).toBeUndefined()
+    else {
+      if (typeof source !== 'string') throw new Error('Módulo de cenários ausente')
+      expect(source).toContain('def carregar_cenario')
+      expect(new TextEncoder().encode(source).byteLength).toBeLessThan(
+        PYTHON_PINTA_SCENE_MODULE_MAX_BYTES,
+      )
+      if (extension.id === PYGAME_EXTENSION.id)
+        expect(source.startsWith(PYGAME_DESKTOP_SOURCES['pinta.py'])).toBe(true)
+      expect(source).not.toContain('_pinta_pgzero_transport')
+      expect(source).not.toContain('_pinta_raylib_transport')
+    }
+    project.tree['pinta.py'] = { kind: 'file', content: 'MARCA = "autoral"\n' }
+    const shadow = await buildPythonSourceFiles(project, catalog)
+    expect(shadow.files['pinta.py']).toBe('MARCA = "autoral"\n')
+    expect(pythonOfficialModules(project, features).has('pinta')).toBe(false)
+  }
+})
+
+for (const { extension, body, python } of [
+  { extension: PYGAME_EXTENSION, body: sdl(true), python: pygame ? native : undefined },
+  { extension: PGZERO_EXTENSION, body: sdl(false), python: pygame ? native : undefined },
+  { extension: RAYLIB_2D_EXTENSION, body: ray, python: raylib },
+])
+  test.skipIf(!python)(
+    `${extension.id} runs the supplied desktop module against real Vila and Cabana PNGs`,
+    async () => {
+      const { project, catalog } = await projectFor(extension, body)
+      const { files } = await buildPythonSourceFiles(project, catalog)
+      expect(files['main.py']).toBe(body)
+      const root = mkdtempSync(join(tmpdir(), 'pinta-module-'))
+      const assets = join(root, 'assets')
+      const written: string[] = []
+      mkdirSync(assets)
+      try {
+        for (const name of ['main.py', 'pinta.py', 'assets/mundo.png', 'assets/recusa.png']) {
+          const content = files[name]
+          if (content === undefined) throw new Error(`Arquivo empacotado ausente: ${name}`)
+          const path = join(root, name)
+          writeFileSync(path, content, { flag: 'wx' })
+          written.push(path)
+        }
+        const result = spawnSync(python!, ['-E', '-B', '-X', 'utf8', 'main.py'], {
+          cwd: root,
+          env: environment,
+          timeout: 20_000,
+          encoding: 'utf8',
+        })
+        expect(result.status, `${result.stdout}\n${result.stderr}\n${result.error ?? ''}`).toBe(0)
+        expect(result.stdout).toContain('Módulo nativo verificado')
+      } finally {
+        for (const path of written) unlinkSync(path)
+        rmdirSync(assets)
+        rmdirSync(root)
+      }
+    },
+  )

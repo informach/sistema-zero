@@ -98,7 +98,7 @@ from pathlib import Path
 assert sys.platform=='emscripten', sys.platform
 ${
   supplied
-    ? "assert pinta.__file__.startswith('/studio/extensions/python-pygame-'), pinta.__file__\nprint('Pinta fornecido',pinta.__file__,flush=True)"
+    ? "assert pinta.__file__.startswith('/studio/extensions/python-pygame-'), pinta.__file__\nassert not Path('/studio/pinta-scene-source.bin').exists()\nprint('Pinta fornecido',pinta.__file__,flush=True)"
     : `_imagem_em_memoria=pinta._imagem_em_memoria
 ${moduleSource}`
 }

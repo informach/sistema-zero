@@ -17,7 +17,8 @@ for (const scale of [1, 2])
         ),
       { scale, supplied: process.env.PYTHON_PROBE_PINTA_SCENES === '1' },
     )
-    expect(await page.evaluate(() => globalThis.providerProbe.read('game').status)).toBe('ready')
+    const ready = await page.evaluate(() => globalThis.providerProbe.read('game'))
+    expect(ready.status, JSON.stringify(ready)).toBe('ready')
     await page.locator('iframe').evaluate((frame) => {
       frame.style.cssText = 'width:800px;height:600px;border:0'
     })
@@ -102,3 +103,28 @@ for (const scale of [1, 2])
     })
     await page.evaluate(() => globalThis.providerProbe.dispose('game'))
   })
+
+test('wrong bytes for the supplied module fail before learner code or a ready session', async ({
+  page,
+}) => {
+  test.skip(process.env.PYTHON_PROBE_PINTA_SCENES !== '1')
+  let intercepted = 0
+  await page.context().route('**/pinta-scenes/pygame/pinta.py', async (route) => {
+    const response = await route.fetch()
+    const body = await response.body()
+    body[0] = (body[0] ?? 0) ^ 1
+    intercepted++
+    await route.fulfill({ response, body })
+  })
+  await page.goto('/provider')
+  await page.waitForFunction(() => !!globalThis.providerProbe)
+  await page.evaluate(() =>
+    globalThis.providerProbe.prepare('game', 'pinta-regional-pygame-1x-fornecido'),
+  )
+  const state = await page.evaluate(() => globalThis.providerProbe.read('game'))
+  expect(intercepted).toBe(1)
+  expect(state.status).toBe('failed')
+  expect(state.error).toContain('não corresponde à distribuição')
+  expect(state.events).toEqual([])
+  expect(state.frameURL).toBe('about:blank')
+})
