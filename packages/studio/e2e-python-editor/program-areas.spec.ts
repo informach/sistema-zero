@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test'
+import type { Locator, Page } from '@playwright/test'
 import type {} from './fixtures/bridge'
 import { expect, test } from './fixtures/pythonLanguageSessions'
 
@@ -70,9 +70,12 @@ const MOLDS = '# 🧩 Meus moldes'
  * Um clique num ponto LIVRE do espaço dos blocos (o fundo do Blockly), longe da paleta, da barra
  * de rolagem, da lixeira e dos blocos: um ponto fixo cai na paleta, que fica em coluna à esquerda.
  */
-async function clickBlocks(page: Page, button: 'left' | 'right' = 'left') {
-  const point = await page.evaluate(() => {
-    const svg = document.querySelector('section[aria-label="Editor de blocos Python"] .blocklySvg')
+const BLOCKS_SVG = 'section[aria-label="Editor de blocos Python"] .blocklySvg'
+
+/** Um ponto do fundo dos blocos que nada cobre (paleta, área, painel do código). */
+async function freeBlocksPoint(page: Page) {
+  const point = await page.evaluate((selector) => {
+    const svg = document.querySelector(selector)
     if (!svg) return undefined
     const box = svg.getBoundingClientRect()
     for (let y = box.bottom - 40; y > box.top + 40; y -= 16)
@@ -80,9 +83,36 @@ async function clickBlocks(page: Page, button: 'left' | 'right' = 'left') {
         if (document.elementFromPoint(x, y)?.classList.contains('blocklyMainBackground'))
           return { x, y }
     return undefined
-  })
+  }, BLOCKS_SVG)
   if (!point) throw new Error('Não há ponto livre no espaço dos blocos.')
+  return point
+}
+
+async function clickBlocks(page: Page, button: 'left' | 'right' = 'left') {
+  const point = await freeBlocksPoint(page)
   await page.mouse.click(point.x, point.y, { button })
+}
+
+/**
+ * Arrasta o fundo dos blocos até o alvo caber na parte visível. No modo Ponte com o jogo à vista
+ * a área dos blocos é estreita, e com a fonte do Linux o fim de um bloco largo passa da borda e
+ * fica embaixo do painel do código (o clique cai no Monaco).
+ */
+async function showInsideBlocks(page: Page, target: Locator) {
+  const area = (await page.locator(BLOCKS_SVG).boundingBox())!
+  const fits = async () => {
+    const box = (await target.boundingBox())!
+    return box.x + box.width <= area.x + area.width - 24
+  }
+  if (await fits()) return
+  const box = (await target.boundingBox())!
+  const overflow = box.x + box.width + 48 - (area.x + area.width)
+  const from = await freeBlocksPoint(page)
+  await page.mouse.move(from.x, from.y)
+  await page.mouse.down()
+  await page.mouse.move(from.x - overflow, from.y, { steps: 8 })
+  await page.mouse.up()
+  await expect.poll(fits).toBe(true)
 }
 
 test('program scratch survives Monaco edits and source undo with its identity and fields intact', async ({
@@ -117,7 +147,8 @@ test('program scratch survives Monaco edits and source undo with its identity an
 test('program index opens a secondary scratch class and nested functions without executing them', async ({
   page,
 }) => {
-  // Largo: o "devolver resultado ⟨73⟩" cabe no painel dos blocos, ao lado da paleta em coluna.
+  // Largo, com a paleta em coluna. Mesmo assim a área dos blocos é estreita no modo Ponte: o
+  // "devolver resultado ⟨73⟩" pode passar da borda (fonte do Linux), e showInsideBlocks o traz.
   await page.setViewportSize({ width: 1600, height: 1000 })
   await page.goto('/')
   await page.waitForFunction(() => !!globalThis.pythonBridgeProbe)
@@ -149,6 +180,7 @@ test('program index opens a secondary scratch class and nested functions without
   await goTo(page, 'Rascunho · Função passo')
   const literal = page.locator('.blocklyTextInputField').filter({ hasText: /^73$/ })
   await expect(literal).toBeVisible()
+  await showInsideBlocks(page, literal)
   await literal.dblclick()
   await page.locator('.blocklyHtmlInput').fill('74')
   await page.locator('.blocklyHtmlInput').press('Enter')
