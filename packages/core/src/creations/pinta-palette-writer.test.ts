@@ -40,6 +40,7 @@ test('sealed and staging keys are scoped and avoid the legacy revision address',
     baseRevision: 1,
     revision: 2,
     expiresAt: '2026-11-22T18:00:00.000Z',
+    itemUpdatedAt: '2026-11-22T17:59:00.000Z',
     bytes: 200,
   })
   const actor = { userId: generation, audience: 'adult' } as const

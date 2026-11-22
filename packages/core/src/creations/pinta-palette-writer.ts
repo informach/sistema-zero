@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { PINTA_CAUSAL_LIMITS } from './pinta-causal'
 import { PINTA_PALETTE_LIBRARY_ITEM_ID, PINTA_PALETTE_LIBRARY_TOOL } from './pinta-palette-library'
 import { creationStorageKey } from './storage-keys'
 
@@ -11,6 +12,7 @@ const generation = z.uuid().nullable()
 const nonce = z.uuid()
 const sha256 = z.string().regex(/^[a-f0-9]{64}$/)
 const isoDate = z.iso.datetime({ offset: true })
+const bytes = z.number().int().positive().max(PINTA_CAUSAL_LIMITS.itemBytes)
 
 export const PintaPaletteHeadSchema = z
   .strictObject({
@@ -49,15 +51,16 @@ export const PintaPaletteBaseCommandSchema = PintaPaletteBaseSchema.extend({
   baseRevision: revision,
 })
 export const PintaPaletteReserveCommandSchema = PintaPaletteBaseCommandSchema.extend({
-  bytes: z.number().int().positive(),
+  bytes,
   itemUpdatedAt: isoDate,
 })
 
 /** Private Members → Member Shell ticket. The caller never chooses bytes, keys or the base at commit. */
 export const PintaPaletteTicketSchema = PintaPaletteUploadCapabilitySchema.extend({
-  bytes: z.number().int().positive(),
+  bytes,
   baseRevision: revision,
   revision: positiveRevision,
+  itemUpdatedAt: isoDate,
 })
 export type PintaPaletteTicket = z.infer<typeof PintaPaletteTicketSchema>
 
