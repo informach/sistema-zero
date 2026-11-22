@@ -218,6 +218,24 @@ describe('guarda de atualização do Blockly (o que as adaptações supõem)', (
     )
   })
 
+  it('abrir um bloco recolhido mostra as entradas, e cada uma liga as conexões por startTrackingAll', () => {
+    // Por isso o gancho no `startTrackingAll` (22/11/2026): ele liga as conexões da árvore embaixo
+    // sem passar pelo `setConnectionTracking`, e um corpo adiado iria ao banco em posição velha.
+    expect(compressed).toContain(
+      'setCollapsed(a){this.collapsed_!==a&&(super.setCollapsed(a),this.updateCollapsed())}',
+    )
+    expect(compressed).toContain(
+      'setVisible(a){let b=[];if(this.visible===a)return b;this.visible=a;for(let c=0,d;d=this.fieldRow[c];c++)d.setVisible(a);if(this.connection&&this.connection instanceof RenderedConnection$$module$build$src$core$rendered_connection){a?b=this.connection.startTrackingAll():this.connection.stopTrackingAll();',
+    )
+    expect(compressed).toContain('startTrackingAll(){this.setTracking(!0);let a=[];')
+  })
+
+  it('desenhar um bloco recolhido refaz o rótulo da forma recolhida (por isso o lote desliga os eventos)', () => {
+    expect(compressed).toContain(
+      'renderEfficiently(){startTextWidthCache$$module$build$src$core$utils$dom();this.isCollapsed()&&this.updateCollapsed();',
+    )
+  })
+
   it('encaixar o seguinte usa a posição da conexão de cima dele (por isso o pai reencaixa)', () => {
     expect(compressed).toContain(
       'tightenEfficiently(){var a=this.targetConnection;const b=this.targetBlock();a&&b&&(a=Coordinate$$module$build$src$core$utils$coordinate.difference(this.offsetInBlock,a.offsetInBlock),b.translate(a.x,a',
