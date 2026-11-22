@@ -69,7 +69,7 @@ ler a fonte, que é o mesmo programa e tem os tipos JSDoc.
 | Runtime | Antes | Depois | Tetos |
 |---|---|---|---|
 | Jogo 2D (sem cenário) | 422.457 bytes, 120.628 gzip | 368.619 bytes, 95.238 gzip (−13% e −21%) | 422.500 → 369.500; 121.500 → 96.000 |
-| Jogo 2D com cenário | 447.878 caracteres | 394.477 | 449.000 → 397.000 |
+| Jogo 2D com cenário | 447.878 caracteres | 394.477; 392.787 em 22/11 (compositor compactado, cache das cenas) | 449.000 → 397.000 → 393.500 |
 | Jogo 3D Avançado | 220.689 caracteres, gzip 64.974 (Windows) e 62.564 (Linux) | 217.833, 63.490 (Windows; Linux estimado pela razão medida no CI, 0,962) | 220.700 → 217.950; gzip Windows 65.000 → 63.600; Linux 62.600 → 61.250 |
 | Jogo 3D Avançado sem cenário | 213.058, 62.755 | 210.202, 61.269 | 213.150 → 210.300; Windows 62.900 → 61.400; Linux 60.550 → 59.100 |
 

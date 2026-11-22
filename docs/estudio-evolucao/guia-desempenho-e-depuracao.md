@@ -211,7 +211,7 @@ pergunta ([`zappy-e-as-abas.md`](zappy-e-as-abas.md)).
 | Lista inicial de projetos | 380.000 bytes crus, 120.000 gzip, 10 arquivos | o mesmo arquivo |
 | Rota do editor | 5.000.000 crus, 1.600.000 gzip, 20 arquivos | o mesmo arquivo |
 | Jogo 2D sem cenário | 369.500 bytes, 96.000 gzip | `official-extensions/game-2d/__tests__/bundle.test.ts` |
-| Jogo 2D e Jogo 2D Avançado com cenário do Pinta | 397.000 e 437.000 caracteres | `MAP_TWO_D_FULL_BOOTSTRAP_MAX_CHARS` em `official-extensions/map-2d/bootstrap.ts` |
+| Jogo 2D e Jogo 2D Avançado com cenário do Pinta | 393.500 e 434.500 caracteres (fragmento 24.000) | `MAP_TWO_D_FULL_BOOTSTRAP_MAX_CHARS` em `official-extensions/map-2d/bootstrap.ts` |
 | Jogo 2D Avançado | 415.000 caracteres, 124.000 gzip | `official-extensions/game-2d-advanced/__tests__/runtimePayload.test.ts` |
 | Jogo 3D (completo / sem cenário / sem Kit e sem cenário / sem Kit, com cenário) | 248.900 / 241.800 / 207.700 / 214.800 caracteres | `official-extensions/runtimePayloadBudget.test.ts` |
 | Mundo 3D (completo / sem cenário) | 357.450 / 350.000 caracteres | o mesmo arquivo |

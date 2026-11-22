@@ -432,7 +432,9 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // +6 (22/11, recorte dos sprites fora do palco): `_drawSprite(ctx, sprite, fora)`, o corpo do
   // `drawSprite` público (que segue com os dois do contrato), `_cullRect(ctx)` e
   // `_offStage(s, r)`, todos com JSDoc; a prova semântica acima cobre os três.
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1504)
+  // +1 (22/11): `_newTileMap(options)`, o corpo do createTileMap sem a conta do "rodando sem
+  // parar" (o cenário do Pinta cria um mapa a cada porta), com JSDoc.
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1505)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {

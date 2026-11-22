@@ -29,14 +29,19 @@ export const mapTwoDBootstrapVariant = (context?: ExtensionBootstrapContext): st
  * 21/11/2026 (lote 4 da missão): o Jogo 2D com cenário também sai sem os comentários de bloco;
  * medido 394.477 caracteres (antes 447.878), e o teto desceu junto.
  */
-export const MAP_TWO_D_FULL_BOOTSTRAP_MAX_CHARS = { g2d: 397_000, gk: 437_000 } as const
+// 22/11/2026 (lote 8 da conclusão): o compositor portátil sai com os nomes encurtados e o tocador
+// ganhou o cache, a pré-carga das portas e as áreas por posição. Medido 392.787 / 433.898, e os
+// tetos desceram junto.
+export const MAP_TWO_D_FULL_BOOTSTRAP_MAX_CHARS = { g2d: 393_500, gk: 434_500 } as const
 // Medidos 26.410 / 26.406 caracteres sobre o legado. Folga inferior a 1%; motores
 // sem cenário e orçamento inicial da galeria permanecem nos mesmos tetos.
 // Reproduzir: bun packages/studio/scripts/measure-pinta-runtime.ts.
 // 21/11/2026 (full review final): o recorte de objetos levou o fragmento a 26.598 / 26.594; as
 // buscas por id num ajudante só (com o conjunto fora do recorte e as imagens pedidas ao criar o
 // cenário) deixaram 26.471 / 26.467, e o teto desceu de 26.600.
-export const MAP_TWO_D_FRAGMENT_MAX_CHARS = 26_500
+// 22/11/2026 (lote 8 da conclusão): 23.923 / 23.921 com o compositor compactado e o cache das
+// cenas; o teto desceu de 26.500.
+export const MAP_TWO_D_FRAGMENT_MAX_CHARS = 24_000
 function host(target: 'g2d' | 'gk'): string {
   const basic = target === 'g2d'
   return `
@@ -48,7 +53,7 @@ function host(target: 'g2d' | 'gk'): string {
     screen:function(ctx){ctx.setTransform(ctx.canvas.width/${basic ? 'stageW(ctx)' : 'config.w'},0,0,ctx.canvas.height/${basic ? 'stageH(ctx)' : 'config.h'},0,0);},
     image:function(url){var img=new Image();img.src=url;return img;},warn:function(message){console.warn('[Pinta] '+message);},
     frame:function(step){requestAnimationFrame(step);},
-    collision:function(name,scene,rows,asset){if(scene.version===3)return null;${basic ? "var map=createTileMap({image:Object.prototype.hasOwnProperty.call(ASSETS,asset)?asset:'',tile:scene.tileSize,solid:'0',platform:'1',grid:rows.map(function(r){return r.join(' ');}).join(';')});placeTileMap(map,0,0,scene.tileSize);return map;" : "var key='_pinta:'+name;tilemaps[key]={rows:rows,artTile:scene.tileSize,imgKey:'',solid:{0:true},platform:{1:true}};tilePx=scene.tileSize;return key;"}},
+    collision:function(name,scene,rows,asset){if(scene.version===3)return null;${basic ? "var map=_newTileMap({image:Object.prototype.hasOwnProperty.call(ASSETS,asset)?asset:'',tile:scene.tileSize,solid:'0',platform:'1',grid:rows.map(function(r){return r.join(' ');}).join(';')});placeTileMap(map,0,0,scene.tileSize);return map;" : "var key='_pinta:'+name;tilemaps[key]={rows:rows,artTile:scene.tileSize,imgKey:'',solid:{0:true},platform:{1:true}};tilePx=scene.tileSize;return key;"}},
     collide:function(sprite,map){${basic ? 'collideTileMap(sprite,map);' : 'collideTilemap(sprite,map);'}},
     precise:function(sprite,scene,map,move,land){
       if(!sprite||${basic ? '_isDestroyedSprite(sprite)' : 'sprite._active===false'})return;

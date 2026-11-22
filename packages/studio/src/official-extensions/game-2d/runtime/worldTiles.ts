@@ -108,13 +108,21 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
   // o laço e avisa UMA vez (o jogo segue rodando).
   var _tileMapCreates = 0;
   function createTileMap(options) {
-    options = options || {};
     _tileMapCreates += 1;
     if (_tileMapCreates === 61) {
       console.warn(
         'SZGame2D: "Criar mapa" está rodando sem parar: ele provavelmente está DENTRO do "A cada quadro do jogo". Monte o bloco de criar o mapa FORA do laço (uma vez só) e deixe dentro do laço apenas o "Desenhar o mapa".'
       );
     }
+    return _newTileMap(options);
+  }
+  /**
+   * O mapa de tiles, sem a conta do "rodando sem parar": o cenário do Pinta cria um a cada porta
+   * (lote 8 da conclusão do plano do Estúdio, 22/11/2026), e isso não é o bloco num laço.
+   * @param {*} options as mesmas do createTileMap
+   */
+  function _newTileMap(options) {
+    options = options || {};
     // tile = tamanho do tile NA ARTE (para fatiar o tileset). O tamanho NA TELA
     // (draw) é calculado no desenho: o mapa ENCAIXA no canvas (a arte é ampliada
     // com nitidez pelo drawFrame). Assim um tile de 16px não fica minúsculo.
