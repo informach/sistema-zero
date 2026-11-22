@@ -64,6 +64,10 @@ export interface PintaCloudUpload {
   blobs: ReadonlyMap<string, Blob>
 }
 
+export type PintaCausalTerminal =
+  | { state: 'committed'; result: PintaCausalResult }
+  | { state: 'aborted' | 'expired' | 'unknown' }
+
 export interface PintaCausalCloud {
   snapshot(signal?: AbortSignal): Promise<PintaCloudSnapshot | null>
   verifyEpoch(epoch: string, signal?: AbortSignal): Promise<void>
@@ -74,6 +78,10 @@ export interface PintaCausalCloud {
   ): Promise<Uint8Array<ArrayBuffer>>
   backfill(entry: PintaCausalEntry, epoch: string, signal?: AbortSignal): Promise<void>
   upload(upload: PintaCloudUpload, signal?: AbortSignal): Promise<PintaCausalResult>
+  settle?(
+    operation: Pick<PintaCloudUpload, 'intent' | 'intentHash'>,
+    signal?: AbortSignal,
+  ): Promise<PintaCausalTerminal>
 }
 
 function invalid(): never {
@@ -153,7 +161,10 @@ export function createPintaCausalCloud(options: {
     }
     return value
   }
-  function readStatus(value: unknown, upload: PintaCloudUpload): Status {
+  function readStatus(
+    value: unknown,
+    upload: Pick<PintaCloudUpload, 'intent' | 'intentHash'>,
+  ): Status {
     const status = statusSchema.safeParse(value)
     if (!status.success) invalid()
     const returned = status.data.state === 'committed' ? status.data.result : status.data
@@ -344,5 +355,25 @@ export function createPintaCausalCloud(options: {
     if (result.state !== 'committed') invalid()
     return result.result
   }
-  return { snapshot, verifyEpoch, download, backfill, upload }
+  async function settle(
+    unit: Pick<PintaCloudUpload, 'intent' | 'intentHash'>,
+    signal?: AbortSignal,
+  ): Promise<PintaCausalTerminal> {
+    const path = `/units/${encodeURIComponent(unit.intent.opId)}`
+    const existing = await api(path, scopedSignal(signal), { missing: true })
+    if (existing === null) return { state: 'unknown' }
+    let status = readStatus(existing, unit)
+    if (status.state === 'collecting' || status.state === 'reserved') {
+      const terminal = await api(`${path}/abort`, scopedSignal(signal), {
+        method: 'POST',
+        missing: true,
+      })
+      if (terminal === null) return { state: 'unknown' }
+      status = readStatus(terminal, unit)
+    }
+    if (status.state === 'committed') return status
+    if (status.state === 'aborted' || status.state === 'expired') return { state: status.state }
+    return invalid()
+  }
+  return { snapshot, verifyEpoch, download, backfill, upload, settle }
 }

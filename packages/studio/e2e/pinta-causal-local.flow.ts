@@ -428,6 +428,203 @@ test('three local candidates survive beside one remote seal, with atomic quota a
   })
 })
 
+test('terminal snapshot keeps seal and prepared Blobs until the complete copy commits', async ({
+  page,
+  context,
+}) => {
+  await proof(page)
+  const work = await page.evaluate(async () => {
+    const p = window.pinta026
+    const namespace = crypto.randomUUID()
+    const { causal } = p.createPintaCausalPersistence({ namespace })
+    const first = p.createPixelSpriteAsset({ name: 'conta', frameSize: 8 })
+    const id = first.id
+    const remote = { revision: 1, sha256: 'a'.repeat(64), layoutRevision: null }
+    await causal.applyPull(
+      {
+        fromEpoch: null,
+        epoch: '1',
+        transitions: [{ id, before: null, beforeRevision: null, after: first, remote }],
+      },
+      () => true,
+    )
+    const [base] = await causal.capture([id])
+    if (!base?.before) throw Error('Documento ausente')
+    const opId = crypto.randomUUID()
+    const intentHash = 'b'.repeat(64)
+    const sealed = await causal.stage({
+      opId,
+      baseEpoch: '1',
+      readSet: [],
+      transitions: [
+        {
+          ...base,
+          after: { ...base.before, name: 'rascunho' },
+          baseRevision: 1,
+          operation: { type: 'update' },
+        },
+      ],
+    })
+    const archive = new Blob(['rascunho'])
+    const candidate = {
+      itemId: id,
+      kind: first.kind,
+      name: 'rascunho',
+      formatVersion: 1,
+      bytes: archive.size,
+      sha256: 'c'.repeat(64),
+      itemUpdatedAt: new Date(first.updatedAt).toISOString(),
+    }
+    const intent: PintaCausalIntent = {
+      protocol: 1,
+      reader: 6,
+      baseEpoch: '1',
+      opId,
+      readSet: [],
+      members: [{ ...candidate, action: 'put', baseRevision: 1, operation: { type: 'update' } }],
+    }
+    if (!(await causal.seal(sealed.preparation, intent, intentHash, new Map([[id, archive]]))))
+      throw Error('Selo ausente')
+    const [nextBase] = await causal.capture([id])
+    if (!nextBase?.before) throw Error('Documento ausente')
+    const next = await causal.stage({
+      opId: crypto.randomUUID(),
+      baseEpoch: '1',
+      follows: opId,
+      readSet: [],
+      transitions: [
+        {
+          ...nextBase,
+          after: { ...nextBase.before, name: 'minha-edicao' },
+          baseRevision: 1,
+          operation: { type: 'update' },
+          baseAfter: {
+            opId,
+            sha256: candidate.sha256,
+            localRevision: sealed.members[0]!.localRevision,
+          },
+        },
+      ],
+    })
+    const latest = new Blob(['minha-edicao'])
+    if (
+      !(await causal.freeze(
+        next.opId,
+        next.preparation,
+        [
+          {
+            ...candidate,
+            name: 'minha-edicao',
+            bytes: latest.size,
+            sha256: 'd'.repeat(64),
+          },
+        ],
+        new Map([[id, latest]]),
+      ))
+    )
+      throw Error('Sucessor ausente')
+    return {
+      namespace,
+      id,
+      opId,
+      intentHash,
+      pending: [{ opId: next.opId, preparation: next.preparation }],
+    }
+  })
+  const other = await context.newPage()
+  await proof(other)
+  await other.evaluate(async ({ namespace, id }) => {
+    window.releaseCausalEditor = await window.pintaPhysicalRegions.holdPintaEditorLock(
+      namespace,
+      id,
+    )
+  }, work)
+  async function recover(interrupt = false) {
+    return page.evaluate(
+      async ({ namespace, id, opId, intentHash, pending, interrupt }) => {
+        const p = window.pinta026
+        const local = p.createPintaCausalPersistence({ namespace })
+        const [base] = await local.causal.capture([id])
+        if (!base?.before) throw Error('Documento ausente')
+        const pull = {
+          fromEpoch: '1',
+          epoch: '2',
+          transitions: [
+            {
+              ...base,
+              after: { ...base.before, name: 'da-conta-agora' },
+              remote: { revision: 2, sha256: 'e'.repeat(64), layoutRevision: null },
+            },
+          ],
+          recoverUnit: { opId, intentHash, pending, terminal: 'unknown' as const },
+        }
+        const impact = await local.causal.pullImpact(pull)
+        const put = IDBObjectStore.prototype.put
+        if (interrupt)
+          IDBObjectStore.prototype.put = function (value, key) {
+            if (
+              typeof key === 'string' &&
+              key.startsWith('pinta:asset:') &&
+              key !== `pinta:asset:${id}`
+            )
+              throw Error('Última cópia interrompida')
+            return put.call(this, value, key)
+          }
+        let applied = false
+        let failed = false
+        try {
+          applied = await window.pintaPhysicalRegions.withClosedPintaEditors(
+            namespace,
+            impact.ids,
+            () => local.causal.applyPull({ ...pull, coveredIds: impact.ids }, () => true),
+          )
+        } catch (error) {
+          if (!String(error).includes('Última cópia interrompida')) throw error
+          failed = true
+        } finally {
+          IDBObjectStore.prototype.put = put
+        }
+        const state = await local.causal.inspect()
+        const queued = await local.causal.prepared(pending[0]!.opId)
+        return {
+          applied,
+          failed,
+          epoch: state.epoch,
+          opId: state.sealed?.intent.opId,
+          prepared: await queued?.blobs.get(id)?.text(),
+          names: (await local.listAllAssets()).map(({ name }) => name).sort(),
+        }
+      },
+      { ...work, interrupt },
+    )
+  }
+  expect(await recover()).toMatchObject({
+    applied: false,
+    failed: false,
+    epoch: '1',
+    opId: work.opId,
+    prepared: 'minha-edicao',
+    names: ['minha-edicao'],
+  })
+  await other.evaluate(() => window.releaseCausalEditor?.())
+  expect(await recover(true)).toMatchObject({
+    applied: false,
+    failed: true,
+    epoch: '1',
+    opId: work.opId,
+    prepared: 'minha-edicao',
+    names: ['minha-edicao'],
+  })
+  expect(await recover()).toEqual({
+    applied: true,
+    failed: false,
+    epoch: '2',
+    opId: undefined,
+    prepared: undefined,
+    names: ['da-conta-agora', 'minha-edicao-copia'],
+  })
+})
+
 test('an editor in another tab defers the complete delta before the final local CAS', async ({
   page,
   context,

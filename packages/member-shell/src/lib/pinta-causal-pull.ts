@@ -60,13 +60,24 @@ export async function pullPintaCausalSnapshot(options: {
   signal: AbortSignal
   isOpen(id: string): boolean
   withClosed(ids: readonly string[], apply: () => Promise<boolean>): Promise<boolean>
+  recoverUnit?: Parameters<PintaCausalLocalPort['applyPull']>[0]['recoverUnit']
 }): Promise<boolean> {
   const { snapshot, local, cloud, signal } = options
   const state = await local.inspect()
   const visible = new Map(snapshot.entries.map((entry) => [entry.itemId, entry]))
+  const recovery = options.recoverUnit
+  if (recovery && state.sealed?.intent.opId !== recovery.opId) return false
   const recoverDiverged =
-    state.epoch !== null && !state.sealed && !state.pending.length && !state.unbased
+    !!recovery || (state.epoch !== null && !state.sealed && !state.pending.length && !state.unbased)
+  const owned = new Set(
+    recovery && state.sealed
+      ? [state.sealed.local, ...state.pending].flatMap((unit) =>
+          unit.members.map(({ itemId }) => itemId),
+        )
+      : [],
+  )
   function differentRemote(item: PintaCloudSnapshot['entries'][number]): boolean {
+    if (owned.has(item.itemId)) return true
     const previous = state.confirmed.get(item.itemId)
     return (
       !previous ||
@@ -128,6 +139,7 @@ export async function pullPintaCausalSnapshot(options: {
     transitions,
     recoverInitial: true as const,
     ...(recoverDiverged ? { recoverDiverged: true as const } : {}),
+    ...(recovery ? { recoverUnit: recovery } : {}),
   }
   const impact = await local.pullImpact(pull)
   if (impact.blocked || impact.ids.some(options.isOpen)) return false

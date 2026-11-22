@@ -18,7 +18,7 @@ import {
 import { observePintaReferences } from '../../../pinta/src/core/sceneMapClosure'
 import { assetFromJson, assetToJson } from '../../../pinta/src/export/assetJson'
 import { createEditorStore } from '../../../pinta/src/state/editorStore'
-import { clearIdbMock } from '../../../pinta/src/testing/idbMock'
+import { clearIdbMock, setIdbWriteGuard } from '../../../pinta/src/testing/idbMock'
 import { createMapObject } from '../../../pinta/src/tiles/mapObjects'
 import { freezeMapTilesets, freezeObjectResource } from '../../../pinta/src/tiles/resourceVersions'
 import { addObjectLayer } from '../../../pinta/src/tiles/tilemapOps'
@@ -38,6 +38,7 @@ import {
   pintaCausalGzipHash,
 } from '../../src/lib/pinta-causal-cloud'
 import { flushPintaCausalOutbox, freezePintaCausalPending } from '../../src/lib/pinta-causal-queue'
+import { syncPintaCausalAccount } from '../../src/lib/pinta-causal-sync'
 import {
   createCloudMirroredPintaPersistence,
   createMemoryPintaFormatMemory,
@@ -659,6 +660,268 @@ test('um escritor antigo pode editar depois do candidato e as duas versões são
   } finally {
     wrapper.dispose?.()
   }
+})
+
+test.each([
+  'expired',
+  'unknown',
+] as const)('recupera uma unidade terminal %s com sucessor durável', async (terminal) => {
+  const local = createPintaCausalPersistence({ namespace: `cloud-terminal-${terminal}` })
+  const sheet = addTile(createTilesetAsset({ name: 'pecas', tileSize: 16 }), 0)
+  const map = createTilemapAsset({ name: 'vila', tilesetId: sheet.id, cols: 2, rows: 2 })
+  const published = await Promise.all([cloudAsset(sheet, 1, '3'), cloudAsset(map, 1)])
+  expect(
+    await local.causal.applyPull(
+      {
+        fromEpoch: null,
+        epoch: '3',
+        transitions: [sheet, map].map((after, i) => ({
+          id: after.id,
+          before: null,
+          beforeRevision: null,
+          after,
+          remote: published[i]!.entry,
+        })),
+      },
+      () => true,
+    ),
+  ).toBe(true)
+  const { cloud, queued } = fakeCloud(map, 1)
+  const unused = async (): Promise<never> => {
+    throw Error('Operação inesperada')
+  }
+  const changed = structuredClone(sheet)
+  changed.tiles[0]!.data[0] = 3
+  const newerSheet = await cloudAsset(changed, 2, '3')
+  let offline = true
+  let epoch = '4'
+  let sealedId: string | undefined
+  let sealedHash: string | undefined
+  const transport: PintaCausalCloud = {
+    snapshot: async () => ({
+      epoch,
+      requiredFormat: 6,
+      entries: [epoch === '4' ? newerSheet.entry : published[0]!.entry, published[1]!.entry],
+    }),
+    verifyEpoch: async (expected) => {
+      expect(expected).toBe(epoch)
+    },
+    backfill: unused,
+    download: async ({ itemId }) =>
+      itemId === sheet.id ? (epoch === '4' ? newerSheet : published[0]!).gzip : published[1]!.gzip,
+    upload: async (candidate) => {
+      if (offline) throw Error('sem rede')
+      expect(candidate.intent.opId).toBe(sealedId)
+      expect(candidate.intentHash).toBe(sealedHash)
+      throw new PintaCausalRequestError(
+        409,
+        terminal === 'expired' ? 'operation-expired' : 'epoch-changed',
+      )
+    },
+    settle: async ({ intent, intentHash }) => {
+      expect(intent.opId).toBe(sealedId)
+      expect(intentHash).toBe(sealedHash)
+      return { state: terminal }
+    },
+  }
+  const wrapper = createCloudMirroredPintaPersistence({
+    local,
+    cloud: { ...cloud, pintaCausal: transport },
+    viewerId: 'terminal',
+    causal: {
+      local: local.causal,
+      holdOpen: async () => () => {},
+      withClosed: (_, apply) => apply(),
+    },
+  })
+  try {
+    const base = await local.loadAssetById(sheet.id)
+    if (base?.kind !== 'tileset') throw Error('Folha ausente')
+    const paint = {
+      ...base,
+      tiles: base.tiles.map((tile, i) => {
+        if (i > 0) return tile
+        const data = new Uint8Array(tile.data)
+        data[0] = 5
+        return { ...tile, data }
+      }),
+    }
+    await wrapper.persistAsset(paint, { resources: [] })
+    const work = {
+      local: local.causal,
+      cloud: transport,
+      reader: 6,
+      signal: new AbortController().signal,
+    }
+    await expect(flushPintaCausalOutbox(work)).rejects.toThrow('sem rede')
+    const sealed = await local.causal.inFlight()
+    if (!sealed) throw Error('Selo ausente')
+    sealedId = sealed.sealed.intent.opId
+    sealedHash = sealed.sealed.intentHash
+    const mapCopy = await local.loadAssetById(map.id)
+    if (mapCopy?.kind !== 'tilemap') throw Error('Mapa ausente')
+    await wrapper.persistAsset(
+      { ...mapCopy, name: 'minha-vila' },
+      {
+        resources: [{ id: sheet.id, localRevision: pintaLocalRevisionOf(paint) ?? null }],
+      },
+    )
+    const [next] = (await local.causal.inspect()).pending
+    if (!next) throw Error('Sucessor ausente')
+    expect(await freezePintaCausalPending(local.causal, next.opId, work.signal)).toBe(true)
+    offline = false
+    let opened = true
+    const sync = () =>
+      syncPintaCausalAccount({
+        ...work,
+        canContinue: () => true,
+        isOpen: (id) => opened && id === map.id,
+        withClosed: (ids, apply) => {
+          expect(ids).toEqual(expect.arrayContaining([sheet.id, map.id]))
+          return apply()
+        },
+      })
+    await expect(sync()).rejects.toBeInstanceOf(PintaCausalRequestError)
+    expect((await local.causal.inFlight())?.sealed.intent.opId).toBe(sealedId)
+    opened = false
+
+    if (terminal === 'unknown') {
+      epoch = '3'
+      await expect(sync()).rejects.toBeInstanceOf(PintaCausalRequestError)
+      expect((await local.causal.inFlight())?.sealed.intent.opId).toBe(sealedId)
+      epoch = '4'
+    }
+    setIdbWriteGuard((key, value) => {
+      if (
+        typeof key === 'string' &&
+        key.startsWith('pinta:asset:') &&
+        value &&
+        typeof value === 'object' &&
+        'name' in value &&
+        value.name === 'minha-vila-copia'
+      )
+        throw Error('Última cópia interrompida')
+    })
+    try {
+      await expect(sync()).rejects.toThrow('Última cópia interrompida')
+    } finally {
+      setIdbWriteGuard(null)
+    }
+    expect((await local.causal.inFlight())?.sealed.intent.opId).toBe(sealedId)
+    expect(await local.causal.prepared(next.opId)).toBeTruthy()
+    expect((await local.listAllAssets()).map(({ name }) => name).sort()).toEqual([
+      'minha-vila',
+      'pecas',
+    ])
+    await expect(sync()).resolves.toMatchObject({ mode: 'causal', applied: true })
+    const state = await local.causal.inspect()
+    expect(state.epoch).toBe('4')
+    expect(state.sealed).toBeNull()
+    expect(state.pending).toEqual([])
+    expect(await local.causal.prepared(next.opId)).toBeNull()
+    expect(state.confirmed.get(sheet.id)?.opId).toBeUndefined()
+    const gallery = await local.listAllAssets()
+    const copySheet = gallery.find(({ name }) => name === 'pecas-copia')
+    const copyMap = gallery.find(({ name }) => name === 'minha-vila-copia')
+    const official = gallery.find(({ id }) => id === sheet.id)
+    if (
+      copySheet?.kind !== 'tileset' ||
+      official?.kind !== 'tileset' ||
+      copyMap?.kind !== 'tilemap'
+    )
+      throw Error('Cópias ausentes')
+    expect(copySheet.tiles[0]?.data[0]).toBe(5)
+    expect(official.tiles[0]?.data[0]).toBe(3)
+    expect(copyMap.tilesetId).toBe(copySheet.id)
+    expect(queued).toEqual([])
+  } finally {
+    wrapper.dispose?.()
+  }
+})
+
+test('o commit que vence o abort confirma o recibo exato sem criar cópia', async () => {
+  const local = createPintaCausalPersistence({ namespace: 'terminal-commit-race' })
+  const sprite = createPixelSpriteAsset({ name: 'lua', frameSize: 8 })
+  const archived = await cloudAsset(sprite, 1)
+  await local.causal.applyPull({ fromEpoch: null, epoch: '1', transitions: [] }, () => true)
+  const opId = crypto.randomUUID()
+  await local.causal.stage({
+    opId,
+    baseEpoch: '1',
+    readSet: [],
+    transitions: [
+      {
+        id: sprite.id,
+        before: null,
+        beforeRevision: null,
+        after: sprite,
+        baseRevision: 0,
+        operation: { type: 'create' },
+      },
+    ],
+  })
+  let epoch = '1'
+  const unused = async (): Promise<never> => {
+    throw Error('Operação inesperada')
+  }
+  const cloud: PintaCausalCloud = {
+    snapshot: async () => ({
+      epoch,
+      requiredFormat: 6,
+      entries: epoch === '1' ? [] : [archived.entry],
+    }),
+    verifyEpoch: async (observed) => {
+      expect(observed).toBe(epoch)
+    },
+    download: unused,
+    backfill: unused,
+    upload: async ({ blobs }) => {
+      const blob = blobs.get(sprite.id)
+      if (!blob) throw Error('Candidato ausente')
+      archived.entry.sha256 = await pintaCausalGzipHash(await blob.arrayBuffer())
+      archived.entry.bytes = blob.size
+      throw new PintaCausalRequestError(409, 'epoch-changed')
+    },
+    settle: async ({ intent, intentHash }) => {
+      const [put] = intent.members
+      if (put?.action !== 'put') throw Error('Unidade ausente')
+      expect(intent.opId).toBe(opId)
+      expect(put.sha256).toBe(archived.entry.sha256)
+      epoch = '2'
+      return {
+        state: 'committed',
+        result: {
+          opId,
+          epoch,
+          intentHash,
+          members: [
+            {
+              itemId: sprite.id,
+              revision: 1,
+              sha256: put.sha256,
+              layoutRevision: null,
+              deleted: false,
+            },
+          ],
+        },
+      }
+    },
+  }
+  const result = await syncPintaCausalAccount({
+    local: local.causal,
+    cloud,
+    reader: 6,
+    signal: new AbortController().signal,
+    canContinue: () => true,
+    isOpen: () => false,
+    withClosed: (_, apply) => apply(),
+  })
+  expect(result).toMatchObject({ mode: 'causal', applied: true })
+  const state = await local.causal.inspect()
+  expect(state.confirmed.get(sprite.id)?.opId).toBe(opId)
+  expect(state.epoch).toBe('2')
+  expect(state.sealed).toBeNull()
+  expect((await local.listAllAssets()).map(({ id }) => id)).toEqual([sprite.id])
 })
 
 test('um ACK antigo com a mesma revisão e hora não autentica outro documento na adoção', async () => {

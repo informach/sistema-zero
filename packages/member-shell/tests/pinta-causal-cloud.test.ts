@@ -9,6 +9,57 @@ const opId = 'd1b1d364-08d2-427b-ad93-182773629af3'
 const sha256 = 'a'.repeat(64)
 const intentHash = 'b'.repeat(64)
 
+it('settles the exact unit when a commit races abort, and treats a missing receipt as uncertain', async () => {
+  const intent: PintaCausalIntent = {
+    protocol: 1,
+    opId,
+    baseEpoch: epoch,
+    reader: scope.reader,
+    members: [{ action: 'delete', itemId: 'a', baseRevision: 1 }],
+    readSet: [],
+  }
+  const result = {
+    opId,
+    intentHash,
+    epoch: '9',
+    members: [{ itemId: 'a', revision: 2, deleted: true, sha256: null, layoutRevision: null }],
+  }
+  const calls: string[] = []
+  let purged = false
+  const cloud = createPintaCausalCloud({
+    ...scope,
+    signal: new AbortController().signal,
+    fetch: async (input, init) => {
+      const path = String(input)
+      calls.push(path)
+      expect(new Headers(init?.headers).get('x-sz-viewer')).toBe(scope.viewerId)
+      if (purged) return new Response(null, { status: 404 })
+      if (path.endsWith('/abort')) {
+        expect(init?.method).toBe('POST')
+        expect(init?.body).toBeUndefined()
+        return Response.json({ state: 'committed', result })
+      }
+      return Response.json({
+        state: 'reserved',
+        opId,
+        intentHash,
+        nextCursor: null,
+        tickets: [],
+      })
+    },
+  })
+  const settle = cloud.settle
+  if (!settle) throw Error('Consulta terminal ausente')
+  await expect(settle({ intent, intentHash })).resolves.toEqual({ state: 'committed', result })
+  purged = true
+  await expect(settle({ intent, intentHash })).resolves.toEqual({ state: 'unknown' })
+  expect(calls).toEqual([
+    `/api/pinta/causal/units/${opId}`,
+    `/api/pinta/causal/units/${opId}/abort`,
+    `/api/pinta/causal/units/${opId}`,
+  ])
+})
+
 function entry(itemId: string): PintaCausalEntry {
   return {
     itemId,

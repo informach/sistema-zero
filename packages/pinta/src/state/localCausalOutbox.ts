@@ -132,6 +132,12 @@ export interface PintaCausalLocalPull<Asset extends PintaMemoryAsset> {
   coveredIds?: readonly string[]
   recoverInitial?: true
   recoverDiverged?: true
+  recoverUnit?: {
+    opId: string
+    intentHash: string
+    terminal: 'aborted' | 'expired' | 'unknown'
+    pending: readonly { opId: string; preparation: string }[]
+  }
   transitions: readonly (LocalAssetTransition<Asset> & {
     remote: Pick<PintaCausalConfirmed, 'revision' | 'sha256' | 'layoutRevision'> | null
   })[]
@@ -544,6 +550,34 @@ function officialProjection<Asset extends PintaMemoryAsset>(
   return official
 }
 
+function terminalLocalMembers<Asset extends PintaMemoryAsset>(
+  pull: PintaCausalLocalPull<Asset>,
+  state: LocalCausalState,
+): ReadonlyMap<string, PintaCausalPendingMember> | null {
+  const proof = pull.recoverUnit
+  const sealed = state.sealed
+  if (
+    !proof ||
+    !sealed ||
+    !pintaCausalEpochSchema.safeParse(pull.epoch).success ||
+    sealed.intent.opId !== proof.opId ||
+    sealed.intentHash !== proof.intentHash ||
+    state.pending.length !== proof.pending.length ||
+    state.pending.some(
+      (unit, index) =>
+        unit.opId !== proof.pending[index]?.opId ||
+        unit.preparation !== proof.pending[index]?.preparation,
+    ) ||
+    (proof.terminal === 'unknown' && BigInt(pull.epoch) <= BigInt(sealed.intent.baseEpoch))
+  )
+    return null
+  return new Map(
+    [sealed.local, ...state.pending].flatMap((group) =>
+      group.members.map((member) => [member.itemId, member] as const),
+    ),
+  )
+}
+
 export function localCausalPullImpact<Asset extends PintaMemoryAsset>(
   pull: PintaCausalLocalPull<Asset>,
   state: LocalCausalState,
@@ -553,6 +587,7 @@ export function localCausalPullImpact<Asset extends PintaMemoryAsset>(
   const changedLayout = new Set<string>()
   let hasSelectorChange = false
   const projected = new Map(snapshot.assets)
+  const terminal = terminalLocalMembers(pull, state)
   for (const { id, before, after, remote } of pull.transitions) {
     if (after) projected.set(id, after)
     else projected.delete(id)
@@ -572,11 +607,13 @@ export function localCausalPullImpact<Asset extends PintaMemoryAsset>(
     if (kindChanged || layoutChanged) changedLayout.add(id)
   }
   const mayRecover =
-    ((pull.recoverInitial && state.epoch === null && !state.confirmed.size) ||
+    terminal ||
+    (((pull.recoverInitial && state.epoch === null && !state.confirmed.size) ||
       (pull.recoverDiverged && state.epoch !== null && !state.unbased)) &&
-    !state.sealed &&
-    !state.pending.length
-  const official = pull.transitions.length ? officialProjection(pull, state, snapshot) : undefined
+      !state.sealed &&
+      !state.pending.length)
+  const official =
+    pull.transitions.length || terminal ? officialProjection(pull, state, snapshot) : undefined
   const seeds =
     mayRecover && official
       ? localRecoverySeeds(
@@ -586,8 +623,16 @@ export function localCausalPullImpact<Asset extends PintaMemoryAsset>(
           (id) => state.confirmed.get(id)?.localRevision !== snapshot.documents.get(id)?.revision,
         )
       : new Set<string>()
-  let blocked = (hasSelectorChange || changedLayout.size > 0) && snapshot.issues.length > 0
+  let blocked =
+    ((hasSelectorChange || changedLayout.size > 0) && snapshot.issues.length > 0) ||
+    (pull.recoverUnit !== undefined && !terminal)
   const affected = new Set(written)
+  for (const member of terminal?.values() ?? []) {
+    affected.add(member.itemId)
+    if (member.action !== 'put') continue
+    if (snapshot.assets.has(member.itemId)) seeds.add(member.itemId)
+    else blocked = true
+  }
   if (state.epoch !== null && official === null) blocked = true
   if (!mayRecover && state.epoch !== null && official) {
     for (const asset of official.values()) {
@@ -642,7 +687,8 @@ export function localRemovalsReturnedByPull<Asset extends PintaMemoryAsset>(
   const initial = pull.recoverInitial && state.epoch === null
   const divergent =
     pull.recoverDiverged && state.epoch !== null && !state.pending.length && !state.sealed
-  if (!initial && !divergent) return []
+  const terminal = terminalLocalMembers(pull, state)
+  if (!initial && !divergent && !terminal) return []
   const removed = new Map(
     state.unbased?.members
       .filter(({ deleted }) => deleted)
@@ -652,7 +698,11 @@ export function localRemovalsReturnedByPull<Asset extends PintaMemoryAsset>(
     if (before || !beforeRevision || !after || !remote?.sha256) return []
     const confirmed = state.confirmed.get(id)
     return (initial && beforeRevision === removed.get(id)) ||
-      (divergent && confirmed && !confirmed.deleted && confirmed.localRevision !== beforeRevision)
+      (divergent &&
+        confirmed &&
+        !confirmed.deleted &&
+        confirmed.localRevision !== beforeRevision) ||
+      terminal?.get(id)?.action === 'delete'
       ? [{ id, name: after.name }]
       : []
   })
@@ -674,6 +724,12 @@ export function installLocalCausalPull<Asset extends PintaMemoryAsset>(
   )
     return null
   const covered = new Set(pull.coveredIds ?? pull.transitions.map(({ id }) => id))
+  const terminal = terminalLocalMembers(pull, state)
+  if (pull.recoverUnit && !terminal) return null
+  if (terminal) {
+    if (!readLocalCausalUpload(records)) invalid()
+    for (const opId of state.prepared?.keys() ?? []) readLocalCausalPrepared(records, opId)
+  }
   const returned = new Set(localRemovalsReturnedByPull(state, pull).map(({ id }) => id))
   let copies: Asset[] = []
   let moved = new Set<string>()
@@ -684,7 +740,8 @@ export function installLocalCausalPull<Asset extends PintaMemoryAsset>(
     moved = new Set(impact.recover ?? [])
     for (const change of pull.transitions) {
       if (Boolean(change.after) !== Boolean(change.remote)) invalid()
-      if (ownsLocalCausalMember(state, change.id, false)) throw new PintaCausalPullDeferred()
+      if (!terminal && ownsLocalCausalMember(state, change.id, false))
+        throw new PintaCausalPullDeferred()
       const mark = state.confirmed.get(change.id)
       if (
         (change.before !== null || change.beforeRevision !== null) &&
@@ -746,7 +803,7 @@ export function installLocalCausalPull<Asset extends PintaMemoryAsset>(
         !doc.asset ||
         (mark && !mark.deleted) ||
         promoting.has(id) ||
-        ownsLocalCausalMember(state, id)
+        (!terminal && ownsLocalCausalMember(state, id))
       )
         recovered.delete(id)
       else recovered.set(id, doc.revision)
@@ -760,7 +817,12 @@ export function installLocalCausalPull<Asset extends PintaMemoryAsset>(
     confirmed,
     ...(recovered.size || state.recovered ? { recovered } : {}),
     ...(local?.members.length ? { pending: [...state.pending, local] } : {}),
+    ...(terminal ? { pending: [], sealed: null, prepared: new Map() } : {}),
   })
+  if (terminal) {
+    records.delete(PINTA_CAUSAL_BLOBS_KEY)
+    for (const id of state.prepared?.keys() ?? []) records.delete(localPreparedKey(id))
+  }
   return snapshot
 }
 

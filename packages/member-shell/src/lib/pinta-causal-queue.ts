@@ -20,6 +20,18 @@ import {
 type LocalCandidate = NonNullable<Awaited<ReturnType<PintaCausalLocalPort['prepare']>>>
 type FrozenCandidate = NonNullable<Awaited<ReturnType<PintaCausalLocalPort['prepared']>>>
 
+/** Carry the attempted seal across awaits so recovery cannot abort a different tab's upload. */
+export class PintaCausalUploadError extends PintaCausalRequestError {
+  constructor(
+    error: PintaCausalRequestError,
+    readonly opId: string,
+    readonly intentHash: string,
+  ) {
+    super(error.status, error.reason, error.itemId)
+    this.cause = error
+  }
+}
+
 async function encodeCandidate(
   { assets }: LocalCandidate,
   signal: AbortSignal,
@@ -84,17 +96,22 @@ export async function flushPintaCausalOutbox(options: {
       try {
         receipt = await cloud.upload({ ...upload.sealed, blobs: upload.blobs }, signal)
       } catch (error) {
+        if (!(error instanceof PintaCausalRequestError)) throw error
+        const failure = new PintaCausalUploadError(
+          error,
+          upload.sealed.intent.opId,
+          upload.sealed.intentHash,
+        )
         if (
           renewed ||
-          !(error instanceof PintaCausalRequestError) ||
           !['operation-expired', 'operation-aborted', 'not-found'].includes(error.reason) ||
           !cloud.snapshot ||
           !cloud.verifyEpoch ||
           !local.renew
         )
-          throw error
+          throw failure
         const snapshot = await cloud.snapshot(signal)
-        if (!snapshot) throw error
+        if (!snapshot) throw failure
         const prior = upload.sealed.intent
         const visible = new Map(snapshot.entries.map((entry) => [entry.itemId, entry]))
         const preservesBasis =
@@ -110,7 +127,7 @@ export async function flushPintaCausalOutbox(options: {
               (entry.layoutRevision ?? undefined) === edge.layoutRevision
             )
           })
-        if (!preservesBasis || snapshot.epoch !== prior.baseEpoch) throw error
+        if (!preservesBasis || snapshot.epoch !== prior.baseEpoch) throw failure
         await cloud.verifyEpoch(snapshot.epoch, signal)
         const next = { ...prior, opId: crypto.randomUUID(), baseEpoch: snapshot.epoch }
         const hash = await pintaCausalIntentHash(next)

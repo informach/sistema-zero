@@ -660,24 +660,37 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
       ),
     applyPull: (pull, ready) =>
       runSerializedWrite(storeHandle, async () => {
-        const installed = await transaction((records) => {
-          if (!ready()) return null
-          const before = localCausalBytes(records)
-          const returned = localRemovalsReturnedByPull(readLocalCausalState(records), pull)
-          const applied = installLocalCausalPull(records, pull, (authorize) =>
-            applyAssetTransitions(records, pull.transitions, false, authorize),
-          )
-          if (applied) checkCombined(records, applied, before)
-          if (!applied) return null
-          const knownCopies = readLocalCausalState(records).recovered
-          return {
-            snapshot: applied,
-            returned,
-            copies: applied.recovered
-              .filter(({ id }) => knownCopies?.has(id))
-              .map(({ name }) => name),
-          }
-        }).catch((error) => {
+        const installed = await transaction(
+          (records) => {
+            if (!ready()) return null
+            const before = localCausalBytes(records)
+            const returned = localRemovalsReturnedByPull(readLocalCausalState(records), pull)
+            const applied = installLocalCausalPull(records, pull, (authorize) =>
+              applyAssetTransitions(records, pull.transitions, false, authorize),
+            )
+            if (applied) checkCombined(records, applied, before)
+            if (!applied) return null
+            const knownCopies = readLocalCausalState(records).recovered
+            return {
+              snapshot: applied,
+              returned,
+              copies: applied.recovered
+                .filter(({ id }) => knownCopies?.has(id))
+                .map(({ name }) => name),
+            }
+          },
+          pull.recoverUnit
+            ? (records) => {
+                if (!records.has(PINTA_CAUSAL_OUTBOX_KEY)) return causalKeys
+                const state = readLocalCausalState(records)
+                const keys = [
+                  PINTA_CAUSAL_BLOBS_KEY,
+                  ...[...(state.prepared?.keys() ?? [])].map(localPreparedKey),
+                ]
+                return keys.some((key) => !records.has(key)) ? keys : null
+              }
+            : undefined,
+        ).catch((error) => {
           if (error instanceof PintaCausalPullDeferred) return null
           throw error
         })
