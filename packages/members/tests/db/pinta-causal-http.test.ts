@@ -67,6 +67,8 @@ describe.skipIf(!target)('Pinta causal through the full Members HTTP server and 
       })
     await conn.sql`insert into members.creations(id,user_id,account_id,tool,item_id,kind,name,item_updated_at,revision,format_version,storage_ref,bytes,created_at,synced_at)
       values(gen_random_uuid(),${actor.userId},${actor.accountId},'pinta','map','tilemap','Map',now(),1,6,'old/map.gz',120000,now(),now())`
+    await conn.sql`insert into members.creations(id,user_id,account_id,tool,item_id,kind,name,item_updated_at,revision,format_version,storage_ref,bytes,created_at,synced_at)
+      values(gen_random_uuid(),${actor.userId},${actor.accountId},'pinta','sz-pinta-palettes','palette-library','Minhas paletas',now(),1,1,'palettes/library.gz',100,now(),now())`
     const member = {
       itemId: 'map',
       name: 'Map',
@@ -252,6 +254,16 @@ describe.skipIf(!target)('Pinta causal through the full Members HTTP server and 
         })
         expect(old.status).toBe(409)
         expect(await old.json()).toMatchObject({ reason: 'protocol-required' })
+        const palette = await fetch(`${base}/members/creations/pinta/sz-pinta-palettes/download`, {
+          headers: { ...gateway, 'x-auth-user-id': actor.userId },
+        })
+        expect(palette.status).toBe(200)
+        expect(await palette.json()).toMatchObject({ storageKey: 'palettes/library.gz' })
+        const otherProfile = await fetch(
+          `${base}/members/creations/pinta/sz-pinta-palettes/download`,
+          { headers: { ...gateway, 'x-auth-user-id': randomUUID() } },
+        )
+        expect(otherProfile.status).toBe(404)
       })
     }
   }, 60_000)

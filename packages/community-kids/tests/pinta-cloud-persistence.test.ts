@@ -16,6 +16,7 @@ import {
   PINTA_MAX_SCHEMA,
   sanitizePintaAsset,
 } from '@sistemazero/pinta/assets'
+import { createPintaCausalCloud } from '../../member-shell/src/lib/pinta-causal-cloud'
 import type {
   CloudCreationSummary,
   CreationsCloud,
@@ -786,6 +787,54 @@ const paletteSummaryOf = (library: PaletteLibrary, revision = 1): CloudCreationS
 })
 
 describe('biblioteca "Minhas paletas" no espelho da nuvem', () => {
+  test('a galeria causal sincroniza paletas sem ler o inventário individual protegido', async () => {
+    const remoteLibrary = libraryOf([{ id: 'ceu', name: 'Céu', updatedAt: 100, hex: '#87f2ff' }])
+    const remote = new Map([
+      [
+        PALETTE_LIBRARY_ITEM_ID,
+        { json: JSON.stringify(remoteLibrary), summary: paletteSummaryOf(remoteLibrary, 3) },
+      ],
+    ])
+    const local = fakeLocal()
+    local.library.current = libraryOf([
+      { id: 'minha', name: 'Minha paleta', updatedAt: 90, hex: '#112233' },
+    ])
+    const { cloud, uploads } = fakeCloud(remote)
+    const marks = createMemorySyncedMarks()
+    let individualLists = 0
+    const mirrored = createCloudMirroredPintaPersistence({
+      local,
+      cloud: {
+        ...cloud,
+        list: async () => {
+          individualLists += 1
+          throw Error('protocol-required')
+        },
+        pintaCausal: createPintaCausalCloud({
+          viewerId: 'p1',
+          audience: 'kids',
+          reader: 6,
+          signal: new AbortController().signal,
+          fetch: async () => {
+            throw Error('A biblioteca não usa os endpoints do grafo.')
+          },
+        }),
+      },
+      viewerId: 'p1',
+      marks,
+    })
+
+    await mirrored.syncPaletteLibrary?.()
+
+    expect(individualLists).toBe(0)
+    expect(local.library.current?.palettes.map(({ id }) => id).sort()).toEqual(['ceu', 'minha'])
+    expect(marks.revision(PALETTE_LIBRARY_ITEM_ID)).toBe(3)
+    expect(local.rows.size).toBe(0)
+    expect(uploads.has(PALETTE_LIBRARY_ITEM_ID)).toBe(true)
+    expect(await uploads.get(PALETTE_LIBRARY_ITEM_ID)?.produce()).not.toBeNull()
+    mirrored.dispose()
+  })
+
   test('sincroniza apenas a biblioteca ao abrir o Molda, sem baixar desenhos do Pinta', async () => {
     const library = libraryOf([{ id: 'ceu', name: 'Céu', updatedAt: 100, hex: '#87f2ff' }])
     const drawing = sprite('desenho remoto', 200)
@@ -805,7 +854,7 @@ describe('biblioteca "Minhas paletas" no espelho da nuvem', () => {
 
     await mirrored.syncPaletteLibrary?.()
 
-    expect(lists.count).toBe(1)
+    expect(lists.count).toBe(0)
     expect(local.library.current?.palettes.map((palette) => palette.id)).toEqual(['ceu'])
     expect(local.rows.size).toBe(0)
   })

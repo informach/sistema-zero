@@ -1308,6 +1308,12 @@ export function createCloudMirroredPintaPersistence(options: {
   async function resolvePaletteConflict(): Promise<void> {
     if (!saveLibrary) return
     const downloaded = await cloud.download(PALETTE_LIBRARY_ITEM_ID)
+    if (
+      downloaded &&
+      (downloaded.summary.itemId !== PALETTE_LIBRARY_ITEM_ID ||
+        downloaded.summary.kind !== PALETTE_LIBRARY_KIND)
+    )
+      throw Error('Não consegui conferir a biblioteca de paletas da conta.')
     if (downloaded) {
       let remote: PaletteLibrary | null = null
       try {
@@ -1367,7 +1373,18 @@ export function createCloudMirroredPintaPersistence(options: {
       )
     }
     // Nuvem sem o item (ou ilegível): o que há aqui sobe.
-    enqueuePaletteUpload()
+    const library = await loadLibrary?.()
+    if (library && (library.palettes.length > 0 || library.removed.length > 0))
+      enqueuePaletteUpload()
+  }
+
+  let paletteSyncInFlight: Promise<void> | null = null
+  function syncPaletteLibraryDirect(): Promise<void> {
+    if (!cloud.supported || !loadLibrary || !saveLibrary) return Promise.resolve()
+    paletteSyncInFlight ??= resolvePaletteConflict().finally(() => {
+      paletteSyncInFlight = null
+    })
+    return paletteSyncInFlight
   }
 
   function enqueueRemove(id: string): void {
@@ -1451,6 +1468,8 @@ export function createCloudMirroredPintaPersistence(options: {
       })
       knownLegacy = result.mode === 'legacy'
       if (result.mode === 'causal') {
+        // This independent document is deliberately outside the causal map graph.
+        void syncPaletteLibraryDirect().catch(() => {})
         if (result.applied) {
           needsRetainedRecovery = false
           if ((await causalLocal.inspect()).pending.length > 0) wakeCausal()
@@ -1829,12 +1848,9 @@ export function createCloudMirroredPintaPersistence(options: {
       ).values(),
     ],
     async syncPaletteLibrary() {
-      if (!cloud.supported) return
-      const remote = await withTimeout(cloud.list(), LIST_TIMEOUT_MS)
-      if (!remote) return
-      await reconcilePaletteSummary(
-        remote.find((item) => item.itemId === PALETTE_LIBRARY_ITEM_ID) ?? null,
-      )
+      // Palettes keep their independent document; adopted galleries refuse the
+      // old asset inventory even though this item's direct download stays valid.
+      await syncPaletteLibraryDirect()
     },
     // A biblioteca "Minhas paletas": leitura direta; salvar TAMBÉM enfileira a
     // subida do item especial. Os métodos só existem quando o local os tem
