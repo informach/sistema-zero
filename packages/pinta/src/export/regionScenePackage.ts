@@ -219,7 +219,10 @@ export async function buildRegionScenePackage(
   imageOf?: ImageOf,
 ) {
   const world = await prepareRegionScenePackage(captured, imageOf)
-  if (target !== 'tiled' && [...world.maps.values()].some(({ scene }) => scene.version === 5))
+  if (
+    (target === 'pygame' || target === 'godot') &&
+    [...world.maps.values()].some(({ scene }) => scene.version === 5)
+  )
     throw new Error('Este destino ainda precisa de um adaptador de projeção.')
   if (target === 'godot') {
     // The Godot script materializes every set instance; charge that fan-out first.

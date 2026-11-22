@@ -30,15 +30,7 @@ export function buildScenePackage(
   options?: { imageOf?: (asset: PintaAsset) => Promise<string | null> },
 ): Promise<Record<string, Uint8Array | string>>
 export function buildScenePackage(
-  root: RegionTilemapAsset,
-  assets: readonly PintaMemoryAsset[],
-  target: ScenePackageTarget,
-  options?: {
-    imageOf?: (asset: VersionablePintaAsset) => Promise<string | null>
-  },
-): Promise<Record<string, Uint8Array | string>>
-export function buildScenePackage(
-  root: ProjectedTilemapAsset,
+  root: RegionTilemapAsset | ProjectedTilemapAsset,
   assets: readonly ProjectedSceneAsset[],
   target: ScenePackageTarget,
   options?: { imageOf?: (asset: VersionablePintaAsset) => Promise<string | null> },

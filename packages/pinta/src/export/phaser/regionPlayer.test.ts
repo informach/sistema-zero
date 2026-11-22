@@ -1,6 +1,7 @@
 import { expect, test } from 'bun:test'
 import { createHash } from 'node:crypto'
 import { encodePintaRegionLayers } from '@sistemazero/core/creations'
+import type { PintaProjectedSceneWire } from '@sistemazero/core/studio/pinta-projected-scene'
 import type { PintaRegionSceneWire } from '@sistemazero/core/studio/pinta-region-scene'
 import { nativeImageOf } from '../../../scripts/homologacao/generate'
 import { regionVila } from '../../testing/regionVila'
@@ -149,4 +150,22 @@ test('admission sums regional grids across maps and binds image folders independ
   expect(() => readRegionPhaserWorld({ '2': full, '1': impostor }, '2')).toThrow(
     'referência de imagem',
   )
+})
+
+test('a projected square map keeps the same explicitly selected legacy motion', () => {
+  const original = platformMap('legacy')
+  const { sets: _sets, ...root } = original
+  const projection: PintaProjectedSceneWire = {
+    ...root,
+    version: 5,
+    physics: 'legacy',
+    projection: { kind: 'orthogonal', tileWidth: 16, tileHeight: 16 },
+  }
+  const players = [original, projection].map((scene) =>
+    createRegionPhaserPlayer(readRegionPhaserWorld({ [scene.id]: scene }, scene.id)),
+  )
+  for (let frame = 1; frame <= 160; frame++) {
+    for (const player of players) player.advance(0, frame === 65 ? -1 : 0, frame * 16, 16)
+    expect(players[0]!.position).toEqual(players[1]!.position)
+  }
 })

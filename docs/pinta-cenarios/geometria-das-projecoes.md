@@ -65,6 +65,12 @@ isométrica do Tiled é aproximado por 48 vértices. O arquivo guarda a
 geometria analítica entre os metadados do Pinta. Instâncias cujo giro e
 escala produzam cisalhamento na arte são recusadas no destino Tiled.
 
+O Phaser 3.90.0 carrega a Vila isométrica e a Cabana hexagonal no pacote
+local. O Chromium confirmou início em `(-8, -8)`, pixels no canvas e
+mudança de projeção ao passar pela porta com a seta. A mesma prova abre o
+pacote regional ortogonal. Rode
+`bun scripts/homologacao/verify-region-phaser.ts --projected` em `packages/pinta`.
+
 ## Integração
 
 1. Admitir o documento projetado e aplicar crescimento e pintura na mesma

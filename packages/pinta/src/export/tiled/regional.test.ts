@@ -3,15 +3,10 @@ import { spawnSync } from 'node:child_process'
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { basename, dirname, join, resolve } from 'node:path'
-import {
-  createRegionCellReader,
-  makePintaHexCell,
-  PINTA_HEX_EMPTY_CELL,
-} from '@sistemazero/core/creations'
+import { createRegionCellReader } from '@sistemazero/core/creations'
 import type { PintaRegionSceneWire } from '@sistemazero/core/studio/pinta-region-scene'
 import { nativeImageOf } from '../../../scripts/homologacao/generate'
-import { isTileLayer } from '../../core/project'
-import type { ProjectedTilemapAsset } from '../../core/projectedDocument'
+import { projectedVila } from '../../testing/projectedVila'
 import { regionVila } from '../../testing/regionVila'
 import { decodeRegionGalleryBackup } from '../regionBackup'
 import { exportPintaRegionScene } from '../regionScene'
@@ -260,54 +255,8 @@ test.skipIf(!tiledBinary)(
 )
 
 async function projectedPackage() {
-  const { map, cabana, assets } = regionVila()
-  const diamond: ProjectedTilemapAsset = {
-    ...map,
-    schema: 9,
-    growth: 'expandable',
-    physics: 'precise',
-    projection: { kind: 'isometric', tileWidth: 32, tileHeight: 16 },
-  }
-  const hex: ProjectedTilemapAsset = {
-    ...cabana,
-    schema: 9,
-    growth: 'expandable',
-    physics: 'precise',
-    projection: {
-      kind: 'hexagonal',
-      tileWidth: 32,
-      tileHeight: 32,
-      hexSideLength: 16,
-      staggerAxis: 'y',
-      staggerIndex: 'odd',
-    },
-    layers: cabana.layers.map((layer) =>
-      isTileLayer(layer)
-        ? {
-            ...layer,
-            cells: {
-              kind: 'hex-regions',
-              version: 1,
-              side: 32,
-              chunks: layer.cells.chunks.map((chunk) => ({
-                ...chunk,
-                cells: Uint32Array.from(chunk.cells, (value) =>
-                  value < 0
-                    ? PINTA_HEX_EMPTY_CELL
-                    : makePintaHexCell(value, value === 3 ? { rotation: 60, flipY: true } : {})!,
-                ),
-              })),
-            },
-          }
-        : layer,
-    ),
-  }
-  return buildScenePackage(
-    diamond,
-    [...assets.filter((asset) => asset.id !== cabana.id), hex],
-    'tiled',
-    { imageOf: nativeImageOf },
-  )
+  const { map, assets } = projectedVila()
+  return buildScenePackage(map, assets, 'tiled', { imageOf: nativeImageOf })
 }
 
 test('projected Tiled packages use native orientations and preserve exact physical metadata', async () => {

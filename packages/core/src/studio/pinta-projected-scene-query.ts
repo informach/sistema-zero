@@ -3,7 +3,8 @@ import type { PintaMapProjection } from '../creations/pinta-map-projection'
 import { createPintaProjectionGeometry } from '../creations/pinta-projection-geometry'
 import { createHexRegionCellReader, createRegionCellReader } from '../creations/pinta-region-reader'
 import type { PintaHexRegionCells, PintaRegionCells } from '../creations/pinta-regions'
-import type { PintaProjectedScene } from './pinta-projected-scene'
+import type { PintaProjectedScene, PintaProjectedSceneMap } from './pinta-projected-scene'
+import type { PintaRegionSceneMap } from './pinta-region-scene'
 import {
   type PintaProjectedCollisionView,
   type SceneBox,
@@ -11,7 +12,33 @@ import {
   sceneMoveBox,
   scenePlatformLanding,
 } from './pinta-scene-geometry'
+import { createRegionSceneQueries } from './pinta-scene-query'
 import { createSceneObjectIterator, sceneSpawn } from './pinta-scene-runtime'
+
+/** The projected reader admits legacy physics only on its exact square lattice. */
+function legacyMapGrid(map: PintaProjectedSceneMap): PintaRegionSceneMap {
+  const layers: PintaRegionSceneMap['layers'] = []
+  for (const layer of map.layers) {
+    if (layer.kind !== 'tiles') layers.push(layer)
+    else {
+      if (layer.cells.kind !== 'regions')
+        throw new Error('A física legada exige células quadradas.')
+      layers.push({ ...layer, cells: layer.cells })
+    }
+  }
+  return { id: map.id, cols: map.cols, rows: map.rows, origin: map.origin, layers }
+}
+
+export function createProjectedLegacyCharacterMover(scene: PintaProjectedScene) {
+  if (scene.physics !== 'legacy') throw new Error('A cena usa física precisa.')
+  const { sets, ...root } = scene
+  return createRegionSceneQueries({
+    ...root,
+    ...legacyMapGrid(scene),
+    version: 4,
+    ...(sets ? { sets: sets.map(legacyMapGrid) } : {}),
+  }).moveCharacter
+}
 
 /** Queries over an admitted Scene 5. Indexes belong to the snapshot and its caller. */
 export function createProjectedSceneQueries(scene: PintaProjectedScene) {

@@ -27,13 +27,16 @@ try {
     layers: window.pintaGame.player.scene.layers.length,
     front: Array.from(window.pintaGame.surface.context.getImageData(320, 240, 1, 1).data),
     friction: window.pintaGame.maps.mapTileProperty('mapa', 'vila-pecas', 0, 'atrito'),
+    projection: window.pintaGame.player.scene.projection?.kind ?? null,
   }))
   assert.equal(before.version, '3.90.0')
   assert.deepEqual(before.origin, expected.origin)
   assert.deepEqual(before.position, { x: -8, y: -8 })
+  assert.equal(before.projection, expected.projection)
   assert.equal(before.layers, 18)
   assert.equal(before.friction, 0.8)
-  assert.deepEqual(before.front, [201, 181, 122, 255])
+  // The exact orthogonal pixels belong to the square Vila; a projected Vila draws elsewhere.
+  if (!expected.projection) assert.deepEqual(before.front, [201, 181, 122, 255])
   await page.keyboard.down('ArrowRight')
   try {
     await page.waitForFunction((id) => window.pintaGame.player.scene.id === id, expected.linked)
@@ -48,14 +51,29 @@ try {
   } finally {
     await page.keyboard.up('ArrowRight')
   }
-  const cabinPixel = await page.evaluate(() => {
-    const { player, surface } = window.pintaGame
-    const { x, y } = player.position
-    return Array.from(
-      surface.context.getImageData(Math.round(330 - x), Math.round(250 - y), 1, 1).data,
+  const destinationProjection = await page.evaluate(
+    () => window.pintaGame.player.scene.projection?.kind ?? null,
+  )
+  assert.equal(destinationProjection, expected.destinationProjection)
+  let cabinPixel = null
+  let painted = null
+  if (expected.projection) {
+    painted = await page.evaluate(() =>
+      window.pintaGame.surface.context
+        .getImageData(0, 0, 640, 480)
+        .data.some((value, index) => index % 4 === 0 && value !== 232),
     )
-  })
-  assert.deepEqual(cabinPixel, [161, 135, 82, 255])
+    assert.equal(painted, true)
+  } else {
+    cabinPixel = await page.evaluate(() => {
+      const { player, surface } = window.pintaGame
+      const { x, y } = player.position
+      return Array.from(
+        surface.context.getImageData(Math.round(330 - x), Math.round(250 - y), 1, 1).data,
+      )
+    })
+    assert.deepEqual(cabinPixel, [161, 135, 82, 255])
+  }
   await page.goto(new URL('edit/', url).href, { waitUntil: 'domcontentloaded' })
   await page.waitForFunction(
     () => window.pintaGame?.surface.context.getImageData(320, 240, 1, 1).data[3] === 255,
@@ -63,7 +81,7 @@ try {
   const newFront = await page.evaluate(() =>
     Array.from(window.pintaGame.surface.context.getImageData(320, 240, 1, 1).data),
   )
-  assert.deepEqual(newFront, [216, 148, 105, 255])
+  if (!expected.projection) assert.deepEqual(newFront, [216, 148, 105, 255])
   for (const [path, error] of [
     ['bad/', 'PNG'],
     ['bad-raster/', 'pixels'],
@@ -88,9 +106,12 @@ try {
       browser: browser.version(),
       phaser: before.version,
       signedStart: before.position,
+      projection: before.projection,
+      destinationProjection,
       door: true,
       front: before.front,
       cabin: cabinPixel,
+      canvas: painted,
       updated: newFront,
       corruptLinkedImage: ['header', 'CRC valid but invalid raster'],
       mainBytes: expected.mainBytes,

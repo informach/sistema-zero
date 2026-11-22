@@ -2,30 +2,37 @@ import { fileURLToPath } from 'node:url'
 import { deflateSync } from 'node:zlib'
 import { pngCrc32, readPngDimensions } from '@sistemazero/core/studio/pinta-png-binary'
 import { PINTA_REGION_IMAGE_PNG_LIMITS } from '@sistemazero/core/studio/pinta-region-image-limits'
-import { isObjectLayer, isTileLayer } from '../../src/core/project'
+import { isTileLayer, type RegionTilemapAsset } from '../../src/core/project'
+import type { ProjectedTilemapAsset } from '../../src/core/projectedDocument'
 import { buildScenePackage } from '../../src/export/scenePackage'
+import { projectedVila } from '../../src/testing/projectedVila'
 import { regionVila } from '../../src/testing/regionVila'
 import { setCell } from '../../src/tiles/tilemapOps'
 import { nativeImageOf } from './generate'
 
-const { map, cabana, assets } = regionVila()
-const signedMap = {
-  ...map,
-  layers: map.layers.map((layer) =>
-    isObjectLayer(layer)
-      ? {
-          ...layer,
-          objects: layer.objects.map((object) =>
-            object.role === 'start'
-              ? { ...object, x: -8, y: -8 }
-              : object.role === 'door'
-                ? { ...object, x: 8, y: -16 }
-                : object,
-          ),
-        }
-      : layer,
-  ),
+const projected = process.argv.includes('--projected')
+const { map, cabana, assets } = projected ? projectedVila() : regionVila()
+
+function startNearDoor<Map extends RegionTilemapAsset | ProjectedTilemapAsset>(map: Map): Map {
+  return {
+    ...map,
+    layers: map.layers.map((layer) =>
+      layer.kind === 'objects'
+        ? {
+            ...layer,
+            objects: layer.objects.map((object) =>
+              object.role === 'start'
+                ? { ...object, x: -8, y: -8 }
+                : object.role === 'door'
+                  ? { ...object, x: 8, y: -16 }
+                  : object,
+            ),
+          }
+        : layer,
+    ),
+  }
 }
+const signedMap = startNearDoor(map)
 const front = signedMap.layers.find((layer) => isTileLayer(layer) && layer.front)
 if (!front) throw new Error('Camada da frente ausente.')
 const files = await buildScenePackage(setCell(signedMap, front.id, -1, -1, 16), assets, 'phaser', {
@@ -95,6 +102,8 @@ try {
       JSON.stringify({
         origin: signedMap.origin,
         linked: cabana.id,
+        projection: projected ? 'isometric' : null,
+        destinationProjection: projected ? 'hexagonal' : null,
         mainBytes: Buffer.byteLength(String(files['main.js'])),
       }),
     ],

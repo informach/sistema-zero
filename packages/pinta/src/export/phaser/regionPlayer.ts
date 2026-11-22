@@ -6,7 +6,14 @@ import {
 } from '@sistemazero/core/studio/pinta-region-image-limits'
 import { checkAdmittedPintaPngPixels } from '@sistemazero/core/studio/pinta-region-png-pixels'
 import {
-  type PintaRegionScene,
+  type PintaProjectedScenePlan,
+  preparePintaProjectedScene,
+} from '@sistemazero/core/studio/pinta-projected-scene'
+import {
+  createProjectedLegacyCharacterMover,
+  createProjectedSceneQueries,
+} from '@sistemazero/core/studio/pinta-projected-scene-query'
+import {
   type PintaRegionScenePlan,
   preparePintaRegionScene,
 } from '@sistemazero/core/studio/pinta-region-scene'
@@ -24,7 +31,11 @@ const HEIGHT = 480
 const SPEED = 120
 const GRAVITY = 500
 const JUMP_SPEED = 250
-type Query = ReturnType<typeof createRegionSceneQueries>
+type Query =
+  | ReturnType<typeof createRegionSceneQueries>
+  | (ReturnType<typeof createProjectedSceneQueries> & {
+      moveCharacter?: ReturnType<typeof createProjectedLegacyCharacterMover>
+    })
 type Point = { x: number; y: number }
 type Key = { isDown: boolean }
 type Direction = 'left' | 'right' | 'up' | 'down'
@@ -62,7 +73,7 @@ export function readRegionPhaserWorld(raw: unknown, rootId: unknown) {
   const entries: [string, unknown][] = Object.entries(raw)
   if (entries.length > PINTA_IMAGE_WORLD_LIMITS.maps || !Object.hasOwn(raw, rootId))
     throw new Error('O pacote ultrapassa o limite de mapas ou perdeu o mapa inicial.')
-  const plans = new Map<string, PintaRegionScenePlan>()
+  const plans = new Map<string, PintaRegionScenePlan | PintaProjectedScenePlan>()
   const folders = new Set<string>()
   let { indexBytes, metadataBytes } = PINTA_REGION_WORLD_BUDGET
   const encoder = new TextEncoder()
@@ -94,7 +105,10 @@ export function readRegionPhaserWorld(raw: unknown, rootId: unknown) {
     const json = JSON.stringify(source)
     metadataBytes -= encoder.encode(json).byteLength
     if (metadataBytes < 0) throw new Error('Os dados dos cenários passaram do limite.')
-    const plan = preparePintaRegionScene(json, indexBytes)
+    const plan =
+      'version' in source && source.version === 5
+        ? preparePintaProjectedScene(json, indexBytes)
+        : preparePintaRegionScene(json, indexBytes)
     if (plan?.id !== id) throw new Error('Um dos mapas regionais tem dados inválidos.')
     indexBytes -= plan.indexBytes
     plans.set(id, plan)
@@ -103,7 +117,16 @@ export function readRegionPhaserWorld(raw: unknown, rootId: unknown) {
   for (const [id, plan] of plans) {
     const scene = plan.decode()
     if (!scene) throw new Error('As regiões do mapa são inválidas.')
-    maps.set(id, createRegionSceneQueries(scene))
+    maps.set(
+      id,
+      scene.version === 5
+        ? {
+            ...createProjectedSceneQueries(scene),
+            moveCharacter:
+              scene.physics === 'legacy' ? createProjectedLegacyCharacterMover(scene) : undefined,
+          }
+        : createRegionSceneQueries(scene),
+    )
   }
   return { rootId, maps }
 }
@@ -116,24 +139,27 @@ function findMap(maps: ReadonlyMap<string, Query>, reference: unknown): Query | 
   return names.length === 1 ? names[0] : undefined
 }
 
-function cameraOf(scene: PintaRegionScene, position: Point) {
-  const x = scene.origin.col * scene.tileSize
-  const y = scene.origin.row * scene.tileSize
+function areaOf(scene: Query['context']) {
+  return scene.version === 5
+    ? scene.worldBounds
+    : {
+        x: scene.origin.col * scene.tileSize,
+        y: scene.origin.row * scene.tileSize,
+        width: scene.cols * scene.tileSize,
+        height: scene.rows * scene.tileSize,
+      }
+}
+function cameraOf(scene: Query['context'], position: Point) {
+  const { x, y, width, height } = areaOf(scene)
   return {
-    x: Math.max(x, Math.min(position.x - WIDTH / 2, x + scene.cols * scene.tileSize - WIDTH)),
-    y: Math.max(y, Math.min(position.y - HEIGHT / 2, y + scene.rows * scene.tileSize - HEIGHT)),
+    x: Math.max(x, Math.min(position.x - WIDTH / 2, x + width - WIDTH)),
+    y: Math.max(y, Math.min(position.y - HEIGHT / 2, y + height - HEIGHT)),
   }
 }
 
 function usesPlatforms(query: Query): boolean {
   const scene = query.context
-  const bounds = {
-    x: scene.origin.col * scene.tileSize,
-    y: scene.origin.row * scene.tileSize,
-    width: scene.cols * scene.tileSize,
-    height: scene.rows * scene.tileSize,
-  }
-  return sceneVisitColliders(scene, bounds, 'platform', () => true)
+  return sceneVisitColliders(scene, areaOf(scene), 'platform', () => true)
 }
 
 export function createRegionPhaserPlayer(world: ReturnType<typeof readRegionPhaserWorld>) {
@@ -221,6 +247,7 @@ export function createRegionPhaserPlayer(world: ReturnType<typeof readRegionPhas
       const previous = boxAt(position)
       let next: ReturnType<typeof boxAt>
       if (query.context.physics === 'legacy') {
+        if (!query.moveCharacter) throw new Error('O mapa de física legada perdeu sua grade.')
         next = boxAt(query.moveCharacter(position, dx, dy, radius))
       } else {
         next = query.moveBox(previous, dx, dy)
@@ -258,7 +285,13 @@ export function createRegionPhaserPlayer(world: ReturnType<typeof readRegionPhas
     ) {
       const scene = query.context
       const camera = cameraOf(scene, position)
-      const viewport = { ...camera, width: WIDTH, height: HEIGHT, regionCells: scene.regionCells }
+      const viewport = {
+        ...camera,
+        width: WIDTH,
+        height: HEIGHT,
+        regionCells: scene.regionCells,
+        projectedCells: scene.version === 5 ? scene.regionCells : undefined,
+      }
       const elapsed = Math.max(0, now - started)
       ctx.fillStyle = '#e8edf4'
       ctx.fillRect(0, 0, WIDTH, HEIGHT)
