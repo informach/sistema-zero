@@ -153,6 +153,18 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    conjunto. A fábrica pública, galeria/host e transporte não selecionam 8;
    inventário parcial de nuvem, adaptadores e rollout seguem pendentes. Não
    fechar o item por essa preparação interna nem anunciar SLA de autosave/heap.
+   Antes da fábrica regional, a revisão corrigiu a classificação não atômica
+   do caminho público de sprites: consumidor futuro surgido depois da consulta
+   de chaves agora força recuperação na própria transação. O inventário não
+   requisita chunks antes da validação pelo codec; o leitor antigo passou de
+   duas buscas de payload futuro para zero. Medições especulativas de quota
+   também foram separadas das confirmadas, inclusive durante warmup/falha com
+   timestamp igual. Provas em `qa/gravacao-atomica-de-sprites-2026-11-22/`:
+   suíte 2.713, 90 focados e 43 ensaios Chromium; galeria de 500 sprites mantém
+   dez leituras para dez autosaves. Isso protege o código atualizado, sem
+   promover 8 ou resolver o inventário parcial da nuvem. Próximo: incorporar
+   a staging observada `69ced6cb3`, revisar seus pontos do Estúdio e prosseguir
+   à fábrica/host, transporte e adaptadores.
 
 Na promoção do store, conferir também os orçamentos globais de metadados e JSON
 antes do histórico/autosave. A soma de objetos/propriedades em várias camadas

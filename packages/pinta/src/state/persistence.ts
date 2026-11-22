@@ -11,7 +11,7 @@
  * para irmãos no mesmo navegador não compartilharem a galeria. Vazio = store
  * default `sistema-zero-pinta`.
  */
-import { createStore, get, getMany, keys, setMany, update } from 'idb-keyval'
+import { createStore, get, getMany, keys, update } from 'idb-keyval'
 import { recordPintaLocalOrigin } from '../core/localAssetOrigin'
 import { withMapResourceVersions } from '../core/mapResourceVersions'
 import type { PaletteLibrary } from '../core/paletteLibrary'
@@ -91,7 +91,7 @@ function getStoreHandle(explicit?: string): StoreHandle {
 }
 
 // Uma cadeia FIFO por BANCO. Além de impedir interleaving entre save/rename/
-// delete, permite gravar asset + mapas ligados numa única transação setMany.
+// delete, permite gravar asset + mapas ligados numa única transação IndexedDB.
 const writeChains = new WeakMap<StoreHandle, Promise<void>>()
 const backupSizeCaches = new WeakMap<StoreHandle, GalleryBackupSizeCache>()
 
@@ -448,6 +448,28 @@ export function createPintaPersistence(options: { namespace?: string } = {}): Pi
     accept(snapshot, undefined, ids)
     return snapshot
   }
+  const finishProtectedWrite = (
+    snapshot: LocalSnapshot & { forks: Map<string, PintaAsset> },
+    assets: readonly PintaAsset[],
+    changed: readonly PintaAsset[],
+  ) => {
+    // A fork may leave the submitted ID unchanged; seed from committed authority,
+    // never from the speculative measurement of the attempted edit.
+    backupSizeCache.invalidate(changed.map((asset) => asset.id))
+    if (!snapshot.forks.size)
+      for (const asset of assets)
+        recordPintaLocalOrigin(asset, dbName, snapshot.documents.get(asset.id)?.revision ?? null)
+    accept(
+      snapshot,
+      snapshot.forks.size ? snapshot.recovered.map((a) => a.id) : changed.map((a) => a.id),
+    )
+    notifyOtherTabs(
+      storeHandle,
+      dbName,
+      [...changed, ...snapshot.recovered].map((a) => a.id),
+    )
+    if (snapshot.forks.size) throw new PintaLocalConflictError(snapshot.forks)
+  }
   const persistAssetsForStore = async (assets: readonly PintaAsset[]): Promise<void> => {
     if (assets.length === 0) return
     // O carimbo `schema` é recalculado a cada gravação. O editor muda o mapa em memória sem
@@ -455,7 +477,7 @@ export function createPintaPersistence(options: { namespace?: string } = {}): Pi
     // registro em vez de abrir, cortar o que não conhece e salvar por cima.
     const unique = new Map(assets.map((asset) => [asset.id, withPintaSchemaStamp(asset)]))
     const pairs = [...unique.values()].map(
-      (asset) => [assetKey(asset.id), asset] as [IDBValidKey, PintaAsset],
+      (asset) => [assetKey(asset.id), asset] as [string, PintaAsset],
     )
     const changed = [...unique.values()]
     // A mixed gallery budgets canonical maps, not legacy mirrors. The incremental
@@ -476,23 +498,7 @@ export function createPintaPersistence(options: { namespace?: string } = {}): Pi
         const snapshot = await withAssetTransaction(storeHandle, (records) =>
           writeLocalRecords(records, changed, observed, dbName),
         )
-        if (!snapshot.forks.size)
-          for (const asset of assets)
-            recordPintaLocalOrigin(
-              asset,
-              dbName,
-              snapshot.documents.get(asset.id)?.revision ?? null,
-            )
-        accept(
-          snapshot,
-          snapshot.forks.size ? snapshot.recovered.map((a) => a.id) : changed.map((a) => a.id),
-        )
-        notifyOtherTabs(
-          storeHandle,
-          dbName,
-          [...changed, ...snapshot.recovered].map((a) => a.id),
-        )
-        if (snapshot.forks.size) throw new PintaLocalConflictError(snapshot.forks)
+        finishProtectedWrite(snapshot, assets, changed)
       })
       return
     }
@@ -538,7 +544,38 @@ export function createPintaPersistence(options: { namespace?: string } = {}): Pi
             throw new PintaStorageBudgetError(projectedBytes)
           }
         }
-        await perfSpanAsync('pinta:persist:write', () => setMany(pairs, storeHandle))
+        let needsAuthority = false
+        const protectedSnapshot = await perfSpanAsync('pinta:persist:write', () =>
+          withAssetTransaction(
+            storeHandle,
+            (records) => {
+              if (needsAuthority) return writeLocalRecords(records, changed, observed, dbName)
+              for (const [key, asset] of pairs) records.set(key, asset)
+              return null
+            },
+            () => (needsAuthority ? null : pairs.map(([key]) => key)),
+            undefined,
+            (allKeys) => {
+              // Same readwrite transaction as the eventual put: another tab cannot
+              // introduce an opaque map after this classification and before the write.
+              needsAuthority = allKeys.some(
+                (key) =>
+                  key.startsWith(LOCAL_ASSET_PREFIX) ||
+                  (key.startsWith(ASSET_KEY_PREFIX) &&
+                    !backupSizeCache.has(key.slice(ASSET_KEY_PREFIX.length))),
+              )
+            },
+          ),
+        ).catch((error) => {
+          // A failed transaction never authenticates the candidate's measured bytes,
+          // even when a caller reused the confirmed timestamp.
+          backupSizeCache.invalidate(changed.map((asset) => asset.id))
+          throw error
+        })
+        if (protectedSnapshot) {
+          finishProtectedWrite(protectedSnapshot, assets, changed)
+          return
+        }
         // Só depois do write resolver: uma transação recusada deixa o disco e o inventário como
         // estavam.
         backupSizeCache.commit(changed)

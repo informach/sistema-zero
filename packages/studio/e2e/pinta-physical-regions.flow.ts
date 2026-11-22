@@ -192,6 +192,7 @@ test('the public reader 7 refuses physical 3 and keeps its old editing RAM in a 
     const p = window.pinta026
     window.client026 = p.createPintaPersistence({ namespace })
     const map = p.createTilemapAsset({ name: 'vila', tilesetId: 'ground', cols: 2, rows: 2 })
+    map.layers[0]!.cells![0] = 0
     await window.client026.persistAsset(map)
     window.ram026 = (await window.client026.loadAssetById(map.id))!
     return map.id
@@ -219,7 +220,14 @@ test('the public reader 7 refuses physical 3 and keeps its old editing RAM in a 
           p.localRegionStorageCodec,
         )
         const reader = window.client026
+        let futureChunkReads = 0
+        const originalGet = IDBObjectStore.prototype.get
+        IDBObjectStore.prototype.get = function (...args) {
+          if (String(args[0]).startsWith('pinta:local:chunk:')) futureChunkReads++
+          return originalGet.apply(this, args)
+        }
         const refused = (await reader.loadAssetById(id)) === null
+        await reader.listAllAssets()
         let copy = ''
         try {
           await reader.persistAsset({ ...window.ram026, name: 'edicao7' })
@@ -227,6 +235,7 @@ test('the public reader 7 refuses physical 3 and keeps its old editing RAM in a 
           if (!(error instanceof window.pinta026.PintaLocalConflictError)) throw error
           copy = error.forks.get(id)!.id
         }
+        IDBObjectStore.prototype.get = originalGet
         const authority = await p.withAssetTransaction(
           store,
           (records) => records.get(key),
@@ -236,6 +245,7 @@ test('the public reader 7 refuses physical 3 and keeps its old editing RAM in a 
         const independent = window.pinta026.createPintaPersistence({ namespace })
         return {
           refused,
+          futureChunkReads,
           copySaved: (await independent.loadAssetById(copy))?.name,
           authority:
             authority && typeof authority === 'object' && 'revision' in authority
@@ -245,7 +255,12 @@ test('the public reader 7 refuses physical 3 and keeps its old editing RAM in a 
       },
       { namespace, id },
     ),
-  ).toEqual({ refused: true, copySaved: 'edicao7-copia', authority: 'region8' })
+  ).toEqual({
+    refused: true,
+    futureChunkReads: 0,
+    copySaved: 'edicao7-copia',
+    authority: 'region8',
+  })
 })
 
 test('IndexedDB keeps the full 32-layer 4-MiB native budget and writes one chunk for one edit', async ({

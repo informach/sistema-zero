@@ -1,5 +1,11 @@
 import { beforeEach, expect, test } from 'bun:test'
-import { createBitmap, createTilemapAsset, createTilesetAsset, isTileLayer } from '../core/project'
+import {
+  createBitmap,
+  createPixelSpriteAsset,
+  createTilemapAsset,
+  createTilesetAsset,
+  isTileLayer,
+} from '../core/project'
 import { clearIdbMock, idbMockDb, setIdbWriteGuard } from '../testing/idbMock'
 import { setCell } from '../tiles/tilemapOps'
 import { decodeLocalChunkDocument, encodeLocalChunkDocument } from './localChunkStorage'
@@ -10,6 +16,44 @@ beforeEach(clearIdbMock)
 const namespace = 'future-recovery',
   db = () => idbMockDb(`sistema-zero-pinta-${namespace}`)
 const client = () => createPintaPersistence({ namespace })
+
+for (const transport of ['document', 'mirror'] as const)
+  test(`a new opaque ${transport} consumer between the keys check and a sprite save cannot bypass recovery`, async () => {
+    const local = client(),
+      source = createPixelSpriteAsset({ name: 'tree', frameSize: 16 })
+    await local.persistAsset(source)
+    const next = {
+      ...source,
+      animations: source.animations.map((animation) => ({ ...animation, id: 'another-animation' })),
+    }
+    // persistAsset has captured the old keys and yielded before its eventual write.
+    const pending = local.persistAsset(next)
+    const opaque =
+      transport === 'document'
+        ? {
+            version: 3,
+            capability: 8,
+            revision: 'future',
+            asset: {
+              id: 'future-map',
+              art: { assetId: source.id, animationId: source.animations[0]!.id },
+            },
+          }
+        : {
+            id: 'future-map',
+            kind: 'tilemap',
+            schema: 8,
+            art: { assetId: source.id, animationId: source.animations[0]!.id },
+          }
+    const opaqueKey =
+      transport === 'document' ? `${LOCAL_ASSET_PREFIX}future-map` : 'pinta:asset:future-map'
+    db().set(opaqueKey, opaque)
+    await expect(pending).rejects.toBeInstanceOf(PintaLocalConflictError)
+    expect(structuredClone(await client().loadAssetById(source.id))).toEqual(
+      structuredClone(source),
+    )
+    expect(db().get(opaqueKey)).toEqual(opaque)
+  })
 
 test('a revision that became unreadable preserves stale RAM in an offline fork', async () => {
   const local = client(),

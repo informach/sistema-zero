@@ -156,6 +156,9 @@ interface CachedAssetBytes {
   updatedAt: number
   bytes: number
 }
+interface ProjectedAssetBytes extends CachedAssetBytes {
+  id: string
+}
 
 /** Um asset do inventário: bytes medidos, ou PENDENTES (o asset fica guardado até medir). */
 interface InventoryEntry {
@@ -180,6 +183,9 @@ interface InventoryEntry {
 export class GalleryBackupSizeCache {
   readonly #assets = new Map<string, CachedAssetBytes>()
   readonly #inventory = new Map<string, InventoryEntry>()
+  // Candidate summaries hold numbers/IDs only; no pending art roots enter confirmed warmup.
+  readonly #projections = new WeakMap<PintaAsset, ProjectedAssetBytes>()
+  readonly #pending = new Map<string, ProjectedAssetBytes>()
   #seeded = false
 
   byteLength(assets: readonly PintaAsset[], refreshIds: ReadonlySet<string> = new Set()): number {
@@ -190,12 +196,20 @@ export class GalleryBackupSizeCache {
   }
 
   invalidate(ids: Iterable<string>): void {
-    for (const id of ids) this.#assets.delete(id)
+    for (const id of ids) {
+      this.#assets.delete(id)
+      this.#pending.delete(id)
+    }
   }
 
   /** O inventário já representa a galeria? (`seed` já rodou.) */
   get seeded(): boolean {
     return this.#seeded
+  }
+
+  /** Membership only: unknown IDs require an authoritative read before a mutation. */
+  has(id: string): boolean {
+    return this.#inventory.has(id)
   }
 
   /** Quantos itens do inventário ainda não foram medidos. */
@@ -254,7 +268,15 @@ export class GalleryBackupSizeCache {
     }
     for (const asset of changed) {
       count += 1
-      bytes += this.#measure(asset, true)
+      // A speculative size must never be reused by idle warmup as confirmed data.
+      const projection = {
+        id: asset.id,
+        updatedAt: asset.updatedAt,
+        bytes: utf8ByteLength(assetJsonFragment(asset)),
+      }
+      this.#projections.set(asset, projection)
+      this.#pending.set(asset.id, projection)
+      bytes += projection.bytes
     }
     if (count === 0) return EMPTY_JSON_BYTES
     return NON_EMPTY_FIXED_BYTES + ASSET_SEPARATOR_BYTES * (count - 1) + bytes
@@ -263,7 +285,16 @@ export class GalleryBackupSizeCache {
   /** A gravação de `changed` deu certo: entram no inventário com os bytes já medidos. */
   commit(changed: readonly PintaAsset[]): void {
     for (const asset of changed) {
-      const bytes = this.#measure(asset, false)
+      const projection = this.#projections.get(asset)
+      const bytes =
+        projection?.id === asset.id &&
+        projection.updatedAt === asset.updatedAt &&
+        this.#pending.get(asset.id) === projection
+          ? projection.bytes
+          : this.#measure(asset, true)
+      this.#projections.delete(asset)
+      this.#pending.delete(asset.id)
+      this.#assets.set(asset.id, { updatedAt: asset.updatedAt, bytes })
       this.#inventory.set(asset.id, { updatedAt: asset.updatedAt, bytes, asset: null })
     }
   }
@@ -271,6 +302,7 @@ export class GalleryBackupSizeCache {
   remove(id: string): void {
     this.#inventory.delete(id)
     this.#assets.delete(id)
+    this.#pending.delete(id)
   }
 
   /**

@@ -124,12 +124,22 @@ mock.module('../state/assetAuthorityDb', () => ({
     store: { name?: string },
     plan: (records: Map<string, unknown>) => T,
     select?: (records: ReadonlyMap<string, unknown>) => readonly string[] | null,
+    _codec?: unknown,
+    inspectKeys?: (keys: readonly string[]) => void,
   ): Promise<T> => {
     const kv = resolveKV(store)
     return serialized(kv, async () => {
       stats.atomic++
       const records = new Map<string, unknown>()
       const source = structuredClone(kv)
+      inspectKeys?.(
+        [...source.keys()].filter(
+          (key): key is string =>
+            typeof key === 'string' &&
+            (key.startsWith('pinta:asset:') || key.startsWith('pinta:local:')) &&
+            !key.startsWith('pinta:local:chunk:'),
+        ),
+      )
       const visited = new Set<string>()
       while (true) {
         const keys =
@@ -137,7 +147,8 @@ mock.module('../state/assetAuthorityDb', () => ({
           [...source.keys()].filter(
             (key): key is string =>
               typeof key === 'string' &&
-              (key.startsWith('pinta:asset:') || key.startsWith('pinta:local:')),
+              (key.startsWith('pinta:asset:') || key.startsWith('pinta:local:')) &&
+              !key.startsWith('pinta:local:chunk:'),
           )
         const pending = keys.filter((key) => !visited.has(key))
         if (!pending.length) break

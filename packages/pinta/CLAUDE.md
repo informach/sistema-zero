@@ -267,6 +267,14 @@ linhagem, nunca a última listagem. Falha/quota aborta tudo. Não comparar por m
 ou horário, nem remover checkpoint para caber. Captura e exportação usam a mesma autoridade.
 Saves protegidos têm custo O(galeria); só sprites mantêm o inventário incremental.
 
+O caminho incremental de sprites também classifica as chaves na própria
+transação `readwrite` do put. Documento protegido ou ID desconhecido do
+inventário força a autoridade completa, mesmo que tenha surgido depois da
+consulta anterior. O IO enumera cabeçalhos; chunks só são lidos por referências
+admitidas pelo codec. O cache da quota separa projeções e confirmações, para
+warmup/abort não autenticar bytes não gravados com timestamp igual. Provas e
+contadores em `qa/gravacao-atomica-de-sprites-2026-11-22/`.
+
 Leitores atualizados recuperam também RAM compatível quando a autoridade passa
 a um formato ilegível: lote inteiro vira cópias religadas, com originais intactos.
 Um consumidor futuro sob outro ID também impede alterar/apagar suas possíveis

@@ -1,5 +1,6 @@
 import type { UseStore } from 'idb-keyval'
 import {
+  LOCAL_CHUNK_PREFIX,
   type LocalStorageCodec,
   localDenseStorageCodec,
   planLocalStorageWrites,
@@ -15,6 +16,7 @@ export function withAssetTransaction<T>(
   plan: (records: Map<string, unknown>) => T,
   select?: AssetRecordSelection,
   codec: LocalStorageCodec = localDenseStorageCodec,
+  inspectKeys?: (keys: readonly string[]) => void,
 ): Promise<T> {
   return openStore(
     'readwrite',
@@ -47,12 +49,16 @@ export function withAssetTransaction<T>(
           }
         }
         const step = () => {
+          if (inspectKeys && fullKeys === null) {
+            readInventory()
+            return
+          }
           let wanted: readonly string[] | null
           try {
             const chunks = [...records].flatMap(([key, value]) =>
               decoded.has(key) ? [] : codec.keys(key, value),
             )
-            const missing = chunks.filter((key) => !visited.has(key))
+            const missing = [...new Set(chunks)].filter((key) => !visited.has(key))
             if (missing.length) {
               read(missing)
               return
@@ -68,15 +74,7 @@ export function withAssetTransaction<T>(
             return
           }
           if (wanted === null && !fullKeys) {
-            const keys = store.getAllKeys()
-            keys.onsuccess = () => {
-              fullKeys = keys.result.filter(
-                (key): key is string =>
-                  typeof key === 'string' &&
-                  (key.startsWith('pinta:asset:') || key.startsWith('pinta:local:')),
-              )
-              step()
-            }
+            readInventory()
             return
           }
           const remaining = (wanted ?? fullKeys ?? []).filter((key) => !visited.has(key))
@@ -85,6 +83,27 @@ export function withAssetTransaction<T>(
             return
           }
           read(remaining)
+        }
+        const readInventory = () => {
+          try {
+            const keys = store.getAllKeys()
+            keys.onsuccess = () => {
+              try {
+                fullKeys = keys.result.filter(
+                  (key): key is string =>
+                    typeof key === 'string' &&
+                    (key.startsWith('pinta:asset:') || key.startsWith('pinta:local:')) &&
+                    !key.startsWith(LOCAL_CHUNK_PREFIX),
+                )
+                inspectKeys?.(fullKeys)
+                step()
+              } catch (error) {
+                abort(error)
+              }
+            }
+          } catch (error) {
+            abort(error)
+          }
         }
         const read = (keys: readonly string[]) => {
           let pending = keys.length

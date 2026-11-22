@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import type { MapSetAsset, TilemapAsset } from '../core/project'
-import { createPixelSpriteAsset, createVectorBackgroundAsset } from '../core/project'
+import {
+  createPixelSpriteAsset,
+  createVectorBackgroundAsset,
+  withPintaSchemaStamp,
+} from '../core/project'
+import { galleryBackupByteLength, MAX_BACKUP_FILE_BYTES } from '../export/projectJson'
 import {
   clearIdbMock,
   idbMockDb,
@@ -69,6 +74,37 @@ describe('persistência por perfil', () => {
     return { ...asset, shapes }
   }
 
+  it('falha de disco não reaproveita bytes da edição recusada ao reabrir com o mesmo timestamp', async () => {
+    const local = createPintaPersistence({ namespace: 'sprite-failed-cache' })
+    const sprite = createPixelSpriteAsset({ name: 'sprite', frameSize: 16 })
+    await local.persistAsset(sprite)
+    const edited = structuredClone(sprite)
+    const data = edited.animations[0]!.frames[0]![0]!.data
+    for (let index = 0; index < data.length; index++) data[index] = index % 16
+    setIdbWriteGuard(() => {
+      throw Error('falha-cache-qa')
+    })
+    try {
+      await expect(local.persistAsset(edited)).rejects.toThrow('falha-cache-qa')
+    } finally {
+      setIdbWriteGuard(null)
+    }
+    await local.listAllAssets()
+    const large = galleryOverBudget(112),
+      last = large.shapes.at(-1)
+    const excess = galleryBackupByteLength([sprite, large]) - MAX_BACKUP_FILE_BYTES + 64
+    if (
+      last?.type !== 'image' ||
+      excess <= 0 ||
+      excess >= last.src.length - 'data:image/png;base64,'.length
+    )
+      throw Error('Fronteira inválida')
+    last.src = last.src.slice(0, last.src.length - Math.ceil(excess / 4) * 4)
+    expect(galleryBackupByteLength([sprite, large])).toBeLessThanOrEqual(MAX_BACKUP_FILE_BYTES)
+    await expect(local.persistAsset(large)).resolves.toBeUndefined()
+    expect(structuredClone(await local.loadAssetById(sprite.id))).toEqual(structuredClone(sprite))
+  })
+
   it('recusa uma mutação que deixaria o backup da galeria acima de 32 MiB', async () => {
     const asset = galleryOverBudget(112)
 
@@ -111,7 +147,8 @@ describe('autosave com centenas de desenhos (medição)', () => {
     const stats = idbMockStats()
     console.log(`[perf] pinta 50 autosaves com 500 desenhos: ${elapsed.toFixed(0)}ms`, stats)
     // O disco recebeu os 50 writes…
-    expect(stats.setMany).toBe(50)
+    expect(stats.atomic).toBe(50)
+    expect(stats.atomicKeys).toBe(50)
     // …e a galeria INTEIRA não foi relida a cada autosave (o teto aqui é a régua da
     // otimização do orçamento incremental: antes, `getManyKeys` era 500 × 50 = 25.000).
     expect(stats.getManyKeys).toBeLessThanOrEqual(500)
@@ -214,9 +251,12 @@ describe('carimbo `schema` na gravação (o que faz outro código recusar em vez
     expect(noDisco(pecas.id).schema).toBe(4)
   })
 
-  it('desenho que já está certo é gravado como veio (a mesma referência, nenhuma cópia)', async () => {
+  it('carimbar não copia um desenho correto; o clone do IndexedDB conserva seus dados', async () => {
     const sprite = createPixelSpriteAsset({ name: 'a', frameSize: 8 })
+    expect(withPintaSchemaStamp(sprite)).toBe(sprite)
     await persistAsset(sprite)
-    expect(idbMockDb('sistema-zero-pinta').get(`pinta:asset:${sprite.id}`)).toBe(sprite)
+    expect(
+      structuredClone(idbMockDb('sistema-zero-pinta').get(`pinta:asset:${sprite.id}`)),
+    ).toEqual(structuredClone(sprite))
   })
 })

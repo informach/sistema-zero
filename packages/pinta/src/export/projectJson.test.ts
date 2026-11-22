@@ -36,6 +36,26 @@ function makeGallery(): PintaAsset[] {
 }
 
 describe('galleryToPintaJson / importPintaJson', () => {
+  it('uma projeção especulativa não altera o inventário confirmado durante o warmup', () => {
+    const source = createPixelSpriteAsset({ name: 'sprite', frameSize: 16 })
+    const edited = structuredClone(source)
+    const data = edited.animations[0]!.frames[0]![0]!.data
+    for (let index = 0; index < data.length; index++) data[index] = index % 16
+    const cache = new GalleryBackupSizeCache()
+    cache.seed([source])
+    const confirmed = galleryBackupByteLength([source]),
+      candidate = galleryBackupByteLength([edited])
+    expect(candidate).toBeGreaterThan(confirmed)
+    expect(cache.projectedBytes([edited])).toBe(candidate)
+    cache.warmUp(1000)
+    expect(cache.totalBytes()).toBe(confirmed)
+    cache.invalidate([source.id])
+    expect(cache.totalBytes()).toBe(confirmed)
+    cache.projectedBytes([edited])
+    cache.commit([edited])
+    expect(cache.totalBytes()).toBe(candidate)
+  })
+
   it('medição incremental continua byte a byte igual ao JSON canônico', () => {
     const gallery = makeGallery()
     gallery[0] = { ...gallery[0], name: 'herói 🎨' } as PintaAsset

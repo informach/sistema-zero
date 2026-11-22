@@ -1,0 +1,216 @@
+{
+  "baseline": "76717ed637357e9de7bae0d7bfa7ec451c194572",
+  "records": [
+    {
+      "file": "sprite-atomic-red.log.gz",
+      "bytes": 652,
+      "sha256": "c472eb425858ce5e6100b351b35ea48ff17511edf29adf5845ba0390bc302b09",
+      "rawBytes": 1119,
+      "rawSha256": "fd607cdb55b1febbc969bbc3f277069300379d3ed498b08af18b2f336b33c235"
+    },
+    {
+      "file": "sprite-atomic-cache-red.log.gz",
+      "bytes": 675,
+      "sha256": "060035e91d1272ba82de346e33c4edf284f0c030dbc1dd85cdb89adb6eaaf992",
+      "rawBytes": 1177,
+      "rawSha256": "8896c82c828c7a873347e5495057c0da2773128ca51e0716fc6b8c2d5b390c27"
+    },
+    {
+      "file": "sprite-atomic-projection-red.log.gz",
+      "bytes": 494,
+      "sha256": "441fa0bf67f7d134628681e32d0e5d26e7e742558d40a4abcda009717afaebb8",
+      "rawBytes": 898,
+      "rawSha256": "97e2496f7ee14f9c269b9f4468301daef3666c588df1a8173ad9581096e8704b"
+    },
+    {
+      "file": "sprite-atomic-unknown-payload-red.log.gz",
+      "bytes": 1294,
+      "sha256": "1757325687a876fd220bf06db225d64a6760c0bad1c3c0b5e21a7ec3a76c40a3",
+      "rawBytes": 7121,
+      "rawSha256": "7566719d59c03c626a2648edefacd519e699d74b45b62d03cf2bf4c9e5687afa"
+    },
+    {
+      "file": "sprite-atomic-focused.log.gz",
+      "bytes": 3484,
+      "sha256": "906a5b30d661d49f7b6fda61fae649eed433365a4d13806779378668d42021e8",
+      "rawBytes": 10112,
+      "rawSha256": "8e36b3b0ae4777c0379fcda16cd6b3f98325ba43c49043f07dbfc83178f64a60"
+    },
+    {
+      "file": "sprite-atomic-full-first.log.gz",
+      "bytes": 81602,
+      "sha256": "11c5c29f684b18ce6235eeb4db8c1acc21bdc755ee04b8782a3df4a637b12280",
+      "rawBytes": 301774,
+      "rawSha256": "f0b5778d9f775869cce474bc96a387c42cb325888ebbe38bd2bd51be61276c7f"
+    },
+    {
+      "file": "sprite-atomic-full.log.gz",
+      "bytes": 81657,
+      "sha256": "a343730b81ffdd79c296f34cd3b58117c4e557d14eed11f8200233470a0e8446",
+      "rawBytes": 301964,
+      "rawSha256": "0228ae5116cd41950da77a55c144a3e2b31ba0f7a6dfc6309181dbea7e5587a7"
+    },
+    {
+      "file": "sprite-atomic-browser-focused.log.gz",
+      "bytes": 714,
+      "sha256": "f8c502f00a9aa557ece91813dcb84001cebf9588fad524b592ad6f1bad1a2126",
+      "rawBytes": 1553,
+      "rawSha256": "52a2bc32e89c036bf3a5afcf53bb8b9a41e839bf22a42b4171524a27b26e360e"
+    },
+    {
+      "file": "sprite-atomic-unknown-payload-browser.log.gz",
+      "bytes": 691,
+      "sha256": "5035700a7db73a39995ae455d76a9a8599ca84c969e9298c5e9461b816cc1771",
+      "rawBytes": 1746,
+      "rawSha256": "e90a57500bb5ddb7600fbc926405dc58b3fce5cb3fdde3be11932afded068e73"
+    },
+    {
+      "file": "sprite-atomic-browser.log.gz",
+      "bytes": 2214,
+      "sha256": "a4ab1b9ff51ee11780244061f9a512d547f3f66b8ecbafc67435bc47cf64a411",
+      "rawBytes": 8310,
+      "rawSha256": "801335cccc22d7ec4c9c42382f201e8f3f85a0f0cc938126e2bbbdd7d6843f9e"
+    },
+    {
+      "file": "sprite-atomic-pinta-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "sprite-atomic-studio-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "sprite-atomic-biome.log.gz",
+      "bytes": 65,
+      "sha256": "314b083278c05eb97fd9754a1f5efafaa5338705f82ca5d2de90f010fe8030cb",
+      "rawBytes": 45,
+      "rawSha256": "8bdfc7aa6c56198c58feeecfcaa41ee6f43514bce567afc930fa7abd23e80828"
+    },
+    {
+      "file": "sprite-atomic-diff.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "playwright-report.json.gz",
+      "bytes": 229571,
+      "sha256": "0a21d41721504c1dd73fd33957069aba69b7e8fbd07901881325223b9982873a",
+      "rawBytes": 366776,
+      "rawSha256": "56f797cd8f089cae075b7389bab2aab4919f3e587f192cfb1f5d668b89829b50"
+    },
+    {
+      "file": "archive-sprite-atomic.cjs.gz",
+      "bytes": 1736,
+      "sha256": "37fc62e26a9b80a48018764a4711d236075d3ffb783e84c75cab42976ebcfd29",
+      "rawBytes": 3810,
+      "rawSha256": "6f16abddb3f68c8fa965a9911ceaffc757916179ad362de7c3e79fff954c51be"
+    }
+  ],
+  "sources": [
+    {
+      "file": "packages/pinta/src/export/projectJson.test.ts",
+      "sha256": "f84ab0741ba34912c5c0de6274ee915bb738c272b18c7d857265525f232e2896",
+      "previousSha256": "07e2ed601a2c11c3ee7a7fdbdc26a9e5ab8307ced1f43f7da424c90758b80fb4"
+    },
+    {
+      "file": "packages/pinta/src/export/projectJson.ts",
+      "sha256": "8f576352126e4aa272dd2487beccdce895dac806144d40a6e51d409f67fad116",
+      "previousSha256": "30372e14bd3e04d2c7a6bd7c15602c19f864360ebd0c4269d058e293a2659652"
+    },
+    {
+      "file": "packages/pinta/src/state/assetAuthorityDb.ts",
+      "sha256": "c7a8f7f4f92b1df64c0f444c963ec5b435632b2bfe5486f5ea739692b0b03c71",
+      "previousSha256": "79c179e63ff7e1f6fa7dd2eb2e0d2da6a92041808d81759e119070424063ca9f"
+    },
+    {
+      "file": "packages/pinta/src/state/localFutureRecovery.test.ts",
+      "sha256": "2444351b9ff8061bea0ba50dc86c6d7d83ae62578088bb7dbaf87dba6a6653b0",
+      "previousSha256": "55554498aa3004a5103ceac64cca10caa85d7808bd8fb2b609433da3b2b53503"
+    },
+    {
+      "file": "packages/pinta/src/state/persistence.test.ts",
+      "sha256": "19bd159885c1f056aae48c77d06b64fab181ce931566843882c14488492ea676",
+      "previousSha256": "a54d505585730f7548eb9028e2fec00c4d194e8aee8d858cf939a4d0dbd5b410"
+    },
+    {
+      "file": "packages/pinta/src/state/persistence.ts",
+      "sha256": "e00d6dd353c641f7f7222d5d5bf3ce62d682194c59943434ebc9ac4fa04f20ec",
+      "previousSha256": "05b700dc13bbfa1c7f7c6e80e85a30d61ba1b634edd2bddd36ecd93a3f9dd119"
+    },
+    {
+      "file": "packages/pinta/src/testing/idbMock.ts",
+      "sha256": "ae8a5a2e967b03dc9dbbfe3add4ef7d6ccfbdbc604aa6c77486285bee5e2407a",
+      "previousSha256": "583741f3752fd25540ac3a9dafce477a464de22fbc58cefbff339c60ffd15a67"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-future-recovery.flow.ts",
+      "sha256": "a032fc457f94cd9f66493d49ede97c389a889f2b499c7bce60a49a28168807bb",
+      "previousSha256": "d4da5004d7bc992fce4605e0c77f2d0e4e5831cabf6cf932a163dd48729facc9"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-physical-regions.flow.ts",
+      "sha256": "5bc191dca7537d75d8e327e9c575db88d391d9602335bb80bbf6bd83f0f38a15",
+      "previousSha256": "48431ec76a2459395032dd69cb98f05eedb61fde161178e28a7e82dfd971cbac"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-physical-regions.config.ts",
+      "sha256": "d1a33c2132fc00bf01698e90c4a7ac42e84cf617bb3c422ef9fe9315b65addb4",
+      "previousSha256": "b86920cef5d3f83992d2e7350a95aa0785d7d537eefa0850d82dce2d01fcba87"
+    }
+  ],
+  "suite": {
+    "pass": 2713,
+    "fail": 0,
+    "skipped": 0,
+    "assertions": 35264,
+    "files": 249
+  },
+  "focused": {
+    "pass": 90,
+    "assertions": 382,
+    "files": 6
+  },
+  "browser": {
+    "pass": 43,
+    "retries": 0,
+    "profiles": [
+      "desktop",
+      "cpu-4x"
+    ],
+    "realIndexedDB": true,
+    "futureRecovery": 6,
+    "spriteRaceAndBudget": 4,
+    "regionBusiness": 4,
+    "regionIO": 8,
+    "legacyAuthorityAndChunks": 21
+  },
+  "spriteBudget": {
+    "gallery": 500,
+    "autosaves": 10,
+    "payloadReads": 10
+  },
+  "unsupportedChunkReads": {
+    "before": 2,
+    "after": 0
+  },
+  "quota": {
+    "projectionIsNotCommitted": true,
+    "sameTimestampAbortReproduced": true,
+    "idleWarmupReproduced": true,
+    "decodedHeapOrLatencySLA": false
+  },
+  "atomicInspection": true,
+  "publicNative8": false,
+  "publicPhysical3": false,
+  "cloudPartialInventory": false,
+  "historicalBinariesPatched": false,
+  "inboundStagingObservedButNotMerged": "69ced6cb3ed9ae3ac2a4b09db68361cb20068b5a"
+}

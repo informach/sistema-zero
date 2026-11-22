@@ -1,5 +1,116 @@
-import { expect, type Page, test } from '@playwright/test'
+import { type BrowserContext, expect, type Page, test } from '@playwright/test'
 import { openPintaAuthorityProof as proof } from './helpers/pintaAuthorityRealm'
+
+async function newPeer(context: BrowserContext) {
+  const peer = await context.newPage()
+  if (test.info().project.name === 'cpu-4x') {
+    const cdp = await context.newCDPSession(peer)
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
+  }
+  return peer
+}
+
+declare global {
+  interface Window {
+    pintaSpriteRace?: {
+      paused: boolean
+      resume?: () => void
+      pending?: Promise<{ saved: boolean; copyId?: string; animation?: string }>
+    }
+  }
+}
+
+test.beforeEach(async ({ page, context }, info) => {
+  if (info.project.name === 'cpu-4x') {
+    const cdp = await context.newCDPSession(page)
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
+  }
+})
+
+test('an opaque consumer created in another tab after the old keys result still protects the sprite', async ({
+  page,
+  context,
+}) => {
+  const namespace = `sprite-keys-race-${Date.now()}`
+  await proof(page)
+  const source = await page.evaluate(async (namespace) => {
+    const p = window.pinta026,
+      local = p.createPintaPersistence({ namespace })
+    const sprite = p.createPixelSpriteAsset({ name: 'tree', frameSize: 16 })
+    await local.persistAsset(sprite)
+    const state: NonNullable<Window['pintaSpriteRace']> = { paused: false }
+    window.pintaSpriteRace = state
+    const original = IDBObjectStore.prototype.getAllKeys
+    IDBObjectStore.prototype.getAllKeys = function (...args) {
+      const request = original.apply(this, args)
+      if (this.transaction.mode === 'readonly')
+        request.addEventListener(
+          'success',
+          (event) => {
+            const done = request.onsuccess
+            if (!done) throw Error('Callback da consulta ausente')
+            event.stopImmediatePropagation()
+            IDBObjectStore.prototype.getAllKeys = original
+            state.paused = true
+            state.resume = () => done.call(request, new Event('success'))
+          },
+          { once: true },
+        )
+      return request
+    }
+    state.pending = local
+      .persistAsset({
+        ...sprite,
+        animations: sprite.animations.map((animation) => ({
+          ...animation,
+          id: 'another-animation',
+          name: 'nova',
+        })),
+      })
+      .then(
+        () => ({ saved: true }),
+        (error) => {
+          if (!(error instanceof p.PintaLocalConflictError)) throw error
+          const copy = error.forks.get(sprite.id)
+          return {
+            saved: false,
+            copyId: copy?.id,
+            animation: copy?.kind === 'pixel-sprite' ? copy.animations[0]?.name : undefined,
+          }
+        },
+      )
+    return { id: sprite.id, animationId: sprite.animations[0]!.id }
+  }, namespace)
+  await page.waitForFunction(() => !!window.pintaSpriteRace?.paused)
+  const other = await newPeer(context)
+  await proof(other)
+  const opaque = {
+    version: 3,
+    capability: 8,
+    revision: 'future',
+    asset: { id: 'future-map', art: { assetId: source.id, animationId: source.animationId } },
+  }
+  await record(other, namespace, 'future-map', opaque)
+  await page.evaluate(() => window.pintaSpriteRace!.resume!())
+  expect(
+    await page.evaluate(
+      async ({ namespace, source }) => {
+        const outcome = await window.pintaSpriteRace!.pending!
+        const local = window.pinta026.createPintaPersistence({ namespace })
+        const original = await local.loadAssetById(source.id)
+        const copy = outcome.copyId && (await local.loadAssetById(outcome.copyId))
+        return {
+          saved: outcome.saved,
+          copied: !!outcome.copyId && outcome.copyId !== source.id,
+          animation: copy && copy.kind === 'pixel-sprite' ? copy.animations[0]?.name : null,
+          original: original?.kind === 'pixel-sprite' ? original.animations[0]?.id : null,
+        }
+      },
+      { namespace, source },
+    ),
+  ).toEqual({ saved: false, copied: true, animation: 'nova', original: source.animationId })
+  expect(await record(other, namespace, 'future-map')).toEqual(opaque)
+})
 
 async function record(page: Page, namespace: string, id: string, value?: unknown) {
   return page.evaluate(
@@ -27,6 +138,38 @@ async function record(page: Page, namespace: string, id: string, value?: unknown
   )
 }
 
+test('a 500-sprite gallery reads only the edited payload for ten guarded autosaves', async ({
+  page,
+}) => {
+  await proof(page)
+  const namespace = `sprite-guard-budget-${Date.now()}`
+  expect(
+    await page.evaluate(async (namespace) => {
+      const p = window.pinta026,
+        local = p.createPintaPersistence({ namespace })
+      const sprites = Array.from({ length: 500 }, (_, index) =>
+        p.createPixelSpriteAsset({ name: `sprite-${index}`, frameSize: 16 }),
+      )
+      await local.persistAssets(sprites)
+      await local.listAllAssets()
+      let payloadReads = 0
+      const original = IDBObjectStore.prototype.get
+      IDBObjectStore.prototype.get = function (...args) {
+        if (String(args[0]).startsWith('pinta:asset:')) payloadReads++
+        return original.apply(this, args)
+      }
+      try {
+        const source = sprites[0]!
+        for (let index = 0; index < 10; index++)
+          await local.persistAsset({ ...source, updatedAt: source.updatedAt + index + 1 })
+      } finally {
+        IDBObjectStore.prototype.get = original
+      }
+      return { payloadReads, assets: (await local.listAllAssets()).length }
+    }, namespace),
+  ).toEqual({ payloadReads: 10, assets: 500 })
+})
+
 test('two tabs preserve opaque data and recover stale RAM offline, then reopen and save the physical fork', async ({
   page,
   context,
@@ -41,7 +184,7 @@ test('two tabs preserve opaque data and recover stale RAM offline, then reopen a
     window.ram026 = (await window.client026.loadAssetById(source.id))!
     return source.id
   }, namespace)
-  const newer = await context.newPage()
+  const newer = await newPeer(context)
   await proof(newer)
   const opaque = {
     version: 3,
@@ -72,7 +215,7 @@ test('two tabs preserve opaque data and recover stale RAM offline, then reopen a
     isolation: { version: 1, readerSchema: 7 },
   })
   await page.close()
-  const reopened = await context.newPage()
+  const reopened = await newPeer(context)
   await proof(reopened)
   expect(
     await reopened.evaluate(
@@ -139,7 +282,7 @@ test('a future map with another ID cannot lose its sheet when an older tab reind
     window.ram026 = (await window.client026.loadAssetById(source.id))!
     return { sheet: sheet.id, map: source.id }
   }, namespace)
-  const newer = await context.newPage()
+  const newer = await newPeer(context)
   await proof(newer)
   const opaque = {
     version: 3,
@@ -189,7 +332,7 @@ test('the existing workshop adopts the offline recovery and saves a second gestu
     await local.persistAssets([sheet, source])
     return source.id
   }, namespace)
-  const newer = await context.newPage()
+  const newer = await newPeer(context)
   await proof(newer)
   await page.goto(`/?namespace=${namespace}`)
   await page.getByRole('button', { name: 'Abrir vila (Mapa)', exact: true }).click()
