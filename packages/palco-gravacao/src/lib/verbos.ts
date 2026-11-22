@@ -1069,7 +1069,13 @@ export async function agirNaPagina(
   // abaixo de Ao iniciar). Antes de medir se uma área ficou por cima da outra, a página assenta:
   // passa do empurrão e espera as pilhas pararem. No ritmo sem pausa do Verificar plano, medir
   // antes disso fazia a mão pegar o bloco recém-encaixado em vez da área.
-  if (f.startsWith('afastar de ')) await assentar(pagina)
+  if (f.startsWith('afastar de ')) {
+    await assentar(pagina)
+    // Uma área que cresceu para o lado e cobriu a vizinha (o bloco encaixado alargou Quando
+    // acontecer por cima de Enquanto estiver rodando): a página organiza os blocos, como o botão
+    // direito e Organizar blocos (pedido da Helena, 22/11/2026). A de baixo o desembolar desce.
+    if (pagina.cobreDoLado() && (await pagina.organizar())) await assentar(pagina)
+  }
   // A roda que rolou a galeria aberta anima a lista por um instante, e às vezes só começa um
   // pouco depois do gesto. Medir no meio disso pedia outra rolagem, e as duas juntas passavam da
   // imagem, que sumia acima da lista. A escolha espera a lista parar.

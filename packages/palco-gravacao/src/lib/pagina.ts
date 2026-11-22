@@ -1,3 +1,4 @@
+import { cobreDoLado } from './arrumacao'
 import type { Alvo } from './verbos'
 
 /**
@@ -103,6 +104,11 @@ export interface PaginaDoPalco {
    * descida até ficar um espaço abaixo da de cima. Nulo quando nenhuma está por cima da outra.
    */
   desembolar(): { de: Alvo; para: Alvo } | null
+  /**
+   * Uma área cresceu para o lado e está por cima da vizinha da direita (`cobreDoLado`): aí a página
+   * organiza os blocos, como o botão direito e Organizar blocos.
+   */
+  cobreDoLado(): boolean
   /**
    * Onde está cada pilha da área de trabalho agora, numa linha: duas iguais em seguida querem
    * dizer que nada mais anda (o Blockly empurra os blocos soltos perto de um encaixe novo 250 ms
@@ -1038,6 +1044,16 @@ export function paginaDe(doc: Document): PaginaDoPalco {
       return pilhasDaArea(doc)
         .caixas.map((r) => [r.left, r.top, r.width, r.height].map(Math.round).join(','))
         .join(';')
+    },
+
+    cobreDoLado() {
+      const area = areaDeTrabalho(doc)
+      if (!area || !visivel(area)) return false
+      return cobreDoLado(
+        [...area.querySelectorAll('.blocklyBlockCanvas > .blocklyDraggable')]
+          .filter((el) => visivel(el) && ehArea(el))
+          .map((el) => el.getBoundingClientRect()),
+      )
     },
 
     desembolar() {
