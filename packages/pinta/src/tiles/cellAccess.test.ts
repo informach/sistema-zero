@@ -21,7 +21,7 @@ const CONFERIDOS: Record<string, string> = {
     'percorre posições distintas de amostragem, não valores de peças; limites vêm do leitor comum, sem acessar os buffers autorais ou decodificar bits',
   'tiles/regionMap.ts':
     'valida células densas inteiras antes de converter e soma chunks por camada; delega conversão e edição às operações comuns preservando flags',
-  'tiles/mapCells.ts':
+  'tiles/mapCellReader.ts':
     'lê células inteiras por origem/extensão e visita apenas o recorte ocupado, preservando bits e orçamento sem decodificar índices',
   'tiles/regionCells.ts':
     'acessa e copia células inteiras em chunks autorais, preserva flags e valida edições por isValidCell; não decodifica índices',

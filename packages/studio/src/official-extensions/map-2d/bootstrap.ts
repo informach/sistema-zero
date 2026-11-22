@@ -73,11 +73,26 @@ function host(target: 'g2d' | 'gk'): string {
   _registerRuntimeDomain('map-2d',{${basic ? 'reset' : 'resetProject'}:_map2d.reset});
   `
 }
-function withMapTwoD(source: string, target: 'g2d' | 'gk', fragment: string): string {
+interface MapTwoDPrivateSource {
+  fragment: string
+  hostFields: string
+  engine(source: string): string
+}
+
+function withMapTwoD(
+  engine: string,
+  target: 'g2d' | 'gk',
+  fragment: string,
+  regional?: MapTwoDPrivateSource,
+): string {
+  const source = regional ? regional.engine(engine) : engine
   if (!source.includes('// MAP_2D_RUNTIME_SLOT') || !source.includes('// MAP_2D_API_SLOT'))
     throw new Error('O motor não declarou os pontos de composição do mapa 2D.')
+  const bridge = regional
+    ? host(target).replace('createMap2D({', `createPrivateMap2D({${regional.hostFields}`)
+    : host(target)
   return source
-    .replace('// MAP_2D_RUNTIME_SLOT', fragment + host(target))
+    .replace('// MAP_2D_RUNTIME_SLOT', () => fragment + (regional?.fragment ?? '') + bridge)
     .replace(
       '// MAP_2D_API_SLOT',
       MAP_TWO_D_API_KEYS.map((key) => `${key}:_map2d.${key},`).join('\n'),
@@ -99,6 +114,15 @@ export async function mapTwoDBootstrap(
   context?: ExtensionBootstrapContext,
 ): Promise<string> {
   const enabled = mapTwoDBootstrapVariant(context) === ''
+  return composeMapTwoDBootstrap(target, enabled)
+}
+
+/** The ordinary host/cache still calls mapTwoDBootstrap with its existing context. */
+export async function composeMapTwoDBootstrap(
+  target: 'g2d' | 'gk',
+  enabled: boolean,
+  regional?: MapTwoDPrivateSource,
+): Promise<string> {
   // A cena e sua geometria só entram no chunk que o jogo realmente usa.
   const fragment = enabled ? (await import('./runtime')).mapTwoDSource : ''
   if (target === 'g2d') {
@@ -108,7 +132,7 @@ export async function mapTwoDBootstrap(
     return (
       prefix +
       compactOfficialRuntimeSource(
-        withMapTwoD(runtime.gameTwoDRuntimeSource.slice(prefix.length), target, fragment),
+        withMapTwoD(runtime.gameTwoDRuntimeSource.slice(prefix.length), target, fragment, regional),
         // O mesmo compactar do Jogo 2D sem cenário (`game-2d/runtime.ts`): sem os comentários de bloco.
         { trimIndent: true, stripBlockComments: true },
       )
@@ -118,8 +142,9 @@ export async function mapTwoDBootstrap(
   return enabled
     ? buildProjectRunContextRuntime() +
         '\n' +
-        compactOfficialRuntimeSource(withMapTwoD(runtime.gameKitRuntimeSource, target, fragment), {
-          trimIndent: true,
-        })
+        compactOfficialRuntimeSource(
+          withMapTwoD(runtime.gameKitRuntimeSource, target, fragment, regional),
+          { trimIndent: true },
+        )
     : runtime.gameKitRuntime
 }

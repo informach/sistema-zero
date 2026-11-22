@@ -1,15 +1,17 @@
 import type { PintaRegionCells } from '@sistemazero/core/creations'
 import type { PintaRegionScene } from '@sistemazero/core/studio/pinta-region-scene'
 import type { PintaScene, PintaSceneCellsLayer } from '@sistemazero/core/studio/pinta-scene'
+import type { PintaRegionSceneQuery } from '@sistemazero/core/studio/pinta-scene-query'
 import { sceneArtFrame, sceneLayerState } from '@sistemazero/core/studio/pinta-scene-runtime'
-import { cellTile } from '../tiles/cell'
-import { cellMatrix } from '../tiles/chunks'
-import { createTileCellReader, mapCellBounds } from '../tiles/mapCells'
+import { cellMatrix, cellTile } from '../tiles/cell'
+import { createTileCellReader, mapCellBounds } from '../tiles/mapCellReader'
 import { MAP_IMAGE_LIMITS, MapImageBudgetError, mapImageSize } from '../tiles/mapImageBudget'
 
 type DrawableScene = PintaScene | PintaRegionScene
 type DrawableLayer = PintaSceneCellsLayer<number[] | PintaRegionCells>
 type DrawableBounds = { cols: number; rows: number; origin?: { col: number; row: number } }
+type ViewBox = { x: number; y: number; width: number; height: number }
+type SceneViewport = ViewBox & { regionCells: PintaRegionSceneQuery['regionCells'] }
 
 /** Compositor estático/animado compartilhado pela imagem de exportação e pelo teste no Pinta. */
 export async function loadSceneImages(
@@ -37,6 +39,7 @@ export function drawScene(
   pass: 'back' | 'front',
   time = 0,
   camera = { x: 0, y: 0 },
+  viewport?: SceneViewport,
 ): void {
   const size = scene.tileSize
   function animatedTile(
@@ -53,13 +56,21 @@ export function drawScene(
     }
     return tile
   }
-  function paint(layers: DrawableLayer[], bounds: DrawableBounds, view = camera): void {
+  function paint(
+    layers: DrawableLayer[],
+    bounds: DrawableBounds,
+    view = camera,
+    visible: ViewBox | undefined = viewport,
+  ): void {
     for (const l of layers) {
       const e = sceneLayerState(layers, l)
       if (!e.visible || !e.opacity) continue
       ctx.save()
       ctx.globalAlpha *= e.opacity
-      ctx.translate(e.offsetX + view.x * (1 - e.parallaxX), e.offsetY + view.y * (1 - e.parallaxY))
+      const dx = e.offsetX + view.x * (1 - e.parallaxX),
+        dy = e.offsetY + view.y * (1 - e.parallaxY)
+      ctx.translate(dx, dy)
+      const local = visible && { ...visible, x: visible.x - dx, y: visible.y - dy }
       if (l.kind === 'tiles' && !l.collision && !!l.front === (pass === 'front')) {
         const ts = scene.tilesets.find((t) => t.id === l.tilesetId),
           image = images.get(l.tilesetId)
@@ -87,7 +98,20 @@ export function drawScene(
             l.cells.forEach((value, i) => {
               cell(value, i % bounds.cols, Math.floor(i / bounds.cols))
             })
-          else {
+          else if (local && viewport) {
+            const col = Math.floor(local.x / size),
+              row = Math.floor(local.y / size)
+            viewport.regionCells(l.cells).visitOccupied(
+              {
+                col,
+                row,
+                cols: Math.ceil((local.x + local.width) / size) - col,
+                rows: Math.ceil((local.y + local.height) / size) - row,
+              },
+              cell,
+              'row-major',
+            )
+          } else {
             const rect = mapCellBounds(bounds)
             createTileCellReader(l.cells, rect).visitOccupied(rect, cell, 'row-major')
           }
@@ -95,6 +119,16 @@ export function drawScene(
       }
       if (l.kind === 'objects')
         for (const o of l.objects) {
+          const objectView = local && inverseObjectView(local, o)
+          if (
+            !o.setId &&
+            objectView &&
+            (objectView.x >= o.width ||
+              objectView.x + objectView.width <= 0 ||
+              objectView.y >= o.height ||
+              objectView.y + objectView.height <= 0)
+          )
+            continue
           ctx.save()
           ctx.translate(o.x, o.y)
           ctx.rotate(((o.rotation ?? 0) * Math.PI) / 180)
@@ -102,10 +136,20 @@ export function drawScene(
           ctx.scale(o.flipX ? -1 : 1, o.flipY ? -1 : 1)
           if (o.setId) {
             const set = scene.sets?.find((s) => s.id === o.setId)
-            if (set) {
-              ctx.scale(o.width / (set.cols * size), o.height / (set.rows * size))
-              if ('origin' in set) ctx.translate(-set.origin.col * size, -set.origin.row * size)
-              paint(set.layers, set, { x: 0, y: 0 })
+            if (set && (!objectView || (o.width > 0 && o.height > 0))) {
+              const sx = o.width / (set.cols * size),
+                sy = o.height / (set.rows * size),
+                ox = 'origin' in set ? set.origin.col * size : 0,
+                oy = 'origin' in set ? set.origin.row * size : 0
+              ctx.scale(sx, sy)
+              if ('origin' in set) ctx.translate(-ox, -oy)
+              const setView = objectView && {
+                x: objectView.x / sx + ox,
+                y: objectView.y / sy + oy,
+                width: objectView.width / sx,
+                height: objectView.height / sy,
+              }
+              paint(set.layers, set, { x: 0, y: 0 }, setView)
             }
           } else if (o.art && pass === 'back') {
             const image = images.get(o.art.assetId),
@@ -149,6 +193,43 @@ export function drawScene(
     }
   }
   paint(scene.layers, scene)
+}
+
+function inverseObjectView(
+  view: ViewBox,
+  object: {
+    x: number
+    y: number
+    width: number
+    height: number
+    rotation?: number
+    flipX?: boolean
+    flipY?: boolean
+  },
+): ViewBox {
+  const a = ((object.rotation ?? 0) * Math.PI) / 180,
+    c = Math.cos(a),
+    s = Math.sin(a),
+    x = view.x - object.x,
+    y = view.y - object.y
+  const points = [
+    { x, y },
+    { x: x + view.width, y },
+    { x, y: y + view.height },
+    { x: x + view.width, y: y + view.height },
+  ].map((p) => {
+    const px = p.x * c + p.y * s,
+      py = -p.x * s + p.y * c
+    return { x: object.flipX ? object.width - px : px, y: object.flipY ? object.height - py : py }
+  })
+  const left = Math.min(...points.map((p) => p.x)),
+    top = Math.min(...points.map((p) => p.y))
+  return {
+    x: left,
+    y: top,
+    width: Math.max(...points.map((p) => p.x)) - left,
+    height: Math.max(...points.map((p) => p.y)) - top,
+  }
 }
 
 export async function scenePng(

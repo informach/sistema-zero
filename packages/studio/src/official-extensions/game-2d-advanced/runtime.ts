@@ -404,6 +404,7 @@ ${gameKitShellRuntime}
     }
     var tx = centerX(camera.target) - config.w / 2;
     var ty = centerY(camera.target) - config.h / 2;
+    // MAP_2D_SIGNED_CAMERA
     camera.x = Math.max(0, Math.min(camera.worldW - config.w, tx));
     camera.y = Math.max(0, Math.min(camera.worldH - config.h, ty));
   }
@@ -1523,6 +1524,7 @@ ${gameKitPoolsRuntime}
     var c1 = Math.floor((num(who.x, 0) + num(who.w, 0) - 1) / t);
     var r0 = Math.floor(num(who.y, 0) / t);
     var r1 = Math.floor((num(who.y, 0) + num(who.h, 0) - 1) / t);
+    // MAP_2D_LEGACY_ADVANCED_SOLID
     for (var r = r0; r <= r1; r++) {
       var rowArr = m.rows[r];
       if (!rowArr) continue;
@@ -1584,6 +1586,7 @@ ${gameKitPoolsRuntime}
     var feetTo = oneWayFeetTo(who, d);
     var c0 = Math.floor(hbLeft(who) / t);
     var c1 = Math.floor((hbRight(who) - 1) / t);
+    // MAP_2D_LEGACY_ADVANCED_PLATFORM
     var rowCount = m.rows.length; if (!rowCount) return;
     // A API pública aceita posição/velocidade: limite ao mapa real para não
     // percorrer milhões de índices inexistentes nem ultrapassar o inteiro seguro.
@@ -1616,6 +1619,7 @@ ${gameKitPoolsRuntime}
     if (!who || typeof who !== 'object') return;
     var mk = text(mapName, '');
     var m = tilemaps[mk];
+    // MAP_2D_LEGACY_ADVANCED_MAP
     if (!m || !m.rows) {
       warnOnce('colmap:' + mk, 'o mapa "' + mk + '" não existe — carregue com "Carregar o mapa"');
       return;

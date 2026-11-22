@@ -533,8 +533,10 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
       else r1 = Math.min(rowsN - 1, Math.floor((sprite.y + sprite.h - oy) / t));
     }
     if (c0 > c1 || r0 > r1) return;
+    // MAP_2D_LEGACY_BASIC_BEGIN
     for (var r = r0; r <= r1; r++) {
       for (var c = c0; c <= c1; c++) {
+        // MAP_2D_LEGACY_BASIC_BODY
         // Peça PLATAFORMA (one-way): segura o sprite na face para a qual a
         // gravidade puxa. Com gravidade normal, pousa por cima; com gravidade
         // negativa, pousa por baixo. Atravessar pela face oposta, andar de lado
@@ -636,6 +638,7 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
         }
       }
     }
+    // MAP_2D_LEGACY_BASIC_END
     // Depois da resolução: a posição já é a final do quadro, então "estou dentro da
     // moeda" é medido onde o sprite de fato parou.
     _recordTileOverlaps(sprite, map);

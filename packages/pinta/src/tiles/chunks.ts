@@ -7,7 +7,7 @@ import {
   type TilemapTileLayer,
   tileLayerTilesetId,
 } from '../core/project'
-import { CELL_FLIP_D, CELL_FLIP_H, CELL_FLIP_V, cellFlags, cellTile } from './cell'
+import { cellFlags, cellMatrix, cellTile } from './cell'
 import { createTileCellReader, mapCellBounds, type TileCellReader } from './mapCells'
 
 export const MAP_CHUNK_SIDE = 32
@@ -83,13 +83,7 @@ function occupiedChunks(
     .sort((a, b) => a.row - b.row || a.col - b.col)
 }
 
-/** Matriz Tiled: troca x/y primeiro, depois espelha horizontal e verticalmente. */
-export function cellMatrix(cell: number): [number, number, number, number] {
-  const f = cellFlags(cell),
-    h = f & CELL_FLIP_H ? -1 : 1,
-    v = f & CELL_FLIP_V ? -1 : 1
-  return f & CELL_FLIP_D ? [0, v, h, 0] : [h, 0, 0, v]
-}
+export { cellMatrix } from './cell'
 export function animatedTile(ts: AnyTilesetAsset, tile: number, time: number): number {
   const frames = ts.animations?.[String(tile)]
   if (!frames?.length) return tile

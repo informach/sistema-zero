@@ -3,6 +3,7 @@ import { createCanvas } from '@napi-rs/canvas'
 import type { PintaRegionScene } from '@sistemazero/core/studio/pinta-region-scene'
 import { readPintaRegionScene } from '@sistemazero/core/studio/pinta-region-scene'
 import type { PintaScene } from '@sistemazero/core/studio/pinta-scene'
+import { createRegionSceneQueries } from '@sistemazero/core/studio/pinta-scene-query'
 import { scene4Fixture } from '../../../core/tests/fixtures/pinta-region-scene'
 import { vilaEFloresta } from '../../scripts/homologacao/fixture'
 import type { PintaMemoryAsset } from '../core/assetMemory'
@@ -76,6 +77,7 @@ function pixels(
   art: ReadonlyMap<string, CanvasImageSource>,
   pass: 'back' | 'front',
   time: number,
+  cull = false,
 ) {
   const canvas = createCanvas(128, 96),
     ctx = canvas.getContext('2d')
@@ -83,10 +85,21 @@ function pixels(
   ctx.scale(0.25, 0.25)
   if ('origin' in scene)
     ctx.translate(-scene.origin.col * scene.tileSize, -scene.origin.row * scene.tileSize)
-  drawScene(ctx as unknown as CanvasRenderingContext2D, scene, art, pass, time, {
+  const camera = {
     x: 7.25,
     y: -2.5,
-  })
+  }
+  const view =
+    scene.version === 4 && cull
+      ? {
+          x: scene.origin.col * scene.tileSize,
+          y: scene.origin.row * scene.tileSize,
+          width: canvas.width * 4,
+          height: canvas.height * 4,
+          regionCells: createRegionSceneQueries(scene).context.regionCells,
+        }
+      : undefined
+  drawScene(ctx as unknown as CanvasRenderingContext2D, scene, art, pass, time, camera, view)
   return Buffer.from(ctx.getImageData(0, 0, 128, 96).data)
 }
 
@@ -140,6 +153,10 @@ test('scene 4 composition preserves dense pixels for all set reflections, rotati
                 actual = pixels(scene, art, pass, time)
               expect(actual, `${rotation}/${flipX}/${flipY}/${offset}/${time}/${pass}`).toEqual(
                 expected,
+              )
+              const culled = pixels(scene, art, pass, time, true)
+              expect(culled, `${rotation}/${flipX}/${flipY}/${offset}/${time}/${pass}`).toEqual(
+                actual,
               )
               if (actual.some((value) => value !== 0)) visible++
               comparisons++

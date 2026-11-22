@@ -274,6 +274,7 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
     var y = (_finiteNumber(sprite.y, 0) + _finiteNumber(sprite.h, 0) / 2) - vh / 2;
     // Presa às bordas do mundo. Se o mundo não for maior que a tela num eixo, a
     // câmera fica em 0 nesse eixo (ex.: plataforma horizontal mantém o chão embaixo).
+    // MAP_2D_SIGNED_CAMERA
     if (_isFiniteNumber(worldWidth) && worldWidth > 0) x = Math.max(0, Math.min(x, Math.max(0, worldWidth - vw)));
     if (_isFiniteNumber(worldHeight) && worldHeight > 0) y = Math.max(0, Math.min(y, Math.max(0, worldHeight - vh)));
     camera.x = x; camera.y = y;

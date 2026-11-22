@@ -43,6 +43,14 @@ export const cellTile = (cell: number): number => (cell < 0 ? EMPTY_CELL : cell 
 /** Os bits de espelho e giro (0 numa célula vazia). */
 export const cellFlags = (cell: number): number => (cell < 0 ? 0 : cell & CELL_FLAGS_MASK)
 
+/** Matriz Tiled: troca x/y primeiro, depois espelha horizontal e verticalmente. */
+export function cellMatrix(cell: number): [number, number, number, number] {
+  const f = cellFlags(cell),
+    h = f & CELL_FLIP_H ? -1 : 1,
+    v = f & CELL_FLIP_V ? -1 : 1
+  return f & CELL_FLIP_D ? [0, v, h, 0] : [h, 0, 0, v]
+}
+
 /** Monta a célula. Peça negativa é célula vazia, com ou sem bits. */
 export function makeCell(tile: number, flags = 0): number {
   if (tile < 0) return EMPTY_CELL
