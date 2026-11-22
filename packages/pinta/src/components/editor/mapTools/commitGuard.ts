@@ -2,7 +2,8 @@
  * Guarda dos commits do editor de mapa: gravar um mapa IGUAL ao de agora criaria um
  * desfazer que não desfaz nada e sujaria o salvamento sem motivo.
  */
-import type { PintaAsset } from '../../../core/project'
+import { pintaValuesEqual } from '../../../core/assetEquality'
+import type { PintaMemoryAsset } from '../../../core/assetMemory'
 import type { PintaEditorState } from '../../../state/editorStore'
 
 function sameValue(a: unknown, b: unknown): boolean {
@@ -22,9 +23,10 @@ function sameShallow(a: object, b: object): boolean {
 }
 
 /** O mesmo desenho, mesmo que o objeto seja outro (compara as casas das camadas de peças). */
-export function sameAssetContent(a: PintaAsset, b: PintaAsset): boolean {
+export function sameAssetContent(a: PintaMemoryAsset, b: PintaMemoryAsset): boolean {
   if (a === b) return true
   if (a.kind !== 'tilemap' || b.kind !== 'tilemap') return false
+  if ('origin' in a || 'origin' in b) return pintaValuesEqual(a, b)
   const { layers: la, ...restA } = a,
     { layers: lb, ...restB } = b
   return (
@@ -38,7 +40,10 @@ export function sameAssetContent(a: PintaAsset, b: PintaAsset): boolean {
 }
 
 /** Grava com desfazer só quando mudou de verdade. Devolve se gravou. */
-export function commitIfChanged(state: PintaEditorState, next: PintaAsset): boolean {
+export function commitIfChanged<Asset extends PintaMemoryAsset>(
+  state: PintaEditorState<Asset>,
+  next: Asset,
+): boolean {
   if (sameAssetContent(state.asset, next)) return false
   return state.commit(next)
 }

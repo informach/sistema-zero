@@ -57,7 +57,7 @@ export function mapCanvasWorldViewport(
 
 export interface MapCanvasOptions {
   canvas: HTMLCanvasElement
-  stage: HTMLElement | null
+  stage: Pick<HTMLElement, 'clientWidth' | 'clientHeight' | 'scrollLeft' | 'scrollTop'> | null
   map: AuthorMap
   /** Casas do anel de "crescer o mapa" em volta da grade (0 ou 1). */
   pad: number

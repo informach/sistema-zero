@@ -39,5 +39,5 @@ export function useSession<T>(selector: (state: PintaSessionState) => T): T {
 
 /** A lista curada do host, ou `undefined` quando ninguém curou. */
 export function useToolCuration(): readonly string[] | undefined {
-  return useEditorStores().allowTools
+  return useContext(PintaEditorContext)?.allowTools
 }

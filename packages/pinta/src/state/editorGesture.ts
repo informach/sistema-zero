@@ -1,8 +1,11 @@
+import type { PintaMemoryAsset } from '../core/assetMemory'
 import type { PintaAsset } from '../core/project'
 import type { PintaEditorStore } from './editorStore'
 
 /** Owns only its surviving RAM revision; persistence remains the editor's responsibility. */
-export function createEditorGesture(editor: PintaEditorStore) {
+export function createEditorGesture<Asset extends PintaMemoryAsset>(
+  editor: PintaEditorStore<Asset>,
+) {
   const base = editor.getState().asset
   let produced = base,
     open = true
@@ -17,7 +20,7 @@ export function createEditorGesture(editor: PintaEditorStore) {
     base,
     isCurrent,
     cancel,
-    replace(next: PintaAsset): boolean {
+    replace(next: Asset): boolean {
       if (!isCurrent()) {
         open = false
         return false
@@ -40,4 +43,6 @@ export function createEditorGesture(editor: PintaEditorStore) {
   }
 }
 
-export type EditorGesture = ReturnType<typeof createEditorGesture>
+export type EditorGesture<Asset extends PintaMemoryAsset = PintaAsset> = ReturnType<
+  typeof createEditorGesture<Asset>
+>

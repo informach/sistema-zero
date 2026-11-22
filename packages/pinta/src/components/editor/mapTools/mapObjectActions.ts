@@ -1,13 +1,15 @@
 /** As ações dos objetos da camada de objetos ativa (nada muda = nada é gravado). */
+
+import type { PintaMemoryAsset } from '../../../core/assetMemory'
 import { COPY } from '../../../core/copy'
 import {
   effectiveLayer,
   PINTA_LIMITS,
-  type TilemapAsset,
   type TilemapObjectLayer,
   type TilemapObjectPropertyValue,
 } from '../../../core/project'
 import type { PintaEditorStore } from '../../../state/editorStore'
+import { type AuthorMap, isAuthorMap } from '../../../tiles/mapCellEdits'
 import {
   addMapObject,
   createMapObject,
@@ -23,8 +25,8 @@ import {
 } from '../../../tiles/mapObjects'
 import { commitIfChanged } from './commitGuard'
 
-export function createMapObjectActions(deps: {
-  editor: PintaEditorStore
+export function createMapObjectActions<Asset extends PintaMemoryAsset>(deps: {
+  editor: PintaEditorStore<Asset>
   showToast: (message: string) => void
   activeObjectLayer: TilemapObjectLayer | null
   selectedObjectId: string | null
@@ -35,7 +37,7 @@ export function createMapObjectActions(deps: {
   const { editor, showToast, activeObjectLayer } = deps
 
   /** Camada trancada: avisa e devolve `true`. */
-  function locked(map: TilemapAsset): boolean {
+  function locked(map: AuthorMap): boolean {
     if (!activeObjectLayer) return false
     const layer = objectLayerById(map, activeObjectLayer.id)
     if (!layer || !effectiveLayer(map, layer).locked) return false
@@ -43,9 +45,11 @@ export function createMapObjectActions(deps: {
     return true
   }
 
-  function commitEdit(edit: (map: TilemapAsset, objectLayerId: string) => TilemapAsset): boolean {
+  function commitEdit(
+    edit: (map: Asset & AuthorMap, objectLayerId: string) => Asset & AuthorMap,
+  ): boolean {
     const state = editor.getState()
-    if (state.asset.kind !== 'tilemap' || !activeObjectLayer) return false
+    if (!isAuthorMap(state.asset) || !activeObjectLayer) return false
     const accepted = commitIfChanged(state, edit(state.asset, activeObjectLayer.id))
     if (!accepted) locked(state.asset)
     return accepted
@@ -58,7 +62,7 @@ export function createMapObjectActions(deps: {
   /** Propriedades do objeto como estão AGORA no editor (não no último render). */
   function liveProperties(id: string): Record<string, TilemapObjectPropertyValue> | null {
     const current = editor.getState().asset
-    if (current.kind !== 'tilemap' || !activeObjectLayer) return null
+    if (!isAuthorMap(current) || !activeObjectLayer) return null
     const object = objectLayerById(current, activeObjectLayer.id)?.objects.find((o) => o.id === id)
     return object ? object.properties : null
   }
@@ -91,7 +95,7 @@ export function createMapObjectActions(deps: {
   return {
     addMarker(position: { x: number; y: number }, tileSize: number, snap: boolean): void {
       const state = editor.getState()
-      if (state.asset.kind !== 'tilemap' || !activeObjectLayer || locked(state.asset)) return
+      if (!isAuthorMap(state.asset) || !activeObjectLayer || locked(state.asset)) return
       const map = state.asset
       const layer = objectLayerById(map, activeObjectLayer.id)
       if (!layer) return
@@ -114,7 +118,7 @@ export function createMapObjectActions(deps: {
         x,
         y,
       })
-      const next = addMapObject(map, layer.id, object)
+      const next = addMapObject<Asset & AuthorMap>(map, layer.id, object)
       if (next === map) {
         showToast(COPY.tiles.objectLimit)
         return
@@ -139,12 +143,12 @@ export function createMapObjectActions(deps: {
     deleteSelected(): boolean {
       if (!activeObjectLayer || !deps.selectedObjectId) return false
       const s = editor.getState()
-      if (s.asset.kind !== 'tilemap') return false
+      if (!isAuthorMap(s.asset)) return false
       if (locked(s.asset)) return true
       const removed = commitIfChanged(
         s,
         deps.selectedObjectIds.reduce(
-          (m, id) => removeMapObject(m, activeObjectLayer.id, id),
+          (m, id) => removeMapObject<Asset & AuthorMap>(m, activeObjectLayer.id, id),
           s.asset,
         ),
       )

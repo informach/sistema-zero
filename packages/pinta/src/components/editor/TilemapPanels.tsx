@@ -128,6 +128,7 @@ interface TilemapToolbarProps {
   orientation?: 'horizontal' | 'vertical'
   /** O nível das ferramentas (soma com a curadoria da aula, nunca a alarga). */
   level?: MapLevel
+  availableTools?: readonly MapTool[]
   tool: MapTool
   mode: MapToolMode
   autoExpand: boolean
@@ -142,6 +143,7 @@ interface TilemapToolbarProps {
 export function TilemapToolbar({
   orientation = 'vertical',
   level = 'advanced',
+  availableTools,
   tool,
   mode,
   autoExpand,
@@ -154,8 +156,11 @@ export function TilemapToolbar({
 }: TilemapToolbarProps): JSX.Element {
   const allowTools = useToolCuration()
   const modeTools = useMemo(
-    () => mapToolsFor(mode).filter((t) => isToolInLevel(level, t.id)),
-    [mode, level],
+    () =>
+      mapToolsFor(mode).filter(
+        (t) => isToolInLevel(level, t.id) && (!availableTools || availableTools.includes(t.id)),
+      ),
+    [mode, level, availableTools],
   )
 
   // A ativa cortada viraria estado impossível: selecionada e fora da tela. Mesma régua do pixel.

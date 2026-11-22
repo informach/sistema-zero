@@ -5,15 +5,27 @@
  */
 import { clsx } from 'clsx'
 import type { JSX } from 'react'
+import { useStore } from 'zustand'
 import { COPY } from '../../core/copy'
+import type { PintaSessionStore } from '../../state/sessionStore'
 import { ToolButton } from '../ui/Button'
 import { ZoomIn, ZoomOut } from '../ui/icons'
-import { useEditorStores, useSession } from './editorContext'
+import { useEditorStores } from './editorContext'
 
 export function ZoomControls({ className }: { className?: string }): JSX.Element {
   const { session } = useEditorStores()
-  const zoom = useSession((state) => state.zoom)
-  const levels = useSession((state) => state.zoomLevels)
+  return <SessionZoomControls session={session} className={className} />
+}
+
+export function SessionZoomControls({
+  className,
+  session,
+}: {
+  className?: string
+  session: PintaSessionStore
+}): JSX.Element {
+  const zoom = useStore(session, (state) => state.zoom)
+  const levels = useStore(session, (state) => state.zoomLevels)
   const min = levels[0]
   const max = levels[levels.length - 1]
 

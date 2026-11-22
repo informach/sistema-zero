@@ -11,6 +11,7 @@ import {
   type TilemapAsset,
   tilemapTilesetIds,
 } from '../../../core/project'
+import { isLocalRegionAsset } from '../../../state/localRegionAssetAuthority'
 import { collectTilesetsByIds } from '../../../tiles/mapTilesets'
 import { usePintaGallery } from '../../appContext'
 import { useEditor } from '../editorContext'
@@ -39,7 +40,9 @@ export function useMapModel(): MapModel {
         ? asset.map.resources
         : undefined
   const galleryAssets = useMemo(() => {
-    const byId = new Map(savedGalleryAssets.map((a) => [a.id, a]))
+    const byId = new Map<string, PintaAsset>()
+    for (const asset of savedGalleryAssets)
+      if (!isLocalRegionAsset(asset)) byId.set(asset.id, asset)
     for (const a of linkedAssets ?? []) byId.set(a.id, a)
     for (const version of resources ?? []) byId.set(version.asset.id, version.asset)
     return [...byId.values()]

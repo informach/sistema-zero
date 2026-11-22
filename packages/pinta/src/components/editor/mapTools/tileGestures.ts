@@ -8,6 +8,7 @@
  * o mapa crescer dentro da mesma jogada.
  */
 import type { PointerEvent, RefObject } from 'react'
+import type { PintaMemoryAsset } from '../../../core/assetMemory'
 import { COPY } from '../../../core/copy'
 import { safeSetPointerCapture } from '../../../core/pointer'
 import type { AnyTilesetAsset, PintaAsset, TilemapAsset } from '../../../core/project'
@@ -15,6 +16,8 @@ import type { PintaEditorStore } from '../../../state/editorStore'
 import type { PintaSessionStore } from '../../../state/sessionStore'
 import { cellTile } from '../../../tiles/cell'
 import type { CellPos } from '../../../tiles/cellGeometry'
+import type { AuthorMap } from '../../../tiles/mapCellEdits'
+import { mapCellBounds } from '../../../tiles/mapCells'
 import type { TileStamp } from '../../../tiles/stamp'
 import { cellAt, growTilemap } from '../../../tiles/tilemapOps'
 import { isTileBlank } from '../../../tiles/tilesetOps'
@@ -32,13 +35,13 @@ import {
 } from './mapBrush'
 import { mapBrushMessage } from './mapBrushMessages'
 
-export interface TileGesture {
-  base: PintaAsset
+export interface TileGesture<Asset extends PintaMemoryAsset = PintaAsset> {
+  base: Asset
   pointerId: number
   /** A casa inicial: alinha o desenho do carimbo e ancora as formas. */
   anchor: CellPos
   lastCell: CellPos
-  produced: PintaAsset
+  produced: Asset
   budget: BrushStrokeBudget
   brush: Omit<MapBrushContext, 'anchor'>
   failed: boolean
@@ -49,11 +52,14 @@ export interface PanGesture {
   startScroll: { x: number; y: number }
 }
 
-export interface TileGestureDeps {
-  editor: PintaEditorStore
+export interface TileGestureDeps<
+  Asset extends PintaMemoryAsset = PintaAsset,
+  Map extends AuthorMap = TilemapAsset,
+> {
+  editor: PintaEditorStore<Asset>
   session: PintaSessionStore
   tool: string
-  tilemap: TilemapAsset
+  tilemap: Map
   layerId: string
   /** As peças da camada ativa (`null` na camada de objetos). */
   tileset: AnyTilesetAsset | null
@@ -63,14 +69,14 @@ export interface TileGestureDeps {
   autoExpand: boolean
   tileSize: number
   cellPx: number
-  gestureRef: RefObject<TileGesture | null>
+  gestureRef: RefObject<TileGesture<Asset> | null>
   previewCellsRef: RefObject<CellPos[]>
   panRef: RefObject<PanGesture | null>
   stageRef: RefObject<HTMLElement | null>
   hoverRef: RefObject<(cell: CellPos | null) => void>
   cellFromEvent: (event: PointerEvent<HTMLCanvasElement>) => CellPos
   clampCell: (cell: CellPos) => CellPos
-  repaintMap: (map: TilemapAsset) => void
+  repaintMap: (map: Map) => void
   showToast: (message: string) => void
   setPanning: (panning: boolean) => void
   /** Chamado ao fim do gesto: pede a repintura completa. */
@@ -80,11 +86,30 @@ export interface TileGestureDeps {
 }
 
 export function createTileGestures(deps: TileGestureDeps) {
+  return createMapTileGestures<PintaAsset, TilemapAsset>(deps, {
+    map: (asset) => (asset.kind === 'tilemap' ? asset : null),
+    asset: (_asset, map) => map,
+    grow: growTilemap,
+  })
+}
+
+interface TileGestureMap<Asset, Map> {
+  map(asset: Asset): Map | null
+  asset(previous: Asset, map: Map): Asset
+  grow(map: Map, side: 'left' | 'right' | 'top' | 'bottom', tileSize: number): Map
+}
+
+export function createMapTileGestures<Asset extends PintaMemoryAsset, Map extends AuthorMap>(
+  deps: TileGestureDeps<Asset, Map>,
+  edits: TileGestureMap<Asset, Map>,
+) {
   const { editor, session, tool, tilemap, layerId, gestureRef, previewCellsRef, panRef, stageRef } =
     deps
 
-  const inRing = (cell: CellPos): boolean =>
-    cell.col < 0 || cell.row < 0 || cell.col >= tilemap.cols || cell.row >= tilemap.rows
+  const inRing = (cell: CellPos, map: AuthorMap = tilemap): boolean => {
+    const { col, row, cols, rows } = mapCellBounds(map)
+    return cell.col < col || cell.row < row || cell.col >= col + cols || cell.row >= row + rows
+  }
 
   const brushContext = (): MapBrushContext =>
     gestureRef.current
@@ -100,18 +125,19 @@ export function createTileGestures(deps: TileGestureDeps) {
         }
 
   /** Pinta as casas com a ferramenta de agora; `warn` avisa quando faltam peças do terreno. */
-  function applyTiles(
-    current: TilemapAsset,
-    cells: CellPos[],
-    warn: boolean,
-  ): MapBrushResult<TilemapAsset> {
+  function applyTiles(current: Map, cells: CellPos[], warn: boolean): MapBrushResult<Map> {
     const result = applyMapBrush(current, cells, brushContext())
     if (!result.failure && result.unmatched && warn)
       deps.showToast(COPY.scene.faltamPecasDeBordaOuCantoNeste)
     return result
   }
 
-  function rejectGesture(g: TileGesture, message: string | null): void {
+  function repaintCurrent(): void {
+    const current = edits.map(editor.getState().asset)
+    if (current) deps.repaintMap(current)
+  }
+
+  function rejectGesture(g: TileGesture<Asset>, message: string | null): void {
     if (g.failed) return
     g.failed = true
     previewCellsRef.current = []
@@ -121,19 +147,18 @@ export function createTileGestures(deps: TileGestureDeps) {
       if (restored) g.produced = restored
     }
     if (message) deps.showToast(message)
-    const current = editor.getState().asset
-    if (current.kind === 'tilemap') deps.repaintMap(current)
+    repaintCurrent()
   }
 
-  function writeGesture(g: TileGesture, next: TilemapAsset): boolean {
+  function writeGesture(g: TileGesture<Asset>, next: Map): boolean {
     const state = editor.getState()
     if (state.asset !== g.produced) {
       cancel()
       deps.showToast(COPY.scene.brushChanged)
       return false
     }
-    if (next === state.asset) return true
-    const written = state.replaceIfCurrent(g.produced, next)
+    if (next === edits.map(state.asset)) return true
+    const written = state.replaceIfCurrent(g.produced, edits.asset(state.asset, next))
     if (!written) {
       if (editor.getState().asset !== g.produced) {
         cancel()
@@ -151,12 +176,19 @@ export function createTileGestures(deps: TileGestureDeps) {
    */
   function growForRing(cell: CellPos): CellPos | null {
     const g = gestureRef.current
-    const current = editor.getState().asset
-    if (!g || current.kind !== 'tilemap') return null
+    const current = edits.map(editor.getState().asset)
+    if (!g || !current) return null
+    const bounds = mapCellBounds(current)
     const side: 'left' | 'right' | 'top' | 'bottom' =
-      cell.col < 0 ? 'left' : cell.col >= current.cols ? 'right' : cell.row < 0 ? 'top' : 'bottom'
+      cell.col < bounds.col
+        ? 'left'
+        : cell.col >= bounds.col + bounds.cols
+          ? 'right'
+          : cell.row < bounds.row
+            ? 'top'
+            : 'bottom'
     // Crescer à esquerda ou em cima empurra os objetos uma peça junto.
-    const grown = growTilemap(current, side, deps.tileSize)
+    const grown = edits.grow(current, side, deps.tileSize)
     if (grown === current) {
       rejectGesture(g, COPY.tiles.autoExpandLimit)
       return null
@@ -165,24 +197,29 @@ export function createTileGestures(deps: TileGestureDeps) {
     // O conteúdo anda uma casa: âncora, última casa e rolagem acompanham para o mapa não pular.
     const stage = stageRef.current
     if (side === 'left') {
-      g.anchor.col += 1
-      g.lastCell.col += 1
+      if (!('origin' in grown)) {
+        g.anchor.col += 1
+        g.lastCell.col += 1
+      }
       if (stage) stage.scrollLeft += deps.cellPx
     } else if (side === 'top') {
-      g.anchor.row += 1
-      g.lastCell.row += 1
+      if (!('origin' in grown)) {
+        g.anchor.row += 1
+        g.lastCell.row += 1
+      }
       if (stage) stage.scrollTop += deps.cellPx
     }
-    const row = Math.min(Math.max(cell.row, 0), current.rows - 1),
-      col = Math.min(Math.max(cell.col, 0), current.cols - 1)
+    const limits = mapCellBounds(grown)
+    const row = Math.min(Math.max(cell.row, bounds.row), bounds.row + bounds.rows - 1),
+      col = Math.min(Math.max(cell.col, bounds.col), bounds.col + bounds.cols - 1)
     const target: CellPos =
       side === 'left'
-        ? { col: 0, row }
+        ? { col: limits.col, row }
         : side === 'right'
-          ? { col: grown.cols - 1, row }
+          ? { col: limits.col + limits.cols - 1, row }
           : side === 'top'
-            ? { col, row: 0 }
-            : { col, row: grown.rows - 1 }
+            ? { col, row: limits.row }
+            : { col, row: limits.row + limits.rows - 1 }
     deps.repaintMap(grown)
     return target
   }
@@ -192,22 +229,23 @@ export function createTileGestures(deps: TileGestureDeps) {
     const g = gestureRef.current
     if (!g || g.failed) return
     let cell = rawCell
-    const before = editor.getState().asset
-    if (before !== g.produced) {
+    const live = editor.getState().asset
+    if (live !== g.produced) {
       cancel()
       deps.showToast(COPY.scene.brushChanged)
       return
     }
-    if (before.kind !== 'tilemap') return
-    if (cell.col < 0 || cell.row < 0 || cell.col >= before.cols || cell.row >= before.rows) {
+    const before = edits.map(live)
+    if (!before) return
+    if (inRing(cell, before)) {
       if (!deps.autoExpand) return
       const grown = growForRing(cell)
       if (!grown) return
       cell = grown
     }
     const state = editor.getState()
-    const current = state.asset
-    if (current.kind !== 'tilemap') return
+    const current = edits.map(state.asset)
+    if (!current) return
     const line = collectShapeBrushCells(current, 'line', g.lastCell, cell),
       collected = line.ok ? collectTargetBrushCells(line.positions, brushContext()) : line
     if (!collected.ok) {
@@ -235,10 +273,11 @@ export function createTileGestures(deps: TileGestureDeps) {
   // ---- Linha e retângulo ------------------------------------------------
   function paintShape(cell: CellPos): void {
     const g = gestureRef.current
-    if (g?.base.kind !== 'tilemap' || g.failed) return
+    const base = g && edits.map(g.base)
+    if (!g || !base || g.failed) return
     const target = deps.clampCell(cell)
     const collected = collectShapeBrushCells(
-      g.base,
+      base,
       tool === 'line' ? 'line' : 'rect',
       g.anchor,
       target,
@@ -248,7 +287,7 @@ export function createTileGestures(deps: TileGestureDeps) {
       return
     }
     const shape = collected.positions,
-      result = applyTiles(g.base, shape, true)
+      result = applyTiles(base, shape, true)
     if (result.failure) {
       rejectGesture(g, mapBrushMessage(result))
       return
@@ -262,8 +301,8 @@ export function createTileGestures(deps: TileGestureDeps) {
   // ---- Conta-gotas ------------------------------------------------------
   function pickAt(cell: CellPos): void {
     const c = deps.clampCell(cell)
-    const current = editor.getState().asset
-    if (current.kind !== 'tilemap') return
+    const current = edits.map(editor.getState().asset)
+    if (!current) return
     const picked = cellTile(cellAt(current, layerId, c.col, c.row))
     const s = session.getState()
     if (picked >= 0) {
@@ -278,13 +317,14 @@ export function createTileGestures(deps: TileGestureDeps) {
   // ---- Balde ------------------------------------------------------------
   function fillAt(cell: CellPos): void {
     const state = editor.getState()
-    if (state.asset.kind !== 'tilemap') return
-    const result = fillWithBrush(state.asset, deps.clampCell(cell), brushContext())
+    const current = edits.map(state.asset)
+    if (!current) return
+    const result = fillWithBrush(current, deps.clampCell(cell), brushContext())
     const message = mapBrushMessage(result)
     if (message) deps.showToast(message)
     if (result.failure) return
     // Área que já está igual não vira um desfazer vazio.
-    commitIfChanged(state, result.map)
+    if (result.map !== current) commitIfChanged(state, edits.asset(state.asset, result.map))
   }
 
   function down(event: PointerEvent<HTMLCanvasElement>): void {
@@ -354,10 +394,10 @@ export function createTileGestures(deps: TileGestureDeps) {
     const gesture = gestureRef.current
     if (!gesture || event.pointerId !== gesture.pointerId) {
       // Prévia do terreno e do "espalhar" sob o ponteiro (só de tela, nada é gravado).
-      const current = editor.getState().asset
+      const current = edits.map(editor.getState().asset)
       if (
         !gesture &&
-        current.kind === 'tilemap' &&
+        current &&
         (deps.brush.scatter || deps.brush.terrainId) &&
         tool === 'pencil' &&
         !inRing(cell)
@@ -408,16 +448,14 @@ export function createTileGestures(deps: TileGestureDeps) {
     // A recuperação de conflito pode ter adotado outra cópia durante o gesto.
     if (state.asset === gesture.produced && state.asset !== gesture.base)
       state.replaceIfCurrent(gesture.produced, gesture.base)
-    const current = editor.getState().asset
-    if (current.kind === 'tilemap') deps.repaintMap(current)
+    repaintCurrent()
     deps.onGestureEnd()
     return true
   }
 
   function leave(): void {
     deps.hoverRef.current(null)
-    const current = editor.getState().asset
-    if (!gestureRef.current && current.kind === 'tilemap') deps.repaintMap(current)
+    if (!gestureRef.current) repaintCurrent()
   }
 
   return { down, move, up, cancel, leave, pickAt }

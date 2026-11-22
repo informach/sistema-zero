@@ -1,3 +1,4 @@
+import type { PintaMemoryAsset } from '../core/assetMemory'
 import {
   effectiveLayer,
   PINTA_MAP_FORMAT_LIMITS,
@@ -12,6 +13,11 @@ import { editRegionMapCells, type RegionMapResult } from './regionMap'
 import { tileLayerById, withTileLayer } from './tilemapOps'
 
 export type AuthorMap = TilemapAsset | RegionTilemapAsset
+export function isAuthorMap<Asset extends PintaMemoryAsset>(
+  asset: Asset,
+): asset is Asset & AuthorMap {
+  return asset.kind === 'tilemap'
+}
 export type MapCellEditFailure = Extract<RegionMapResult, { ok: false }>['reason']
 export interface MapCellEditResult<Map extends AuthorMap> {
   map: Map

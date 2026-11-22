@@ -2,6 +2,7 @@ import { type JSX, useEffect, useId, useRef, useState } from 'react'
 import { COPY } from '../../core/copy'
 import { newId } from '../../core/id'
 import type { AnyTilesetAsset, TileTerrain } from '../../core/project'
+import type { PintaSessionStore } from '../../state/sessionStore'
 import { setTilesetTerrain } from '../../tiles/terrain'
 import { Button } from '../ui/Button'
 import { Panel } from '../ui/Panel'
@@ -28,23 +29,43 @@ export const DEFAULT_MAP_BRUSH: MapBrushSettings = {
 const ALL_PARTS = { animation: true, terrain: true, scatter: true }
 const DEFAULT_TERRAIN_COLOR = '#62b447'
 const FIELD = 'min-h-11 w-full rounded-xl border-2 border-pin-border bg-pin-surface px-2 text-sm'
-export function MapTerrainPanel({
-  tileset,
-  tile,
-  settings,
-  onChange,
-  show = ALL_PARTS,
-}: {
+interface MapTerrainPanelProps {
   tileset: AnyTilesetAsset
   tile: number
   settings: MapBrushSettings
   onChange: (value: MapBrushSettings) => void
   /** Quais partes aparecem (o nível das ferramentas esconde as mais difíceis). */
   show?: { animation: boolean; terrain: boolean; scatter: boolean }
+}
+export function MapTerrainPanel(props: MapTerrainPanelProps): JSX.Element {
+  const { editor, session } = useEditorStores()
+  return (
+    <MapBrushPanel
+      {...props}
+      session={session}
+      saveTileset={(next) => {
+        const state = editor.getState()
+        if (state.asset.id === props.tileset.id) state.commit(next)
+        else state.commitLinked(state.asset, { before: [props.tileset], after: [next] })
+      }}
+    />
+  )
+}
+
+export function MapBrushPanel({
+  tileset,
+  tile,
+  settings,
+  onChange,
+  show = ALL_PARTS,
+  session,
+  saveTileset,
+}: MapTerrainPanelProps & {
+  session: PintaSessionStore
+  saveTileset?: (next: AnyTilesetAsset) => void
 }): JSX.Element {
   const fieldId = useId()
-  const { editor, session } = useEditorStores(),
-    terrain = tileset.terrains?.find((t) => t.id === settings.terrainId)
+  const terrain = tileset.terrains?.find((t) => t.id === settings.terrainId)
   const update = (patch: Partial<MapBrushSettings>): void => onChange({ ...settings, ...patch })
   function resumePainting(): void {
     const state = session.getState()
@@ -55,10 +76,7 @@ export function MapTerrainPanel({
     resumePainting()
   }
   function save(t: TileTerrain): void {
-    const state = editor.getState()
-    const next = setTilesetTerrain(tileset, t)
-    if (state.asset.id === tileset.id) state.commit(next)
-    else state.commitLinked(state.asset, { before: [tileset], after: [next] })
+    saveTileset?.(setTilesetTerrain(tileset, t))
   }
   return (
     <>
@@ -99,24 +117,26 @@ export function MapTerrainPanel({
           ) : tileset.terrains?.length ? (
             <p className="mt-2 text-xs text-pin-muted">{COPY.scene.choosePreparedTerrain}</p>
           ) : null}
-          <Button
-            variant="barOutline"
-            className="mt-2 w-full"
-            onClick={() => {
-              const t: TileTerrain = {
-                id: newId(),
-                name: COPY.scene.dynamicTerreno((tileset.terrains?.length ?? 0) + 1),
-                mode: 'corner',
-                colors: [DEFAULT_TERRAIN_COLOR],
-                tiles: {},
-              }
-              save(t)
-              update({ terrainId: t.id, color: 1, scatter: false })
-            }}
-          >
-            {COPY.scene.novoTerreno}
-          </Button>
-          {terrain ? (
+          {saveTileset ? (
+            <Button
+              variant="barOutline"
+              className="mt-2 w-full"
+              onClick={() => {
+                const t: TileTerrain = {
+                  id: newId(),
+                  name: COPY.scene.dynamicTerreno((tileset.terrains?.length ?? 0) + 1),
+                  mode: 'corner',
+                  colors: [DEFAULT_TERRAIN_COLOR],
+                  tiles: {},
+                }
+                save(t)
+                update({ terrainId: t.id, color: 1, scatter: false })
+              }}
+            >
+              {COPY.scene.novoTerreno}
+            </Button>
+          ) : null}
+          {terrain && saveTileset ? (
             <details className="mt-2">
               <summary className="flex min-h-11 cursor-pointer items-center text-sm font-bold">
                 {COPY.scene.prepararAsPecasDoTerreno}

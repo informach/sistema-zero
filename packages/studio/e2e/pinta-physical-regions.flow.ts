@@ -1652,6 +1652,154 @@ test('stored Vila paints and navigates with exactly the same pixels as a complet
   expect(result.outdatedRefused).toBe(true)
 })
 
+test('regional authoring reads only the edited chunk on autosave', async ({
+  page,
+  context,
+}, info) => {
+  test.skip(!process.env.PINTA_PROFILE_REGIONAL_AUTHORING, 'Perfil de autoria opt-in')
+  test.setTimeout(120_000)
+  await proof(page)
+  const seed = await page.evaluate(() => window.pintaPhysicalRegions.seedRegionalIoProfile())
+  await page.close()
+  const writer = await context.newPage()
+  await proof(writer)
+  if (info.project.name === 'cpu-4x') {
+    const cdp = await context.newCDPSession(writer)
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
+  }
+  const samples = await writer.evaluate(async (seed) => {
+    const samples = []
+    for (const path of ['incremental', 'complete', 'complete', 'incremental'] as const)
+      samples.push({
+        path,
+        ...(await window.pintaPhysicalRegions.profileRegionalGesture(seed, path)),
+      })
+    return samples
+  }, seed)
+  for (const sample of samples) {
+    expect(sample.chunkPuts).toBe(1)
+    if (sample.path === 'complete') {
+      expect(sample.chunks).toBe(4096)
+      expect(sample.bytes).toBe(8 * 1024 * 1024)
+    } else {
+      expect(sample.chunks).toBe(1)
+      expect(sample.bytes).toBe(2048)
+    }
+  }
+  await info.attach('regional-authoring-profile', {
+    body: JSON.stringify(samples, null, 2),
+    contentType: 'application/json',
+  })
+})
+
+test('regional map editor paints across chunks, edits terrain and objects, and reopens offline', async ({
+  page,
+  context,
+}, info) => {
+  test.skip(info.project.name !== 'desktop', 'Uma prova funcional em Chromium')
+  await proof(page)
+  const seed = await page.evaluate(() => window.pintaPhysicalRegions.seedRegionalAuthoringView())
+  await page.evaluate((value) => window.pintaPhysicalRegions.openRegionalAuthoringView(value), seed)
+  await expect(page.getByRole('img', { name: 'Grade do mapa' })).toBeVisible()
+  await expect(page.getByRole('img', { name: 'Árvore da Vila' })).toBeVisible()
+  await context.setOffline(true)
+  const point = (col: number, row: number) =>
+    page.evaluate(({ col, row }) => window.pintaPhysicalRegions.regionalAuthoringCells(col, row), {
+      col,
+      row,
+    })
+  const flush = () => page.evaluate(() => window.pintaPhysicalRegions.flushRegionalAuthoringView())
+  const snapshot = (row: number, id = seed.id) =>
+    page.evaluate(
+      ({ seed, row, id }) =>
+        window.pintaPhysicalRegions.inspectRegionalAuthoringView(
+          seed,
+          [
+            { col: -33, row },
+            { col: -32, row },
+          ],
+          id,
+        ),
+      { seed, row, id },
+    )
+  const left = await point(-33, -55)
+  const right = await point(-32, -55)
+  await page.mouse.move(left.x, left.y)
+  await page.mouse.down()
+  await page.mouse.move(right.x, right.y, { steps: 4 })
+  await page.mouse.up()
+  expect(await flush()).toMatchObject({ value: { ok: true }, chunks: 2, bytes: 4096 })
+  expect((await snapshot(-55)).cells).toEqual([0, 0])
+  await page.getByRole('button', { name: 'Desfazer', exact: true }).click()
+  expect((await flush()).value.ok).toBe(true)
+  expect((await snapshot(-55)).cells).toEqual([-1, -1])
+  await page.getByRole('button', { name: 'Refazer', exact: true }).click()
+  expect((await flush()).value.ok).toBe(true)
+  expect((await snapshot(-55)).cells).toEqual([0, 0])
+
+  await page.getByRole('combobox', { name: 'Terreno', exact: true }).selectOption('terra')
+  const terrain = await point(-33, -53)
+  await page.mouse.click(terrain.x, terrain.y)
+  expect(await flush()).toMatchObject({ value: { ok: true }, chunks: 2 })
+  expect((await snapshot(-53)).cells).toEqual([15, 8])
+
+  await page.getByRole('combobox', { name: 'Camadas', exact: true }).selectOption(seed.objects)
+  await page.getByRole('button', { name: 'Marcar um ponto', exact: true }).click()
+  const object = await point(-31, -52)
+  await page.mouse.click(object.x, object.y)
+  expect(await flush()).toMatchObject({ value: { ok: true }, chunks: 0 })
+  const saved = await snapshot(-53)
+  expect(saved.objects).toHaveLength(2)
+  expect(saved.objects[1]).toMatchObject({ x: -488, y: -824, width: 0, height: 0 })
+  const rgba = await page.evaluate(
+    (value) => window.pintaPhysicalRegions.compareRegionalAuthoringPixels(value),
+    seed,
+  )
+  expect(rgba.actual).toEqual(rgba.expected)
+  expect(rgba.width).toBeLessThan(1280)
+  await page.evaluate((value) => window.pintaPhysicalRegions.openRegionalAuthoringView(value), seed)
+  await expect(page.getByRole('img', { name: 'Grade do mapa' })).toBeVisible()
+  expect(await snapshot(-53)).toEqual(saved)
+  expect((await snapshot(-54)).cells).toEqual([4, -1])
+
+  await context.setOffline(false)
+  const other = await context.newPage()
+  await proof(other)
+  await other.evaluate(
+    (value) => window.pintaPhysicalRegions.changeRegionalAuthoringInAnotherTab(value, -33, -54),
+    seed,
+  )
+  await other.close()
+  const stale = await point(-32, -54)
+  await page.mouse.click(stale.x, stale.y)
+  expect((await flush()).value.ok).toBe(true)
+  const original = await snapshot(-54)
+  expect(original).toMatchObject({ name: 'Outra aba', cells: [11, -1] })
+  expect(original.id).not.toEqual(seed.id)
+  if (!original.id) throw Error('A cópia da edição não abriu')
+  expect((await snapshot(-54, original.id)).cells).toEqual([4, 0])
+})
+
+test('regional autosave rolls back the last chunk put and respects confirmed causal authority', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'desktop', 'Uma prova funcional em Chromium')
+  await proof(page)
+  const result = await page.evaluate(async () => {
+    const pinta = window.pintaPhysicalRegions
+    return pinta.verifyRegionalAuthoringAbortAndCausalFence(await pinta.seedRegionalAuthoringView())
+  })
+  expect(result).toEqual({
+    rolledBack: true,
+    stopped: true,
+    chunkPuts: 1,
+    fenced: true,
+    confirmed: 7,
+    revisionPreserved: true,
+    protocolKnown: true,
+  })
+})
+
 test('stored map view refuses a foreign namespace, changed revision and corrupt selected chunk', async ({
   page,
 }) => {

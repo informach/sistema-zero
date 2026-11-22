@@ -40,6 +40,17 @@ export { regionVila } from '../src/testing/regionVila'
 export { expandRegionMap, prepareMapRegions } from '../src/tiles/regionMap'
 export { cellAt, setCell } from '../src/tiles/tilemapOps'
 export { vilaEFloresta } from './homologacao/fixture'
+export { profileRegionalGesture } from './region-authoring-proof'
+export {
+  changeRegionalAuthoringInAnotherTab,
+  compareRegionalAuthoringPixels,
+  flushRegionalAuthoringView,
+  inspectRegionalAuthoringView,
+  openRegionalAuthoringView,
+  regionalAuthoringCells,
+  seedRegionalAuthoringView,
+  verifyRegionalAuthoringAbortAndCausalFence,
+} from './region-authoring-view-proof'
 export {
   compareStoredVilaViewports,
   measureRegionalIo,

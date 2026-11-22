@@ -24,6 +24,7 @@ import { MapTerrainPanel } from './MapTerrainPanel'
 import { isMapLevel, MAP_LEVELS, type MapLevel } from './mapTools/mapLevels'
 import { useMapModel } from './mapTools/useMapModel'
 import { type ReadyMapModel, useTilemapController } from './mapTools/useTilemapController'
+import { RegionMapWorkspace, type RegionMapWorkspaceProps } from './RegionMapWorkspace'
 import { TilemapSidebar, TilemapToolbar } from './TilemapPanels'
 import { useMediaQuery } from './useMediaQuery'
 import { ZoomControls } from './ZoomControls'
@@ -36,9 +37,16 @@ const LEVEL_LABEL: Record<MapLevel, string> = {
 
 export function TilemapEditor({
   setEditor = false,
+  regional,
 }: {
   setEditor?: boolean
+  regional?: RegionMapWorkspaceProps
 } = {}): JSX.Element | null {
+  if (regional) return <RegionMapWorkspace {...regional} />
+  return <DenseTilemapEditor setEditor={setEditor} />
+}
+
+function DenseTilemapEditor({ setEditor }: { setEditor: boolean }): JSX.Element | null {
   const model = useMapModel()
   if (!model.tilemap || model.tilemap.layers.length === 0) return null
   if (!model.baseTileset) {

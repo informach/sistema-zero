@@ -1,14 +1,20 @@
 import { type JSX, useEffect, useMemo, useState } from 'react'
 import { useAnimationPlayer } from '../../animation/player'
+import type { PintaMemoryAsset } from '../../core/assetMemory'
 import { COPY } from '../../core/copy'
 import type { MapResourceSource } from '../../core/mapResourceVersions'
 import {
   isTilesetKind,
   type PintaAsset,
   pintaAssetDependencyIds,
+  type RegionMapSetAsset,
+  type RegionTilemapAsset,
   type TilemapObject,
 } from '../../core/project'
+import { exportPintaRegionScene } from '../../export/regionScene'
+import { scenePng } from '../../export/sceneDrawing'
 import { buildStudioPayload } from '../../export/studioBridge'
+import { isLocalRegionAsset } from '../../state/localRegionAssetAuthority'
 import { usePintaGallery } from '../appContext'
 import { useEditor } from './editorContext'
 
@@ -18,17 +24,17 @@ type ArtworkImage = { dataUrl: string; width: number; height: number } | null
  * mapa montam a folha uma vez só. O desenho editado é outro objeto, então ganha entrada nova.
  */
 const artworkCache = new WeakMap<
-  PintaAsset,
+  PintaMemoryAsset,
   {
-    dependencies: Map<string, PintaAsset | null>
+    dependencies: Map<string, PintaMemoryAsset | null>
     image: Promise<ArtworkImage>
   }
 >()
 function artworkDependencies(
-  asset: PintaAsset,
-  find: (id: string) => PintaAsset | null,
-): Map<string, PintaAsset | null> {
-  const dependencies = new Map<string, PintaAsset | null>(),
+  asset: PintaMemoryAsset,
+  find: (id: string) => PintaMemoryAsset | null,
+): Map<string, PintaMemoryAsset | null> {
+  const dependencies = new Map<string, PintaMemoryAsset | null>(),
     pending = [asset]
   const seen = new Set([asset.id])
   while (pending.length)
@@ -41,10 +47,10 @@ function artworkDependencies(
     }
   return dependencies
 }
-export function artworkImage(
-  asset: PintaAsset,
-  find: (id: string) => PintaAsset | null,
-  build: typeof buildStudioPayload = buildStudioPayload,
+function cachedArtwork(
+  asset: PintaMemoryAsset,
+  find: (id: string) => PintaMemoryAsset | null,
+  render: () => Promise<ArtworkImage>,
 ): Promise<ArtworkImage> {
   const cached = artworkCache.get(asset)
   const dependencies = artworkDependencies(asset, find)
@@ -54,14 +60,33 @@ export function artworkImage(
     [...dependencies].every(([id, dependency]) => cached.dependencies.get(id) === dependency)
   )
     return cached.image
-  const source = asset.kind === 'map-set' ? asset.map : asset
-  const pending = build(source, find, { animationId: null, frameIndex: 0 })
-    .then((result) =>
-      result ? { dataUrl: result.dataUrl, width: result.width, height: result.height } : null,
-    )
-    .catch(() => null)
+  const pending = render().catch(() => null)
   artworkCache.set(asset, { dependencies, image: pending })
   return pending
+}
+
+export function artworkImage(
+  asset: PintaAsset,
+  find: (id: string) => PintaAsset | null,
+  build: typeof buildStudioPayload = buildStudioPayload,
+): Promise<ArtworkImage> {
+  const source = asset.kind === 'map-set' ? asset.map : asset
+  return cachedArtwork(asset, find, () =>
+    build(source, find, { animationId: null, frameIndex: 0 }).then((result) =>
+      result ? { dataUrl: result.dataUrl, width: result.width, height: result.height } : null,
+    ),
+  )
+}
+
+function regionArtworkImage(
+  asset: RegionTilemapAsset | RegionMapSetAsset,
+  find: (id: string) => PintaMemoryAsset | null,
+): Promise<ArtworkImage> {
+  return cachedArtwork(asset, find, async () => {
+    const map = asset.kind === 'map-set' ? asset.map : asset
+    const { scene } = await exportPintaRegionScene(map, find)
+    return scenePng(scene, 1, 512)
+  })
 }
 
 export function MapObjectArtwork({
@@ -83,6 +108,27 @@ export function MapObjectArtwork({
       : map.kind === 'map-set'
         ? map.map.resources
         : undefined
+  return (
+    <CatalogMapObjectArtwork
+      object={object}
+      source={source}
+      assets={assets}
+      resources={resources}
+    />
+  )
+}
+
+export function CatalogMapObjectArtwork({
+  object,
+  source,
+  assets,
+  resources,
+}: {
+  object: TilemapObject
+  source?: PintaMemoryAsset
+  assets: readonly PintaMemoryAsset[]
+  resources: MapResourceSource['resources']
+}): JSX.Element | null {
   const find = useMemo(() => {
     const byId = new Map(assets.map((a) => [a.id, a]))
     for (const version of resources ?? []) byId.set(version.asset.id, version.asset)
@@ -96,7 +142,13 @@ export function MapObjectArtwork({
       setImage(null)
       return
     }
-    void artworkImage(asset, find).then((result) => {
+    const pending = isLocalRegionAsset(asset)
+      ? regionArtworkImage(asset, find)
+      : artworkImage(asset, (id) => {
+          const target = find(id)
+          return target && !isLocalRegionAsset(target) ? target : null
+        })
+    void pending.then((result) => {
       if (active) setImage(result)
     })
     return () => {
@@ -120,7 +172,7 @@ function ArtworkFrame({
   image,
 }: {
   object: TilemapObject
-  asset: PintaAsset
+  asset: PintaMemoryAsset
   image: NonNullable<ArtworkImage>
 }): JSX.Element {
   const animations =
