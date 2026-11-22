@@ -338,3 +338,36 @@ test('recomeçar durante o preparo aborta a partida antiga sem instalar sua carg
     instalador.descartar()
   }
 })
+
+test('"Quando o heroi entrar na região" conta cada entrada uma vez, inclusive começando dentro', async () => {
+  const origem = { x: 100, z: 200 }
+  const { api, plano, instalador, mundo } = await preparar({ origem, comRegioes: true }),
+    heroi: Mesh = call(api, 'createBox', mundo)
+  try {
+    call(api, 'setPosition', heroi, origem.x + 10, 3, origem.z + 10)
+    expect(await call(api, 'loadScene', mundo, plano.assetId)).toBe(true)
+    const entradas: string[] = []
+    call(api, 'onEnterRegion', heroi, 'Vila', () => entradas.push('Vila'))
+    call(api, 'onEnterRegion', heroi, 'Floresta', () => entradas.push('Floresta'))
+    let tempo = 0
+    const step = (quadros: number) => {
+      for (let i = 0; i < quadros; i++) {
+        tempo += 1000 / 60
+        mundo.renderer._loop?.(tempo)
+      }
+    }
+    step(3)
+    expect(entradas).toEqual(['Vila'])
+    call(api, 'setPosition', heroi, origem.x + 40, 3, origem.z + 10)
+    step(3)
+    call(api, 'setPosition', heroi, origem.x + 50, 3, origem.z + 20)
+    step(3)
+    expect(entradas).toEqual(['Vila', 'Floresta'])
+    call(api, 'setPosition', heroi, origem.x + 10, 3, origem.z + 10)
+    step(3)
+    expect(entradas).toEqual(['Vila', 'Floresta', 'Vila'])
+  } finally {
+    call(api, 'disposeAll')
+    instalador.descartar()
+  }
+})

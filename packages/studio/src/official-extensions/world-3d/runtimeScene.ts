@@ -217,6 +217,9 @@ export const world3DSceneRuntime = `
     importedScene = null;
     importedBounds = null;
   }
+
+  // "Quando o jogador entrar na região" (as regras): a região do cenário onde ele está.
+  function sceneRegion(o, at, name) { return importedScene && importedScene.regiao(activePlayerGroup(), at, name); }
 `
 
 /**

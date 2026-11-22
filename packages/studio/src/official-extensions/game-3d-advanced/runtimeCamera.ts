@@ -119,7 +119,8 @@ export const gameKit3DCameraRuntimeSource = `
     var p = camMode.pivot;
     if (p && p.mesh) {
       if (sameCamEntity(p, camMode.pivotGen)) { v.set(p.mesh.position.x, p.mesh.position.y, p.mesh.position.z); return; }
-      camMode.pivot = null; // o alvo morreu (ou o slot virou outro): volta à origem
+      // o alvo morreu (ou o slot virou outro): volta à origem
+      camMode.pivot = null;
       v.set(0, 0, 0);
       return;
     }

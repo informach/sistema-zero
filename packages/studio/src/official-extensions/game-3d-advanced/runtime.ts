@@ -3807,6 +3807,7 @@ const gameKit3DRuntimeAfterModelSource = `
     timeLeft: guard('timeLeft', function () { return rules.timeLeft(); }),
     stopTimer: guard('stopTimer', function () { rules.stopTimer(); }),
     onTimerEnd: guard('onTimerEnd', function (fn) { rules.onTimerEnd(fn); }),
+    onEnterRegion: rules.onEnterRegion,
     say: guard('say', say),
     hideSay: guard('hideSay', hideSay),
     playAnim: guard('playAnim', function (e, name, loop) { playAnim(e, name, loop !== false); }),
@@ -4058,6 +4059,7 @@ function composeGameKit3DRuntime(sceneSource: string, investigate = false): stri
         gameKit3DRuntimeAfterModelSource,
       investigate ? GAME_KIT_3D_INVESTIGATION : null,
     ),
+    sceneSource !== gameKit3DSceneAbsentRuntimeSource,
   )
     .replace('  /*__SZ_GAME_KIT_3D_PHYSICS_RUNTIME__*/', () => gameKit3DPhysicsRuntimeSource)
     .replace('  /*__SZ_GAME_KIT_3D_CAMERA_RUNTIME__*/', () => gameKit3DCameraRuntimeSource)

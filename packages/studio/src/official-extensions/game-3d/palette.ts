@@ -20,6 +20,7 @@ export const GAME_THREE_D_PALETTE: ExtensionPaletteTree = [
           'sz_g3d_create_fullscreen_scene',
           'sz_g3d_load_scene',
           'sz_g3d_scene_start',
+          'sz_g3d_on_enter_region',
           'sz_g3d_animate',
           'sz_g3d_create_scene',
         ],

@@ -24,6 +24,12 @@ documento.marcadores = [
     configuracao: { tipo: 'inicio', principal: true },
   },
 ]
+// Duas regiões (lote 6 da conclusão, 22/11/2026): o herói começa no Campo, e as estrelas do fundo
+// ficam no Pomar. O exemplo usa o "Quando … entrar na região".
+documento.regioes = [
+  { id: 'campo', nome: 'Campo', caixa: { x0: -16, z0: -4, x1: 16, z1: 16 }, vizinhas: ['pomar'] },
+  { id: 'pomar', nome: 'Pomar', caixa: { x0: -16, z0: -16, x1: 16, z1: -4 }, vizinhas: ['campo'] },
+]
 const semRecurso = async (): Promise<ArrayBuffer> => {
   throw Error('A cena autoral não depende de acervo externo.')
 }

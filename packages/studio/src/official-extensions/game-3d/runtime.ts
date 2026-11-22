@@ -2065,7 +2065,8 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     if (kind === 'jump') _beep('square', 300, 700, 0.16, 'linear');
     else if (kind === 'explosion') _beep('sawtooth', 180, 40, 0.4, 'exp');
     else if (kind === 'hit') _beep('square', 440, 110, 0.12, 'exp');
-    else _beep('square', 880, 1320, 0.18, 'exp'); // coin (padrão)
+    // coin (padrão)
+    else _beep('square', 880, 1320, 0.18, 'exp');
   }
   // ---- Sons do projeto (os arquivos que a crianca enviou) ----
   // O bipe acima e sintetizado; isto aqui toca o mp3/wav importado em "Imagens e
@@ -3156,10 +3157,12 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
   // GENÉRICOS de grade/isométrico + Kit Travessia (atravessar a rua).
   // Mundo z-up (chão no plano XY, altura em Z). Escala: 1 tile = 1 unidade.
   // ======================================================================
-  var TS = 1; // tamanho do tile (unidade do mundo)
+  // tamanho do tile (unidade do mundo)
+  var TS = 1;
   var MIN_TILE = -8;
   var MAX_TILE = 8;
-  var TILES_PER_ROW = MAX_TILE - MIN_TILE + 1; // 17
+  // 17
+  var TILES_PER_ROW = MAX_TILE - MIN_TILE + 1;
 
   // Descarta recursivamente as geometrias/materiais de um grupo (higiene de GPU).
   function disposeGroup(group, disposeTextures, seen, forceGeometries) {
@@ -3205,7 +3208,8 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
   function makeIsoCamera(canvas) {
     var w = canvasDimension(canvas, 'width', 480);
     var h = canvasDimension(canvas, 'height', 360);
-    var vs = 14; // unidades visíveis na vertical
+    // unidades visíveis na vertical
+    var vs = 14;
     var ratio = w / h;
     var cam = new THREE.OrthographicCamera(
       (-vs * ratio) / 2, (vs * ratio) / 2, vs / 2, -vs / 2, 0.1, 1000
@@ -3629,7 +3633,8 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     if (!belongsToWorld(world, obj, 'crosser-step-world', 'Atualizar o personagem da travessia')) return;
     var cs = crossingState(world);
     var g = gridData(obj);
-    g.world = world; // para o crosserMove validar
+    // para o crosserMove validar
+    g.world = world;
     if (cs.gameOver) return;
     wireGridKeys(obj, world);
     animateStep(obj);
@@ -3807,7 +3812,8 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
   function makeAerialCamera(canvas) {
     var w = canvasDimension(canvas, 'width', 480);
     var h = canvasDimension(canvas, 'height', 360);
-    var vs = 30; // unidades visíveis na vertical (vê a pista inteira)
+    // unidades visíveis na vertical (vê a pista inteira)
+    var vs = 30;
     var ratio = w / h;
     var cam = new THREE.OrthographicCamera(
       (-vs * ratio) / 2, (vs * ratio) / 2, vs / 2, -vs / 2, 0.1, 2000
@@ -4052,7 +4058,8 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
   // GENÉRICOS de movimento/física SEM lib (cair com tombo, deslizar, girar)
   // + Kit Empilhar (Stack). Mundo y-up: empilha em +Y, gravidade -Y.
   // ======================================================================
-  var FALL_G = -0.012; // aceleração da gravidade por quadro (queda livre)
+  // aceleração da gravidade por quadro (queda livre)
+  var FALL_G = -0.012;
 
   // Estado de queda por objeto (lazy): velocidade + giro (tombo).
   function fallData(obj) {
@@ -4114,11 +4121,16 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
   }
 
   // ---- Kit Empilhar (torre de blocos; câmera iso que sobe) ----
-  var STACK_H = 1;        // altura de cada andar
-  var STACK_W0 = 3;       // largura/profundidade inicial
-  var STACK_SPEED = 0.07; // velocidade que o bloco do topo desliza
-  var STACK_START = 10;   // de onde o bloco entra (no eixo que desliza)
-  var STACK_LIMIT = 10;   // passou disso sem soltar = errou
+  // altura de cada andar
+  var STACK_H = 1;
+  // largura/profundidade inicial
+  var STACK_W0 = 3;
+  // velocidade que o bloco do topo desliza
+  var STACK_SPEED = 0.07;
+  // de onde o bloco entra (no eixo que desliza)
+  var STACK_START = 10;
+  // passou disso sem soltar = errou
+  var STACK_LIMIT = 10;
 
   // Câmera ortográfica isométrica y-up (igual à referência: olha p/ 0,0,0).
   function makeStackCamera(canvas) {
@@ -4200,8 +4212,10 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
       warnOnce('stack-already-built', 'a torre já foi montada; use recomeçar para reconstruí-la.');
       return;
     }
-    addStackLayer(st, 0, 0, STACK_W0, STACK_W0, null);          // fundação (fixa)
-    addStackLayer(st, -STACK_START, 0, STACK_W0, STACK_W0, 'x'); // 1º bloco deslizante
+    // fundação (fixa)
+    addStackLayer(st, 0, 0, STACK_W0, STACK_W0, null);
+    // 1º bloco deslizante
+    addStackLayer(st, -STACK_START, 0, STACK_W0, STACK_W0, 'x');
     st.score = 0; st.gameOver = false;
   }
   // O bloco do topo inteiro vira sobra e cai (errou o encaixe).
@@ -4242,7 +4256,8 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     var top = st.layers[st.layers.length - 1];
     var prev = st.layers[st.layers.length - 2];
     if (!prev) return;
-    var dir = top.direction; // 'x' ou 'z'
+    // 'x' ou 'z'
+    var dir = top.direction;
     var size = dir === 'x' ? top.width : top.depth;
     var delta = top.mesh.position[dir] - prev.mesh.position[dir];
     var overhangSize = Math.abs(delta);
@@ -4450,6 +4465,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     onClickObject: rules.onClickObject,
     onCanvasClick: rules.onCanvasClick,
     onTouchGroup: rules.onTouchGroup,
+    onEnterRegion: rules.onEnterRegion,
     createScene: createScene,
     createFullscreenScene: createFullscreenScene,
     setBackground: setBackground,
@@ -4636,6 +4652,7 @@ function composeGameThreeDRuntime(
               () => gameThreeDModelAssetsRuntimeSource,
             ),
         ),
+        sceneSource !== gameThreeDSceneAbsentRuntimeSource,
       ),
     ),
     // Sem crase no runtime composto: a indentação sai do payload sem mudar texto nenhum.

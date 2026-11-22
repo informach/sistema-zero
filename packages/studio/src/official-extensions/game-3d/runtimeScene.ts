@@ -160,6 +160,9 @@ export const gameThreeDSceneRuntimeSource = `
     if (world.camera.parent) world.camera.parent.worldToLocal(to);
     world.camera.position.copy(to);
   }
+
+  // "Quando entrar na região" (as regras): a região do cenário onde o objeto está.
+  function sceneRegion(obj, at, name) { var w = _currentWorld(), h = w && w._sceneHandle; return h && h.regiao(obj, at, name); }
 `
 
 /**

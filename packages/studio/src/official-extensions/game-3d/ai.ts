@@ -8,6 +8,7 @@ Encostar · Grupos · Placar, vida e telas · Tempo e sorteio · Som · Kits pro
 Cena, céu e câmera:
 - loadScene(world, "id-do-cenario"): usa uma cena completa já trazida do Molda, por ID estável; escolha em Ao iniciar. Conserva objetos, câmera e controles; o primeiro preparo segura o movimento.
 - sceneStart(obj): coloca o personagem no início compilado, apoiado no solo. Pode ser chamado durante a carga; uma posição explícita posterior tem prioridade. Com cenário, topDown e o passo físico usam suas superfícies/recortes. Não criar um piso plano substituto nem outro motor de movimento.
+- onEnterRegion(obj, "Vila", () => {...}): roda UMA vez cada vez que obj entra na região do cenário (também se já começa dentro). Em Quando acontecer. Só os nomes de região que o cenário tem (desenhados no Molda Cenários, na aba Jogo); não invente nomes.
 - createFullscreenScene(background) -> world: caminho recomendado; cria canvas responsivo em tela cheia.
 - createScene(canvasId) -> world { scene, camera, renderer }: cria cena+câmera+luz num canvas do HTML.
 - animate(world, fn): "A cada quadro da cena". Várias atualizações da mesma cena rodam em ordem e produzem um único desenho por quadro. Se uma falhar, somente ela é pausada.

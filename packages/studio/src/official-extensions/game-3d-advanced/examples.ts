@@ -22364,7 +22364,7 @@ export const heroiDoMoldaExample: ExtensionExample = {
         },
         {
           type: 'g3k:loadScene',
-          asset: 'e487b2099a0ecef566ccef06126ddd2b8a6e29d4f5a8aebac1c122f2daef09ba',
+          asset: 'dcf98aca7e80238a583b0322634d17a9bea06471ef2bb5f07b0679976fb8a243',
         },
         {
           type: 'g3k:screenText',
@@ -22746,6 +22746,38 @@ export const heroiDoMoldaExample: ExtensionExample = {
                   ],
                 },
               ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onGame',
+          event: 'regiao',
+          objVar: 'heroi',
+          region: 'Campo',
+          body: [
+            {
+              type: 'g3k:cornerText',
+              corner: 'top-right',
+              text: {
+                type: 'str',
+                value: 'No campo',
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onGame',
+          event: 'regiao',
+          objVar: 'heroi',
+          region: 'Pomar',
+          body: [
+            {
+              type: 'g3k:cornerText',
+              corner: 'top-right',
+              text: {
+                type: 'str',
+                value: 'No pomar das estrelas',
+              },
             },
           ],
         },

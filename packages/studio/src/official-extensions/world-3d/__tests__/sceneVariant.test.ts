@@ -37,7 +37,12 @@ describe('Cenário do Molda no Mundo 3D: o substituto cobre o fragmento', () => 
     // Anti-vácuo: o fragmento tem as funções e o estado do cenário.
     expect(functions.length).toBeGreaterThanOrEqual(13)
     expect(state.length).toBeGreaterThanOrEqual(5)
-    for (const name of functions)
+    // `sceneRegion` só é chamada pelo subfragmento das regiões das regras, que não entra no motor
+    // sem cenário (`withGameRules3DRuntime(fonte, false)`): ali ela não precisa de substituto, e a
+    // prova é o motor sem cenário não citá-la.
+    expect(functions).toContain('sceneRegion')
+    expect(semCenario).not.toContain('sceneRegion')
+    for (const name of functions.filter((n) => n !== 'sceneRegion'))
       expect(
         new RegExp(String.raw`\bfunction ${name}\(|\b${name} = sceneAbsent\b`).test(
           world3DSceneAbsentRuntime,

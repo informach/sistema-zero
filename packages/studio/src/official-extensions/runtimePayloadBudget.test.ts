@@ -130,10 +130,13 @@ const BUDGETS: readonly {
   // sombra): 248_765 caracteres; gzip Windows 70_123. Linux medido no CI em 386eb685b (89
   // caracteres a menos): 67_504.
   {
+    // 22/11 (lote 6 da conclusão: o bloco "Quando entrar na região", pago pela troca do laço de
+    // apoio pelo `fisica.apoio` do SDK e pelos comentários de fim de linha levados para linha própria):
+    // 248_020 caracteres, gzip Windows 69_686 (o Linux desce com a medida do CI).
     extension: gameThreeDExtension,
-    maxChars: 248_900,
+    maxChars: 248_100,
     maxGzipBytes: 67_650, // Linux medido: 67_520
-    maxGzipBytesWindows: 70_250,
+    maxGzipBytesWindows: 69_800,
   },
   // Sem cenário, com o kit. Medido: 241_722 caracteres; gzip Windows 68_289. Antes de 19/11
   // (e193c8f8f): 238_497 / Linux 64_810 / Windows 67_291 (teto 238_550). A diferença,
@@ -144,9 +147,10 @@ const BUDGETS: readonly {
     extension: gameThreeDExtension,
     variant: 'sem cenário',
     context: { code: 'SZGame3D.loadStage(cena, mapa)' },
-    maxChars: 241_800,
+    // 22/11 (lote 6): 240_939 caracteres, gzip Windows 67_786.
+    maxChars: 241_000,
     maxGzipBytes: 65_900, // Linux medido: 65_783
-    maxGzipBytesWindows: 68_400,
+    maxGzipBytesWindows: 67_900,
   },
   // ⬇️ Lote 14 do review 3D (P2): o Kit Plataforma (`runtimePlatform.ts`) só entra quando o
   // código do projeto usa um método dele (`game-3d/platformKitVariant.ts`); os outros 20
@@ -179,9 +183,10 @@ const BUDGETS: readonly {
     // Antes: 204_415; gzip Linux 55_387 / Windows 57_577. Evidência acima.
     // 20/11 (decisão acima): este contexto não usa cenário. Medido: 207_640 caracteres; gzip
     // Windows 58_573. A mesma composição da variante "sem cenário" do Jogo 3D.
-    maxChars: 207_700,
+    // 22/11 (lote 6): 207_326 caracteres, gzip Windows 58_329.
+    maxChars: 207_400,
     maxGzipBytes: 56_450, // Linux medido: 56_343
-    maxGzipBytesWindows: 58_700,
+    maxGzipBytesWindows: 58_450,
   },
   // Com cenário, sem o kit. Medido 20/11: 214_683 caracteres; gzip Windows 60_412. Linux
   // medido no CI em 386eb685b (89 caracteres a menos): 58_082.
@@ -191,9 +196,10 @@ const BUDGETS: readonly {
     context: {
       code: 'const cena = SZGame3D.createScene("tela"); SZGame3D.loadScene(cena, "ilha")',
     },
-    maxChars: 214_800,
+    // 22/11 (lote 6): 214_407 caracteres, gzip Windows 60_237.
+    maxChars: 214_500,
     maxGzipBytes: 58_250, // Linux medido: 58_099
-    maxGzipBytesWindows: 60_550,
+    maxGzipBytesWindows: 60_350,
   },
   // Medido: 341_986 caracteres, 93_312 bytes gzip.
   // ⚠️ SUBIU nos lotes 8-9 do review 3D: o Mundo 3D passou a injetar o fragmento COMPARTILHADO
@@ -258,10 +264,13 @@ const BUDGETS: readonly {
   // 20/11 (decisão acima): este é o completo, com cenário. Medido: 357_367 caracteres; gzip
   // Windows 106_823; Linux 102_838 (achado T3 fechado: o Linux tem medição própria).
   {
+    // 22/11 (lote 6 da conclusão: o bloco "Quando entrar na região", pago pela troca do laço de
+    // apoio pelo `fisica.apoio` do SDK e pelos comentários de fim de linha levados para linha própria):
+    // 350_553 caracteres, gzip Windows 103_443 (antes 357_367 / 106_823).
     extension: worldThreeDExtension,
-    maxChars: 357_450,
+    maxChars: 350_650,
     maxGzipBytes: 102_950,
-    maxGzipBytesWindows: 106_950,
+    maxGzipBytesWindows: 103_550,
   },
   // Sem cenário. Medido: 349_931 caracteres; gzip Windows 104_710. Antes de 19/11: 346_415 /
   // Windows 103_642 (teto 346_500). A diferença é da mesma natureza da do Jogo 3D: ganchos do
@@ -271,9 +280,10 @@ const BUDGETS: readonly {
     extension: worldThreeDExtension,
     variant: 'sem cenário',
     context: { code: 'SZWorld3D.setup({ style: "floresta" })' },
-    maxChars: 350_000,
+    // 22/11 (lote 6): 342_786 caracteres, gzip Windows 101_227 (antes 349_931 / 104_710).
+    maxChars: 342_900,
     maxGzipBytes: 100_900, // Linux medido: 100_755
-    maxGzipBytesWindows: 104_850,
+    maxGzipBytesWindows: 101_350,
   },
   // Medido: 213_707 caracteres, 62_113 bytes gzip.
   // ⬇️ DESCEU no lote 11 (o Avançado consome as regras comuns): entrou o fragmento
@@ -328,10 +338,13 @@ const BUDGETS: readonly {
   // para linha própria, e o recado das faíscas diz o que fazer. Medido no Windows: 217_833
   // caracteres, 63_490 gzip; o Linux estimado pela razão medida no CI (0,962): ~61_080.
   {
+    // 22/11 (lote 6 da conclusão: o bloco "Quando entrar na região", pago pela troca do laço de
+    // apoio pelo `fisica.apoio` do SDK e pelos comentários de fim de linha levados para linha própria):
+    // 217_947 caracteres, gzip Windows 63_470: o bloco coube no teto de antes.
     extension: gameKit3DExtension,
     maxChars: 217_950,
     maxGzipBytes: 61_250,
-    maxGzipBytesWindows: 63_600,
+    maxGzipBytesWindows: 63_550,
   },
   // Sem cenário. Medido: 213_058 caracteres; gzip Windows 62_755. Antes de 19/11 (81dfb3d8d):
   // 210_644 / Windows 62_048 (teto 210_700). Mesma natureza: ganchos do cenário na física, na

@@ -205,6 +205,9 @@ export const gameKit3DSceneRuntimeSource = `
     else pivotInto(focus);
     importedScene.quadro(camera, focus);
   }
+
+  // "Quando entrar na região" (as regras): a região do cenário onde está o primeiro vivo do molde.
+  function sceneRegion(m, at, n) { var e; forEachAlive(m, function (x) { e = x; }); return importedScene && importedScene.regiao(e, at, n); }
 `
 
 /**

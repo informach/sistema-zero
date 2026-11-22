@@ -34,6 +34,15 @@ export const GAME_RULES_ENABLED_PREFIXES: readonly GameRulesPrefix[] = ['g3d', '
 export const GAME_RULES_IMPLICIT_HERO_PREFIXES: readonly GameRulesPrefix[] = ['w3d']
 
 /**
+ * Prefixos em que "Quando ⟨…⟩ entrar na região" segue um MOLDE (o primeiro vivo dele), não uma
+ * variável: no 3D Avançado as entidades nascem dentro do "Quando o jogo entrar no estado", e a
+ * regra mora no ⚡ Quando acontecer, onde a variável não existe. O `objVar` guarda o nome do
+ * molde, e o código sai com ele entre aspas (`onEnterRegion("heroi", "Vila", …)`), como os
+ * outros "Quando…" de molde de lá.
+ */
+export const GAME_RULES_REGION_BY_MOLD_PREFIXES: readonly GameRulesPrefix[] = ['g3k']
+
+/**
  * Regras que um prefixo NÃO oferece (nem bloco, nem leitura na Ponte): no Mundo 3D não há
  * objetos nem grupos da criança, então piscar, tecla, clique e encostar ficam de fora (o mundo já
  * tem os seus "Quando…"). Os nomes são os MÉTODOS do global.
@@ -112,6 +121,7 @@ export type GameRulesEvent =
   | 'clique'
   | 'clique-cena'
   | 'encostar'
+  | 'regiao'
 
 /** Interfaces, não interseções: uma união de interseções aninhada estoura o TS2590. */
 interface Common {
@@ -181,6 +191,8 @@ interface OnGameRule extends Common {
   key?: string
   groupVar?: string
   itemName?: string
+  /** O nome da região do cenário ("Quando ⟨obj⟩ entrar na região ⟨nome⟩"; lote 6 da conclusão). */
+  region?: string
   body: JSStatement[]
 }
 
@@ -342,13 +354,13 @@ function checkOnGame(node: OnGameRule, ctx: Ctx): void {
   switch (node.event) {
     case 'vida-acabou':
       checkLifeOwner(ctx, node)
-      forbid(ctx, record, ['key', 'groupVar', 'itemName'], 'em "quando a vida acabar"')
+      forbid(ctx, record, ['key', 'groupVar', 'itemName', 'region'], 'em "quando a vida acabar"')
       return
     case 'tempo-acabou':
       forbid(
         ctx,
         record,
-        ['objVar', 'key', 'groupVar', 'itemName'],
+        ['objVar', 'key', 'groupVar', 'itemName', 'region'],
         'em "quando a contagem acabar"',
       )
       return
@@ -360,14 +372,24 @@ function checkOnGame(node: OnGameRule, ctx: Ctx): void {
           message: `A tecla "${String(node.key ?? '')}" não está na lista do bloco.`,
         })
       }
-      forbid(ctx, record, ['objVar', 'groupVar', 'itemName'], 'em "quando apertar a tecla"')
+      forbid(
+        ctx,
+        record,
+        ['objVar', 'groupVar', 'itemName', 'region'],
+        'em "quando apertar a tecla"',
+      )
       return
     case 'clique':
       requireNamed(ctx, node.objVar, 'objVar', EMPTY_NAME)
-      forbid(ctx, record, ['key', 'groupVar', 'itemName'], 'em "quando clicar"')
+      forbid(ctx, record, ['key', 'groupVar', 'itemName', 'region'], 'em "quando clicar"')
       return
     case 'clique-cena':
-      forbid(ctx, record, ['objVar', 'key', 'groupVar', 'itemName'], 'em "quando clicar no jogo"')
+      forbid(
+        ctx,
+        record,
+        ['objVar', 'key', 'groupVar', 'itemName', 'region'],
+        'em "quando clicar no jogo"',
+      )
       if (!node.type.startsWith('g3d:'))
         ctx.addIssue({
           code: 'custom',
@@ -378,7 +400,7 @@ function checkOnGame(node: OnGameRule, ctx: Ctx): void {
     case 'encostar':
       requireNamed(ctx, node.objVar, 'objVar', EMPTY_NAME)
       requireNamed(ctx, node.groupVar, 'groupVar', EMPTY_GROUP)
-      forbid(ctx, record, ['key'], 'em "quando encostar"')
+      forbid(ctx, record, ['key', 'region'], 'em "quando encostar"')
       if (node.itemName !== undefined) {
         requireNamed(ctx, node.itemName, 'itemName', 'Dê um nome a quem encostou (ex.: item).')
         // O nome de quem encostou SOMBREIA o grupo (ou o objeto) dentro do corpo: "tirar do
@@ -397,6 +419,18 @@ function checkOnGame(node: OnGameRule, ctx: Ctx): void {
           })
         }
       }
+      return
+    case 'regiao':
+      if (implicitHero(node.type))
+        forbid(ctx, record, ['objVar'], 'aqui: quem entra na região é sempre o jogador')
+      else requireNamed(ctx, node.objVar, 'objVar', EMPTY_NAME)
+      requireNamed(
+        ctx,
+        node.region,
+        'region',
+        'Escolha a região (o nome que ela tem no Molda Cenários).',
+      )
+      forbid(ctx, record, ['key', 'groupVar', 'itemName'], 'em "quando entrar na região"')
       return
   }
 }
@@ -487,11 +521,13 @@ export function gameRulesStatementSchemas(
           'clique',
           'clique-cena',
           'encostar',
+          'regiao',
         ]),
         objVar: irText().optional(),
         key: irText().optional(),
         groupVar: irText().optional(),
         itemName: irText().optional(),
+        region: irText().optional(),
         body: z.array(statement),
         ...id,
       })

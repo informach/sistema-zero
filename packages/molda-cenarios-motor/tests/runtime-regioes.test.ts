@@ -5,8 +5,9 @@ import {
   type PacoteCompilado,
 } from '@sistemazero/molda-cenarios-core/compilar'
 import type { RegiaoDeCenario } from '@sistemazero/molda-cenarios-core/v2'
-import { Matrix4, PerspectiveCamera, Vector3 } from 'three'
+import { Matrix4, PerspectiveCamera, Scene, Vector3 } from 'three'
 import { ArquivosDaCompilacao } from '../src/compilar/arquivos'
+import { criarInstaladorDeCenasThree } from '../src/compilar/instalar-three'
 import { type CenaNoThree, carregarCenaNoThree } from '../src/compilar/runtime-three'
 import { exemplo, glb } from './fixtures/glb-compilacao'
 
@@ -247,4 +248,52 @@ test('dez idas e voltas entre A e C terminam com as mesmas contagens', async () 
   expect(nos(cena)).toEqual(['no-a', 'no-b', 'no-d', 'no-poste'])
   // Os modelos de A, B, D e do poste e as colisões de A, B e D: nada a mais na memória.
   expect(cena.estadoDasRegioes()!.arquivos).toBe(7)
+})
+
+test('a região de um alvo pelo nome, com a tolerância de quem estava lá', async () => {
+  const { cena } = await abrir()
+  expect(cena.regiao({ x: 50, z: 50 })).toBe('A')
+  expect(cena.regiao({ position: { x: 100.3, z: 50 } })).toBe('B')
+  expect(cena.regiao({ mesh: { position: { x: 100.3, z: 50 } } }, 'A')).toBe('A')
+  expect(cena.regiao({ x: 50, z: -30 }, 'A')).toBeNull()
+  expect(cena.regiao(null)).toBeNull()
+  // A carga inteira de uma cena com regiões também responde: a régua é do documento.
+  const inteira = await abrir({})
+  expect(inteira.cena.regiao({ x: 250, z: 50 })).toBe('C')
+})
+
+test('o nome de região que a cena não tem é avisado uma vez', async () => {
+  const { cena } = await abrir()
+  const avisos: string[] = []
+  const warn = console.warn
+  console.warn = (msg: string) => avisos.push(msg)
+  try {
+    for (let i = 0; i < 3; i++) cena.regiao({ x: 50, z: 50 }, null, 'Vila')
+    cena.regiao({ x: 50, z: 50 }, null, 'A')
+  } finally {
+    console.warn = warn
+  }
+  expect(avisos).toEqual([
+    'O cenário não tem a região "Vila". Desenhe as regiões no Molda Cenários, na aba Jogo.',
+  ])
+})
+
+test('instalada na cena do jogo, a consulta de colisões acompanha a troca de região', async () => {
+  const p = await pacote(),
+    instalador = criarInstaladorDeCenasThree(
+      async (_id, sinal, opcoes) => carregarCenaNoThree(p, sinal, opcoes),
+      () => ({}),
+    )
+  try {
+    const cena = await instalador.instalar('grade', new Scene(), new AbortController().signal, {
+      ambiente: 'luzes-locais',
+      carga: 'regioes',
+    })
+    expect(ondeHaChao(cena, 'c')).toBe(false)
+    await andar(cena, 250, 50)
+    // Sem copiar o getter, o objeto instalado ficava com o mundo da janela inicial.
+    expect(ondeHaChao(cena, 'c')).toBe(true)
+  } finally {
+    instalador.descartar()
+  }
 })

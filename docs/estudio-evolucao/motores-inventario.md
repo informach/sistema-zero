@@ -87,6 +87,36 @@ As cinco aulas protegidas passaram no navegador com os motores novos (`e2e/prote
 5 de 5), a matriz dos cursos (43) e os testes completos dos três motores mexidos (Jogo 2D e cenas
 3.345, Avançado 1.237, 3D Avançado 576).
 
+### O bloco "Quando entrar na região" pagou os próprios bytes (22/11/2026, lote 6 da conclusão)
+
+O bloco entrou nos três motores 3D do JavaScript sem subir teto nenhum. Cada motor pagou o seu:
+
+- **O laço de apoio de 9 amostras saiu dos três motores** e virou `fisica.apoio` do SDK dos
+  cenários (`three/scene3dPhysics.ts`, o mesmo resultado do laço antigo, conferido por teste).
+- **O fragmento das regras ganhou um subfragmento de regiões** (`/*__SZ_GAME_RULES_REGIONS__*/`):
+  o "Quando entrar na região" só entra no motor com o cenário do Molda; sem cenário, três nomes
+  vazios (`withGameRules3DRuntime(fonte, false)`).
+- **176 comentários no fim de linhas de código** dos fragmentos dos motores 3D foram para uma linha
+  própria (o compactar só tira a linha inteira; no fim da linha eles iam para o jogo). No Mundo 3D
+  isso desceu ~7 mil caracteres e ~3,4 KB gzip.
+- No 3D Avançado o bloco segue um **molde** (as entidades nascem dentro do "Quando o jogo entrar no
+  estado", e a regra mora no ⚡ Quando acontecer, onde a variável não existe): o motor procura o
+  primeiro vivo do molde com o `forEachAlive` que já existia.
+
+| Runtime | Antes (20/11 e 21/11) | Depois (22/11) | Tetos (caracteres; gzip Windows) |
+|---|---|---|---|
+| Jogo 3D (completo) | 248.765; 70.123 | 248.020; 69.686 | 248.900 → 248.100; 70.250 → 69.800 |
+| Jogo 3D sem cenário | 241.722; 68.289 | 240.939; 67.786 | 241.800 → 241.000; 68.400 → 67.900 |
+| Jogo 3D sem Kit e sem cenário | 207.640; 58.573 | 207.326; 58.329 | 207.700 → 207.400; 58.700 → 58.450 |
+| Jogo 3D sem Kit, com cenário | 214.683; 60.412 | 214.407; 60.237 | 214.800 → 214.500; 60.550 → 60.350 |
+| Mundo 3D (completo) | 357.367; 106.823 | 350.553; 103.443 | 357.450 → 350.650; 106.950 → 103.550 |
+| Mundo 3D sem cenário | 349.931; 104.710 | 342.786; 101.227 | 350.000 → 342.900; 104.850 → 101.350 |
+| 3D Avançado (completo) | 217.833; 63.490 | 217.947; 63.470 | 217.950 (igual); 63.600 → 63.550 |
+| 3D Avançado sem cenário | 210.202; 61.269 | 210.265; 61.234 | 210.300 (igual); 61.400 (igual) |
+
+O gzip do Linux desce com a medida do CI do commit (o teste a registra no log): até lá ficam os
+tetos de antes, que a medida nova não alcança.
+
 ## A GPU em 10 recomeços (descarte medido)
 
 `e2e/engine-gpu-cycles.spec.ts` (config própria, `playwright.engines.config.ts`, e workflow

@@ -16,7 +16,8 @@ const gameKit3DModelAssetsRuntimeTemplate = `  // ---- 🧊 Modelos 3D de verdad
     : {};
   var _environmentTexture = null;
   var _pendingEnvironmentTexture = null;
-  var _skyPhotoRequest = 0;  // impede uma carga antiga de vencer a escolha mais nova
+  // impede uma carga antiga de vencer a escolha mais nova
+  var _skyPhotoRequest = 0;
   // O start() ESPERA os modelos (o MESMO array dos sons): o template fica remendado ANTES
   // do primeiro spawn, porque o spawn CLONA o template.
   var models = createSzModels({

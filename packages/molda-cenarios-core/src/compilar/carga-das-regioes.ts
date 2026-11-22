@@ -59,6 +59,24 @@ function distanciaAteCaixa(p: PontoNoChao, c: RegiaoDaCarga['caixa']): number {
   return Math.hypot(dx, dz)
 }
 
+/**
+ * A região de um ponto com a tolerância da borda: quem estava em `anterior` continua nela até
+ * passar meio metro além da caixa; senão, a região que contém o ponto; fora de todas, `null`. É a
+ * régua do plano da carga e do bloco "Quando entrar na região" (cada objeto guarda a sua).
+ */
+export function regiaoDoPonto(
+  regioes: readonly RegiaoDaCarga[],
+  p: PontoNoChao,
+  anterior: string | null = null,
+): string | null {
+  if (anterior !== null) {
+    const r = regioes.find((x) => x.id === anterior)
+    if (r && distanciaAteCaixa(p, r.caixa) <= REGRAS_DA_CARGA.tolerancia) return anterior
+  }
+  for (const r of regioes) if (distanciaAteCaixa(p, r.caixa) === 0) return r.id
+  return null
+}
+
 /** O plano da carga de uma cena com regiões. `atualizar` a cada quadro. */
 export function criarPlanoDaCarga(regioes: readonly RegiaoDaCarga[]) {
   if (!regioes.length) throw Error('O plano da carga precisa de ao menos uma região.')
@@ -68,16 +86,6 @@ export function criarPlanoDaCarga(regioes: readonly RegiaoDaCarga[]) {
   // Quando cada região carregada passou a ficar longe (o relógio do descarte).
   const longeDesde = new Map<string, number>()
   const carregadas = new Set<string>()
-
-  const regiaoDoPonto = (p: PontoNoChao): string | null => {
-    // Quem já está numa região fica nela até sair da caixa com a tolerância.
-    if (atual !== null) {
-      const r = porId.get(atual)!
-      if (distanciaAteCaixa(p, r.caixa) <= REGRAS_DA_CARGA.tolerancia) return atual
-    }
-    for (const r of regioes) if (distanciaAteCaixa(p, r.caixa) === 0) return r.id
-    return null
-  }
 
   const maisPerto = (p: PontoNoChao) => {
     let melhor = regioes[0]!
@@ -101,7 +109,7 @@ export function criarPlanoDaCarga(regioes: readonly RegiaoDaCarga[]) {
       if (![foco.x, foco.z, agora].every(Number.isFinite))
         throw Error('O foco e o tempo da carga precisam ser números.')
       const antes = atual
-      atual = regiaoDoPonto(foco)
+      atual = regiaoDoPonto(regioes, foco, atual)
       if (atual !== null) segura = atual
       else if (segura === null) segura = maisPerto(foco)
       // Começar dentro também é entrar: a atual nasce nenhuma.

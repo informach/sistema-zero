@@ -2096,6 +2096,7 @@ const GAME_KIT_THREE_D_RULES = gameRulesBlocks('g3k', {
   objectPicker: 'entity3d',
   groupPicker: 'mold3d',
   keys: THREE_KEY_OPTIONS,
+  regionByMold: true,
   only: [
     'hud_text',
     'add_score',
@@ -2109,6 +2110,7 @@ const GAME_KIT_THREE_D_RULES = gameRulesBlocks('g3k', {
     'random_between',
     'random_chance',
     'camera_shake',
+    'on_enter_region',
   ],
 })
 

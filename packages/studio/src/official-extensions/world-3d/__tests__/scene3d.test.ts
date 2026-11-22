@@ -223,3 +223,27 @@ test('o salto encontra o teto físico da cena antes de atravessá-lo', async () 
   releaseKey(' ', 'Space')
   mundo.api.disposeAll()
 })
+
+test('"Quando o jogador entrar na região" conta cada entrada uma vez, inclusive começando dentro', async () => {
+  const { plano } = await instalarCarregador({ comRegioes: true }),
+    entradas: string[] = [],
+    mundo = await loadStartedWorld((api) => {
+      api.loadScene(plano.assetId)
+      api.person('#448855', 'nenhum')
+      api.personPlace(-10, 0, 0)
+      const regras = api as unknown as { onEnterRegion(name: string, fn: () => void): void }
+      regras.onEnterRegion('Vila', () => entradas.push('Vila'))
+      regras.onEnterRegion('Floresta', () => entradas.push('Floresta'))
+    })
+  mundo.step(3)
+  expect(entradas).toEqual(['Vila'])
+  mundo.api.personPlace(10, 5, 0)
+  mundo.step(3)
+  mundo.api.personPlace(20, 10, 0)
+  mundo.step(3)
+  expect(entradas).toEqual(['Vila', 'Floresta'])
+  mundo.api.personPlace(-10, 0, 0)
+  mundo.step(3)
+  expect(entradas).toEqual(['Vila', 'Floresta', 'Vila'])
+  mundo.api.disposeAll()
+})

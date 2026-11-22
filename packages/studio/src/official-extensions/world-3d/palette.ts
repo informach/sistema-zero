@@ -19,6 +19,7 @@ export const WORLD_THREE_D_PALETTE: ExtensionPaletteTree = [
         types: [
           'sz_w3d_setup',
           'sz_w3d_use_scene',
+          'sz_w3d_on_enter_region',
           'sz_w3d_terrain',
           'sz_w3d_flatten',
           'sz_w3d_path',

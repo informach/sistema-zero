@@ -6,6 +6,7 @@ import {
   type EntidadeCompilada,
   LIMITES_DA_EXPORTACAO,
   type PacoteCompilado,
+  regiaoDoPonto,
 } from '@sistemazero/molda-cenarios-core/compilar'
 import type { FonteDeAlturas } from '@sistemazero/molda-cenarios-core/v2'
 import {
@@ -73,6 +74,11 @@ export interface EstadoDasRegioes {
   arquivos: number
   imagens: number
 }
+/** O que o bloco de região pergunta: um ponto no chão, um objeto do three ou uma entidade. */
+export type AlvoDaRegiao =
+  | { x: number; z: number }
+  | { position: { x: number; z: number } }
+  | { mesh: { position: { x: number; z: number } } }
 export interface CenaNoThree {
   readonly cena: Scene
   readonly raiz: Group
@@ -91,6 +97,18 @@ export interface CenaNoThree {
   /** Na carga por regiões, o `alvo` é o foco que decide o que fica carregado. */
   quadro(camera: Camera, alvo: Vector3): void
   estadoDasRegioes(): EstadoDasRegioes | null
+  /**
+   * A região (pelo nome) onde está o `alvo` (um ponto `{x, z}`, um objeto com `position` ou uma
+   * entidade com `mesh.position`), com a tolerância de meio metro na borda para quem estava em
+   * `anterior`; `null` fora de todas, sem alvo ou numa cena sem regiões. É o que o bloco "Quando
+   * entrar na região" pergunta a cada quadro; com `esperado`, um nome que a cena não tem é
+   * avisado uma vez no console (que o Estúdio mostra em Mensagens do jogo).
+   */
+  regiao(
+    alvo: AlvoDaRegiao | null | undefined,
+    anterior?: string | null,
+    esperado?: string,
+  ): string | null
   descartar(): void
 }
 
@@ -347,6 +365,8 @@ export async function carregarCenaNoThree(
     emCurso: Set<string> | null = null,
     aplicando: Promise<void> | null = null
   const falhas = new Map<string, { tentativa: number; proxima: number }>()
+  /** Os nomes de região que o jogo pediu e a cena não tem (avisados uma vez). */
+  const avisadas = new Set<string>()
 
   /** Leva a carga ao conjunto pedido: carrega o que entra, descarta o que sai. */
   const aplicar = async (alvo: Set<string>) => {
@@ -638,6 +658,31 @@ export async function carregarCenaNoThree(
           alvoDaCarga.size === regioesCarregadas.size &&
           [...alvoDaCarga].every((id) => regioesCarregadas.has(id))
         if (!igual) pedir(alvoDaCarga)
+      },
+      regiao(alvo, anterior = null, esperado) {
+        const todas = dados.regioes ?? []
+        if (
+          esperado !== undefined &&
+          !avisadas.has(esperado) &&
+          !todas.some((r) => r.nome === esperado)
+        ) {
+          avisadas.add(esperado)
+          console.warn(
+            `O cenário não tem a região "${esperado}". Desenhe as regiões no Molda Cenários, na aba Jogo.`,
+          )
+        }
+        const p = !alvo
+          ? undefined
+          : 'mesh' in alvo
+            ? alvo.mesh.position
+            : 'position' in alvo
+              ? alvo.position
+              : alvo
+        if (!todas.length || !p || !Number.isFinite(p.x) || !Number.isFinite(p.z)) return null
+        const antes =
+          anterior === null ? null : (todas.find((r) => r.nome === anterior)?.id ?? null)
+        const id = regiaoDoPonto(todas, { x: p.x, z: p.z }, antes)
+        return id === null ? null : todas.find((r) => r.id === id)!.nome
       },
       estadoDasRegioes() {
         if (!plano) return null

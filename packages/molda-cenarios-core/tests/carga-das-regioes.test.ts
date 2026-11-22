@@ -1,5 +1,9 @@
 import { describe, expect, test } from 'bun:test'
-import { criarPlanoDaCarga, type RegiaoDaCarga } from '../src/compilar/carga-das-regioes'
+import {
+  criarPlanoDaCarga,
+  type RegiaoDaCarga,
+  regiaoDoPonto,
+} from '../src/compilar/carga-das-regioes'
 
 /**
  * Que regiões ficam carregadas enquanto o personagem anda (lote 6 da conclusão, 22/11/2026).
@@ -111,5 +115,15 @@ describe('o que fica carregado', () => {
     expect(() => plano.atualizar(em(Number.NaN), 0)).toThrow()
     expect(() => plano.atualizar(em(1), Number.POSITIVE_INFINITY)).toThrow()
     expect(() => criarPlanoDaCarga([])).toThrow()
+  })
+})
+
+describe('a região de um ponto (a régua do bloco)', () => {
+  test('com a região anterior, a tolerância da borda vale; sem ela, só a caixa', () => {
+    expect(regiaoDoPonto(REGIOES, em(100.4))).toBe('floresta')
+    expect(regiaoDoPonto(REGIOES, em(100.4), 'vila')).toBe('vila')
+    expect(regiaoDoPonto(REGIOES, em(100.6), 'vila')).toBe('floresta')
+    expect(regiaoDoPonto(REGIOES, em(150, 120), 'floresta')).toBeNull()
+    expect(regiaoDoPonto(REGIOES, em(150, 100.3), 'floresta')).toBe('floresta')
   })
 })

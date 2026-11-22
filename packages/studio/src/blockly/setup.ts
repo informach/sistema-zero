@@ -30,6 +30,7 @@ import { registerFieldColourSZ } from './fields/FieldColourSZ'
 import { registerFieldJsonData } from './fields/FieldJsonData'
 import { registerFieldModelClipPicker } from './fields/FieldModelClipPicker'
 import { registerFieldNamePicker } from './fields/FieldNamePicker'
+import { registerFieldSceneRegionPicker } from './fields/FieldSceneRegionPicker'
 import { registerFieldSolidTilesPicker } from './fields/FieldSolidTilesPicker'
 import { registerFieldSoundPicker } from './fields/FieldSoundPicker'
 import { registerFieldSpritePicker } from './fields/FieldSpritePicker'
@@ -306,6 +307,8 @@ export function ensureBlocklyInitialized(): void {
   registerFieldAnimationPicker()
   // Nome da animação de um modelo 3D do Molda (clipes lidos do próprio .glb).
   registerFieldModelClipPicker()
+  // Nome da região de um cenário do Molda (as regiões lidas dos cenários do projeto).
+  registerFieldSceneRegionPicker()
   registerFieldCampaignStage()
   registerFieldJsonData()
   registerFieldSolidTilesPicker()

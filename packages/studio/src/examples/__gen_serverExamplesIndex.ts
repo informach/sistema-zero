@@ -9869,6 +9869,7 @@ export const SERVER_EXAMPLES_INDEX: readonly ServerExampleIndexEntry[] = [
       'sz_g3k_move_with_keys',
       'sz_g3k_on_anim_end',
       'sz_g3k_on_enter_entity_state',
+      'sz_g3k_on_enter_region',
       'sz_g3k_on_enter_state',
       'sz_g3k_on_entity_state_update',
       'sz_g3k_on_overlap',

@@ -6,7 +6,8 @@
  * repetindo), o pulo toca "Esticar" UMA VEZ na mão ("Tocar a animação … uma vez") e o "Quando …
  * terminar a animação" o devolve ao "parado". O floco de gelo CONGELA o herói: "Parar a
  * animação" o deixa duro no lugar até o "depois de 1.5 s" devolvê-lo ao "parado" (e à animação
- * do estado). O objetivo é curto: pôr as cinco estrelas na mochila.
+ * do estado). O objetivo é curto: pôr as cinco estrelas na mochila. O cenário tem duas regiões
+ * (Campo e Pomar), e o "Quando o heroi entrar na região" diz no canto onde o herói está.
  *
  * `bun run gen:game-3d-examples` regrava a IR em examples.ts a partir daqui.
  */
@@ -100,6 +101,12 @@ SZGameKit3D.onOverlap("estrela", function (zona, quem) {
       SZGameKit3D.endGame("ganhou");
     }
   }
+});
+SZGameKit3D.onEnterRegion("heroi", "Campo", function () {
+  SZGameKit3D.hudText("top-right", "No campo");
+});
+SZGameKit3D.onEnterRegion("heroi", "Pomar", function () {
+  SZGameKit3D.hudText("top-right", "No pomar das estrelas");
 });
 SZGameKit3D.onUpdate(function (dt) {
   SZGameKit3D.hudText("top-left", "Estrelas: " + SZGameKit3D.bagCount("estrela") + " de 5");

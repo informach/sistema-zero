@@ -92,7 +92,8 @@ beforeAll(() => {
 describe('Auditoria Jogo 3D Avançado — inventário', () => {
   it('todo def é statement (previousStatement) ou reporter (output)', () => {
     expect(statementDefs.length + exprDefs.length).toBe(gameKit3DBlocks.length)
-    expect(gameKit3DBlocks.length).toBe(150)
+    // 150 → 151 (22/11/2026): "Quando … entrar na região …" do cenário do Molda.
+    expect(gameKit3DBlocks.length).toBe(151)
     for (const def of statementDefs) expect(def.previousStatement).toBe('JSStmt')
     for (const def of exprDefs) expect(def.output).toBe('JSValue')
   })
