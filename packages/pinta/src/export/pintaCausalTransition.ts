@@ -37,8 +37,16 @@ export function pintaCausalRemapChange(operation: RemapOperation): TileIndexChan
 }
 
 function sameDocument(expected: PintaMemoryAsset, proposed: PintaMemoryAsset): boolean {
-  const { updatedAt: _beforeTime, schema: _beforeSchema, ...before } = expected
-  const { updatedAt: _afterTime, schema: _afterSchema, ...after } = proposed
+  const {
+    updatedAt: _beforeTime,
+    schema: _beforeSchema,
+    ...before
+  } = { schema: undefined, ...expected }
+  const {
+    updatedAt: _afterTime,
+    schema: _afterSchema,
+    ...after
+  } = { schema: undefined, ...proposed }
   return pintaValuesEqual(before, after)
 }
 

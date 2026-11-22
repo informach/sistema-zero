@@ -18,6 +18,7 @@ import {
   type PintaAssetReferenceRole,
   pintaAssetSchema,
   sanitizePintaAsset,
+  type TilemapCells,
   tileLayerTilesetId,
   tilemapOfAsset,
   visitPintaAssetDependencies,
@@ -189,7 +190,7 @@ function referencesOf(asset: PintaMemoryAsset): CausalReference[] {
   if (map) {
     const bounds = mapCellBounds(map)
     for (const layer of map.layers) {
-      if (isTileLayer(layer)) {
+      if (isTileLayer<TilemapCells>(layer)) {
         const id = tileLayerTilesetId(map, layer)
         if (dependencies.has(id))
           createTileCellReader(layer.cells, bounds).visitOccupied(bounds, (cell) =>
