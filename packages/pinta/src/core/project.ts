@@ -14,6 +14,7 @@ import {
   parsePintaRegionLayers,
 } from '@sistemazero/core/creations'
 import { PINTA_SOURCE_REF_PATTERN } from '@sistemazero/core/studio/pinta-source-ref'
+import type { AutomapBook } from '../tiles/automapping/book'
 import { cellTile, isValidCell } from '../tiles/cell'
 import { unpackCells } from '../tiles/cellCodec'
 import { sanitizeMaskReferences } from '../vector/mask'
@@ -587,10 +588,9 @@ export interface TilemapAsset<Cells extends TilemapCells = Int16Array> extends P
 }
 
 /** In-memory preparation only; not part of PintaAsset/persistence until all format-8 readers exist. */
-export interface RegionTilemapAsset extends TilemapAsset<PintaRegionCells> {
-  schema: 8
+export type RegionTilemapAsset = TilemapAsset<PintaRegionCells> & {
   origin: { col: number; row: number }
-}
+} & ({ schema: 8; automapping?: never } | { schema: 9; automapping: AutomapBook })
 
 /** Um pedaço reutilizável do mapa; uma instância aponta para o id deste desenho. */
 export interface MapSetAsset<Cells extends TilemapCells = Int16Array> extends PintaAssetBase {

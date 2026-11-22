@@ -62,7 +62,7 @@ async function validGallery({ assets, books }: AutomapGallery) {
   }
   return true
 }
-function encodeBase(assets: readonly PintaMemoryAsset[]) {
+export function encodeAutomapBodies(assets: readonly PintaMemoryAsset[]) {
   const regional = assets.some(
     (a) => (a.kind === 'tilemap' || a.kind === 'map-set') && a.schema === 8,
   )
@@ -111,12 +111,12 @@ function sameEncodedValue(a: unknown, b: unknown, depth = 0): boolean {
 }
 /** Some legacy readers normalize names and omit unknown fields. A native-9 snapshot must
  * survive that boundary intact, including the meaning of name-bound doors in older maps. */
-function readExactBase(raw: readonly unknown[]) {
+export function readExactAutomapBodies(raw: readonly unknown[]) {
   const base = decodeRegionGalleryBackup(
     JSON.stringify({ format: 'pinta-gallery', version: 8, assets: raw }),
   )
   if (base.warnings.length) return null
-  const checked = encodeBase(base.assets)
+  const checked = encodeAutomapBodies(base.assets)
   if (
     !checked ||
     checked.length !== raw.length ||
@@ -128,8 +128,8 @@ function readExactBase(raw: readonly unknown[]) {
 export async function encodeAutomapGallery(gallery: AutomapGallery): Promise<string | null> {
   try {
     if (!(await validGallery(gallery))) return null
-    const encoded = encodeBase(gallery.assets)
-    if (!encoded || !readExactBase(encoded)) return null
+    const encoded = encodeAutomapBodies(gallery.assets)
+    if (!encoded || !readExactAutomapBodies(encoded)) return null
     const doc = automapDocumentEnvelope(encoded, gallery.books)
     return pintaEncodedBackupByteLength(doc.assets, 9) <= MAX_BACKUP_FILE_BYTES
       ? pintaBackupFromEncoded(doc.assets, 9)
@@ -172,7 +172,7 @@ export async function decodeAutomapGallery(text: string): Promise<AutomapGallery
       books.set(asset.id, book)
       raw.push(asset.map)
     }
-    const assets = readExactBase(raw)
+    const assets = readExactAutomapBodies(raw)
     if (!assets) return null
     const result = { assets, books }
     return (await validGallery(result)) ? result : null

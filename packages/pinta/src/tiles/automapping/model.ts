@@ -20,3 +20,10 @@ export interface AutomapRegionEditorDocument {
   map: RegionTilemapAsset
   book: AutomapBook
 }
+
+export type PintaAuthoredMap = AutomapEditorMap | Extract<RegionTilemapAsset, { schema: 9 }>
+export function isPintaAuthoredMap(
+  asset: import('../../core/assetMemory').PintaMemoryAsset,
+): asset is PintaAuthoredMap {
+  return asset.kind === 'tilemap' && asset.schema === 9 && 'automapping' in asset
+}
