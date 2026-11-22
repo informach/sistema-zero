@@ -67,6 +67,16 @@ export class CenarioArquivoSaindoError extends DomainError {
   }
 }
 
+/** O lote cria, muda ou apaga regiões com o interruptor `CENARIOS_REGIOES` desligado neste
+ * ambiente. → 403. Vale para todo lote (inclusive desfazer): sem os leitores prontos, o campo
+ * não entra no documento. */
+export class CenarioRegioesDesligadasError extends DomainError {
+  readonly code = 'CENARIO_REGIOES_DESLIGADAS'
+  constructor() {
+    super('As regiões ainda não estão disponíveis neste ambiente.')
+  }
+}
+
 /** O lote cria ou muda uma ferramenta que o posto de quem pede ainda não liberou. → 403, com as
  * famílias trancadas. Desfazer, refazer e voltar a uma versão nunca caem aqui. */
 export class CenarioFerramentaTrancadaError extends DomainError {

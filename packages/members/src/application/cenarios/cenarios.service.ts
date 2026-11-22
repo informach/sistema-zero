@@ -50,6 +50,7 @@ import {
   CenarioFerramentaTrancadaError,
   CenarioInvalidoError,
   CenarioNaoEncontradoError,
+  CenarioRegioesDesligadasError,
   CenariosFechadosError,
   CenariosSemEspacoError,
 } from '../../domain/cenarios/cenarios.errors'
@@ -185,6 +186,12 @@ export class CenariosService {
     if (!podeUsarCenarios(this.abertura, ator)) return false
     if (ator.equipe && !ator.suporte) return true
     return (await this.abertura.produto?.(ator)) === true
+  }
+
+  /** A resposta de `/acesso`: a oficina aberta e se a ferramenta Regiões vale neste ambiente. */
+  async acesso(ator: Ator): Promise<{ aberto: boolean; regioes: boolean }> {
+    const aberto = await this.aberto(ator)
+    return { aberto, regioes: aberto && this.abertura.regioes === true }
   }
 
   private async exigirAberto(ator: Ator): Promise<void> {
@@ -1022,6 +1029,14 @@ export class CenariosService {
         throw new CenarioInvalidoError(['O lote tem um comando fora do formato'])
       throw erro
     }
+    // O interruptor das regiões: desligado, nenhum lote mexe no campo (nem o desfazer). Os leitores
+    // (o Estúdio, o motor dos cenários e a imagem do studio-runtime) chegam antes do escritor.
+    if (
+      this.abertura.regioes !== true &&
+      JSON.stringify(cenario.documento.regioes ?? null) !==
+        JSON.stringify(depois.documento.regioes ?? null)
+    )
+      throw new CenarioRegioesDesligadasError()
     // A faixa do posto: o lote não cria nem muda uma ferramenta trancada (o agente também não).
     if (autoria && !(ator.equipe && !ator.suporte)) {
       const trancadas = familiasTrancadas(

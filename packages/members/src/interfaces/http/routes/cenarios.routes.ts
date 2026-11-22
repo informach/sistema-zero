@@ -118,7 +118,7 @@ export function cenariosRoutes(deps: CenariosRoutesDeps) {
     .group('/members/cenarios', (app) =>
       app
         // Para o menu saber se mostra a ferramenta. Nunca recusa.
-        .get('/acesso', async ({ headers }) => ({ aberto: await s.aberto(atorDe(headers)) }))
+        .get('/acesso', async ({ headers }) => s.acesso(atorDe(headers)))
         .get('/espacos', ({ headers }) => s.espacos(atorDe(headers)))
         .get('/mundos/:id', ({ headers, params }) => s.abrirMundo(atorDe(headers), params.id), {
           params: Id,

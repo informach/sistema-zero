@@ -475,15 +475,17 @@ describe('Molda Cenários: quem entra', () => {
   })
   test('a equipe vê o espaço dela e o da equipe; o cliente fica de fora', async () => {
     const { app } = buildApp()
+    // Sem o interruptor `CENARIOS_REGIOES`, a ferramenta Regiões não vale (22/11/2026).
     expect(await json(await pedir(app, 'GET', '/members/cenarios/acesso'))).toEqual({
       aberto: true,
+      regioes: false,
     })
     const espacos = await json(await pedir(app, 'GET', '/members/cenarios/espacos'))
     expect(espacos.map((e: { tipo: string }) => e.tipo)).toEqual(['conta', 'equipe'])
 
     expect(
       await json(await pedir(app, 'GET', '/members/cenarios/acesso', undefined, doCliente)),
-    ).toEqual({ aberto: false })
+    ).toEqual({ aberto: false, regioes: false })
     const recusa = await pedir(app, 'GET', '/members/cenarios/espacos', undefined, doCliente)
     expect(recusa.status).toBe(403)
     expect((await json(recusa)).error.code).toBe('CENARIOS_FECHADOS')
@@ -492,13 +494,15 @@ describe('Molda Cenários: quem entra', () => {
     const { app } = buildApp({ cenariosModo: 'aberto', cenariosProduto: async () => false })
     expect(
       await json(await pedir(app, 'GET', '/members/cenarios/acesso', undefined, doCliente)),
-    ).toEqual({ aberto: false })
+    ).toEqual({ aberto: false, regioes: false })
     const recusa = await pedir(app, 'GET', '/members/cenarios/espacos', undefined, doCliente)
     expect(recusa.status).toBe(403)
     expect((await json(recusa)).error.code).toBe('CENARIOS_FECHADOS')
     // A equipe segue entrando.
+    // Sem o interruptor `CENARIOS_REGIOES`, a ferramenta Regiões não vale (22/11/2026).
     expect(await json(await pedir(app, 'GET', '/members/cenarios/acesso'))).toEqual({
       aberto: true,
+      regioes: false,
     })
   })
   test('ferramenta fora da faixa do posto: 403 com as famílias trancadas', async () => {

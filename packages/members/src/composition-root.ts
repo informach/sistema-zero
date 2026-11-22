@@ -464,6 +464,7 @@ export async function createApplication(env: Env): Promise<Application> {
   const cenariosRepo = new DrizzleCenariosRepository(db)
   const cenariosService = new CenariosService(cenariosRepo, clock, {
     modo: env.CENARIOS_MODO,
+    regioes: env.CENARIOS_REGIOES,
     lista: new Set(
       (env.CENARIOS_LISTA ?? '')
         .split(',')

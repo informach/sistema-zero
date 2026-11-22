@@ -161,6 +161,13 @@ export const FAMILIAS_DA_OFICINA = [
     servidor: true,
   },
   {
+    id: 'jogo.regioes',
+    aba: 'jogo',
+    faixa: 'intermediate',
+    rotulo: 'Regiões',
+    servidor: true,
+  },
+  {
     id: 'luz.sol-e-ambiente',
     aba: 'luz',
     faixa: 'intermediate',
@@ -280,6 +287,7 @@ export const FAMILIA_DA_FERRAMENTA: Readonly<
     esfera: 'jogo.zonas-e-rotas',
     poligono: 'jogo.zonas-e-rotas',
     rota: 'jogo.zonas-e-rotas',
+    regiao: 'jogo.regioes',
     camera: 'jogo.cameras',
   },
   luz: {},
@@ -360,6 +368,8 @@ function marcas(doc: DocumentoDeCenario): Map<string, string> {
     else if (tipo === 'camera') marcar('jogo.cameras', mk.id, mk.configuracao)
     else if (tipo === 'luz') marcar('luz.luzes-e-sombra', mk.id, mk.configuracao)
   }
+
+  for (const r of doc.regioes ?? []) marcar('jogo.regioes', r.id, r)
 
   const entidades = [
     ...doc.instancias,
