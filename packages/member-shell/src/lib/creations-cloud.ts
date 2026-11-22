@@ -36,9 +36,19 @@ import {
   canonicalJson,
   PINTA_INVENTORY_READER_VERSION,
   PINTA_MIN_INVENTORY_FORMAT_VERSION,
+  PINTA_PALETTE_LIBRARY_ITEM_ID,
+  PINTA_PALETTE_LIBRARY_KIND,
   pintaInventoryFloorConfirmed,
   sha256Hex,
 } from '@sistemazero/core/creations'
+import {
+  PINTA_PALETTE_WRITE_PROTOCOL,
+  PintaPaletteCommitCapabilitySchema,
+  type PintaPaletteHead,
+  PintaPaletteHeadSchema,
+  type PintaPaletteUploadCapability,
+  PintaPaletteUploadCapabilitySchema,
+} from '@sistemazero/core/creations/pinta-palette-writer'
 import { perfSpanAsync } from './perf'
 import { createPintaCausalCloud, type PintaCausalCloud } from './pinta-causal-cloud'
 
@@ -91,6 +101,8 @@ export interface CreationMeta {
    * Vai na reserva; base vencida = 409 `CREATION_STALE_BASE` (ver `onStale`).
    */
   baseRevision?: number
+  paletteHead?: PintaPaletteHead
+  preparePalette?(revision: number, ticket: PintaPaletteUploadCapability): Promise<boolean>
   /** Impressão digital do conteúdo (rascunho da aula: o "envio em dia" a compara com o envio). */
   fingerprint?: string | null
 }
@@ -139,6 +151,7 @@ export type UploadedListener = (result: {
   itemId: string
   updatedAt: number
   revision: number
+  paletteHead?: PintaPaletteHead
 }) => void | Promise<void>
 
 /**
@@ -175,7 +188,20 @@ export interface CreationsCloud {
    * Sobe AGORA (fora da fila): comprime, reserva, envia, confirma. Lança em falha. Com `parts`,
    * declara as partes na reserva e sobe só as que a nuvem pede (ver `CloudPart`).
    */
-  upload(meta: CreationMeta, json: string, parts?: CloudPart[]): Promise<{ revision: number }>
+  confirmPalette?(
+    base: PintaPaletteHead,
+    revision: number,
+    ticket: PintaPaletteUploadCapability,
+    signal?: AbortSignal,
+  ): Promise<{ revision: number; paletteHead: PintaPaletteHead }>
+  readPalette?(options?: {
+    signal?: AbortSignal
+  }): Promise<{ head: PintaPaletteHead; download: CloudDownload | null }>
+  upload(
+    meta: CreationMeta,
+    json: string,
+    parts?: CloudPart[],
+  ): Promise<{ revision: number; paletteHead?: PintaPaletteHead }>
   /**
    * A revisão corrente SEM baixar o conteúdo (só o tíquete): `null` = não existe (404). `load()`
    * baixa e descomprime com o MESMO tíquete. `serverNow` é o relógio do servidor (ms).
@@ -188,7 +214,11 @@ export interface CreationsCloud {
    */
   download(itemId: string, options?: { signal?: AbortSignal }): Promise<CloudDownload | null>
   /** Lixeira lógica na nuvem, condicionada à revisão que este aparelho conhece. */
-  remove(itemId: string, baseRevision: number): Promise<{ revision: number }>
+  remove(
+    itemId: string,
+    baseRevision: number,
+    head?: PintaPaletteHead,
+  ): Promise<{ revision: number; paletteHead?: PintaPaletteHead }>
   /**
    * Enfileira o item (o produtor roda só na hora de subir; substitui o pendente do
    * mesmo item). `onUploaded` roda DEPOIS do commit confirmado — nunca antes (e não
@@ -471,6 +501,7 @@ export function createCreationsCloud(options: {
   viewerId?: string
   audience?: 'adult' | 'kids'
   pintaCausalEnabled?: boolean
+  pintaPaletteWriteEnabled?: boolean
   /** Injetável (testes). Default: o `fetch` global. */
   fetch?: FetchLike
   /**
@@ -499,6 +530,8 @@ export function createCreationsCloud(options: {
         })
       }))
   const supported = gzipSupported()
+  const paletteWriter =
+    tool === 'pinta' && !!options.viewerId && options.pintaPaletteWriteEnabled === true
   const base = `/api/creations/${tool}`
   const viewerHeaders: Record<string, string> = options.viewerId
     ? { 'x-sz-viewer': options.viewerId }
@@ -618,7 +651,7 @@ export function createCreationsCloud(options: {
     for (const listener of listeners) listener(state)
   }
 
-  async function api<T>(path: string, init?: RequestInit): Promise<T> {
+  async function request(path: string, init?: RequestInit): Promise<Response> {
     const signal = init?.signal ? anySignal(abort.signal, init.signal) : abort.signal
     const response = await doFetch(`${base}${path}`, {
       ...init,
@@ -632,6 +665,11 @@ export function createCreationsCloud(options: {
         ? { keepalive: true }
         : {}),
     })
+    return response
+  }
+
+  async function api<T>(path: string, init?: RequestInit): Promise<T> {
+    const response = await request(path, init)
     if (!response.ok) throw await readError(response)
     return (await response.json()) as T
   }
@@ -686,6 +724,7 @@ export function createCreationsCloud(options: {
   }
 
   interface UploadTicket {
+    paletteWrite?: unknown
     inventoryFloor?: number
     maxReadFormatVersion?: number
     revision: number
@@ -721,12 +760,69 @@ export function createCreationsCloud(options: {
     throw err
   }
 
+  async function confirmPalette(
+    base: PintaPaletteHead,
+    revision: number,
+    capability: PintaPaletteUploadCapability,
+    signal?: AbortSignal,
+  ) {
+    const expected = PintaPaletteHeadSchema.parse(base)
+    const ticket = PintaPaletteUploadCapabilitySchema.parse(capability)
+    if (
+      ticket.baseGeneration !== expected.generation ||
+      !Number.isSafeInteger(revision) ||
+      revision <= expected.revision
+    )
+      throw Error('A base do recibo de paletas mudou.')
+    const receipt = await api<{
+      item?: RawCloudSummary
+      paletteHead?: unknown
+      paletteWrite?: unknown
+    }>(`/${PINTA_PALETTE_LIBRARY_ITEM_ID}/commit`, {
+      method: 'POST',
+      signal,
+      body: JSON.stringify({
+        revision,
+        paletteWrite: { protocol: PINTA_PALETTE_WRITE_PROTOCOL, nonce: ticket.nonce },
+      }),
+    })
+    const paletteHead = PintaPaletteHeadSchema.parse(receipt.paletteHead)
+    const confirmation = PintaPaletteCommitCapabilitySchema.parse(receipt.paletteWrite)
+    if (
+      confirmation.nonce !== ticket.nonce ||
+      (expected.adopted
+        ? paletteHead.generation !== expected.generation
+        : paletteHead.generation === expected.generation) ||
+      !paletteHead.exists ||
+      !paletteHead.adopted ||
+      paletteHead.revision !== revision ||
+      receipt.item?.itemId !== PINTA_PALETTE_LIBRARY_ITEM_ID ||
+      receipt.item.kind !== PINTA_PALETTE_LIBRARY_KIND ||
+      receipt.item.revision !== revision
+    )
+      throw Error('A nuvem não confirmou a biblioteca de paletas enviada.')
+    return { revision, paletteHead }
+  }
+
   async function upload(
     meta: CreationMeta,
     json: string,
     parts: CloudPart[] = [],
-  ): Promise<{ revision: number }> {
+  ): Promise<{ revision: number; paletteHead?: PintaPaletteHead }> {
     if (!supported) throw new Error(CLOUD_MESSAGES.unsupported)
+    if (meta.paletteHead)
+      meta = { ...meta, paletteHead: PintaPaletteHeadSchema.parse(meta.paletteHead) }
+    const reservedPalette = tool === 'pinta' && meta.itemId === PINTA_PALETTE_LIBRARY_ITEM_ID
+    if (
+      (meta.paletteHead &&
+        (!paletteWriter ||
+          !reservedPalette ||
+          meta.kind !== PINTA_PALETTE_LIBRARY_KIND ||
+          meta.baseRevision !== meta.paletteHead.revision ||
+          parts.length)) ||
+      (paletteWriter && reservedPalette && !meta.paletteHead)
+    )
+      throw Error('Não consegui confirmar a revisão da biblioteca de paletas.')
     const bytes = await perfSpanAsync('kids:cloud:gzip', () => gzipText(json), {
       chars: json.length,
     })
@@ -736,6 +832,7 @@ export function createCreationsCloud(options: {
     // Bytes gzip das partes que o servidor PEDIU (só essas são comprimidas): hash → bytes.
     const gzipped = new Map<string, Uint8Array>()
     const requestedReader =
+      !meta.paletteHead &&
       tool === 'pinta' &&
       maxFormatVersion !== undefined &&
       maxFormatVersion >= PINTA_MIN_INVENTORY_FORMAT_VERSION &&
@@ -752,6 +849,14 @@ export function createCreationsCloud(options: {
         ...(meta.formatVersion !== undefined ? { formatVersion: meta.formatVersion } : {}),
         ...(requestedReader === undefined ? {} : { maxReadFormatVersion: requestedReader }),
         ...(meta.baseRevision !== undefined ? { baseRevision: meta.baseRevision } : {}),
+        ...(meta.paletteHead
+          ? {
+              paletteWrite: {
+                protocol: PINTA_PALETTE_WRITE_PROTOCOL,
+                baseGeneration: meta.paletteHead.generation,
+              },
+            }
+          : {}),
         ...(meta.fingerprint ? { fingerprint: meta.fingerprint } : {}),
         ...(byHash.size > 0
           ? {
@@ -827,6 +932,29 @@ export function createCreationsCloud(options: {
       err.code = 'CLOUD_PARTS_UNSUPPORTED'
       throw err
     }
+    const paletteCapability = meta.paletteHead
+      ? PintaPaletteUploadCapabilitySchema.parse(ticket.paletteWrite)
+      : null
+    if (
+      paletteCapability &&
+      (paletteCapability.baseGeneration !== meta.paletteHead!.generation ||
+        Date.parse(paletteCapability.expiresAt) <= now() ||
+        new Headers(ticket.headers).get('if-none-match') !== '*' ||
+        ticket.method !== 'PUT' ||
+        !Number.isSafeInteger(ticket.revision) ||
+        ticket.revision <= (meta.baseRevision ?? 0) ||
+        ticket.bytes !== bytes.byteLength ||
+        ticket.parts?.length)
+    )
+      throw Error('A nuvem não confirmou a reserva da biblioteca de paletas.')
+    if (
+      paletteCapability &&
+      meta.preparePalette &&
+      !(await meta.preparePalette(ticket.revision, paletteCapability))
+    )
+      throw Error('A preparação de paletas mudou em outra aba.')
+    if (paletteCapability && Date.parse(paletteCapability.expiresAt) <= now())
+      throw Error('A reserva da biblioteca de paletas expirou antes do envio.')
     const reserved = ticket
     // As partes faltantes (em paralelo limitado) e depois o manifesto. A reserva só assina
     // partes cujos bytes foram declarados, e esses estão em `gzipped`.
@@ -860,12 +988,16 @@ export function createCreationsCloud(options: {
       },
     )
     // Só a revisão (+ as partes que subiram): bytes e metadados são os da reserva.
+    if (paletteCapability && meta.paletteHead)
+      return perfSpanAsync('kids:cloud:commit', () =>
+        confirmPalette(meta.paletteHead!, reserved.revision, paletteCapability),
+      )
     await perfSpanAsync('kids:cloud:commit', () =>
       api(`/${encodeURIComponent(meta.itemId)}/commit`, {
         method: 'POST',
         body: JSON.stringify({
           revision: reserved.revision,
-          ...(missing.length > 0 ? { uploadedParts: missing.map((part) => part.hash) } : {}),
+          ...(missing.length ? { uploadedParts: missing.map((part) => part.hash) } : {}),
         }),
       }),
     )
@@ -921,6 +1053,28 @@ export function createCreationsCloud(options: {
     }
   }
 
+  async function readPalette(options?: { signal?: AbortSignal }) {
+    const response = await request(
+      `/${PINTA_PALETTE_LIBRARY_ITEM_ID}/download?paletteWrite=${PINTA_PALETTE_WRITE_PROTOCOL}`,
+      { signal: options?.signal, cache: 'no-store' },
+    )
+    if (!response.ok && response.status !== 404) throw await readError(response)
+    const ticket = (await response.json()) as DownloadTicket & { paletteHead?: unknown }
+    const head = PintaPaletteHeadSchema.parse(ticket.paletteHead)
+    if (response.status === 404 && !head.exists) return { head, download: null }
+    if (
+      response.status !== 200 ||
+      !head.exists ||
+      ticket.item?.itemId !== PINTA_PALETTE_LIBRARY_ITEM_ID ||
+      ticket.item.kind !== PINTA_PALETTE_LIBRARY_KIND ||
+      ticket.item.revision !== head.revision ||
+      ticket.revision !== head.revision ||
+      ticket.parts?.length
+    )
+      throw Error('Não consegui conferir a biblioteca de paletas da conta.')
+    return { head, download: await materialize(ticket, options) }
+  }
+
   async function download(
     itemId: string,
     options?: { signal?: AbortSignal },
@@ -964,14 +1118,48 @@ export function createCreationsCloud(options: {
     }
   }
 
-  async function remove(itemId: string, baseRevision: number): Promise<{ revision: number }> {
-    const result = await api<{ revision: number }>(`/${encodeURIComponent(itemId)}`, {
-      method: 'DELETE',
-      body: JSON.stringify({
-        baseRevision,
-        ...(maxFormatVersion !== undefined ? { maxFormatVersion } : {}),
-      }),
-    })
+  async function remove(
+    itemId: string,
+    baseRevision: number,
+    requested?: PintaPaletteHead,
+  ): Promise<{ revision: number; paletteHead?: PintaPaletteHead }> {
+    const isPalette = tool === 'pinta' && itemId === PINTA_PALETTE_LIBRARY_ITEM_ID
+    const head = requested ? PintaPaletteHeadSchema.parse(requested) : null
+    if (
+      (head && (!paletteWriter || !isPalette || head.revision !== baseRevision)) ||
+      (paletteWriter && isPalette && !head)
+    )
+      throw Error('A nuvem precisa confirmar a identidade da biblioteca antes da exclusão.')
+    const result = await api<{ revision: number; paletteHead?: unknown }>(
+      `/${encodeURIComponent(itemId)}`,
+      {
+        method: 'DELETE',
+        body: JSON.stringify({
+          baseRevision,
+          ...(head
+            ? {
+                paletteWrite: {
+                  protocol: PINTA_PALETTE_WRITE_PROTOCOL,
+                  baseGeneration: head.generation,
+                },
+              }
+            : {}),
+          ...(maxFormatVersion !== undefined ? { maxFormatVersion } : {}),
+        }),
+      },
+    )
+    if (head) {
+      const next = PintaPaletteHeadSchema.parse(result.paletteHead)
+      if (
+        result.revision !== 0 ||
+        next.exists ||
+        (head.adopted && !next.adopted) ||
+        (head.exists && (!next.adopted || next.generation === head.generation)) ||
+        (next.generation !== head.generation && !next.adopted)
+      )
+        throw Error('A nuvem não confirmou a exclusão da biblioteca.')
+      return { revision: result.revision, paletteHead: next }
+    }
     return { revision: result.revision }
   }
 
@@ -1012,14 +1200,25 @@ export function createCreationsCloud(options: {
             ...(snapshot.meta?.baseRevision !== undefined
               ? { baseRevision: snapshot.meta.baseRevision }
               : {}),
+            ...(snapshot.meta?.paletteHead
+              ? {
+                  paletteHead: snapshot.meta.paletteHead,
+                  preparePalette: snapshot.meta.preparePalette,
+                }
+              : {}),
             ...(snapshot.meta?.fingerprint ? { fingerprint: snapshot.meta.fingerprint } : {}),
           }
-          const { revision } = await upload(meta, snapshot.json, snapshot.parts)
+          const { revision, paletteHead } = await upload(meta, snapshot.json, snapshot.parts)
           // Um `enqueueRemove` do mesmo item chegou enquanto o upload voava? A lápide manda:
           // avançar a marca e limpá-la aqui faria o item apagado voltar da nuvem.
           const replacement = pending.get(itemId)
           if (replacement?.kind !== 'remove') {
-            await job.onUploaded?.({ itemId, updatedAt: meta.updatedAt, revision })
+            await job.onUploaded?.({
+              itemId,
+              updatedAt: meta.updatedAt,
+              revision,
+              ...(paletteHead ? { paletteHead } : {}),
+            })
           } else {
             // A remoção chegou durante ESTE upload. A revisão recém-confirmada também é nossa:
             // avance a base da lápide para ela não parecer uma exclusão velha no servidor.
@@ -1042,7 +1241,14 @@ export function createCreationsCloud(options: {
       // Base vencida (409): outro aparelho subiu este item depois. O item SAI da fila e o
       // adaptador resolve (guarda a versão da nuvem como cópia e sobe de novo com a base
       // certa) — repetir o mesmo envio só daria 409 de novo.
-      if (err.status === 409 && err.code === 'CREATION_STALE_BASE') {
+      if (
+        err.status === 409 &&
+        (err.code === 'CREATION_STALE_BASE' ||
+          (paletteWriter &&
+            itemId === PINTA_PALETTE_LIBRARY_ITEM_ID &&
+            job.kind === 'upload' &&
+            err.code === 'CREATION_REVISION_MISMATCH'))
+      ) {
         // Um trabalho substituído não decide mais nada sobre o item. Em especial, o
         // `onStale` de um upload antigo não pode disputar com a lápide que chegou em voo.
         if (pending.get(itemId) !== job) return 'done'
@@ -1334,6 +1540,7 @@ export function createCreationsCloud(options: {
 
   return {
     tool,
+    ...(paletteWriter ? { readPalette, confirmPalette } : {}),
     ...(pintaCausal
       ? {
           pintaCausal,

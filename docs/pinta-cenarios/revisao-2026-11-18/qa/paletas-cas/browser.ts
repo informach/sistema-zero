@@ -8,9 +8,12 @@ await mkdir(base, { recursive: true })
 const dir = await mkdtemp(join(base, 'build-'))
 const historical = '64c197d5332a36b73af54de6ae5bf045a4a7699e'
 const old = (await prepareAuthorityBaseline(root, dir, historical)).extracted
+const v1 = (await prepareAuthorityBaseline(root, dir, '14fcee965333172f8d101e5445b165d4ace817b1'))
+  .extracted
 for (const [name, checkout] of [
   ['atual', root],
   ['antigo', old],
+  ['anterior', v1],
 ] as const) {
   const ref = (file: string) => JSON.stringify(join(checkout, file).replaceAll('\\', '/'))
   const entry = join(dir, name + '.ts')
@@ -48,7 +51,7 @@ const server = Bun.serve({
   port: 0,
   fetch(req) {
     const path = new URL(req.url).pathname
-    const matched = /^\/(atual|antigo)\.(html|js)$/.exec(path)
+    const matched = /^\/(atual|antigo|anterior)\.(html|js)$/.exec(path)
     if (!matched) return new Response(null, { status: 404 })
     if (matched[2] === 'js') return new Response(Bun.file(join(dir, matched[1] + '.js')))
     return new Response(

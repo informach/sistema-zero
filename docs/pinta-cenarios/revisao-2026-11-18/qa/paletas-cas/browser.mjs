@@ -117,9 +117,77 @@ try {
     ),
     result.ids,
   )
+  const submitting = await page()
+  const preparation = await submitting.evaluate(async () => {
+    const local = window.api.createPintaPersistence({ namespace: 'paleta-negociada' })
+    const protocol = 'palette-cas-v1',
+      head = { protocol, revision: 0, exists: false, adopted: false, generation: null }
+    const a = local.paletteAccount,
+      active = () => true
+    await a.receive(await a.inspect(), null, active, 0, undefined, head)
+    const first = window.doc('paleta', 10)
+    await local.savePaletteLibrary(first)
+    const seen = await a.inspect(),
+      ticket = {
+        protocol,
+        nonce: crypto.randomUUID(),
+        baseGeneration: null,
+        expiresAt: new Date(200).toISOString(),
+      }
+    if (!(await a.prepare(seen, { ticket, revision: 1, sent: first }, active)))
+      throw Error('A preparação não foi gravada.')
+    const next = window.doc('paleta', 11)
+    next.palettes[0].name = 'Gesto posterior'
+    await local.savePaletteLibrary(next)
+    return { nonce: ticket.nonce, first }
+  })
+  await submitting.close()
+  const predecessor = await page('anterior')
+  await assert.rejects(
+    predecessor.evaluate(async () => {
+      await window.api
+        .createPintaPersistence({ namespace: 'paleta-negociada' })
+        .savePaletteLibrary(window.doc('incompatível', 90))
+    }),
+    /versão mais nova/,
+  )
+  await predecessor.close()
+  const resumed = await page()
+  const recovered = await resumed.evaluate(async (nonce) => {
+    const local = window.api.createPintaPersistence({ namespace: 'paleta-negociada' })
+    const a = local.paletteAccount,
+      seen = await a.inspect()
+    const head = {
+      protocol: 'palette-cas-v1',
+      generation: crypto.randomUUID(),
+      revision: 1,
+      adopted: true,
+      exists: true,
+    }
+    const ack = await a.acknowledge(seen, seen.submission.sent, 1, () => true, head, nonce)
+    return {
+      saved: seen.submission.sent,
+      dirty: ack.dirty,
+      pending: !!ack.submission,
+      current: ack.candidate.palettes[0].name,
+    }
+  }, preparation.nonce)
+  assert.deepEqual(recovered, {
+    saved: preparation.first,
+    dirty: true,
+    pending: false,
+    current: 'Gesto posterior',
+  })
+  await resumed.close()
   console.log(
     JSON.stringify({
       chrome: browser.version(),
+      disk2: {
+        historicalWriter: '14fcee965333172f8d101e5445b165d4ace817b1',
+        refusedWrite: true,
+        replayed: true,
+        retainedSuccessor: true,
+      },
       historical: '64c197d5332a36b73af54de6ae5bf045a4a7699e',
       lateGet: { revision: 52, palettes: 0, uploads: 0 },
       legacyWrite: { recoveredCopies: 1, upload: false },

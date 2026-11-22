@@ -261,3 +261,178 @@ test('entrada de rede inválida preserva bytes e revisão inclusive após reinic
   expect([...db().entries()]).toEqual(before)
   expect((await open().paletteAccount!.inspect()).revision).toBe(2)
 })
+
+const writerProtocol = 'palette-cas-v1' as const
+const head = (revision: number, generation: string | null, adopted: boolean) => ({
+  protocol: writerProtocol,
+  exists: revision > 0,
+  revision,
+  generation,
+  adopted,
+})
+
+const issue = (baseGeneration: string | null) => ({
+  protocol: writerProtocol,
+  nonce: crypto.randomUUID(),
+  baseGeneration,
+  expiresAt: new Date(60_000).toISOString(),
+})
+
+test('migração só qualifica a geração em GET; primeiro ACK adota e preserva o gesto sucessor', async () => {
+  const local = open(),
+    p = local.paletteAccount!,
+    base = lib('base', 10),
+    previous = crypto.randomUUID(),
+    next = crypto.randomUUID()
+  await p.receive(await p.inspect(), remote(base, 5), active, 10)
+  expect(db().get(PALETTE_ACCOUNT_KEY)).toMatchObject({ version: 1, confirmed: base })
+  await local.savePaletteLibrary!(lib('offline', 11))
+  const oldToken = await p.inspect()
+  expect(oldToken.head).toBeUndefined()
+  const qualified = await p.receive(
+    oldToken,
+    remote(base, 5),
+    active,
+    11,
+    undefined,
+    head(5, previous, false),
+  )
+  expect(qualified?.head?.generation).toBe(previous)
+  expect(qualified?.candidate?.palettes.map((p) => p.id)).toEqual(['base', 'offline'])
+  await local.savePaletteLibrary!(lib('posterior', 12))
+  const ticket = issue(previous)
+  expect(
+    await p.prepare(qualified!, { ticket, revision: 7, sent: qualified!.candidate! }, active),
+  ).toBe(true)
+  const ack = await p.acknowledge(
+    qualified!,
+    qualified!.candidate!,
+    7,
+    active,
+    head(7, next, true),
+    ticket.nonce,
+  )
+  expect(ack?.head).toEqual(head(7, next, true))
+  expect(ack?.dirty).toBe(true)
+  expect(ack?.candidate?.palettes.map((p) => p.id)).toEqual(['base', 'offline', 'posterior'])
+  expect(await p.receive(oldToken, remote(base, 99), active, 12)).toBeNull()
+  await expect(p.receive(ack!, remote(base, 99), active, 12)).rejects.toThrow()
+  expect((await open().paletteAccount!.inspect()).head).toEqual(head(7, next, true))
+})
+
+test('troca de geração arquiva alterações e lápides sem reenviá-las, inclusive quando a revisão coincide', async () => {
+  const local = open(),
+    p = local.paletteAccount!,
+    g1 = crypto.randomUUID(),
+    g2 = crypto.randomUUID()
+  await p.receive(
+    await p.inspect(),
+    remote(lib('antiga', 2), 8),
+    active,
+    2,
+    undefined,
+    head(8, g1, true),
+  )
+  await local.savePaletteLibrary!(lib('em-edicao', 3))
+  await local.savePaletteLibrary!(removed('antiga', 4))
+  const before = await p.inspect()
+  const fresh = lib('nova', 10)
+  const changed = await p.receive(
+    before,
+    remote(fresh, 8),
+    active,
+    10,
+    undefined,
+    head(8, g2, true),
+  )
+  expect(changed?.dirty).toBe(false)
+  expect(changed?.candidate?.palettes.map((p) => p.id)).toEqual(['nova'])
+  expect(
+    (await local.loadPaletteLibrary!())?.palettes.some((p) => p.name === 'em-edicao (cópia)'),
+  ).toBe(true)
+  expect(db().get(PALETTE_ACCOUNT_KEY)).toMatchObject({
+    version: 2,
+    priorEdits: { removed: [{ id: 'antiga', removedAt: 4 }] },
+  })
+  expect(
+    await p.receive(
+      before,
+      remote(lib('antiga', 2), 100),
+      active,
+      10,
+      undefined,
+      head(100, g1, true),
+    ),
+  ).toBeNull()
+  expect(await p.acknowledge(before, before.candidate!, 15, active, head(15, g1, true))).toBeNull()
+  const ticket = issue(g2)
+  await p.prepare(changed!, { ticket, revision: 9, sent: fresh }, active)
+  await expect(
+    p.acknowledge(changed!, fresh, 9, active, head(9, g1, true), ticket.nonce),
+  ).rejects.toThrow()
+  expect((await open().paletteAccount!.inspect()).head).toEqual(head(8, g2, true))
+})
+
+test('404 autenticado e recriação mantêm a geração da lápide, com 409 invalidando GET anterior', async () => {
+  const p = open().paletteAccount!,
+    g1 = crypto.randomUUID(),
+    g2 = crypto.randomUUID()
+  await p.receive(
+    await p.inspect(),
+    remote(lib('atual', 2), 100),
+    active,
+    2,
+    undefined,
+    head(100, g1, true),
+  )
+  const stale = await p.inspect()
+  expect(await p.observeConflict(stale, 0, active)).toBe(true)
+  expect(
+    await p.receive(stale, remote(lib('atual', 2), 100), active, 2, undefined, head(100, g1, true)),
+  ).toBeNull()
+  const renewed = await p.inspect()
+  expect(renewed.needsHead).toBe(true)
+  const absent = await p.receive(renewed, null, active, 3, undefined, head(0, g2, true))
+  expect(absent?.head).toEqual(head(0, g2, true))
+  expect(absent?.dirty).toBe(false)
+  await open().savePaletteLibrary!(lib('recriada', 4))
+  const candidate = await p.inspect()
+  expect(candidate.candidate?.palettes.map((p) => p.id)).toEqual(['recriada'])
+  const ticket = issue(g2)
+  await p.prepare(candidate, { ticket, revision: 1, sent: candidate.candidate! }, active)
+  expect(
+    (
+      await p.acknowledge(
+        candidate,
+        candidate.candidate!,
+        1,
+        active,
+        head(1, g2, true),
+        ticket.nonce,
+      )
+    )?.dirty,
+  ).toBe(false)
+})
+
+test('a falha definitiva retém o documento exato e permite um gesto novo', async () => {
+  const local = open(),
+    p = local.paletteAccount!,
+    generation = crypto.randomUUID()
+  await p.receive(
+    await p.inspect(),
+    remote(lib('confirmada', 1), 2),
+    active,
+    2,
+    undefined,
+    head(2, generation, true),
+  )
+  await local.savePaletteLibrary!(lib('meu', 3))
+  const seen = await p.inspect(),
+    ticket = issue(generation)
+  await p.prepare(seen, { ticket, revision: 4, sent: seen.candidate! }, active)
+  expect(await p.release(seen, ticket.nonce, 4, active, true)).toBe(true)
+  expect((await p.inspect()).rejected).toBe(true)
+  expect(db().get(PALETTE_ACCOUNT_KEY)).toMatchObject({ priorSubmission: seen.candidate })
+  await local.savePaletteLibrary!(lib('meu', 5, 'revisada'))
+  expect((await p.inspect()).rejected).toBe(false)
+})

@@ -1,9 +1,14 @@
+import {
+  PintaPaletteHeadSchema,
+  PintaPaletteUploadCapabilitySchema,
+} from '@sistemazero/core/creations/pinta-palette-writer'
 import { pintaValuesEqual } from '../core/assetEquality'
 import { newId } from '../core/id'
 import type {
   PaletteAccount,
   PaletteAccountSnapshot,
   PaletteAccountToken,
+  PaletteSubmission,
 } from '../core/paletteAccount'
 import {
   emptyPaletteLibrary,
@@ -20,7 +25,12 @@ export const PALETTE_LIBRARY_KEY = 'pinta:palettes'
 export const PALETTE_ACCOUNT_KEY = 'pinta:sync:palette-account'
 
 interface PaletteRecord extends PaletteAccountToken {
-  version: 1
+  version: 1 | 2
+  submission?: PaletteSubmission
+  rejected?: true
+  priorSubmission?: PaletteLibrary
+  recheck?: true
+  priorEdits?: PaletteLibrary
   confirmed: PaletteLibrary | null
   library: PaletteLibrary | null
   /** Foreign edits stay local until the author explicitly edits their recovered copy. */
@@ -66,6 +76,19 @@ function snapshot(record: PaletteRecord): PaletteAccountSnapshot {
   const candidate = source && record.revision === 0 ? delta(source, record.confirmed) : source
   const base = record.revision === 0 ? null : record.confirmed
   return {
+    ...(record.head
+      ? {
+          head: record.head,
+          needsHead: record.recheck === true,
+          rejected:
+            !!record.rejected &&
+            !!record.priorSubmission &&
+            !!candidate &&
+            paletteLibraryContentKey(record.priorSubmission) ===
+              paletteLibraryContentKey(candidate),
+          submission: record.submission,
+        }
+      : {}),
     generation: record.generation,
     revision: record.revision,
     minimum: record.minimum,
@@ -102,7 +125,7 @@ function addCopies(
 
 function supportedRecord(record: PaletteRecord): boolean {
   if (
-    record?.version !== 1 ||
+    (record?.version !== 1 && record?.version !== 2) ||
     typeof record.generation !== 'string' ||
     !record.generation ||
     !Number.isSafeInteger(record.minimum) ||
@@ -123,6 +146,40 @@ function supportedRecord(record: PaletteRecord): boolean {
     'retired',
     'lastLegacyWrite',
   ])
+  if (record.version === 2) {
+    allowed.add('head')
+    allowed.add('priorEdits')
+    allowed.add('recheck')
+    allowed.add('submission')
+    allowed.add('priorSubmission')
+    allowed.add('rejected')
+    if (record.rejected !== undefined && (record.rejected !== true || !record.priorSubmission))
+      return false
+    if (record.priorSubmission !== undefined && !readAccountPaletteLibrary(record.priorSubmission))
+      return false
+    if (
+      record.submission !== undefined &&
+      (!record.submission ||
+        Object.keys(record.submission).some(
+          (key) => !['ticket', 'revision', 'sent'].includes(key),
+        ) ||
+        !PintaPaletteUploadCapabilitySchema.safeParse(record.submission.ticket).success ||
+        record.submission.ticket.baseGeneration !== record.head?.generation ||
+        !Number.isSafeInteger(record.submission.revision) ||
+        record.submission.revision <= (record.revision ?? 0) ||
+        !readAccountPaletteLibrary(record.submission.sent))
+    )
+      return false
+    if (record.recheck !== undefined && record.recheck !== true) return false
+    const parsed = PintaPaletteHeadSchema.safeParse(record.head)
+    if (
+      !parsed.success ||
+      parsed.data.revision !== record.revision ||
+      parsed.data.exists !== !!record.confirmed ||
+      (record.priorEdits !== undefined && !readAccountPaletteLibrary(record.priorEdits))
+    )
+      return false
+  }
   if (Object.keys(record).some((key) => !allowed.has(key))) return false
   for (const library of [
     record.confirmed,
@@ -158,13 +215,39 @@ function captureToken(token: PaletteAccountToken): PaletteAccountToken {
   if (!generation || typeof generation !== 'string') throw Error('Identidade das paletas inválida.')
   validRevision(minimum, 0)
   if (revision !== null) validRevision(revision, 0)
-  return { generation, revision, minimum }
+  return {
+    generation,
+    revision,
+    minimum,
+    ...(token.head ? { head: PintaPaletteHeadSchema.parse(token.head) } : {}),
+  }
 }
 
 function captureLibrary(input: PaletteLibrary): PaletteLibrary {
   const accepted = readAccountPaletteLibrary(input)
   if (!accepted) throw Error('Não consegui conferir o conteúdo da biblioteca de paletas.')
   return accepted
+}
+
+/** Keep the authored difference on this device when another incarnation replaces its base. */
+function archivePriorEdits(record: PaletteRecord, remote: PaletteLibrary | null) {
+  const local = withoutCopies(record) ?? emptyPaletteLibrary()
+  const edits = delta(local, record.confirmed)
+  record.priorEdits = edits
+  addCopies(record, edits, remote)
+  const copyIds = new Set(record.recoveries.map((copy) => copy.id))
+  const copies = record.library?.palettes.filter((p) => copyIds.has(p.id)) ?? []
+  const visible = remote ? emptyPaletteLibrary() : (record.confirmed ?? emptyPaletteLibrary())
+  record.library = {
+    ...visible,
+    updatedAt: Math.max(visible.updatedAt, local.updatedAt),
+    palettes: [...visible.palettes, ...copies],
+  }
+  record.retired = remote ? null : record.confirmed
+  record.confirmed = null
+  record.migrationSource = null
+  record.revision = null
+  record.minimum = 0
 }
 
 function checkReady(ready?: () => boolean) {
@@ -226,11 +309,72 @@ export function createLocalPaletteAccount(transaction: Transaction, notify: () =
           (record.revision ?? 0) !== (expected.revision ?? 0)
         )
           return false
+        if (record.submission) return false
+        if (record.head) {
+          record.recheck = true
+          record.generation = newId()
+        }
         record.minimum = Math.max(record.minimum, minimum)
         return true
       }, ready)
     },
-    async receive(origin, response, ready, now, previousSyncAt) {
+    async prepare(origin, input, ready, replaces) {
+      const expected = captureToken(origin),
+        ticket = PintaPaletteUploadCapabilitySchema.parse(input.ticket),
+        sent = captureLibrary(input.sent)
+      const revision = input.revision
+      validRevision(revision, 1)
+      return access((record) => {
+        if (
+          !record.head ||
+          record.recheck ||
+          record.generation !== expected.generation ||
+          record.revision !== expected.revision ||
+          record.head.generation !== ticket.baseGeneration ||
+          revision <= record.head.revision
+        )
+          return false
+        if (
+          replaces &&
+          (record.submission?.ticket.nonce !== replaces ||
+            !sameLibrary(record.submission.sent, sent))
+        )
+          return false
+        if (record.submission && !replaces)
+          return (
+            pintaValuesEqual(record.submission.ticket, ticket) &&
+            record.submission.revision === revision &&
+            sameLibrary(record.submission.sent, sent)
+          )
+        record.submission = { ticket, revision, sent }
+        return true
+      }, ready)
+    },
+    async release(origin, nonce, revision, ready, invalid = false) {
+      const expected = captureToken(origin)
+      return access((record) => {
+        const transfer = record.submission
+        if (
+          !transfer ||
+          transfer.ticket.nonce !== nonce ||
+          transfer.revision !== revision ||
+          expected.generation !== record.generation
+        )
+          return false
+        if (invalid || !sameLibrary(transfer.sent, withoutCopies(record))) {
+          if (invalid) record.rejected = true
+          else delete record.rejected
+          record.priorSubmission = transfer.sent
+          addCopies(record, delta(transfer.sent, record.confirmed), withoutCopies(record))
+        }
+        delete record.submission
+        record.generation = newId()
+        record.recheck = true
+        return true
+      }, ready)
+    },
+    async receive(origin, response, ready, now, previousSyncAt, reportedHead) {
+      const head = reportedHead ? PintaPaletteHeadSchema.parse(reportedHead) : undefined
       const expected = captureToken(origin)
       const remote = response
         ? {
@@ -245,10 +389,39 @@ export function createLocalPaletteAccount(transaction: Transaction, notify: () =
           throw Error('Data da biblioteca de paletas inválida.')
       }
       const result = await access((record) => {
-        if (expected.generation !== record.generation) return null
-        if (!remote) {
-          if (record.revision !== expected.revision || record.minimum !== expected.minimum)
+        if (expected.generation !== record.generation || record.submission) return null
+        const sameRead =
+          record.revision === expected.revision && record.minimum === expected.minimum
+        if (!remote && !sameRead) return null
+        if (record.head && !head)
+          throw Error('A nuvem precisa confirmar a identidade da biblioteca de paletas.')
+        if (head) {
+          if (
+            head.exists !== !!remote ||
+            head.revision !== (remote?.revision ?? 0) ||
+            (record.head?.adopted && !head.adopted)
+          )
+            throw Error('A nuvem não confirmou a identidade e a revisão da biblioteca de paletas.')
+          const bind = !record.head
+          const rotate = record.head
+            ? record.head.generation !== head.generation ||
+              (!record.head.adopted && record.head.exists && !head.exists)
+            : record.minimum > head.revision ||
+              (!!record.confirmed &&
+                (!remote ||
+                  head.revision !== record.revision ||
+                  !sameLibrary(record.confirmed, remote.library)))
+          if ((rotate || bind) && !sameRead) return null
+          if (!rotate && remote && remote.revision < Math.max(record.minimum, record.revision ?? 0))
             return null
+          if (!rotate && !remote && record.head?.exists) return null
+          if (rotate) archivePriorEdits(record, remote?.library ?? null)
+          if (rotate || bind) record.generation = newId()
+          record.version = 2
+          record.head = head
+          delete record.recheck
+        }
+        if (!remote) {
           if (record.revision !== 0 || record.minimum > 0) {
             record.generation = newId()
             const previous =
@@ -309,7 +482,8 @@ export function createLocalPaletteAccount(transaction: Transaction, notify: () =
       if (result && remote) notify()
       return result
     },
-    async acknowledge(origin, candidate, revision, ready) {
+    async acknowledge(origin, candidate, revision, ready, reportedHead, nonce) {
+      const head = reportedHead ? PintaPaletteHeadSchema.parse(reportedHead) : undefined
       const expected = captureToken(origin),
         sent = captureLibrary(candidate)
       validRevision(revision, 1)
@@ -321,6 +495,29 @@ export function createLocalPaletteAccount(transaction: Transaction, notify: () =
           revision < record.minimum
         )
           return null
+        if (record.head || head) {
+          if (
+            !record.submission ||
+            record.submission.revision !== revision ||
+            record.submission.ticket.nonce !== nonce ||
+            !sameLibrary(record.submission.sent, sent)
+          )
+            return null
+          if (
+            !record.head ||
+            !head?.adopted ||
+            !head.exists ||
+            head.revision !== revision ||
+            (record.head.adopted
+              ? head.generation !== record.head.generation
+              : head.generation === record.head.generation)
+          )
+            throw Error('A nuvem não confirmou a encarnação desta biblioteca.')
+          if (head.generation !== record.head.generation) record.generation = newId()
+          record.head = head
+          delete record.submission
+          delete record.rejected
+        }
         record.confirmed = sent
         record.revision = revision
         record.minimum = revision

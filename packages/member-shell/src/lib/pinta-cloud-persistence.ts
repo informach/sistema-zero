@@ -57,6 +57,7 @@ import {
   pintaCanWriteNativeSchema,
   pintaWriteFormatVersion,
 } from '@sistemazero/core/creations'
+import type { PintaPaletteUploadCapability } from '@sistemazero/core/creations/pinta-palette-writer'
 import type { PintaCausalLocalPort, PintaEditorWriteContext } from '@sistemazero/pinta'
 import type {
   PaletteAccount,
@@ -1304,15 +1305,105 @@ export function createCloudMirroredPintaPersistence(options: {
   let paletteMinimumRevision = 0
   let paletteSyncInFlight: Promise<number> | null = null
 
+  async function settlePaletteSubmission(seen: PaletteAccountSnapshot) {
+    const transfer = seen.submission,
+      base = seen.head,
+      account = paletteAccount
+    if (!transfer || !base || !account) return
+    if (!cloud.confirmPalette)
+      throw Error('A nuvem precisa confirmar o envio anterior das suas paletas.')
+    const ready = () => !causalSession.signal.aborted
+    let nonce = transfer.ticket.nonce
+    let result: Awaited<ReturnType<CreationsCloud['upload']>>
+    try {
+      try {
+        result = await cloud.confirmPalette(
+          base,
+          transfer.revision,
+          transfer.ticket,
+          causalSession.signal,
+        )
+      } catch (error) {
+        if ((error as { code?: string }).code !== 'PINTA_PALETTE_UPLOAD_MISSING') throw error
+        // After a crash before the PUT, reserve fresh single-use storage for the retained document.
+        result = await cloud.upload(
+          {
+            itemId: PALETTE_LIBRARY_ITEM_ID,
+            kind: PALETTE_LIBRARY_KIND,
+            name: 'Minhas paletas',
+            updatedAt: transfer.sent.updatedAt,
+            baseRevision: base.revision,
+            paletteHead: base,
+            async preparePalette(revision, ticket) {
+              const saved = await account.prepare(
+                seen,
+                { ticket, revision, sent: transfer.sent },
+                ready,
+                transfer.ticket.nonce,
+              )
+              if (saved) nonce = ticket.nonce
+              return saved
+            },
+          },
+          JSON.stringify(transfer.sent),
+        )
+      }
+    } catch (error) {
+      causalSession.signal.throwIfAborted()
+      const code = (error as { code?: string }).code
+      if (code !== 'CREATION_REVISION_MISMATCH' && code !== 'PINTA_PALETTE_CONTENT_INVALID')
+        throw error
+      const current = await account.inspect()
+      if (current.submission?.ticket.nonce === nonce)
+        await account.release(
+          current,
+          nonce,
+          current.submission.revision,
+          ready,
+          code === 'PINTA_PALETTE_CONTENT_INVALID',
+        )
+      return
+    }
+    causalSession.signal.throwIfAborted()
+    if (!result.paletteHead) throw Error('A nuvem não confirmou as paletas enviadas.')
+    const acknowledged = await account.acknowledge(
+      seen,
+      transfer.sent,
+      result.revision,
+      ready,
+      result.paletteHead,
+      nonce,
+    )
+    if (acknowledged && ready()) {
+      marks.set(PALETTE_LIBRARY_ITEM_ID, transfer.sent.updatedAt, result.revision)
+      if (acknowledged.dirty) enqueuePaletteUpload()
+    }
+  }
+
   /** Sobe a biblioteca "Minhas paletas" (item especial) quando o registro local mudou. */
   function enqueuePaletteUpload(): void {
     if (!paletteAccount || causalSession.signal.aborted) return
     const account = paletteAccount
     let produced: PaletteAccountSnapshot | null = null
+    let preparedNonce: string | undefined
     cloud.enqueueUpload(
       PALETTE_LIBRARY_ITEM_ID,
       async () => {
-        const read = await account.inspect()
+        let read = await account.inspect()
+        if (read.head && !cloud.readPalette)
+          throw Error(
+            'Este dispositivo precisa confirmar a identidade da biblioteca de paletas para sincronizar.',
+          )
+        if (cloud.readPalette && (!read.head || read.needsHead || read.submission)) {
+          await syncPaletteLibraryDirect()
+          read = await account.inspect()
+          if (!read.head || read.needsHead || read.submission)
+            throw Error('A nuvem ainda não confirmou a biblioteca de paletas.')
+        }
+        if (read.rejected)
+          throw Error(
+            'A conta não aceitou esta biblioteca. As paletas continuam neste aparelho. Edite a paleta antes de tentar novamente.',
+          )
         produced = read
         if (!read.dirty || !read.candidate || read.minimum > (read.revision ?? 0)) return null
         return {
@@ -1322,10 +1413,24 @@ export function createCloudMirroredPintaPersistence(options: {
             name: 'Minhas paletas',
             updatedAt: read.candidate.updatedAt,
             baseRevision: read.revision ?? 0,
+            ...(read.head
+              ? {
+                  paletteHead: read.head,
+                  async preparePalette(revision: number, ticket: PintaPaletteUploadCapability) {
+                    const saved = await account.prepare(
+                      read,
+                      { ticket, revision, sent: read.candidate! },
+                      () => !causalSession.signal.aborted,
+                    )
+                    if (saved) preparedNonce = ticket.nonce
+                    return saved
+                  },
+                }
+              : {}),
           },
         }
       },
-      async ({ itemId, updatedAt, revision }) => {
+      async ({ itemId, updatedAt, revision, paletteHead }) => {
         if (
           !produced?.candidate ||
           itemId !== PALETTE_LIBRARY_ITEM_ID ||
@@ -1338,6 +1443,8 @@ export function createCloudMirroredPintaPersistence(options: {
           produced.candidate,
           revision,
           () => !causalSession.signal.aborted,
+          paletteHead,
+          preparedNonce,
         )
         if (ack && !causalSession.signal.aborted) {
           marks.set(itemId, updatedAt, revision)
@@ -1347,16 +1454,22 @@ export function createCloudMirroredPintaPersistence(options: {
       },
       async ({ currentRevision }) => {
         if (causalSession.signal.aborted || !produced) return
+        // A GET which started before an unversioned conflict cannot certify the reply.
+        if ((!currentRevision || cloud.readPalette) && paletteSyncInFlight) paletteReadSequence++
+        if (produced.head && (await account.inspect()).submission) {
+          if (paletteSyncInFlight) paletteReadSequence++
+          await syncPaletteLibraryDirect()
+          return
+        }
         if (
           !(await account.observeConflict(
             produced,
-            currentRevision ?? 0,
+            cloud.readPalette ? 0 : (currentRevision ?? 0),
             () => !causalSession.signal.aborted,
           ))
         )
           return
-        if (!currentRevision && paletteSyncInFlight) paletteReadSequence++
-        await syncPaletteLibraryDirect(currentRevision, true)
+        await syncPaletteLibraryDirect(cloud.readPalette ? 0 : currentRevision, true)
       },
     )
   }
@@ -1369,9 +1482,19 @@ export function createCloudMirroredPintaPersistence(options: {
     signal.throwIfAborted()
     const sequence = paletteReadSequence
     const active = () => !signal.aborted && sequence === paletteReadSequence
-    const token = await paletteAccount.inspect(0, () => !signal.aborted)
+    let token = await paletteAccount.inspect(0, () => !signal.aborted)
+    if (token.submission) {
+      await settlePaletteSubmission(token)
+      token = await paletteAccount.inspect(0, () => !signal.aborted)
+      if (token.submission) throw Error('A nuvem ainda está confirmando as suas paletas.')
+    }
     signal.throwIfAborted()
-    const downloaded = await cloud.download(PALETTE_LIBRARY_ITEM_ID, { signal })
+    if (token.head && !cloud.readPalette)
+      throw Error('A versão da nuvem precisa confirmar a identidade da biblioteca de paletas.')
+    const qualified = await cloud.readPalette?.({ signal })
+    const downloaded = qualified
+      ? qualified.download
+      : await cloud.download(PALETTE_LIBRARY_ITEM_ID, { signal })
     signal.throwIfAborted()
     if (!active() || (!downloaded && paletteMinimumRevision > 0)) return -1
     const summary = downloaded?.summary
@@ -1392,6 +1515,7 @@ export function createCloudMirroredPintaPersistence(options: {
       active,
       now(),
       marks.get(PALETTE_LIBRARY_ITEM_ID),
+      qualified?.head,
     )
     signal.throwIfAborted()
     if (!result) return -1
@@ -1412,6 +1536,7 @@ export function createCloudMirroredPintaPersistence(options: {
     if (!cloud.supported || !loadLibrary || !saveLibrary || causalSession.signal.aborted) return
     if (!paletteAccount)
       throw Error('Este armazenamento mantém suas paletas somente neste aparelho.')
+    if (cloud.readPalette) minimumRevision = 0
     paletteMinimumRevision = Math.max(paletteMinimumRevision, minimumRevision)
     if (minimumRevision && !conflictObserved)
       await paletteAccount.inspect(minimumRevision, () => !causalSession.signal.aborted)
