@@ -1,6 +1,8 @@
+import { pythonAreaIndex } from '../blocks/areas'
 import type { PythonBlockCodec } from '../blocks/contract'
 import { isNode, node, nodes, pythonSemanticTree } from '../blocks/nodes'
 import { type PythonBlockProjection, pythonVisualToAST } from '../blocks/projection'
+import { planPythonAreaMarkers, pythonAreaMarkerOffsets } from './areaMarkers'
 import { planPythonBranchInsertion, planPythonBranchRemoval } from './branchEdits'
 import { composePythonCopiedEdit } from './composeCopiedEdit'
 import { planPythonIdentifierEdit } from './identifierEdits'
@@ -146,6 +148,7 @@ function createPythonVisualPlanner(
   document: PythonParsedDocument,
   sourceLines: PythonSourceLines,
   transferredComments: ReadonlySet<number>,
+  areaIndexOf?: (value: PythonNode) => number | undefined,
 ) {
   function compare(a: PythonNode, b: PythonNode): VisualChange[] | null {
     if (samePythonSourceTree(a, b)) return []
@@ -217,6 +220,7 @@ function createPythonVisualPlanner(
           newValue,
           sourceLines,
           a.kind === 'Module',
+          a.kind === 'Module' ? areaIndexOf : undefined,
         )
         if (inserted) {
           for (const { before, after } of inserted.retained) {
@@ -288,6 +292,8 @@ export interface PreparedPythonVisualTransaction {
   expected: { identity: PythonAnalysisIdentity; source: string }
   parsed: PythonParsedDocument
   edits: PythonSourceEdit[]
+  /** Fase 2 (áreas do projeto): edições dos comentários de área, sobre a fonte da fase 1. */
+  markerEdits: PythonSourceEdit[]
 }
 
 /** Produces a verified candidate. The editor must compare expected again at synchronous commit. */
@@ -324,7 +330,21 @@ export async function preparePythonVisualTransaction(options: {
   const sourceLines = indexPythonSourceLines(document.source)
   const { transfers, comments } = planPythonStatementTransfers(document, tree, sourceLines)
   const copyScope = transfers.size ? { start: 0, end: document.source.length } : undefined
-  const findChanges = createPythonVisualPlanner(document, sourceLines, comments)
+  // Áreas do projeto: a posição da área de cada linha de topo (para a regra de inserção).
+  const areaByNode = new Map<PythonNode, number>()
+  if (projection.areas && nodes(tree.fields.body))
+    tree.fields.body.forEach((value, index) => {
+      const kind = projection.areas![index]
+      if (kind) areaByNode.set(value, pythonAreaIndex(kind))
+    })
+  const findChanges = createPythonVisualPlanner(
+    document,
+    sourceLines,
+    comments,
+    areaByNode.size ? (value) => areaByNode.get(value) : undefined,
+  )
+  // Numa troca do módulo inteiro, os comentários de área podem sair: a fase 2 os escreve de novo.
+  const replacedMarkers = projection.areas ? pythonAreaMarkerOffsets(document) : undefined
   const changes = findChanges(document.tree, tree)
   const newline = /\r\n|\r|\n/.exec(document.source)?.[0] ?? '\n'
   async function renderInsertion(
@@ -495,7 +515,10 @@ export async function preparePythonVisualTransaction(options: {
           : replacement.before.range!
       const original = document.source.slice(range.start, range.end)
       // Reject comment loss before asking the worker to generate anything.
-      applyPythonSourceEdits(document, expected, [{ range, expected: original, replacement: '' }])
+      applyPythonSourceEdits(document, expected, [{ range, expected: original, replacement: '' }], {
+        droppedComments: replacement.before.kind === 'Module' ? replacedMarkers : undefined,
+      })
+      if (replacement.before.kind === 'Module' && replacedMarkers?.size) moduleReplaced = true
       const expression =
         expressions.has(replacement.before.kind) && expressions.has(replacement.after.kind)
       let rendered = await analysis.render(
@@ -553,12 +576,14 @@ export async function preparePythonVisualTransaction(options: {
     }
     return edits
   }
+  let moduleReplaced = false
   const renderedEdits = await renderChanges(changes)
   const edits = transfers.size
     ? [consolidatePythonTransferredEdits(document.source, renderedEdits)]
     : renderedEdits
   checkCurrent()
-  const source = applyPythonSourceEdits(document, current(), edits)
+  const dropped = moduleReplaced ? replacedMarkers : undefined
+  const source = applyPythonSourceEdits(document, current(), edits, { droppedComments: dropped })
   const parsed = await analysis.parse(nextIdentity, source, signal)
   checkCurrent()
   if (
@@ -568,12 +593,37 @@ export async function preparePythonVisualTransaction(options: {
     !samePythonAnalysisIdentity(parsed.identity, nextIdentity)
   )
     throw new Error('A alteração visual não produziu um programa Python válido.')
-  assertPythonCommentsPreserved(document, parsed, edits)
+  assertPythonCommentsPreserved(document, parsed, edits, dropped)
   if (semantic(parsed.tree) !== semantic(relocatePythonTypeIgnores(document, tree, edits, source)))
     throw new Error(
       'A alteração mudaria outro significado do programa. Edite este trecho no modo fonte.',
     )
-  return { expected, parsed, edits }
+  if (!projection.areas) return { expected, parsed, edits, markerEdits: [] }
+  // Fase 2: os comentários de área acompanham a nova divisão (só eles mudam; a árvore, não).
+  const markers = planPythonAreaMarkers(parsed, projection.areas)
+  if (!markers.edits.length) return { expected, parsed, edits, markerEdits: [] }
+  const marked = applyPythonSourceEdits(
+    parsed,
+    { identity: parsed.identity, source: parsed.source },
+    markers.edits,
+    { droppedComments: markers.dropped },
+  )
+  const final = await analysis.parse(nextIdentity, marked, signal)
+  checkCurrent()
+  if (
+    !final.tree ||
+    final.diagnostics.length ||
+    final.source !== marked ||
+    !samePythonAnalysisIdentity(final.identity, nextIdentity)
+  )
+    throw new Error('A alteração visual não produziu um programa Python válido.')
+  assertPythonCommentsPreserved(parsed, final, markers.edits, markers.dropped)
+  if (
+    semantic(final.tree) !==
+    semantic(relocatePythonTypeIgnores(parsed, parsed.tree, markers.edits, marked))
+  )
+    throw new Error('Os comentários de área mudariam o programa. Edite este trecho no modo fonte.')
+  return { expected, parsed: final, edits, markerEdits: markers.edits }
 }
 
 export function assertPythonVisualTransactionCurrent(
