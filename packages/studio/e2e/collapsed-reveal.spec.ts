@@ -41,17 +41,17 @@ const bundle = buildSync({
         return renderEfficiently.call(this);
       };
       const BODY = 30;
-      const unit = (i) => {
+      const unit = (i, size = BODY) => {
         let body;
-        for (let k = BODY - 1; k >= 0; k--)
+        for (let k = size - 1; k >= 0; k--)
           body = { type: 'controls_if', id: 'c' + i + '_' + k, ...(body ? { next: { block: body } } : {}) };
         return { type: 'controls_repeat', id: 'u' + i, collapsed: true, fields: { TIMES: 10 },
           inputs: { DO: { block: body } } };
       };
-      function project(count) {
+      function project(count, longBody) {
         let chain;
         for (let i = count - 1; i >= 0; i--) {
-          const item = unit(i);
+          const item = unit(i, i === 40 && longBody ? longBody : BODY);
           if (chain) item.next = { block: chain };
           chain = item;
         }
@@ -75,12 +75,12 @@ const bundle = buildSync({
       };
       window.__reveal = {
         settle,
-        async open(name, deferred) {
+        async open(name, deferred, longBody = 0) {
           const ws = Blockly.inject(document.getElementById(name), {
             sounds: false, renderer: 'zelos', move: { scrollbars: true, drag: true, wheel: true },
           });
           spaces[name] = ws;
-          const json = project(50);
+          const json = project(50, longBody);
           const load = deferred ? prepareDeferredTail(ws, json, true) : null;
           try {
             withWorkspaceLoad(() => Blockly.serialization.workspaces.load(load ? load.state : json, ws));
@@ -97,6 +97,12 @@ const bundle = buildSync({
         state: (name) => JSON.stringify(saveWorkspaceState(spaces[name])),
         undoSize: (name) => spaces[name].getUndoStack().length,
         reveal: (name, id) => revealBlockInWorkspace(spaces[name], id, false, { transient: true }),
+        center: (name, id) => spaces[name].centerOnBlock(id, true),
+        /** Centraliza e devolve, na MESMA tarefa (antes de a rolagem desenhar algo), quem ficou adiado. */
+        centerAndDeferred(name, id, ids) {
+          spaces[name].centerOnBlock(id, true);
+          return ids.map((other) => isDeferredBlock(block(name, other)));
+        },
         setCollapsed: (name, id, collapsed) => block(name, id).setCollapsed(collapsed),
         scrollToEnd(name) {
           const ws = spaces[name];
@@ -117,8 +123,13 @@ const bundle = buildSync({
             if (!b.getParent()) continue;
             const other = normal.getBlockById(b.id);
             const p = b.getRelativeToSurfaceXY(), q = other.getRelativeToSurfaceXY();
+            // Com corpo adiado dentro, a altura fecha no último desenhado (como a área com cauda).
+            const next = b.getNextBlock();
+            const bodyDeferred = b.getChildren(false)
+              .some((c) => c !== next && c.getDescendants(false).some((d) => isDeferredBlock(d)));
+            const height = bodyDeferred ? 0 : Math.abs(b.height - other.height);
             if (Math.abs(p.x - q.x) > 0.01 || Math.abs(p.y - q.y) > 0.01 ||
-                Math.abs(b.width - other.width) > 0.01 || Math.abs(b.height - other.height) > 0.01)
+                Math.abs(b.width - other.width) > 0.01 || height > 0.01)
               geometry.push(b.id);
           }
           const deferredInPage = ws.getAllBlocks(false)
@@ -134,7 +145,7 @@ const bundle = buildSync({
   platform: 'browser',
 }).outputFiles[0]?.text
 
-async function openBoth(page: Page) {
+async function openBoth(page: Page, longBody = 0) {
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
   if (!bundle) throw new Error('The collapsed reveal fixture was not compiled')
@@ -142,13 +153,13 @@ async function openBoth(page: Page) {
     '<div id="normal" style="width:800px;height:600px"></div><div id="adiado" style="width:800px;height:600px"></div>',
   )
   await page.addScriptTag({ content: bundle })
-  const opened = await page.evaluate(async () => {
+  const opened = await page.evaluate(async (longBody) => {
     const r = (window as unknown as { __reveal: Record<string, (...a: unknown[]) => unknown> })
       .__reveal
-    const normal = await r.open?.('normal', false)
-    const adiado = await r.open?.('adiado', true)
+    const normal = await r.open?.('normal', false, longBody)
+    const adiado = await r.open?.('adiado', true, longBody)
     return { normal, adiado, alvoAdiado: r.isDeferred?.('adiado', 'c40_15') }
-  })
+  }, longBody)
   expect(opened).toEqual({ normal: false, adiado: true, alvoAdiado: true })
   return errors
 }
@@ -258,6 +269,67 @@ test('abrir uma função recolhida que ainda não foi desenhada não liga as con
   await call(page, 'setCollapsed', 'adiado', 'u48', false)
   await call(page, 'settle')
   expect(await call(page, 'isDeferred', 'adiado', 'u48')).toBe(true)
+  expect(await call(page, 'compare', 'adiado')).toEqual({
+    geometry: [],
+    trackedDeferred: 0,
+    deferredInPage: 0,
+  })
+  expect(errors).toEqual([])
+})
+
+test('mostrar um bloco perto do começo de um corpo comprido desenha só até ele e mais uma tela e meia', async ({
+  page,
+}) => {
+  test.setTimeout(120_000)
+  const errors = await openBoth(page, 300)
+  await call(page, 'resetRenders')
+  for (const name of ['adiado', 'normal']) await call(page, 'reveal', name, 'c40_10')
+  await call(page, 'settle')
+  const drawn = (await call(page, 'renders', 'adiado')) as number
+  console.log(`[corpo comprido] blocos desenhados no gesto: ${drawn}`)
+  // Sem o corte, o corpo inteiro da função (300 blocos) seria desenhado.
+  expect(drawn).toBeLessThan(150)
+  expect(await call(page, 'isDeferred', 'adiado', 'c40_200')).toBe(true)
+  expect(await call(page, 'isDeferred', 'adiado', 'u41')).toBe(true)
+  expect(await call(page, 'compare', 'adiado')).toEqual({
+    geometry: [],
+    trackedDeferred: 0,
+    deferredInPage: 0,
+  })
+  expect(errors).toEqual([])
+})
+
+test('rolar depois de mostrar no corpo comprido completa o corpo antes da unidade seguinte, com a geometria exata', async ({
+  page,
+}) => {
+  test.setTimeout(120_000)
+  const errors = await openBoth(page, 300)
+  for (const name of ['adiado', 'normal']) await call(page, 'reveal', name, 'c40_10')
+  await call(page, 'settle')
+  await call(page, 'scrollToEnd', 'adiado')
+  await call(page, 'settle')
+  await call(page, 'settle')
+  expect(await call(page, 'isDeferred', 'adiado', 'c40_299')).toBe(false)
+  expect(await call(page, 'compare', 'adiado')).toEqual({
+    geometry: [],
+    trackedDeferred: 0,
+    deferredInPage: 0,
+  })
+  expect(errors).toEqual([])
+})
+
+test('centralizar num bloco escondido numa função recolhida, sem abri-la, desenha só até a função', async ({
+  page,
+}) => {
+  test.setTimeout(120_000)
+  const errors = await openBoth(page)
+  // O cursor do código e o `select` chegam por aqui sem abrir a função. A função que contém o alvo
+  // é desenhada (recolhida); o alvo segue no corpo escondido, e a cauda depois dela não é desenhada
+  // à procura dele (a rolagem ainda desenha o que ficar perto da vista, depois).
+  expect(
+    await call(page, 'centerAndDeferred', 'adiado', 'c40_15', ['u40', 'c40_15', 'u44', 'u49']),
+  ).toEqual([false, true, true, true])
+  await call(page, 'settle')
   expect(await call(page, 'compare', 'adiado')).toEqual({
     geometry: [],
     trackedDeferred: 0,

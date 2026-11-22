@@ -180,8 +180,8 @@ test('mostrar o bloco da tecla R no Reino Zero Ultra', async ({ page }) => {
   expect(diferencas).toEqual([])
   expect(resultado_.projetoMarcadoComoMudado).toBe(false)
   // O trabalho do gesto, com folga sobre a medida depois do conserto (antes: 1.008 leituras de
-  // estilo e 5.752 blocos redesenhados; depois: 540 e 750). A maior tarefa depende da máquina e só
+  // estilo e 5.752 blocos redesenhados; depois: 444 e 393). A maior tarefa depende da máquina e só
   // fica registrada.
-  expect(resultado_.leiturasDeEstilo).toBeLessThan(700)
-  expect(resultado_.blocosRedesenhados).toBeLessThan(1000)
+  expect(resultado_.leiturasDeEstilo).toBeLessThan(600)
+  expect(resultado_.blocosRedesenhados).toBeLessThan(550)
 })
