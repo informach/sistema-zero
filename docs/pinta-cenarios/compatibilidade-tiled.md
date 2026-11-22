@@ -113,3 +113,34 @@ uma diferença puramente representacional na ida e volta. Ver [provas atuais](re
 
 O [registro de homologação](homologacao.md) diz o que tem teste automático e o que não foi
 realizado.
+
+## Exportação de cenários regionais ortogonais
+
+O pacote regional contém mapas JSON, TMX com folhas TSX externas e as imagens PNG.
+As camadas usam chunks de 32 × 32, inclusive em coordenadas negativas. GIDs guardam as oito
+combinações de espelho e giro. O mapa pode ter uma área autoral maior que os chunks preenchidos.
+Ela fica em `pinta:bounds`, junto com os dados de colisão, conjuntos e ligações usados pelos
+leitores do Pinta. [Formato JSON do Tiled](https://doc.mapeditor.org/en/stable/reference/json-map-format/) · [Formato TMX](https://doc.mapeditor.org/en/stable/reference/tmx-map-format/) · [GIDs](https://doc.mapeditor.org/en/stable/reference/global-tile-ids/)
+
+O Tiled edita as camadas, as folhas, os objetos e suas propriedades. Portas e colisões
+dependem da lógica do jogo que usa o mapa. As cópias visíveis dos conjuntos são projeções
+para o Tiled. A definição fica em `pinta:sets`. Animações sem repetição conservam essa opção nos
+metadados, enquanto o Tiled as exibe em repetição.
+
+O ensaio com a Vila e a Cabana, no Tiled 1.12.2, confere JSON → TMX → JSON e TMX com TSX →
+JSON. Ele compara células ocupadas nas coordenadas assinadas, GIDs, bases das folhas,
+identidade, limites, modo de física e definições. O ensaio importa as duas cenas usando
+o mesmo leitor de objetos, propriedades e folhas dos mapas fixos.
+
+O retorno regional privado usa `importRegionalTiledWorld`. Ele recebe os arquivos do pacote
+e a escolha de um JSON ou TMX por mapa, começando pelo lugar inicial. Se faltar um destino ou
+uma peça estiver fora de `pinta:bounds`, a importação recusa o pacote inteiro. Camadas regionais
+usam uma folha cada. O retorno reorganiza os chunks do Tiled em regiões de 32 × 32 e valida
+o PNG5 resultante pelo leitor do Estúdio. Esse PNG pode alimentar a exportação para Tiled de novo.
+
+O ZIP regional inclui `desenhos.pinta.json` com um backup nativo privado dos originais,
+além de `maps.json` para execução. O retorno usa o arquivo escolhido no Tiled para aplicar
+as edições. O menu público **Trazer mapa** continua aceitando mapas finitos ortogonais.
+
+Execute `bun test ./src/export/tiled/regional.test.ts` em `packages/pinta` com
+`PINTA_TILED_BIN` apontando para o executável.

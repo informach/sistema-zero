@@ -8,6 +8,7 @@ import {
   PINTA_REGION_SCENE_MAX_INDEX_BYTES,
   PINTA_REGION_SCENE_MAX_JSON_BYTES,
   type PintaRegionScene,
+  type PintaRegionSceneWire,
   readPintaRegionScene,
 } from '@sistemazero/core/studio/pinta-region-scene'
 import type { PintaMemoryAsset } from '../core/assetMemory'
@@ -26,8 +27,10 @@ import { preparePintaSceneResources, type SceneMapSource, sceneLayersWithCells }
 export interface PintaRegionSceneExport {
   /** Decoded memory for consumers; transport uses json, never JSON.stringify(scene). */
   scene: PintaRegionScene
+  wire: PintaRegionSceneWire
   json: string
   bytes: number
+  indexBytes: number
 }
 
 function invalid(): never {
@@ -59,15 +62,25 @@ export async function exportPintaRegionScene(
   map: RegionTilemapAsset,
   findExternal: (id: string) => PintaMemoryAsset | null,
   imageOf?: (asset: VersionablePintaAsset) => Promise<string | null>,
+  budget?: { metadataBytes: number; indexBytes: number },
 ): Promise<PintaRegionSceneExport> {
   const sizing = new JsonByteSizeCache(64)
+  const maxMetadataBytes = Math.min(
+    budget?.metadataBytes ?? PINTA_REGION_SCENE_MAX_JSON_BYTES,
+    PINTA_REGION_SCENE_MAX_JSON_BYTES,
+  )
+  const maxIndexBytes = Math.min(
+    budget?.indexBytes ?? PINTA_REGION_SCENE_MAX_INDEX_BYTES,
+    PINTA_REGION_SCENE_MAX_INDEX_BYTES,
+  )
+  let chunks = 0
   const maps = new Map<
     SceneMapSource,
     {
       cols: number
       rows: number
       origin: { col: number; row: number }
-      layers: ReturnType<typeof sceneLayersWithCells>
+      layers: PintaRegionSceneWire['layers']
     }
   >()
   const memo = new Map<string, PintaMemoryAsset | null>()
@@ -97,18 +110,15 @@ export async function exportPintaRegionScene(
         name: map.name,
         ...metadataOf(map),
         ...(sets.length
-          ? { sets: sets.map((set) => ({ id: set.id, ...metadataOf(set.map) })) }
+          ? {
+              sets: sets.map((set) => ({ id: set.id, ...metadataOf(set.map) })),
+            }
           : {}),
       }
-      if (
-        sizing.byteLength(metadata, PINTA_REGION_SCENE_MAX_JSON_BYTES) >
-        PINTA_REGION_SCENE_MAX_JSON_BYTES
-      )
-        overBudget()
-      let chunks = 0
+      if (sizing.byteLength(metadata, maxMetadataBytes) > maxMetadataBytes) overBudget()
       // All already-regional headers precede any payload validation or dense conversion.
       for (const source of documents) if ('origin' in source) chunks += chunkCount(source)
-      if (chunks * PINTA_REGION_CHUNK_BYTES > PINTA_REGION_SCENE_MAX_INDEX_BYTES) overBudget()
+      if (chunks * PINTA_REGION_CHUNK_BYTES > maxIndexBytes) overBudget()
       const regions = new Map<SceneMapSource, RegionTilemapAsset>()
       for (const source of documents) {
         let candidate: RegionTilemapAsset
@@ -118,7 +128,7 @@ export async function exportPintaRegionScene(
           if (!converted.ok) invalid()
           candidate = converted.map
           chunks += chunkCount(candidate)
-          if (chunks * PINTA_REGION_CHUNK_BYTES > PINTA_REGION_SCENE_MAX_INDEX_BYTES) overBudget()
+          if (chunks * PINTA_REGION_CHUNK_BYTES > maxIndexBytes) overBudget()
         }
         regions.set(source, candidate)
       }
@@ -148,7 +158,7 @@ export async function exportPintaRegionScene(
   })
   const root = maps.get(map)
   if (!root) invalid()
-  const raw = {
+  const raw: PintaRegionSceneWire = {
     version: 4,
     id: rootId,
     name: rootName,
@@ -171,10 +181,16 @@ export async function exportPintaRegionScene(
     ...(prepared.art.length ? { art: prepared.art } : {}),
     ...(prepared.versions.length ? { resources: prepared.versions } : {}),
   }
-  const bytes = sizing.byteLength(raw, PINTA_REGION_SCENE_MAX_JSON_BYTES)
-  if (bytes > PINTA_REGION_SCENE_MAX_JSON_BYTES) overBudget()
+  const bytes = sizing.byteLength(raw, maxMetadataBytes)
+  if (bytes > maxMetadataBytes) overBudget()
   const json = JSON.stringify(raw, null, 2)
-  const scene = readPintaRegionScene(json)
+  const scene = readPintaRegionScene(json, maxIndexBytes)
   if (!scene) invalid()
-  return { scene, json, bytes }
+  return {
+    scene,
+    wire: raw,
+    json,
+    bytes,
+    indexBytes: chunks * PINTA_REGION_CHUNK_BYTES,
+  }
 }

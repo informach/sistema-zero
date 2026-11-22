@@ -213,12 +213,21 @@ export async function preparePintaSceneResources(
               }
             : null
       if (!payload?.dataUrl) throw new Error('Não foi possível preparar o desenho do objeto.')
-      return { id, image: payload.dataUrl, width: payload.width, height: payload.height }
+      return {
+        id,
+        image: payload.dataUrl,
+        width: payload.width,
+        height: payload.height,
+      }
     }),
   )
   const versions = resources
     .filter((r) => ids.includes(r.asset.id) || artIds.includes(r.asset.id))
-    .map((r) => ({ id: r.asset.id, sourceId: r.sourceId, capturedAt: r.capturedAt }))
+    .map((r) => ({
+      id: r.asset.id,
+      sourceId: r.sourceId,
+      capturedAt: r.capturedAt,
+    }))
   const animatedTileObjects = documents.some((m) =>
     m.layers.some(
       (l) =>
@@ -232,14 +241,22 @@ export async function preparePintaSceneResources(
         ),
     ),
   )
-  return { definitions, documents, tilesets, art, versions, animatedTileObjects, base }
+  return {
+    definitions,
+    documents,
+    tilesets,
+    art,
+    versions,
+    animatedTileObjects,
+    base,
+  }
 }
 
 /** Public legacy converter retains scene 1–3 and its existing image/data contracts. */
 export async function exportPintaScene(
   map: TilemapAsset,
   findExternal: (id: string) => PintaAsset | null,
-  imageOf?: (asset: PintaAsset) => Promise<string | null>,
+  imageOf?: (asset: VersionablePintaAsset) => Promise<string | null>,
 ): Promise<PintaScene> {
   const prepared = await preparePintaSceneResources(map, findExternal, imageOf)
   const definitions = prepared.definitions.filter(

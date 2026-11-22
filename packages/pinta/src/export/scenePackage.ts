@@ -1,7 +1,14 @@
 import type { PintaScene } from '@sistemazero/core/studio/pinta-scene'
 import { mapTwoDSource } from '@sistemazero/core/studio/pinta-scene-player'
 import { sceneObjects } from '@sistemazero/core/studio/pinta-scene-runtime'
-import type { PintaAsset, TilemapAsset } from '../core/project'
+import type { PintaMemoryAsset } from '../core/assetMemory'
+import type {
+  PintaAsset,
+  RegionTilemapAsset,
+  TilemapAsset,
+  VersionablePintaAsset,
+} from '../core/project'
+import { sceneMapClosure } from '../core/sceneMapClosure'
 import { assetBundleToJson } from './assetJson'
 import { dataUrlToBlob } from './png'
 import { galleryToPintaJson, importPintaJson } from './projectJson'
@@ -14,12 +21,34 @@ import {
   tiledTilesetXml,
 } from './tiled/export'
 export type ScenePackageTarget = 'tiled' | 'phaser' | 'pygame' | 'godot'
-export async function buildScenePackage(
+export function buildScenePackage(
   root: TilemapAsset,
   assets: readonly PintaAsset[],
   target: ScenePackageTarget,
-  options: { imageOf?: (asset: PintaAsset) => Promise<string | null> } = {},
+  options?: { imageOf?: (asset: PintaAsset) => Promise<string | null> },
+): Promise<Record<string, Uint8Array | string>>
+export function buildScenePackage(
+  root: RegionTilemapAsset,
+  assets: readonly PintaMemoryAsset[],
+  target: ScenePackageTarget,
+  options?: {
+    imageOf?: (asset: VersionablePintaAsset) => Promise<string | null>
+  },
+): Promise<Record<string, Uint8Array | string>>
+export async function buildScenePackage(
+  root: TilemapAsset | RegionTilemapAsset,
+  inventory: readonly PintaMemoryAsset[],
+  target: ScenePackageTarget,
+  options: {
+    imageOf?: (asset: VersionablePintaAsset) => Promise<string | null>
+  } = {},
 ): Promise<Record<string, Uint8Array | string>> {
+  if ('origin' in root) {
+    const captured = structuredClone(sceneMapClosure(root, inventory))
+    const { buildRegionScenePackage } = await import('./regionScenePackage')
+    return buildRegionScenePackage(captured, target, options.imageOf)
+  }
+  const assets = inventory as readonly PintaAsset[]
   const files: Record<string, Uint8Array | string> = {},
     maps = new Map<string, TilemapAsset>([[root.id, root]]),
     byId = new Map(assets.map((a) => [a.id, a])),

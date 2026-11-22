@@ -1,19 +1,32 @@
+import {
+  createRegionCellReader,
+  encodePintaRegionLayers,
+  PINTA_REGION_SIDE,
+  type PintaRegionCells,
+} from '@sistemazero/core/creations'
+import type {
+  PintaRegionScene,
+  PintaRegionSceneWire,
+} from '@sistemazero/core/studio/pinta-region-scene'
 import type {
   PintaScene,
-  PintaSceneLayer,
+  PintaSceneCellsLayer,
   PintaSceneObject,
 } from '@sistemazero/core/studio/pinta-scene'
 import {
   sceneLayerState,
   transformSceneSetObject,
 } from '@sistemazero/core/studio/pinta-scene-runtime'
+import { JsonByteSizeCache } from '../../core/jsonBytes'
 import { PINTA_MAP_FORMAT_LIMITS } from '../../core/projectConfig'
 import { CELL_FLIP_D, CELL_FLIP_H, CELL_FLIP_V, cellFlags, cellTile } from '../../tiles/cell'
 import { cellMatrix } from '../../tiles/chunks'
 import { atlasCapacity, atlasSnapshot } from './metadata'
+import { TILED_PACKAGE_LIMITS } from './package'
 
 type Property = { name: string; type: string; value: unknown }
-export function tiledSceneWarnings(scene: PintaScene): string[] {
+type SceneLayer = PintaSceneCellsLayer<number[] | PintaRegionCells>
+export function tiledSceneWarnings(scene: PintaScene | PintaRegionSceneWire): string[] {
   return (scene.art ?? []).flatMap((a) =>
     a.sprite?.animations.some((v) => !v.loop)
       ? [
@@ -61,7 +74,41 @@ export function tiledProperties(properties: Record<string, unknown> | undefined)
   })
 }
 /** Arquivos usam índices estáveis; os nomes livres do usuário nunca viram caminhos. */
-export async function tiledMap(scene: PintaScene): Promise<Record<string, unknown>> {
+export async function tiledMap(
+  scene: PintaScene | PintaRegionScene,
+): Promise<Record<string, unknown>> {
+  const regional = scene.version === 4
+  const sets = regional
+    ? scene.sets?.map((set) => {
+        const grids = encodePintaRegionLayers(
+          set.layers.flatMap((layer) => (layer.kind === 'tiles' ? [layer.cells] : [])),
+          { ...set.origin, cols: set.cols, rows: set.rows },
+        )
+        if (!grids)
+          throw new TiledSceneCompatibilityError('As regiões de um conjunto são inválidas.')
+        let index = 0
+        return {
+          ...set,
+          layers: set.layers.map((layer) =>
+            layer.kind === 'tiles' ? { ...layer, cells: grids[index++] } : layer,
+          ),
+        }
+      })
+    : scene.sets
+  // Tiled draws an editable copy of each set instance. Charge projections as
+  // they are made so repeated large sets cannot allocate an unbounded object list.
+  const projectionSize = new JsonByteSizeCache(64)
+  let remainingProjection = TILED_PACKAGE_LIMITS.fileBytes
+  function appendProjection(objects: Record<string, unknown>[], value: Record<string, unknown>) {
+    if (regional) {
+      remainingProjection -= projectionSize.byteLength(value, remainingProjection)
+      if (remainingProjection < 0)
+        throw new TiledSceneCompatibilityError(
+          'As cópias visíveis dos conjuntos excedem o tamanho do arquivo Tiled. Exporte menos conjuntos por mapa.',
+        )
+    }
+    objects.push(value)
+  }
   let first = 1,
     layerId = 0,
     objectId = 0
@@ -122,7 +169,13 @@ export async function tiledMap(scene: PintaScene): Promise<Record<string, unknow
       properties: [
         { name: 'pinta:id', type: 'string', value: ts.id },
         ...(snapshot
-          ? [{ name: 'pinta:atlas', type: 'string', value: JSON.stringify(snapshot) }]
+          ? [
+              {
+                name: 'pinta:atlas',
+                type: 'string',
+                value: JSON.stringify(snapshot),
+              },
+            ]
           : []),
       ],
       tiles: [...tileIds]
@@ -131,7 +184,10 @@ export async function tiledMap(scene: PintaScene): Promise<Record<string, unknow
           id,
           ...(ts.animations?.[id]
             ? {
-                animation: ts.animations[id].map((f) => ({ tileid: f.tile, duration: f.duration })),
+                animation: ts.animations[id].map((f) => ({
+                  tileid: f.tile,
+                  duration: f.duration,
+                })),
               }
             : {}),
           properties: [
@@ -206,7 +262,13 @@ export async function tiledMap(scene: PintaScene): Promise<Record<string, unknow
           { name: 'pinta:art', type: 'string', value: a.id },
           ...(animation ? [{ name: 'pinta:animation', type: 'string', value: animation.id }] : []),
           ...(sprite
-            ? [{ name: 'pinta:sprite', type: 'string', value: JSON.stringify(sprite) }]
+            ? [
+                {
+                  name: 'pinta:sprite',
+                  type: 'string',
+                  value: JSON.stringify(sprite),
+                },
+              ]
             : []),
         ],
         tiles: animation
@@ -288,9 +350,10 @@ export async function tiledMap(scene: PintaScene): Promise<Record<string, unknow
       ],
     }
   }
-  function expanded(o: PintaSceneObject, owner: PintaSceneLayer): Record<string, unknown>[] {
+  function expanded(o: PintaSceneObject, owner: SceneLayer): Record<string, unknown>[] {
     const set = scene.sets?.find((s) => s.id === o.setId)
     if (!set) return []
+    const origin = 'origin' in set ? set.origin : { col: 0, row: 0 }
     const sx = o.width / (set.cols * scene.tileSize),
       sy = o.height / (set.rows * scene.tileSize),
       angle = ((o.rotation ?? 0) * Math.PI) / 180
@@ -309,13 +372,13 @@ export async function tiledMap(scene: PintaScene): Promise<Record<string, unknow
       if (l.kind === 'group') return []
       const e = sceneLayerState(set.layers, l),
         objects: Record<string, unknown>[] = []
-      if (l.kind === 'tiles' && !l.collision)
-        l.cells.forEach((cell, i) => {
+      if (l.kind === 'tiles' && !l.collision) {
+        const addTile = (cell: number, col: number, row: number) => {
           if (cell < 0) return
           const size = scene.tileSize,
             [a, b, c, d] = cellMatrix(cell),
-            cx = ((i % set.cols) + 0.5) * size + e.offsetX,
-            cy = (Math.floor(i / set.cols) + 0.5) * size + e.offsetY
+            cx = (col + 0.5) * size + e.offsetX,
+            cy = (row + 0.5) * size + e.offsetY
           const p = point(cx - ((a + c) * size) / 2, cy - ((b + d) * size) / 2),
             pu = point(cx + ((a - c) * size) / 2, cy + ((b - d) * size) / 2),
             pv = point(cx + ((-a + c) * size) / 2, cy + ((-b + d) * size) / 2)
@@ -324,9 +387,10 @@ export async function tiledMap(scene: PintaScene): Promise<Record<string, unknow
             vx = pv.x - p.x,
             vy = pv.y - p.y,
             flip = ux * vy - uy * vx < 0
-          objects.push(
+          appendProjection(
+            objects,
             object({
-              id: `${o.id}/${l.id}/${i}`,
+              id: `${o.id}/${l.id}/${row * set.cols + col}`,
               name: '',
               type: '',
               x: p.x + (flip ? vx : 0),
@@ -340,12 +404,27 @@ export async function tiledMap(scene: PintaScene): Promise<Record<string, unknow
               properties: {},
             }),
           )
-        })
+        }
+        if (Array.isArray(l.cells))
+          l.cells.forEach((cell, index) => {
+            addTile(cell, index % set.cols, Math.floor(index / set.cols))
+          })
+        else
+          createRegionCellReader(l.cells).visitOccupied(
+            { ...origin, cols: set.cols, rows: set.rows },
+            (cell, col, row) => addTile(cell, col - origin.col, row - origin.row),
+            'row-major',
+          )
+      }
       if (l.kind === 'objects')
         for (const child of l.objects) {
           const transformed = transformSceneSetObject(
             o,
-            { ...child, x: child.x + e.offsetX, y: child.y + e.offsetY },
+            {
+              ...child,
+              x: child.x + e.offsetX - origin.col * scene.tileSize,
+              y: child.y + e.offsetY - origin.row * scene.tileSize,
+            },
             set.cols * scene.tileSize,
             set.rows * scene.tileSize,
             localIds,
@@ -363,8 +442,8 @@ export async function tiledMap(scene: PintaScene): Promise<Record<string, unknow
             throw new TiledSceneCompatibilityError(
               'O Tiled não representa uma imagem com cisalhamento (shear). Use a mesma escala nos dois lados do conjunto ou retire o giro do desenho interno.',
             )
-          objects.push(object(transformed))
-          if (separateArt(transformed)) objects.push(artObject(transformed))
+          appendProjection(objects, object(transformed))
+          if (separateArt(transformed)) appendProjection(objects, artObject(transformed))
         }
       return [
         {
@@ -387,7 +466,7 @@ export async function tiledMap(scene: PintaScene): Promise<Record<string, unknow
       ]
     })
   }
-  function layer(l: PintaSceneLayer): Record<string, unknown> {
+  function layer(l: SceneLayer): Record<string, unknown> {
     const common = {
       id: ++layerId,
       name: l.name,
@@ -403,6 +482,9 @@ export async function tiledMap(scene: PintaScene): Promise<Record<string, unknow
       properties: [
         ...properties(l.properties),
         { name: 'pinta:id', type: 'string', value: l.id },
+        ...(regional && l.kind === 'tiles'
+          ? [{ name: 'pinta:tileset', type: 'string', value: l.tilesetId }]
+          : []),
         ...(l.kind === 'tiles' && l.front
           ? [{ name: 'pinta:front', type: 'bool', value: true }]
           : []),
@@ -448,12 +530,23 @@ export async function tiledMap(scene: PintaScene): Promise<Record<string, unknow
           }
         : original
     }
+    const start = firstgid.get(l.tilesetId) ?? 1
     return {
       ...common,
       type: 'tilelayer',
       width: scene.cols,
       height: scene.rows,
-      data: l.cells.map((c) => cellToGid(c, firstgid.get(l.tilesetId) ?? 1)),
+      ...(Array.isArray(l.cells)
+        ? { data: l.cells.map((cell) => cellToGid(cell, start)) }
+        : {
+            chunks: l.cells.chunks.map((chunk) => ({
+              x: chunk.col * PINTA_REGION_SIDE,
+              y: chunk.row * PINTA_REGION_SIDE,
+              width: PINTA_REGION_SIDE,
+              height: PINTA_REGION_SIDE,
+              data: Array.from(chunk.cells, (cell) => cellToGid(cell, start)),
+            })),
+          }),
     }
   }
   const layers = scene.layers.filter((l) => !l.parentId).map(layer)
@@ -463,9 +556,9 @@ export async function tiledMap(scene: PintaScene): Promise<Record<string, unknow
     tiledversion: '1.12.2',
     orientation: 'orthogonal',
     renderorder: 'right-down',
-    infinite: false,
-    width: scene.cols,
-    height: scene.rows,
+    infinite: regional,
+    width: regional ? 0 : scene.cols,
+    height: regional ? 0 : scene.rows,
     tilewidth: scene.tileSize,
     tileheight: scene.tileSize,
     tilesets,
@@ -475,14 +568,38 @@ export async function tiledMap(scene: PintaScene): Promise<Record<string, unknow
     properties: [
       { name: 'pinta:id', type: 'string', value: scene.id },
       { name: 'pinta:name', type: 'string', value: scene.name },
+      ...(scene.version === 4
+        ? [
+            {
+              name: 'pinta:bounds',
+              type: 'string',
+              value: JSON.stringify({
+                ...scene.origin,
+                cols: scene.cols,
+                rows: scene.rows,
+              }),
+            },
+            {
+              name: 'pinta:physics',
+              type: 'string',
+              value: scene.physics ?? 'precise',
+            },
+          ]
+        : []),
       ...(scene.version >= 2
         ? [{ name: 'pinta:sceneVersion', type: 'int', value: scene.version }]
         : []),
       ...(scene.resources?.length
-        ? [{ name: 'pinta:resources', type: 'string', value: JSON.stringify(scene.resources) }]
+        ? [
+            {
+              name: 'pinta:resources',
+              type: 'string',
+              value: JSON.stringify(scene.resources),
+            },
+          ]
         : []),
-      ...(scene.sets?.length
-        ? [{ name: 'pinta:sets', type: 'string', value: JSON.stringify(scene.sets) }]
+      ...(sets?.length
+        ? [{ name: 'pinta:sets', type: 'string', value: JSON.stringify(sets) }]
         : []),
     ],
   }
@@ -540,8 +657,18 @@ export function tiledMapXml(map: Record<string, unknown>, external = false): str
       p = props(l.properties)
     if (l.type === 'group')
       return `<group${a}>${p}${(l.layers as Record<string, unknown>[]).map(layer).join('')}</group>`
-    if (l.type === 'tilelayer')
-      return `<layer${a}>${p}<data encoding="csv">${(l.data as number[]).join(',')}</data></layer>`
+    if (l.type === 'tilelayer') {
+      const chunks = l.chunks as Array<Record<string, unknown> & { data: number[] }> | undefined
+      const csv = chunks
+        ? chunks
+            .map(
+              (chunk) =>
+                `<chunk${attrs(chunk, ['x', 'y', 'width', 'height'])}>${chunk.data.join(',')}</chunk>`,
+            )
+            .join('')
+        : (l.data as number[]).join(',')
+      return `<layer${a}>${p}<data encoding="csv">${csv}</data></layer>`
+    }
     return `<objectgroup${a} draworder="index">${p}${((l.objects as Record<string, unknown>[]) ?? []).map((o) => `<object${attrs(o, ['id', 'name', 'type', 'x', 'y', 'width', 'height', 'rotation', 'gid', 'visible'])}>${props(o.properties)}${o.point ? '<point/>' : ''}${o.ellipse ? '<ellipse/>' : ''}${o.polygon || o.polyline ? `<${o.polygon ? 'polygon' : 'polyline'} points="${((o.polygon || o.polyline) as { x: number; y: number }[]).map((p) => `${p.x},${p.y}`).join(' ')}"/>` : ''}</object>`).join('')}</objectgroup>`
   }
   return `<?xml version="1.0" encoding="UTF-8"?><map${attrs(map, ['version', 'tiledversion', 'orientation', 'renderorder', 'width', 'height', 'tilewidth', 'tileheight', 'infinite', 'nextlayerid', 'nextobjectid'])}>${props(map.properties)}${(map.tilesets as Record<string, unknown>[]).map((t, i) => (external ? `<tileset firstgid="${t.firstgid}" source="tiles-${i}.tsx"/>` : tiledTilesetXml(t).replace('<tileset ', `<tileset firstgid="${t.firstgid}" `))).join('')}${(map.layers as Record<string, unknown>[]).map(layer).join('')}</map>`

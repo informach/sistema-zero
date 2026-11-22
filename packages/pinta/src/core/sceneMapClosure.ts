@@ -51,7 +51,10 @@ export function* pintaDoorSelectors(asset: PintaMemoryAsset): IterableIterator<s
   }
 }
 
-export function pintaDoorBinding(destination: string, byId: ReadonlyMap<string, PintaMemoryAsset>) {
+export function pintaDoorBinding(
+  destination: string,
+  byId: ReadonlyMap<string, Pick<PintaMemoryAsset, 'id' | 'name' | 'kind'>>,
+) {
   const exact = byId.get(destination)
   if (exact)
     return exact.kind === 'tilemap'
@@ -107,7 +110,12 @@ export function observePintaReferences<Asset extends PintaMemoryAsset>(
   references.delete(asset.id)
   return [...references].map((id) => {
     const target = byId.get(id)
-    return (target && pintaResourceObservation(target)) || { id, localRevision: null }
+    return (
+      (target && pintaResourceObservation(target)) || {
+        id,
+        localRevision: null,
+      }
+    )
   })
 }
 

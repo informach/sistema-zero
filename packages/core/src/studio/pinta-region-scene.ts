@@ -6,6 +6,7 @@ import {
   PINTA_REGION_CHUNK_BYTES,
   PINTA_REGION_LIMITS,
   type PintaRegionCells,
+  type PintaRegionWire,
   parsePintaRegionLayerLocations,
   parsePintaRegionLayers,
 } from '../creations/pinta-regions'
@@ -65,6 +66,16 @@ export type PintaRegionSceneMap = Omit<MapHeader, 'layers'> & {
 export type PintaRegionScene = Omit<z.infer<typeof header>, 'layers' | 'sets'> & {
   layers: PintaSceneCellsLayer<PintaRegionCells>[]
   sets?: PintaRegionSceneMap[]
+}
+
+/** Canonical encoded Scene4, for producers carrying cells through JSON. */
+export type PintaRegionSceneWire = Omit<PintaRegionScene, 'layers' | 'sets'> & {
+  layers: PintaSceneCellsLayer<PintaRegionWire>[]
+  sets?: Array<
+    Omit<PintaRegionSceneMap, 'layers'> & {
+      layers: PintaSceneCellsLayer<PintaRegionWire>[]
+    }
+  >
 }
 
 export interface PintaRegionScenePlan {

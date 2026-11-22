@@ -1,4 +1,15 @@
-import { sha256Hex } from '@sistemazero/core/creations'
+import {
+  PINTA_REGION_CELL_COUNT,
+  PINTA_REGION_CHUNK_BYTES,
+  PINTA_REGION_LIMITS,
+  parsePintaRegionBounds,
+  sha256Hex,
+} from '@sistemazero/core/creations'
+import {
+  type PintaRegionScene,
+  type PintaRegionSceneWire,
+  readPintaRegionScene,
+} from '@sistemazero/core/studio/pinta-region-scene'
 import {
   type PintaScene,
   type PintaSceneLayer,
@@ -8,7 +19,8 @@ import {
 } from '@sistemazero/core/studio/pinta-scene'
 import { Gunzip, Unzlib } from 'fflate'
 import { pintaValuesEqual } from '../../core/assetEquality'
-import { PINTA_LIMITS, PINTA_MAP_FORMAT_LIMITS } from '../../core/projectConfig'
+import { JsonByteSizeCache } from '../../core/jsonBytes'
+import { PINTA_LIMITS, PINTA_MAP_FORMAT_LIMITS, TILE_SIZES } from '../../core/projectConfig'
 import { CELL_FLIP_D, CELL_FLIP_H, CELL_FLIP_V, cellTile, makeCell } from '../../tiles/cell'
 import { TiledImportError } from './errors'
 import {
@@ -17,6 +29,7 @@ import {
   readEmptyTerrainTiles,
   type TiledAtlasSnapshot,
 } from './metadata'
+import { readRegionalTiledGrid } from './regionGrid'
 
 export { TiledImportError }
 
@@ -53,6 +66,7 @@ const LIMITS = {
   /** Bytes de uma camada em base64, antes de descompactar. */
   encodedLayer: 16 * 1024 * 1024,
 } as const
+const REGION_PIXEL_LIMIT = PINTA_REGION_LIMITS.maxCoordinateExclusive * Math.max(...TILE_SIZES)
 
 type RecordValue = Record<string, unknown>
 const rec = (v: unknown): RecordValue => {
@@ -235,8 +249,10 @@ function inflate(raw: Uint8Array, compression: string, size: number): Uint8Array
 }
 function data(layer: RecordValue, count: number): number[] {
   let values: number[]
-  if (Array.isArray(layer.data)) values = layer.data.map((n) => number(n, Number.NaN))
-  else if (typeof layer.data !== 'string') return refuse('Uma camada de peças veio sem dados.')
+  if (Array.isArray(layer.data)) {
+    if (layer.data.length !== count) return refuse('O tamanho da camada não corresponde ao mapa.')
+    values = layer.data.map((n) => number(n, Number.NaN))
+  } else if (typeof layer.data !== 'string') return refuse('Uma camada de peças veio sem dados.')
   else if (layer.encoding === 'csv')
     values = layer.data
       .trim()
@@ -307,7 +323,7 @@ function explain(scene: RecordValue, path: PropertyKey[], message: string): stri
 
 /** Restaura só o preenchimento comprovadamente intacto e sem referências novas. */
 async function restoreAtlasCounts(
-  scene: PintaScene,
+  scene: PintaScene | PintaRegionScene,
   snapshots: ReadonlyMap<string, TiledAtlasSnapshot>,
 ): Promise<void> {
   const eligible = new Map<string, TiledAtlasSnapshot>()
@@ -333,7 +349,11 @@ async function restoreAtlasCounts(
     for (const layer of owner.layers) {
       if (layer.kind === 'tiles' && eligible.has(layer.tilesetId)) {
         let maximum = -1
-        for (const cell of layer.cells) if (cell >= 0) maximum = Math.max(maximum, cellTile(cell))
+        const parts = Array.isArray(layer.cells)
+          ? [layer.cells]
+          : layer.cells.chunks.map((chunk) => chunk.cells)
+        for (const part of parts)
+          for (const cell of part) if (cell >= 0) maximum = Math.max(maximum, cellTile(cell))
         mark(layer.tilesetId, maximum)
       } else if (layer.kind === 'objects')
         for (const object of layer.objects)
@@ -357,11 +377,50 @@ async function restoreAtlasCounts(
   }
 }
 
-export async function importTiledScene(
+export function importTiledScene(
   input: unknown,
   resolver: TiledResolver,
   name = 'mapa-importado',
 ): Promise<{ scene: PintaScene; warnings: string[] }> {
+  return importScene(input, resolver, name, undefined)
+}
+
+/** Private Scene4 return. The public fixed-map importer keeps its original contract. */
+interface RegionalTiledImport {
+  scene: PintaRegionScene
+  wire: PintaRegionSceneWire
+  indexBytes: number
+  metadataBytes: number
+  warnings: string[]
+}
+
+export function importRegionalTiledScene(
+  input: unknown,
+  resolver: TiledResolver,
+  name = 'mapa-importado',
+  maxIndexBytes = PINTA_REGION_LIMITS.maxChunks * PINTA_REGION_CHUNK_BYTES,
+): Promise<RegionalTiledImport> {
+  return importScene(input, resolver, name, { maxIndexBytes })
+}
+
+function importScene(
+  input: unknown,
+  resolver: TiledResolver,
+  name: string,
+  region: undefined,
+): Promise<{ scene: PintaScene; warnings: string[] }>
+function importScene(
+  input: unknown,
+  resolver: TiledResolver,
+  name: string,
+  region: { maxIndexBytes: number },
+): Promise<RegionalTiledImport>
+async function importScene(
+  input: unknown,
+  resolver: TiledResolver,
+  name: string,
+  region: { maxIndexBytes: number } | undefined,
+): Promise<{ scene: PintaScene; warnings: string[] } | RegionalTiledImport> {
   const map = rec(input),
     warnings: string[] = []
   const cut = (text: string, what: string): string => {
@@ -370,20 +429,33 @@ export async function importTiledScene(
     warnings.push(`O nome de ${what} foi encurtado para ${LIMITS.name} sinais: ${short}`)
     return short
   }
-  if (map.orientation !== 'orthogonal' || map.infinite === true || map.infinite === 1)
+  const infinite = map.infinite === true || map.infinite === 1
+  const regionalProps = region && props(map.properties, 'o mapa', warnings)
+  const bounds = regionalProps ? parsePintaRegionBounds(json(regionalProps['pinta:bounds'])) : null
+  if (region) {
+    const version = regionalProps?.['pinta:sceneVersion']
+    if (!infinite || !bounds || !version || typeof version !== 'object' || rec(version).value !== 4)
+      refuse('Traga o mapa regional do Pinta com as propriedades de origem preservadas no Tiled.')
+    if (
+      !Number.isSafeInteger(region.maxIndexBytes) ||
+      region.maxIndexBytes < 0 ||
+      region.maxIndexBytes > PINTA_REGION_LIMITS.maxChunks * PINTA_REGION_CHUNK_BYTES
+    )
+      refuse('O limite de regiões informado não é válido.')
+  }
+  if (map.orientation !== 'orthogonal' || (infinite && !region))
     refuse(
       'Traga um mapa ortogonal de tamanho fixo. Mapas infinitos, isométricos e hexagonais ainda não entram no Pinta.',
     )
-  const cols = number(map.width),
-    rows = number(map.height),
+  const cols = bounds?.cols ?? number(map.width),
+    rows = bounds?.rows ?? number(map.height),
     size = number(map.tilewidth)
   if (
     !Number.isInteger(cols) ||
     !Number.isInteger(rows) ||
     cols < 1 ||
     rows < 1 ||
-    cols > LIMITS.cols ||
-    rows > LIMITS.rows ||
+    (!bounds && (cols > LIMITS.cols || rows > LIMITS.rows)) ||
     !Number.isInteger(size) ||
     size < 1 ||
     number(map.tileheight) !== size
@@ -401,7 +473,13 @@ export async function importTiledScene(
   const atlasSnapshots = new Map<string, TiledAtlasSnapshot>()
   const art: NonNullable<PintaScene['art']> = [],
     tilesets: RecordValue[] = [],
-    gids: { first: number; id: string; count: number; art?: string; animationId?: string }[] = []
+    gids: {
+      first: number
+      id: string
+      count: number
+      art?: string
+      animationId?: string
+    }[] = []
   for (const [i, raw] of array(map.tilesets).entries()) {
     let ts = rec(raw)
     const first = number(ts.firstgid)
@@ -626,6 +704,8 @@ export async function importTiledScene(
   const layers: RecordValue[] = [],
     numericObjects = new Map<string, string>()
   let cells = 0
+  let regionBytes = 0
+  let regionalSourceCells = 0
   /** A folha de um gid; um gid acima da última peça da folha não existe. */
   const resolve = (gid: number) => {
     const n = gid & GID_MASK,
@@ -675,7 +755,7 @@ export async function importTiledScene(
       return clamp(n, min, max)
     }
     for (const key of ['offsetx', 'offsety'] as const)
-      if (Math.abs(number(l[key])) > LIMITS.layerOffset)
+      if (Math.abs(number(l[key])) > (bounds ? REGION_PIXEL_LIMIT : LIMITS.layerOffset))
         refuse(`O deslocamento de ${where} é grande demais para o Pinta.`)
     const common = {
       id,
@@ -708,6 +788,54 @@ export async function importTiledScene(
       return
     }
     if (l.type === 'tilelayer') {
+      const flags = {
+        ...(p['pinta:front'] === true ? { front: true } : {}),
+        ...(p['pinta:collision'] === true ? { collision: true } : {}),
+      }
+      if (bounds && region) {
+        if (
+          number(l.x) ||
+          number(l.y) ||
+          (l.data !== undefined && l.data !== '' && !(Array.isArray(l.data) && !l.data.length))
+        )
+          refuse(`A camada ${label} precisa guardar as peças nas regiões do mapa.`)
+        let tilesetId: string | undefined
+        const grid = readRegionalTiledGrid(
+          l.chunks ?? [],
+          bounds,
+          (chunk, length) =>
+            data({ encoding: l.encoding, compression: l.compression, ...chunk }, length),
+          (gid) => {
+            const g = resolve(gid)
+            if (!g || g.art) return refuse(`A camada ${label} aponta para uma peça inválida.`)
+            if (tilesetId && tilesetId !== g.id)
+              refuse(
+                `A camada ${label} usa mais de uma folha. Separe as peças em camadas no Tiled.`,
+              )
+            tilesetId = g.id
+            return gidCell(gid, g.first)
+          },
+          (length) => {
+            regionalSourceCells += length
+            if (regionalSourceCells > PINTA_REGION_LIMITS.maxChunks * PINTA_REGION_CELL_COUNT)
+              refuse('As regiões do mapa do Tiled ocupam espaço demais.')
+          },
+          () => {
+            regionBytes += PINTA_REGION_CHUNK_BYTES
+            if (regionBytes > region.maxIndexBytes)
+              refuse('As regiões do mapa ocupam espaço demais.')
+          },
+        )
+        const chosen = tilesetId ?? string(p['pinta:tileset'], string(tilesets[0]?.id))
+        push({
+          ...common,
+          kind: 'tiles',
+          tilesetId: chosen,
+          cells: grid,
+          ...flags,
+        })
+        return
+      }
       if (l.chunks) refuse('Camadas infinitas não entram no Pinta.')
       if (
         (l.width !== undefined && number(l.width) !== cols) ||
@@ -737,8 +865,7 @@ export async function importTiledScene(
           cells: values.map((v) =>
             v === 0 || resolve(v)?.id !== source ? -1 : gidCell(v, g.first),
           ),
-          ...(p['pinta:front'] === true ? { front: true } : {}),
-          ...(p['pinta:collision'] === true ? { collision: true } : {}),
+          ...flags,
         })
       }
       if (sources.length > 1)
@@ -793,7 +920,11 @@ export async function importTiledScene(
           }
           const placed = g ? tileObjectPlacement({ ...box, gid }) : null,
             at = placed ?? box
-          if ([at.x, at.y, at.width, at.height].some((n) => Math.abs(n) > LIMITS.objectCoord))
+          if (
+            [at.x, at.y, at.width, at.height].some(
+              (n) => Math.abs(n) > (bounds ? REGION_PIXEL_LIMIT : LIMITS.objectCoord),
+            )
+          )
             refuse(
               `${whereObject[0]!.toUpperCase()}${whereObject.slice(1)} está longe ou é grande demais para o Pinta.`,
             )
@@ -849,7 +980,9 @@ export async function importTiledScene(
               ...(at.rotation ? { rotation: at.rotation } : {}),
               ...(shape ? { shape } : {}),
               ...(shape === 'polygon' || shape === 'polyline'
-                ? { points: points.map(rec).map((q) => ({ x: number(q.x), y: number(q.y) })) }
+                ? {
+                    points: points.map(rec).map((q) => ({ x: number(q.x), y: number(q.y) })),
+                  }
                 : {}),
               ...(e.separateArt === true && original ? { art: original } : {}),
               ...(g
@@ -902,7 +1035,7 @@ export async function importTiledScene(
   for (const ts of tilesets)
     if (ts.tileProperties)
       for (const properties of Object.values(rec(ts.tileProperties))) remapReferences(properties)
-  const p = props(map.properties, 'o mapa', warnings),
+  const p = regionalProps ?? props(map.properties, 'o mapa', warnings),
     sets = json(p['pinta:sets']),
     resources = json(p['pinta:resources'])
   const lost = Object.keys(p).filter((key) => !key.startsWith('pinta:'))
@@ -925,6 +1058,42 @@ export async function importTiledScene(
     ...(art.length ? { art } : {}),
     ...(sets ? { sets } : {}),
     ...(resources ? { resources } : {}),
+  }
+  if (region && bounds) {
+    const physics = p['pinta:physics']
+    if (physics !== 'legacy' && physics !== 'precise')
+      refuse('A física original do mapa não veio do Tiled.')
+    const wire = {
+      ...candidate,
+      origin: { col: bounds.col, row: bounds.row },
+      physics,
+    }
+    const scene = readPintaRegionScene(JSON.stringify(wire), region.maxIndexBytes)
+    if (!scene) return refuse('Não foi possível conferir o cenário regional editado.')
+    await restoreAtlasCounts(scene, atlasSnapshots)
+    // Admission checked every field of this specific object, including every encoded region.
+    const canonical = {
+      ...wire,
+      tilesets: scene.tilesets,
+    } as PintaRegionSceneWire
+    const indexBytes = [scene, ...(scene.sets ?? [])].reduce(
+      (bytes, map) =>
+        bytes +
+        map.layers.reduce(
+          (total, layer) =>
+            total +
+            (layer.kind === 'tiles' ? layer.cells.chunks.length * PINTA_REGION_CHUNK_BYTES : 0),
+          0,
+        ),
+      0,
+    )
+    return {
+      scene,
+      wire: canonical,
+      indexBytes,
+      metadataBytes: new JsonByteSizeCache(64).byteLength(canonical),
+      warnings,
+    }
   }
   const parsed = PintaSceneSchema.safeParse(candidate)
   if (!parsed.success) {
@@ -1012,16 +1181,26 @@ export function tiledXmlToJson(text: string): RecordValue {
         continue
       }
       if (name === 'data') {
-        if (child.querySelector('chunk')) result.chunks = true
-        result.data =
-          child.getAttribute('encoding') === 'csv'
-            ? (child.textContent ?? '')
+        const chunkData = (data: Element) => {
+          const encoding = child.getAttribute('encoding')
+          const text = data.textContent ?? ''
+          if (encoding === 'base64') return text
+          if (encoding !== 'csv')
+            return [...data.children].map((c) => Number(c.getAttribute('gid') ?? 0))
+          return text.trim()
+            ? text
                 .trim()
                 .split(/[\s,]+/)
                 .map(Number)
-            : child.getAttribute('encoding') === 'base64'
-              ? child.textContent
-              : [...child.children].map((c) => Number(c.getAttribute('gid') ?? 0))
+            : []
+        }
+        const chunks = [...child.children].filter((element) => element.tagName === 'chunk')
+        if (chunks.length)
+          result.chunks = chunks.map((chunk) => ({
+            ...read(chunk),
+            data: chunkData(chunk),
+          }))
+        else result.data = chunkData(child)
         result.encoding = child.getAttribute('encoding') ?? 'csv'
         result.compression = child.getAttribute('compression') ?? ''
         continue
