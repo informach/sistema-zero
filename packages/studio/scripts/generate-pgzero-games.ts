@@ -4,6 +4,7 @@ import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promis
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { formatGeneratedSource } from '../../../scripts/format-generated-source'
 import {
   PGZERO_GAME_FILES,
   PGZERO_GAMES,
@@ -406,24 +407,7 @@ ${(PGZERO_GAMES as readonly PgzeroGame[])
 })
 
 for (const { output, raw } of generated) {
-  const formatter = Bun.spawn(
-    [
-      process.execPath,
-      '--no-env-file',
-      'x',
-      '--no-install',
-      'biome',
-      'format',
-      `--stdin-file-path=${output}`,
-    ],
-    { cwd: studio, stdin: new Blob([raw]), stdout: 'pipe', stderr: 'pipe' },
-  )
-  const [code, formatted, errors] = await Promise.all([
-    formatter.exited,
-    new Response(formatter.stdout).text(),
-    new Response(formatter.stderr).text(),
-  ])
-  if (code !== 0) throw new Error(`Falha ao formatar ${output}: ${errors}`)
+  const formatted = await formatGeneratedSource(raw, output, studio)
   await put(join(studio, output), encoder.encode(formatted))
 }
 if (problems.length)

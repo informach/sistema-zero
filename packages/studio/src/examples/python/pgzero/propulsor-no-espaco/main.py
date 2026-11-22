@@ -1,7 +1,9 @@
+# 📦 Bibliotecas
 import math
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Propulsor no Espaço'
@@ -11,19 +13,8 @@ ATRITO = 0.99
 # tamanho do retângulo dele, então a conta usa a distância até o centro.
 RAIO = {'grande': 40, 'media': 22, 'pequena': 12}
 
-nave = Actor('nave')
-velocidade_x = 0
-velocidade_y = 0
-tiros = []
-idades = []
-pedras = []
-tamanhos = []
-direcoes = []
-vidas = 3
-pontos = 0
-protegida = 0
 
-
+# 🧩 Meus moldes
 def nova_pedra(tamanho, x, y):
     pedra = Actor('pedra_' + tamanho)
     pedra.pos = (x, y)
@@ -95,7 +86,39 @@ def novo_jogo():
     recomecar_nave()
     nova_onda()
 
+# ⚙️ Ao iniciar
+nave = Actor('nave')
+velocidade_x = 0
+velocidade_y = 0
+tiros = []
+idades = []
+pedras = []
+tamanhos = []
+direcoes = []
+vidas = 3
+pontos = 0
+protegida = 0
 
+
+novo_jogo()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    if key != keys.SPACE:
+        return
+    if vidas == 0:
+        novo_jogo()
+    elif len(tiros) < 5:
+        tiro = Actor('tiro')
+        tiro.pos = nave.pos
+        tiro.angle = nave.angle
+        tiros.append(tiro)
+        idades.append(0)
+        sounds.tiro.play()
+
+
+# 🔁 Enquanto estiver rodando
 def draw():
     screen.blit('fundo', (0, 0))
     for pedra in pedras:
@@ -169,21 +192,4 @@ def update():
                 break
     if not pedras:
         nova_onda()
-
-
-def on_key_down(key):
-    if key != keys.SPACE:
-        return
-    if vidas == 0:
-        novo_jogo()
-    elif len(tiros) < 5:
-        tiro = Actor('tiro')
-        tiro.pos = nave.pos
-        tiro.angle = nave.angle
-        tiros.append(tiro)
-        idades.append(0)
-        sounds.tiro.play()
-
-
-novo_jogo()
 pgzrun.go()

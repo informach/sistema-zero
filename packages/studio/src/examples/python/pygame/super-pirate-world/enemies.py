@@ -1,7 +1,9 @@
+# 📦 Bibliotecas
 from settings import * 
 from random import choice
 from timer import Timer
 
+# 🧩 Meus moldes
 class Tooth(pygame.sprite.Sprite):
 	def __init__(self, pos, frames, groups, collision_sprites):
 		super().__init__(groups)

@@ -72,7 +72,7 @@ atualizado no fim do lote 8, depois da homologação integral em `d2f238b62` e d
 | B. Desafio do Primeiro Jogo | feito | CI Linux, CI Windows, Windows local, staging logado |
 | C. Clássico com milhares de blocos | parcial | CI Linux, CI Windows, Windows local, emulado; três itens não verificados |
 | D. Jogo 2D de grande porte | feito no Windows local; CI no lote 9 | Windows local (testes, navegador e editor); a sessão de 10 minutos roda no `studio-engines.yml` |
-| E. Jogo 3D de exploração | não feito | só peças isoladas, listadas na seção E |
+| E. Jogo 3D de exploração | feito, com 384 m em vez de 1 km | CI Linux (GPU emulada), Windows local; a conferência logada no staging fica no lote 9 |
 | F. Projeto Pro grande | parcial | CI Linux, CI Windows, Windows local, emulado |
 | G. Python | parcial | CI Linux, staging logado; os custos separados não foram medidos |
 | H. Falhas intencionais | parcial: 7 de 10 com prova no navegador | CI Linux, CI Windows, Windows local, staging logado, emulado |
@@ -165,23 +165,28 @@ feito por código, e um programa só com blocos que já existem no Jogo 2D. Deta
 
 ## E. Jogo 3D de exploração
 
-**Não feito.** A fixture genérica de exploração (terreno extenso, várias regiões, centenas de
-objetos, personagens animados, água, luzes, física e streaming) não existe. O streaming por regiões
-depende da frente do Molda: o formato `studio-cena3d` v1 não tem lista de regiões e o Estúdio
-carrega a cena inteira ([`mapa-da-missao.md`](mapa-da-missao.md), seção 12). Nenhum asset privado
-do Arquipélago foi usado.
+**Feito nos lotes 5 a 7 da conclusão (22/11/2026), com um mundo de 384 m em vez de 1 km.** O jogo
+E é um mundo do Molda Cenários com seis regiões (Vila, Floresta, Caverna, Lago, Praia, Montanha),
+433 objetos juntados em 23 lotes, um lago, luzes, o herói do Molda, moedas com física e o placar
+de cada região, montado pelo caminho de verdade (a oficina compila, o Estúdio importa) e sem
+nada do Arquipélago. Detalhe e números em
+[`evidencias/jogo-e-regioes-2026-11-22/`](evidencias/jogo-e-regioes-2026-11-22/README.md).
 
-O que já existe:
-
-| Peça | Prova | Onde foi conferido |
+| Item pedido | Prova | Onde foi conferido |
 |---|---|---|
-| Os objetos de GPU dos três motores 3D (buffers, texturas, programas, framebuffers, VAOs) estáveis em 10 recomeços, com o recomeço que recria a cena conferido e prova por sabotagem | `packages/studio/e2e/engine-gpu-cycles.spec.ts`; `evidencias/motores-gpu-2026-11-21/windows-local.json` (`74c852e78`, árvore limpa) | Windows local; CI Linux (`studio-engines.yml`, 44944417041) |
-| Contrato de um cenário completo do Molda (relevo, água, caminhos, grupos e conjuntos, colisões, partidas, marcadores, iluminação, materiais e regiões) pelo domínio, pelo compilador e pela importação do Estúdio | `packages/studio/src/core/scene3d/__tests__/moldaFullScenario.contract.test.ts` (15 casos) | Windows local (21/11/2026: 15 casos passam e 3 ficam como pendentes declarados, `todo`); em CI: não verificado (veio em `fa4872992`, depois da última homologação) |
-| Uma cena 3D de homologação (não um cenário real) roda na prévia e no site exportado | `packages/studio/playwright.scene3d-document.config.ts` | CI Linux (44860362872) |
-| A aba Desempenho dos jogos 3D mostra "Objetos na cena" e "Desenhos por quadro" | [`paineis-proposta.md`](paineis-proposta.md), lote 4 da interface | não verificado (sem rodada registrada no navegador) |
+| Terreno extenso, várias regiões, centenas de objetos, personagens animados, água, luzes e física | `packages/studio/playground/cenarios-integration/preparar-jogo-e.ts` (o gerador confere a ida e volta código ⇄ blocos) | CI Linux (`studio-engines.yml`, 45064624513) e Windows local |
+| Carregamento por regiões: a região do herói e as vizinhas; a Caverna só entra quando ele chega; sai na volta | `packages/studio/e2e/engine-regions.spec.ts` (Vila → Floresta → Caverna → Floresta → Vila, dez vezes) | CI Linux (45064624513) |
+| "Quando … entrar na região" uma vez por entrada | `engine-regions.spec.ts` (Vila 11, Floresta 20, Caverna 10) e os testes do bloco nos três motores 3D | CI Linux e Windows local |
+| Objetos de GPU estáveis nas últimas voltas | `engine-regions.spec.ts` (buffers, texturas, programas e VAOs iguais nas quatro últimas voltas) | CI Linux |
+| Com e sem regiões, lado a lado | `medidas.json` (com regiões desenha menos e com quadros mais curtos; GPU emulada) | CI Linux |
+| Regiões no Python (Raylib 3D) | `__tests__/cenario_test.py`, `e2e-runtime/python-raylib.spec.ts` (a rota pelas regiões) | CI Linux e Windows local |
+| Na galeria "Ver os jogos prontos" | `src/examples/bigExamples.test.ts` (o arquivo fora do pacote, conferido pelo hash) | Windows local |
 
-Triângulos, memória de GPU, 30 quadros por segundo em qualidade leve e a carga do cenário completo
-no Three: não verificado.
+O tamanho: com os tetos de hoje, o maior mundo que o Estúdio aceita fica perto de 384 m (o chão
+pintado a 8 pixels por metro passa dos 256 MiB do pacote em 1 km, dos 128 MiB por janela em 640 m
+e dos 24 MiB de materiais em 512 m). Um mundo de 1 km pede um chão mais leve no destino Estúdio ou
+tetos maiores: é uma decisão de produto, no relatório final. Os 30 quadros por segundo valem para
+GPU de verdade e não são medidos no CI (GPU emulada, SwiftShader).
 
 ## F. Projeto Pro grande
 
@@ -255,8 +260,8 @@ voo).
    (`evidencias/a3-depois-2026-11-21-ci/`).
 3. Feito no lote 8: Verificar e Enviar com a casca ligada, Cadê adulto (2 de 2 e enviado) e Desafio
    no Kids (enviado; os 6 de 6 da parte 4 com a casca ficaram sem conferir).
-4. O jogo D está feito (lote 8 da conclusão, Windows local; a rodada do CI entra no lote 9). O
-   jogo E está na seção E.
+4. Os jogos D e E estão feitos (lotes 5 a 8 da conclusão; o D com a rodada do CI no lote 9 e o E
+   com 384 m em vez de 1 km, decisão de produto no relatório final).
 5. No C: trocar de modo, executar e "Virar profissional" com milhares de blocos.
 6. No F: o build hospedado com dependências reais e Meus testes do Pro no navegador (o Histórico
    do projeto já passou no CI, na homologação de `d2f238b62`).

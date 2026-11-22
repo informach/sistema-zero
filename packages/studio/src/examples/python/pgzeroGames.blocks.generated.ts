@@ -4,7 +4,7 @@ import type { PgzeroGameKey } from './pgzeroGames.manifest'
 
 export const PGZERO_GAME_BLOCKS = {
   'ola-pgzero': {
-    sourceSha256: 'c36c24223264f836f8716c371bdb3617beb714dc46a5a7c32da4a72cb41836e2',
+    sourceSha256: '09fda426e48c9d6f7ad96b6e4872aa32fa007813291d31296e4ff6e184d99b28',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -31,7 +31,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'acerte-a-maca': {
-    sourceSha256: 'd0ab80cbf519a9113882d55ac18f827c7f8167b54d610a8888cf09595de72381',
+    sourceSha256: '99d23b8a8f696021be3820f9277450678c27b39908ff4ac6926cbfc997963c2f',
     blockIds: [
       'sz_py_arithmetic',
       'sz_py_assign',
@@ -68,7 +68,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'raposa-moedas': {
-    sourceSha256: '4ecb8acd4e4ba7c825f17e3a3946ac1a0a3832707cc82b4e8fa9d9be2a3832d9',
+    sourceSha256: 'aec1a9e8cb70651692810a328d7bf8b1f0c59079ffca70c690fa9a68f1fa872f',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -111,7 +111,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'ligue-os-pontos': {
-    sourceSha256: '362ebd5faef52b1218022dcf3aede0a503e9b4b8a7bda6fd43d8f18be07047a4',
+    sourceSha256: 'b6055d191dc3720a062f1a47eb6eddfb48835bc4634977a24f09f482addea0bf',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -158,7 +158,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'estrela-vermelha': {
-    sourceSha256: '56dfbb8fa97a33b1cabe181f5e6de6eb33defe8ccdbb06c17d33d6935ce779f0',
+    sourceSha256: '2539409b279a5af693515b54a99970d5d15144e46d5a440d30a76708e4714406',
     blockIds: [
       'sz_py_arithmetic',
       'sz_py_assign',
@@ -204,7 +204,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'quiz-relampago': {
-    sourceSha256: 'ee09e1984729bf578d21456bba7931e1a6dd152b4ead61b4e68aae55d42b0858',
+    sourceSha256: '1d86d94796cc7b7641600d1be4e7a07ab7de4439eba7a19a8d1bff1eab731ecb',
     blockIds: [
       'sz_py_arithmetic',
       'sz_py_assign',
@@ -244,7 +244,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'voo-de-balao': {
-    sourceSha256: 'a23268cab3d5d884dedf569ce7c01b808dbbeba08c0a5466cfaa62f8606880ec',
+    sourceSha256: 'cedbdedbc9d36aae16884aee83dfa8dd92fa5a938684ce056acd558dc304e8ed',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -294,7 +294,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'desafio-da-danca': {
-    sourceSha256: 'a55df05225dbf785479b307eccd769e3d4aaf4986d825396edf304840f7f5fa1',
+    sourceSha256: '137c06983e2698f22e58bc48e6687142b4c6ea6555c5a9aaa37df1b7599ad19e',
     blockIds: [
       'sz_py_arithmetic',
       'sz_py_assign',
@@ -341,7 +341,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'jardim-feliz': {
-    sourceSha256: '7a1dfdfa506464ecbb2cead6e269f84ab17eb195d9836e77f7c209c1f3078023',
+    sourceSha256: 'b676e99db5c1dd5fc195a6987e943acf359ee535dcd6635401c7b575127be1da',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -396,7 +396,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'dragoes-dorminhocos': {
-    sourceSha256: 'cf45045d580b12c929d9afaa309643dd742bd543acee05b76b5df0fe123ac75d',
+    sourceSha256: '8b9033f0c9fcc0e7f6dd5b341d287334accecb73c4925a9a6797547263e7301e',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -441,7 +441,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'barris-na-rampa': {
-    sourceSha256: '401ae26cc89a6a4e95daa68aa02ddcbac2acd5e7ef3e4f13b32dfdb8f7009b3b',
+    sourceSha256: '1dbedea5359f6e1a7a492fa1d7cb67d2a3bd033591b8500969ed466769281750',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -498,7 +498,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'salto-nas-plataformas': {
-    sourceSha256: 'fa03c97c06fd03c9b1b35fe46cbce44442a3210319ab028b036d5859c50eb316',
+    sourceSha256: '3aa18534e69da2db09d4cef4e405d061a9670593feaeedb9ed73b788863c8f13',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -546,7 +546,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'piramide-de-cubos': {
-    sourceSha256: '456e9cd644cf893a892c053040298e67606ac2837b4c12b7a102e992223573df',
+    sourceSha256: '6de606668a8879a297f5c834b76aafef2cb01e5f24db4113ede3377629fa122f',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -598,7 +598,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'cipo-sobre-o-poco': {
-    sourceSha256: '6d65a6a864cf03beeb15fc703f7c155e470ef1e9ae56299f72bc4bd7f899d33b',
+    sourceSha256: '882d9ce5152588eded59cd6c3066949722ab0fecbee7825449e1612474217b97',
     blockIds: [
       'sz_py_abs',
       'sz_py_and',
@@ -649,7 +649,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'mina-que-desmorona': {
-    sourceSha256: '022eb60639657f8c6c1745d3c9cf6c8e427f31bf2355703dbd775ab5865123ca',
+    sourceSha256: '33b585aaf6f860e74caf7b581694f5b919df4514b6c5a2598605d70f438e7936',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -704,7 +704,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'escudos-contra-invasores': {
-    sourceSha256: 'aa1df55a692a3974ff55d53f197c45f0dc4d6dcd6a1bf1ac418170bebf4d7b3d',
+    sourceSha256: '383c6878d94acc127ce528956c73f9ad0413690b01f9e5c7850dc86640be4351',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -765,7 +765,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'mergulho-alienigena': {
-    sourceSha256: '51b2fe5f7581fe59aaf18e862a8b9152d7679b27bffd316334f2c28396da874f',
+    sourceSha256: '92563872746aec5c47bfab7d7b75b41e129c31c9a46a43c557e24627f4b8e221',
     blockIds: [
       'sz_py_abs',
       'sz_py_and',
@@ -821,7 +821,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'nave-mae': {
-    sourceSha256: '4123eb75b59fce0fc050e48dbf053fb917cacf0ff43a9c04af36c074ce3fc4d7',
+    sourceSha256: '66c0aafe651b32936fe1a6809f7fd31470e5e2edf8f5ddd4eccc8362a0d3e63c',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -879,7 +879,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'rastro-de-ajudantes': {
-    sourceSha256: '0f922b4e2318fa917ac6397c7975b483b611e6f26a0d771e590900c19e5db548',
+    sourceSha256: '60a6babdcfee759f1ddda7b2c9a4e8903505a9b9700fc7b433319c87831b52de',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -937,7 +937,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'helicoptero-bombardeiro': {
-    sourceSha256: 'c44b2fc74b03bf8e7764b61483c12daf3813d4e9f75caf6b0ea5b8335f71b719',
+    sourceSha256: '2504d219bf85d2c5e5397145c046de50574901933fdd8b1fcba66a056d457bab',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -990,7 +990,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'cauda-espacial': {
-    sourceSha256: '5c6d93fdfd9ab96f67ef39a7637a3c6fb999275e37e0be2bcc3e41edeb4dbb76',
+    sourceSha256: '706771d326c0b5be09c92ba4dbe8f9009eb5099876798076395a7a390e4952cf',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -1046,7 +1046,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'mochila-a-jato': {
-    sourceSha256: '74fd7fab3b6bbf2ceb512f8307a13e2cafd761418802837734ebf27e76167dba',
+    sourceSha256: 'e3adcbadc95d441e863ae73be7dfe7b77bcf01ffe73b415abff2e77cca5ac284',
     blockIds: [
       'sz_py_abs',
       'sz_py_and',
@@ -1110,7 +1110,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'propulsor-no-espaco': {
-    sourceSha256: '1d5f043a93794e15dfe4409b1d4a390334785c4c994ce750967ef482b1808d85',
+    sourceSha256: 'ab776ebb3083aa6228f5eb751c00c13efaceb0ed976d140fe538300bb1e24f89',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -1165,7 +1165,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'encanamento-apressado': {
-    sourceSha256: '1c987ab5c2593d407805005e9155933dd6ddc70817345c83ff4742087aaacfc1',
+    sourceSha256: '028711cecb24aa29df999edac9f7dddaf488c995cc1377394250aee7fb99cb82',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -1217,7 +1217,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'troca-de-joias': {
-    sourceSha256: '7b9e7abdc59087df39dddcdd5e91469dfeb352678b7cca703a66910104b7faf2',
+    sourceSha256: 'bc9463295e0a1f6e73f40d724fe5d044393d8fb2ff5e469bc4e3932626a058f1',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -1267,7 +1267,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'bichinhos-em-fila': {
-    sourceSha256: '214181ca5a70a869a59b8bab2285515ef054002d61c7366d22765518d63e29ae',
+    sourceSha256: 'ff94e4edfe70607791ca9edf90e21ac0feb41d8df5d59620c8284daabae9c1a0',
     blockIds: [
       'sz_py_abs',
       'sz_py_and',
@@ -1322,7 +1322,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'cavando-por-gemas': {
-    sourceSha256: 'e0cc682c4a036d4342460c025763164eb55233741bc7879a696616728983c028',
+    sourceSha256: '8e039841933ef7567a0d5a7edb088d3732b49be5f2b24f49ae4af464e79cb1eb',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -1369,7 +1369,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'editor-de-cavernas': {
-    sourceSha256: 'e3e6b3982c9b221152625fef05e67261c5dc81712993b1e3e8874c6482169f53',
+    sourceSha256: '0885c07d28c4f74a27b803f991156dd2caa141431d3792bb647ec2affbc143b3',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -1435,7 +1435,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'corrida-vista-de-cima': {
-    sourceSha256: '919dd4f202feb888697c3cb6e51bc31e366a3af48a7bf8473953b1c13ba6bb84',
+    sourceSha256: '0e52abee348a0481fed6818b0856873b657577716b5c683767a85a866325727a',
     blockIds: [
       'sz_py_abs',
       'sz_py_and',
@@ -1496,7 +1496,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   sinuca: {
-    sourceSha256: 'be27c338d316fbddce9bf2dbe550f8c7b82e798834f50bd88dc5ea9bf7db8708',
+    sourceSha256: '18d6218fbb68dfa2d8ced4c98438ca63253b086fee955d80db0aeab5ec2befca',
     blockIds: [
       'sz_py_abs',
       'sz_py_and',
@@ -1561,7 +1561,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   fliperama: {
-    sourceSha256: 'd3f3bfa5cba2381503abf3f4374a2ab6cc2bb4cdffef9cd0be5b3840cb5a5226',
+    sourceSha256: 'e58cfd98abde8f44f4bb6bc40fe5497e31c35d49917477a87d410c2d8f51920a',
     blockIds: [
       'sz_py_abs',
       'sz_py_and',
@@ -1616,7 +1616,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'minigolfe-maluco': {
-    sourceSha256: '0eb3cf5eb3542fcf99ea3b277d9c61c3ce2b0d31b4403e119a9bb1d6c1dc2a3c',
+    sourceSha256: 'dd0701b2767c52f276f9d934e03aab79bc582a58420487cec7f1a666b734b610',
     blockIds: [
       'sz_py_abs',
       'sz_py_and',
@@ -1674,7 +1674,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'tiro-ao-prato': {
-    sourceSha256: '66860f5f714c250e68206f328d36f24b78b24e2c26ca67e507f654959c2e9d18',
+    sourceSha256: 'beb9393c9db6f26acf7199e7d3b2e3127a4d5a0edb94101ee82b34759faefb62',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -1721,7 +1721,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'rali-com-minimapa': {
-    sourceSha256: 'cbf84c479a2360a8685d6f657241da5d19f765e2826f826bff5b3dc696bbdf3f',
+    sourceSha256: 'dcd7e644962847a608c6b99b68e9f7f3daaa161c2fb679cc7ab835ae5034e7f0',
     blockIds: [
       'sz_py_abs',
       'sz_py_and',
@@ -1779,7 +1779,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'pouso-lunar': {
-    sourceSha256: 'de9515406ced09584b39e98f985646f110f9ec39a3a4e53e46e194adf6ef5fb3',
+    sourceSha256: 'dc7fb5790e60aec4042290227554c0847d8e8ab37a8136c183601b7c6ffe499b',
     blockIds: [
       'sz_py_abs',
       'sz_py_and',
@@ -1831,7 +1831,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'quebra-tijolos': {
-    sourceSha256: 'd698e9526944d477c50a38f79a19f01744c4dcfbd27708f416d98bb70e9048db',
+    sourceSha256: '59909a614f6ba928e25f2e7a5e1118fbfb9fb83d508a4f21f98bbd84aa7c0a59',
     blockIds: [
       'sz_py_abs',
       'sz_py_and',
@@ -1888,7 +1888,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'sapo-atravessa': {
-    sourceSha256: '68425cd5236fd5d1a175c8c29d07b6f45261562f6a9092635665a01971272794',
+    sourceSha256: 'f67e4da8021fd09aa84d35c409f8c594be62bac2eb26a87d5064dee9687d62b6',
     blockIds: [
       'sz_py_abs',
       'sz_py_and',
@@ -1944,7 +1944,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'patrulha-em-camadas': {
-    sourceSha256: '23ac997545bab04eb64d7fbae0a83dce5c403911bb817bf34c708659e17e69ec',
+    sourceSha256: '8cdb79057abd7f7c4cf7a50eb27a4c9d8210f92d6c2ba21c7a46b875c1351670',
     blockIds: [
       'sz_py_abs',
       'sz_py_and',
@@ -1996,7 +1996,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'motos-de-luz': {
-    sourceSha256: 'a6a2df7b79b306dadb10f66f2291d0ac69f386373dcb531d4623bde05a97790e',
+    sourceSha256: '51e326dd80412012ee0fbf1578df9c221c0681ad7813d9a6c225ba1324d36929',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -2048,7 +2048,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'arena-de-dois-comandos': {
-    sourceSha256: 'b01ffd917445556a5fbe93c5a51af2b11baea25ae56ec91f55a88275bb5aa4fc',
+    sourceSha256: 'c89d217b8434abf978f8af23f85bcc0f790e962e50e2548ffc944018149243bd',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -2110,7 +2110,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'bombas-no-labirinto': {
-    sourceSha256: '888d65396e2b517ae214c09fa572dbd2f4830faee2416e0ee6032693691d3344',
+    sourceSha256: '8b97a1a22a4814d865500ff7fa43342550d6a7ae6fbd2cff470274444215949a',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -2164,7 +2164,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'corredor-do-kung-fu': {
-    sourceSha256: 'f267d667e8e5a88036ae906a36b41df52db339ec371d070e0f10aab62ac5e386',
+    sourceSha256: '4a939618ca575fe50a9de86569905482b038e0091325e57603f6c1bb49159298',
     blockIds: [
       'sz_py_abs',
       'sz_py_and',
@@ -2221,7 +2221,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'bolinha-rolante': {
-    sourceSha256: '6366ee601b14d9a014f96697b1a4bb63880c0713c9586ccaa96298c25ae86844',
+    sourceSha256: 'da429bb9cdafa30f58989adb40c916bae8619782b85a91d59ef02955f0b0b911',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -2266,7 +2266,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'bolhas-que-se-dividem': {
-    sourceSha256: '244080f4524b1843cc23a4f98c47b02821bd747cb693c9fc4b1d7c734f3d542f',
+    sourceSha256: '042f4a27685619ac05fb702444afc52934346909c49f5ecd86c893bcc26db1f3',
     blockIds: [
       'sz_py_abs',
       'sz_py_and',
@@ -2319,7 +2319,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'masmorra-para-quatro': {
-    sourceSha256: '2dd104cbd3763602ab643126f38e81b0d54bb95695dae5001938cfa203ecfc62',
+    sourceSha256: '5c1d03813555458c1d9546a7c39881cffda8b46459864fb5877dbf8eea48675b',
     blockIds: [
       'sz_py_abs',
       'sz_py_and',
@@ -2377,7 +2377,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'duelo-por-turnos': {
-    sourceSha256: 'b2b225234e0f1bcaacf497df8dea29469b688d60b421a972b9caca7272ec2974',
+    sourceSha256: '3a6984db5b5a4e77920bf364de74d79957bc8d2be525de950f4b884c07cbb44c',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -2427,7 +2427,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'passarinho-saltitante': {
-    sourceSha256: 'ab9a58ae22740432ec68e54063c82c6fff9ec84e8bcc74338cb36ca1a835f152',
+    sourceSha256: 'e0b7a8492df71bb0dc0e375b726a9eeaf9c9e9f2b754a5c811142c68d54cb424',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -2478,7 +2478,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'placar-dos-campeoes': {
-    sourceSha256: 'e65f85995de9b6cc3e351844fcfc1b7bf940abdf2646d098c79cb3bddd2e24f7',
+    sourceSha256: 'd02da980ff35941bde6eb69850071c88c79ad25ea665f847f7b8d05c9f951ab6',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -2534,7 +2534,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   continuar: {
-    sourceSha256: 'c39635211e17b54827bfa301d5a80d0cae754d1c7d4554235ad5ee3cbe2d47fc',
+    sourceSha256: '17ba36ef36cd4920c89d0d1fa86b42eaba3f622025ad2e37a01f3e165a6396de',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -2593,7 +2593,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'bussola-maluca': {
-    sourceSha256: '986b095bb86c34c9e7ad448c9d216584ea6d93c968b95e726a7177e97c11b900',
+    sourceSha256: 'd64288576b8ab62b484e702066ea6ce2d263d373531a125a5355c8d3501d060c',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -2650,7 +2650,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'cores-e-bolinha': {
-    sourceSha256: '3d67870dd5559db7904914756ccf9363c4dd0d33e1877c022f9f7a66aee2dcb9',
+    sourceSha256: 'c199ce25852df8ab6cd17f579e2222cbefd3616a359b34a6face169ca3b80a74',
     blockIds: [
       'sz_py_abs',
       'sz_py_and',
@@ -2711,7 +2711,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'piano-maluco': {
-    sourceSha256: 'fc1ce34a6642ce1d3025eb1a25f27538313437db594d2e22f2c7cba5344ba9fe',
+    sourceSha256: '7ed581e7dabeb273587afadb0103b2c1dcb8f06d6cf46c3f1398a35a5bd93b03',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -2767,7 +2767,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'duelo-de-tanques': {
-    sourceSha256: '91180fd93f05cb4742f71191bce100b4b021a104c54b9948f978e1da1e8c1a3b',
+    sourceSha256: '1f4cbeed11722272e9e9d495d3af7db268af4162dc5402e51712d9ba5a567796',
     blockIds: [
       'sz_py_abs',
       'sz_py_and',
@@ -2831,7 +2831,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'memoria-contra-o-computador': {
-    sourceSha256: '4b1da145a415dea90725cc1a06f0777e218ad739617c40249e2a1dced8d39243',
+    sourceSha256: 'ed04732839c26807cd15177196b431396cfb24df27495d687a3b743ce19608be',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -2891,7 +2891,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'batalha-naval': {
-    sourceSha256: '5e99aad70b89b8f2127a922ae0a970851da1b4b8fcf65f85f837246c90de9e1a',
+    sourceSha256: '958f3f1172b959c9869a300fb59c8a64ce09074fc9a42483061c53d27f79296e',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -2954,7 +2954,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   'atirador-espacial': {
-    sourceSha256: '842484c9675e3ba5a3a0bda416ffbce570e64482766e47808939330b22ca0713',
+    sourceSha256: '3273b13e681ce9f35f88c82d2a40bc5a7bb4099d7a14af821af761afffe997cc',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -3012,7 +3012,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   boing: {
-    sourceSha256: '97dc45b2f045644e4f4b0b08b9e030ffcff7b9bbb36e728be50c0b0ff70ed5d3',
+    sourceSha256: '223dea3f034fa3112662de0a35026b35fb4520c9c3460b542c5616f96bb48904',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -3076,7 +3076,7 @@ export const PGZERO_GAME_BLOCKS = {
     ],
   },
   centopeia: {
-    sourceSha256: '3775198591bcd1302e8eea69e1d71b07cca4b674207175f6b11daf2f85ef0ff1',
+    sourceSha256: '2a40a57951bf6f45ec566c598614e794455af5f5e569c5af234a793fcaab2a23',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',

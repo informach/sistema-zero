@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 from pyray import *
 from math import sin
 
+# 🎛️ Configurações
 LARGURA = 800
 ALTURA = 450
 CASA = 32
@@ -29,35 +31,10 @@ MAPA = [
     '~..............###...........~',
     '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
 ]
-MUNDO_LARGURA = len(MAPA[0]) * CASA
-MUNDO_ALTURA = len(MAPA) * CASA
-
-init_window(LARGURA, ALTURA, 'Aventura do Herói')
-init_audio_device()
-set_target_fps(60)
-
-imagens = {}
-for nome in ['arvore', 'pedra', 'mato', 'coracao', 'folha', 'espada']:
-    imagens[nome] = load_texture(f'images/{nome}.png')
-# O herói e a gosma são folhas de quadros, do jeito que o Pinta exporta: uma linha por animação.
-# O herói tem uma linha por direção (baixo, lado, cima); a gosma, uma linha com dois quadros.
-# O tamanho de um quadro sai da própria imagem: um desenho de qualquer tamanho entra no lugar.
-textura_heroi = load_texture('images/heroi.png')
 LINHA_DO_HEROI = {'baixo': 0, 'direita': 1, 'esquerda': 1, 'cima': 2}
-LARGURA_HEROI = textura_heroi.width
-ALTURA_HEROI = textura_heroi.height / 3
-textura_gosma = load_texture('images/gosma.png')
-LARGURA_GOSMA = textura_gosma.width / 2
-ALTURA_GOSMA = textura_gosma.height
-fonte = load_font_ex('fonts/pressstart2p.ttf', 16, None, 224)
-som_espada = load_sound('sounds/espada.wav')
-som_acerto = load_sound('sounds/acerto.wav')
-som_dano = load_sound('sounds/dano.wav')
-musica = load_music_stream('music/aventura.ogg')
-set_music_volume(musica, 0.6)
-play_music_stream(musica)
 
 
+# 🧩 Meus moldes
 class Objeto:
     """Árvore, pedra ou mato: um desenho parado no mapa."""
 
@@ -243,12 +220,41 @@ def comecar():
             paredes.append(objeto.caixa())
     estado = 'jogando'
 
+# ⚙️ Ao iniciar
+MUNDO_LARGURA = len(MAPA[0]) * CASA
+MUNDO_ALTURA = len(MAPA) * CASA
+
+init_window(LARGURA, ALTURA, 'Aventura do Herói')
+init_audio_device()
+set_target_fps(60)
+
+imagens = {}
+for nome in ['arvore', 'pedra', 'mato', 'coracao', 'folha', 'espada']:
+    imagens[nome] = load_texture(f'images/{nome}.png')
+# O herói e a gosma são folhas de quadros, do jeito que o Pinta exporta: uma linha por animação.
+# O herói tem uma linha por direção (baixo, lado, cima); a gosma, uma linha com dois quadros.
+# O tamanho de um quadro sai da própria imagem: um desenho de qualquer tamanho entra no lugar.
+textura_heroi = load_texture('images/heroi.png')
+LARGURA_HEROI = textura_heroi.width
+ALTURA_HEROI = textura_heroi.height / 3
+textura_gosma = load_texture('images/gosma.png')
+LARGURA_GOSMA = textura_gosma.width / 2
+ALTURA_GOSMA = textura_gosma.height
+fonte = load_font_ex('fonts/pressstart2p.ttf', 16, None, 224)
+som_espada = load_sound('sounds/espada.wav')
+som_acerto = load_sound('sounds/acerto.wav')
+som_dano = load_sound('sounds/dano.wav')
+musica = load_music_stream('music/aventura.ogg')
+set_music_volume(musica, 0.6)
+play_music_stream(musica)
+
 
 comecar()
 camera = Camera2D()
 camera.offset = Vector2(LARGURA / 2, ALTURA / 2)
 camera.zoom = 1
 
+# 🔁 Enquanto estiver rodando
 while not window_should_close():
     dt = get_frame_time()
     update_music_stream(musica)

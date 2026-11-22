@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Batalha Naval'
@@ -13,6 +15,7 @@ AGUA = (30, 90, 160)
 LINHAS_DA_GRADE = (90, 150, 210)
 
 
+# 🧩 Meus moldes
 class Navio:
     """Um navio: as casas que ele ocupa e quantas delas já levaram tiro."""
 
@@ -171,17 +174,6 @@ class Computador:
                 self.mirar_em_volta(acerto)
 
 
-minha_frota = Frota((50, 160))
-frota_inimiga = Frota((450, 160))
-computador = Computador()
-estado = 'colocando'
-proximo = 0
-deitado = True
-mouse_em = (0, 0)
-espera = 0
-recado = ''
-
-
 def novo_jogo():
     global computador, estado, proximo, deitado, espera, recado
     minha_frota.navios = []
@@ -208,6 +200,22 @@ def contar(quem, efeito):
     return quem + ': afundou um navio!'
 
 
+# ⚙️ Ao iniciar
+minha_frota = Frota((50, 160))
+frota_inimiga = Frota((450, 160))
+computador = Computador()
+estado = 'colocando'
+proximo = 0
+deitado = True
+mouse_em = (0, 0)
+espera = 0
+recado = ''
+
+
+novo_jogo()
+
+
+# ⚡ Quando acontecer
 def on_mouse_move(pos):
     global mouse_em
     mouse_em = pos
@@ -248,6 +256,7 @@ def on_key_down(key):
         proximo = 0
 
 
+# 🔁 Enquanto estiver rodando
 def update(dt):
     global estado, espera, recado
     if estado != 'computador':
@@ -292,7 +301,4 @@ def draw():
         screen.draw.text('Espaço: outra partida', center=(400, 575), fontsize=30, color='white')
     else:
         screen.draw.text(recado, center=(400, 540), fontsize=30, color='white')
-
-
-novo_jogo()
 pgzrun.go()

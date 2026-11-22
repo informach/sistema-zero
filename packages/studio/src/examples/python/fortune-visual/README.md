@@ -27,6 +27,13 @@ CPython/Tk, esses arquivos e o módulo `sz_audio` exportado, execute
 
 ## Explorar e modificar
 
+O código segue as áreas do projeto, na ordem em que o Python o lê:
+📦 Bibliotecas, 🎛️ Configurações (as constantes em MAIÚSCULAS: números, textos e
+listas que ficam iguais enquanto o jogo roda), 🧩 Meus moldes (as funções do
+jogo), ⚙️ Ao iniciar (a janela e as tartarugas), ⚡ Quando acontecer (as teclas)
+e 🔁 Enquanto estiver rodando (o laço `a_cada_quadro`). O comentário no começo de
+cada área só ajuda a ler, e o Estúdio o escreve sozinho.
+
 As constantes no topo são o painel de controle. `RESPOSTAS` é a lista das
 respostas: troque os textos pelos seus, ou ponha 6 ou 10 respostas, e a roda se
 redesenha com o número certo de fatias. `VELOCIDADE_MINIMA` e
@@ -37,27 +44,28 @@ empurrão das setas. `CORES_FATIAS` e `COR_PONTEIRO` mudam as cores.
 
 Comece por `fatia_apontada`, que transforma o ângulo do ponteiro no número da
 fatia, e por `passo_do_giro`, que gira, aplica o atrito, toca o tique ao trocar
-de fatia e chama `parar` quando a velocidade fica pequena. As setas usam
-funções rápidas (`lambda: empurrar(1)`) para passar o sentido a uma única
-função.
+de fatia e chama `parar` quando a velocidade fica pequena. Cada seta chama uma
+função com nome (`empurrar_para_direita` chama `empurrar(1)`), e todas moram em
+⚡ Quando acontecer.
 
 Três tartarugas persistentes desenham a cena: `cenario` pinta a roda e escreve
 as respostas uma única vez, `ponteiro` tem a forma de seta registrada com
 `register_shape` e só muda de direção, e `painel` escreve o título e o
-histórico. Uma única cadeia de `ontimer(..., 16)` mede o tempo com
-`time.monotonic()`; a física anda em passos fixos de 16 ms, a pausa congela o
-giro e reiniciar não adiciona outra cadeia. Um quadro atrasado avança no máximo
-dois passos de física.
+histórico. O laço do jogo, `a_cada_quadro` (em 🔁 Enquanto estiver rodando), mede
+o tempo com `time.monotonic()`; a física anda em passos fixos de 16 ms, a pausa
+congela o giro e reiniciar não começa outro laço. Um quadro atrasado avança no
+máximo dois passos de física.
 
 ## Verificação e limites
 
 `python test_model.py` verifica regras reais do programa sem abrir Tk, navegador
-ou dispositivo de áudio: o arquivo é carregado sem os imports, e as tartarugas
-viram gravadores que guardam as chamadas e os timers. Os testes conferem a
-divisão das fatias, o giro que desacelera e para numa resposta, um tique por
-fatia cruzada, as setas, o histórico de três, a pausa, o reinício sem cadeia
-duplicada e o limite de quadro atrasado. Isso verifica o modelo e seus efeitos
-pedidos, não pixels, áudio ouvido, foco nem desempenho. A roda é uma
-brincadeira: as respostas são sorteadas e não preveem nada.
+ou dispositivo de áudio: o arquivo é carregado sem os imports e sem o que ele
+faz ao iniciar, e as tartarugas viram gravadores que guardam as chamadas e os
+timers. Os testes conferem a divisão das fatias, o giro que desacelera e para
+numa resposta, um tique por fatia cruzada, as setas, o histórico de três, a
+pausa, o reinício sem laço duplicado e o limite de quadro atrasado. Isso
+verifica o modelo e seus efeitos pedidos, não pixels, áudio ouvido, foco nem
+desempenho. A roda é uma brincadeira: as respostas são sorteadas e não preveem
+nada.
 
 Autoria e licença estão em [NOTICE.md](NOTICE.md) e [LICENSE](LICENSE).

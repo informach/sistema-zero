@@ -1,5 +1,7 @@
+# 📦 Bibliotecas
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Cavando por Gemas'
@@ -35,19 +37,8 @@ NOMES = {
     ' ': 'vazio',
 }
 
-grade = []
-minerador = Actor('minerador_frente')
-heroi_linha = 0
-heroi_coluna = 0
-gemas = 0
-gemas_total = 0
-tempo = TEMPO_TOTAL
-# 'jogando', 'amassado', 'sem_tempo' ou 'venceu'
-estado = 'jogando'
-# A última seta apertada: um toque rápido também anda uma casa.
-pedido = ''
 
-
+# 🧩 Meus moldes
 def novo_jogo():
     global heroi_linha, heroi_coluna, gemas, gemas_total, tempo, estado, pedido
     grade.clear()
@@ -172,7 +163,41 @@ def contar_tempo():
             estado = 'sem_tempo'
             sounds.amassou.play()
 
+# ⚙️ Ao iniciar
+grade = []
+minerador = Actor('minerador_frente')
+heroi_linha = 0
+heroi_coluna = 0
+gemas = 0
+gemas_total = 0
+tempo = TEMPO_TOTAL
+# 'jogando', 'amassado', 'sem_tempo' ou 'venceu'
+estado = 'jogando'
+# A última seta apertada: um toque rápido também anda uma casa.
+pedido = ''
 
+
+novo_jogo()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    global pedido
+    if estado != 'jogando':
+        if key == keys.SPACE:
+            novo_jogo()
+        return
+    if key == keys.LEFT:
+        pedido = 'esquerda'
+    elif key == keys.RIGHT:
+        pedido = 'direita'
+    elif key == keys.UP:
+        pedido = 'cima'
+    elif key == keys.DOWN:
+        pedido = 'baixo'
+
+
+# 🔁 Enquanto estiver rodando
 def draw():
     screen.blit('fundo', (0, 0))
     for lin in range(len(grade)):
@@ -194,25 +219,6 @@ def draw():
         screen.draw.text('O tempo acabou!', center=(WIDTH / 2, 280), fontsize=52, color='orange', owidth=1, ocolor='black')
     if estado != 'jogando':
         screen.draw.text('Espaço joga de novo', center=(WIDTH / 2, 330), fontsize=36, color='white', owidth=1, ocolor='black')
-
-
-def on_key_down(key):
-    global pedido
-    if estado != 'jogando':
-        if key == keys.SPACE:
-            novo_jogo()
-        return
-    if key == keys.LEFT:
-        pedido = 'esquerda'
-    elif key == keys.RIGHT:
-        pedido = 'direita'
-    elif key == keys.UP:
-        pedido = 'cima'
-    elif key == keys.DOWN:
-        pedido = 'baixo'
-
-
-novo_jogo()
 clock.schedule_interval(passo, 0.12)
 clock.schedule_interval(contar_tempo, 1)
 pgzrun.go()

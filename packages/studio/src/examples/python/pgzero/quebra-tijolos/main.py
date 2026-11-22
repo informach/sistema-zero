@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 600
 HEIGHT = 800
 TITLE = 'Quebra-Tijolos'
@@ -15,18 +17,8 @@ CORES = [(229, 57, 53), (251, 140, 0), (253, 216, 53), (67, 160, 71), (30, 136, 
 # A cada quadro a bola anda em 3 passinhos, para não atravessar um tijolo.
 PASSOS = 3
 
-tijolos = []
-raquete = Rect((WIDTH / 2 - 45, HEIGHT - 60), (90, 14))
-bola = Actor('bola')
-vx = 0
-vy = 0
-vidas = 3
-pontos = 0
-fase = 1
-# 'esperando' (a bola em cima da raquete), 'jogando' ou 'fim'
-estado = 'esperando'
 
-
+# 🧩 Meus moldes
 def montar_tijolos():
     tijolos.clear()
     for linha in range(LINHAS):
@@ -106,6 +98,44 @@ def andar_um_passo():
             preparar_bola()
 
 
+def comecar():
+    if estado == 'esperando':
+        lancar()
+    elif estado == 'fim':
+        novo_jogo()
+
+# ⚙️ Ao iniciar
+tijolos = []
+raquete = Rect((WIDTH / 2 - 45, HEIGHT - 60), (90, 14))
+bola = Actor('bola')
+vx = 0
+vy = 0
+vidas = 3
+pontos = 0
+fase = 1
+# 'esperando' (a bola em cima da raquete), 'jogando' ou 'fim'
+estado = 'esperando'
+
+
+novo_jogo()
+
+
+# ⚡ Quando acontecer
+def on_mouse_move(pos):
+    # A raquete segue o mouse, sem sair da tela.
+    raquete.centerx = min(max(pos[0], raquete.width / 2), WIDTH - raquete.width / 2)
+
+
+def on_mouse_down():
+    comecar()
+
+
+def on_key_down(key):
+    if key == keys.SPACE:
+        comecar()
+
+
+# 🔁 Enquanto estiver rodando
 def update():
     global fase
     if keyboard.left and raquete.left > 0:
@@ -145,28 +175,4 @@ def draw():
     if estado == 'fim':
         screen.draw.text('Fim de jogo!', center=(WIDTH / 2, 450), fontsize=64, color='orange')
         screen.draw.text('Clique ou aperte espaço para jogar de novo', center=(WIDTH / 2, 510), fontsize=30, color='white')
-
-
-def on_mouse_move(pos):
-    # A raquete segue o mouse, sem sair da tela.
-    raquete.centerx = min(max(pos[0], raquete.width / 2), WIDTH - raquete.width / 2)
-
-
-def comecar():
-    if estado == 'esperando':
-        lancar()
-    elif estado == 'fim':
-        novo_jogo()
-
-
-def on_mouse_down():
-    comecar()
-
-
-def on_key_down(key):
-    if key == keys.SPACE:
-        comecar()
-
-
-novo_jogo()
 pgzrun.go()

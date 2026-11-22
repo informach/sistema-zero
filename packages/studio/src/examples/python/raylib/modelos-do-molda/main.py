@@ -1,10 +1,13 @@
+# 📦 Bibliotecas
 from pyray import *
 
+# 🎛️ Configurações
 LARGURA = 800
 ALTURA = 450
 VELOCIDADE_DO_GIRO = 40
 TAMANHO = 3
 
+# ⚙️ Ao iniciar
 init_window(LARGURA, ALTURA, 'Modelos do Molda')
 set_target_fps(60)
 camera = Camera3D(Vector3(0, 4, 8), Vector3(0, 1.2, 0), Vector3(0, 1, 0), 45, CAMERA_PERSPECTIVE)
@@ -15,6 +18,7 @@ modelos = [load_model(arquivo) for arquivo in arquivos]
 atual = 0
 giro = 0
 
+# 🔁 Enquanto estiver rodando
 while not window_should_close():
     dt = get_frame_time()
     if is_key_pressed(KEY_RIGHT):

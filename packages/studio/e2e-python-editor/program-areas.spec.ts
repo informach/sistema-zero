@@ -211,8 +211,9 @@ test('Pac-Man program areas reveal editable functions and persist non-executable
   const state = () => page.evaluate(() => studioFreeProbe.workspace())
   await expect.poll(async () => (await state()).mounted).toBeLessThan(300)
   const overview = (await state()).mounted
-  // 2022 de antes, sem o "Programa" e com as 4 áreas que o Pac-Man usa (22/11/2026).
-  expect((await state()).count).toBe(2025)
+  // O Pac-Man convertido às áreas (22/11/2026): as seis áreas e o laço no bloco "repetir a
+  // cada". É o mesmo número que o `program-area-examples.ts` mede.
+  expect((await state()).count).toBe(1974)
   expect((await state()).opaque).toEqual([])
   const source = () =>
     page.evaluate(async () => {

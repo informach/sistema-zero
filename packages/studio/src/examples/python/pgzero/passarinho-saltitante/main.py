@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Passarinho Saltitante'
@@ -14,16 +16,8 @@ VAO = 160
 DISTANCIA = 300
 LARGURA_DO_CANO = 64
 
-passarinho = Actor('passarinho_baixo', (160, 300))
-canos_de_cima = []
-canos_de_baixo = []
-vy = 0
-pontos = 0
-recorde = 0
-# 'esperando' (até a primeira batida de asas), 'voando' ou 'caiu'
-estado = 'esperando'
 
-
+# 🧩 Meus moldes
 def criar_canos(x):
     altura = random.randint(80, CHAO - VAO - 80)
     canos_de_cima.append(Rect((x, 0), (LARGURA_DO_CANO, altura)))
@@ -54,7 +48,36 @@ def cair():
     recorde = max(recorde, pontos)
     sounds.batida.play()
 
+# ⚙️ Ao iniciar
+passarinho = Actor('passarinho_baixo', (160, 300))
+canos_de_cima = []
+canos_de_baixo = []
+vy = 0
+pontos = 0
+recorde = 0
+# 'esperando' (até a primeira batida de asas), 'voando' ou 'caiu'
+estado = 'esperando'
 
+
+recomecar()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    global estado
+    if key != keys.SPACE:
+        return
+    if estado == 'esperando':
+        estado = 'voando'
+        bater_asas()
+    elif estado == 'voando':
+        # Cada toque no espaço bate as asas, mesmo subindo.
+        bater_asas()
+    elif estado == 'caiu':
+        recomecar()
+
+
+# 🔁 Enquanto estiver rodando
 def update():
     global vy, pontos
     if estado != 'voando':
@@ -111,21 +134,4 @@ def draw():
     if estado == 'caiu':
         screen.draw.text('Bateu!', center=(WIDTH / 2, 240), fontsize=72, color='orange', owidth=1, ocolor='black')
         screen.draw.text('Espaço tenta de novo', center=(WIDTH / 2, 300), fontsize=36, color='white', owidth=1, ocolor='black')
-
-
-def on_key_down(key):
-    global estado
-    if key != keys.SPACE:
-        return
-    if estado == 'esperando':
-        estado = 'voando'
-        bater_asas()
-    elif estado == 'voando':
-        # Cada toque no espaço bate as asas, mesmo subindo.
-        bater_asas()
-    elif estado == 'caiu':
-        recomecar()
-
-
-recomecar()
 pgzrun.go()

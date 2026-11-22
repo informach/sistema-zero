@@ -27,6 +27,13 @@ CPython/Tk, esses arquivos e o módulo `sz_audio` exportado, execute
 
 ## Explorar e modificar
 
+O código segue as áreas do projeto, na ordem em que o Python o lê:
+📦 Bibliotecas, 🎛️ Configurações (as constantes em MAIÚSCULAS: números, textos e
+listas que ficam iguais enquanto o jogo roda), 🧩 Meus moldes (as funções e as
+classes do jogo), ⚙️ Ao iniciar (a janela e as tartarugas), ⚡ Quando acontecer
+(as teclas) e 🔁 Enquanto estiver rodando (o laço `a_cada_quadro`). O comentário
+no começo de cada área só ajuda a ler, e o Estúdio o escreve sozinho.
+
 As constantes no topo são o painel de controle: `VELOCIDADE_SUB` e `RAIO_SUB`
 mudam o submarino; `RAIO_MIN`, `RAIO_MAX`, `VELOCIDADE_MAX`, `CHANCE_BOLHA` e
 `MAX_BOLHAS` mudam as bolhas; `TEMPO_INICIAL`, `BONUS_PONTOS` e `BONUS_TEMPO`
@@ -37,22 +44,24 @@ A classe `Bolha` guarda só o modelo de cada bolha: posição, raio e velocidade
 Comece por `andar`, `encosta` e `valor`; depois veja `atualizar`, que move o
 submarino, solta bolhas novas, estoura as que encostam e desconta o tempo. A
 conta de `encosta` compara a distância entre os centros com a soma dos raios,
-sem raiz quadrada. As setas usam funções rápidas
-(`lambda: segurar("cima", True)`) para passar o nome da tecla a uma única
-função.
+sem raiz quadrada. Cada seta tem uma função com nome para apertar e outra para
+soltar (`apertar_cima` chama `segurar("cima", True)`), e todas moram em
+⚡ Quando acontecer.
 
 Três tartarugas persistentes desenham a cena: `cenario` pinta o mar uma vez,
 `pincel` carimba as bolhas e o submarino a cada quadro e `painel` escreve o
 placar. Nenhuma tartaruga nova nasce durante o jogo, e `MAX_BOLHAS` limita
-quantos carimbos existem de uma vez. Uma única cadeia de `ontimer(..., 16)` mede
-o tempo com `time.monotonic()`; a pausa congela a partida e reiniciar não
-adiciona outra cadeia. Um quadro atrasado avança no máximo três quadros.
+quantos carimbos existem de uma vez. O laço do jogo, `a_cada_quadro` (em
+🔁 Enquanto estiver rodando), mede o tempo com `time.monotonic()`; a pausa
+congela a partida e reiniciar não começa outro laço. Um quadro atrasado avança
+no máximo três quadros.
 
 ## Verificação e limites
 
 `python test_model.py` verifica regras reais do programa sem abrir Tk, navegador
-ou dispositivo de áudio: o arquivo é carregado sem os imports, e as tartarugas
-viram gravadores que contam carimbos e timers. Isso verifica o modelo e seus
-efeitos pedidos, não pixels, áudio ouvido, foco nem desempenho.
+ou dispositivo de áudio: o arquivo é carregado sem os imports e sem o que ele
+faz ao iniciar, e as tartarugas viram gravadores que contam carimbos e timers.
+Isso verifica o modelo e seus efeitos pedidos, não pixels, áudio ouvido, foco
+nem desempenho.
 
 Autoria e licença estão em [NOTICE.md](NOTICE.md) e [LICENSE](LICENSE).

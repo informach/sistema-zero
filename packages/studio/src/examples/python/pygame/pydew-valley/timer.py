@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 import pygame
 
 
+# 🧩 Meus moldes
 class Timer:
     """Counts `duration` milliseconds after start() and then calls `when_done` (if given)."""
 

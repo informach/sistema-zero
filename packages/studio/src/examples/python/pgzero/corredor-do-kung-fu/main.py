@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 450
 TITLE = 'Corredor do Kung Fu'
@@ -17,22 +19,8 @@ TEMPO_DO_CHUTE = 20
 # Quanta energia cada capanga agarrado tira por quadro.
 APERTO = 0.6
 
-heroi = Actor('heroi_parado_esquerda', (WIDTH / 2, CHAO), anchor=('center', 'bottom'))
-capangas = []
-lado = 'esquerda'
-# '', 'soco' ou 'chute'
-golpe = ''
-tempo_do_golpe = 0
-fundo_x = 0
-quadros = 0
-pontos = 0
-vidas = 3
-energia = 100
-andar = 1
-# 'jogando', 'passou' ou 'fim'
-estado = 'jogando'
 
-
+# 🧩 Meus moldes
 def novo_andar():
     global fundo_x, lado, golpe, tempo_do_golpe, energia, estado
     # O herói começa na porta, na ponta direita do corredor; a escada fica na esquerda.
@@ -148,7 +136,52 @@ def mover_capangas():
     if energia <= 0:
         perder_vida()
 
+# ⚙️ Ao iniciar
+heroi = Actor('heroi_parado_esquerda', (WIDTH / 2, CHAO), anchor=('center', 'bottom'))
+capangas = []
+lado = 'esquerda'
+# '', 'soco' ou 'chute'
+golpe = ''
+tempo_do_golpe = 0
+fundo_x = 0
+quadros = 0
+pontos = 0
+vidas = 3
+energia = 100
+andar = 1
+# 'jogando', 'passou' ou 'fim'
+estado = 'jogando'
 
+
+novo_jogo()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    global golpe, tempo_do_golpe, andar
+    if estado == 'passou':
+        if key == keys.SPACE:
+            andar = andar + 1
+            novo_andar()
+        return
+    if estado == 'fim':
+        if key == keys.SPACE:
+            novo_jogo()
+        return
+    if tempo_do_golpe > 0:
+        return
+    # A dá um soco (rápido e curto); S dá um chute (mais longe, mais demorado).
+    if key == keys.A:
+        golpe = 'soco'
+        tempo_do_golpe = TEMPO_DO_SOCO
+        golpear()
+    elif key == keys.S:
+        golpe = 'chute'
+        tempo_do_golpe = TEMPO_DO_CHUTE
+        golpear()
+
+
+# 🔁 Enquanto estiver rodando
 def update():
     global quadros, tempo_do_golpe, golpe, estado
     if estado != 'jogando':
@@ -192,31 +225,4 @@ def draw():
         screen.draw.text('Fim de jogo!', center=(WIDTH / 2, HEIGHT / 2), fontsize=56, color='orange', owidth=1, ocolor='black')
     if estado != 'jogando':
         screen.draw.text('Espaço continua', center=(WIDTH / 2, HEIGHT / 2 + 50), fontsize=34, color='white', owidth=1, ocolor='black')
-
-
-def on_key_down(key):
-    global golpe, tempo_do_golpe, andar
-    if estado == 'passou':
-        if key == keys.SPACE:
-            andar = andar + 1
-            novo_andar()
-        return
-    if estado == 'fim':
-        if key == keys.SPACE:
-            novo_jogo()
-        return
-    if tempo_do_golpe > 0:
-        return
-    # A dá um soco (rápido e curto); S dá um chute (mais longe, mais demorado).
-    if key == keys.A:
-        golpe = 'soco'
-        tempo_do_golpe = TEMPO_DO_SOCO
-        golpear()
-    elif key == keys.S:
-        golpe = 'chute'
-        tempo_do_golpe = TEMPO_DO_CHUTE
-        golpear()
-
-
-novo_jogo()
 pgzrun.go()

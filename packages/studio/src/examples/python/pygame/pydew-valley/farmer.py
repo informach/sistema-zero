@@ -1,3 +1,4 @@
+# 📦 Bibliotecas
 import pygame
 import art
 from settings import LAYERS, TOOL_REACH, TOOLS, START_ITEMS, START_SEEDS, START_MONEY
@@ -5,6 +6,7 @@ from settings import FARMER_DRAWINGS, SIDE_NAMES
 from timer import Timer
 
 
+# 🧩 Meus moldes
 class Farmer(pygame.sprite.Sprite):
     """The farmer: walks with the arrows, uses tools and plants seeds."""
 

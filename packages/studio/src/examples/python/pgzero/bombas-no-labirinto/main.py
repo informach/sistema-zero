@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 import random
 import pgzrun
 
+# 🎛️ Configurações
 LADO = 48
 COLUNAS = 13
 LINHAS = 11
@@ -14,24 +16,8 @@ TEMPO_DA_BOMBA = 120
 TEMPO_DO_FOGO = 30
 DIRECOES = [(0, -1), (1, 0), (0, 1), (-1, 0)]
 
-# Cada casa guarda o nome do que está nela (que é também o nome da imagem) e um relógio.
-mapa = []
-relogio = []
-heroi = Actor('heroi')
-monstros = []
-porta = (0, 0)
-heroi_coluna = 0
-heroi_linha = 0
-vidas = 3
-# Quadros em que o herói pisca protegido, logo depois de perder uma vida.
-protegido = 0
-pontos = 0
-fase = 1
-quadros = 0
-# 'jogando', 'passou' ou 'fim'
-estado = 'jogando'
 
-
+# 🧩 Meus moldes
 def montar_fase():
     global porta, quadros, estado
     mapa.clear()
@@ -140,7 +126,64 @@ def mover_monstros():
         if caminhos:
             monstro.coluna, monstro.linha = random.choice(caminhos)
 
+# ⚙️ Ao iniciar
+# Cada casa guarda o nome do que está nela (que é também o nome da imagem) e um relógio.
+mapa = []
+relogio = []
+heroi = Actor('heroi')
+monstros = []
+porta = (0, 0)
+heroi_coluna = 0
+heroi_linha = 0
+vidas = 3
+# Quadros em que o herói pisca protegido, logo depois de perder uma vida.
+protegido = 0
+pontos = 0
+fase = 1
+quadros = 0
+# 'jogando', 'passou' ou 'fim'
+estado = 'jogando'
 
+
+novo_jogo()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    global heroi_coluna, heroi_linha, fase
+    if estado == 'passou':
+        if key == keys.SPACE:
+            fase = fase + 1
+            montar_fase()
+        return
+    if estado == 'fim':
+        if key == keys.SPACE:
+            novo_jogo()
+        return
+    if key == keys.SPACE:
+        # Uma bomba de cada vez, na casa onde o herói está.
+        for linha in mapa:
+            if 'bomba' in linha:
+                return
+        mapa[heroi_linha][heroi_coluna] = 'bomba'
+        relogio[heroi_linha][heroi_coluna] = TEMPO_DA_BOMBA
+        return
+    dc = 0
+    dl = 0
+    if key == keys.LEFT:
+        dc = -1
+    elif key == keys.RIGHT:
+        dc = 1
+    elif key == keys.UP:
+        dl = -1
+    elif key == keys.DOWN:
+        dl = 1
+    if (dc != 0 or dl != 0) and pode_andar(heroi_coluna + dc, heroi_linha + dl):
+        heroi_coluna = heroi_coluna + dc
+        heroi_linha = heroi_linha + dl
+
+
+# 🔁 Enquanto estiver rodando
 def update():
     global quadros, pontos, estado, protegido
     if estado != 'jogando':
@@ -203,41 +246,4 @@ def draw():
         screen.draw.text('Fim de jogo!', center=(WIDTH / 2, HEIGHT / 2), fontsize=56, color='orange', owidth=1, ocolor='black')
     if estado != 'jogando':
         screen.draw.text('Espaço continua', center=(WIDTH / 2, HEIGHT / 2 + 50), fontsize=34, color='white', owidth=1, ocolor='black')
-
-
-def on_key_down(key):
-    global heroi_coluna, heroi_linha, fase
-    if estado == 'passou':
-        if key == keys.SPACE:
-            fase = fase + 1
-            montar_fase()
-        return
-    if estado == 'fim':
-        if key == keys.SPACE:
-            novo_jogo()
-        return
-    if key == keys.SPACE:
-        # Uma bomba de cada vez, na casa onde o herói está.
-        for linha in mapa:
-            if 'bomba' in linha:
-                return
-        mapa[heroi_linha][heroi_coluna] = 'bomba'
-        relogio[heroi_linha][heroi_coluna] = TEMPO_DA_BOMBA
-        return
-    dc = 0
-    dl = 0
-    if key == keys.LEFT:
-        dc = -1
-    elif key == keys.RIGHT:
-        dc = 1
-    elif key == keys.UP:
-        dl = -1
-    elif key == keys.DOWN:
-        dl = 1
-    if (dc != 0 or dl != 0) and pode_andar(heroi_coluna + dc, heroi_linha + dl):
-        heroi_coluna = heroi_coluna + dc
-        heroi_linha = heroi_linha + dl
-
-
-novo_jogo()
 pgzrun.go()

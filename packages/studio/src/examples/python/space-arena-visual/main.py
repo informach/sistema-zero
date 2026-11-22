@@ -1,9 +1,10 @@
-"""Space Arena: Patrulha das Estrelas — exemplo original do Sistema Zero.
+# Space Arena: Patrulha das Estrelas — exemplo original do Sistema Zero.
+#
+# Toda a partida usa funções, decisões, repetições, listas e dicionários.
+# Desenho: Turtle oficial. Áudio: sz_audio 1.0.0 e cinco WAVs originais.
+# Leia README.md para jogar e NOTICE.md para os créditos.
 
-Toda a partida usa funções, decisões, repetições, listas e dicionários.
-Desenho: Turtle oficial. Áudio: sz_audio 1.0.0 e cinco WAVs originais.
-Leia README.md para jogar e NOTICE.md para os créditos.
-"""
+# 📦 Bibliotecas
 import math
 import random
 import time
@@ -11,6 +12,7 @@ import turtle
 import sz_audio
 
 
+# 🎛️ Configurações
 # Experimente mudar estas regras sem mexer no desenho ou nos controles.
 LIMITE_X = 760
 LIMITE_Y = 520
@@ -18,19 +20,9 @@ IMPULSO = 0.18
 VELOCIDADE_MAXIMA = 6
 GIRO = 4
 CORES = ["#fb7185", "#a78bfa", "#fbbf24"]
-jogo = {"aberto": True, "pendente": False}
-nave = {}
-teclas = {"esquerda": False, "direita": False, "cima": False, "baixo": False, "tiro": False}
-sons = {"musica": None, "motor": None, "tiro": None, "explosao": None, "bonus": None}
-interface = {"tela": None, "mundo": None, "painel": None, "aviso": None}
-inimigos = []
-tiros = []
-estrelas = []
-bonus = []
-explosao = []
-rastro = []
 
 
+# 🧩 Meus moldes
 def reiniciar_modelo():
     jogo.update({"fase": "abertura", "pontos": 0, "vidas": 3, "energia": 100,
                  "imunidade": 120, "recarga": 0, "melhoria": 0, "restantes": 25,
@@ -464,25 +456,7 @@ def desenhar():
         carimbar(nave["x"], nave["y"], "nave", cor, 1, nave["angulo"])
     desenhar_radar()
     desenhar_painel()
-    interface["tela"].update()
-
-
-def agendar(intervalo):
-    if jogo["aberto"] and not jogo["pendente"]:
-        jogo["pendente"] = True
-        interface["tela"].ontimer(quadro, intervalo)
-
-
-def quadro():
-    jogo["pendente"] = False
-    if jogo["aberto"]:
-        inicio = time.perf_counter()
-        if jogo["fase"] == "jogando" or jogo["sujo"]:
-            avancar()
-            jogo["sujo"] = False
-            desenhar()
-        intervalo = max(1, math.ceil(1000 / 60 - (time.perf_counter() - inicio) * 1000))
-        agendar(intervalo)
+    tela.update()
 
 
 def fechar():
@@ -490,45 +464,79 @@ def fechar():
         jogo["aberto"] = False
         limpar_controles()
         sz_audio.stop()
-        interface["tela"].bye()
+        tela.bye()
 
 
-def executar():
-    interface["tela"] = turtle.Screen()
-    janela = interface["tela"]
-    janela.setup(1020, 620)
-    janela.title("Space Arena — Patrulha das Estrelas")
-    janela.bgcolor("#08111f")
-    janela.tracer(0)
-    janela.register_shape("nave", ((0, 16), (-10, -11), (0, -6), (10, -11)))
-    janela.register_shape("drone", ((12, 0), (6, 10), (-6, 10), (-12, 0), (-6, -10), (6, -10)))
-    for nome in ["mundo", "painel", "aviso"]:
-        caneta = turtle.Turtle()
-        caneta.hideturtle()
-        caneta.penup()
-        caneta.speed(0)
-        interface[nome] = caneta
-    reiniciar_modelo()
-    for tecla, pressionar, soltar in [("Left", pressionar_esquerda, soltar_esquerda),
-                                     ("Right", pressionar_direita, soltar_direita),
-                                     ("Up", pressionar_cima, soltar_cima),
-                                     ("Down", pressionar_baixo, soltar_baixo),
-                                     ("space", pressionar_tiro, soltar_tiro)]:
-        janela.onkeypress(pressionar, tecla)
-        janela.onkeyrelease(soltar, tecla)
-    for tecla, acao in [("s", iniciar), ("S", iniciar), ("p", pausar), ("P", pausar),
-                        ("c", alternar_camera), ("C", alternar_camera),
-                        ("r", reiniciar), ("R", reiniciar), ("Escape", fechar)]:
-        janela.onkey(acao, tecla)
-    janela.listen()
-    desenhar()
-    agendar(17)
-    try:
-        janela.mainloop()
-    finally:
-        jogo["aberto"] = False
-        sz_audio.stop()
+# ⚙️ Ao iniciar
+jogo = {"aberto": True}
+nave = {}
+teclas = {"esquerda": False, "direita": False, "cima": False, "baixo": False, "tiro": False}
+sons = {"musica": None, "motor": None, "tiro": None, "explosao": None, "bonus": None}
+interface = {"mundo": None, "painel": None, "aviso": None}
+inimigos = []
+tiros = []
+estrelas = []
+bonus = []
+explosao = []
+rastro = []
+
+tela = turtle.Screen()
+
+tela.setup(1020, 620)
+tela.title("Space Arena — Patrulha das Estrelas")
+tela.bgcolor("#08111f")
+tela.tracer(0)
+tela.register_shape("nave", ((0, 16), (-10, -11), (0, -6), (10, -11)))
+tela.register_shape("drone", ((12, 0), (6, 10), (-6, 10), (-12, 0), (-6, -10), (6, -10)))
+for nome in ["mundo", "painel", "aviso"]:
+    caneta = turtle.Turtle()
+    caneta.hideturtle()
+    caneta.penup()
+    caneta.speed(0)
+    interface[nome] = caneta
+reiniciar_modelo()
+desenhar()
 
 
-if __name__ == "__main__":
-    executar()
+# ⚡ Quando acontecer
+tela.onkeypress(pressionar_esquerda, "Left")
+tela.onkeyrelease(soltar_esquerda, "Left")
+tela.onkeypress(pressionar_direita, "Right")
+tela.onkeyrelease(soltar_direita, "Right")
+tela.onkeypress(pressionar_cima, "Up")
+tela.onkeyrelease(soltar_cima, "Up")
+tela.onkeypress(pressionar_baixo, "Down")
+tela.onkeyrelease(soltar_baixo, "Down")
+tela.onkeypress(pressionar_tiro, "space")
+tela.onkeyrelease(soltar_tiro, "space")
+tela.onkey(iniciar, "s")
+tela.onkey(iniciar, "S")
+tela.onkey(pausar, "p")
+tela.onkey(pausar, "P")
+tela.onkey(alternar_camera, "c")
+tela.onkey(alternar_camera, "C")
+tela.onkey(reiniciar, "r")
+tela.onkey(reiniciar, "R")
+tela.onkey(fechar, "Escape")
+tela.listen()
+
+
+# 🔁 Enquanto estiver rodando
+def a_cada_quadro():
+    if not jogo["aberto"]:
+        return
+    inicio = time.perf_counter()
+    if jogo["fase"] == "jogando" or jogo["sujo"]:
+        avancar()
+        jogo["sujo"] = False
+        desenhar()
+    # Se a janela fechou durante esta volta, o laço para aqui.
+    if not jogo["aberto"]:
+        return
+    # Uma volta a cada 1/60 de segundo, descontando o tempo que esta levou.
+    intervalo = max(1, math.ceil(1000 / 60 - (time.perf_counter() - inicio) * 1000))
+    tela.ontimer(a_cada_quadro, intervalo)
+
+
+a_cada_quadro()
+tela.mainloop()

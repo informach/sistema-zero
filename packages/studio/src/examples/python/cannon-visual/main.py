@@ -1,5 +1,6 @@
-"""Canhão: mire, escolha a força e derrube os alvos antes que cheguem ao seu lado."""
+# Canhão: mire, escolha a força e derrube os alvos antes que cheguem ao seu lado.
 
+# 📦 Bibliotecas
 import turtle
 import random
 import math
@@ -7,6 +8,7 @@ import time
 import sz_audio
 
 
+# 🎛️ Configurações
 LARGURA = 800
 ALTURA = 600
 INTERVALO = 16
@@ -32,15 +34,9 @@ COR_MIRA = "#e11d48"
 COR_ALVO = "#f97316"
 COR_BALA = "#1f2937"
 COR_CEU = "#bfe3ff"
-estado = {"aberto": False, "timer_pendente": False, "recorde": 0}
-
-tela = turtle.Screen()
-cenario = turtle.Turtle(visible=False)
-pincel = turtle.Turtle(visible=False)
-mira = turtle.Turtle(visible=False)
-painel = turtle.Turtle(visible=False)
 
 
+# 🧩 Meus moldes
 class Projetil:
     """A bala sai da boca do cano e a gravidade puxa a velocidade vertical para baixo."""
 
@@ -200,6 +196,22 @@ def mirar(angulo, forca):
     desenhar_mira()
 
 
+def subir_a_mira():
+    mirar(PASSO_ANGULO, 0)
+
+
+def descer_a_mira():
+    mirar(-PASSO_ANGULO, 0)
+
+
+def mais_forca():
+    mirar(0, 1)
+
+
+def menos_forca():
+    mirar(0, -1)
+
+
 def atirar():
     # Um tiro por vez: enquanto a bala voa, o canhão espera.
     if not jogando() or estado["bala"] is not None:
@@ -256,26 +268,6 @@ def atualizar(tempo):
     desenhar_cena()
 
 
-def agendar():
-    if estado["aberto"] and not estado["timer_pendente"]:
-        estado["timer_pendente"] = True
-        tela.ontimer(quadro, INTERVALO)
-
-
-def quadro():
-    estado["timer_pendente"] = False
-    if not estado["aberto"]:
-        return
-    agora = time.monotonic()
-    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
-    estado["ultimo_tempo"] = agora
-    if not estado["pausado"]:
-        atualizar(tempo)
-    desenhar_painel()
-    tela.update()
-    agendar()
-
-
 def pausar():
     if estado["fase"] == "jogando":
         estado["pausado"] = not estado["pausado"]
@@ -304,7 +296,6 @@ def reiniciar():
     desenhar_painel()
     estado["ultimo_tempo"] = time.monotonic()
     tela.update()
-    # Não agende aqui: o reinício reutiliza a cadeia existente.
 
 
 def fechar():
@@ -315,34 +306,58 @@ def fechar():
     tela.bye()
 
 
-def iniciar():
-    tela.setup(LARGURA, ALTURA)
-    tela.title("Canhão • Sistema Zero")
-    tela.bgcolor(COR_CEU)
-    tela.tracer(0)
-    for desenho in [cenario, pincel, mira, painel]:
-        desenho.penup()
-        desenho.speed(0)
-    pincel.shape("circle")
-    desenhar_cenario()
-    tela.onkeypress(lambda: mirar(PASSO_ANGULO, 0), "Up")
-    tela.onkeypress(lambda: mirar(-PASSO_ANGULO, 0), "Down")
-    tela.onkeypress(lambda: mirar(0, 1), "Right")
-    tela.onkeypress(lambda: mirar(0, -1), "Left")
-    tela.onkey(atirar, "space")
-    tela.onscreenclick(clicar)
-    tela.onkey(pausar, "p")
-    tela.onkey(pausar, "P")
-    tela.onkey(reiniciar, "r")
-    tela.onkey(reiniciar, "R")
-    tela.onkey(fechar, "Escape")
-    tela.listen()
-    estado["aberto"] = True
-    reiniciar()
-    agendar()
-    if estado["aberto"]:
-        tela.mainloop()
+# ⚙️ Ao iniciar
+estado = {"aberto": True, "recorde": 0}
+
+tela = turtle.Screen()
+cenario = turtle.Turtle(visible=False)
+pincel = turtle.Turtle(visible=False)
+mira = turtle.Turtle(visible=False)
+painel = turtle.Turtle(visible=False)
+
+tela.setup(LARGURA, ALTURA)
+tela.title("Canhão • Sistema Zero")
+tela.bgcolor(COR_CEU)
+tela.tracer(0)
+for desenho in [cenario, pincel, mira, painel]:
+    desenho.penup()
+    desenho.speed(0)
+pincel.shape("circle")
+desenhar_cenario()
+reiniciar()
 
 
-if __name__ == "__main__":
-    iniciar()
+# ⚡ Quando acontecer
+tela.onkeypress(subir_a_mira, "Up")
+tela.onkeypress(descer_a_mira, "Down")
+tela.onkeypress(mais_forca, "Right")
+tela.onkeypress(menos_forca, "Left")
+tela.onkey(atirar, "space")
+tela.onscreenclick(clicar)
+tela.onkey(pausar, "p")
+tela.onkey(pausar, "P")
+tela.onkey(reiniciar, "r")
+tela.onkey(reiniciar, "R")
+tela.onkey(fechar, "Escape")
+tela.listen()
+
+
+# 🔁 Enquanto estiver rodando
+def a_cada_quadro():
+    if not estado["aberto"]:
+        return
+    agora = time.monotonic()
+    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
+    estado["ultimo_tempo"] = agora
+    if not estado["pausado"]:
+        atualizar(tempo)
+    desenhar_painel()
+    tela.update()
+    # Se a janela fechou durante esta volta, o laço para aqui.
+    if not estado["aberto"]:
+        return
+    tela.ontimer(a_cada_quadro, INTERVALO)
+
+
+a_cada_quadro()
+tela.mainloop()

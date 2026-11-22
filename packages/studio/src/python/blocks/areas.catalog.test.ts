@@ -30,9 +30,6 @@ test('toda lista de blocos das áreas cita só blocos que existem', () => {
           cited.push(id)
   // Anti-vácuo: as listas exportadas existem e não estão vazias.
   expect(cited.length).toBeGreaterThan(20)
-  // O "repetir a cada" do Turtle entra junto com a requalificação dos exemplos do Turtle (o
-  // catálogo novo muda o recibo deles). Quando entrar, esta linha reprova: tire a exceção.
-  expect(known.has(areas.PYTHON_TURTLE_REPEAT_CODEC)).toBe(false)
-  const pending = new Set([areas.PYTHON_TURTLE_REPEAT_CODEC])
-  expect(cited.filter((id) => !known.has(id) && !pending.has(id))).toEqual([])
+  expect(known.has(areas.PYTHON_TURTLE_REPEAT_CODEC)).toBe(true)
+  expect(cited.filter((id) => !known.has(id))).toEqual([])
 })

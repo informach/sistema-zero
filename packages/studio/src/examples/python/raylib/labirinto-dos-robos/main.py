@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 from pyray import *
 from math import sin, cos
 
+# 🎛️ Configurações
 LARGURA = 800
 ALTURA = 450
 LADO = 2
@@ -31,50 +33,8 @@ MAPA = [
     '############',
 ]
 
-init_window(LARGURA, ALTURA, 'Labirinto dos Robôs')
-init_audio_device()
-set_target_fps(60)
-# O mouse fica preso na janela: mexer o mouse vira o olhar.
-disable_cursor()
 
-# Paredes, chão e céu foram feitos no Molda; o robô e o lançador foram desenhados no Pinta.
-parede = load_model_from_mesh(gen_mesh_cube(LADO, ALTURA_DA_PAREDE, LADO))
-set_material_texture(parede.materials[0], MATERIAL_MAP_ALBEDO, load_texture('images/parede.png'))
-chao = load_model_from_mesh(gen_mesh_cube(LADO, 0.2, LADO))
-set_material_texture(chao.materials[0], MATERIAL_MAP_ALBEDO, load_texture('images/chao.png'))
-# O céu 360° do Molda é uma imagem panorâmica. A esfera do raylib vai de polo a polo pela
-# largura da imagem e dá a volta pela altura, então a imagem entra deitada (girada e espelhada)
-# e a esfera é desenhada girada, com o polo para cima.
-imagem_do_ceu = load_image('images/ceu.png')
-image_rotate_cw(imagem_do_ceu)
-image_flip_horizontal(imagem_do_ceu)
-ceu = load_model_from_mesh(gen_mesh_sphere(60, 32, 32))
-set_material_texture(ceu.materials[0], MATERIAL_MAP_ALBEDO, load_texture_from_image(imagem_do_ceu))
-unload_image(imagem_do_ceu)
-
-# A folha do robô tem uma linha por animação: parado, andando, atacando e desligado, com até
-# dois quadros em cada linha (por isso a largura do quadro é a metade da imagem).
-textura_robo = load_texture('images/robo.png')
-LARGURA_DO_ROBO = textura_robo.width / 2
-ALTURA_DO_ROBO = textura_robo.height / 4
-# A folha do lançador: pronto em cima, disparando embaixo.
-textura_lancador = load_texture('images/lancador.png')
-LARGURA_DO_LANCADOR = textura_lancador.width
-ALTURA_DO_LANCADOR = textura_lancador.height / 2
-
-som_raio = load_sound('sounds/raio.wav')
-som_choque = load_sound('sounds/choque.wav')
-som_desliga = load_sound('sounds/desliga.wav')
-
-# Uma caixa por parede: é nelas que o raio de energia bate.
-caixas = []
-for linha in range(len(MAPA)):
-    for coluna in range(len(MAPA[linha])):
-        if MAPA[linha][coluna] == '#':
-            canto = Vector3(coluna * LADO - LADO / 2, 0, linha * LADO - LADO / 2)
-            caixas.append(BoundingBox(canto, Vector3(canto.x + LADO, ALTURA_DA_PAREDE, canto.z + LADO)))
-
-
+# 🧩 Meus moldes
 def parede_em(x, z):
     return MAPA[int((z + LADO / 2) // LADO)][int((x + LADO / 2) // LADO)] == '#'
 
@@ -185,10 +145,55 @@ def disparar():
         if not alvo.ligado():
             play_sound(som_desliga)
 
+# ⚙️ Ao iniciar
+init_window(LARGURA, ALTURA, 'Labirinto dos Robôs')
+init_audio_device()
+set_target_fps(60)
+# O mouse fica preso na janela: mexer o mouse vira o olhar.
+disable_cursor()
+
+# Paredes, chão e céu foram feitos no Molda; o robô e o lançador foram desenhados no Pinta.
+parede = load_model_from_mesh(gen_mesh_cube(LADO, ALTURA_DA_PAREDE, LADO))
+set_material_texture(parede.materials[0], MATERIAL_MAP_ALBEDO, load_texture('images/parede.png'))
+chao = load_model_from_mesh(gen_mesh_cube(LADO, 0.2, LADO))
+set_material_texture(chao.materials[0], MATERIAL_MAP_ALBEDO, load_texture('images/chao.png'))
+# O céu 360° do Molda é uma imagem panorâmica. A esfera do raylib vai de polo a polo pela
+# largura da imagem e dá a volta pela altura, então a imagem entra deitada (girada e espelhada)
+# e a esfera é desenhada girada, com o polo para cima.
+imagem_do_ceu = load_image('images/ceu.png')
+image_rotate_cw(imagem_do_ceu)
+image_flip_horizontal(imagem_do_ceu)
+ceu = load_model_from_mesh(gen_mesh_sphere(60, 32, 32))
+set_material_texture(ceu.materials[0], MATERIAL_MAP_ALBEDO, load_texture_from_image(imagem_do_ceu))
+unload_image(imagem_do_ceu)
+
+# A folha do robô tem uma linha por animação: parado, andando, atacando e desligado, com até
+# dois quadros em cada linha (por isso a largura do quadro é a metade da imagem).
+textura_robo = load_texture('images/robo.png')
+LARGURA_DO_ROBO = textura_robo.width / 2
+ALTURA_DO_ROBO = textura_robo.height / 4
+# A folha do lançador: pronto em cima, disparando embaixo.
+textura_lancador = load_texture('images/lancador.png')
+LARGURA_DO_LANCADOR = textura_lancador.width
+ALTURA_DO_LANCADOR = textura_lancador.height / 2
+
+som_raio = load_sound('sounds/raio.wav')
+som_choque = load_sound('sounds/choque.wav')
+som_desliga = load_sound('sounds/desliga.wav')
+
+# Uma caixa por parede: é nelas que o raio de energia bate.
+caixas = []
+for linha in range(len(MAPA)):
+    for coluna in range(len(MAPA[linha])):
+        if MAPA[linha][coluna] == '#':
+            canto = Vector3(coluna * LADO - LADO / 2, 0, linha * LADO - LADO / 2)
+            caixas.append(BoundingBox(canto, Vector3(canto.x + LADO, ALTURA_DA_PAREDE, canto.z + LADO)))
+
 
 camera = Camera3D(Vector3(0, OLHOS, 0), Vector3(1, OLHOS, 0), Vector3(0, 1, 0), 60, CAMERA_PERSPECTIVE)
 comecar()
 
+# 🔁 Enquanto estiver rodando
 while not window_should_close():
     dt = get_frame_time()
 

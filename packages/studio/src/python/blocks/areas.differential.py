@@ -106,6 +106,54 @@ def fake_turtle():
     return module
 
 
+def fake_pgzero(namespace):
+    """`pgzrun.go()` roda o laço do jogo: três voltas com `update`, `draw` e o relógio, e uma
+    tecla. `clock` e `screen` entram no módulo como o Pygame Zero faz."""
+    pgzrun = types.ModuleType("pgzrun")
+    timers = []
+
+    def log(name, *args):
+        shown = ", ".join(getattr(arg, "__name__", None) or repr(arg) for arg in args)
+        print(f"[pgzero] {name}({shown})")
+
+    def schedule(fun, delay):
+        timers.append(fun)
+
+    def unschedule(fun):
+        if fun in timers:
+            timers.remove(fun)
+
+    clock = types.SimpleNamespace(
+        schedule=schedule, schedule_interval=schedule, schedule_unique=schedule,
+        unschedule=unschedule,
+    )
+    screen = types.SimpleNamespace(
+        clear=lambda: log("clear"), fill=lambda color: log("fill", color),
+        draw=types.SimpleNamespace(text=lambda text, *args, **options: log("text", text)),
+    )
+
+    def go():
+        log("go")
+        for frame in range(3):
+            for name in ("update", "draw"):
+                hook = namespace.get(name)
+                if callable(hook):
+                    print(f"[volta {frame}: {name}]")
+                    hook()
+            for fun in list(timers):
+                print("[relógio]")
+                fun()
+        hook = namespace.get("on_key_down")
+        if callable(hook):
+            print("[tecla]")
+            hook("space")
+
+    pgzrun.go = go
+    namespace["clock"] = clock
+    namespace["screen"] = screen
+    return pgzrun
+
+
 def simple(value, depth=0):
     if depth > 4:
         return False
@@ -121,6 +169,7 @@ def simple(value, depth=0):
 def execute(tree):
     sys.modules["turtle"] = fake_turtle()
     namespace = {"__name__": "__main__"}
+    sys.modules["pgzrun"] = fake_pgzero(namespace)
     output = io.StringIO()
     error = None
     with contextlib.redirect_stdout(output):

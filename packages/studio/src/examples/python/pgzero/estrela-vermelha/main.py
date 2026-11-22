@@ -1,19 +1,16 @@
+# 📦 Bibliotecas
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 640
 HEIGHT = 480
 TITLE = 'Estrela Vermelha'
 CORES = ['verde', 'azul', 'amarela', 'roxa']
 ULTIMA_FASE = 6
 
-estrelas = []
-animacoes = []
-fase = 1
-fim = False
-venceu = False
 
-
+# 🧩 Meus moldes
 def parar_estrelas():
     for animacao in animacoes:
         if animacao.running:
@@ -38,29 +35,18 @@ def nova_fase():
         animacoes.append(animate(estrela, duration=10 - fase, y=HEIGHT))
         x = x + espaco
 
-
-def draw():
-    screen.fill((10, 12, 32))
-    for estrela in estrelas:
-        estrela.draw()
-    screen.draw.text('Fase ' + str(fase), topleft=(12, 10), fontsize=32, color='white')
-    if fim:
-        screen.draw.text('Fim de jogo! Clique para recomeçar', center=(WIDTH / 2, HEIGHT / 2), fontsize=40, color='yellow')
-    if venceu:
-        screen.draw.text('Você venceu todas as fases!', center=(WIDTH / 2, HEIGHT / 2), fontsize=44, color='yellow')
+# ⚙️ Ao iniciar
+estrelas = []
+animacoes = []
+fase = 1
+fim = False
+venceu = False
 
 
-def update():
-    global fim
-    if fim or venceu:
-        return
-    for estrela in estrelas:
-        if estrela.y >= HEIGHT:
-            fim = True
-            sounds.erro.play()
-            parar_estrelas()
+nova_fase()
 
 
+# ⚡ Quando acontecer
 def on_mouse_down(pos):
     global fase, fim, venceu
     if fim or venceu:
@@ -86,5 +72,25 @@ def on_mouse_down(pos):
             return
 
 
-nova_fase()
+# 🔁 Enquanto estiver rodando
+def draw():
+    screen.fill((10, 12, 32))
+    for estrela in estrelas:
+        estrela.draw()
+    screen.draw.text('Fase ' + str(fase), topleft=(12, 10), fontsize=32, color='white')
+    if fim:
+        screen.draw.text('Fim de jogo! Clique para recomeçar', center=(WIDTH / 2, HEIGHT / 2), fontsize=40, color='yellow')
+    if venceu:
+        screen.draw.text('Você venceu todas as fases!', center=(WIDTH / 2, HEIGHT / 2), fontsize=44, color='yellow')
+
+
+def update():
+    global fim
+    if fim or venceu:
+        return
+    for estrela in estrelas:
+        if estrela.y >= HEIGHT:
+            fim = True
+            sounds.erro.play()
+            parar_estrelas()
 pgzrun.go()

@@ -1,3 +1,4 @@
+# 📦 Bibliotecas
 from os.path import join
 from random import randint
 
@@ -14,6 +15,7 @@ from hud import Hud, SleepFade
 from shop import Shop
 
 
+# 🧩 Meus moldes
 class Camera(pygame.sprite.Group):
     """All the sprites of the map, drawn around the farmer, layer by layer."""
 

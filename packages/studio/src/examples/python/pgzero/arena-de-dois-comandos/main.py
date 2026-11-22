@@ -1,29 +1,19 @@
+# 📦 Bibliotecas
 import math
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Arena de Dois Comandos'
-ARENA = Rect((60, 70), (680, 500))
 VELOCIDADE = 4
 VELOCIDADE_DA_BALA = 10
 # Segundos entre um tiro e outro, segurando a tecla de mira.
 INTERVALO_DOS_TIROS = 0.15
 
-tanque = Actor('esteira')
-torre = Actor('torre')
-balas = []
-robos = []
-pessoas = []
-onda = 1
-pontos = 0
-vidas = 3
-espera_do_tiro = 0
-# 'jogando' ou 'fim'
-estado = 'jogando'
 
-
+# 🧩 Meus moldes
 def longe_do_tanque():
     # Um lugar na arena a pelo menos 200 pixels do tanque.
     while True:
@@ -113,7 +103,32 @@ def perder_vida():
         for robo in robos:
             robo.pos = longe_do_tanque()
 
+# ⚙️ Ao iniciar
+ARENA = Rect((60, 70), (680, 500))
 
+tanque = Actor('esteira')
+torre = Actor('torre')
+balas = []
+robos = []
+pessoas = []
+onda = 1
+pontos = 0
+vidas = 3
+espera_do_tiro = 0
+# 'jogando' ou 'fim'
+estado = 'jogando'
+
+
+novo_jogo()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    if estado == 'fim' and key == keys.SPACE:
+        novo_jogo()
+
+
+# 🔁 Enquanto estiver rodando
 def update(dt):
     global pontos, onda
     if estado != 'jogando':
@@ -177,12 +192,4 @@ def draw():
     if estado == 'fim':
         screen.draw.text('Fim de jogo!', center=(WIDTH / 2, 280), fontsize=64, color='orange', owidth=1, ocolor='black')
         screen.draw.text('Espaço joga de novo', center=(WIDTH / 2, 330), fontsize=36, color='white', owidth=1, ocolor='black')
-
-
-def on_key_down(key):
-    if estado == 'fim' and key == keys.SPACE:
-        novo_jogo()
-
-
-novo_jogo()
 pgzrun.go()

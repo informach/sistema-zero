@@ -1,5 +1,6 @@
-"""Pong educacional: raquetes, bola, placar e computador visíveis em blocos, Ponte e Python."""
+# Pong educacional: raquetes, bola, placar e computador visíveis em blocos, Ponte e Python.
 
+# 📦 Bibliotecas
 import turtle
 import random
 import math
@@ -7,6 +8,7 @@ import time
 import sz_audio
 
 
+# 🎛️ Configurações
 LARGURA = 900
 ALTURA = 660
 CAMPO_TOPO = 240
@@ -28,16 +30,9 @@ PONTOS_VITORIA = 7
 COR_ESQUERDA = "#ffe14a"
 COR_DIREITA = "#5cc8ff"
 COR_BOLA = "#f8fafc"
-estado = {"aberto": False, "timer_pendente": False, "computador": False}
-
-tela = turtle.Screen()
-campo = turtle.Turtle(visible=False)
-raquete_esquerda = turtle.Turtle()
-raquete_direita = turtle.Turtle()
-bolinha = turtle.Turtle()
-painel = turtle.Turtle(visible=False)
 
 
+# 🧩 Meus moldes
 class Raquete:
     """Guarda a posição da raquete e as teclas que estão seguradas."""
 
@@ -232,27 +227,6 @@ def atualizar(tempo):
         passo_fisica(passo / 1000)
 
 
-def agendar():
-    if estado["aberto"] and not estado["timer_pendente"]:
-        estado["timer_pendente"] = True
-        tela.ontimer(quadro, INTERVALO)
-
-
-def quadro():
-    estado["timer_pendente"] = False
-    if not estado["aberto"]:
-        return
-    agora = time.monotonic()
-    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
-    estado["ultimo_tempo"] = agora
-    if not estado["pausado"]:
-        atualizar(tempo)
-    desenhar()
-    desenhar_painel()
-    tela.update()
-    agendar()
-
-
 def segurar(lado, sentido, apertada):
     raquete = estado[lado]
     if sentido == 1:
@@ -261,9 +235,36 @@ def segurar(lado, sentido, apertada):
         raquete.descendo = apertada
 
 
-def ligar_tecla(tecla, lado, sentido):
-    tela.onkeypress(lambda: segurar(lado, sentido, True), tecla)
-    tela.onkeyrelease(lambda: segurar(lado, sentido, False), tecla)
+def esquerda_sobe():
+    segurar("esquerda", 1, True)
+
+
+def esquerda_para_de_subir():
+    segurar("esquerda", 1, False)
+
+
+def esquerda_desce():
+    segurar("esquerda", -1, True)
+
+
+def esquerda_para_de_descer():
+    segurar("esquerda", -1, False)
+
+
+def direita_sobe():
+    segurar("direita", 1, True)
+
+
+def direita_para_de_subir():
+    segurar("direita", 1, False)
+
+
+def direita_desce():
+    segurar("direita", -1, True)
+
+
+def direita_para_de_descer():
+    segurar("direita", -1, False)
 
 
 def alternar_computador():
@@ -300,7 +301,6 @@ def reiniciar():
     desenhar_painel()
     estado["ultimo_tempo"] = time.monotonic()
     tela.update()
-    # Não agende aqui: o reinício reutiliza a cadeia existente.
 
 
 def fechar():
@@ -311,44 +311,76 @@ def fechar():
     tela.bye()
 
 
-def iniciar():
-    tela.setup(LARGURA, ALTURA)
-    tela.title("Pong • Sistema Zero")
-    tela.bgcolor("#071222")
-    tela.tracer(0)
-    for desenho in [campo, raquete_esquerda, raquete_direita, bolinha, painel]:
-        desenho.penup()
-        desenho.speed(0)
-    for raquete in [raquete_esquerda, raquete_direita]:
-        raquete.shape("square")
-        raquete.shapesize(RAQUETE_ALTURA / 20, RAQUETE_LARGURA / 20)
-    raquete_esquerda.color(COR_ESQUERDA)
-    raquete_direita.color(COR_DIREITA)
-    bolinha.shape("circle")
-    bolinha.shapesize(RAIO_BOLA / 10)
-    bolinha.color(COR_BOLA)
-    desenhar_campo()
-    ligar_tecla("w", "esquerda", 1)
-    ligar_tecla("W", "esquerda", 1)
-    ligar_tecla("s", "esquerda", -1)
-    ligar_tecla("S", "esquerda", -1)
-    ligar_tecla("Up", "direita", 1)
-    ligar_tecla("Down", "direita", -1)
-    tela.onkey(alternar_computador, "c")
-    tela.onkey(alternar_computador, "C")
-    tela.onkey(pausar, "space")
-    tela.onkey(pausar, "p")
-    tela.onkey(pausar, "P")
-    tela.onkey(reiniciar, "r")
-    tela.onkey(reiniciar, "R")
-    tela.onkey(fechar, "Escape")
-    tela.listen()
-    estado["aberto"] = True
-    reiniciar()
-    agendar()
-    if estado["aberto"]:
-        tela.mainloop()
+# ⚙️ Ao iniciar
+estado = {"aberto": True, "computador": False}
+
+tela = turtle.Screen()
+campo = turtle.Turtle(visible=False)
+raquete_esquerda = turtle.Turtle()
+raquete_direita = turtle.Turtle()
+bolinha = turtle.Turtle()
+painel = turtle.Turtle(visible=False)
+
+tela.setup(LARGURA, ALTURA)
+tela.title("Pong • Sistema Zero")
+tela.bgcolor("#071222")
+tela.tracer(0)
+for desenho in [campo, raquete_esquerda, raquete_direita, bolinha, painel]:
+    desenho.penup()
+    desenho.speed(0)
+for raquete in [raquete_esquerda, raquete_direita]:
+    raquete.shape("square")
+    raquete.shapesize(RAQUETE_ALTURA / 20, RAQUETE_LARGURA / 20)
+raquete_esquerda.color(COR_ESQUERDA)
+raquete_direita.color(COR_DIREITA)
+bolinha.shape("circle")
+bolinha.shapesize(RAIO_BOLA / 10)
+bolinha.color(COR_BOLA)
+desenhar_campo()
+reiniciar()
 
 
-if __name__ == "__main__":
-    iniciar()
+# ⚡ Quando acontecer
+tela.onkeypress(esquerda_sobe, "w")
+tela.onkeyrelease(esquerda_para_de_subir, "w")
+tela.onkeypress(esquerda_sobe, "W")
+tela.onkeyrelease(esquerda_para_de_subir, "W")
+tela.onkeypress(esquerda_desce, "s")
+tela.onkeyrelease(esquerda_para_de_descer, "s")
+tela.onkeypress(esquerda_desce, "S")
+tela.onkeyrelease(esquerda_para_de_descer, "S")
+tela.onkeypress(direita_sobe, "Up")
+tela.onkeyrelease(direita_para_de_subir, "Up")
+tela.onkeypress(direita_desce, "Down")
+tela.onkeyrelease(direita_para_de_descer, "Down")
+tela.onkey(alternar_computador, "c")
+tela.onkey(alternar_computador, "C")
+tela.onkey(pausar, "space")
+tela.onkey(pausar, "p")
+tela.onkey(pausar, "P")
+tela.onkey(reiniciar, "r")
+tela.onkey(reiniciar, "R")
+tela.onkey(fechar, "Escape")
+tela.listen()
+
+
+# 🔁 Enquanto estiver rodando
+def a_cada_quadro():
+    if not estado["aberto"]:
+        return
+    agora = time.monotonic()
+    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
+    estado["ultimo_tempo"] = agora
+    if not estado["pausado"]:
+        atualizar(tempo)
+    desenhar()
+    desenhar_painel()
+    tela.update()
+    # Se a janela fechou durante esta volta, o laço para aqui.
+    if not estado["aberto"]:
+        return
+    tela.ontimer(a_cada_quadro, INTERVALO)
+
+
+a_cada_quadro()
+tela.mainloop()

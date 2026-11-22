@@ -1,5 +1,6 @@
-"""Céu Estrelado educacional: toda a lógica fica visível em blocos, Ponte e Python."""
+# Céu Estrelado educacional: toda a lógica fica visível em blocos, Ponte e Python.
 
+# 📦 Bibliotecas
 import turtle
 import random
 import math
@@ -7,6 +8,7 @@ import time
 import sz_audio
 
 
+# 🎛️ Configurações
 INTERVALO = 16
 RITMO_ESTRELA = 350
 MAX_ESTRELAS = 150
@@ -20,15 +22,9 @@ CEU_ALTO = 250
 COR_LUNETA = "#67e8f9"
 COR_LINHA = "#93c5fd"
 CORES_ESTRELAS = ["#fff7ae", "#ffd166", "#ffffff", "#f9a8d4", "#c4b5fd", "#fdba74", "#bbf7d0"]
-estado = {"aberto": False, "timer_pendente": False}
-
-tela = turtle.Screen()
-pincel = turtle.Turtle(visible=False)
-linhas = turtle.Turtle(visible=False)
-luneta = turtle.Turtle(visible=False)
-painel = turtle.Turtle(visible=False)
 
 
+# 🧩 Meus moldes
 class Estrela:
     """Uma estrela de N pontas: o desenho gira 180 - 180/N graus em cada ponta."""
 
@@ -136,30 +132,27 @@ def atualizar(tempo):
         adicionar(estrela_sorteada(x, y))
 
 
-def agendar():
-    if estado["aberto"] and not estado["timer_pendente"]:
-        estado["timer_pendente"] = True
-        tela.ontimer(quadro, INTERVALO)
-
-
-def quadro():
-    estado["timer_pendente"] = False
-    if not estado["aberto"]:
-        return
-    agora = time.monotonic()
-    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
-    estado["ultimo_tempo"] = agora
-    atualizar(tempo)
-    desenhar_painel()
-    tela.update()
-    agendar()
-
-
 def mover_luneta(dx, dy):
     x = min(CEU_X, max(-CEU_X, estado["luneta"][0] + dx * PASSO_LUNETA))
     y = min(CEU_ALTO, max(CEU_BAIXO, estado["luneta"][1] + dy * PASSO_LUNETA))
     estado["luneta"] = (x, y)
     luneta.goto(x, y)
+
+
+def luneta_para_direita():
+    mover_luneta(1, 0)
+
+
+def luneta_para_esquerda():
+    mover_luneta(-1, 0)
+
+
+def luneta_para_cima():
+    mover_luneta(0, 1)
+
+
+def luneta_para_baixo():
+    mover_luneta(0, -1)
 
 
 def por_estrela(x, y):
@@ -210,7 +203,6 @@ def reiniciar():
     estado["ultimo_tempo"] = time.monotonic()
     sz_audio.play("abertura.wav", volume=0.5)
     tela.update()
-    # Não agende aqui: o reinício reutiliza a cadeia existente.
 
 
 def fechar():
@@ -221,43 +213,66 @@ def fechar():
     tela.bye()
 
 
-def iniciar():
-    tela.setup(800, 650)
-    tela.title("Céu Estrelado • Sistema Zero")
-    tela.bgcolor("#0b1026")
-    tela.tracer(0)
-    for desenho in [pincel, linhas, luneta, painel]:
-        desenho.penup()
-        desenho.speed(0)
-    linhas.color(COR_LINHA)
-    linhas.pensize(2)
-    luneta.shape("circle")
-    luneta.color(COR_LUNETA)
-    luneta.shapesize(0.9)
-    luneta.showturtle()
-    tela.onkeypress(lambda: mover_luneta(1, 0), "Right")
-    tela.onkeypress(lambda: mover_luneta(-1, 0), "Left")
-    tela.onkeypress(lambda: mover_luneta(0, 1), "Up")
-    tela.onkeypress(lambda: mover_luneta(0, -1), "Down")
-    tela.onkey(estrela_na_luneta, "Return")
-    tela.onkey(alternar_constelacao, "c")
-    tela.onkey(alternar_constelacao, "C")
-    tela.onkey(limpar, "l")
-    tela.onkey(limpar, "L")
-    tela.onkey(pausar, "space")
-    tela.onkey(pausar, "p")
-    tela.onkey(pausar, "P")
-    tela.onkey(reiniciar, "r")
-    tela.onkey(reiniciar, "R")
-    tela.onkey(fechar, "Escape")
-    tela.onscreenclick(por_estrela)
-    tela.listen()
-    estado["aberto"] = True
-    reiniciar()
-    agendar()
-    if estado["aberto"]:
-        tela.mainloop()
+# ⚙️ Ao iniciar
+estado = {"aberto": True}
+
+tela = turtle.Screen()
+pincel = turtle.Turtle(visible=False)
+linhas = turtle.Turtle(visible=False)
+luneta = turtle.Turtle(visible=False)
+painel = turtle.Turtle(visible=False)
+
+tela.setup(800, 650)
+tela.title("Céu Estrelado • Sistema Zero")
+tela.bgcolor("#0b1026")
+tela.tracer(0)
+for desenho in [pincel, linhas, luneta, painel]:
+    desenho.penup()
+    desenho.speed(0)
+linhas.color(COR_LINHA)
+linhas.pensize(2)
+luneta.shape("circle")
+luneta.color(COR_LUNETA)
+luneta.shapesize(0.9)
+luneta.showturtle()
+reiniciar()
 
 
-if __name__ == "__main__":
-    iniciar()
+# ⚡ Quando acontecer
+tela.onkeypress(luneta_para_direita, "Right")
+tela.onkeypress(luneta_para_esquerda, "Left")
+tela.onkeypress(luneta_para_cima, "Up")
+tela.onkeypress(luneta_para_baixo, "Down")
+tela.onkey(estrela_na_luneta, "Return")
+tela.onkey(alternar_constelacao, "c")
+tela.onkey(alternar_constelacao, "C")
+tela.onkey(limpar, "l")
+tela.onkey(limpar, "L")
+tela.onkey(pausar, "space")
+tela.onkey(pausar, "p")
+tela.onkey(pausar, "P")
+tela.onkey(reiniciar, "r")
+tela.onkey(reiniciar, "R")
+tela.onkey(fechar, "Escape")
+tela.onscreenclick(por_estrela)
+tela.listen()
+
+
+# 🔁 Enquanto estiver rodando
+def a_cada_quadro():
+    if not estado["aberto"]:
+        return
+    agora = time.monotonic()
+    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
+    estado["ultimo_tempo"] = agora
+    atualizar(tempo)
+    desenhar_painel()
+    tela.update()
+    # Se a janela fechou durante esta volta, o laço para aqui.
+    if not estado["aberto"]:
+        return
+    tela.ontimer(a_cada_quadro, INTERVALO)
+
+
+a_cada_quadro()
+tela.mainloop()

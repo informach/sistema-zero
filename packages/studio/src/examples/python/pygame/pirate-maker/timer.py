@@ -1,5 +1,7 @@
+# 📦 Bibliotecas
 import pygame
 
+# 🧩 Meus moldes
 class Timer:
     def __init__(self, duration):
         self.duration = duration

@@ -1,5 +1,7 @@
+# 📦 Bibliotecas
 from pyray import *
 
+# 🎛️ Configurações
 LARGURA = 800
 ALTURA = 450
 VELOCIDADE_NAVE = 300
@@ -7,6 +9,7 @@ VELOCIDADE_PEDRA = 220
 # Cada ponto do desenho vira ESCALA pontos na tela: um desenho do Pinta fica grande e nítido.
 ESCALA = 3
 
+# ⚙️ Ao iniciar
 init_window(LARGURA, ALTURA, 'Nave que Desliza')
 set_target_fps(60)
 
@@ -27,6 +30,7 @@ estrela_posicao = Vector2(get_random_value(40, 740), get_random_value(40, 400))
 pontos = 0
 batidas = 0
 
+# 🔁 Enquanto estiver rodando
 while not window_should_close():
     # O tempo do quadro: multiplicar por ele deixa a velocidade igual em qualquer computador.
     dt = get_frame_time()

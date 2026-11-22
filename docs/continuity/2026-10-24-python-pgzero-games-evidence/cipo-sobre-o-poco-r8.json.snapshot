@@ -1,0 +1,279 @@
+{
+  "kind": "python-visual-authoring",
+  "analyzer": {
+    "pythonVersion": "3.14.2",
+    "pyodideVersion": "314.0.7",
+    "distributionSha256": "1b9e2813e174008c0572c2233cd8f68f0f45d72f99902d25bbd769c23892291b",
+    "analyzerSha256": "030eee7115db46c8c19831372a0948f71bbda0a8ad751235d4da889ed68bdf9b"
+  },
+  "authoringRuntime": {
+    "profileId": "python-probe",
+    "releaseId": "probe-1",
+    "manifestSha256": "8e04b8116485b851bc2d280c4273d13e1524a3ecc1c2e7610e28de03fcb106c6"
+  },
+  "authoringRuntimeFeatures": [
+    "turtle-compound-shapes",
+    "project-missions-v1",
+    "pinta-map-world-v1",
+    "pinta-scene-physics-v1",
+    "molda-scene-assets-v1",
+    "python-background-focus-v1",
+    "molda-scene-regions-v1"
+  ],
+  "authoringLoader": "loadPythonAuthoring",
+  "extension": "python-pgzero",
+  "codecOrderSha256": "7dc0c6647e6c38a27d732f6c43dd50e7dccd2546f49c785edd557815eaa9cbf9",
+  "sourceSha256": "882d9ce5152588eded59cd6c3066949722ab0fecbee7825449e1612474217b97",
+  "generatedSha256": "3a6b6175bc09d36218b8c7c460ba1c965dc6fe7d5d1e9c24a3bc24dacc6aaad6",
+  "opaqueCount": 0,
+  "blockCount": 498,
+  "referencedBlocks": [
+    {
+      "id": "sz_py_abs",
+      "count": 1
+    },
+    {
+      "id": "sz_py_and",
+      "count": 7
+    },
+    {
+      "id": "sz_py_arithmetic",
+      "count": 23
+    },
+    {
+      "id": "sz_py_assign",
+      "count": 59
+    },
+    {
+      "id": "sz_py_boolean",
+      "count": 15
+    },
+    {
+      "id": "sz_py_compare",
+      "count": 17
+    },
+    {
+      "id": "sz_py_def",
+      "count": 5
+    },
+    {
+      "id": "sz_py_float",
+      "count": 1
+    },
+    {
+      "id": "sz_py_global",
+      "count": 5
+    },
+    {
+      "id": "sz_py_if",
+      "count": 20
+    },
+    {
+      "id": "sz_py_import_one",
+      "count": 2
+    },
+    {
+      "id": "sz_py_integer",
+      "count": 62
+    },
+    {
+      "id": "sz_py_math_cos",
+      "count": 1
+    },
+    {
+      "id": "sz_py_math_radians",
+      "count": 1
+    },
+    {
+      "id": "sz_py_math_sin",
+      "count": 1
+    },
+    {
+      "id": "sz_py_math_sqrt",
+      "count": 1
+    },
+    {
+      "id": "sz_py_max",
+      "count": 1
+    },
+    {
+      "id": "sz_py_min",
+      "count": 1
+    },
+    {
+      "id": "sz_py_negative",
+      "count": 3
+    },
+    {
+      "id": "sz_py_not",
+      "count": 2
+    },
+    {
+      "id": "sz_py_or",
+      "count": 4
+    },
+    {
+      "id": "sz_py_pgzero_actor",
+      "count": 4
+    },
+    {
+      "id": "sz_py_pgzero_actor_draw",
+      "count": 4
+    },
+    {
+      "id": "sz_py_pgzero_actor_property",
+      "count": 44
+    },
+    {
+      "id": "sz_py_pgzero_collidepoint",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_colliderect",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_distance_to",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_draw",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_draw_text",
+      "count": 3
+    },
+    {
+      "id": "sz_py_pgzero_go",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_height",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_keyboard",
+      "count": 2
+    },
+    {
+      "id": "sz_py_pgzero_keys",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_on_key_down",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_screen_blit",
+      "count": 3
+    },
+    {
+      "id": "sz_py_pgzero_sound_play",
+      "count": 5
+    },
+    {
+      "id": "sz_py_pgzero_title",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_update",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_width",
+      "count": 1
+    },
+    {
+      "id": "sz_py_return",
+      "count": 5
+    },
+    {
+      "id": "sz_py_run",
+      "count": 5
+    },
+    {
+      "id": "sz_py_run_value",
+      "count": 9
+    },
+    {
+      "id": "sz_py_str",
+      "count": 1
+    },
+    {
+      "id": "sz_py_text",
+      "count": 21
+    },
+    {
+      "id": "sz_py_tuple",
+      "count": 13
+    },
+    {
+      "id": "sz_py_variable",
+      "count": 136
+    }
+  ],
+  "approvedBlockIdsSha256": "d447df688843ce29be5142e1aefe192a7099be67f72ce751ed1223af520ddae0",
+  "fullWorkspaceRoundtrip": true,
+  "initialWorkspaceSha256": "7d0524561c47c22886832b9068f54f7f135e2460ca0b4da5ef320c58c15d099f",
+  "editedWorkspaceSha256": "ed024817d0a9e0698afaa36cf6a60139a43ee79dbae4f3b7038a645282b8ffdb",
+  "canonicalRenderReanalysis": true,
+  "runtimeCapabilitiesQualified": false,
+  "browserInteractionQualified": false,
+  "edits": [
+    {
+      "label": "width",
+      "path": {
+        "body": 2,
+        "inputs": [
+          {
+            "name": "value",
+            "index": 0
+          }
+        ]
+      },
+      "codecId": "sz_py_integer",
+      "field": "NUMBER",
+      "before": "800",
+      "after": "810",
+      "beforeSourceSha256": "9071327e2f5a0d6971c43a162b115f81562fa074742cde51594400238d2bac5b",
+      "afterSourceSha256": "c8a83eda8478f1056bc9a9164da0e0ec8a151662c183db91167a843dae35323e"
+    },
+    {
+      "label": "height",
+      "path": {
+        "body": 3,
+        "inputs": [
+          {
+            "name": "value",
+            "index": 0
+          }
+        ]
+      },
+      "codecId": "sz_py_integer",
+      "field": "NUMBER",
+      "before": "600",
+      "after": "610",
+      "beforeSourceSha256": "c8a83eda8478f1056bc9a9164da0e0ec8a151662c183db91167a843dae35323e",
+      "afterSourceSha256": "3c1daf7ac308c00437ba7fd104455b8274b7d2e4cba65f9012ad2bd32fe2121a"
+    },
+    {
+      "label": "title",
+      "path": {
+        "body": 4,
+        "inputs": [
+          {
+            "name": "value",
+            "index": 0
+          }
+        ]
+      },
+      "codecId": "sz_py_text",
+      "field": "TEXT",
+      "before": "Cipó sobre o Poço",
+      "after": "Cipó sobre o Poço!",
+      "beforeSourceSha256": "3c1daf7ac308c00437ba7fd104455b8274b7d2e4cba65f9012ad2bd32fe2121a",
+      "afterSourceSha256": "3a6b6175bc09d36218b8c7c460ba1c965dc6fe7d5d1e9c24a3bc24dacc6aaad6"
+    }
+  ]
+}

@@ -7,8 +7,14 @@
  */
 import { describe, expect, test } from 'bun:test'
 import { fileURLToPath } from 'node:url'
+import { STUDIO_PYTHON_RUNTIME_FEATURES } from '@sistemazero/core/studio/python-runtime-features'
+import { PGZERO_RESOLVER_OPTIONS, PYTHON_PGZERO_CODECS } from '../extensions/pgzero/catalog'
 import type { PythonNode } from '../language/types'
 import { analyzePythonModuleAreas, planPythonOrganize } from './areas'
+import { orderPythonAuthoringCodecs } from './authoring'
+import type { PythonBlockCodec } from './contract'
+import { pythonASTToVisual } from './projection'
+import { attachPythonResolverOptions, pythonResolverOptionsOf } from './resolverOptions'
 
 const DRIVER = fileURLToPath(new URL('./areas.differential.py', import.meta.url))
 
@@ -51,16 +57,30 @@ interface Comparison {
 }
 
 /** Organiza cada fonte e roda as duas ordens no Python. */
-function organizeAndCompare(sources: readonly string[]) {
+/** Os blocos do Pygame Zero como o editor os carrega: ganchos, relógio, WIDTH e o `pgzrun.go()`. */
+const PGZERO = attachPythonResolverOptions(
+  orderPythonAuthoringCodecs(PYTHON_PGZERO_CODECS, STUDIO_PYTHON_RUNTIME_FEATURES),
+  PGZERO_RESOLVER_OPTIONS,
+)
+
+function organizeAndCompare(sources: readonly string[], codecs?: readonly PythonBlockCodec[]) {
   const trees = driver<(PythonNode | null)[]>({ op: 'parse', sources })
   const plans = trees.map((tree, index) => {
     if (!tree) throw new Error(`não analisou:\n${sources[index]}`)
     const body = (tree.fields.body as PythonNode[]) ?? []
+    // Com blocos, cada linha leva o id do bloco dela (é o que decide gancho, laço e fim do jogo).
+    const codecIds = codecs
+      ? pythonASTToVisual(tree, {
+          codecs,
+          officialModules: new Set(['math', 'random', 'pgzero', 'pgzrun', 'pygame']),
+        }).body.map((value) => (value.kind === 'block' ? value.codecId : undefined))
+      : body.map(() => undefined)
+    // Os nomes que o editor sabe que cada biblioteca exporta (sem eles, nenhum
+    // `from math import pi` seria "só cria nomes" e a prova não passaria por esse caminho).
     return planPythonOrganize(
-      analyzePythonModuleAreas(
-        tree,
-        body.map(() => undefined),
-      ),
+      analyzePythonModuleAreas(tree, codecIds, {
+        starExports: pythonResolverOptionsOf(codecs ?? []).starExports,
+      }),
     )
   })
   const results = driver<Comparison[]>({
@@ -85,6 +105,104 @@ function expectSame(results: ReturnType<typeof organizeAndCompare>) {
 
 // Os casos da revisão de 22/11/2026 (M1 a M12): cada um mudava o programa no modelo antigo.
 const REVIEW_CASES: Record<string, string> = {
+  // Revisão final (22/11/2026): cada um mudava o programa antes do conserto.
+  'R2 __str__ roda escondido no print': `
+def nome():
+    return "velho"
+class Bicho:
+    def __str__(self):
+        return "sou " + nome()
+b = Bicho()
+print(b)
+def nome():
+    return "novo"
+`,
+  'R2 __str__ lê configuração escrita depois': `
+class Placar:
+    def __str__(self):
+        return "vidas " + str(VIDAS)
+p = Placar()
+print(p)
+VIDAS = 3
+`,
+  'R3 expressão geradora roda onde é consumida': `
+def fator():
+    return 1
+def dobro(x):
+    return x * fator()
+pares = (dobro(n) for n in range(3))
+print(list(pares))
+def fator():
+    return 10
+`,
+  'R3 função geradora roda onde é consumida': `
+def passo():
+    return 1
+def contar():
+    yield passo()
+    yield passo() + 1
+g = contar()
+for valor in g:
+    print(valor)
+def passo():
+    return 5
+`,
+  'R4 atributo de classe que guarda função': `
+def saudacao():
+    return "oi"
+def falar(self):
+    return saudacao()
+class Robo:
+    acao = falar
+r = Robo()
+print(r.acao())
+def saudacao():
+    return "tchau"
+`,
+  'R5 desempacotar lê o conteúdo na hora': `
+posicao = [0, 0]
+print("antes")
+posicao[0] = 5
+x, y = posicao
+print(x)
+`,
+  'R5 desempacotar com tamanho errado dá erro': `
+print("oi")
+A, B = 1, 2, 3
+`,
+  'R6 anotação no corpo da classe é lida na hora': `
+print("Bem-vindo")
+class Jogador:
+    inimigo: Inimigo = None
+class Inimigo:
+    pass
+`,
+  'R8 dir() lê os nomes do módulo': `
+nomes = dir()
+print(sorted(n for n in nomes if not n.startswith("_")))
+import random
+VIDAS = 3
+`,
+  'R9 from import lê o atributo do módulo naquela hora': `
+import math
+math.pi = 3
+from math import pi
+print(pi)
+`,
+  'R10 potência que estoura não é configuração': `
+print("oi")
+X = 1e300 ** 2
+`,
+  'R10 inteiro enorme virando float não é configuração': `
+print("oi")
+Y = (10 ** 64) ** 5 * 1.0
+`,
+  // O limite do tamanho (o caso real, "a" * 10000 * 10000 * 10000, dá MemoryError).
+  'R10 texto repetido grande demais não é configuração': `
+print("oi")
+Z = "a" * 2000 * 1000
+print(len(Z))
+`,
   // Lista, dicionário e conjunto que ficam iguais sobem para as Configurações (22/11/2026).
   'lista fixa sobe para as Configurações': `
 print('oi')
@@ -448,16 +566,25 @@ function fuzzSources(count: number, seed: number) {
   return out
 }
 
-/** A área da linha `line` (0 = a primeira) de um programa analisado pelo Python de verdade. */
-function areaOf(source: string, line: number) {
-  const [tree] = driver<(PythonNode | null)[]>({ op: 'parse', sources: [source] })
-  if (!tree) throw new Error(`não analisou:\n${source}`)
-  const body = (tree.fields.body as PythonNode[]) ?? []
-  const info = analyzePythonModuleAreas(
-    tree,
-    body.map(() => undefined),
-  ).statements[line]!
-  return info.role === 'area' ? info.area : info.role
+/**
+ * A área da linha pedida (0 = a primeira) de cada programa, analisados pelo Python de verdade num
+ * processo só.
+ */
+function areasOf(cases: readonly (readonly [string, number])[]) {
+  const trees = driver<(PythonNode | null)[]>({
+    op: 'parse',
+    sources: cases.map(([source]) => source),
+  })
+  return cases.map(([source, line], index) => {
+    const tree = trees[index]
+    if (!tree) throw new Error(`não analisou:\n${source}`)
+    const body = (tree.fields.body as PythonNode[]) ?? []
+    const info = analyzePythonModuleAreas(
+      tree,
+      body.map(() => undefined),
+    ).statements[line]!
+    return [source, info.role === 'area' ? info.area : info.role] as const
+  })
 }
 
 describe.skipIf(!PYTHON)('lista, dicionário e conjunto em MAIÚSCULAS', () => {
@@ -477,6 +604,11 @@ describe.skipIf(!PYTHON)('lista, dicionário e conjunto em MAIÚSCULAS', () => {
       ['DIRECOES = [(1, 0), (0, 1)]\nfor dx, dy in DIRECOES + [(0, 0)]:\n    print(dx)\n', 0],
       ['GRADE = [[0, 0], [1, 1]]\nprint(GRADE[0][1], len(GRADE))\n', 0],
       ['A, B = [1], (2, 3)\nprint(A[0], B)\n', 0],
+      // A cópia rasa de uma lista de textos é nova: mudar a cópia não muda a constante.
+      [
+        'CORES = ["a"]\ncopia = CORES.copy()\ncopia.append("b")\nprint(CORES[:1], list(NOMES.keys()))\nNOMES = {"x": 1}\n',
+        0,
+      ],
       // Dicionário de listas de textos: o `for` tira textos da lista de dentro.
       [
         'ABERTURAS = {"I": ["cima", "baixo"]}\nfor lado in ABERTURAS["I"]:\n    print(lado)\nprint("cima" in ABERTURAS.get("I", []))\n',
@@ -488,8 +620,8 @@ describe.skipIf(!PYTHON)('lista, dicionário e conjunto em MAIÚSCULAS', () => {
         0,
       ],
     ]
-    for (const [source, line] of constants)
-      expect([source, areaOf(source, line)]).toEqual([source, 'settings'])
+    for (const [source, area] of areasOf(constants))
+      expect([source, area]).toEqual([source, 'settings'])
   })
 
   test('o programa muda, ou entrega a quem pode mudar: Ao iniciar', () => {
@@ -504,6 +636,11 @@ describe.skipIf(!PYTHON)('lista, dicionário e conjunto em MAIÚSCULAS', () => {
       ['GRADE = [[0, 0]]\nprimeira = GRADE[0]\n', 0],
       // Um dicionário de dentro guardado noutro nome pode ser mudado por ele.
       ['GOLPES = {"a": {"dano": 1}}\ngolpe = GOLPES["a"]\n', 0],
+      // O que `get`, `values`, `copy` e a fatia entregam ainda é do valor (revisão final, achado 7).
+      ['MONSTROS = {"slime": {"vida": 3}}\ndef atacar(n):\n    MONSTROS.get(n)["vida"] -= 1\n', 0],
+      ['MONSTROS = {"slime": {"vida": 3}}\nfor d in MONSTROS.values():\n    d["vida"] = 0\n', 0],
+      ['GRADE = [[0, 0], [1, 1]]\nfor linha in GRADE[1:]:\n    linha[0] = 9\n', 0],
+      ['GRADE = [[0, 0], [1, 1]]\ncopia = GRADE.copy()\ncopia[0].append(1)\n', 0],
       ['LISTAS = [[1], [2]]\nimport random\nprint(random.choice(LISTAS))\n', 0],
       ['TECLAS = {"a": 1}\nTECLAS.update(b=2)\n', 0],
       ['cores = ["a"]\n', 0],
@@ -511,14 +648,61 @@ describe.skipIf(!PYTHON)('lista, dicionário e conjunto em MAIÚSCULAS', () => {
       ['BASE = {"a": 1}\nTUDO = {**BASE}\n', 1],
       ['CORES = ["a"]\nCORES = ["b"]\n', 0],
     ]
-    for (const [source, line] of variables)
-      expect([source, areaOf(source, line)]).toEqual([source, 'start'])
+    for (const [source, area] of areasOf(variables))
+      expect([source, area]).toEqual([source, 'start'])
   })
 })
+
+// Com os blocos do Pygame Zero (revisão final, achado 11): os ganchos descem, o fim fica preso.
+const PGZERO_CASES: Record<string, string> = {
+  'ganchos descem para o laço e para o Quando acontecer': `
+import pgzrun
+WIDTH = 400
+print("preparando")
+def draw():
+    screen.clear()
+    print("desenha", pontos)
+pontos = 0
+def update():
+    global pontos
+    pontos += 1
+def on_key_down(key):
+    print("tecla", key)
+clock.schedule_interval(update, 1.0)
+print("pronto")
+pgzrun.go()
+`,
+  'o que vem depois do pgzrun.go() fica preso no fim': `
+import pgzrun
+def draw():
+    print("x", VEZES)
+VEZES = 2
+pgzrun.go()
+print("fim")
+def draw():
+    print("outro")
+`,
+  'WIDTH que depende de um nome criado depois não sobe': `
+import pgzrun
+print("oi")
+LARGURA = 300
+WIDTH = LARGURA * 2
+def draw():
+    print(WIDTH)
+pgzrun.go()
+`,
+}
 
 describe.skipIf(!PYTHON)('organizar com o Python de verdade', () => {
   test('os casos da revisão continuam fazendo a mesma coisa', () => {
     expectSame(organizeAndCompare(Object.values(REVIEW_CASES)))
+  }, 60_000)
+
+  test('com os blocos do Pygame Zero, também', () => {
+    const results = organizeAndCompare(Object.values(PGZERO_CASES), PGZERO)
+    expectSame(results)
+    // Anti-vácuo: os ganchos de fato descem (o primeiro programa muda de ordem).
+    expect(results[0]!.plan.changed).toBe(true)
   }, 60_000)
 
   test('programas sorteados continuam fazendo a mesma coisa (e alguns mudam de ordem)', () => {

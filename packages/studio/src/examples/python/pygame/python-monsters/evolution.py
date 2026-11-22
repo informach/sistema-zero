@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 from settings import *
 from timer import Timer
 
+# 🧩 Meus moldes
 class Evolution:
     def __init__(self, frames, start_monster, end_monster, font, end_evolution, star_frames):
         self.display_surface = pygame.display.get_surface()

@@ -1,29 +1,17 @@
+# 📦 Bibliotecas
 import math
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Rastro de Ajudantes'
 DISTANCIA = 15
 MAXIMO = 4
 
-nave = Actor('nave')
-nave.pos = (150, 300)
-# Os lugares por onde a nave passou, do mais novo para o mais antigo.
-rastro = []
-ajudantes = []
-tiros = []
-inimigos = []
-alturas = []
-capsula = Actor('capsula')
-capsula.pos = (-100, -100)
-ceu_x = 0
-vidas = 3
-pontos = 0
-quadros = 0
 
-
+# 🧩 Meus moldes
 def guardar_lugar():
     # Só guarda quando a nave se mexe: parada, os ajudantes também param.
     if not rastro or rastro[0] != nave.pos:
@@ -76,7 +64,37 @@ def novo_jogo():
     alturas.clear()
     capsula.pos = (-100, -100)
 
+# ⚙️ Ao iniciar
+nave = Actor('nave')
+nave.pos = (150, 300)
+# Os lugares por onde a nave passou, do mais novo para o mais antigo.
+rastro = []
+ajudantes = []
+tiros = []
+inimigos = []
+alturas = []
+capsula = Actor('capsula')
+capsula.pos = (-100, -100)
+ceu_x = 0
+vidas = 3
+pontos = 0
+quadros = 0
 
+
+novo_jogo()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    if key != keys.SPACE:
+        return
+    if vidas == 0:
+        novo_jogo()
+    else:
+        atirar()
+
+
+# 🔁 Enquanto estiver rodando
 def draw():
     screen.blit('fundo', (ceu_x, 0))
     screen.blit('fundo', (ceu_x + WIDTH, 0))
@@ -146,18 +164,6 @@ def update():
         elif inimigo.right < 0:
             inimigos.pop(numero)
             alturas.pop(numero)
-
-
-def on_key_down(key):
-    if key != keys.SPACE:
-        return
-    if vidas == 0:
-        novo_jogo()
-    else:
-        atirar()
-
-
-novo_jogo()
 clock.schedule_interval(novo_inimigo, 0.8)
 clock.schedule_interval(soltar_capsula, 6)
 pgzrun.go()

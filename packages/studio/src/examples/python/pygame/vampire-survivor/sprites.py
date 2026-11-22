@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 from settings import *
 from math import atan2, degrees
 
+# 🧩 Meus moldes
 class CollisionSprite(pygame.sprite.Sprite):
     def __init__(self, pos, surf, groups):
         super().__init__(groups)

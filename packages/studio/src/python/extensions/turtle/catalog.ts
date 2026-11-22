@@ -7,6 +7,7 @@ import {
 } from '../../blocks/apiCallCodec'
 import type { PythonBlockCodec } from '../../blocks/contract'
 import { integer, name, text } from '../../blocks/nodes'
+import { turtleEveryCodec } from './every'
 import { TURTLE_CONCEPTS, type TurtleConcept } from './labels'
 
 interface TurtleAPI {
@@ -214,8 +215,14 @@ const PINTA_SHAPE_CODEC = pythonApiCallCodec({
   dependencies: ['sz_py_import_one', 'sz_py_turtle_turtle_shape'],
 })
 
+const CONCEPT_CODECS = TURTLE_CONCEPTS.flatMap(codecsOf)
+const ONTIMER = CONCEPT_CODECS.find((codec) => codec.id === 'sz_py_turtle_screen_ontimer')
+if (!ONTIMER) throw new Error('Turtle sem o bloco "chamar depois de".')
+
 export const PYTHON_TURTLE_CODECS: readonly PythonBlockCodec[] = [
-  ...TURTLE_CONCEPTS.flatMap(codecsOf),
+  // Antes do "definir a função": a função que se reagenda é o laço do jogo (áreas do projeto).
+  turtleEveryCodec(ONTIMER),
+  ...CONCEPT_CODECS,
   PINTA_SHAPE_CODEC,
 ]
 

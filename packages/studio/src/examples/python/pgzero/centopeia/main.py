@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Centopeia'
@@ -22,6 +24,7 @@ VELOCIDADE_DO_BESOURO = 3
 PONTOS_DO_BESOURO = 50
 
 
+# 🧩 Meus moldes
 class Parte:
     """Uma parte da centopeia: anda de casa em casa e desce quando bate numa pedra ou na borda."""
 
@@ -59,24 +62,6 @@ class Parte:
         x = self.ator.left + max(min(alvo[0] - self.ator.left, self.velocidade), -self.velocidade)
         y = self.ator.top + max(min(alvo[1] - self.ator.top, self.velocidade), -self.velocidade)
         self.ator.topleft = (x, y)
-
-
-jogador = Actor('jogador')
-tiro = Actor('tiro')
-atirando = False
-# O besouro cruza a zona do jogador em zigue-zague e come as pedras por onde passa.
-besouro = Actor('besouro')
-besouro_voando = False
-espera_do_besouro = TEMPO_DO_BESOURO
-# As pedras do campo, cada uma na sua casa: (coluna, linha) -> ator.
-pedras = {}
-centopeia = []
-estado = 'inicio'
-pontos = 0
-vidas = VIDAS
-onda = 1
-protegido = 0
-espera = 0
 
 
 def espalhar_pedras():
@@ -228,6 +213,36 @@ def bater():
         espera = 1.0
 
 
+# ⚙️ Ao iniciar
+jogador = Actor('jogador')
+tiro = Actor('tiro')
+atirando = False
+# O besouro cruza a zona do jogador em zigue-zague e come as pedras por onde passa.
+besouro = Actor('besouro')
+besouro_voando = False
+espera_do_besouro = TEMPO_DO_BESOURO
+# As pedras do campo, cada uma na sua casa: (coluna, linha) -> ator.
+pedras = {}
+centopeia = []
+estado = 'inicio'
+pontos = 0
+vidas = VIDAS
+onda = 1
+protegido = 0
+espera = 0
+
+
+espalhar_pedras()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    if key == keys.SPACE:
+        if estado == 'inicio' or (estado == 'fim' and espera <= 0):
+            novo_jogo()
+
+
+# 🔁 Enquanto estiver rodando
 def update(dt):
     global onda, protegido, espera
     if estado == 'fim':
@@ -250,12 +265,6 @@ def update(dt):
         # Acabou a centopeia: vem outra, maior e mais rápida.
         onda = onda + 1
         soltar_centopeia()
-
-
-def on_key_down(key):
-    if key == keys.SPACE:
-        if estado == 'inicio' or (estado == 'fim' and espera <= 0):
-            novo_jogo()
 
 
 def draw():
@@ -289,7 +298,4 @@ def draw():
         screen.draw.text('Fim de jogo', center=(WIDTH / 2, 250), fontsize=80, color='white', owidth=2, ocolor='red')
         if espera <= 0:
             screen.draw.text('Espaço: jogar de novo', center=(WIDTH / 2, 330), fontsize=36, color='yellow')
-
-
-espalhar_pedras()
 pgzrun.go()

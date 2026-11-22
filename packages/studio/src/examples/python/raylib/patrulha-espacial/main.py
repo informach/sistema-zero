@@ -1,7 +1,9 @@
+# 📦 Bibliotecas
 from pyray import *
 from random import randint
 from math import sin
 
+# 🎛️ Configurações
 LARGURA = 800
 ALTURA = 450
 VELOCIDADE_DA_NAVE = 7
@@ -23,37 +25,11 @@ void main() {
 }
 """
 
-init_window(LARGURA, ALTURA, 'Patrulha Espacial')
-init_audio_device()
-set_target_fps(60)
-camera = Camera3D(Vector3(-4, 8, 6), Vector3(0, 0, -1), Vector3(0, 1, 0), 45, CAMERA_PERSPECTIVE)
-
-# A nave foi feita no Molda. A caixa dela diz o tamanho no arquivo; a escala a deixa da largura certa.
-nave = load_model('models/nave.glb')
-caixa_da_nave = get_model_bounding_box(nave)
-escala_da_nave = LARGURA_DA_NAVE / (caixa_da_nave.max.x - caixa_da_nave.min.x)
-meio_da_nave = (caixa_da_nave.min.y + caixa_da_nave.max.y) / 2
-
 # O chão escuro: uma peça quadrada com a textura do Molda, repetida embaixo da patrulha.
 LADO_DO_CHAO = 8
-chao = load_model_from_mesh(gen_mesh_cube(LADO_DO_CHAO, 1, LADO_DO_CHAO))
-set_material_texture(chao.materials[0], MATERIAL_MAP_ALBEDO, load_texture('images/chao.png'))
-
-# Uma bola para cada cor de meteoro, todas com o mesmo shader do clarão.
-shader = load_shader_from_memory(ffi.NULL, CLARAO)
-lugar_do_clarao = get_shader_location(shader, 'clarao')
-quanto = ffi.new('struct Vector2 *', [0, 0])
-bolas = []
-for cor in ['vermelho', 'verde', 'laranja', 'roxo']:
-    bola = load_model_from_mesh(gen_mesh_sphere(1, 8, 8))
-    set_material_texture(bola.materials[0], MATERIAL_MAP_ALBEDO, load_texture(f'images/meteoro-{cor}.png'))
-    bola.materials[0].shader = shader
-    bolas.append(bola)
-
-som_laser = load_sound('sounds/laser.wav')
-som_explosao = load_sound('sounds/explosao.wav')
 
 
+# 🧩 Meus moldes
 class Meteoro:
     def __init__(self):
         self.bola = bolas[randint(0, len(bolas) - 1)]
@@ -91,10 +67,39 @@ def comecar():
     destruidos = 0
     perdeu = False
 
+# ⚙️ Ao iniciar
+init_window(LARGURA, ALTURA, 'Patrulha Espacial')
+init_audio_device()
+set_target_fps(60)
+camera = Camera3D(Vector3(-4, 8, 6), Vector3(0, 0, -1), Vector3(0, 1, 0), 45, CAMERA_PERSPECTIVE)
+
+# A nave foi feita no Molda. A caixa dela diz o tamanho no arquivo; a escala a deixa da largura certa.
+nave = load_model('models/nave.glb')
+caixa_da_nave = get_model_bounding_box(nave)
+escala_da_nave = LARGURA_DA_NAVE / (caixa_da_nave.max.x - caixa_da_nave.min.x)
+meio_da_nave = (caixa_da_nave.min.y + caixa_da_nave.max.y) / 2
+chao = load_model_from_mesh(gen_mesh_cube(LADO_DO_CHAO, 1, LADO_DO_CHAO))
+set_material_texture(chao.materials[0], MATERIAL_MAP_ALBEDO, load_texture('images/chao.png'))
+
+# Uma bola para cada cor de meteoro, todas com o mesmo shader do clarão.
+shader = load_shader_from_memory(ffi.NULL, CLARAO)
+lugar_do_clarao = get_shader_location(shader, 'clarao')
+quanto = ffi.new('struct Vector2 *', [0, 0])
+bolas = []
+for cor in ['vermelho', 'verde', 'laranja', 'roxo']:
+    bola = load_model_from_mesh(gen_mesh_sphere(1, 8, 8))
+    set_material_texture(bola.materials[0], MATERIAL_MAP_ALBEDO, load_texture(f'images/meteoro-{cor}.png'))
+    bola.materials[0].shader = shader
+    bolas.append(bola)
+
+som_laser = load_sound('sounds/laser.wav')
+som_explosao = load_sound('sounds/explosao.wav')
+
 
 recorde = 0
 comecar()
 
+# 🔁 Enquanto estiver rodando
 while not window_should_close():
     dt = get_frame_time()
 

@@ -1,3 +1,4 @@
+# 📦 Bibliotecas
 from settings import *
 from level import Level
 import pinta
@@ -8,6 +9,7 @@ from debug import debug
 from ui import UI, Screen
 from overworld import Overworld
 
+# 🧩 Meus moldes
 class Game:
 	def __init__(self):
 		pygame.init()
@@ -179,6 +181,7 @@ class Game:
 
 			pygame.display.update()
 
+# ⚙️ Ao iniciar
 if __name__ == '__main__':
 	game = Game()
 	game.run()

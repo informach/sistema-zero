@@ -1,3 +1,4 @@
+# 📦 Bibliotecas
 from settings import *
 from support import check_connections
 from timer import Timer
@@ -6,6 +7,7 @@ from monster import Monster
 from game_data import TRAINER_DATA
 
 
+# 🧩 Meus moldes
 def requirements_met(character_data):
     # the trainers a character waits for (the arena guard waits for the three temple bosses)
     for trainer in character_data.get('requires', []):

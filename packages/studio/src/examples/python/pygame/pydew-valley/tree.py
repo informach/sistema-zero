@@ -1,3 +1,4 @@
+# 📦 Bibliotecas
 from random import randint, choice
 
 import pygame
@@ -6,6 +7,7 @@ from settings import LAYERS, APPLE_SPOTS, STUMP_DRAWINGS
 from things import Thing, Flash
 
 
+# 🧩 Meus moldes
 class Tree(Thing):
     """A tree with apples. Each blow of the axe drops an apple; the fifth one fells it."""
 

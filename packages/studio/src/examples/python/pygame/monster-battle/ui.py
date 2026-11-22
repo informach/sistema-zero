@@ -1,5 +1,7 @@
+# 📦 Bibliotecas
 from settings import *
 
+# 🧩 Meus moldes
 class UI:
     def __init__(self, monster, player_monsters, simple_surfs, icons, get_input):
         self.display_surface = pygame.display.get_surface()

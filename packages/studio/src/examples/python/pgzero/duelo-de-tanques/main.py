@@ -1,8 +1,10 @@
+# 📦 Bibliotecas
 import math
 import random
 import pygame
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Duelo de Tanques'
@@ -13,29 +15,10 @@ PEDACO = 20
 SUBIDA = 18
 COMPUTADOR = True
 PASSOS_DO_TIRO = 4
-
-terreno = []
-tanques = [Actor('tanque_azul'), Actor('tanque_laranja')]
-canos = [Actor('cano', anchor=('left', 'middle')), Actor('cano', anchor=('left', 'middle'))]
 NOMES = ['Azul', 'Laranja']
-angulos = [45, 45]
-forcas = [60, 60]
-vitorias = [0, 0]
-vez = 0
-estado = 'mirando'
-espera = 0
-vento = 0
-tiro_x = 0
-tiro_y = 0
-tiro_vx = 0
-tiro_vy = 0
-rastro = []
-explosao = 0
-# O que o computador aprendeu com o último tiro dele.
-ajuste = 10
-ultimo_tiro = None
 
 
+# 🧩 Meus moldes
 def criar_terreno():
     # O chão é um polígono: sobe e desce aos pedaços, com um lugar plano para cada tanque.
     global terreno
@@ -177,7 +160,42 @@ def passar_a_vez():
     espera = 60
     sortear_vento()
 
+# ⚙️ Ao iniciar
+terreno = []
+tanques = [Actor('tanque_azul'), Actor('tanque_laranja')]
+canos = [Actor('cano', anchor=('left', 'middle')), Actor('cano', anchor=('left', 'middle'))]
+angulos = [45, 45]
+forcas = [60, 60]
+vitorias = [0, 0]
+vez = 0
+estado = 'mirando'
+espera = 0
+vento = 0
+tiro_x = 0
+tiro_y = 0
+tiro_vx = 0
+tiro_vy = 0
+rastro = []
+explosao = 0
+# O que o computador aprendeu com o último tiro dele.
+ajuste = 10
+ultimo_tiro = None
 
+
+nova_rodada()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    if key != keys.SPACE:
+        return
+    if estado == 'fim':
+        nova_rodada()
+    elif estado == 'mirando' and not (vez == 1 and COMPUTADOR):
+        atirar()
+
+
+# 🔁 Enquanto estiver rodando
 def update():
     global espera, explosao
     apontar_canos()
@@ -197,15 +215,6 @@ def update():
             passar_a_vez()
     elif estado == 'fim':
         explosao = max(explosao - 1, 0)
-
-
-def on_key_down(key):
-    if key != keys.SPACE:
-        return
-    if estado == 'fim':
-        nova_rodada()
-    elif estado == 'mirando' and not (vez == 1 and COMPUTADOR):
-        atirar()
 
 
 def draw():
@@ -233,7 +242,4 @@ def draw():
         screen.draw.text(texto, topleft=canto, fontsize=28, color='white', owidth=1, ocolor='black')
     else:
         screen.draw.text(texto, topright=canto, fontsize=28, color='white', owidth=1, ocolor='black')
-
-
-nova_rodada()
 pgzrun.go()

@@ -1,3 +1,4 @@
+# 📦 Bibliotecas
 import pygame
 from pygame.math import Vector2 as vector
 from settings import *
@@ -8,6 +9,7 @@ from os.path import join
 from editor import Editor
 from level import Level
 
+# 🧩 Meus moldes
 class Main:
     def __init__(self):
         pygame.init()
@@ -140,6 +142,7 @@ class Transition:
                 self.direction = 1
             pygame.draw.circle(self.display_surface, 'black',self.center, self.radius, int(self.border_width))
 
+# ⚙️ Ao iniciar
 if __name__ == '__main__':
     main = Main()
     main.run()

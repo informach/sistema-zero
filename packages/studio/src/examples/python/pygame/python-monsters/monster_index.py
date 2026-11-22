@@ -1,7 +1,9 @@
+# 📦 Bibliotecas
 from settings import *
 from support import draw_bar
 from game_data import MONSTER_DATA, ATTACK_DATA
 
+# 🧩 Meus moldes
 class MonsterIndex:
     def __init__(self, monsters, fonts, monster_frames):
         self.display_surface = pygame.display.get_surface()

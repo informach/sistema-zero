@@ -1,8 +1,10 @@
+# 📦 Bibliotecas
 from settings import * 
 from sprites import AnimatedSprite
 from random import randint
 from timer import Timer
 
+# 🧩 Meus moldes
 class UI:
 	def __init__(self, font, frames):
 		self.display_surface = pygame.display.get_surface()

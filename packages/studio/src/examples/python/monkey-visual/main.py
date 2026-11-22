@@ -1,5 +1,6 @@
-"""Macaco e Morcego: o macaco lança a banana para cima e tenta acertar quem voa."""
+# Macaco e Morcego: o macaco lança a banana para cima e tenta acertar quem voa.
 
+# 📦 Bibliotecas
 import turtle
 import random
 import math
@@ -7,6 +8,7 @@ import time
 import sz_audio
 
 
+# 🎛️ Configurações
 LARGURA = 800
 ALTURA = 600
 INTERVALO = 16
@@ -35,15 +37,9 @@ COR_BANANA = "#ffe135"
 COR_MORCEGO = "#4c3a78"
 COR_HIPOPOTAMO = "#b48ef0"
 COR_CEU = "#9fd8cb"
-estado = {"aberto": False, "timer_pendente": False, "recorde": 0}
-teclas = {"esquerda": False, "direita": False}
-
-tela = turtle.Screen()
-cenario = turtle.Turtle(visible=False)
-pincel = turtle.Turtle(visible=False)
-painel = turtle.Turtle(visible=False)
 
 
+# 🧩 Meus moldes
 class Alvo:
     """Voa de um lado para o outro numa altura; atingido, cai e renasce."""
 
@@ -281,28 +277,24 @@ def atualizar(tempo):
     desenhar_cena()
 
 
-def agendar():
-    if estado["aberto"] and not estado["timer_pendente"]:
-        estado["timer_pendente"] = True
-        tela.ontimer(quadro, INTERVALO)
-
-
-def quadro():
-    estado["timer_pendente"] = False
-    if not estado["aberto"]:
-        return
-    agora = time.monotonic()
-    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
-    estado["ultimo_tempo"] = agora
-    if not estado["pausado"]:
-        atualizar(tempo)
-    desenhar_painel()
-    tela.update()
-    agendar()
-
-
 def segurar(nome, apertada):
     teclas[nome] = apertada
+
+
+def apertar_esquerda():
+    segurar("esquerda", True)
+
+
+def soltar_esquerda():
+    segurar("esquerda", False)
+
+
+def apertar_direita():
+    segurar("direita", True)
+
+
+def soltar_direita():
+    segurar("direita", False)
 
 
 def pausar():
@@ -336,7 +328,6 @@ def reiniciar():
     desenhar_painel()
     estado["ultimo_tempo"] = time.monotonic()
     tela.update()
-    # Não agende aqui: o reinício reutiliza a cadeia existente.
 
 
 def fechar():
@@ -347,33 +338,57 @@ def fechar():
     tela.bye()
 
 
-def iniciar():
-    tela.setup(LARGURA, ALTURA)
-    tela.title("Macaco e Morcego • Sistema Zero")
-    tela.bgcolor(COR_CEU)
-    tela.tracer(0)
-    for desenho in [cenario, pincel, painel]:
-        desenho.penup()
-        desenho.speed(0)
-    pincel.shape("circle")
-    desenhar_cenario()
-    tela.onkeypress(lambda: segurar("esquerda", True), "Left")
-    tela.onkeyrelease(lambda: segurar("esquerda", False), "Left")
-    tela.onkeypress(lambda: segurar("direita", True), "Right")
-    tela.onkeyrelease(lambda: segurar("direita", False), "Right")
-    tela.onkey(lancar, "space")
-    tela.onkey(pausar, "p")
-    tela.onkey(pausar, "P")
-    tela.onkey(reiniciar, "r")
-    tela.onkey(reiniciar, "R")
-    tela.onkey(fechar, "Escape")
-    tela.listen()
-    estado["aberto"] = True
-    reiniciar()
-    agendar()
-    if estado["aberto"]:
-        tela.mainloop()
+# ⚙️ Ao iniciar
+estado = {"aberto": True, "recorde": 0}
+teclas = {"esquerda": False, "direita": False}
+
+tela = turtle.Screen()
+cenario = turtle.Turtle(visible=False)
+pincel = turtle.Turtle(visible=False)
+painel = turtle.Turtle(visible=False)
+
+tela.setup(LARGURA, ALTURA)
+tela.title("Macaco e Morcego • Sistema Zero")
+tela.bgcolor(COR_CEU)
+tela.tracer(0)
+for desenho in [cenario, pincel, painel]:
+    desenho.penup()
+    desenho.speed(0)
+pincel.shape("circle")
+desenhar_cenario()
+reiniciar()
 
 
-if __name__ == "__main__":
-    iniciar()
+# ⚡ Quando acontecer
+tela.onkeypress(apertar_esquerda, "Left")
+tela.onkeyrelease(soltar_esquerda, "Left")
+tela.onkeypress(apertar_direita, "Right")
+tela.onkeyrelease(soltar_direita, "Right")
+tela.onkey(lancar, "space")
+tela.onkey(pausar, "p")
+tela.onkey(pausar, "P")
+tela.onkey(reiniciar, "r")
+tela.onkey(reiniciar, "R")
+tela.onkey(fechar, "Escape")
+tela.listen()
+
+
+# 🔁 Enquanto estiver rodando
+def a_cada_quadro():
+    if not estado["aberto"]:
+        return
+    agora = time.monotonic()
+    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
+    estado["ultimo_tempo"] = agora
+    if not estado["pausado"]:
+        atualizar(tempo)
+    desenhar_painel()
+    tela.update()
+    # Se a janela fechou durante esta volta, o laço para aqui.
+    if not estado["aberto"]:
+        return
+    tela.ontimer(a_cada_quadro, INTERVALO)
+
+
+a_cada_quadro()
+tela.mainloop()

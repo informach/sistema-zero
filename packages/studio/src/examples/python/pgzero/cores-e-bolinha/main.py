@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Cores e Bolinha'
@@ -10,29 +12,8 @@ VELOCIDADE_MAXIMA = 9
 CANAIS = ['vermelho', 'verde', 'azul']
 CORES_DOS_NOMES = ['#e53935', '#43a047', '#1e88e5']
 
-# A cor da bolinha: quanto de vermelho, de verde e de azul (de 0 a 255).
-cor = [0, 0, 0]
-alvo = (255, 0, 0)
-pontos = 0
-cliques = 0
-arco_iris = False
-giro = 0
-bola_x = 580
-bola_y = 300
-vel_x = 4
-vel_y = 3
 
-# Cada botão muda um canal: o de menos tira PASSO, o de mais põe PASSO.
-botoes = []
-for canal in range(3):
-    menos = Actor('menos_' + CANAIS[canal])
-    menos.pos = (230, 90 + canal * 110)
-    mais = Actor('mais_' + CANAIS[canal])
-    mais.pos = (300, 90 + canal * 110)
-    botoes.append((menos, canal, -PASSO))
-    botoes.append((mais, canal, PASSO))
-
-
+# 🧩 Meus moldes
 def novo_alvo():
     # Uma cor que dá para fazer com os botões e que ainda não é a da bolinha.
     global alvo
@@ -72,7 +53,34 @@ def conferir():
             vel_y = vel_y * 1.1
         novo_alvo()
 
+# ⚙️ Ao iniciar
+# A cor da bolinha: quanto de vermelho, de verde e de azul (de 0 a 255).
+cor = [0, 0, 0]
+alvo = (255, 0, 0)
+pontos = 0
+cliques = 0
+arco_iris = False
+giro = 0
+bola_x = 580
+bola_y = 300
+vel_x = 4
+vel_y = 3
 
+# Cada botão muda um canal: o de menos tira PASSO, o de mais põe PASSO.
+botoes = []
+for canal in range(3):
+    menos = Actor('menos_' + CANAIS[canal])
+    menos.pos = (230, 90 + canal * 110)
+    mais = Actor('mais_' + CANAIS[canal])
+    mais.pos = (300, 90 + canal * 110)
+    botoes.append((menos, canal, -PASSO))
+    botoes.append((mais, canal, PASSO))
+
+
+novo_alvo()
+
+
+# ⚡ Quando acontecer
 def on_mouse_down(pos):
     global cliques
     for botao, canal, mudanca in botoes:
@@ -89,6 +97,7 @@ def on_key_down(key):
         arco_iris = not arco_iris
 
 
+# 🔁 Enquanto estiver rodando
 def update():
     global bola_x, bola_y, vel_x, vel_y, giro
     giro = (giro + 1) % 255
@@ -123,7 +132,4 @@ def draw():
         screen.draw.text('Arco-íris! Espaço volta', midleft=(20, 490), fontsize=30, color='yellow')
     else:
         screen.draw.text('Espaço: modo arco-íris', midleft=(20, 490), fontsize=30, color='white')
-
-
-novo_alvo()
 pgzrun.go()

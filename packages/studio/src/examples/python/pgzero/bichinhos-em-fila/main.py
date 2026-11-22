@@ -1,5 +1,7 @@
+# 📦 Bibliotecas
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Bichinhos em Fila'
@@ -8,19 +10,8 @@ PARA_VENCER = 6
 QUEDA_MAXIMA = 150
 SUBIDA = 4
 
-entrada = Actor('entrada')
-entrada.pos = (90, 150)
-saida = Actor('saida')
-saida.midbottom = (740, 420)
-bichos = []
-direcoes = []
-estados = []
-quedas = []
-soltos = 0
-salvos = 0
-bloqueios = 0
 
-
+# 🧩 Meus moldes
 def chao_em(x, y):
     # A imagem da fase é o mapa: onde ela tem cor, tem chão; onde é transparente, é ar.
     if x < 0 or x >= WIDTH or y < 0 or y >= HEIGHT:
@@ -91,23 +82,6 @@ def mover(numero):
         sounds.salvo.play()
 
 
-def draw():
-    screen.blit('ceu', (0, 0))
-    screen.blit('fase', (0, 0))
-    entrada.draw()
-    saida.draw()
-    for bicho in bichos:
-        bicho.draw()
-    screen.draw.text('Salvos: ' + str(salvos) + ' (meta: ' + str(PARA_VENCER) + ')', topleft=(12, 8), fontsize=30, color='white', owidth=1.5, ocolor='black')
-    screen.draw.text('Bloqueios: ' + str(3 - bloqueios), topright=(WIDTH - 12, 8), fontsize=30, color='white', owidth=1.5, ocolor='black')
-    if acabou():
-        if salvos >= PARA_VENCER:
-            mensagem = 'Você salvou ' + str(salvos) + ' bichinhos! Clique para jogar de novo'
-        else:
-            mensagem = 'Só ' + str(salvos) + ' chegaram. Clique para tentar de novo'
-        screen.draw.text(mensagem, center=(WIDTH / 2, 560), fontsize=36, color='yellow', owidth=2, ocolor='black')
-
-
 def acabou():
     if soltos < TOTAL:
         return False
@@ -116,20 +90,21 @@ def acabou():
             return False
     return True
 
+# ⚙️ Ao iniciar
+entrada = Actor('entrada')
+entrada.pos = (90, 150)
+saida = Actor('saida')
+saida.midbottom = (740, 420)
+bichos = []
+direcoes = []
+estados = []
+quedas = []
+soltos = 0
+salvos = 0
+bloqueios = 0
 
-def update():
-    for numero in range(len(bichos)):
-        mover(numero)
-        bicho = bichos[numero]
-        lado = 'd' if direcoes[numero] == 1 else 'e'
-        if estados[numero] == 'bloqueando':
-            bicho.image = 'bicho_bloqueio'
-        elif estados[numero] == 'caindo':
-            bicho.image = 'bicho_' + lado + '0'
-        else:
-            bicho.image = 'bicho_' + lado + str(int(bicho.x / 6) % 2)
 
-
+# ⚡ Quando acontecer
 def on_mouse_down(pos):
     global bloqueios, soltos, salvos
     if acabou():
@@ -156,6 +131,37 @@ def on_mouse_down(pos):
             bloqueios = bloqueios - 1
             sounds.bloqueio.play()
             return
+
+
+# 🔁 Enquanto estiver rodando
+def draw():
+    screen.blit('ceu', (0, 0))
+    screen.blit('fase', (0, 0))
+    entrada.draw()
+    saida.draw()
+    for bicho in bichos:
+        bicho.draw()
+    screen.draw.text('Salvos: ' + str(salvos) + ' (meta: ' + str(PARA_VENCER) + ')', topleft=(12, 8), fontsize=30, color='white', owidth=1.5, ocolor='black')
+    screen.draw.text('Bloqueios: ' + str(3 - bloqueios), topright=(WIDTH - 12, 8), fontsize=30, color='white', owidth=1.5, ocolor='black')
+    if acabou():
+        if salvos >= PARA_VENCER:
+            mensagem = 'Você salvou ' + str(salvos) + ' bichinhos! Clique para jogar de novo'
+        else:
+            mensagem = 'Só ' + str(salvos) + ' chegaram. Clique para tentar de novo'
+        screen.draw.text(mensagem, center=(WIDTH / 2, 560), fontsize=36, color='yellow', owidth=2, ocolor='black')
+
+
+def update():
+    for numero in range(len(bichos)):
+        mover(numero)
+        bicho = bichos[numero]
+        lado = 'd' if direcoes[numero] == 1 else 'e'
+        if estados[numero] == 'bloqueando':
+            bicho.image = 'bicho_bloqueio'
+        elif estados[numero] == 'caindo':
+            bicho.image = 'bicho_' + lado + '0'
+        else:
+            bicho.image = 'bicho_' + lado + str(int(bicho.x / 6) % 2)
 
 
 clock.schedule_interval(soltar_bicho, 1.5)

@@ -1,7 +1,9 @@
+# 📦 Bibliotecas
 import pygame
 from pygame.math import Vector2 as vector
 from sys import exit
 
+# 🎛️ Configurações
 WINDOW_WIDTH, WINDOW_HEIGHT = 1280, 720
 TILE_SIZE = 64
 ANIMATION_SPEED = 6
@@ -46,6 +48,17 @@ BATTLE_LAYERS = {
     'overlay': 4
 }
 
+# The names shown on screen for the stats (the game data keeps the original keys).
+STAT_NAMES = {
+    'health': 'vida',
+    'energy': 'energia',
+    'attack': 'ataque',
+    'defense': 'defesa',
+    'speed': 'velocidade',
+    'recovery': 'recuperação'
+}
+
+# ⚙️ Ao iniciar
 BATTLE_CHOICES = {
     'full': {
         'fight': {'pos': vector(30, -60), 'icon': 'sword'},
@@ -57,14 +70,4 @@ BATTLE_CHOICES = {
         'fight': {'pos': vector(30, -40), 'icon': 'sword'},
         'defend': {'pos': vector(40, 0), 'icon': 'shield'},
         'switch': {'pos': vector(30, 40), 'icon': 'arrows'}}
-}
-
-# The names shown on screen for the stats (the game data keeps the original keys).
-STAT_NAMES = {
-    'health': 'vida',
-    'energy': 'energia',
-    'attack': 'ataque',
-    'defense': 'defesa',
-    'speed': 'velocidade',
-    'recovery': 'recuperação'
 }

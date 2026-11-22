@@ -3,7 +3,7 @@ export const PYGAME_GAME_BLOCKS: Readonly<
   Record<string, { sourceSha256: string; blockIds: readonly string[] }>
 > = {
   pong: {
-    sourceSha256: '8ea5dc0638a6eb4d5abde7e890757f9a018176899ea8f38693df73e32f1795f9',
+    sourceSha256: '67c027bbc5dcd98d02588dfe3deff3cf20a3cb1beb1f0bbe6161c30120b711bc',
     blockIds: [
       'sz_py_alias',
       'sz_py_and',
@@ -72,7 +72,7 @@ export const PYGAME_GAME_BLOCKS: Readonly<
     ],
   },
   'space-shooter': {
-    sourceSha256: '3eeeafaa26a01ce4eeddda79cd97f611a341c8ca57d3b8fceb742b19949b1cb3',
+    sourceSha256: 'dd1bacc8907f526f9ad20453a7377f8c51e4635fb69ec2ba5501ca4e9dd9172c',
     blockIds: [
       'sz_py_alias',
       'sz_py_and',
@@ -156,7 +156,7 @@ export const PYGAME_GAME_BLOCKS: Readonly<
     ],
   },
   platformer: {
-    sourceSha256: '6c32d48bac90678ba97e9fef1a6f0a5432b76a080db9c22eea8d094dfe0fcb0c',
+    sourceSha256: '736d9a7d3d8168a092057485e5877c4e577ab9d6b52484f186a9e7d3b2032b6f',
     blockIds: [
       'sz_py_alias',
       'sz_py_and',
@@ -248,7 +248,7 @@ export const PYGAME_GAME_BLOCKS: Readonly<
     ],
   },
   'monster-battle': {
-    sourceSha256: 'bebd86cb3eccaa7fbc308d79e066e30537abaf3ee2c6d4c273193b99ff744058',
+    sourceSha256: '533a4e1d630e504d5adf321742475132aa58be5d23b1fa055394efbdb4e9684e',
     blockIds: [
       'sz_py_alias',
       'sz_py_and',
@@ -341,7 +341,7 @@ export const PYGAME_GAME_BLOCKS: Readonly<
     ],
   },
   'pirate-maker': {
-    sourceSha256: '439961fed95256017fc425995fb627fa0dd8bb69c3685547ac438f51b2c18551',
+    sourceSha256: '0050e3f4b16131fc1a86120da07f95e47ce4b04dfeb488306ce063ecef2321bc',
     blockIds: [
       'sz_py_alias',
       'sz_py_and',
@@ -459,7 +459,7 @@ export const PYGAME_GAME_BLOCKS: Readonly<
     ],
   },
   'vampire-survivor': {
-    sourceSha256: '14b930fd5f15dd4c885d79ccc52abd215f646d3a5133d94f9c0bc4c80b9569d1',
+    sourceSha256: '27cc3ea8b4646a4d2f0ab7b6b4243fe4c14c3233ca7d2db5bc8a62f3c8840c3c',
     blockIds: [
       'sz_py_abs',
       'sz_py_alias',
@@ -568,7 +568,7 @@ export const PYGAME_GAME_BLOCKS: Readonly<
     ],
   },
   'pydew-valley': {
-    sourceSha256: '84377cb8a3cbd56e1faa22999d30269b1e116eea0ceac4939bbe456da6bea93c',
+    sourceSha256: 'bedf23f81d59784c6e09322a2fef68400cbd76e981b42bb3bce92c154c28d6bb',
     blockIds: [
       'sz_py_alias',
       'sz_py_and',
@@ -669,7 +669,7 @@ export const PYGAME_GAME_BLOCKS: Readonly<
     ],
   },
   'python-monsters': {
-    sourceSha256: '582c62258cfbd084b69b14444809cd637d3a9be6619022da32b9c58dc71c39f4',
+    sourceSha256: '4ccfccaed6cb0ab954f1e269e8066371fc3a6df76f7a63e87c27c36a0c8d4013',
     blockIds: [
       'sz_py_abs',
       'sz_py_alias',
@@ -785,7 +785,7 @@ export const PYGAME_GAME_BLOCKS: Readonly<
     ],
   },
   'super-pirate-world': {
-    sourceSha256: '5ebeed6be14774067f9d8d6e9c29c1583d4456193b9e6195a0c2d6dc39d8e890',
+    sourceSha256: '2a745e3c9b330708d3c7a4cde7d613b9de36cca877cc837c3260d38fe3249527',
     blockIds: [
       'sz_py_abs',
       'sz_py_alias',

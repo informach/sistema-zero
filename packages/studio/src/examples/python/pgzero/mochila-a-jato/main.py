@@ -1,7 +1,9 @@
+# 📦 Bibliotecas
 import random
 import time
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Mochila a Jato'
@@ -9,28 +11,8 @@ GRAVIDADE = 0.25
 EMPURRAO = 0.5
 BASE_DO_FOGUETE = 600
 
-chao = Rect((0, 550), (WIDTH, 50))
-# Entre uma plataforma e outra sobra bastante espaço para o astronauta passar voando.
-plataformas = [chao, Rect((330, 380), (140, 16)), Rect((60, 230), (160, 16)), Rect((580, 230), (160, 16))]
-astronauta = Actor('astro_d')
-chama = Actor('chama')
-partes = [Actor('foguete_base'), Actor('foguete_meio'), Actor('foguete_ponta')]
-combustivel = Actor('combustivel')
-meteoros = []
-lados = []
-laser = Actor('laser')
-velocidade_y = 0
-olhando = 'd'
-# A próxima coisa a buscar: 1 e 2 são partes do foguete, 3 é o combustível.
-proxima = 1
-carregando = False
-tanque = 0
-decolando = False
-vidas = 3
-comeco = time.time()
-segundos = 0
 
-
+# 🧩 Meus moldes
 def no_chao_de(ator):
     # A plataforma onde o ator está pisando, ou None se ele está no ar.
     for plataforma in plataformas:
@@ -150,7 +132,47 @@ def perder_vida():
     astronauta.midbottom = (300, chao.top)
     velocidade_y = 0
 
+# ⚙️ Ao iniciar
+chao = Rect((0, 550), (WIDTH, 50))
+# Entre uma plataforma e outra sobra bastante espaço para o astronauta passar voando.
+plataformas = [chao, Rect((330, 380), (140, 16)), Rect((60, 230), (160, 16)), Rect((580, 230), (160, 16))]
+astronauta = Actor('astro_d')
+chama = Actor('chama')
+partes = [Actor('foguete_base'), Actor('foguete_meio'), Actor('foguete_ponta')]
+combustivel = Actor('combustivel')
+meteoros = []
+lados = []
+laser = Actor('laser')
+velocidade_y = 0
+olhando = 'd'
+# A próxima coisa a buscar: 1 e 2 são partes do foguete, 3 é o combustível.
+proxima = 1
+carregando = False
+tanque = 0
+decolando = False
+vidas = 3
+comeco = time.time()
+segundos = 0
 
+
+montar()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    global vidas
+    if key != keys.SPACE:
+        return
+    if vidas == 0 or (decolando and partes[2].bottom < 0):
+        vidas = 3
+        montar()
+    elif laser.x <= -100:
+        laser.direcao = 1 if olhando == 'd' else -1
+        laser.pos = astronauta.pos
+        sounds.laser.play()
+
+
+# 🔁 Enquanto estiver rodando
 def draw():
     screen.blit('fundo', (0, 0))
     for plataforma in plataformas[1:]:
@@ -208,21 +230,5 @@ def update():
     if tanque == 3 and astronauta.colliderect(partes[0]):
         decolando = True
         sounds.decola.play()
-
-
-def on_key_down(key):
-    global vidas
-    if key != keys.SPACE:
-        return
-    if vidas == 0 or (decolando and partes[2].bottom < 0):
-        vidas = 3
-        montar()
-    elif laser.x <= -100:
-        laser.direcao = 1 if olhando == 'd' else -1
-        laser.pos = astronauta.pos
-        sounds.laser.play()
-
-
-montar()
 clock.schedule_interval(novo_meteoro, 2.5)
 pgzrun.go()

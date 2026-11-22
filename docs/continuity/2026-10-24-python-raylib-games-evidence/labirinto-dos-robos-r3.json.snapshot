@@ -1,0 +1,509 @@
+{
+  "kind": "python-visual-authoring",
+  "analyzer": {
+    "pythonVersion": "3.14.2",
+    "pyodideVersion": "314.0.7",
+    "distributionSha256": "1b9e2813e174008c0572c2233cd8f68f0f45d72f99902d25bbd769c23892291b",
+    "analyzerSha256": "030eee7115db46c8c19831372a0948f71bbda0a8ad751235d4da889ed68bdf9b"
+  },
+  "authoringRuntime": {
+    "profileId": "python-probe",
+    "releaseId": "probe-1",
+    "manifestSha256": "8e04b8116485b851bc2d280c4273d13e1524a3ecc1c2e7610e28de03fcb106c6"
+  },
+  "authoringRuntimeFeatures": [
+    "turtle-compound-shapes",
+    "project-missions-v1",
+    "pinta-map-world-v1",
+    "pinta-scene-physics-v1",
+    "molda-scene-assets-v1",
+    "python-background-focus-v1",
+    "molda-scene-regions-v1"
+  ],
+  "authoringLoader": "loadPythonAuthoring",
+  "extension": "python-raylib-3d",
+  "codecOrderSha256": "d1a32b4dbbb4f2ac01c0d5467fa69d467ec592c35fd91e57aaa164307638b7a5",
+  "sourceSha256": "ad943086f255b64cb16144b1e8ff0a5a12d8546efcbb5ef6e0b3d599163740a2",
+  "generatedSha256": "6f8d5afae4158c087799b7fdd6cdbb307dff5b16f272081bb0dfca55fb439a77",
+  "opaqueCount": 0,
+  "blockCount": 1177,
+  "referencedBlocks": [
+    {
+      "id": "sz_py_alias",
+      "count": 2
+    },
+    {
+      "id": "sz_py_and",
+      "count": 3
+    },
+    {
+      "id": "sz_py_arithmetic",
+      "count": 90
+    },
+    {
+      "id": "sz_py_assign",
+      "count": 89
+    },
+    {
+      "id": "sz_py_attribute",
+      "count": 25
+    },
+    {
+      "id": "sz_py_boolean",
+      "count": 6
+    },
+    {
+      "id": "sz_py_class",
+      "count": 1
+    },
+    {
+      "id": "sz_py_compare",
+      "count": 18
+    },
+    {
+      "id": "sz_py_def",
+      "count": 10
+    },
+    {
+      "id": "sz_py_dictionary",
+      "count": 1
+    },
+    {
+      "id": "sz_py_float",
+      "count": 28
+    },
+    {
+      "id": "sz_py_for",
+      "count": 12
+    },
+    {
+      "id": "sz_py_format_value",
+      "count": 2
+    },
+    {
+      "id": "sz_py_global",
+      "count": 3
+    },
+    {
+      "id": "sz_py_if",
+      "count": 23
+    },
+    {
+      "id": "sz_py_if_value",
+      "count": 2
+    },
+    {
+      "id": "sz_py_import_all",
+      "count": 1
+    },
+    {
+      "id": "sz_py_import_from",
+      "count": 1
+    },
+    {
+      "id": "sz_py_int",
+      "count": 9
+    },
+    {
+      "id": "sz_py_integer",
+      "count": 138
+    },
+    {
+      "id": "sz_py_interpolation",
+      "count": 2
+    },
+    {
+      "id": "sz_py_lambda",
+      "count": 1
+    },
+    {
+      "id": "sz_py_len",
+      "count": 8
+    },
+    {
+      "id": "sz_py_list",
+      "count": 6
+    },
+    {
+      "id": "sz_py_list_append",
+      "count": 2
+    },
+    {
+      "id": "sz_py_list_comprehension",
+      "count": 2
+    },
+    {
+      "id": "sz_py_math_cos",
+      "count": 6
+    },
+    {
+      "id": "sz_py_math_sin",
+      "count": 5
+    },
+    {
+      "id": "sz_py_max",
+      "count": 5
+    },
+    {
+      "id": "sz_py_method",
+      "count": 2
+    },
+    {
+      "id": "sz_py_method_value",
+      "count": 5
+    },
+    {
+      "id": "sz_py_min",
+      "count": 1
+    },
+    {
+      "id": "sz_py_negative",
+      "count": 6
+    },
+    {
+      "id": "sz_py_none",
+      "count": 1
+    },
+    {
+      "id": "sz_py_not",
+      "count": 4
+    },
+    {
+      "id": "sz_py_or",
+      "count": 5
+    },
+    {
+      "id": "sz_py_parameter",
+      "count": 1
+    },
+    {
+      "id": "sz_py_parameters",
+      "count": 1
+    },
+    {
+      "id": "sz_py_range",
+      "count": 6
+    },
+    {
+      "id": "sz_py_return",
+      "count": 5
+    },
+    {
+      "id": "sz_py_rl3d_begin_drawing",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_begin_mode_3d",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_BoundingBox",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_Camera3D",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_clear_background",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_close_audio_device",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_close_window",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_color",
+      "count": 21
+    },
+    {
+      "id": "sz_py_rl3d_disable_cursor",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_draw_billboard_rec",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_draw_cylinder_ex",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_draw_line",
+      "count": 2
+    },
+    {
+      "id": "sz_py_rl3d_draw_model",
+      "count": 2
+    },
+    {
+      "id": "sz_py_rl3d_draw_model_ex",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_draw_rectangle",
+      "count": 5
+    },
+    {
+      "id": "sz_py_rl3d_draw_text",
+      "count": 7
+    },
+    {
+      "id": "sz_py_rl3d_draw_texture_pro",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_enable_cursor",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_end_drawing",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_end_mode_3d",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_fade",
+      "count": 4
+    },
+    {
+      "id": "sz_py_rl3d_field",
+      "count": 44
+    },
+    {
+      "id": "sz_py_rl3d_gen_mesh_cube",
+      "count": 2
+    },
+    {
+      "id": "sz_py_rl3d_gen_mesh_sphere",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_get_frame_time",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_get_mouse_delta",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_get_ray_collision_box",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_get_ray_collision_sphere",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_get_screen_to_world_ray",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_image_flip_horizontal",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_init_audio_device",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_init_window",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_is_key_down",
+      "count": 8
+    },
+    {
+      "id": "sz_py_rl3d_is_key_pressed",
+      "count": 2
+    },
+    {
+      "id": "sz_py_rl3d_is_mouse_button_pressed",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_key",
+      "count": 10
+    },
+    {
+      "id": "sz_py_rl3d_load_image",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_load_model_from_mesh",
+      "count": 3
+    },
+    {
+      "id": "sz_py_rl3d_load_sound",
+      "count": 3
+    },
+    {
+      "id": "sz_py_rl3d_load_texture",
+      "count": 4
+    },
+    {
+      "id": "sz_py_rl3d_load_texture_from_image",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_material_map",
+      "count": 3
+    },
+    {
+      "id": "sz_py_rl3d_mouse_button",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_play_sound",
+      "count": 3
+    },
+    {
+      "id": "sz_py_rl3d_projection",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_Rectangle",
+      "count": 3
+    },
+    {
+      "id": "sz_py_rl3d_rl_disable_backface_culling",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_rl_disable_depth_mask",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_rl_enable_backface_culling",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_rl_enable_depth_mask",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_set_material_texture",
+      "count": 3
+    },
+    {
+      "id": "sz_py_rl3d_set_target_fps",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_unload_image",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_Vector2",
+      "count": 3
+    },
+    {
+      "id": "sz_py_rl3d_Vector3",
+      "count": 17
+    },
+    {
+      "id": "sz_py_rl3d_vector3_add",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_vector3_distance",
+      "count": 2
+    },
+    {
+      "id": "sz_py_rl3d_vector3_normalize",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_vector3_scale",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_vector3_subtract",
+      "count": 1
+    },
+    {
+      "id": "sz_py_rl3d_window_loop",
+      "count": 1
+    },
+    {
+      "id": "sz_py_run",
+      "count": 7
+    },
+    {
+      "id": "sz_py_run_value",
+      "count": 4
+    },
+    {
+      "id": "sz_py_sorted",
+      "count": 1
+    },
+    {
+      "id": "sz_py_subscript",
+      "count": 17
+    },
+    {
+      "id": "sz_py_text",
+      "count": 44
+    },
+    {
+      "id": "sz_py_update",
+      "count": 6
+    },
+    {
+      "id": "sz_py_variable",
+      "count": 369
+    }
+  ],
+  "approvedBlockIdsSha256": "e023451f9a56d6b277d70a297072125e089c5344f1b1d8774d48540668a8f797",
+  "fullWorkspaceRoundtrip": true,
+  "initialWorkspaceSha256": "32f84f9ebe579bb400f8afc14809cccf448682739791706c4473192e58d023ac",
+  "editedWorkspaceSha256": "e56b37b7bb6d1346734dcf64418b81a359e6b7855608f9b16a7a7e6c2fc729c0",
+  "canonicalRenderReanalysis": true,
+  "runtimeCapabilitiesQualified": false,
+  "browserInteractionQualified": false,
+  "edits": [
+    {
+      "label": "altura da parede",
+      "path": {
+        "body": 5,
+        "inputs": [
+          {
+            "name": "VALUE",
+            "index": 0
+          }
+        ]
+      },
+      "codecId": "sz_py_integer",
+      "field": "NUMBER",
+      "before": "3",
+      "after": "4",
+      "beforeSourceSha256": "902809650526343d2082b707527b2ecd6bb4b55a821750dff91f92194fa76645",
+      "afterSourceSha256": "7f28042a007ff11646be0174e121291a61346942d359440c4c654afd17f6648d"
+    },
+    {
+      "label": "velocidade",
+      "path": {
+        "body": 7,
+        "inputs": [
+          {
+            "name": "VALUE",
+            "index": 0
+          }
+        ]
+      },
+      "codecId": "sz_py_integer",
+      "field": "NUMBER",
+      "before": "4",
+      "after": "5",
+      "beforeSourceSha256": "7f28042a007ff11646be0174e121291a61346942d359440c4c654afd17f6648d",
+      "afterSourceSha256": "6f8d5afae4158c087799b7fdd6cdbb307dff5b16f272081bb0dfca55fb439a77"
+    }
+  ]
+}

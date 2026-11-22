@@ -1,5 +1,7 @@
+# 📦 Bibliotecas
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 460
 TITLE = 'Piano Maluco'
@@ -15,40 +17,12 @@ INICIO_X = 100
 FRASE_A = ['C4', 'C4', 'G4', 'G4', 'A4', 'A4', 'G4', '']
 FRASE_B = ['F4', 'F4', 'E4', 'E4', 'D4', 'D4', 'C4', '']
 FRASE_C = ['G4', 'G4', 'F4', 'F4', 'E4', 'E4', 'D4', '']
-MUSICA = FRASE_A + FRASE_B + FRASE_C + FRASE_C + FRASE_A + FRASE_B
 BRANCAS = ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5', 'D5', 'E5']
 # Estas brancas têm uma tecla preta (o sustenido) logo à direita.
 COM_SUSTENIDO = ['C4', 'D4', 'F4', 'G4', 'A4', 'C5', 'D5']
 
-# O lugar de cada tecla e o som de cada nota, preparados uma vez só.
-teclas_brancas = {}
-teclas_pretas = {}
-sons = {}
-for numero in range(len(BRANCAS)):
-    nota = BRANCAS[numero]
-    teclas_brancas[nota] = Rect((INICIO_X + numero * 60, TOPO_DO_PIANO), (60, 150))
-    if nota in COM_SUSTENIDO:
-        sustenido = nota[0] + '#' + nota[1]
-        teclas_pretas[sustenido] = Rect((INICIO_X + numero * 60 + 42, TOPO_DO_PIANO), (36, 95))
-for nota in list(teclas_brancas) + list(teclas_pretas):
-    sons[nota] = tone.create(nota, 0.4)
 
-botao_ouvir = Actor('botao_ouvir')
-botao_ouvir.pos = (160, 45)
-botao_jogar = Actor('botao_jogar')
-botao_jogar.pos = (640, 45)
-
-estado = 'menu'
-posicao = -6
-relogio = 0
-pontos = 0
-erros = 0
-perdidas = 0
-acertou = False
-tecla_acesa = ''
-brilho = 0
-
-
+# 🧩 Meus moldes
 def tocar(nota):
     global tecla_acesa, brilho
     sons[nota].play()
@@ -89,17 +63,6 @@ def proxima_batida():
         tocar(nota_atual())
 
 
-def update(dt):
-    global relogio, brilho
-    brilho = max(brilho - dt, 0)
-    if estado not in ('ouvir', 'jogar'):
-        return
-    relogio = relogio + dt
-    if relogio >= TEMPO_DA_BATIDA:
-        relogio = relogio - TEMPO_DA_BATIDA
-        proxima_batida()
-
-
 def tecla_em(pos):
     # As pretas ficam por cima das brancas: elas são procuradas primeiro.
     for nota in teclas_pretas:
@@ -109,27 +72,6 @@ def tecla_em(pos):
         if teclas_brancas[nota].collidepoint(pos):
             return nota
     return ''
-
-
-def on_mouse_down(pos):
-    global pontos, erros, acertou
-    if botao_ouvir.collidepoint(pos):
-        comecar('ouvir')
-        return
-    if botao_jogar.collidepoint(pos):
-        comecar('jogar')
-        return
-    nota = tecla_em(pos)
-    if nota == '':
-        return
-    tocar(nota)
-    # Na pausa e na contagem, a tecla só toca: não é acerto nem erro.
-    if estado == 'jogar' and nota_atual() != '':
-        if nota == nota_atual() and not acertou:
-            pontos = pontos + 1
-            acertou = True
-        else:
-            erros = erros + 1
 
 
 def centro_da_tecla(nota):
@@ -158,6 +100,71 @@ def desenhar_notas():
             y = LINHA - adiante * DISTANCIA + descida
             cor = 'limegreen' if adiante == 0 else 'royalblue'
             screen.draw.filled_circle((centro_da_tecla(MUSICA[lugar]), y), 11, cor)
+
+# ⚙️ Ao iniciar
+MUSICA = FRASE_A + FRASE_B + FRASE_C + FRASE_C + FRASE_A + FRASE_B
+
+# O lugar de cada tecla e o som de cada nota, preparados uma vez só.
+teclas_brancas = {}
+teclas_pretas = {}
+sons = {}
+for numero in range(len(BRANCAS)):
+    nota = BRANCAS[numero]
+    teclas_brancas[nota] = Rect((INICIO_X + numero * 60, TOPO_DO_PIANO), (60, 150))
+    if nota in COM_SUSTENIDO:
+        sustenido = nota[0] + '#' + nota[1]
+        teclas_pretas[sustenido] = Rect((INICIO_X + numero * 60 + 42, TOPO_DO_PIANO), (36, 95))
+for nota in list(teclas_brancas) + list(teclas_pretas):
+    sons[nota] = tone.create(nota, 0.4)
+
+botao_ouvir = Actor('botao_ouvir')
+botao_ouvir.pos = (160, 45)
+botao_jogar = Actor('botao_jogar')
+botao_jogar.pos = (640, 45)
+
+estado = 'menu'
+posicao = -6
+relogio = 0
+pontos = 0
+erros = 0
+perdidas = 0
+acertou = False
+tecla_acesa = ''
+brilho = 0
+
+
+# ⚡ Quando acontecer
+def on_mouse_down(pos):
+    global pontos, erros, acertou
+    if botao_ouvir.collidepoint(pos):
+        comecar('ouvir')
+        return
+    if botao_jogar.collidepoint(pos):
+        comecar('jogar')
+        return
+    nota = tecla_em(pos)
+    if nota == '':
+        return
+    tocar(nota)
+    # Na pausa e na contagem, a tecla só toca: não é acerto nem erro.
+    if estado == 'jogar' and nota_atual() != '':
+        if nota == nota_atual() and not acertou:
+            pontos = pontos + 1
+            acertou = True
+        else:
+            erros = erros + 1
+
+
+# 🔁 Enquanto estiver rodando
+def update(dt):
+    global relogio, brilho
+    brilho = max(brilho - dt, 0)
+    if estado not in ('ouvir', 'jogar'):
+        return
+    relogio = relogio + dt
+    if relogio >= TEMPO_DA_BATIDA:
+        relogio = relogio - TEMPO_DA_BATIDA
+        proxima_batida()
 
 
 def draw():

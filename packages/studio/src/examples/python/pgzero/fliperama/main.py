@@ -1,7 +1,9 @@
+# 📦 Bibliotecas
 import math
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 600
 HEIGHT = 800
 TITLE = 'Fliperama'
@@ -13,20 +15,8 @@ PASSOS = 3
 TAMANHO_DO_FLIPER = 80
 GROSSURA_DO_FLIPER = 8
 
-# O mapa é uma imagem que não aparece: preto é por onde a bola anda, branco é parede e
-# vermelho é um batedor, que joga a bola longe e dá pontos.
-flipper_esquerdo = Actor('flipper_esquerdo', (200, 690), anchor=(12, 12))
-flipper_direito = Actor('flipper_direito', (400, 690), anchor=(86, 12))
-bola = Actor('bola')
-bola.vx = 0
-bola.vy = 0
-pontos = 0
-bolas = 3
-# 'esperando' (a bola na canaleta), 'jogando' ou 'fim'
-estado = 'esperando'
-batedor_aceso = 0
 
-
+# 🧩 Meus moldes
 def nova_bola():
     global estado
     bola.pos = (558, 748)
@@ -142,7 +132,39 @@ def limitar_velocidade():
         bola.vx = bola.vx / velocidade * VELOCIDADE_MAXIMA
         bola.vy = bola.vy / velocidade * VELOCIDADE_MAXIMA
 
+# ⚙️ Ao iniciar
+# O mapa é uma imagem que não aparece: preto é por onde a bola anda, branco é parede e
+# vermelho é um batedor, que joga a bola longe e dá pontos.
+flipper_esquerdo = Actor('flipper_esquerdo', (200, 690), anchor=(12, 12))
+flipper_direito = Actor('flipper_direito', (400, 690), anchor=(86, 12))
+bola = Actor('bola')
+bola.vx = 0
+bola.vy = 0
+pontos = 0
+bolas = 3
+# 'esperando' (a bola na canaleta), 'jogando' ou 'fim'
+estado = 'esperando'
+batedor_aceso = 0
 
+
+novo_jogo()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    global estado
+    if key != keys.SPACE:
+        return
+    if estado == 'fim':
+        novo_jogo()
+    elif estado == 'esperando':
+        # A mola: cada lançamento sai com uma força um pouco diferente.
+        bola.vy = -random.randint(175, 190) / 10
+        estado = 'jogando'
+        sounds.lancar.play()
+
+
+# 🔁 Enquanto estiver rodando
 def update():
     global estado, bolas, batedor_aceso
     if estado == 'fim':
@@ -188,20 +210,4 @@ def draw():
     if estado == 'fim':
         screen.draw.text('Fim de jogo!', center=(300, 380), fontsize=64, color='orange', owidth=1, ocolor='black')
         screen.draw.text('Espaço joga de novo', center=(300, 440), fontsize=36, color='white', owidth=1, ocolor='black')
-
-
-def on_key_down(key):
-    global estado
-    if key != keys.SPACE:
-        return
-    if estado == 'fim':
-        novo_jogo()
-    elif estado == 'esperando':
-        # A mola: cada lançamento sai com uma força um pouco diferente.
-        bola.vy = -random.randint(175, 190) / 10
-        estado = 'jogando'
-        sounds.lancar.play()
-
-
-novo_jogo()
 pgzrun.go()

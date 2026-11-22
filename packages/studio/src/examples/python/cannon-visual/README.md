@@ -29,6 +29,13 @@ CPython/Tk, esses arquivos e o módulo `sz_audio` exportado, execute
 
 ## Explorar e modificar
 
+O código segue as áreas do projeto, na ordem em que o Python o lê:
+📦 Bibliotecas, 🎛️ Configurações (as constantes em MAIÚSCULAS: números, textos e
+listas que ficam iguais enquanto o jogo roda), 🧩 Meus moldes (as funções e as
+classes do jogo), ⚙️ Ao iniciar (a janela e as tartarugas), ⚡ Quando acontecer
+(as teclas) e 🔁 Enquanto estiver rodando (o laço `a_cada_quadro`). O comentário
+no começo de cada área só ajuda a ler, e o Estúdio o escreve sozinho.
+
 As constantes no topo são o painel de controle: `ANGULO_INICIAL`,
 `FORCA_INICIAL`, `PASSO_ANGULO`, `ANGULO_MIN`, `ANGULO_MAX`, `FORCA_MIN` e
 `FORCA_MAX` mudam a mira; `GRAVIDADE` muda a curva da bala; `RAIO_ACERTO` diz
@@ -39,21 +46,23 @@ A classe `Projetil` usa `math.cos` e `math.sin` para transformar ângulo e forç
 em velocidade horizontal (`vx`) e vertical (`vy`); a cada quadro, `andar` tira
 um pouco de `vy` por causa da gravidade. A classe `Alvo` anda para a esquerda e
 sabe dizer se a bala está `perto`. Veja também `clicar`, que usa `math.atan2`
-para descobrir o ângulo até o ponto clicado. As setas usam funções rápidas
-(`lambda: mirar(PASSO_ANGULO, 0)`) para passar quanto mudar a uma única função.
+para descobrir o ângulo até o ponto clicado. Cada seta chama uma função com nome
+(`subir_a_mira` chama `mirar(PASSO_ANGULO, 0)`), e todas moram em
+⚡ Quando acontecer.
 
 Quatro tartarugas persistentes desenham a cena: `cenario` pinta o céu e a base
 uma vez, `mira` redesenha o cano e a mira só quando eles mudam, `pincel` carimba
-os alvos e a bala a cada quadro e `painel` escreve o placar. Uma única cadeia de
-`ontimer(..., 16)` mede o tempo com `time.monotonic()`; a pausa congela a
-partida e reiniciar não adiciona outra cadeia. Um quadro atrasado avança no
-máximo três quadros.
+os alvos e a bala a cada quadro e `painel` escreve o placar. O laço do jogo,
+`a_cada_quadro` (em 🔁 Enquanto estiver rodando), mede o tempo com
+`time.monotonic()`; a pausa congela a partida e reiniciar não começa outro laço.
+Um quadro atrasado avança no máximo três quadros.
 
 ## Verificação e limites
 
 `python test_model.py` verifica regras reais do programa sem abrir Tk, navegador
-ou dispositivo de áudio: o arquivo é carregado sem os imports, e as tartarugas
-viram gravadores que contam carimbos e timers. Isso verifica o modelo e seus
-efeitos pedidos, não pixels, áudio ouvido, foco nem desempenho.
+ou dispositivo de áudio: o arquivo é carregado sem os imports e sem o que ele
+faz ao iniciar, e as tartarugas viram gravadores que contam carimbos e timers.
+Isso verifica o modelo e seus efeitos pedidos, não pixels, áudio ouvido, foco
+nem desempenho.
 
 Autoria e licença estão em [NOTICE.md](NOTICE.md) e [LICENSE](LICENSE).

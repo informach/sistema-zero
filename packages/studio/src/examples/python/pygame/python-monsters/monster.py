@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 from game_data import MONSTER_DATA, ATTACK_DATA
 from random import randint
 
+# 🧩 Meus moldes
 class Monster:
     def __init__(self, name, level):
         self.name, self.level = name, level

@@ -1,12 +1,12 @@
+# 📦 Bibliotecas
 import math
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Sinuca'
 RAIO = 14
-# O pano verde, por onde as bolas andam.
-AREA = Rect((80, 110), (640, 380))
 # O ponto de cada caçapa fica um pouco para dentro do pano: assim a bola que vai para o canto
 # cai, em vez de bater na tabela ao lado dele.
 CACAPAS = [
@@ -20,6 +20,7 @@ PASSOS = 8
 TACADAS = 15
 
 
+# 🧩 Meus moldes
 class Bola:
     def __init__(self, imagem, x, y):
         self.ator = Actor(imagem, (x, y))
@@ -52,18 +53,6 @@ class Bola:
 
     def parada(self):
         return self.vx == 0 and self.vy == 0
-
-
-bolas = []
-branca = Bola('branca', 240, 300)
-mira = 0
-forca = 6
-tacadas = TACADAS
-encacapadas = 0
-total_de_bolas = 0
-branca_caiu = False
-# 'mirando', 'rolando', 'venceu' ou 'perdeu'
-estado = 'mirando'
 
 
 def arrumar_mesa():
@@ -168,6 +157,63 @@ def tacar():
     sounds.tacada.play()
 
 
+def desenhar_mira():
+    # Uma linha de pontinhos que mostra para onde a branca vai, voltando nas tabelas.
+    x = branca.ator.x
+    y = branca.ator.y
+    dx = math.cos(math.radians(mira))
+    dy = math.sin(math.radians(mira))
+    for ponto in range(25):
+        x = x + dx * 12
+        y = y + dy * 12
+        if x < AREA.left + RAIO or x > AREA.right - RAIO:
+            dx = -dx
+        if y < AREA.top + RAIO or y > AREA.bottom - RAIO:
+            dy = -dy
+        # A linha para na primeira bola que encontrar.
+        for bola in bolas:
+            if bola != branca and bola.ator.distance_to((x, y)) < RAIO:
+                return
+        screen.draw.filled_circle((x, y), 2, 'white')
+
+# ⚙️ Ao iniciar
+# O pano verde, por onde as bolas andam.
+AREA = Rect((80, 110), (640, 380))
+
+
+bolas = []
+branca = Bola('branca', 240, 300)
+mira = 0
+forca = 6
+tacadas = TACADAS
+encacapadas = 0
+total_de_bolas = 0
+branca_caiu = False
+# 'mirando', 'rolando', 'venceu' ou 'perdeu'
+estado = 'mirando'
+
+
+arrumar_mesa()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    global forca
+    if estado == 'venceu' or estado == 'perdeu':
+        if key == keys.SPACE:
+            arrumar_mesa()
+        return
+    if estado != 'mirando':
+        return
+    if key == keys.UP and forca < 10:
+        forca = forca + 1
+    elif key == keys.DOWN and forca > 1:
+        forca = forca - 1
+    elif key == keys.SPACE:
+        tacar()
+
+
+# 🔁 Enquanto estiver rodando
 def update():
     global mira
     if estado == 'mirando':
@@ -187,26 +233,6 @@ def update():
             bola.frear()
         if not alguma_rolando():
             fim_da_tacada()
-
-
-def desenhar_mira():
-    # Uma linha de pontinhos que mostra para onde a branca vai, voltando nas tabelas.
-    x = branca.ator.x
-    y = branca.ator.y
-    dx = math.cos(math.radians(mira))
-    dy = math.sin(math.radians(mira))
-    for ponto in range(25):
-        x = x + dx * 12
-        y = y + dy * 12
-        if x < AREA.left + RAIO or x > AREA.right - RAIO:
-            dx = -dx
-        if y < AREA.top + RAIO or y > AREA.bottom - RAIO:
-            dy = -dy
-        # A linha para na primeira bola que encontrar.
-        for bola in bolas:
-            if bola != branca and bola.ator.distance_to((x, y)) < RAIO:
-                return
-        screen.draw.filled_circle((x, y), 2, 'white')
 
 
 def draw():
@@ -229,23 +255,4 @@ def draw():
         screen.draw.text('Acabaram as tacadas!', center=(400, 280), fontsize=60, color='orange', owidth=1, ocolor='black')
     if estado == 'venceu' or estado == 'perdeu':
         screen.draw.text('Espaço joga de novo', center=(400, 340), fontsize=36, color='white', owidth=1, ocolor='black')
-
-
-def on_key_down(key):
-    global forca
-    if estado == 'venceu' or estado == 'perdeu':
-        if key == keys.SPACE:
-            arrumar_mesa()
-        return
-    if estado != 'mirando':
-        return
-    if key == keys.UP and forca < 10:
-        forca = forca + 1
-    elif key == keys.DOWN and forca > 1:
-        forca = forca - 1
-    elif key == keys.SPACE:
-        tacar()
-
-
-arrumar_mesa()
 pgzrun.go()

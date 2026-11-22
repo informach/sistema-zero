@@ -1,5 +1,7 @@
+# 📦 Bibliotecas
 from settings import *
 
+# 🧩 Meus moldes
 def folder_importer(view):
     """The frames of one view ('frente', 'costas' or 'icone') of every monster, by name.
 

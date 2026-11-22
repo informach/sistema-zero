@@ -1,11 +1,13 @@
-"""Flappy educacional: gravidade, canos reutilizados e pontos visíveis em blocos, Ponte e Python."""
+# Flappy educacional: gravidade, canos reutilizados e pontos visíveis em blocos, Ponte e Python.
 
+# 📦 Bibliotecas
 import turtle
 import random
 import time
 import sz_audio
 
 
+# 🎛️ Configurações
 LARGURA = 480
 ALTURA = 720
 TETO = 300
@@ -24,14 +26,9 @@ QUANTIDADE_CANOS = 3
 COR_PASSARO = "#ffd23f"
 COR_CANO = "#3fbf5f"
 COR_BORDA_CANO = "#23843b"
-estado = {"aberto": False, "timer_pendente": False, "recorde": 0}
-
-tela = turtle.Screen()
-cenario = turtle.Turtle(visible=False)
-pincel = turtle.Turtle(visible=False)
-painel = turtle.Turtle(visible=False)
 
 
+# 🧩 Meus moldes
 class Passaro:
     """Só a altura muda: a gravidade puxa e cada batida de asa empurra para cima."""
 
@@ -185,27 +182,6 @@ def atualizar(tempo):
             return
 
 
-def agendar():
-    if estado["aberto"] and not estado["timer_pendente"]:
-        estado["timer_pendente"] = True
-        tela.ontimer(quadro, INTERVALO)
-
-
-def quadro():
-    estado["timer_pendente"] = False
-    if not estado["aberto"]:
-        return
-    agora = time.monotonic()
-    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
-    estado["ultimo_tempo"] = agora
-    if not estado["pausado"]:
-        atualizar(tempo)
-    desenhar()
-    desenhar_painel()
-    tela.update()
-    agendar()
-
-
 def voar():
     if estado["pausado"]:
         return
@@ -217,6 +193,10 @@ def voar():
         estado["ultimo_tempo"] = time.monotonic()
     estado["passaro"].bater_asas()
     sz_audio.play("asa.wav", volume=0.35)
+
+
+def clicar(x, y):
+    voar()
 
 
 def pausar():
@@ -246,7 +226,6 @@ def reiniciar():
     desenhar_painel()
     estado["ultimo_tempo"] = time.monotonic()
     tela.update()
-    # Não agende aqui: o reinício reutiliza a cadeia existente.
 
 
 def fechar():
@@ -257,30 +236,54 @@ def fechar():
     tela.bye()
 
 
-def iniciar():
-    tela.setup(LARGURA, ALTURA)
-    tela.title("Flappy • Sistema Zero")
-    tela.bgcolor("#7cc6f2")
-    tela.tracer(0)
-    for desenho in [cenario, pincel, painel]:
-        desenho.penup()
-        desenho.speed(0)
-    desenhar_cenario()
-    tela.onkey(voar, "space")
-    tela.onkey(voar, "Up")
-    tela.onscreenclick(lambda x, y: voar())
-    tela.onkey(pausar, "p")
-    tela.onkey(pausar, "P")
-    tela.onkey(reiniciar, "r")
-    tela.onkey(reiniciar, "R")
-    tela.onkey(fechar, "Escape")
-    tela.listen()
-    estado["aberto"] = True
-    reiniciar()
-    agendar()
-    if estado["aberto"]:
-        tela.mainloop()
+# ⚙️ Ao iniciar
+estado = {"aberto": True, "recorde": 0}
+
+tela = turtle.Screen()
+cenario = turtle.Turtle(visible=False)
+pincel = turtle.Turtle(visible=False)
+painel = turtle.Turtle(visible=False)
+
+tela.setup(LARGURA, ALTURA)
+tela.title("Flappy • Sistema Zero")
+tela.bgcolor("#7cc6f2")
+tela.tracer(0)
+for desenho in [cenario, pincel, painel]:
+    desenho.penup()
+    desenho.speed(0)
+desenhar_cenario()
+reiniciar()
 
 
-if __name__ == "__main__":
-    iniciar()
+# ⚡ Quando acontecer
+tela.onkey(voar, "space")
+tela.onkey(voar, "Up")
+tela.onscreenclick(clicar)
+tela.onkey(pausar, "p")
+tela.onkey(pausar, "P")
+tela.onkey(reiniciar, "r")
+tela.onkey(reiniciar, "R")
+tela.onkey(fechar, "Escape")
+tela.listen()
+
+
+# 🔁 Enquanto estiver rodando
+def a_cada_quadro():
+    if not estado["aberto"]:
+        return
+    agora = time.monotonic()
+    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
+    estado["ultimo_tempo"] = agora
+    if not estado["pausado"]:
+        atualizar(tempo)
+    desenhar()
+    desenhar_painel()
+    tela.update()
+    # Se a janela fechou durante esta volta, o laço para aqui.
+    if not estado["aberto"]:
+        return
+    tela.ontimer(a_cada_quadro, INTERVALO)
+
+
+a_cada_quadro()
+tela.mainloop()

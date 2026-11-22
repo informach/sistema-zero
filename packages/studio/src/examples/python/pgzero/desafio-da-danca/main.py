@@ -1,30 +1,15 @@
+# 📦 Bibliotecas
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Desafio da Dança'
 DIRECOES = ['cima', 'direita', 'baixo', 'esquerda']
 
-dancarino = Actor('dancarino')
-dancarino.pos = (WIDTH / 2, 280)
-setas = []
-x = 220
-for direcao in DIRECOES:
-    seta = Actor('seta_' + direcao)
-    seta.pos = (x, 520)
-    setas.append(seta)
-    x = x + 120
 
-sequencia = []
-posicao = 0
-mostrando = True
-vez_de_jogar = False
-fim_de_jogo = False
-pontos = 0
-contagem = 3
-
-
+# 🧩 Meus moldes
 def mostrar_passo(numero):
     dancarino.image = 'dancarino_' + DIRECOES[numero]
     setas[numero].image = 'seta_' + DIRECOES[numero] + '_acesa'
@@ -70,23 +55,6 @@ def contar():
         vez_de_jogar = True
 
 
-def draw():
-    screen.blit('palco', (0, 0))
-    dancarino.draw()
-    for seta in setas:
-        seta.draw()
-    screen.draw.text('Pontos: ' + str(pontos), topleft=(16, 12), fontsize=36, color='white')
-    if fim_de_jogo:
-        screen.draw.text('Fim de jogo!', center=(WIDTH / 2, 110), fontsize=72, color='yellow', owidth=2, ocolor='black')
-        screen.draw.text('Aperte espaço para dançar de novo', center=(WIDTH / 2, 170), fontsize=32, color='white')
-    elif mostrando:
-        screen.draw.text('Preste atenção!', center=(WIDTH / 2, 90), fontsize=56, color='white', owidth=1.5, ocolor='black')
-    elif vez_de_jogar:
-        screen.draw.text('Sua vez: dance!', center=(WIDTH / 2, 90), fontsize=56, color='white', owidth=1.5, ocolor='black')
-    else:
-        screen.draw.text(str(contagem), center=(WIDTH / 2, 90), fontsize=80, color='white', owidth=1.5, ocolor='black')
-
-
 def acertou_ou_errou(numero):
     global posicao, pontos, fim_de_jogo, vez_de_jogar
     mostrar_passo(numero)
@@ -102,7 +70,31 @@ def acertou_ou_errou(numero):
         vez_de_jogar = False
         music.stop()
 
+# ⚙️ Ao iniciar
+dancarino = Actor('dancarino')
+dancarino.pos = (WIDTH / 2, 280)
+setas = []
+x = 220
+for direcao in DIRECOES:
+    seta = Actor('seta_' + direcao)
+    seta.pos = (x, 520)
+    setas.append(seta)
+    x = x + 120
 
+sequencia = []
+posicao = 0
+mostrando = True
+vez_de_jogar = False
+fim_de_jogo = False
+pontos = 0
+contagem = 3
+
+
+music.play('ritmo')
+nova_rodada()
+
+
+# ⚡ Quando acontecer
 def on_key_down(key):
     global fim_de_jogo, pontos
     if fim_de_jogo:
@@ -125,6 +117,20 @@ def on_key_down(key):
         acertou_ou_errou(3)
 
 
-music.play('ritmo')
-nova_rodada()
+# 🔁 Enquanto estiver rodando
+def draw():
+    screen.blit('palco', (0, 0))
+    dancarino.draw()
+    for seta in setas:
+        seta.draw()
+    screen.draw.text('Pontos: ' + str(pontos), topleft=(16, 12), fontsize=36, color='white')
+    if fim_de_jogo:
+        screen.draw.text('Fim de jogo!', center=(WIDTH / 2, 110), fontsize=72, color='yellow', owidth=2, ocolor='black')
+        screen.draw.text('Aperte espaço para dançar de novo', center=(WIDTH / 2, 170), fontsize=32, color='white')
+    elif mostrando:
+        screen.draw.text('Preste atenção!', center=(WIDTH / 2, 90), fontsize=56, color='white', owidth=1.5, ocolor='black')
+    elif vez_de_jogar:
+        screen.draw.text('Sua vez: dance!', center=(WIDTH / 2, 90), fontsize=56, color='white', owidth=1.5, ocolor='black')
+    else:
+        screen.draw.text(str(contagem), center=(WIDTH / 2, 90), fontsize=80, color='white', owidth=1.5, ocolor='black')
 pgzrun.go()

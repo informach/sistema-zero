@@ -1,10 +1,11 @@
+# 📦 Bibliotecas
 from settings import *
 import pinta
 
-# The original read folders of PNG files (os.walk); here every picture comes from a Pinta
-# drawing in assets/: a sprite with named animations, or a plain picture (clouds).
-sprites = {}
+# 🎛️ Configurações
+KEY = (255, 0, 255)
 
+# 🧩 Meus moldes
 def drawing(name):
 	if name not in sprites:
 		sprites[name] = pinta.carregar_sprite(name)
@@ -18,9 +19,6 @@ def trim(frames):
 		area.union_ip(frame.get_bounding_rect())
 	area = pygame.Rect(0, 0, area.right, area.bottom)
 	return [frame.subsurface(area) for frame in frames]
-
-KEY = (255, 0, 255)
-keyed_cache = {}
 
 def keyed(surf):
 	# Pixel art has no half-transparent pixel, so a color key draws exactly the same picture
@@ -61,3 +59,9 @@ def import_sub_folders(name, animations, cut = False):
 	for key, animation in animations.items():
 		frame_dict[key] = import_folder(name, animation, cut = cut)
 	return frame_dict
+
+# ⚙️ Ao iniciar
+# The original read folders of PNG files (os.walk); here every picture comes from a Pinta
+# drawing in assets/: a sprite with named animations, or a plain picture (clouds).
+sprites = {}
+keyed_cache = {}

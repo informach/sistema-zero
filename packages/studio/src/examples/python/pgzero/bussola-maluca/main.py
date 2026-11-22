@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Bússola Maluca'
@@ -18,23 +20,8 @@ ANGULO_DA_AGULHA = {'NORTE': 0, 'OESTE': 90, 'SUL': 180, 'LESTE': 270}
 LUGARES_DAS_PEDRAS = [(200, 170), (600, 430), (180, 440), (620, 160), (300, 200),
                       (500, 400), (250, 380), (560, 220), (150, 200), (660, 380)]
 
-explorador = Actor('explorador_baixo_1')
-bussola = Actor('bussola')
-bussola.pos = (400, 60)
-agulha = Actor('agulha')
-agulha.pos = (400, 60)
-pedras = []
 
-estado = 'inicio'
-direcao = 'NORTE'
-olhando = 'baixo'
-passos = 0
-pontos = 0
-nivel = 1
-tempo = TEMPO_INICIAL
-recorde = 0
-
-
+# 🧩 Meus moldes
 def ler_recorde():
     global recorde
     try:
@@ -142,7 +129,34 @@ def acabar():
     sounds.fim.play()
     salvar_recorde()
 
+# ⚙️ Ao iniciar
+explorador = Actor('explorador_baixo_1')
+bussola = Actor('bussola')
+bussola.pos = (400, 60)
+agulha = Actor('agulha')
+agulha.pos = (400, 60)
+pedras = []
 
+estado = 'inicio'
+direcao = 'NORTE'
+olhando = 'baixo'
+passos = 0
+pontos = 0
+nivel = 1
+tempo = TEMPO_INICIAL
+recorde = 0
+
+
+ler_recorde()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    if key == keys.SPACE and estado != 'jogando':
+        comecar()
+
+
+# 🔁 Enquanto estiver rodando
 def update(dt):
     global tempo
     if estado != 'jogando':
@@ -158,11 +172,6 @@ def update(dt):
         if explorador.colliderect(pedra):
             acabar()
             return
-
-
-def on_key_down(key):
-    if key == keys.SPACE and estado != 'jogando':
-        comecar()
 
 
 def draw():
@@ -188,7 +197,4 @@ def draw():
         screen.draw.text('Fim de jogo!', center=(400, 260), fontsize=72, color='orange', owidth=2, ocolor='black')
         screen.draw.text('Pontos: ' + str(pontos) + '   Recorde: ' + str(recorde), center=(400, 330), fontsize=40, color='white', owidth=1, ocolor='black')
         screen.draw.text('Espaço joga de novo', center=(400, 380), fontsize=36, color='white', owidth=1, ocolor='black')
-
-
-ler_recorde()
 pgzrun.go()

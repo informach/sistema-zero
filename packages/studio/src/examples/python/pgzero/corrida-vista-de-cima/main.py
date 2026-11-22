@@ -1,7 +1,9 @@
+# 📦 Bibliotecas
 import math
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Corrida Vista de Cima'
@@ -14,13 +16,8 @@ VELOCIDADE_MAXIMA = 4
 # perto da de dentro, e é esse tom que os carros do computador seguem.
 CENTRO_DA_PISTA = 136
 
-carros = []
-largada = 3
-terminou = False
-lugar = 0
-chegaram = 0
 
-
+# 🧩 Meus moldes
 def novo_jogo():
     global largada, terminou, lugar, chegaram
     carros.clear()
@@ -151,7 +148,24 @@ def separar_batidas():
                 a.velocidade = a.velocidade * 0.8
                 b.velocidade = b.velocidade * 0.8
 
+# ⚙️ Ao iniciar
+carros = []
+largada = 3
+terminou = False
+lugar = 0
+chegaram = 0
 
+
+novo_jogo()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    if terminou and key == keys.SPACE:
+        novo_jogo()
+
+
+# 🔁 Enquanto estiver rodando
 def update():
     if largada > 0 or terminou:
         return
@@ -176,12 +190,4 @@ def draw():
     if terminou:
         screen.draw.text('Você chegou em ' + str(lugar) + 'º lugar!', center=(400, 280), fontsize=56, color='yellow', owidth=1, ocolor='black')
         screen.draw.text('Espaço corre de novo', center=(400, 330), fontsize=36, color='white', owidth=1, ocolor='black')
-
-
-def on_key_down(key):
-    if terminou and key == keys.SPACE:
-        novo_jogo()
-
-
-novo_jogo()
 pgzrun.go()

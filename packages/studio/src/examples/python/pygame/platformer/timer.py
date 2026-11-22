@@ -1,5 +1,7 @@
+# 📦 Bibliotecas
 from settings import *
 
+# 🧩 Meus moldes
 class Timer:
     def __init__(self, duration, func = None, repeat = None, autostart = False):
         self.duration = duration

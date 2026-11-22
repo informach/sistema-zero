@@ -384,5 +384,22 @@ for (const versao of ['regioes', 'inteiro'] as const)
       expect(voltas.at(-1)!.carregadas).toContain('Vila')
       expect(voltas.at(-1)!.carregadas).not.toContain('Caverna')
       expect(voltas.flatMap((volta) => volta.falhas)).toEqual([])
+      // A capa do jogo E na galeria "Ver os jogos prontos" (lote 9 da conclusão;
+      // `scripts/gen-jogo-e-galeria.ts`): a Floresta pela câmera "em volta" do próprio Jogo 3D,
+      // DEPOIS das medidas (mover o herói e trocar a câmera não mexem em nenhuma delas).
+      await page.evaluate(() => {
+        const w = window as unknown as {
+          SZGame3D: {
+            setPosition(o: unknown, x: number, y: number, z: number): void
+            cameraMode(cena: unknown, modo: string, alvo: unknown): void
+          }
+          __qaJogoE: { cena: unknown; heroi: unknown }
+        }
+        w.SZGame3D.setPosition(w.__qaJogoE.heroi, 0, 6, -96)
+        w.SZGame3D.cameraMode(w.__qaJogoE.cena, 'em-volta', w.__qaJogoE.heroi)
+      })
+      await esperarCarregada(page, 'Floresta')
+      await page.waitForTimeout(3500)
+      await page.screenshot({ path: resolve(JOGO_E, 'olhar-inicio.png') })
     }
   })
