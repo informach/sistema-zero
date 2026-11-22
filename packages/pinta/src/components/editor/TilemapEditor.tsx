@@ -8,8 +8,9 @@
  * - `mapTools/useMapKeyboard` (atalhos), `useMapAnimation` (peças animadas), `mapCanvas`
  *   (a pintura) e `MapStage` (o palco).
  */
-import type { JSX, ReactNode } from 'react'
+import { type JSX, lazy, type ReactNode, Suspense } from 'react'
 import { COPY } from '../../core/copy'
+import { isAutomapEditorMap } from '../../tiles/automapping/model'
 import { Button } from '../ui/Button'
 import { Panel } from '../ui/Panel'
 import { MapLibraryPanel } from './MapLibraryPanel'
@@ -28,6 +29,10 @@ import { RegionMapWorkspace, type RegionMapWorkspaceProps } from './RegionMapWor
 import { TilemapSidebar, TilemapToolbar } from './TilemapPanels'
 import { useMediaQuery } from './useMediaQuery'
 import { ZoomControls } from './ZoomControls'
+
+const MapAutomappingPanel = lazy(async () => ({
+  default: (await import('./MapAutomappingPanel')).MapAutomappingPanel,
+}))
 
 const LEVEL_LABEL: Record<MapLevel, string> = {
   start: COPY.scene.comecar,
@@ -200,6 +205,18 @@ function TilemapWorkspace({
             extras={
               <>
                 {levelPanel}
+                {c.level === 'advanced' && isAutomapEditorMap(tilemap) ? (
+                  <Suspense fallback={null}>
+                    <MapAutomappingPanel
+                      key={tilemap.id}
+                      map={tilemap}
+                      selection={c.selRect}
+                      sheets={mapTilesets}
+                      showPreview={c.showAutomapPreview}
+                      registerStroke={c.registerAutomapStroke}
+                    />
+                  </Suspense>
+                ) : null}
                 {features.minimap ? (
                   <MapMinimapPanel
                     map={tilemap}

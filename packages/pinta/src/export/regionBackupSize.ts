@@ -94,7 +94,10 @@ export class RegionBackupSizeCache {
   }
 
   /** Whole snapshot/batch size, including every repeated occurrence; Infinity refuses. */
-  byteLength(assets: readonly PintaMemoryAsset[]): number {
+  byteLength(
+    assets: readonly PintaMemoryAsset[],
+    envelope?: (assets: readonly PintaMemoryAsset[]) => unknown,
+  ): number {
     try {
       if (!admitsRegionBackupBuffers(assets, bitmapBytes)) return Infinity
       const maps: RegionTilemapAsset[] = []
@@ -132,7 +135,7 @@ export class RegionBackupSizeCache {
         }
       }
       return this.sizes.byteLength(
-        pintaBackupContainer(assets, REGION_BACKUP_VERSION),
+        envelope ? envelope(assets) : pintaBackupContainer(assets, REGION_BACKUP_VERSION),
         MAX_BACKUP_FILE_BYTES,
       )
     } catch {

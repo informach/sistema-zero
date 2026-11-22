@@ -17,6 +17,10 @@ import { join, relative } from 'node:path'
 const SRC = join(import.meta.dir, '..')
 
 const CONFERIDOS: Record<string, string> = {
+  'tiles/automapping/book.ts':
+    'confere as células completas de padrões importados pelo validador comum de índices e transformações',
+  'tiles/automapping/engine.ts':
+    'lê o mapa pelos leitores comuns e compara ou aplica o valor completo capturado no exemplo, incluindo espelhos',
   'tiles/objectScatterStroke.ts':
     'percorre posições distintas de amostragem, não valores de peças; limites vêm do leitor comum, sem acessar os buffers autorais ou decodificar bits',
   'tiles/regionMap.ts':

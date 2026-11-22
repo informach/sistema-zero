@@ -35,7 +35,15 @@ import {
 } from './mapBrush'
 import { mapBrushMessage } from './mapBrushMessages'
 
+export type StageBrush<Map extends AuthorMap = TilemapAsset> = (
+  base: Map,
+  painted: Map,
+  layerId: string,
+  shift?: CellPos,
+) => void
 export interface TileGesture<Asset extends PintaMemoryAsset = PintaAsset> {
+  stage?: (base: Asset, painted: Asset, layerId: string, shift?: CellPos) => void
+  startAnchor?: CellPos
   base: Asset
   pointerId: number
   /** A casa inicial: alinha o desenho do carimbo e ancora as formas. */
@@ -56,6 +64,7 @@ export interface TileGestureDeps<
   Asset extends PintaMemoryAsset = PintaAsset,
   Map extends AuthorMap = TilemapAsset,
 > {
+  stageBrush?: StageBrush<Map>
   editor: PintaEditorStore<Asset>
   session: PintaSessionStore
   tool: string
@@ -152,6 +161,15 @@ export function createMapTileGestures<Asset extends PintaMemoryAsset, Map extend
 
   function writeGesture(g: TileGesture<Asset>, next: Map): boolean {
     const state = editor.getState()
+    if (g.stage) {
+      if (state.asset !== g.base) {
+        cancel()
+        deps.showToast(COPY.scene.brushChanged)
+        return false
+      }
+      g.produced = edits.asset(g.produced, next)
+      return true
+    }
     if (state.asset !== g.produced) {
       cancel()
       deps.showToast(COPY.scene.brushChanged)
@@ -176,7 +194,7 @@ export function createMapTileGestures<Asset extends PintaMemoryAsset, Map extend
    */
   function growForRing(cell: CellPos): CellPos | null {
     const g = gestureRef.current
-    const current = edits.map(editor.getState().asset)
+    const current = edits.map(g?.stage ? g.produced : editor.getState().asset)
     if (!g || !current) return null
     const bounds = mapCellBounds(current)
     const side: 'left' | 'right' | 'top' | 'bottom' =
@@ -229,8 +247,9 @@ export function createMapTileGestures<Asset extends PintaMemoryAsset, Map extend
     const g = gestureRef.current
     if (!g || g.failed) return
     let cell = rawCell
-    const live = editor.getState().asset
-    if (live !== g.produced) {
+    const stateAsset = editor.getState().asset
+    const live = g.stage ? g.produced : stateAsset
+    if ((g.stage && stateAsset !== g.base) || live !== g.produced) {
       cancel()
       deps.showToast(COPY.scene.brushChanged)
       return
@@ -244,7 +263,7 @@ export function createMapTileGestures<Asset extends PintaMemoryAsset, Map extend
       cell = grown
     }
     const state = editor.getState()
-    const current = edits.map(state.asset)
+    const current = edits.map(g.stage ? g.produced : state.asset)
     if (!current) return
     const line = collectShapeBrushCells(current, 'line', g.lastCell, cell),
       collected = line.ok ? collectTargetBrushCells(line.positions, brushContext()) : line
@@ -324,7 +343,9 @@ export function createMapTileGestures<Asset extends PintaMemoryAsset, Map extend
     if (message) deps.showToast(message)
     if (result.failure) return
     // Área que já está igual não vira um desfazer vazio.
-    if (result.map !== current) commitIfChanged(state, edits.asset(state.asset, result.map))
+    if (result.map === current) return
+    if (deps.stageBrush) deps.stageBrush(current, result.map, layerId)
+    else commitIfChanged(state, edits.asset(state.asset, result.map))
   }
 
   function down(event: PointerEvent<HTMLCanvasElement>): void {
@@ -367,6 +388,16 @@ export function createMapTileGestures<Asset extends PintaMemoryAsset, Map extend
     const context = brushContext()
     gestureRef.current = {
       base: editor.getState().asset,
+      ...(deps.stageBrush
+        ? {
+            stage: (base: Asset, painted: Asset, layer: string, shift?: CellPos) => {
+              const prior = edits.map(base),
+                next = edits.map(painted)
+              if (prior && next) deps.stageBrush?.(prior, next, layer, shift)
+            },
+            startAnchor: { ...anchor },
+          }
+        : {}),
       pointerId: event.pointerId,
       anchor: { ...anchor },
       lastCell: { ...anchor },
@@ -423,6 +454,19 @@ export function createMapTileGestures<Asset extends PintaMemoryAsset, Map extend
     previewCellsRef.current = []
     const state = editor.getState()
     if (
+      gesture.stage &&
+      !gesture.failed &&
+      state.asset === gesture.base &&
+      gesture.base.kind === 'tilemap' &&
+      gesture.produced.kind === 'tilemap' &&
+      gesture.base !== gesture.produced
+    ) {
+      gesture.stage(gesture.base, gesture.produced, gesture.brush.layerId, {
+        col: gesture.anchor.col - gesture.startAnchor!.col,
+        row: gesture.anchor.row - gesture.startAnchor!.row,
+      })
+    } else if (
+      !gesture.stage &&
       !gesture.failed &&
       state.asset === gesture.produced &&
       !sameAssetContent({ ...gesture.base, updatedAt: state.asset.updatedAt }, state.asset)

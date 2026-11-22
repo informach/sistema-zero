@@ -117,6 +117,12 @@ export function useTilemapController(model: ReadyMapModel) {
   const paperRef = useRef<HTMLDivElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
   const viewportRef = useRef({ x: 0, y: 0, width: 0, height: 0 })
+  const [stageBrush, setStageBrush] = useState<import('./tileGestures').StageBrush>()
+  const registerAutomapStroke = useCallback(
+    (stage: import('./tileGestures').StageBrush | undefined) => setStageBrush(() => stage),
+    [],
+  )
+  const automapPreviewRef = useRef<KeyboardMapPreview | null>(null)
   const keyboardPreviewRef = useRef<KeyboardMapPreview | null>(null)
   const keyboardCursorRef = useRef<HTMLDivElement>(null)
   const animationTimeRef = useRef(0)
@@ -191,7 +197,12 @@ export function useTilemapController(model: ReadyMapModel) {
       const viewport = paintMapCanvas({
         canvas,
         stage: stageRef.current,
-        map: keyboardPreviewRef.current?.base === map ? keyboardPreviewRef.current.map : map,
+        map:
+          automapPreviewRef.current?.base === map
+            ? automapPreviewRef.current.map
+            : keyboardPreviewRef.current?.base === map
+              ? keyboardPreviewRef.current.map
+              : map,
         pad,
         cellPx,
         tileSize,
@@ -204,6 +215,17 @@ export function useTilemapController(model: ReadyMapModel) {
       if (viewport) viewportRef.current = viewport
     },
     [baseTileset, pad, cellPx, tilesetById, chunkCache, tileSize, showCollision, sheets.sheetOf],
+  )
+
+  const showAutomapPreview = useCallback(
+    (base: TilemapAsset, shown: TilemapAsset | null) => {
+      if (shown && editor.getState().asset !== base) return
+      if (!shown && automapPreviewRef.current?.base !== base) return
+      automapPreviewRef.current = shown ? { base, map: shown } : null
+      const asset = editor.getState().asset
+      if (asset.kind === 'tilemap') repaintMap(asset)
+    },
+    [editor, repaintMap],
   )
 
   useMapAnimation(
@@ -279,7 +301,11 @@ export function useTilemapController(model: ReadyMapModel) {
       const target = event.target as Node | null
       if (!target) return
       if (canvasRef.current?.contains(target)) return
-      if (selectionBarRef.current?.contains(target)) return
+      if (
+        selectionBarRef.current?.contains(target) ||
+        (target instanceof Element && target.closest('[data-pinta-automapping]'))
+      )
+        return
       stampPendingRef.current()
     }
     document.addEventListener('pointerdown', onPointerDown)
@@ -372,6 +398,7 @@ export function useTilemapController(model: ReadyMapModel) {
   stampPendingRef.current = selection.stampPending
 
   const tiles = createTileGestures({
+    stageBrush,
     editor,
     session,
     tool,
@@ -417,6 +444,7 @@ export function useTilemapController(model: ReadyMapModel) {
   })
 
   const keyboard = useKeyboardPainting({
+    stageBrush,
     editor,
     map: tilemap,
     layerId,
@@ -642,6 +670,8 @@ export function useTilemapController(model: ReadyMapModel) {
     deleteVertexRef,
     canvasHandlers,
     // ações
+    registerAutomapStroke,
+    showAutomapPreview,
     setLevel,
     setPlaytest,
     setPrecisePhysics: (enabled: boolean): void => {

@@ -1,5 +1,6 @@
 import {
   isTileLayer,
+  PINTA_MAX_SCHEMA,
   type PintaAsset,
   type PintaBitmap,
   sanitizePintaAsset,
@@ -17,6 +18,8 @@ import { packCells } from '../tiles/cellCodec'
  * `pintaAssetFromWire` restaura e valida os tipos canônicos na outra ponta.
  */
 export function pintaAssetToWire(input: PintaAsset): unknown {
+  if ('schema' in input && typeof input.schema === 'number' && input.schema > PINTA_MAX_SCHEMA)
+    throw new RangeError('Esta versão do desenho exige um gravador compatível.')
   // O carimbo `schema` sai sempre certo para o conteúdo: é ele que faz um código mais antigo
   // recusar o desenho em vez de cortar o que não conhece.
   const asset = withPintaSchemaStamp(input)

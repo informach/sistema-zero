@@ -6,16 +6,26 @@
  * confirmado sem reler o disco.
  */
 import { createStore, type StoreApi } from 'zustand/vanilla'
-import { type PintaMemoryAsset, retainedAssetBytes, sharedAssetParts } from '../core/assetMemory'
+import {
+  type PintaMemoryAsset,
+  retainedAssetBytes,
+  rulebookSharedPart,
+  sharedAssetParts,
+} from '../core/assetMemory'
 import { createHistory, type SharedPart } from '../core/history'
 import type { PintaResourceObservation } from '../core/localAssetOrigin'
 import { RegionMetadataBudgetCache, regionDocumentMetadata } from '../core/mapDocumentBoundary'
 import { isTilesetKind, type PintaAsset } from '../core/project'
 import { RegionBackupSizeCache } from '../export/regionBackupSize'
+import type { AutomapRegionEditorDocument } from '../tiles/automapping/model'
 import type { TileIndexChange } from '../tiles/tilesetOps'
 
 export { assetBytes } from '../core/assetMemory'
 
+type EditorAsset = PintaMemoryAsset | AutomapRegionEditorDocument
+function content(asset: EditorAsset): PintaMemoryAsset {
+  return asset.kind === 'automap-document' ? asset.map : asset
+}
 export type PintaSaveState = 'saved' | 'pending' | 'saving' | 'error'
 
 export type PintaSaveResult = { ok: true } | { ok: false; error: string }
@@ -36,7 +46,7 @@ export interface PintaEditorSlotLineage {
   after: readonly symbol[]
 }
 
-export interface PintaEditorState<Asset extends PintaMemoryAsset = PintaAsset> {
+export interface PintaEditorState<Asset extends EditorAsset = PintaAsset> {
   asset: Asset
   /** Último snapshot efetivamente confirmado pela persistência. */
   savedAsset: Asset
@@ -79,7 +89,7 @@ export interface PintaEditorState<Asset extends PintaMemoryAsset = PintaAsset> {
   flush(): Promise<PintaSaveResult>
 }
 
-export type PintaEditorStore<Asset extends PintaMemoryAsset = PintaAsset> = StoreApi<
+export type PintaEditorStore<Asset extends EditorAsset = PintaAsset> = StoreApi<
   PintaEditorState<Asset>
 >
 
@@ -89,7 +99,7 @@ export type PintaEditorStore<Asset extends PintaMemoryAsset = PintaAsset> = Stor
  * juntos. `linkedMaps` só é não-nulo depois de um `commitLinked`; edições comuns
  * (pincel etc.) carregam o `linkedMaps` corrente adiante (mapas não mudaram).
  */
-interface EditorSnapshot<Asset extends PintaMemoryAsset> {
+interface EditorSnapshot<Asset extends EditorAsset> {
   asset: Asset
   linkedMaps: Asset[] | null
   slots: readonly symbol[] | null
@@ -97,7 +107,7 @@ interface EditorSnapshot<Asset extends PintaMemoryAsset> {
 }
 
 /** Mescla revisões ligadas por id, preservando assets tocados em commits anteriores. */
-function mergeLinkedAssets<Asset extends PintaMemoryAsset>(
+function mergeLinkedAssets<Asset extends EditorAsset>(
   current: readonly Asset[] | null,
   changed: readonly Asset[],
 ): Asset[] {
@@ -107,10 +117,10 @@ function mergeLinkedAssets<Asset extends PintaMemoryAsset>(
 }
 
 /** Bytes do snapshot de undo = o asset + os mapas ligados (se houver). */
-function snapshotBytes(snapshot: EditorSnapshot<PintaMemoryAsset>): number {
-  let bytes = retainedAssetBytes(snapshot.asset, false)
+function snapshotBytes(snapshot: EditorSnapshot<EditorAsset>): number {
+  let bytes = retainedAssetBytes(content(snapshot.asset), false)
   if (snapshot.linkedMaps)
-    for (const map of snapshot.linkedMaps) bytes += retainedAssetBytes(map, false)
+    for (const map of snapshot.linkedMaps) bytes += retainedAssetBytes(content(map), false)
   return bytes
 }
 
@@ -120,13 +130,16 @@ function snapshotBytes(snapshot: EditorSnapshot<PintaMemoryAsset>): number {
  * vez é o que a memória gasta de verdade.
  */
 export function* snapshotShared(snapshot: {
-  asset: PintaMemoryAsset
-  linkedMaps: readonly PintaMemoryAsset[] | null
+  asset: EditorAsset
+  linkedMaps: readonly EditorAsset[] | null
   slots?: readonly symbol[] | null
   resources?: readonly PintaResourceObservation[]
 }): Iterable<SharedPart> {
   const maps = [snapshot.asset, ...(snapshot.linkedMaps ?? [])]
-  for (const asset of maps) yield* sharedAssetParts(asset)
+  for (const asset of maps) {
+    if (asset.kind === 'automap-document') yield rulebookSharedPart(asset.book)
+    yield* sharedAssetParts(content(asset))
+  }
   if (snapshot.slots) yield { key: snapshot.slots, bytes: snapshot.slots.length * 8 }
   if (snapshot.resources)
     yield {
@@ -138,7 +151,7 @@ export function* snapshotShared(snapshot: {
     }
 }
 
-export interface PintaEditorStoreOptions<Asset extends PintaMemoryAsset = PintaAsset> {
+export interface PintaEditorStoreOptions<Asset extends EditorAsset = PintaAsset> {
   asset: Asset
   persist: (
     asset: Asset,
@@ -165,18 +178,18 @@ export interface PintaEditorStoreOptions<Asset extends PintaMemoryAsset = PintaA
   recoverPersisted?: (error: unknown, sourceId: string) => { asset: Asset; linked: Asset[] } | null
 }
 
-export function createEditorStore<Asset extends PintaMemoryAsset = PintaAsset>(
+export function createEditorStore<Asset extends EditorAsset = PintaAsset>(
   options: NoInfer<PintaEditorStoreOptions<Asset>>,
 ): PintaEditorStore<Asset> {
   const metadataBudget = new RegionMetadataBudgetCache()
   let backupSizes: RegionBackupSizeCache | null = null
-  function admitsMetadata(asset: Asset): boolean {
+  function admitsMetadata(asset: PintaMemoryAsset): boolean {
     if ((asset.kind !== 'tilemap' && asset.kind !== 'map-set') || asset.schema !== 8) return true
     const metadata = regionDocumentMetadata(asset)
     return metadata !== null && metadataBudget.accepts(metadata)
   }
   function admitsSnapshot(asset: Asset, linked: readonly Asset[] = []): boolean {
-    const assets = [asset, ...linked]
+    const assets = [asset, ...linked].map(content)
     if (!assets.every(admitsMetadata)) return false
     if (
       !assets.some(
@@ -198,9 +211,10 @@ export function createEditorStore<Asset extends PintaMemoryAsset = PintaAsset>(
   // Mapas ligados ao ESTADO CORRENTE do asset (null até o 1º commitLinked).
   let currentLinked: Asset[] | null = null
   // The same logical slots follow the snapshots already kept for undo, even when pixel data changes.
-  let currentSlots: readonly symbol[] | null = isTilesetKind(options.asset)
-    ? options.asset.tiles.map(() => Symbol())
-    : null
+  let currentSlots: readonly symbol[] | null =
+    options.asset.kind !== 'automap-document' && isTilesetKind(options.asset)
+      ? options.asset.tiles.map(() => Symbol())
+      : null
   let savedSlots = currentSlots
   let currentResources = options.observeResources?.(options.asset)
   function observeNewBindings(asset: Asset): void {
@@ -336,7 +350,7 @@ export function createEditorStore<Asset extends PintaMemoryAsset = PintaAsset>(
       if (get().asset !== current) return null
       let slots = currentSlots
       if (indices) {
-        if (!slots || !isTilesetKind(applied)) return null
+        if (!slots || applied.kind === 'automap-document' || !isTilesetKind(applied)) return null
         const inserted = 'insertedAt' in indices
         const at = inserted ? indices.insertedAt : indices.removedAt
         if (

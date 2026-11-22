@@ -70,9 +70,31 @@ export function assetBytes(asset: PintaMemoryAsset, countSharedData = true): num
 }
 
 /** Retained authoring estimate includes tile rules/properties, without serializing pixel buffers. */
+const rulebookSizes = new WeakMap<object, number>()
+function authoredRulebook(asset: PintaMemoryAsset): SharedPart | undefined {
+  if (
+    asset.kind !== 'tilemap' ||
+    asset.schema !== 9 ||
+    !('automapping' in asset) ||
+    !asset.automapping ||
+    typeof asset.automapping !== 'object'
+  )
+    return
+  return rulebookSharedPart(asset.automapping)
+}
+export function rulebookSharedPart(book: object): SharedPart {
+  let bytes = rulebookSizes.get(book)
+  if (bytes === undefined) {
+    bytes = JSON.stringify(book).length * 2
+    rulebookSizes.set(book, bytes)
+  }
+  return { key: book, bytes }
+}
 export function retainedAssetBytes(asset: PintaMemoryAsset, countSharedData = true): number {
   if (asset.kind === 'map-set') return retainedAssetBytes(asset.map, countSharedData)
-  let bytes = assetBytes(asset, countSharedData)
+  let bytes =
+    assetBytes(asset, countSharedData) +
+    (countSharedData ? (authoredRulebook(asset)?.bytes ?? 0) : 0)
   if (asset.kind === 'tileset' || asset.kind === 'vector-tileset') {
     if (asset.animations || asset.terrains || asset.tileProperties)
       bytes +=
@@ -94,6 +116,8 @@ export function retainedAssetBytes(asset: PintaMemoryAsset, countSharedData = tr
 /** Every immutable chunk buffer is an independent shared part of history. */
 export function* sharedAssetParts(asset: PintaMemoryAsset): Iterable<SharedPart> {
   if (asset.kind !== 'tilemap' && asset.kind !== 'map-set') return
+  const book = authoredRulebook(asset)
+  if (book) yield book
   const map = asset.kind === 'map-set' ? asset.map : asset
   for (const resource of map.resources ?? [])
     yield { key: resource.asset, bytes: retainedAssetBytes(resource.asset) }

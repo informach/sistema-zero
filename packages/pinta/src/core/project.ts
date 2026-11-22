@@ -927,6 +927,10 @@ export function pintaAssetSchema(asset: PintaAsset): number {
  * carimbo, e é o carimbo no disco que faz um código mais antigo recusar o registro.
  */
 export function withPintaSchemaStamp<T extends PintaAsset>(asset: T): T {
+  // A writer may recompute only versions it understands. Keep an unknown stamp
+  // intact so admission can refuse the document before any stored fields are dropped.
+  if ('schema' in asset && typeof asset.schema === 'number' && asset.schema > PINTA_MAX_SCHEMA)
+    return asset
   if (asset.kind === 'map-set') {
     const map = withPintaSchemaStamp(asset.map)
     const schema = mapSetSchemaFor(map)

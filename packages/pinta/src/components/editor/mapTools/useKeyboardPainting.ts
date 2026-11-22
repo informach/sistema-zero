@@ -15,6 +15,7 @@ import { mapBrushMessage } from './mapBrushMessages'
 
 export type KeyboardMapPreview = { base: TilemapAsset; map: TilemapAsset }
 interface Options {
+  stageBrush?: import('./tileGestures').StageBrush
   editor: PintaEditorStore
   map: TilemapAsset
   layerId: string
@@ -287,7 +288,8 @@ export function useKeyboardPainting(options: Options) {
       isTileBlank(brush.tileset, brush.selectedTile)
     )
       d.showToast(COPY.tiles.blankTile)
-    commitIfChanged(d.editor.getState(), candidate.map)
+    if (d.stageBrush) d.stageBrush(map, candidate.map, d.layerId)
+    else commitIfChanged(d.editor.getState(), candidate.map)
   }
 
   return {

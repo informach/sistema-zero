@@ -1,0 +1,7 @@
+# Autorregras visuais de várias camadas
+
+A ferramenta do nível Avançado captura dois exemplos retangulares. A pessoa escolhe as camadas de entrada e de saída, guarda o exemplo e testa a regra na área editada. A ordem na lista resolve prioridades. Uma semente escolhe entre variantes do mesmo padrão. A prévia usa o mapa imutável e uma confirmação grava um único gesto.
+
+1. Em `tiles/automapping`, validar livros declarativos v1 e projetar leituras e escritas pelo acesso a células já usado nas ferramentas. Comparar posições na grade lógica, inclusive negativas. Resolver sobreposições por ordem de regra e de âncora. Recusar operações acima de 64 regras, padrões 16 × 16, oito camadas, 65.536 escritas ou 1.048.576 comparações. Testar travas herdadas, transformações, mudanças de folha e a ausência de cascata.
+2. Guardar os livros vinculados por ID no envelope nativo 9 privado e importar/exportar um único livro em `.pinta-regras.json`. Reutilizar o backup 8 para o corpo e a validação de recursos. Conferir a identidade da folha e a identidade do mapa antes de aplicar, e remapear referências na duplicação de uma coleção. Mostrar a recusa de versão 9 nos leitores anteriores.
+3. No painel avançado atual, capturar exemplos de entrada e saída, editar a prioridade e a semente, prever, confirmar ou cancelar. Reutilizar seleção, desenho e histórico. Provar o fluxo integrado com um mapa de duas camadas e um grupo bloqueado. O contrato 9 é preparado em separado da ativação da oficina e da publicação de nuvem.

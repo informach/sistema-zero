@@ -28,7 +28,7 @@ import {
   tilesetNeedsV4,
   withPintaSchemaStamp,
 } from '../core/project'
-import { PINTA_RESOURCE_LIMITS } from '../core/projectConfig'
+import { PINTA_MAX_SCHEMA, PINTA_RESOURCE_LIMITS } from '../core/projectConfig'
 
 const FORMAT = 'pinta-gallery'
 /** A versão que um arquivo SEM nada novo leva (e a única que versões antigas leem). */
@@ -96,6 +96,8 @@ interface EncodedAssetBase {
 type EncodedAsset = EncodedAssetBase & Record<string, unknown>
 
 function encodeAsset(input: PintaAsset): EncodedAsset {
+  if ('schema' in input && typeof input.schema === 'number' && input.schema > PINTA_MAX_SCHEMA)
+    throw new RangeError('Esta versão do desenho exige um gravador compatível.')
   // O carimbo `schema` do arquivo acompanha o conteúdo, mesmo que a chave em memória esteja velha.
   const asset = withPintaSchemaStamp(input)
   switch (asset.kind) {
