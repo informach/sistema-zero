@@ -269,7 +269,7 @@ describe('efeitos e troca de lugar', () => {
           target: name('i', 'Store'),
           iter: call(name('range'), [integer('3')]),
           ifs: [],
-          is_async: 0,
+          is_async: { literal: 'int', value: '0' },
         }),
       ],
     })

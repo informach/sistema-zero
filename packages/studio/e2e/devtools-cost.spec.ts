@@ -122,11 +122,12 @@ function saveRow(row: { key: string } & Record<string, unknown>) {
   writeFileSync(OUTPUT, `${JSON.stringify(report, null, 2)}\n`)
 }
 
-const median = (values: number[]) => {
+const median = (values: number[]): number => {
   const sorted = values.filter(Number.isFinite).sort((a, b) => a - b)
-  if (sorted.length === 0) return Number.NaN
   const middle = Math.floor(sorted.length / 2)
-  return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2
+  const upper = sorted[middle]
+  if (upper === undefined) return Number.NaN
+  return sorted.length % 2 ? upper : ((sorted[middle - 1] ?? upper) + upper) / 2
 }
 
 const quantile = (values: number[], p: number) => {
@@ -172,7 +173,7 @@ async function measureWindow(page: Page, frame: Frame, arm: Arm, round: number):
       target.__szCostOn = false
       return target.__szCostTimes ?? []
     })
-    const intervals = times.slice(1).map((time, index) => time - times[index])
+    const intervals = times.slice(1).map((time, index) => time - (times[index] ?? time))
     const frames = intervals.length
     const task = ((after.TaskDuration ?? 0) - (before.TaskDuration ?? 0)) * 1000
     const script = ((after.ScriptDuration ?? 0) - (before.ScriptDuration ?? 0)) * 1000

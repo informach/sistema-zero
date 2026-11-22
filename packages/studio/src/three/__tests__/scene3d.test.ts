@@ -183,10 +183,11 @@ test('orçamento do transporte é conferido antes de decodificar recursos', asyn
 
 test('o Estúdio pede a carga por regiões: cena com regiões carrega por janela, sem regiões inteira', async () => {
   const { criarTransporteDeEnsaio } = await import('../../testing/scene3dTransportFixture')
-  for (const [comRegioes, esperado] of [
+  const casos: Array<[boolean, string[] | null]> = [
     [true, ['floresta', 'vila']],
     [false, null],
-  ] as const) {
+  ]
+  for (const [comRegioes, esperado] of casos) {
     const plano = await criarTransporteDeEnsaio({ comRegioes })
     const cena = await carregarCena3DDoProjeto(
       plano.assetId,

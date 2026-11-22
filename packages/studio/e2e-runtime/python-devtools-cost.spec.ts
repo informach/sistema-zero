@@ -78,11 +78,12 @@ function saveRow(row: { key: string } & Record<string, unknown>) {
   )
 }
 
-const median = (values: number[]) => {
+const median = (values: number[]): number => {
   const sorted = values.filter(Number.isFinite).sort((a, b) => a - b)
-  if (sorted.length === 0) return Number.NaN
   const middle = Math.floor(sorted.length / 2)
-  return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2
+  const upper = sorted[middle]
+  if (upper === undefined) return Number.NaN
+  return sorted.length % 2 ? upper : ((sorted[middle - 1] ?? upper) + upper) / 2
 }
 
 const round2 = (value: number) => Math.round(value * 100) / 100
