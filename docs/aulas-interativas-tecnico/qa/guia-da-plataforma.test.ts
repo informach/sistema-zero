@@ -6,6 +6,7 @@ import {
   type CursoDoGuia,
   capturasDoCurso,
   marcasDaTela,
+  paginasDoCurso,
 } from '../recursos/guia-da-plataforma/guia'
 import { concordanciasErradas, guiasPessoa, PALAVRAS_DA_ESCOLA } from './palavras-da-escola'
 
@@ -16,7 +17,7 @@ import { concordanciasErradas, guiasPessoa, PALAVRAS_DA_ESCOLA } from './palavra
  * legenda que ficou velha.
  */
 
-const CURSOS: CursoDoGuia[] = ['cade-todo-mundo', 'desafio-primeiro-jogo']
+const CURSOS: CursoDoGuia[] = ['cade-todo-mundo', 'desafio-primeiro-jogo', 'ilha-do-farol']
 const PASTA = resolve(import.meta.dir, '../recursos/guia-da-plataforma')
 
 /** Rótulos citados que não são uma marca da própria tela, mas aparecem nela ou na mesma área. */
@@ -54,8 +55,9 @@ test('o texto do guia segue a régua das aulas', () => {
 describe.each(CURSOS)('prints de %s', (curso) => {
   const capturas = capturasDoCurso(curso)
 
-  test('toda tela das páginas tem print, e todo print existe', () => {
-    for (const pagina of CONTEUDO_DO_GUIA.paginas)
+  test('toda tela das páginas do curso tem print, e todo print existe', () => {
+    expect(paginasDoCurso(curso).length).toBeGreaterThan(0)
+    for (const pagina of paginasDoCurso(curso))
       for (const tela of pagina.telas) {
         expect(capturas[tela], `${curso}/${tela}`).toBeDefined()
         expect(

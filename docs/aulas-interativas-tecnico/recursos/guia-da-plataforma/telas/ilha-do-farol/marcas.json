@@ -1,0 +1,57 @@
+{
+  "jogo-3d": {
+    "arquivo": "jogo-3d.jpg",
+    "largura": 1159.59375,
+    "altura": 729.984375,
+    "marcas": {
+      "aviso-do-jogo": {
+        "x": 28.17,
+        "y": 2.74,
+        "w": 43.66,
+        "h": 4.86,
+        "ancora": "l",
+        "nome": "Encontre a chave e leve o personagem até o farol."
+      },
+      "dica-dos-controles": {
+        "x": 33.83,
+        "y": 92.37,
+        "w": 32.34,
+        "h": 4.86,
+        "ancora": "l",
+        "nome": "Setas ou WASD: andar. R: recomeçar."
+      },
+      "aproximar": {
+        "x": 94.83,
+        "y": 60.53,
+        "w": 3.45,
+        "h": 5.48,
+        "ancora": "l",
+        "nome": "Aproximar"
+      },
+      "afastar": {
+        "x": 94.83,
+        "y": 66.83,
+        "w": 3.45,
+        "h": 5.48,
+        "ancora": "l",
+        "nome": "Afastar"
+      },
+      "girar": {
+        "x": 94.83,
+        "y": 73.13,
+        "w": 3.45,
+        "h": 11.78,
+        "ancora": "l",
+        "nome": "Girar a cena para um lado | Girar a cena para o outro lado"
+      },
+      "vista-do-comeco": {
+        "x": 94.83,
+        "y": 85.73,
+        "w": 3.45,
+        "h": 5.48,
+        "ancora": "l",
+        "nome": "Voltar à vista do começo"
+      }
+    }
+  }
+}

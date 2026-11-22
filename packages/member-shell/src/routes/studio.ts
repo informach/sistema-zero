@@ -100,6 +100,7 @@ import {
   drainStudioReservationCleanup,
   retireStudioReservation,
 } from '../server/studio-reservation-cleanup'
+import { createStudioExampleFilesRoute } from './studio-example-files'
 import { createStudioPublicRuntimeRoute } from './studio-public-runtime'
 
 export type StudioRoutes = ReturnType<typeof createStudioRoutes>
@@ -1878,6 +1879,7 @@ export function createStudioRoutes(deps: {
   }
   return {
     studioPublicRuntime: createStudioPublicRuntimeRoute({ hub, members }),
+    studioExampleFiles: createStudioExampleFilesRoute(),
     studioDescribe,
     studioPublish,
     studioPublishStandalone,

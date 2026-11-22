@@ -14,12 +14,12 @@ das cenas do Pinta, `pinta-scene-player.ts`).
 | Atualizar separado de desenhar | não (o "a cada quadro" faz os dois) | sim | sim | sim | sim |
 | Pool de entidades | não (só teto) | sim (por molde, pré-aquecido) | não | instâncias | sim (recursos de modelo com dono) |
 | Índice espacial | parcial (grade do terreno, sort-and-sweep acima de 2048 pares) | sim (células de 64 a partir de 1600 pares) | não | colisores em grade | sim (grade 16×16) |
-| Recorte fora da tela | só os tiles; sprites desenhados todos | tiles e entidades (margem 128) | frustum padrão do three | pedaços de 80 m com esfera própria | frustum padrão; recicla longe da origem |
+| Recorte fora da tela | tiles e, desde o lote 8 da conclusão, sprites (margem de 64 px mais o maior lado; quem está fora só atualiza o estado do quadro) | tiles e entidades (margem 128) | frustum padrão do three | pedaços de 80 m com esfera própria | frustum padrão; recicla longe da origem |
 | Instancing | (Canvas 2D) | (Canvas 2D) | não; geometria e material compartilhados | sim, em muitos lugares | não; clones compartilham geometria e material |
-| Regiões / streaming | não (porta troca a cena inteira) | não (o RPG troca o mapa inteiro) | só o Kit Plataforma (17 colunas à frente, 11 atrás) | grama toroidal (só visual) | não |
+| Regiões / streaming | cenas do Pinta ligadas por portas: destinos prontos antes de passar e cache de 8 cenas (lote 8); no jogo D, as regiões ligam as entidades pelo programa | não (o RPG troca o mapa inteiro) | só o Kit Plataforma (17 colunas à frente, 11 atrás) | grama toroidal (só visual) | não |
 | Qualidade adaptativa | (Canvas 2D) | (Canvas 2D) | sombra por nível | modo turbo | modo leve e composer |
 | Descarte de GPU | (Canvas 2D) | (Canvas 2D) | recomeçar descarta mundos; fechar solta caches e o renderer | recomeçar leve no lugar; fechar descarta tudo | nova partida descarta pools e moldes; fechar descarta tudo |
-| Persistência do jogo | não | sim (slots validados) | não | não | sim (`localStorage` com prefixo) |
+| Persistência do jogo | pelos blocos de armazenamento do navegador (o jogo D guarda na cama) | sim (slots validados) | não | não | sim (`localStorage` com prefixo) |
 
 As cenas do Pinta ("Criar cenário do meu desenho", Jogo 2D e Avançado): os tiles são recortados
 pela câmera (`CORE/pinta-scene-player.ts`), e desde `719fade30` os objetos de arte também: só os
@@ -28,7 +28,15 @@ limite). A instância de CONJUNTO fica fora do recorte (full review final de 21/
 pode passar do retângulo nominal, e o raio do retângulo cortava um filho à vista. Dentro de um
 conjunto o recorte não segue a câmera. As imagens do cenário são pedidas ao criar o cenário, para a
 arte de um objeto distante não chegar atrasada. A cena inteira é preparada de uma vez (256×256
-células, 32 camadas, 512 objetos por camada no máximo).
+células, 32 camadas, 512 objetos por camada no máximo). Desde o lote 8 da conclusão (22/11/2026),
+num mundo com portas: as cenas preparadas ficam num cache de 8 (voltar não prepara de novo), os
+destinos das portas da cena ativa ficam prontos um por quadro com as imagens decodificadas, as
+áreas são conferidas de novo só quando o corpo muda de lugar e o host do Jogo 2D cria o mapa de
+colisão pelo `_newTileMap` (70 passagens davam o aviso falso de "Criar mapa rodando sem parar").
+O relógio das áreas e a pré-carga vivem na mesma geração: na primeira versão, o relógio abria uma
+geração nova e matava a pré-carga em todo jogo com "Quando entrar em área" (revisão do lote 8).
+O jogo D (`evidencias/jogo-d-2026-11-22/`) mede isso num mundo de 96 × 72 peças com 14 portas:
+pior passagem de 7,8 ms e p95 de 2,1 ms por quadro no Windows local.
 
 O orçamento de desenho dos três motores 3D (`OE/threeRenderBudgetRuntime.ts`) cuida do pixel
 ratio, do tamanho da tela, do mapa de sombra e dos efeitos, e passa ao nível leve uma vez abaixo
@@ -183,15 +191,24 @@ num motor que os cursos protegidos usam. Fazer direito pede separar o estado do 
 com as aulas conferidas no navegador: fica registrado como pendente. Evidência:
 `evidencias/motores-gpu-2026-11-21/sprites-fora-do-palco-windows.json`.
 
+**Feito no lote 8 da conclusão (22/11/2026).** O `drawSprite` se dividiu: o estado do quadro
+(piscar, ordem de pintura, medida do texto) continua a cada quadro para todos, e só o desenho é
+pulado para quem está fora do retângulo do mundo visto pela transformação do contexto (margem de
+64 px mais o maior lado; com rotação ou inclinação, nada é recortado). Testes:
+`game-2d/__tests__/offscreenCulling.test.ts` (400 fora não desenham, piscar, ordem de pintura que o
+clique usa, câmera, DPR e rotação); `e2e/engine-2d-offscreen.spec.ts` conta os desenhos do canvas:
+0 com os 400 fora, 400 com eles dentro. O ganho de TEMPO num computador de mesa é pequeno (0,275
+para 0,2 a 0,25 ms por grupo cheio fora), porque o Chromium já descartava quase todo desenho fora
+da tela; a régua de tempo sozinha passaria sem o recorte, e por isso a prova conta desenhos.
+
 ## O que falta na seção 8, sem enfeite
 
 - **Regiões e streaming genéricos** (8.3): nenhum motor 2D tem, e só o Kit Plataforma do 3D. Para
   a criança, isso é bloco novo (definir regiões, o que fica salvo ao sair delas): precisa de
   proposta aprovada por ela antes de existir.
-- **Recorte de sprites fora do palco no Jogo 2D**: medido (0,45 ms por grupo cheio fora da tela num
-  computador de mesa), não feito; pede separar o estado do quadro do desenho (seção acima).
 - **Recorte das instâncias de conjunto das cenas do Pinta**: pede a caixa real do conteúdo de cada
   conjunto, calculada ao preparar a cena (os objetos de arte já são recortados, `719fade30`).
-- **Jogos de homologação D e E inteiros**: o que foi medido aqui usa os exemplos e uma bancada; o
-  jogo 2D extenso (vila, floresta, cavernas, interiores) e o 3D com regiões dependem das regiões.
+- **Jogos de homologação D e E**: o jogo D está feito no lote 8 da conclusão
+  (`evidencias/jogo-d-2026-11-22/`); o jogo E, com as regiões 3D, no lote 7 (a seção E da
+  homologação é atualizada no lote 9).
 - **Instancing no Jogo 3D e no 3D Avançado**: só se um perfil apontar.

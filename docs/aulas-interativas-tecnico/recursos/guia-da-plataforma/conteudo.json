@@ -45,6 +45,15 @@
       "texto": "Clique em <b>Expandir</b> e o Estúdio ocupa a tela toda. Numa tela grande, como a do computador, os blocos ficam de um lado e o jogo do outro: você muda um bloco e já vê o jogo mudar.",
       "telas": ["estudio-expandido"],
       "nota": "Em telas pequenas, como a do celular, o Estúdio continua em abas, mesmo expandido: toque em <b>Blocos</b> para programar e em <b>Jogo</b> para jogar."
+    },
+    {
+      "id": "guia-jogo-3d",
+      "parte": 1,
+      "cursos": ["ilha-do-farol"],
+      "titulo": "O jogo em três dimensões",
+      "texto": "A ilha tem profundidade: as coisas ficam mais perto ou mais longe, e uma pode ficar na frente da outra. Os botões no canto do jogo mudam o jeito de olhar a ilha. Para o personagem andar, clique dentro do jogo e use as setas.",
+      "telas": ["jogo-3d"],
+      "nota": "Com o mouse também dá: a rodinha aproxima e afasta, arrastar o jogo gira a cena e dois cliques voltam à vista do começo. No celular ou no tablet, arraste um dedo para girar e use dois dedos para aproximar e afastar."
     }
   ],
   "telas": {
@@ -126,6 +135,18 @@
         "desfazer": "<b>Desfazer</b> volta o último passo. <b>Refazer</b> faz de novo.",
         "video-no-estudio": "<b>Vídeo</b>: abre o vídeo da parte numa janelinha, sem sair do Estúdio.",
         "reduzir": "<b>Reduzir</b>: volta para a aula."
+      }
+    },
+    "jogo-3d": {
+      "formato": "larga",
+      "legenda": "Assim fica o jogo ampliado na Parte 1 da Aula 1.",
+      "marcas": {
+        "aviso-do-jogo": "O aviso do jogo diz o que fazer na partida. Ele pode mudar enquanto você joga.",
+        "dica-dos-controles": "A dica das teclas: as setas ou as teclas W, A, S e D fazem o personagem andar, e a tecla R recomeça a partida.",
+        "aproximar": "<b>Aproximar</b>: chega mais perto, para ver os detalhes.",
+        "afastar": "<b>Afastar</b>: olha de mais longe, para ver a ilha inteira.",
+        "girar": "<b>Girar a cena para um lado</b> e <b>Girar a cena para o outro lado</b>: dão a volta na ilha, para olhar de outro lado.",
+        "vista-do-comeco": "<b>Voltar à vista do começo</b>: a ilha volta a aparecer como no começo da partida."
       }
     }
   }

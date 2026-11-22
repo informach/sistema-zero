@@ -107,6 +107,8 @@
     "check:game-2d-advanced-recipes": "bun scripts/gen-game-2d-advanced-recipes.ts --check",
     "gen:snow-descent": "bun scripts/gen-snow-descent.ts",
     "check:snow-descent": "bun scripts/gen-snow-descent.ts --check",
+    "gen:jogo-d": "bun scripts/gen-jogo-d.ts",
+    "check:jogo-d": "bun scripts/gen-jogo-d.ts --check",
     "gen:core-example-catalog": "bun scripts/gen-core-example-catalog.ts",
     "gen:reino-zero-ultra": "bun scripts/gen-reino-zero-ultra.ts",
     "check:reino-zero-ultra": "bun scripts/gen-reino-zero-ultra.ts --check",

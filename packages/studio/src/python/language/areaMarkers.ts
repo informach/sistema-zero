@@ -16,7 +16,7 @@ import {
   pythonModuleHeaderEnd,
 } from './sourceLines'
 import { pythonStatementLines } from './statementMoves'
-import type { PythonParsedDocument, PythonToken } from './types'
+import type { PythonNode, PythonParsedDocument, PythonToken } from './types'
 
 export interface PythonAreaMarkerPlan {
   edits: PythonSourceEdit[]
@@ -44,6 +44,20 @@ export function pythonAreaMarkerOffsets(document: PythonParsedDocument): Set<num
 }
 
 /**
+ * As linhas inteiras de um comando que divide uma linha com outro (`a = 1; b = 2`), onde
+ * `pythonStatementLines` não serve (ela é a régua de mover comandos, e um pedaço de linha não se
+ * move sozinho). Comando com decorador fica de fora: a linha dele começa no `@`.
+ */
+function sharedLines(statement: PythonNode, lines: PythonSourceLines) {
+  if (!statement.range) return undefined
+  if (nodes(statement.fields.decorator_list) && statement.fields.decorator_list.length) return
+  return {
+    start: lines.lineAt(statement.range.start).start,
+    end: lines.lineAt(statement.range.end).next,
+  }
+}
+
+/**
  * Acerta os comentários de área para a divisão `areas` (paralela às linhas de topo): um no começo
  * de cada área com conteúdo; os repetidos, os de áreas vazias e os do rodapé saem.
  */
@@ -56,7 +70,10 @@ export function planPythonAreaMarkers(
   if (!body || body.length !== areas.length) return NONE
   const source = document.source
   const lines = indexPythonSourceLines(source)
-  const ranges = body.map((statement) => pythonStatementLines(document, statement, lines))
+  const ranges = body.map(
+    (statement) =>
+      pythonStatementLines(document, statement, lines) ?? sharedLines(statement, lines),
+  )
   if (ranges.some((range) => !range)) return NONE
   const newline = /\r\n|\r|\n/.exec(source)?.[0] ?? '\n'
   const markers = document.tokens.filter((token) => isPythonAreaMarkerToken(token, lines))
@@ -85,11 +102,20 @@ export function planPythonAreaMarkers(
     removals.push({ start: line.start, end, token: token.range.start })
   }
   let previousEnd = 0
+  // O comentário de uma área que começou no meio de uma linha, à espera da próxima linha dela.
+  let deferred: string | undefined
   body.forEach((_, index) => {
     const range = ranges[index]!
-    const region = markersIn(previousEnd, range.start)
     const opens = index === 0 || areas[index] !== areas[index - 1]
-    const wanted = opens ? PYTHON_AREA_BY_KIND.get(areas[index]!)!.marker : undefined
+    if (opens) deferred = undefined
+    // `A = 1; b = 2`: o segundo divide a linha com o de cima, e não cabe comentário entre eles.
+    // Se uma área começa nele, o comentário dela vai para a próxima linha própria da área.
+    const shared = range.start < previousEnd
+    const own = opens ? PYTHON_AREA_BY_KIND.get(areas[index]!)!.marker : deferred
+    if (shared) deferred = own
+    const wanted = shared ? undefined : own
+    if (!shared) deferred = undefined
+    const region = shared ? [] : markersIn(previousEnd, range.start)
     let kept = false
     for (const token of region) {
       if (!kept && token.text === wanted) {
@@ -101,12 +127,13 @@ export function planPythonAreaMarkers(
     if (wanted && !kept) {
       // Os comentários de área desta região saem todos: contam como linhas que não existem.
       const removed = new Set(region.map((token) => lines.lineAt(token.range.start).start))
-      // Acima do bloco de comentários colado à primeira linha da área.
+      // Acima do bloco de comentários colado à primeira linha da área. Só os da coluna 0: um
+      // comentário recuado é o fim do bloco de cima (o corpo de uma função), e fica com ele.
       let offset = range.start
       while (offset > Math.max(previousEnd, header)) {
         const above = lines.lineAt(offset - 1)
         const text = source.slice(above.start, above.end)
-        if (!removed.has(above.start) && !/^[\t ]*#/.test(text)) break
+        if (!removed.has(above.start) && !text.startsWith('#')) break
         offset = above.start
       }
       offset = Math.max(offset, header)
@@ -117,7 +144,7 @@ export function planPythonAreaMarkers(
       const blank = !before || /^[\t \f]*$/.test(source.slice(before.start, before.end))
       insertions.push({ offset, text: `${blank ? '' : newline}${wanted}${newline}` })
     }
-    previousEnd = range.end
+    previousEnd = Math.max(previousEnd, range.end)
   })
   for (const token of markersIn(previousEnd, source.length + 1)) removeLine(token)
   // O arquivo não começa com linha em branco antes do primeiro comentário de área: é a sobra da

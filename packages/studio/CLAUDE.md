@@ -1,5 +1,38 @@
 # @sistemazero/studio
 
+## O jogo D: o 2D de grande porte (22/11/2026)
+
+O exemplo "Mundo das Portas" (lote 8 da conclusão do plano; detalhe e números em
+`docs/estudio-evolucao/evidencias/jogo-d-2026-11-22/`): mundo do Pinta de 96 × 72 peças, seis
+regiões, três cavernas, quatro casas, 14 portas, 603 entidades, só com blocos que já existem.
+
+- **Tudo é gerado por código** (`scripts/jogo-d/` arte, cenas e sons; `scripts/gen-jogo-d.ts`):
+  mudou a arte, uma cena ou `src/examples/jogoDSource.ts`? `bun run gen:jogo-d`. O
+  `check:jogo-d` roda no `studio-engines.yml`, e o `jogoD.test.ts` compara os bytes também.
+  ⚠️ `jogoD.generated.ts` (1,75 milhão de caracteres) fica fora do biome; não o importe de código
+  do app sem pensar no pacote (a galeria entra no lote 9).
+- **Contratos das cenas que o programa usa**: porta com `destino` (nome do desenho) e `chegada` (id
+  do objeto no destino, no MEIO de uma peça e nunca dentro de uma porta, senão o herói volta na
+  hora: no mundo, a peça abaixo da porta; nas cavernas e casas, duas peças acima da saída); região
+  `role: 'region'` com `vizinhas` em par e 1 px a menos na largura e na altura (o tocador confere
+  as bordas incluídas; assim a borda comum fica numa região só); entidade com `chave`
+  (`lugar/objeto`), porque o bloco "dado do objeto" não lê o id. Nenhum inimigo nasce a menos de
+  `RAIO_SEM_INIMIGO` (6 peças) de uma chegada, do início ou do centro de uma região: ele persegue a
+  140 px. ⚠️ Camada de tiles com `collision` é só de colisão: o tocador NÃO a desenha (a peça
+  visível segura pelo `solid` do tileset).
+- **A porta**: o programa sabe que trocou de lugar quando a porta usada não está mais na cena
+  (`mapObjectNamed` do nome dela dá `null`; os nomes das portas não se repetem entre os lugares).
+  Destino quebrado: o `useMapDoor` avisa uma vez e nada muda. Chegada que falta: o herói fica no
+  início do outro lugar e o resto muda.
+- **Guardar**: uma chave só para o que foi pego (`jogo-d-pegos`, a lista unida por vírgula) e o
+  `jogo-d-salvo` por último. ⚠️ O armazenamento da prévia aceita no máximo 500 chaves
+  (`PRO_STORAGE_LIMITS.maxKeys`): uma chave por item quebrava a cama na prévia.
+- Provas: `src/examples/jogoD.test.ts` (rodadas no motor de verdade, sem navegador) e
+  `e2e/jogo-d.flow.ts` (`playwright.jogo-d.config.ts`, dois servidores: a prova e o Estúdio do
+  playground). A sessão longa usa `JOGO_D_SESSAO_MS` (10 minutos no CI, pelo menos 3 voltas) e
+  PÕE o herói em cada região e porta (não anda; quem anda é a prova de desempenho). O programa das
+  provas de navegador ganha a sonda `window.__jogoD` (e o contador `__comecos`), só de leitura.
+
 ## Áreas do projeto no Python (22/11/2026)
 
 O editor de blocos do Python tem as seis áreas do JavaScript (📦 🎛️ 🧩 ⚙️ ⚡ 🔁), que no Python

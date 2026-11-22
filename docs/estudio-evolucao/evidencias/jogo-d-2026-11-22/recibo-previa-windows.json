@@ -1,0 +1,10 @@
+{
+  "modo": "preview",
+  "recibo": {
+    "largura": 3072,
+    "altura": 2304,
+    "regiao": "Vila",
+    "vivas": 225,
+    "pintados": 480000
+  }
+}

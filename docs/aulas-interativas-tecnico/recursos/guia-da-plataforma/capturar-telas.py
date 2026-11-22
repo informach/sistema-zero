@@ -12,7 +12,12 @@ Requisitos:
   "Somente hoje", clique em Ir para a área da criança, escolha o perfil e salve o estado do
   navegador (`context.storage_state(path=...)`).
 
-    SZ_KIDS_SESSAO=caminho/da/sessao.json python capturar-telas.py [cade-todo-mundo|desafio-primeiro-jogo]
+    SZ_KIDS_SESSAO=caminho/da/sessao.json python capturar-telas.py [cade-todo-mundo|desafio-primeiro-jogo|ilha-do-farol]
+
+A Ilha do Farol (22/11/2026) tem a sua própria tela, o jogo em 3D ampliado na Parte 1 da Aula 1, com
+os botões da vista, que ficam dentro do jogo (`no_jogo`). Tira também as duas fotos da página da
+câmera do caderno (`FOTOS`): a vista do começo e a cena girada, sem marcas; e as da página de
+encostar, a experiência da Aula 2, Parte 3, olhando de cima e de lado.
 
 Abrir as partes muda só a parte em que a aula reabre para aquele perfil de testes.
 
@@ -33,7 +38,10 @@ ESCALA = 2
 CURSOS = {
     'cade-todo-mundo': 'f59382bb-9791-42ac-8912-7f011c2959d1',
     'desafio-primeiro-jogo': '38b1df5b-cd0e-4888-ae00-b319a582a567',
+    'ilha-do-farol': 'f63fe236-5862-42c9-81c8-cb26a113eac2',
 }
+# O endereço do curso, quando não é o nome da pasta dos prints.
+SLUG = {'ilha-do-farol': 'jornada-faisca-base-3d'}
 
 # Alvos: {'botao': nome} pelo nome acessível ou texto (começo, sem diferença de maiúsculas),
 # {'texto': t} pelo menor elemento com esse texto, {'cartao': selo} pelo cartão do selo da parte
@@ -121,6 +129,50 @@ TELAS = [
         ],
     },
 ]
+
+# A Ilha do Farol: o jogo em 3D ampliado. O aviso, a dica e os botões da vista são do próprio jogo,
+# dentro do iframe: `no_jogo` mede lá dentro e soma o lugar do iframe; `{'jogo': True}` é o iframe.
+TELAS_ILHA = [
+    {
+        'id': 'jogo-3d', 'parte': 1, 'tela': (1440, 900),
+        'antes': [{'clicar': 'Ampliar jogo'}],
+        'depois': [{'clicar': 'Voltar à aula'}],
+        'recorte': {'jogo': True},
+        'marcas': [
+            {'id': 'aviso-do-jogo', 'alvo': {'no_jogo': {'texto_re': r'^Encontre a chave'}}, 'ancora': 'l'},
+            {'id': 'dica-dos-controles', 'alvo': {'no_jogo': {'texto_re': r'^Setas ou WASD'}}, 'ancora': 'l'},
+            {'id': 'aproximar', 'alvo': {'no_jogo': {'botao': 'Aproximar'}}, 'ancora': 'l'},
+            {'id': 'afastar', 'alvo': {'no_jogo': {'botao': 'Afastar'}}, 'ancora': 'l'},
+            {'id': 'girar', 'alvo': {'no_jogo': {'uniao': [{'botao': 'Girar a cena para um lado'}, {'botao': 'Girar a cena para o outro lado'}]}}, 'ancora': 'l'},
+            {'id': 'vista-do-comeco', 'alvo': {'no_jogo': {'botao': 'Voltar à vista do começo'}}, 'ancora': 'l'},
+        ],
+    },
+]
+TELAS_DO_CURSO = {'ilha-do-farol': TELAS_ILHA}
+
+# Fotos sem marcas para as páginas de conceito do caderno. `aula`: outra aula do curso; `ampliar`: o
+# botão que amplia a atividade; `girar`: toques em "Girar a cena para o outro lado" (no jogo);
+# `clicar`: botões da experiência; `corte`: o pedaço do jogo (esquerda, topo, direita, base, em
+# fração do iframe), o mesmo nas duas vistas para a ilha ficar do mesmo tamanho; sem `corte`, a
+# cena da experiência (o maior canvas). Na vista do começo, a pedra esconde a chave.
+AULA_2_ILHA = '972c7cd4-7c5d-4395-853b-f263724c4348'
+FOTOS = {
+    'ilha-do-farol': [
+        {'id': 'vista-do-comeco', 'parte': 1, 'ampliar': 'Ampliar jogo', 'girar': 0, 'corte': (0.12, 0.2, 0.9, 0.92)},
+        {'id': 'vista-girada', 'parte': 1, 'ampliar': 'Ampliar jogo', 'girar': 6, 'corte': (0.12, 0.2, 0.9, 0.92)},
+        {'id': 'encostar-de-cima', 'aula': AULA_2_ILHA, 'parte': 3, 'ampliar': 'Ampliar experiência', 'clicar': []},
+        {'id': 'encostar-de-lado', 'aula': AULA_2_ILHA, 'parte': 3, 'ampliar': 'Ampliar experiência', 'clicar': ['Lado']},
+    ],
+}
+
+# A cena da experiência: o maior canvas visível, com a moldura arredondada dele.
+MAIOR_CANVAS = r"""
+() => {
+  const cs = [...document.querySelectorAll('canvas')].filter((c) => c.getClientRects().length)
+  const r = cs.map((c) => c.getBoundingClientRect()).sort((a, b) => b.width * b.height - a.width * a.height)[0]
+  return r ? { x: r.x + scrollX, y: r.y + scrollY, width: r.width, height: r.height } : null
+}
+"""
 
 # Procura no DOM. Devolve a caixa (coordenadas da página) e o nome que aparece na tela.
 ACHAR = r"""
@@ -227,10 +279,45 @@ def ir_para(page, parte):
     page.wait_for_timeout(6000)
 
 
+def frame_do_jogo(page):
+    """O iframe do jogo em 3D: o que tem a barra da vista."""
+    for frame in page.frames:
+        try:
+            if frame.evaluate("() => !!document.querySelector('[data-sz-vista]')"):
+                return frame
+        except Exception:
+            continue
+    return None
+
+
+def achar(page, alvo):
+    """A caixa do alvo em coordenadas da página, também dentro do jogo (`no_jogo`, `jogo`)."""
+    if 'no_jogo' in alvo or alvo.get('jogo'):
+        jogo = frame_do_jogo(page)
+        if not jogo:
+            return None
+        quadro = jogo.frame_element().bounding_box()
+        rolagem_x, rolagem_y = page.evaluate('() => [scrollX, scrollY]')
+        if alvo.get('jogo'):
+            return {'x': quadro['x'] + rolagem_x, 'y': quadro['y'] + rolagem_y, 'w': quadro['width'], 'h': quadro['height'], 'nome': ''}
+        caixa = jogo.evaluate(ACHAR, [alvo['no_jogo'], None])
+        if not caixa:
+            return None
+        escala = quadro['width'] / jogo.evaluate('() => innerWidth')
+        return {
+            **caixa,
+            'x': quadro['x'] + rolagem_x + caixa['x'] * escala,
+            'y': quadro['y'] + rolagem_y + caixa['y'] * escala,
+            'w': caixa['w'] * escala,
+            'h': caixa['h'] * escala,
+        }
+    return page.evaluate(ACHAR, [alvo, None])
+
+
 def medir(page, tela, largura, altura):
     """Recorte da imagem e caixa de cada marca, em porcentagem do recorte."""
     if tela.get('recorte'):
-        r = page.evaluate(ACHAR, [tela['recorte'], None])
+        r = achar(page, tela['recorte'])
         if not r:
             return None, {}, ['recorte']
         recorte = {'x': max(r['x'] - 8, 0), 'y': max(r['y'] - 8, 0), 'width': r['w'] + 16, 'height': r['h'] + 16}
@@ -239,7 +326,7 @@ def medir(page, tela, largura, altura):
     marcas = {}
     faltando = []
     for marca in tela['marcas']:
-        caixa = page.evaluate(ACHAR, [marca['alvo'], None])
+        caixa = achar(page, marca['alvo'])
         if not caixa:
             if not marca.get('opcional'):
                 faltando.append(marca['id'])
@@ -264,22 +351,55 @@ def capturar(curso):
     resultado = {}
     with sync_playwright() as runtime:
         browser = runtime.chromium.launch(channel='chrome', headless=True)
-        for tela in TELAS:
-            largura, altura = tela['tela']
+        def abrir(largura, altura, parte, aula=None):
             ctx = browser.new_context(storage_state=sessao, viewport={'width': largura, 'height': altura}, device_scale_factor=ESCALA)
             page = ctx.new_page()
-            page.goto(f"{BASE}/cursos/{curso}/aulas/{CURSOS[curso]}", wait_until='domcontentloaded')
+            page.goto(f"{BASE}/cursos/{SLUG.get(curso, curso)}/aulas/{aula or CURSOS[curso]}", wait_until='domcontentloaded')
             page.wait_for_timeout(8000)
             if '/login/aluno' in page.url or '/perfis' in page.url:
-                # O aparelho autorizado só pede o perfil de novo: escolhe o primeiro da lista.
+                # O aparelho autorizado só pede o perfil de novo: escolhe o primeiro que entra sem código.
                 fora = {'Tenho um código', 'Voltar', 'Preciso de ajuda', 'Entrar para criar'}
-                perfis = [b for b in page.get_by_role('button').all() if b.is_visible() and b.inner_text().strip() not in fora]
+                perfis = [b for b in page.get_by_role('button').all() if b.is_visible() and b.inner_text().strip() not in fora and 'Pedir código' not in b.inner_text()]
                 if perfis:
                     perfis[0].click()
                     page.wait_for_timeout(8000)
             if '/aulas/' not in page.url:
                 raise RuntimeError(f'A sessão não abriu a aula ({page.url}). Renove a sessão de criança.')
-            ir_para(page, tela['parte'])
+            ir_para(page, parte)
+            return ctx, page
+
+        for foto in FOTOS.get(curso, []):
+            ctx, page = abrir(1440, 900, foto['parte'], foto.get('aula'))
+            page.get_by_role('button', name=foto['ampliar'], exact=True).first.click()
+            page.wait_for_timeout(4000)
+            for nome in foto.get('clicar', []):
+                page.get_by_role('button', name=nome, exact=True).first.click()
+                page.wait_for_timeout(2500)
+            if 'corte' in foto:
+                jogo = frame_do_jogo(page)
+                for _ in range(foto.get('girar', 0)):
+                    jogo.get_by_role('button', name='Girar a cena para o outro lado').click()
+                    page.wait_for_timeout(300)
+            page.mouse.move(1, 899)
+            page.wait_for_timeout(1500)
+            if 'corte' in foto:
+                quadro = jogo.frame_element().bounding_box()
+                esquerda, topo, direita, base = foto['corte']
+                corte = {
+                    'x': quadro['x'] + quadro['width'] * esquerda,
+                    'y': quadro['y'] + quadro['height'] * topo,
+                    'width': quadro['width'] * (direita - esquerda),
+                    'height': quadro['height'] * (base - topo),
+                }
+            else:
+                corte = page.evaluate(MAIOR_CANVAS)
+            page.screenshot(path=str(pasta / f"{foto['id']}.jpg"), clip=corte, type='jpeg', quality=86)
+            ctx.storage_state(path=sessao)
+            ctx.close()
+            print(f"{curso}/{foto['id']}: foto")
+        for tela in TELAS_DO_CURSO.get(curso, TELAS):
+            largura, altura = tela['tela']
+            ctx, page = abrir(largura, altura, tela['parte'])
             for acao in tela.get('antes', []):
                 page.get_by_role('button', name=acao['clicar'], exact=True).first.click()
                 page.wait_for_timeout(3000)

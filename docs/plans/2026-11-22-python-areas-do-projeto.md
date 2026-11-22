@@ -90,7 +90,10 @@ e tira os repetidos, os de áreas vazias e os do rodapé; insere o que falta aci
 colados à primeira linha da área, nunca acima de shebang ou da declaração de codificação (PEP 263,
 linha 1 ou 2, `pythonModuleHeaderEnd`). Comentário de área = linha inteira, coluna 0, texto exato
 (espaço no fim não conta). Quando um sai, a separação que sobraria no começo do arquivo ou grudada
-em outra linha em branco sai junto.
+em outra linha em branco sai junto. Só comentário da coluna 0 cola na primeira linha da área: um
+comentário recuado que fecha uma função fica com ela. Numa linha com dois comandos (`A = 1; b = 2`)
+não cabe comentário entre eles; se uma área começa no segundo, o comentário dela vai para a
+próxima linha própria da área.
 
 A transação visual (`visualTransaction.ts`) ganhou a fase 2: depois de aplicar e conferir o
 gesto, acerta os comentários de área e confere de novo (comentários preservados, árvore igual). As
@@ -155,9 +158,6 @@ o cliente do Playwright roda no Node.
 - Lote 6: a reestruturação do Turtle, a requalificação e a geração.
 - Lote 8: a versão nova do motor e a lista de blocos aprovados, uma vez só, com a frente
   "Evolução do Estúdio" (blocos de região do Raylib 3D) e a do Pinta (cenários 2D).
-- Detalhes de aparência que ficaram: um comentário recuado que fecha uma função fica abaixo do
-  comentário da área seguinte; com `a = 1; b = 2` numa linha, os comentários de área não são
-  mantidos no arquivo.
 - A suíte inteira `playwright.python-bridge.config.ts` (fora do CI) tem ~25 reprovações que parecem
   anteriores às áreas (o "Rodar" que não existe na fixture e campos cobertos pelo Monaco no painel
   estreito); os 20 jogos clássicos do Turtle reprovam até os exemplos serem convertidos.

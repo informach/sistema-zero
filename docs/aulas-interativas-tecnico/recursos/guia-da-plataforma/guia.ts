@@ -9,14 +9,18 @@
  * - Os prints e a posição de cada marca vêm de `telas/<curso>/` (ver `capturar-telas.py`).
  * - O texto que a criança lê mora em `conteudo.json`, conferido por
  *   `qa/guia-da-plataforma.test.ts` (vocabulário e nomes dos botões).
- * - Os dois geradores (`cade-todo-mundo/gerar-caderno.ts` e `desafio-farol/gerar-caderno.ts`)
- *   chamam `guiaSecao` e somam `GUIA_CSS` ao CSS do caderno.
+ * - Os geradores (`cade-todo-mundo`, `desafio-farol` e `ilha-farol`, cada um no seu
+ *   `gerar-caderno.ts`) chamam `guiaSecao` e somam `GUIA_CSS` ao CSS do caderno.
+ * - A Ilha do Farol (22/11/2026) tem uma página só dela, o jogo em 3D e os botões da vista
+ *   (`cursos` na página); as outras são dos dois cursos de entrada.
  */
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { nota } from '../caderno-visual/visual'
 
-export type CursoDoGuia = 'cade-todo-mundo' | 'desafio-primeiro-jogo'
+export type CursoDoGuia = 'cade-todo-mundo' | 'desafio-primeiro-jogo' | 'ilha-do-farol'
+/** Os cursos de uma página que não diz os seus: os dois de entrada. */
+const CURSOS_DE_ENTRADA: CursoDoGuia[] = ['cade-todo-mundo', 'desafio-primeiro-jogo']
 
 type Marca = { x: number; y: number; w: number; h: number; ancora: string; nome: string }
 type Captura = { arquivo: string; largura: number; altura: number; marcas: Record<string, Marca> }
@@ -33,6 +37,7 @@ type Pagina = {
   texto: string
   telas: string[]
   nota?: string
+  cursos?: CursoDoGuia[]
 }
 export type ConteudoDoGuia = { paginas: Pagina[]; telas: Record<string, Tela> }
 
@@ -47,6 +52,11 @@ export function capturasDoCurso(curso: CursoDoGuia): Record<string, Captura> {
 
 /** As páginas do guia, na ordem em que entram no caderno. */
 export const GUIA_IDS = CONTEUDO_DO_GUIA.paginas.map((p) => p.id)
+
+/** As páginas do guia que um curso tem. */
+export function paginasDoCurso(curso: CursoDoGuia): Pagina[] {
+  return CONTEUDO_DO_GUIA.paginas.filter((p) => (p.cursos ?? CURSOS_DE_ENTRADA).includes(curso))
+}
 
 /** Marcas da tela que existem no print deste curso, na ordem da legenda. */
 export function marcasDaTela(curso: CursoDoGuia, tela: string): [string, string, Marca][] {
@@ -124,8 +134,8 @@ export function guiaSecao(
     rodape,
   }: { curso: CursoDoGuia; kicker: (parte: number) => string; rodape: string },
 ): string {
-  const pagina = CONTEUDO_DO_GUIA.paginas.find((p) => p.id === id)
-  if (!pagina) throw new Error(`Página do guia desconhecida: ${id}`)
+  const pagina = paginasDoCurso(curso).find((p) => p.id === id)
+  if (!pagina) throw new Error(`Página do guia desconhecida para ${curso}: ${id}`)
   const telas = pagina.telas.map((tela) => figura(curso, tela)).join('')
   const notaDaPagina = pagina.nota ? nota(pagina.nota) : ''
   return `<section class="page guia" data-id="${id}"><div class="inner"><div class="guia-topo"><span class="guia-selo">Conheça a plataforma</span><div class="kicker">${kicker(pagina.parte)}</div><h2>${pagina.titulo}</h2><p>${pagina.texto}</p></div><div class="content guia-conteudo">${telas}${notaDaPagina}</div></div>${rodape}</section>`

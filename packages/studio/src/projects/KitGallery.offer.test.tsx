@@ -80,3 +80,22 @@ test('Turtle examples cannot be selected from a free environment without its cou
   )
   await waitFor(() => expect((example as HTMLButtonElement).disabled).toBe(false))
 })
+
+test('o card de um exemplo grande mostra a capa tirada do jogo, decorativa', {
+  timeout: 15_000,
+}, async () => {
+  render(<KitGallery onOpenProject={() => {}} professional />)
+  // O grupo do Jogo 2D abre no percurso recomendado; o jogo D aparece em "Ver todos os jogos 2D".
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Ver todos os jogos 2D' }, { timeout: 4000 }),
+  )
+  const nome = await screen.findByText('Mundo das Portas', {}, { timeout: 4000 })
+  const card = nome.closest('button') as HTMLButtonElement
+  const capa = card.querySelector('img[data-sz-kit-cover]') as HTMLImageElement
+  expect(capa).not.toBeNull()
+  expect(capa.getAttribute('src')).toMatch(/^data:image\/png;base64,/)
+  // O nome do botão continua sendo o texto do card (a imagem não entra nele).
+  expect(capa.getAttribute('alt')).toBe('')
+  // Os outros cards seguem só com o emoji: a única capa da lista é a do jogo D.
+  expect(document.querySelectorAll('img[data-sz-kit-cover]')).toHaveLength(1)
+})

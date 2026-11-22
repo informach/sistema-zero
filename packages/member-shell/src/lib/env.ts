@@ -48,6 +48,10 @@ export const EnvSchema = z
     STUDIO_PYTHON_LANGUAGE_TOKEN: z.string().min(32).optional(),
     STUDIO_PYTHON_RUNTIME_URL: z.string().url().optional(),
     STUDIO_PYTHON_RUNTIME_TOKEN: z.string().min(32).optional(),
+    // Onde moram os arquivos dos exemplos GRANDES da galeria do Estúdio (o jogo E, 20 MB): a base
+    // pública do R2 do ambiente. Ausente (produção até ela decidir) → o card não aparece e a rota
+    // `/api/studio/example-files` responde 404 (lote 9 da conclusão do plano do Estúdio, 22/11/2026).
+    STUDIO_EXAMPLES_ORIGIN: z.string().url().optional(),
     OPENROUTER_STUDIO_BUILDER_MODEL: z.string().optional(),
     // Chave estável do cookie temporário da Área dos Pais do community-kids. Em
     // produção aquele app a exige no boot; aqui permanece opcional porque o shell
