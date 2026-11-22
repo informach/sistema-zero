@@ -58,10 +58,21 @@ export function createLiveProRuntime(
     const current = assertLiveStudioAuthority(scope, false)
     if (current.revision !== revision || !sameLiveProject(current.project, snapshot))
       throw new Error('O projeto mudou durante a compilação. Execute a revisão atual.')
-    if (!response.ok || !value || typeof value !== 'object')
-      throw new Error(
-        'Não foi possível compilar esta revisão. Confira a autoria e tente novamente.',
-      )
+    if (!response.ok || !value || typeof value !== 'object') {
+      // A rota responde a falha de compilação com o recado da criança e a saída do Vite
+      // (`{ error: { message, output } }`); o palco mostra os dois, como no Pro da aula (full
+      // review final: aqui tudo virava o recado genérico).
+      const failure =
+        value && typeof value === 'object' && 'error' in value ? value.error : undefined
+      const detail = failure && typeof failure === 'object' ? failure : {}
+      const error = new Error(
+        'message' in detail && typeof detail.message === 'string' && detail.message.trim()
+          ? detail.message
+          : 'Não foi possível compilar esta revisão. Confira a autoria e tente novamente.',
+      ) as Error & { output?: string }
+      if ('output' in detail && typeof detail.output === 'string') error.output = detail.output
+      throw error
+    }
     if (!('workspaceRevision' in value) || value.workspaceRevision !== revision)
       throw new Error('A resposta não corresponde à revisão confirmada.')
     return value
