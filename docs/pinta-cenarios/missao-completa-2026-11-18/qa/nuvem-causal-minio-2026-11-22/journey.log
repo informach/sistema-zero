@@ -1,0 +1,31 @@
+bun test v1.3.11 (af24e281)
+
+.cache\pinta-causal-s3-probe.test.ts:
+{
+  severity_local: "NOTICE",
+  severity: "NOTICE",
+  code: "42P06",
+  message: "schema \"drizzle\" already exists, skipping",
+  file: "schemacmds.c",
+  line: "132",
+  routine: "CreateSchemaCommand",
+}
+{
+  severity_local: "NOTICE",
+  severity: "NOTICE",
+  code: "42P07",
+  message: "relation \"members_migrations\" already exists, skipping",
+  file: "parse_utilcmd.c",
+  line: "207",
+  routine: "transformCreateStmt",
+}
+PostgreSQL 16.13
+[INFO] http.listening {"port":5597,"host":"127.0.0.1"}
+[INFO] adult_journey_seed.skipped {"reason":"already-configured","detail":"política já configurada, seed ignorado"}
+[INFO] app.stopped
+(pass) Pinta commits the real gzip only after BFF, Gateway, Members and PostgreSQL agree on the whole unit [1469.00ms]
+
+ 1 pass
+ 0 fail
+ 66 expect() calls
+Ran 1 test across 1 file. [3.85s]

@@ -35,9 +35,40 @@
   },
   "artifactSha256": {
     "Dockerfile": "f70a05f387a2187999d88f6e3bd13a55934d62831f0c1a82434d538ccde52c74",
-    "README.md": "82f06b679cc1856c77f81b74df9d604c7b6b60e0ae07ace967bcda1aa9414d96",
+    "README.md": "2778e869f62ba0b87de9ec8204c31963fbee9436e79dbc35e7547c3978ef90d4",
     "probe.ts": "84e623bdf6c1781bfb26bab7ae41b3db42ed74a3a7fb14b61f1fa1b19fed7fba",
-    "run.ps1": "05ac65cde897366400fe069c48ede7ca9446c274d445f6a06eae197ab660fc2c",
-    "minio.log": "8509b84b1e01cbf7ea6906e8dbf837932021ce13ac5041c700d42d8d95c4dc64"
+    "run.ps1": "ac9104765dd9d5d478e2a82728519a958c1a9f8ed8b8cbc86f8a9004adb6c385",
+    "minio.log": "8509b84b1e01cbf7ea6906e8dbf837932021ce13ac5041c700d42d8d95c4dc64",
+    "probe-journey.ts": "7e5fb498ee4ca32b85fde30603cb8f20ccb3ab8a91e8129d1f36388895b87327",
+    "journey.log": "9f0f3c4ce90636df07e512016cc24949ba98a348082fe8c349ad2265fc807014"
+  },
+  "journey": {
+    "testedCommit": "541e41903253352cc8cf21d3d077ec305e8b43d6",
+    "membersHttpSourceCommit": "fdb196192efaad0ed303c7c2ba2d0104232c9355",
+    "sourceGitBlobSha256": {
+      "packages/member-shell/src/routes/pinta-causal.ts": "3c2b0ff8639986c6389e6432772f0f78a3289c0a9aa7cb90093ac4e6e3ee2f76",
+      "packages/member-shell/src/server/gateway.ts": "43af052e16c0b6fe164b7d356b70c2c30e02f5b05987859553544c133843c9c6",
+      "packages/member-shell/src/server/r2.ts": "c76a41ac2afd62abdc33aa99313dcf20b636e916d912610e98b7a89d90c77367",
+      "packages/member-shell/src/server/pinta-causal-content.ts": "0aed36b31e7310dc7d36ea867f24aef6b2dba6d073fe5fce0cbfd7797737c88e",
+      "packages/member-shell/src/server/pinta-causal-proof.ts": "44ecab78a15cad6629fbf2db086eade772ebfc1c3f6df36c0bf2efd051fd6837",
+      "packages/member-shell/src/server/pinta-causal-protocol.ts": "fa038d6aa93a70966e111ecb0c512cd8b693ee181c28bfb3315b888ddec89123",
+      "packages/pinta/src/export/pintaCausalManifest.ts": "aa554051ee05077b0480d0a64f107499c3750bf4de0f1cf3bcdeeee7179884e1",
+      "packages/pinta/src/export/pintaCausalTransition.ts": "d6566ae453997b86e453358158dabdfcd446fd1bc613d85a3e5dce548651ed3a",
+      "packages/pinta/src/export/pintaCausalDetach.ts": "4ece13775a71121d7a7d17620d2a9163d23068a2b6528d0b22525b50b002f745",
+      "packages/core/src/creations/pinta-causal.ts": "4aeb95e0acec9629d60578175059cef1774fbd5afc73da0266a0f6085a1e7e29",
+      "packages/api-gateway/src/infrastructure/config/pinta-causal-routes.ts": "394044171d36b395eb0c450e5bba33bacf2db1e139c570ff47c29543480d7900",
+      "packages/members/src/composition-root.ts": "1af3d8d354a010dfbd349c6909cfb265dc24a519e790b060b0672693eabf90c4",
+      "packages/members/src/interfaces/http/routes/pinta-causal.routes.ts": "d21c39d9a08815a256e0437ff4d4dc317fae1070a484060c910a2b2f89901d97",
+      "packages/members/src/infrastructure/persistence/drizzle/pinta-causal-units.repository.ts": "3db02668ddf38c09c2442ff6e923fee890a49c44f4425e398f7b07d522ac38ad",
+      "packages/members/src/infrastructure/persistence/drizzle/migrations/0168_pinta_causal_units.sql": "807fed01b4971f8d9c74b1802351b1266268d1c0d6e46065bb0c956168d1b05f",
+      "packages/members/src/infrastructure/persistence/drizzle/migrations/0169_pinta_causal_object_retirement.sql": "790edce8e1f272b6b28e88b5a4a7d1a60e8c92932d6c9d132582ed76afdd7f38",
+      "packages/members/src/infrastructure/persistence/drizzle/migrations/0170_pinta_causal_writer_fence.sql": "5ffd334905cb8fe4cb2bd5b340d4d1cb7340133e487927d51841724bb16a0a3c",
+      "packages/members/tests/db/kids-journey-database.ts": "373e785d778b93069b52786169a7610ef9a669f12b08d6e938286d2b962e8a45"
+    },
+    "postgresVersion": "16.13",
+    "observedMinioImageId": "sha256:14d1092864902e6b02f7130cba271b4e958ba3fefaf83b3d9ae740efd9c86ddb",
+    "tests": 1,
+    "failed": 0,
+    "assertions": 66
   }
 }

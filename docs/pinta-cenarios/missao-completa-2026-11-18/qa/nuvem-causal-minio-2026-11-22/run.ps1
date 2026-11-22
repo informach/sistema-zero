@@ -1,7 +1,26 @@
 [CmdletBinding()]
-param()
+param([switch]$Journey)
 
 $ErrorActionPreference = 'Stop'
+function Get-JourneyDatabaseUrl {
+  $postgres = 'pinta-causal-20261122-db'
+  $binding = docker port $postgres 5432/tcp
+  if ($LASTEXITCODE -ne 0 -or $binding -ne '127.0.0.1:55553') {
+    throw 'Inicie o PostgreSQL descartável do roteiro no loopback 127.0.0.1:55553.'
+  }
+  $settings = docker inspect --format '{{json .Config.Env}}' $postgres | ConvertFrom-Json
+  if ($LASTEXITCODE -ne 0) { throw 'Não foi possível ler a configuração do PostgreSQL descartável.' }
+  $values = @{}
+  foreach ($entry in $settings) {
+    $key, $value = $entry -split '=',2
+    if ($key -in 'POSTGRES_USER','POSTGRES_PASSWORD') { $values[$key] = $value }
+  }
+  if (!$values['POSTGRES_PASSWORD']) { throw 'Configure a credencial do PostgreSQL descartável.' }
+  $user = [Uri]::EscapeDataString(($values['POSTGRES_USER'] ?? 'postgres'))
+  $password = [Uri]::EscapeDataString($values['POSTGRES_PASSWORD'])
+  return 'postgresql://{0}:{1}@127.0.0.1:55553/kids_journey_pinta_causal_bff_journey' -f $user,$password
+}
+
 $repo = (git -C $PSScriptRoot rev-parse --show-toplevel).Trim()
 if ($LASTEXITCODE -ne 0) { throw 'Execute o ensaio em um checkout do repositório.' }
 
@@ -13,13 +32,15 @@ $expectedSha = '7c5bd8512c6e966455b1d198209358b2d191c77a83ab377c4073281065fb855f
 $url = "https://github.com/minio/minio/releases/download/$version/minio.linux-amd64.$version"
 $cache = Join-Path $repo '.cache/pinta-causal-minio-20250907'
 $module = Join-Path $repo 'packages/member-shell'
-$log = Join-Path $repo '.cache/pinta-causal-minio-local.log'
+$log = Join-Path $repo $(if ($Journey) { '.cache/pinta-causal-journey.log' } else { '.cache/pinta-causal-minio-local.log' })
+$probe = if ($Journey) { 'probe-journey.ts' } else { 'probe.ts' }
 $binary = Join-Path $cache 'minio'
 
 $existing = docker ps -a --filter "name=^${name}$" --format '{{.ID}}'
 if ($LASTEXITCODE -ne 0 -or $existing) { throw 'Docker indisponível ou nome isolado em uso.' }
-if (Get-NetTCPConnection -State Listen -LocalPort 5578 -ErrorAction SilentlyContinue) {
-  throw 'A porta 5578 está ocupada.'
+$ports = if ($Journey) { 5578,5597,5598,5599 } else { 5578 }
+if (Get-NetTCPConnection -State Listen -LocalPort $ports -ErrorAction SilentlyContinue) {
+  throw 'Uma porta reservada para o ensaio está ocupada.'
 }
 
 New-Item -ItemType Directory -Path $cache,$(Join-Path $module '.cache') -Force | Out-Null
@@ -36,12 +57,13 @@ $actualSha = (Get-FileHash -Algorithm SHA256 -LiteralPath $binary).Hash.ToLowerI
 if ($actualSha -ne $expectedSha) { throw 'O SHA-256 do binário em cache difere do release oficial.' }
 
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Dockerfile') -Destination (Join-Path $cache 'Dockerfile')
-Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'probe.ts') -Destination (Join-Path $module '.cache/pinta-causal-s3-probe.test.ts')
+Copy-Item -LiteralPath (Join-Path $PSScriptRoot $probe) -Destination (Join-Path $module '.cache/pinta-causal-s3-probe.test.ts')
 docker build --quiet --network none --platform linux/amd64 --tag $image $cache
 if ($LASTEXITCODE -ne 0) { throw 'A imagem descartável do MinIO não foi construída.' }
 
 $names = @(
   'R2_ACCESS_KEY_ID', 'R2_SECRET_ACCESS_KEY', 'R2_ACCOUNT_ID', 'R2_UGC_BUCKET', 'R2_S3_ENDPOINT',
+  'PINTA_CAUSAL_JOURNEY_DATABASE_URL',
   'MINIO_ROOT_USER', 'MINIO_ROOT_PASSWORD', 'MINIO_API_CORS_ALLOW_ORIGIN', 'MINIO_SITE_REGION', 'MINIO_BROWSER'
 )
 $prior = @{}
@@ -51,6 +73,9 @@ foreach ($variable in $names) {
 $container = $null
 $probeExit = 1
 try {
+  if ($Journey -and !$env:PINTA_CAUSAL_JOURNEY_DATABASE_URL) {
+    $env:PINTA_CAUSAL_JOURNEY_DATABASE_URL = Get-JourneyDatabaseUrl
+  }
   $env:R2_ACCESS_KEY_ID = 'pintatest' + [Guid]::NewGuid().ToString('N')
   $env:R2_SECRET_ACCESS_KEY = [Guid]::NewGuid().ToString('N') + [Guid]::NewGuid().ToString('N')
   $env:R2_ACCOUNT_ID = 'pinta-local-test'
@@ -87,7 +112,11 @@ try {
   Push-Location -LiteralPath $module
   try {
     bun test ./.cache/pinta-causal-s3-probe.test.ts 2>&1 |
-      ForEach-Object { $_.ToString().Replace($env:R2_ACCESS_KEY_ID, '[redacted]').Replace($env:R2_SECRET_ACCESS_KEY, '[redacted]') } |
+      ForEach-Object {
+        $_.ToString().Replace($env:R2_ACCESS_KEY_ID, '[redacted]').Replace($env:R2_SECRET_ACCESS_KEY, '[redacted]') `
+          -replace 'postgres(?:ql)?://[^\s\x27\x22]+','[redacted-db]' `
+          -replace '(?i)X-Amz-Signature=[0-9a-f]{64}','X-Amz-Signature=[redacted]'
+      } |
       Tee-Object -FilePath $log
     $probeExit = $LASTEXITCODE
   } finally {
