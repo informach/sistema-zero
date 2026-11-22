@@ -176,7 +176,7 @@ for (const { extension, prefix, sceneCodecs, oldCodecs, target, offset } of acce
       selectPythonPalette({ ...onlySome.loaded, level: 2 })
         .entries.filter(({ id }) => id.startsWith(`${prefix}pinta_scene_`))
         .map(({ id }) => id),
-    ).toEqual([expectedIds[0]])
+    ).toEqual(expectedIds.slice(0, 1))
   })
 
   test(`${extension.id} does not claim a drawing call on a learner object or a shadowed import`, async () => {

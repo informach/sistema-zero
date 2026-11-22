@@ -9,7 +9,7 @@ import { figuras, PECA, recortar, reduzir, Tela } from './arte'
 
 /** A janela da capa, em peças: as casas de cima da vila, o início do herói e o caminho. */
 const JANELA = { x: 1, y: 5, colunas: 24, linhas: 14 }
-const FIGURA_DO_TIPO: Record<string, string> = {
+const FIGURA_DO_TIPO: Record<string, keyof ReturnType<typeof figuras>> = {
   moeda: 'moeda',
   bau: 'bau',
   inimigo: 'gosma',
