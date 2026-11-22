@@ -64,12 +64,24 @@ try {
     Array.from(window.pintaGame.surface.context.getImageData(320, 240, 1, 1).data),
   )
   assert.deepEqual(newFront, [216, 148, 105, 255])
-  await page.goto(new URL('bad/', url).href, { waitUntil: 'domcontentloaded' })
-  await page.waitForFunction(() =>
-    document.querySelector('#pinta-status').textContent.includes('PNG'),
-  )
-  assert.equal(await page.locator('canvas').count(), 0)
-  assert.equal(await page.evaluate(() => !!window.pintaGame), false)
+  for (const [path, error] of [
+    ['bad/', 'PNG'],
+    ['bad-raster/', 'pixels'],
+  ]) {
+    await page.goto(new URL(path, url).href, { waitUntil: 'domcontentloaded' })
+    try {
+      await page.waitForFunction(
+        (message) => document.querySelector('#pinta-status').textContent.includes(message),
+        error,
+      )
+    } catch (cause) {
+      const status = await page.locator('#pinta-status').textContent()
+      const canvasCount = await page.locator('canvas').count()
+      throw new Error(`${path}: ${status}. Canvas count: ${canvasCount}.`, { cause })
+    }
+    assert.equal(await page.locator('canvas').count(), 0)
+    assert.equal(await page.evaluate(() => !!window.pintaGame), false)
+  }
   assert.deepEqual(errors, [])
   console.log(
     JSON.stringify({
@@ -80,7 +92,7 @@ try {
       front: before.front,
       cabin: cabinPixel,
       updated: newFront,
-      corruptLinkedImage: 'refused before player boot',
+      corruptLinkedImage: ['header', 'CRC valid but invalid raster'],
       mainBytes: expected.mainBytes,
       errors,
     }),

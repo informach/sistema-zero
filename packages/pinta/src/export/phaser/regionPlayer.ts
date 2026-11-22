@@ -4,6 +4,7 @@ import {
   PINTA_REGION_IMAGE_PNG_LIMITS,
   PINTA_REGION_WORLD_BUDGET,
 } from '@sistemazero/core/studio/pinta-region-image-limits'
+import { checkAdmittedPintaPngPixels } from '@sistemazero/core/studio/pinta-region-png-pixels'
 import {
   type PintaRegionScene,
   type PintaRegionScenePlan,
@@ -317,6 +318,7 @@ async function readWorldImages(world: ReturnType<typeof readRegionPhaserWorld>) 
     const size = readPngDimensions(bytes, PINTA_REGION_IMAGE_PNG_LIMITS)
     imagePixels -= size.width * size.height
     if (imagePixels < 0) throw new Error('As imagens do cenário ultrapassam o limite do pacote.')
+    checkAdmittedPintaPngPixels({ png: bytes, ...size })
     images.set(path, new Blob([bytes], { type: 'image/png' }))
     return size
   }
