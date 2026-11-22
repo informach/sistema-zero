@@ -1,7 +1,12 @@
 import { expect, test } from 'bun:test'
 import { IDBFactory } from 'fake-indexeddb'
 import { createEmptyProject } from '../core/project'
-import { readAllKeys, readValue, writeInOneTransaction } from '../state/idbTransaction'
+import {
+  interruptConditionalTransactions,
+  readAllKeys,
+  readValue,
+  writeInOneTransaction,
+} from '../state/idbTransaction'
 import type { RecoveryWrite } from '../state/projectStorageCoordinator'
 import { projectHeadKey, projectMetaKey, projectRecoveryKey } from '../state/projectStorageKeys'
 import { projectStorageEntries } from '../state/projectStorageRecords'
@@ -319,6 +324,43 @@ test('native journal discovery preserves readable legacy IDs containing colons',
       id: recovery.projectId,
     })
     expect(await readValue(f.scope.store, key)).toBeUndefined()
+  } finally {
+    f.close()
+  }
+})
+
+test('a saída da aba escondida no meio da promoção não deixa o projeto "Preservado"', async () => {
+  // A gravação de saída com a página VIVA (aba escondida, `pageAlive`) chama
+  // `interruptConditionalTransactions`, que aborta as escritas condicionais da mesma identidade.
+  // A promoção da migração é uma delas: abortada, ela virava "pendente" e o card dizia
+  // "Preservado" até a próxima carga, embora nada estivesse errado (lote 1, item 7, 22/11/2026).
+  const f = await fixture()
+  try {
+    const sources = [await f.seed('escondida-a'), await f.seed('escondida-b')]
+    // A conexão fica "quente" depois da primeira transação, e as seguintes abrem direto nela:
+    // é nela que a saída precisa chegar, logo depois de a escrita condicional se registrar.
+    const database = await new Promise<IDBDatabase>((resolve) =>
+      f.scope.store('readonly', (objectStore) => resolve(objectStore.transaction.db)),
+    )
+    const transaction = database.transaction.bind(database)
+    let interrupt = true
+    database.transaction = ((names: string | string[], mode?: IDBTransactionMode) => {
+      const opened = transaction(names, mode)
+      if (mode === 'readwrite' && interrupt) {
+        interrupt = false
+        queueMicrotask(() => interruptConditionalTransactions(f.scope.identity))
+      }
+      return opened
+    }) as IDBDatabase['transaction']
+    const result = await migrateLocalV3Projects(f.scope)
+    expect(interrupt).toBe(false)
+    expect(result.pending).toEqual([])
+    expect([...result.changed].sort()).toEqual(sources.map((source) => source.id).sort())
+    for (const source of sources)
+      expect(await readValue(f.scope.store, projectMetaKey(source.id, 4))).toMatchObject({
+        id: source.id,
+        name: source.name,
+      })
   } finally {
     f.close()
   }

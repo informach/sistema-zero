@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'bun:test'
 import { IDBFactory } from 'fake-indexeddb'
 import { createEmptyProject } from '../core/project'
-import { readAllKeys, readValue, writeInOneTransaction } from '../state/idbTransaction'
+import {
+  interruptConditionalTransactions,
+  readAllKeys,
+  readValue,
+  writeInOneTransaction,
+} from '../state/idbTransaction'
 import {
   projectBlocksKey,
   projectFilesKey,
@@ -216,6 +221,31 @@ describe('corte local com IndexedDB transacional', () => {
     await expect(migrateLocalProject('old', scope)).rejects.toThrow()
     expect(await readValue(scope.store, 'sz:project:old')).toEqual(original)
     expect(await readValue(scope.store, projectMetaKey('old'))).toBeUndefined()
+  })
+
+  it('a saída da aba escondida no meio da promoção não deixa o projeto pendente', async () => {
+    // A saída com a página viva aborta as escritas condicionais em voo (a promoção é uma): ela é
+    // lida de novo e tentada outra vez, em vez de virar "Preservado" até a próxima carga.
+    const scope = database()
+    await writeInOneTransaction(scope.store, { puts: [['sz:project:old', oldProject()]] })
+    const opened = await new Promise<IDBDatabase>((resolve) =>
+      scope.store('readonly', (objectStore) => resolve(objectStore.transaction.db)),
+    )
+    const transaction = opened.transaction.bind(opened)
+    let interrupt = true
+    opened.transaction = ((names: string | string[], mode?: IDBTransactionMode) => {
+      const created = transaction(names, mode)
+      if (mode === 'readwrite' && interrupt) {
+        interrupt = false
+        queueMicrotask(() => interruptConditionalTransactions(scope.identity))
+      }
+      return created
+    }) as IDBDatabase['transaction']
+    const result = await migrateLocalProjects(scope, await readAllKeys(scope.store))
+    expect(interrupt).toBe(false)
+    expect(result.pending).toEqual([])
+    expect(result.changed).toEqual(['old'])
+    expect(await readValue(scope.store, projectMetaKey('old'))).toMatchObject({ name: 'Aventura' })
   })
 })
 

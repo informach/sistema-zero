@@ -24,7 +24,7 @@ import { assembleProjectRecord, projectStorageEntries } from '../state/projectSt
 import { isLocalHead, type LocalHead } from '../state/projectStorageRevision'
 import type { ProjectStorageScope } from '../state/projectStorageRuntime'
 import { encodeProjectStorageValue } from '../state/projectStorageTransport'
-import { promoteLocalMigration } from './localTransaction'
+import { interruptedByExit, promoteLocalMigration } from './localTransaction'
 
 const pending = (id: string, message: string) =>
   new ProjectDocumentError('migration-pending', message, id)
@@ -188,7 +188,13 @@ async function migrate(id: string, scope: ProjectStorageScope): Promise<string |
       const prepared: IdbWrite = {
         puts: puts.map(([key, value]) => [key, encodeProjectStorageValue(key, value)]),
       }
-      if (await promoteLocalMigration(scope.store, expected, prepared, scope.identity)) return
+      const promoted = await promoteLocalMigration(
+        scope.store,
+        expected,
+        prepared,
+        scope.identity,
+      ).catch(interruptedByExit)
+      if (promoted === true) return
       continue
     }
     const fields = new Map<string, unknown>()
@@ -318,8 +324,13 @@ async function migrate(id: string, scope: ProjectStorageScope): Promise<string |
       // Keep head/history/ledger: an already open v3 tab can preserve its next edit.
       deletes: sourceKeys.slice(0, 6),
     }
-    if (await promoteLocalMigration(scope.store, expected, prepared, scope.identity))
-      return targetExists ? undefined : targetId
+    const promoted = await promoteLocalMigration(
+      scope.store,
+      expected,
+      prepared,
+      scope.identity,
+    ).catch(interruptedByExit)
+    if (promoted === true) return targetExists ? undefined : targetId
   }
   throw pending(
     id,
