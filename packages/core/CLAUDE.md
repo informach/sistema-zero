@@ -1,5 +1,18 @@
 # CLAUDE.md — @sistemazero/core
 
+## Leitor interno de cenas regionais (22/11/2026)
+
+`studio/pinta-region-scene.ts` prepara leitura de cena 4, sem incluí-la na API
+ativa `readPintaScene` (1–3). JSON de até 8 MiB UTF-8; origem/chunks do codec
+compartilhado, cabeçalhos de todas as definições antes de qualquer decodificação.
+Cada mapa mantém 32 camadas/2.048 chunks/4 MiB. O teto agregado deriva do tamanho
+base64 e do arquivo, sem ampliar os formatos publicados. O retorno contém
+`Int16Array`; não é o DTO serializável. Não ativar PNG 5/runtimes por essa leitura.
+`PintaSceneBaseSchema` é apenas a estrutura reutilizável; a validação semântica
+completa continua obrigatória. `validatePintaSceneCells` reúne essas regras para
+as duas representações, conservando as cenas antigas. Provas em
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-de-cena-regional-2026-11-22/`.
+
 ## Publicação clássica com versões (20/11/2026)
 
 `studio/classic-publication.ts`: `StudioClassicPublication` (`publicationVersion: 1`,

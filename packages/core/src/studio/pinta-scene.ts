@@ -153,166 +153,188 @@ export const PintaSceneSpriteSchema = z.strictObject({
     .min(1)
     .max(64),
 })
-export const PintaSceneSchema = z
-  .strictObject({
-    version: z.union([z.literal(1), z.literal(2), z.literal(3)]),
-    id,
-    name: z.string().max(48),
-    tileSize: z.number().int().min(1).max(128),
-    cols: piece.cols,
-    rows: piece.rows,
-    tilesets: z.array(PintaSceneTilesetSchema).min(1).max(32),
-    layers: piece.layers,
-    sets: z.array(z.strictObject(piece)).max(64).optional(),
-    art: z
-      .array(
-        z.strictObject({
-          id,
-          image: z.string().min(1).max(800000),
-          width: z.number().positive(),
-          height: z.number().positive(),
-          sprite: PintaSceneSpriteSchema.optional(),
-        }),
-      )
-      .max(128)
-      .optional(),
-    resources: z
-      .array(z.strictObject({ id, sourceId: id, capturedAt: z.number().int().nonnegative() }))
-      .max(32)
-      .optional(),
-  })
-  .superRefine((s, ctx) => {
-    const allLayers = [s.layers, ...(s.sets ?? []).map((v) => v.layers)].flat()
+export const PintaSceneBaseSchema = z.strictObject({
+  version: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+  id,
+  name: z.string().max(48),
+  tileSize: z.number().int().min(1).max(128),
+  cols: piece.cols,
+  rows: piece.rows,
+  tilesets: z.array(PintaSceneTilesetSchema).min(1).max(32),
+  layers: piece.layers,
+  sets: z.array(z.strictObject(piece)).max(64).optional(),
+  art: z
+    .array(
+      z.strictObject({
+        id,
+        image: z.string().min(1).max(800000),
+        width: z.number().positive(),
+        height: z.number().positive(),
+        sprite: PintaSceneSpriteSchema.optional(),
+      }),
+    )
+    .max(128)
+    .optional(),
+  resources: z
+    .array(z.strictObject({ id, sourceId: id, capturedAt: z.number().int().nonnegative() }))
+    .max(32)
+    .optional(),
+})
+
+/** Shared semantic checks; each cell format owns its shape, bounds and payload admission. */
+export type PintaSceneCellsLayer<Cells> =
+  | Exclude<z.infer<typeof PintaSceneLayerSchema>, { kind: 'tiles' }>
+  | (Omit<Extract<z.infer<typeof PintaSceneLayerSchema>, { kind: 'tiles' }>, 'cells'> & {
+      cells: Cells
+    })
+export type PintaSceneCellsDocument<Cells> = Omit<
+  z.infer<typeof PintaSceneBaseSchema>,
+  'version' | 'layers' | 'sets'
+> & {
+  version: number
+  layers: PintaSceneCellsLayer<Cells>[]
+  sets?: Array<{ id: string; cols: number; rows: number; layers: PintaSceneCellsLayer<Cells>[] }>
+}
+export function validatePintaSceneCells<Cells>(
+  s: PintaSceneCellsDocument<Cells>,
+  ctx: Pick<z.RefinementCtx, 'addIssue'>,
+  policy: {
+    count(cells: Cells): number
+    valid(cells: Cells, cols: number, rows: number, tileCount: number): boolean
+  },
+): void {
+  const allLayers = [s.layers, ...(s.sets ?? []).map((v) => v.layers)].flat()
+  if (
+    s.version < 3 &&
+    allLayers.some(
+      (layer) => layer.kind === 'objects' && layer.objects.some((object) => object.collision),
+    )
+  )
+    ctx.addIssue({ code: 'custom', message: 'Colisão de objeto exige cena 3.' })
+  if (
+    s.version === 1 &&
+    (s.resources?.length ||
+      s.art?.some((a) => a.sprite) ||
+      allLayers.some((l) => l.kind === 'objects' && l.objects.some((o) => o.art?.animationId)))
+  )
+    ctx.addIssue({
+      code: 'custom',
+      message: 'Animações de objetos e versões de recursos exigem cena 2.',
+    })
+  for (const a of s.art ?? []) {
+    if (!a.sprite) continue
+    const sprite = a.sprite
+    const animationIds = sprite.animations.map((v) => v.id)
     if (
-      s.version < 3 &&
-      allLayers.some(
-        (layer) => layer.kind === 'objects' && layer.objects.some((object) => object.collision),
+      new Set(animationIds).size !== animationIds.length ||
+      a.width % sprite.frameWidth ||
+      a.height % sprite.frameHeight ||
+      a.width !== sprite.columns * sprite.frameWidth ||
+      sprite.animations.some((v) =>
+        v.frames.some((f) => f.tile >= (sprite.columns * a.height) / sprite.frameHeight),
       )
     )
-      ctx.addIssue({ code: 'custom', message: 'Colisão de objeto exige cena 3.' })
+      ctx.addIssue({ code: 'custom', message: 'A folha de animação do objeto é inválida.' })
+  }
+  if (
+    s.resources &&
+    (new Set(s.resources.map((r) => r.id)).size !== s.resources.length ||
+      s.resources.some(
+        (r) => r.id === r.sourceId || ![...s.tilesets, ...(s.art ?? [])].some((a) => a.id === r.id),
+      ))
+  )
+    ctx.addIssue({ code: 'custom', message: 'Versões de recursos inválidas.' })
+  const sets = new Set(s.tilesets.map((t) => t.id))
+  const unique = (values: string[]) => new Set(values).size === values.length
+  if (
+    !unique([...s.tilesets.map((t) => t.id), ...(s.art ?? []).map((a) => a.id)]) ||
+    !unique((s.sets ?? []).map((v) => v.id))
+  )
+    ctx.addIssue({ code: 'custom', message: 'Referências de desenhos duplicadas.' })
+  for (const t of s.tilesets) {
+    const indices = [
+      ...t.solid,
+      ...t.platform,
+      ...Object.keys(t.animations ?? {}).map(Number),
+      ...Object.values(t.animations ?? {}).flatMap((a) => a.map((f) => f.tile)),
+      ...Object.keys(t.tileProperties ?? {}).map(Number),
+      ...(t.terrains ?? []).flatMap((g) => Object.keys(g.tiles).map(Number)),
+    ]
     if (
-      s.version === 1 &&
-      (s.resources?.length ||
-        s.art?.some((a) => a.sprite) ||
-        allLayers.some((l) => l.kind === 'objects' && l.objects.some((o) => o.art?.animationId)))
+      indices.some((n) => !Number.isInteger(n) || n < 0 || n >= t.count) ||
+      (t.terrains ?? []).some((g) =>
+        Object.values(g.tiles).some((v) => v.some((c) => c > g.colors.length)),
+      )
     )
       ctx.addIssue({
         code: 'custom',
-        message: 'Animações de objetos e versões de recursos exigem cena 2.',
+        message: 'Metadados apontam para peças ou cores inexistentes.',
       })
-    for (const a of s.art ?? []) {
-      if (!a.sprite) continue
-      const sprite = a.sprite
-      const animationIds = sprite.animations.map((v) => v.id)
-      if (
-        new Set(animationIds).size !== animationIds.length ||
-        a.width % sprite.frameWidth ||
-        a.height % sprite.frameHeight ||
-        a.width !== sprite.columns * sprite.frameWidth ||
-        sprite.animations.some((v) =>
-          v.frames.some((f) => f.tile >= (sprite.columns * a.height) / sprite.frameHeight),
-        )
-      )
-        ctx.addIssue({ code: 'custom', message: 'A folha de animação do objeto é inválida.' })
-    }
-    if (
-      s.resources &&
-      (new Set(s.resources.map((r) => r.id)).size !== s.resources.length ||
-        s.resources.some(
-          (r) =>
-            r.id === r.sourceId || ![...s.tilesets, ...(s.art ?? [])].some((a) => a.id === r.id),
-        ))
-    )
-      ctx.addIssue({ code: 'custom', message: 'Versões de recursos inválidas.' })
-    const sets = new Set(s.tilesets.map((t) => t.id))
-    const unique = (values: string[]) => new Set(values).size === values.length
-    if (
-      !unique([...s.tilesets.map((t) => t.id), ...(s.art ?? []).map((a) => a.id)]) ||
-      !unique((s.sets ?? []).map((v) => v.id))
-    )
-      ctx.addIssue({ code: 'custom', message: 'Referências de desenhos duplicadas.' })
-    for (const t of s.tilesets) {
-      const indices = [
-        ...t.solid,
-        ...t.platform,
-        ...Object.keys(t.animations ?? {}).map(Number),
-        ...Object.values(t.animations ?? {}).flatMap((a) => a.map((f) => f.tile)),
-        ...Object.keys(t.tileProperties ?? {}).map(Number),
-        ...(t.terrains ?? []).flatMap((g) => Object.keys(g.tiles).map(Number)),
-      ]
-      if (
-        indices.some((n) => !Number.isInteger(n) || n < 0 || n >= t.count) ||
-        (t.terrains ?? []).some((g) =>
-          Object.values(g.tiles).some((v) => v.some((c) => c > g.colors.length)),
-        )
-      )
-        ctx.addIssue({
-          code: 'custom',
-          message: 'Metadados apontam para peças ou cores inexistentes.',
-        })
-    }
-    const validate = (
-      cols: number,
-      rows: number,
-      layers: z.infer<typeof PintaSceneLayerSchema>[],
-    ) => {
-      const groups = new Set<string>(),
-        ids = new Set<string>()
-      let cells = 0
-      for (const l of layers) {
-        if (ids.has(l.id) || (l.parentId && !groups.has(l.parentId)))
-          ctx.addIssue({ code: 'custom', message: 'Árvore de camadas inválida.' })
-        ids.add(l.id)
-        if (l.kind === 'group') groups.add(l.id)
-        if (l.kind === 'objects') {
-          if (!unique(l.objects.map((o) => o.id)))
-            ctx.addIssue({ code: 'custom', message: 'Objetos duplicados.' })
-          for (const o of l.objects) {
-            if (
-              o.art?.animationId &&
-              !(s.art ?? []).some(
-                (a) =>
-                  a.id === o.art!.assetId &&
-                  a.sprite?.animations.some((v) => v.id === o.art!.animationId),
-              )
-            )
-              ctx.addIssue({ code: 'custom', message: 'A animação do objeto não foi encontrada.' })
-            if (
-              (o.setId && !(s.sets ?? []).some((v) => v.id === o.setId)) ||
-              (o.art &&
-                !sets.has(o.art.assetId) &&
-                !(s.art ?? []).some((a) => a.id === o.art!.assetId))
-            )
-              ctx.addIssue({ code: 'custom', message: 'Desenho do objeto não encontrado.' })
-            if (
-              o.art?.tile != null &&
-              sets.has(o.art.assetId) &&
-              o.art.tile >= (s.tilesets.find((t) => t.id === o.art!.assetId)?.count ?? 0)
-            )
-              ctx.addIssue({ code: 'custom', message: 'Peça do objeto não encontrada.' })
-          }
-        }
-        if (l.kind === 'tiles') {
-          cells += l.cells.length
-          const ts = s.tilesets.find((t) => t.id === l.tilesetId)
+  }
+  const validate = (cols: number, rows: number, layers: PintaSceneCellsLayer<Cells>[]) => {
+    const groups = new Set<string>(),
+      ids = new Set<string>()
+    let cells = 0
+    for (const l of layers) {
+      if (ids.has(l.id) || (l.parentId && !groups.has(l.parentId)))
+        ctx.addIssue({ code: 'custom', message: 'Árvore de camadas inválida.' })
+      ids.add(l.id)
+      if (l.kind === 'group') groups.add(l.id)
+      if (l.kind === 'objects') {
+        if (!unique(l.objects.map((o) => o.id)))
+          ctx.addIssue({ code: 'custom', message: 'Objetos duplicados.' })
+        for (const o of l.objects) {
           if (
-            l.cells.length !== cols * rows ||
-            !sets.has(l.tilesetId) ||
-            l.cells.some((c) => c >= 0 && (c & 4095) >= (ts?.count ?? 0))
+            o.art?.animationId &&
+            !(s.art ?? []).some(
+              (a) =>
+                a.id === o.art!.assetId &&
+                a.sprite?.animations.some((v) => v.id === o.art!.animationId),
+            )
           )
-            ctx.addIssue({ code: 'custom', message: 'Peças ou dimensões da camada inválidas.' })
+            ctx.addIssue({ code: 'custom', message: 'A animação do objeto não foi encontrada.' })
+          if (
+            (o.setId && !(s.sets ?? []).some((v) => v.id === o.setId)) ||
+            (o.art &&
+              !sets.has(o.art.assetId) &&
+              !(s.art ?? []).some((a) => a.id === o.art!.assetId))
+          )
+            ctx.addIssue({ code: 'custom', message: 'Desenho do objeto não encontrado.' })
+          if (
+            o.art?.tile != null &&
+            sets.has(o.art.assetId) &&
+            o.art.tile >= (s.tilesets.find((t) => t.id === o.art!.assetId)?.count ?? 0)
+          )
+            ctx.addIssue({ code: 'custom', message: 'Peça do objeto não encontrada.' })
         }
       }
-      if (cells > PINTA_SCENE_LIMITS.cells)
-        ctx.addIssue({ code: 'custom', message: 'O cenário passou do orçamento de células.' })
+      if (l.kind === 'tiles') {
+        cells += policy.count(l.cells)
+        const ts = s.tilesets.find((t) => t.id === l.tilesetId)
+        if (!sets.has(l.tilesetId) || !policy.valid(l.cells, cols, rows, ts?.count ?? 0))
+          ctx.addIssue({ code: 'custom', message: 'Peças ou dimensões da camada inválidas.' })
+      }
     }
-    validate(s.cols, s.rows, s.layers)
-    for (const set of s.sets ?? []) {
-      validate(set.cols, set.rows, set.layers)
-      if (set.layers.some((l) => l.kind === 'objects' && l.objects.some((o) => o.setId)))
-        ctx.addIssue({ code: 'custom', message: 'Conjuntos não podem conter outros conjuntos.' })
-    }
-  })
+    if (cells > PINTA_SCENE_LIMITS.cells)
+      ctx.addIssue({ code: 'custom', message: 'O cenário passou do orçamento de células.' })
+  }
+  validate(s.cols, s.rows, s.layers)
+  for (const set of s.sets ?? []) {
+    validate(set.cols, set.rows, set.layers)
+    if (set.layers.some((l) => l.kind === 'objects' && l.objects.some((o) => o.setId)))
+      ctx.addIssue({ code: 'custom', message: 'Conjuntos não podem conter outros conjuntos.' })
+  }
+}
+
+export const PintaSceneSchema = PintaSceneBaseSchema.superRefine((scene, ctx) =>
+  validatePintaSceneCells(scene, ctx, {
+    count: (cells) => cells.length,
+    valid: (cells, cols, rows, tileCount) =>
+      cells.length === cols * rows &&
+      !cells.some((cell) => cell >= 0 && (cell & 4095) >= tileCount),
+  }),
+)
+
 export type PintaScene = z.infer<typeof PintaSceneSchema>
 export type PintaSceneLayer = z.infer<typeof PintaSceneLayerSchema>
 export type PintaSceneObject = z.infer<typeof PintaSceneObjectSchema>

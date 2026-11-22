@@ -827,3 +827,87 @@ test('regional capture refuses an opaque future place before reading any future 
     }, namespace),
   ).toEqual({ refused: true, chunkReads: 0, transactions: 1, unchanged: true })
 })
+
+test('the scene-4 reader decodes the full 4-MiB budget in the browser while the public reader refuses it', async ({
+  page,
+}) => {
+  const result = await page.evaluate(() => {
+    const p = window.pintaPhysicalRegions,
+      source = p.scene4BudgetFixture(),
+      text = JSON.stringify(source)
+    const started = performance.now(),
+      scene = p.readPintaRegionScene(text),
+      elapsedMs = performance.now() - started
+    if (!scene) throw Error('Leitor recusou o teto')
+    let chunks = 0,
+      bytes = 0
+    for (const layer of scene.layers)
+      if (layer.kind === 'tiles')
+        for (const chunk of layer.cells.chunks) {
+          chunks++
+          bytes += chunk.cells.byteLength
+        }
+    return {
+      version: scene.version,
+      layers: scene.layers.length,
+      chunks,
+      bytes,
+      logicalCells: scene.cols * scene.rows,
+      publicRefused: p.readPintaScene(source) === null,
+      elapsedMs,
+    }
+  })
+  expect(result).toMatchObject({
+    version: 4,
+    layers: 32,
+    chunks: 2048,
+    bytes: 4194304,
+    logicalCells: 100000000,
+    publicRefused: true,
+  })
+  expect(Number.isFinite(result.elapsedMs)).toBe(true)
+  await test.info().attach('scene4-decode.json', {
+    body: Buffer.from(JSON.stringify(result)),
+    contentType: 'application/json',
+  })
+})
+
+test('scene-4 browser admission rejects a late malformed definition without decoding earlier chunks', async ({
+  page,
+}) => {
+  expect(
+    await page.evaluate(() => {
+      const p = window.pintaPhysicalRegions,
+        source = p.scene4Fixture()
+      const malformed = {
+        id: 'future-set',
+        cols: 10000,
+        rows: 10000,
+        origin: { col: -64, row: -64 },
+        layers: [
+          {
+            kind: 'tiles',
+            id: 'future-layer',
+            name: 'Chão',
+            visible: true,
+            tilesetId: 'ground',
+            cells: { kind: 'regions', version: 2, side: 32, encoding: 'future', chunks: [] },
+          },
+        ],
+      }
+      const original = globalThis.atob
+      let decodes = 0,
+        refused = false
+      globalThis.atob = (text) => {
+        decodes++
+        return original(text)
+      }
+      try {
+        refused = p.readPintaRegionScene(JSON.stringify({ ...source, sets: [malformed] })) === null
+      } finally {
+        globalThis.atob = original
+      }
+      return { refused, decodes }
+    }),
+  ).toEqual({ refused: true, decodes: 0 })
+})

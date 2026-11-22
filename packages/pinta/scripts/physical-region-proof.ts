@@ -1,5 +1,8 @@
 // Browser QA entry only. It does not select the regional codec for public persistence.
 export { createStore } from 'idb-keyval'
+export { readPintaRegionScene } from '../../core/src/studio/pinta-region-scene'
+export { readPintaScene } from '../../core/src/studio/pinta-scene'
+export { scene4BudgetFixture, scene4Fixture } from '../../core/tests/fixtures/pinta-region-scene'
 export { recordPintaLocalOrigin } from '../src/core/localAssetOrigin'
 export { createTilemapAsset, sanitizeRegionTilemapAsset } from '../src/core/project'
 export { regionAssetBundleToJson } from '../src/export/regionAssetBundle'

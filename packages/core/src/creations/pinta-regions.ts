@@ -40,6 +40,8 @@ interface LayerHeader {
 const ENCODING = 'i16le-base64-v1'
 const BYTE_COUNT = PINTA_REGION_CELL_COUNT * 2
 const BASE64_LENGTH = Math.ceil(BYTE_COUNT / 3) * 4
+export const PINTA_REGION_CHUNK_BYTES = BYTE_COUNT
+export const PINTA_REGION_CHUNK_BASE64_CHARS = BASE64_LENGTH
 const BASE64 = /^[A-Za-z0-9+/]+=$/
 
 function record(value: unknown): value is RecordValue {
@@ -202,10 +204,11 @@ function encode(cells: Int16Array): string {
 export function parsePintaRegionLayerLocations(
   raw: unknown,
   rawBounds: unknown,
+  allowWire = false,
 ): Array<Array<{ col: number; row: number }>> | null {
   try {
     const bounds = readBounds(rawBounds)
-    const headers = bounds && readHeaders(raw, bounds, false)
+    const headers = bounds && readHeaders(raw, bounds, allowWire)
     return headers
       ? headers.map((header) =>
           header.chunks.map((chunk) => ({ col: chunk.col as number, row: chunk.row as number })),

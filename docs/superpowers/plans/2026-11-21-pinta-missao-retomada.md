@@ -194,6 +194,16 @@ Este documento continua o plano da missão e o design de regiões de 20/11.
    ou o transporte público 8. Próximo: contrato cena 4/PNG 5 e seus leitores,
    integração dos consumidores públicos e segurança do inventário parcial da
    nuvem, antes do rollout. O item 4 e a etapa macro permanecem abertos.
+   Leitor interno de cena 4 preparado no Core, reutilizando a validação
+   semântica da cena anterior e o codec existente. Cabeçalhos globais precedem
+   payloads; JSON tem teto de 8 MiB UTF-8 e orçamento agregado de índices
+   derivado, mantendo 4 MiB por mapa. Suíte Core 3.214, Pinta 2.728 e 624
+   comparações legadas com dados/erros idênticos. Dois controles de mutação
+   detectam a retirada das guardas. Provas em
+   `qa/leitor-de-cena-regional-2026-11-22/`. Leitor é anterior ao emissor:
+   ainda faltam conversão do Pinta/cena 4, PNG 5, motores, host/galeria e
+   proteção de inventário parcial da nuvem. Não promover constantes ou fechar
+   o item 4 a partir desse contrato isolado.
 
 Na promoção do store, conferir também os orçamentos globais de metadados e JSON
 antes do histórico/autosave. A soma de objetos/propriedades em várias camadas
