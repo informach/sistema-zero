@@ -94,7 +94,8 @@ async function readBase(
   signal: AbortSignal,
 ): Promise<PintaCausalDocument | null> {
   const { baseEntry: entry, baseStorageRef, binding } = plan
-  if (binding.baseRevision === 0) return null
+  if (binding.baseRevision === 0 || (!entry && !baseStorageRef && binding.baseSha256 === null))
+    return null
   if (
     !entry ||
     !baseStorageRef ||
@@ -132,8 +133,11 @@ export async function attestPintaMember(
   )
     throw new PintaCausalUnverifiedContent('A unidade de desfazer precisa da prova histórica.')
 
-  if (member.action === 'delete')
+  if (member.action === 'delete') {
+    if (inverse && !(await readBase(storage, actor, plan, signal)))
+      throw new PintaCausalUnverifiedContent('A revisão que será removida não foi conferida.')
     return { purpose: 'pinta-unit-content-v1', binding, manifest: null, transitions: [] }
+  }
 
   const expected = {
     itemId: member.itemId,

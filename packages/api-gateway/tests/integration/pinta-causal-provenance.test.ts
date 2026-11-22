@@ -33,7 +33,7 @@ test('the ten Pinta proof paths forward only an authenticated member-shell body'
       rateLimit: { by: 'json-field', field: 'accountId' },
     })
 
-  const forwarded: { path: string; body: string }[] = []
+  const forwarded: { path: string; body: string; consumer: string | null }[] = []
   const app = await createApplication(
     loadEnv({ JWT_HS256_SECRET: jwtSecret, TRUST_PROXY: 'true', TRUSTED_PROXY_HOPS: '1' }),
     {
@@ -53,6 +53,7 @@ test('the ten Pinta proof paths forward only an authenticated member-shell body'
       forwarder: fakeForwarder(async (request) => {
         forwarded.push({
           path: request.path,
+          consumer: request.headers.get('x-consumer-id'),
           body: await new Response(request.body).text(),
         })
         return Response.json({ accepted: true })
@@ -96,7 +97,7 @@ test('the ten Pinta proof paths forward only an authenticated member-shell body'
       expect((await request(auth, body.replace('kids', 'adult'))).status).toBe(401)
       expect((await request(auth)).status).toBe(200)
     }
-    expect(forwarded).toEqual(paths.map((path) => ({ path, body })))
+    expect(forwarded).toEqual(paths.map((path) => ({ path, body, consumer: 'member-shell' })))
   } finally {
     await app.stop()
   }

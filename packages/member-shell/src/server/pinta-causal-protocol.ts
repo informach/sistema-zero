@@ -21,6 +21,7 @@ export const PintaCausalActorSchema = z.strictObject({
   userId: z.uuid(),
   accountId: z.uuid(),
   audience: z.enum(['kids', 'adult']),
+  privileged: z.literal(true).optional(),
 })
 export type PintaCausalActor = z.infer<typeof PintaCausalActorSchema>
 
@@ -55,8 +56,8 @@ export const PintaMemberPlan = z
     inverse: z
       .strictObject({
         baseRevision: causalRevision,
-        baseSha256: hash,
-        restoredSha256: hash,
+        baseSha256: hash.nullable(),
+        restoredSha256: hash.nullable(),
       })
       .nullable()
       .optional(),
@@ -69,10 +70,9 @@ export const PintaMemberPlan = z
       new Set(remapSheetIds).size === remapSheetIds.length &&
       remapSheetIds.length === remaps.length &&
       remapSheetIds.every((id, index) => id === remaps[index]?.sheetId) &&
-      (member.baseRevision === 0
-        ? baseEntry === null && baseStorageRef === null && binding.baseSha256 === null
-        : baseEntry !== null &&
-          baseStorageRef !== null &&
+      (baseEntry === null
+        ? baseStorageRef === null && binding.baseSha256 === null
+        : baseStorageRef !== null &&
           baseEntry.revision === member.baseRevision &&
           baseEntry.itemId === member.itemId &&
           baseEntry.sha256 === binding.baseSha256),

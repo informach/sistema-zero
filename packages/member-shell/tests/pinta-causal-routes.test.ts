@@ -305,3 +305,81 @@ test('backfill only exposes a download after it binds the exact historical gzip 
     downloadUrl: 'https://storage.example/get',
   })
 })
+
+test('the historical receipt restores a tombstone using its former exact gzip', async () => {
+  const { routes, objects, responses, calls } = fixture()
+  const restore = { ...binding, baseRevision: 2, revision: 3 }
+  const basePlan = {
+    member: { ...member, baseRevision: 2, operation: { type: 'update' } },
+    binding: restore,
+    baseStorageRef: null,
+    baseEntry: null,
+    remapSheetIds: [],
+    remaps: [],
+    inverseOf: '55555555-5555-4555-8555-555555555555',
+    inverse: { baseRevision: 2, baseSha256: null, restoredSha256: '0'.repeat(64) },
+  }
+  const candidateKey = pintaCausalBlobKey(restore, 'upload')
+  const sealedKey = pintaCausalBlobKey(restore, 'sealed')
+  objects.set(candidateKey, gzip)
+  const verify = () =>
+    routes.pintaCausalVerify.POST(json('/units/verify', { itemId: member.itemId }), context)
+  responses.set('units/member', basePlan)
+  expect((await verify()).status).toBe(409)
+  expect(objects.has(sealedKey)).toBe(false)
+
+  responses.set('units/member', {
+    ...basePlan,
+    inverse: { ...basePlan.inverse, restoredSha256: sha256 },
+  })
+  expect((await verify()).status).toBe(200)
+  expect(objects.get(sealedKey)).toEqual(gzip)
+  const last = calls.at(-1)?.body as { payload: unknown }
+  expect(PintaCausalAttestationSchema.parse(last.payload).transitions).toEqual([])
+})
+
+test('undoing a creation checks its current immutable bytes before attesting a deletion', async () => {
+  const { routes, objects, responses, calls } = fixture()
+  const deletion = {
+    ...binding,
+    baseRevision: 1,
+    revision: 2,
+    baseSha256: sha256,
+    candidateSha256: null,
+  }
+  responses.set('units/member', {
+    member: { action: 'delete', itemId: member.itemId, baseRevision: 1 },
+    binding: deletion,
+    baseStorageRef: sealed,
+    baseEntry: { ...entry, coverage: 'certified', sha256 },
+    remapSheetIds: [],
+    remaps: [],
+    inverseOf: '55555555-5555-4555-8555-555555555555',
+    inverse: { baseRevision: 1, baseSha256: sha256, restoredSha256: null },
+  })
+  const verify = () =>
+    routes.pintaCausalVerify.POST(json('/units/verify', { itemId: member.itemId }), context)
+  expect((await verify()).status).toBe(409)
+  objects.set(sealed, gzip)
+  expect((await verify()).status).toBe(200)
+  const last = calls.at(-1)?.body as { payload: unknown }
+  expect(PintaCausalAttestationSchema.parse(last.payload).manifest).toBeNull()
+})
+
+test('the adult namespace signs the account actor and derives privilege from its trusted session', async () => {
+  const { activeProfile: _profile, ...adult } = sessionUser
+  const { routes, calls } = fixture({ audience: 'adult', actor: { ...adult, role: 'staff' } })
+  const page = await routes.pintaCausalGraph.GET(
+    new Request(`${link}/graph?reader=7`, {
+      headers: { 'x-sz-viewer-audience': 'adult' },
+    }),
+  )
+  expect(page.status).toBe(200)
+  expect(calls[0]?.body).toEqual({
+    userId,
+    accountId: userId,
+    audience: 'adult',
+    privileged: true,
+    payload: { reader: 7 },
+  })
+})

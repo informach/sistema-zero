@@ -10,6 +10,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { isReadonlyImpersonation } from '../lib/act'
 import { getEnv } from '../lib/env'
+import { isPrivilegedRole } from '../lib/studio-tier'
 import { CREATION_BLOB_CONTENT_TYPE, CREATION_GET_TTL_SECONDS } from '../server/creation-download'
 import type { GatewayModule } from '../server/gateway'
 import { PintaCausalUnverifiedContent } from '../server/pinta-causal-content'
@@ -182,8 +183,11 @@ export function createPintaCausalRoutes({
       userId: user.id,
       accountId: user.activeProfile?.accountId ?? user.id,
       audience: session.audience,
+      ...(isPrivilegedRole(user.role) ? { privileged: true } : {}),
     })
     if (!actor.success) return error(401, 'unauthenticated')
+    if (actor.data.audience === 'adult' && actor.data.accountId !== actor.data.userId)
+      return error(403, 'forbidden')
     try {
       return await operation(actor.data, readOnly)
     } catch (failure) {
