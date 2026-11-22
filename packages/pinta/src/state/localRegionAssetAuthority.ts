@@ -52,7 +52,12 @@ export function stampLocalRegionAsset(asset: PintaMemoryAsset): PintaMemoryAsset
   return asset
 }
 
-export function matchesLocalRegionMirror(raw: unknown, id: string, revision: string): boolean {
+export function matchesLocalRegionMirror(
+  raw: unknown,
+  id: string,
+  revision: string,
+  capability = 8,
+): boolean {
   return Boolean(
     raw &&
       typeof raw === 'object' &&
@@ -62,7 +67,7 @@ export function matchesLocalRegionMirror(raw: unknown, id: string, revision: str
       'version' in raw &&
       raw.version === 1 &&
       'capability' in raw &&
-      raw.capability === 8 &&
+      raw.capability === capability &&
       'id' in raw &&
       raw.id === id &&
       'revision' in raw &&
@@ -71,30 +76,48 @@ export function matchesLocalRegionMirror(raw: unknown, id: string, revision: str
 }
 
 /** Internal only: the public persistence still selects the native-7 authority. */
-export function createLocalRegionAssetAuthority() {
+export function createLocalRegionAssetAuthority(authored?: {
+  sanitize(raw: unknown): PintaMemoryAsset | null
+  stamp(asset: PintaMemoryAsset): PintaMemoryAsset
+  schema(asset: PintaMemoryAsset): number
+  size(sizing: RegionBackupSizeCache, assets: readonly PintaMemoryAsset[]): number
+}) {
+  const sanitize = authored?.sanitize ?? sanitizeLocalRegionAsset
+  const schema =
+    authored?.schema ??
+    ((asset: PintaMemoryAsset) => (isLocalRegionAsset(asset) ? 8 : pintaAssetSchema(asset)))
+  const compact = (asset: PintaMemoryAsset) =>
+    isLocalRegionAsset(asset) || (!!authored && schema(asset) === 9)
+
   return createLocalAssetAuthority<PintaMemoryAsset>({
-    maxSchema: 8,
-    sanitize: sanitizeLocalRegionAsset,
-    stamp: stampLocalRegionAsset,
-    schema: (asset) => (isLocalRegionAsset(asset) ? 8 : pintaAssetSchema(asset)),
+    maxSchema: authored ? 9 : 8,
+    sanitize,
+    stamp: authored?.stamp ?? stampLocalRegionAsset,
+    schema,
     mirror(asset, revision) {
-      return isLocalRegionAsset(asset)
-        ? { kind: 'pinta-local-mirror', version: 1, capability: 8, id: asset.id, revision }
+      return compact(asset)
+        ? {
+            kind: 'pinta-local-mirror',
+            version: 1,
+            capability: schema(asset),
+            id: asset.id,
+            revision,
+          }
         : asset
     },
     readMirror(raw, id, doc) {
       if (raw && typeof raw === 'object' && 'kind' in raw && raw.kind === 'pinta-local-mirror') {
         if (
           !doc?.asset ||
-          !isLocalRegionAsset(doc.asset) ||
-          !matchesLocalRegionMirror(raw, id, doc.revision)
+          !compact(doc.asset) ||
+          !matchesLocalRegionMirror(raw, id, doc.revision, schema(doc.asset))
         )
           throw new PintaLocalStorageError(
             'Não consegui conferir a referência do cenário guardado. Seus dados foram mantidos.',
           )
         return doc.asset
       }
-      const asset = sanitizeLocalRegionAsset(raw)
+      const asset = sanitize(raw)
       return asset?.id === id ? asset : null
     },
     checkBudget(before, after, bytes) {
@@ -102,11 +125,13 @@ export function createLocalRegionAssetAuthority() {
       // Numerical identity summaries are shared within this transaction, never across writes.
       const sizing = new RegionBackupSizeCache()
       const size = (assets: readonly PintaMemoryAsset[]) =>
-        assets.some(isLocalRegionAsset)
-          ? sizing.byteLength(assets)
-          : galleryBackupByteLength(
-              assets.filter((asset): asset is PintaAsset => !isLocalRegionAsset(asset)),
-            )
+        authored
+          ? authored.size(sizing, assets)
+          : assets.some(isLocalRegionAsset)
+            ? sizing.byteLength(assets)
+            : galleryBackupByteLength(
+                assets.filter((asset): asset is PintaAsset => !isLocalRegionAsset(asset)),
+              )
       const projected = size(after) + (bytes?.after ?? 0)
       if (projected <= MAX_BACKUP_FILE_BYTES) return
       if (projected < size(before) + (bytes?.before ?? 0)) return

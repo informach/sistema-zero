@@ -50,7 +50,7 @@ export function pintaWorkshopBody(asset: PintaMemoryAsset): PintaMemoryAsset {
   const { automapping: _book, schema: _schema, ...body } = asset
   return withPintaSchemaStamp(body)
 }
-function attachBook(asset: AuthorMap, book: AutomapBook): PintaAuthoredMap | null {
+export function attachWorkshopBook(asset: AuthorMap, book: AutomapBook): PintaAuthoredMap | null {
   if (
     !book.rules.every((rule) =>
       [rule.input, ...rule.outputs].every((group) =>
@@ -106,7 +106,7 @@ export async function readPintaWorkshopBackup(
       continue
     }
     if (source.kind !== 'tilemap') return refused
-    const asset = attachBook(source, book)
+    const asset = attachWorkshopBook(source, book)
     if (!asset) return refused
     assets.push(asset)
   }
@@ -120,7 +120,7 @@ export function pintaWorkshopAssetToJson(asset: PintaMemoryAsset): string | null
   if (!isPintaAuthoredMap(asset)) return encodeRegionGalleryBackup([asset])?.text ?? null
   const book = readAutomapBook(JSON.stringify(asset.automapping)),
     body = pintaWorkshopBody(asset)
-  if (!book || !attachBook(body, book)) return null
+  if (!book || !attachWorkshopBook(body, book)) return null
   const encoded = encodeAutomapBodies([body])
   if (!encoded || !readExactAutomapBodies(encoded)) return null
   const wrapper = automapDocumentEnvelope(encoded, new Map([[asset.id, book]]))
@@ -157,7 +157,7 @@ export function pintaWorkshopAssetFromJson(text: string): PintaMemoryAsset | nul
     const book = readAutomapBook(JSON.stringify(record.book))
     if (!book) return null
     const body = readExactAutomapBodies([record.map])?.[0]
-    return body?.kind === 'tilemap' ? attachBook(body, book) : null
+    return body?.kind === 'tilemap' ? attachWorkshopBook(body, book) : null
   } catch {
     return null
   }
