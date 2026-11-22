@@ -142,24 +142,34 @@ O que não pode regredir:
 
 - **Cauda adiada (`blockly/deferredTail.ts`)**: o corpo escondido de um bloco recolhido continua
   adiado até ele abrir (`revealBody`, gancho em `setCollapsed`); `RenderedConnection.startTrackingAll`
-  não liga conexão de bloco adiado; o lote de desenho roda com `Blockly.Events.disable()` (desenhar
-  um bloco recolhido refaz o rótulo dele, e isso saía como mudança de campo, no desfazer e na
-  regeneração); o corpo comprido em volta do alvo é cortado depois do alvo + 1,5 tela
+  não liga conexão de bloco adiado; a medição do lote de desenho (`measuringOnce`) roda com
+  `Blockly.Events.disable()` (desenhar um bloco recolhido refaz o rótulo dele, e isso saía como
+  mudança de campo, no desfazer e na regeneração), mas o `triggerQueuedRenders` do `settle` roda
+  com os eventos ligados (é ele que afasta pilhas soltas, e afastar sem evento escondia a mudança);
+  o corpo comprido em volta do alvo é cortado depois do alvo + 1,5 tela
   (`renderAround`) e completado antes da unidade seguinte (`completeBodyAbove`); centralizar num
   bloco escondido para na unidade que o contém. ⚠️ A fronteira deixada dentro da função fica
   escondida quando a função (ou a área) é recolhida: `hiddenByCollapsed` olha TODOS os blocos
   acima, e o `revealBody` completa o corpo se algo embaixo já foi desenhado (revisão do lote 2).
 - **Abrir só para mostrar (`blockly/transientExpansion.ts`)**: `revealBlockInWorkspace(…, {transient:
-  true})`, só do `BlocklyPanel` (o Python abre como antes). Sem evento nem desfazer; o
+  true})`, só do `BlocklyPanel` (a busca, o cartão do palco, os Problemas e o Investigar; o cursor
+  do código só seleciona, e o Python abre como antes). A abertura não emite evento; o
   `saveWorkspaceState` grava o bloco recolhido (`keepShownBlocksCollapsed`, na ordem de chaves do
-  Blockly) até a criança mexer nele; o `bump` causado pela abertura (nos 2 s depois dela) não
-  grava layout (`isBumpWhileShowing`), e a gravação de saída e o Rodar ignoram essa diferença só de
-  posição (`differsOnlyInStackPositions` no `flushScheduledRegeneration`). ⚠️ Todo estado que
+  Blockly) até a criança mexer nele. ⭐ O gesto inteiro (abrir, centralizar, selecionar) roda no
+  `withShowingScope`: um grupo de eventos PRÓPRIO, com o desfazer desligado, e a fila de desenho
+  esvaziada antes de sair. O Blockly lê o grupo e o "vai para o desfazer" quando o evento NASCE, e o
+  `bump` que o desenho faz nasce ali dentro: ele é reconhecido pelo grupo (`isBumpWhileShowing`,
+  não grava layout), não entra no desfazer (apagava o refazer) e não tira a marca. ⚠️ Nada de
+  relógio: a janela de 2 s de antes começava antes do desenho caro, e numa máquina lenta o evento
+  chegava depois dela e o projeto salvo mudava (full review final). A gravação de saída e o Rodar
+  ignoram a diferença só de posição (`differsOnlyInStackPositions` no
+  `flushScheduledRegeneration`). ⚠️ Todo estado que
   sai do Blockly do Clássico JS precisa passar pelo
   `saveWorkspaceState`, senão a abertura vira mudança do projeto.
 - Provas: `e2e/collapsed-reveal.spec.ts` (na config `offscreen-lifecycle`, três motores),
-  `e2e/classic-reveal-scale.spec.ts` (o gesto no Reino Zero Ultra, projeto salvo igual e trabalho
-  limitado) e as guardas do Blockly 12.5.1 no `deferredTail.test.ts`.
+  `e2e/classic-reveal-scale.spec.ts` (o gesto no Reino Zero Ultra com a CPU 4× mais lenta: projeto
+  salvo igual, "Desfazer" como estava e trabalho limitado), `transientExpansion.test.ts` (o grupo
+  do gesto, o desfazer e o refazer) e as guardas do Blockly 12.5.1 no `deferredTail.test.ts`.
 
 ## Compartilhar de novo atualiza o jogo no Mural (20/11/2026)
 

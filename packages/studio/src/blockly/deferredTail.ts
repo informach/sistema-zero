@@ -495,7 +495,12 @@ class DeferredTail implements DeferredDrawing {
     if (bodies.length > 0) {
       const root = block.getRootBlock()
       if (!root.disposed) root.queueRender()
-      Blockly.renderManagement.triggerQueuedRenders(this.workspace)
+      // Com os eventos desligados (a abertura só para mostrar), o desenho fica na fila: desenhado
+      // aqui, o afastamento de uma pilha solta saía SEM evento, e o Rodar e a gravação de saída
+      // viam a posição nova e gravavam (full review final). Quem abriu desenha a fila com os
+      // eventos ligados (`withShowingScope`); as conexões ligadas antes do desenho vão junto,
+      // porque o Blockly atualiza o banco ao mover conexão ligada.
+      if (Blockly.Events.isEnabled()) Blockly.renderManagement.triggerQueuedRenders(this.workspace)
       this.trackNestedDrawn()
     } else block.queueRender()
     this.publish()

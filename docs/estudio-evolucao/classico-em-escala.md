@@ -796,3 +796,27 @@ sabotagens (só o pai, sem completar, desenhar a fronteira escondida) deixam ess
 `classic-reveal-scale.spec.ts` aperta Rodar depois do gesto e exige o salvo igual (e recusa um
 salvo que não foi lido). `deferredTail.test.ts` prende também a recursão do `startTrackingAll`, onde
 o gancho intercepta. `transientExpansion.test.ts` cobre a comparação só de posição.
+
+### Full review final (22/11/2026)
+
+O revisor independente de Blockly e busca achou que mostrar o bloco ainda podia mudar o projeto e
+o desfazer:
+
+1. **Numa máquina lenta o projeto salvo mudava.** O afastamento era reconhecido por uma janela de
+   2 s a partir da abertura, mas a abertura vem antes do desenho caro do gesto e o evento só chega
+   ao ouvinte do painel depois do quadro seguinte. No Chrome conectado (243 s no gesto) ou num
+   tablet modesto, a janela fechava antes.
+2. **O afastamento entrava no desfazer e apagava o refazer**: o desenho afasta com os eventos
+   ligados e o desfazer ligado. O primeiro Ctrl+Z devolvia a pilha solta para cima da função aberta.
+3. **Afastamento sem evento**: com a função de corpo cortado, o `revealBody` desenhava dentro do
+   `Events.disable()` da abertura, e o Rodar via a posição nova sem que nada tivesse marcado o
+   afastamento.
+
+Conserto: o gesto inteiro roda no `withShowingScope` (grupo de eventos próprio, desfazer
+desligado, fila de desenho esvaziada antes de sair). O Blockly lê o grupo e o desfazer quando o
+evento nasce, e o afastamento nasce dentro do gesto, então é reconhecido pelo grupo, sem relógio,
+e fica fora do desfazer. Com os eventos desligados, o `revealBody` só põe o desenho na fila (quem
+abriu desenha com os eventos ligados). Provas: `transientExpansion.test.ts` (o afastamento do
+gesto um minuto depois continua do gesto; fora do gesto é gravado; desfazer e refazer intactos; o
+grupo volta mesmo se o gesto lança), com as sabotagens sem o grupo e com o desfazer ligado
+vermelhas, e o `classic-reveal-scale.spec.ts` com a CPU 4× mais lenta e o "Desfazer" conferido.
