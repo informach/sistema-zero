@@ -182,8 +182,16 @@ o cliente do Playwright roda no Node.
 
 - Lotes 5 e 6 entraram em `d99a00d32` (bloco "repetir a cada", os 104 exemplos e os recibos);
   os achados do full review do modelo em `5ddcc8dca` e os do editor em `c0c2460c1`.
-- Lote 8: a versão nova do motor e a lista de blocos aprovados, uma vez só, com a frente
-  "Evolução do Estúdio" (blocos de região do Raylib 3D) e a do Pinta (cenários 2D).
+- Lote 8 preparado (só local, nada implantado): release `python-browser`/`2026-11-22-areas-1`,
+  catálogo do Members `01c079c1…` e seletor de staging `1dd32fdc…`; roteiro da implantação em
+  `docs/plans/evidencias/2026-11-22-python-areas-motor/`. Produção pede o baseline de produção.
+- e2e por família (22/11): Ponte 50/50; `python-runtime` com as fixtures nas áreas
+  (`2cb5cc170`), fora só o que exige o acervo externo licenciado (Pac-Man e Space Arena
+  originais) e o REPL do `python-boot-reuse`, sem relação com as áreas; `pgzero` 63/63,
+  `raylib` 26/26, `pygame` 22/22. ⚠️ Essas três configs NÃO sobem o servidor de provas: suba
+  `bun experiments/studio-python-runtime/server.ts` antes, com `PYTHON_PROBE_PORT=5297` (a do
+  `pygame` usa 5298 por padrão) e as variáveis `PYTHON_PROBE_DISTRIBUTION_*`; sem ele, todo teste
+  reprova com `ERR_CONNECTION_REFUSED`.
 - A suíte inteira `playwright.python-bridge.config.ts` (fora do CI) tem ~25 reprovações que parecem
   anteriores às áreas (o "Rodar" que não existe na fixture e campos cobertos pelo Monaco no painel
   estreito); os 20 jogos clássicos do Turtle reprovam até os exemplos serem convertidos.

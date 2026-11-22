@@ -133,7 +133,10 @@ são TRECHOS do arquivo na ordem em que ele roda. Proposta aprovada e desenho t�
   `python-browser-isolation`): clicar nos blocos procura um ponto LIVRE do
   `blocklyMainBackground` (num ponto fixo a paleta intercepta) e esperar a gravação pede 6 s sem
   mudança; as fixtures contam rascunho sem os `sz_py_area_*`. No Windows o servidor de provas
-  exige Bun 1.4.3.
+  exige Bun 1.4.3. As fixtures do `e2e-runtime` montam o programa NAS ÁREAS
+  (`pythonVisualToWorkspace(…, { areas })`): no modo antigo de pilhas soltas o programa é gravado
+  como rascunho. As configs `python-pgzero`/`-raylib`/`-pygame` não sobem o servidor de provas
+  (suba `experiments/studio-python-runtime/server.ts` antes, porta 5297).
 
 ## "Mostrar o bloco" em projeto grande: corpos escondidos e abertura só para mostrar (22/11/2026)
 
