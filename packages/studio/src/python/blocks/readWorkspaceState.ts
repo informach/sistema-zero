@@ -34,7 +34,12 @@ export function readPythonWorkspaceState(
     ...roles.map((role) => `sz_py_source_${role}`),
   ])
   const blockIds = new Set<string>()
-  const queue: { value: unknown; depth: number }[] = []
+  /**
+   * A sombra (o valor padrão) de um soquete que também tem um bloco de verdade: o Blockly guarda
+   * só o estado dela, sem bloco carregado. Ela é conferida igual, mas não conta como bloco.
+   */
+  const dormant = new Set<string>()
+  const queue: { value: unknown; depth: number; covered?: boolean }[] = []
   const savedFields = new Map<string, Record<string, unknown>>()
   if (state.blocks !== undefined) {
     if (
@@ -47,7 +52,7 @@ export function readPythonWorkspaceState(
     for (const value of state.blocks.blocks) queue.push({ value, depth: 0 })
   }
   while (queue.length) {
-    const { value, depth } = queue.pop()!
+    const { value, depth, covered } = queue.pop()!
     // Blockly deserializes chains recursively. Bound stack depth independently
     // of Python AST depth; source remains available for larger programs.
     if (
@@ -63,6 +68,7 @@ export function readPythonWorkspaceState(
     )
       fail()
     blockIds.add(value.id)
+    if (covered) dormant.add(value.id)
     for (const key of ['x', 'y'])
       if (
         value[key] !== undefined &&
@@ -104,7 +110,7 @@ export function readPythonWorkspaceState(
         )
           fail()
     }
-    if (record(value.fields)) savedFields.set(value.id, value.fields)
+    if (record(value.fields) && !covered) savedFields.set(value.id, value.fields)
     if (
       value.fields !== undefined &&
       (!record(value.fields) ||
@@ -122,7 +128,13 @@ export function readPythonWorkspaceState(
         Object.keys(connection).some((key) => !['block', 'shadow'].includes(key))
       )
         fail()
-      for (const child of Object.values(connection)) queue.push({ value: child, depth: depth + 1 })
+      const hidden = 'block' in connection && 'shadow' in connection
+      for (const [key, child] of Object.entries(connection))
+        queue.push({
+          value: child,
+          depth: depth + 1,
+          covered: covered || (hidden && key === 'shadow'),
+        })
     }
   }
   if (state.workspaceComments !== undefined) {
@@ -155,7 +167,7 @@ export function readPythonWorkspaceState(
     // cache de texto), não deste workspace descartável (full review final de 21/11/2026).
     loadWorkspaceState(state, scratch)
     pythonAreaFrames(scratch)
-    if (scratch.getAllBlocks(false).length !== blockIds.size) fail()
+    if (scratch.getAllBlocks(false).length !== blockIds.size - dormant.size) fail()
     for (const [id, fields] of savedFields) {
       const block = scratch.getBlockById(id)
       for (const [name, value] of Object.entries(fields))

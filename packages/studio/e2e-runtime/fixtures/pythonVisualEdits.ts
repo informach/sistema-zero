@@ -572,7 +572,9 @@ export async function provePythonVisualEdits(analysis: PythonAnalysisSession) {
       reverseBody: false,
       appendBody: true,
       deleteFirst: true,
-      expected: "# anotação\nprint(f())\ndef f():\n    x = (10) # valor\n    print('dentro')\n",
+      // O comentário da linha apagada fica onde estava: antes da próxima linha que fica (o
+      // `def f()`), e não no topo (full review das áreas, 22/11/2026).
+      expected: "print(f())\n# anotação\ndef f():\n    x = (10) # valor\n    print('dentro')\n",
     },
   ]) {
     const parsed = await analysis.parse(identity(), fixture.source)

@@ -1,7 +1,11 @@
 import { expect, test } from 'bun:test'
 import * as Blockly from 'blockly/core'
-import { pythonVisualToWorkspace, pythonWorkspaceToVisual } from './blockly'
-import { expression, integer, moduleNode, node, pass } from './nodes'
+import {
+  type PythonBlocklyBlock,
+  pythonVisualToWorkspace,
+  pythonWorkspaceToVisual,
+} from './blockly'
+import { call, expression, integer, moduleNode, name, node, pass } from './nodes'
 import { pythonASTToVisual, pythonVisualToAST } from './projection'
 import { readPythonWorkspaceState } from './readWorkspaceState'
 
@@ -127,5 +131,33 @@ test('a class draft saved before inheritance existed fails safely instead of cha
   } finally {
     workspace.dispose()
     restored.dispose()
+  }
+})
+
+test('um bloco encaixado por cima do valor padrão (sombra) reabre do rascunho', () => {
+  // O soquete guarda o bloco E a sombra; o Blockly carrega só o bloco. Antes a conferência
+  // contava a sombra como bloco que faltava e recusava o rascunho inteiro.
+  const workspace = new Blockly.Workspace()
+  try {
+    pythonVisualToWorkspace(
+      pythonASTToVisual(moduleNode([expression(call(name('print'), [integer('1')]))])),
+      workspace,
+    )
+    const printed = workspace
+      .getAllBlocks(false)
+      .find((block) => block.type === 'sz_py_print') as PythonBlocklyBlock
+    printed.setPythonOption('args:count', 2)
+    const second = workspace.newBlock('sz_py_integer')
+    second.setFieldValue('900', 'NUMBER')
+    printed.getInput('args:1')!.connection!.connect(second.outputConnection!)
+    const saved = Blockly.serialization.workspaces.save(workspace)
+    const input = saved.blocks.blocks[0].inputs['args:1']
+    expect(input.block && input.shadow).toBeTruthy()
+    expect(readPythonWorkspaceState(saved)).toEqual(saved)
+    // A sombra escondida continua conferida: um tipo estranho nela ainda recusa.
+    input.shadow.type = 'foreign_python_test'
+    expect(() => readPythonWorkspaceState(saved)).toThrow('restaurar')
+  } finally {
+    workspace.dispose()
   }
 })
