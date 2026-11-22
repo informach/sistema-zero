@@ -32,7 +32,10 @@ test('keeps the Vila PNG exact and admits Cabana and the sparse signed world in 
   expect(candidate.dataUrl).toBe(dataUrl)
   expect(candidate.regional).toEqual({ dataVersion: 5, sourceId: 'vila', sha256: sha(original) })
   expect(Object.isFrozen(candidate.regional)).toBe(true)
-  expect({ ...candidate }).toEqual({ dataUrl, regional: candidate.regional })
+  expect(Object.fromEntries(Object.entries(candidate))).toEqual({
+    dataUrl,
+    regional: candidate.regional,
+  })
   expect([...candidate.world.maps.keys()]).toEqual(['vila', 'cabana'])
   const root = candidate.world.maps.get('vila')
   const child = candidate.world.maps.get('cabana')
