@@ -52,6 +52,7 @@ import {
 } from './localAssetAuthority'
 import {
   acknowledgeLocalCausalDraft,
+  discardLocalCausalCreation,
   freezeLocalCausalDraft,
   installLocalCausalPull,
   type LocalCausalState,
@@ -76,6 +77,7 @@ import {
   sealLocalCausalDraft,
   stageLocalCausalDraft,
   stageLocalUnbasedDraft,
+  unbasedRemovalsReturnedByPull,
 } from './localCausalOutbox'
 import type { LocalStorageCodec } from './localChunkStorage'
 
@@ -193,6 +195,8 @@ export type PintaPersistenceEvent =
   | { type: 'palette-library-changed' }
   | { type: 'sync-end' }
   | { type: 'recovered'; names: string[] }
+  | { type: 'account-removal-returned'; names: string[] }
+  | { type: 'account-recovered'; names: string[] }
 
 /**
  * Um desenho que existe na conta num formato mais novo que o deste código. Ele NÃO é carregado:
@@ -455,6 +459,7 @@ export interface PintaCausalLocalPort<Asset extends PintaMemoryAsset = PintaAsse
   pullImpact(pull: PintaCausalLocalPull<Asset>): Promise<{ ids: string[]; blocked: boolean }>
   applyPull(pull: PintaCausalLocalPull<Asset>, ready: () => boolean): Promise<boolean>
   stageUnbased(draft: PintaLocalUnbasedDraft<Asset>): Promise<void>
+  discardUnpublished(change: LocalAssetTransition<Asset>): Promise<boolean>
   stage(draft: PintaCausalLocalDraft<Asset>): Promise<PintaCausalPending>
   prepare(opId: string): Promise<{ pending: PintaCausalPending; assets: Asset[] } | null>
   freeze(
@@ -655,19 +660,29 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
       ),
     applyPull: (pull, ready) =>
       runSerializedWrite(storeHandle, async () => {
-        const snapshot = await transaction((records) => {
+        const installed = await transaction((records) => {
           if (!ready()) return null
           const before = localCausalBytes(records)
+          const returned = unbasedRemovalsReturnedByPull(readLocalCausalState(records), pull)
           const applied = installLocalCausalPull(records, pull, (authorize) =>
             applyAssetTransitions(records, pull.transitions, false, authorize),
           )
           if (applied) checkCombined(records, applied, before)
-          return applied
+          if (!applied) return null
+          const knownCopies = readLocalCausalState(records).recovered
+          return {
+            snapshot: applied,
+            returned,
+            copies: applied.recovered
+              .filter(({ id }) => knownCopies?.has(id))
+              .map(({ name }) => name),
+          }
         }).catch((error) => {
           if (error instanceof PintaCausalPullDeferred) return null
           throw error
         })
-        if (!snapshot) return false
+        if (!installed) return false
+        const { snapshot, returned, copies } = installed
         const ids = [
           ...new Set([
             ...(pull.coveredIds ?? pull.transitions.map(({ id }) => id)),
@@ -676,7 +691,31 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
         ]
         backupSizeCache.invalidate(ids)
         accept(snapshot, ids)
+        if (copies.length)
+          emitPersistenceEvent(storeHandle, { type: 'account-recovered', names: copies })
+        if (returned.length)
+          emitPersistenceEvent(storeHandle, {
+            type: 'account-removal-returned',
+            names: returned.map(({ name }) => name),
+          })
         if (ids.length) notifyOtherTabs(storeHandle, dbName, ids)
+        return true
+      }),
+    discardUnpublished: (change) =>
+      runSerializedWrite(storeHandle, async () => {
+        if (!change.before || change.after) return false
+        const snapshot = await transaction((records) => {
+          const bytes = localCausalBytes(records)
+          const written = discardLocalCausalCreation<Asset>(records, change.id, (authorize) =>
+            applyAssetTransitions(records, [change], true, authorize),
+          )
+          if (written) checkCombined(records, written, bytes)
+          return written
+        })
+        if (!snapshot) return false
+        backupSizeCache.invalidate([change.id])
+        accept(snapshot, [change.id])
+        notifyOtherTabs(storeHandle, dbName, [change.id])
         return true
       }),
     stageUnbased: (draft) =>

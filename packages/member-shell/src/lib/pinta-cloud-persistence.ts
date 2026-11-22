@@ -99,6 +99,8 @@ export type PintaCloudPersistenceEvent =
   | { type: 'palette-library-changed' }
   | { type: 'sync-end' }
   | { type: 'recovered'; names: string[] }
+  | { type: 'account-removal-returned'; names: string[] }
+  | { type: 'account-recovered'; names: string[] }
 
 /**
  * Um desenho guardado na conta num formato mais novo que o deste navegador. Ele fica intocado na
@@ -513,12 +515,24 @@ export function createCloudMirroredPintaPersistence(options: {
   ): Promise<boolean> {
     if (!causalLocal || !causalCloud) return false
     let state = await causalLocal.inspect()
-    const structure = !!deletion || !!context?.layout?.oldToNew.some((next, old) => next !== old)
+    const renumbering = !!context?.layout?.oldToNew.some((next, old) => next !== old)
+    const structure = !!deletion || renumbering
     if (!state.protocolKnown && knownLegacy && !state.unbased) return false
+    if (deletion?.before && state.epoch !== null) {
+      const [base] = await causalLocal.capture([deletion.id])
+      if (
+        base?.before &&
+        base.beforeRevision === pintaLocalRevisionOf(deletion.before) &&
+        (await causalLocal.discardUnpublished({ ...base, after: null }))
+      ) {
+        await reportCausalQueue().catch(() => {})
+        return true
+      }
+    }
     const root = assets[0]
     const independent = root && pintaPinBoundary(await local.loadAssetById(root.id), root)
     if (state.writeEpoch !== undefined || state.epoch !== null) {
-      await freezeBeforeBoundary(root?.id, structure, !!independent)
+      await freezeBeforeBoundary(root?.id ?? deletion?.id, renumbering, !!independent)
       state = await causalLocal.inspect()
     }
     const remap =
@@ -566,6 +580,9 @@ export function createCloudMirroredPintaPersistence(options: {
         transitions: changes,
         readSet,
         requireKnownInventory: structure,
+        ...(root && context?.slotLineage && context.slotLineage.before === context.slotLineage.after
+          ? { stableTilesets: [root.id] }
+          : {}),
       })
       await reportCausalQueue().catch(() => {})
       wakeCausal()
@@ -1294,7 +1311,13 @@ export function createCloudMirroredPintaPersistence(options: {
     for (const listener of listeners) listener(event)
   }
   const unsubscribeLocal = local.subscribe?.((event) => {
-    if (event.type === 'recovered' || event.type === 'changed') emit(event)
+    if (
+      event.type === 'recovered' ||
+      event.type === 'changed' ||
+      event.type === 'account-removal-returned' ||
+      event.type === 'account-recovered'
+    )
+      emit(event)
   })
   // `changed` coalescido: cada desenho que desce avisaria uma vez; a galeria relê em lote.
   let changedTimer: ReturnType<typeof setTimeout> | null = null

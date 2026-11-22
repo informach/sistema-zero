@@ -241,6 +241,126 @@ describe('authority of the causal gallery', () => {
     ])
   })
 
+  it('keeps an account portal bound to its own map when a local ID shadows the name', async () => {
+    const local = createPintaCausalPersistence({ namespace: 'adoption-official-door' })
+    const sheet = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+    const room = (name: string) =>
+      createTilemapAsset({ name, tilesetId: sheet.id, cols: 2, rows: 2 })
+    const shadow = { ...room('galpao'), id: 'cabana' }
+    await local.persistAssets([sheet, shadow])
+    const cabin = room('cabana')
+    const home = addObjectLayer(room('vila'), 'Portas')
+    home.layers
+      .find(isObjectLayer)!
+      .objects.push(
+        createMapObject({ id: 'porta', role: 'door', properties: { destino: 'cabana' } }),
+      )
+    const remote = { revision: 1, sha256: 'a'.repeat(64), layoutRevision: null }
+    const assets = [sheet, home, cabin]
+    const bases = await local.causal.capture(assets.map(({ id }) => id))
+    const pull = {
+      fromEpoch: null,
+      epoch: '1',
+      recoverInitial: true as const,
+      transitions: bases.map((base, i) => ({ ...base, after: assets[i]!, remote })),
+    }
+    const impact = await local.causal.pullImpact(pull)
+    expect(impact.blocked).toBe(false)
+    expect(impact.ids).toContain(shadow.id)
+    expect(await local.causal.applyPull({ ...pull, coveredIds: impact.ids }, () => true)).toBe(true)
+    const saved = new Map((await local.listAllAssets()).map((asset) => [asset.id, asset]))
+    expect(saved.has(shadow.id)).toBe(false)
+    expect([...saved.values()].find((asset) => asset.name === 'galpao-copia')).toBeDefined()
+    expect(pintaDoorBindings(saved.get(home.id)!, saved)).toEqual([
+      { selector: 'cabana', binding: { type: 'target', id: cabin.id } },
+    ])
+  })
+
+  it('carries a newly created map’s exact offline observation through slot-stable painting', async () => {
+    const local = createPintaCausalPersistence({ namespace: 'unbased-paint' })
+    const sheet = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+    const map = createTilemapAsset({ name: 'vila', tilesetId: sheet.id, cols: 2, rows: 2 })
+    const [sheetBase] = await local.causal.capture([sheet.id])
+    if (!sheetBase) throw Error('Base ausente')
+    await local.causal.stageUnbased({ transitions: [{ ...sheetBase, after: sheet }], readSet: [] })
+    const [paintBase, mapBase] = await local.causal.capture([sheet.id, map.id])
+    if (paintBase?.before?.kind !== 'tileset' || !mapBase) throw Error('Acervo incompleto')
+    await local.causal.stageUnbased({
+      transitions: [{ ...mapBase, after: map }],
+      readSet: [
+        { consumerId: map.id, targetId: sheet.id, localRevision: paintBase.beforeRevision },
+      ],
+    })
+    const paint = structuredClone(paintBase.before)
+    paint.tiles[0]!.data[0] = 1
+    await local.causal.stageUnbased({
+      transitions: [{ ...paintBase, after: paint }],
+      readSet: [],
+      stableTilesets: [sheet.id],
+    })
+    const before = await local.causal.inspect()
+    expect(before.version).toBe(2)
+    expect(before.unbased?.readSet[0]?.localRevision).toBe(
+      before.unbased?.members.find(({ itemId }) => itemId === sheet.id)?.localRevision,
+    )
+    expect(
+      await local.causal.applyPull(
+        {
+          fromEpoch: null,
+          epoch: '1',
+          recoverInitial: true,
+          transitions: [],
+        },
+        () => true,
+      ),
+    ).toBe(true)
+    const saved = await local.causal.inspect()
+    expect(saved.pending[0]?.readSet).toEqual([
+      { source: 'unit', consumerId: map.id, targetId: sheet.id },
+    ])
+    expect(saved.unbased).toBeUndefined()
+  })
+
+  it('confirms a remotely alive asset without replaying a deletion made without a base', async () => {
+    const local = createPintaCausalPersistence({ namespace: 'unbased-removal' })
+    const sheet = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+    await local.persistAsset(sheet)
+    const [base] = await local.causal.capture([sheet.id])
+    if (!base) throw Error('Base ausente')
+    await local.causal.stageUnbased({
+      transitions: [{ ...base, after: null }],
+      readSet: [],
+      requireKnownInventory: true,
+    })
+    const [removed] = await local.causal.capture([sheet.id])
+    if (!removed) throw Error('Lápide ausente')
+    const returned: string[] = []
+    const detach = local.subscribe?.((event) => {
+      if (event.type === 'account-removal-returned') returned.push(...event.names)
+    })
+    try {
+      const remote = { revision: 7, sha256: 'a'.repeat(64), layoutRevision: '2' }
+      expect(
+        await local.causal.applyPull(
+          {
+            fromEpoch: null,
+            epoch: '2',
+            recoverInitial: true,
+            transitions: [{ ...removed, after: sheet, remote }],
+          },
+          () => true,
+        ),
+      ).toBe(true)
+      const state = await local.causal.inspect()
+      expect(state.unbased).toBeUndefined()
+      expect(state.pending).toEqual([])
+      expect(state.confirmed.get(sheet.id)).toMatchObject({ revision: 7, deleted: false })
+      expect(returned).toEqual([sheet.name])
+    } finally {
+      detach?.()
+    }
+  })
+
   it('counts drawings and the sealed gzip in the same budget and keeps the draft after refusal', async () => {
     const local = createPintaCausalPersistence({ namespace: 'causal-budget' })
     const drawings = Array.from({ length: 20 }, (_, i) =>
@@ -308,6 +428,26 @@ describe('authority of the causal gallery', () => {
     disk.set('pinta:sync:causal', malformed)
     await expect(local.causal.inspect()).rejects.toThrow('Não consegui conferir')
     expect(disk.get('pinta:sync:causal')).toEqual(malformed)
+  })
+
+  it('reads the previous local queue schema and fences its next commit as version 2', async () => {
+    const namespace = 'causal-disk-fence'
+    const local = createPintaCausalPersistence({ namespace })
+    await local.causal.rememberProtocol()
+    const disk = idbMockDb(`sistema-zero-pinta-${namespace}`)
+    disk.set('pinta:sync:causal', { ...(await local.causal.inspect()), version: 1 })
+    expect((await local.causal.inspect()).version).toBe(1)
+    expect(
+      await local.causal.applyPull(
+        {
+          fromEpoch: null,
+          epoch: '1',
+          transitions: [],
+        },
+        () => true,
+      ),
+    ).toBe(true)
+    expect(disk.get('pinta:sync:causal')).toMatchObject({ version: 2, epoch: '1' })
   })
 })
 

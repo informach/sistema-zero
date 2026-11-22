@@ -316,6 +316,10 @@ export const COPY = {
     cancel: 'Cancelar',
     recoveredLocal:
       'Recuperei uma edição de outra janela numa cópia. Seus desenhos foram protegidos.',
+    accountRemovalReturned:
+      'Um desenho apagado aqui ainda estava na sua conta. Ele voltou para você conferir antes de apagar de novo.',
+    accountRecovered:
+      'A versão da conta está na galeria. Suas mudanças ficaram numa cópia neste aparelho.',
     storageBudget:
       'Sua galeria chegou ao limite de 32 MB. Apague um desenho ou uma figura grande para continuar salvando.',
     downloadAll: 'Baixar tudo',

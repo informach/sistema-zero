@@ -30,6 +30,25 @@ export function initialRecoverySeeds<Asset extends PintaMemoryAsset>(
     )
       seeds.add(incumbent.id)
   }
+  const official = new Map(
+    pull.transitions.flatMap(({ id, after }) => (after ? [[id, after] as const] : [])),
+  )
+  const retained = [...local.values()].filter((asset) => !remoteNames.has(asset.id))
+  const projected = new Map([...official, ...retained.map((asset) => [asset.id, asset] as const)])
+  const retainedByName = new Map(retained.map((asset) => [asset.name, asset]))
+  for (const asset of official.values()) {
+    for (const { selector, binding } of pintaDoorBindings(asset, official)) {
+      if (
+        typeof selector !== 'string' ||
+        pintaValuesEqual(binding, pintaDoorBinding(selector, projected))
+      )
+        continue
+      const shadow = projected.get(selector)
+      if (shadow && !official.has(shadow.id)) seeds.add(shadow.id)
+      const namesake = retainedByName.get(selector)
+      if (namesake?.kind === 'tilemap') seeds.add(namesake.id)
+    }
+  }
   return seeds
 }
 

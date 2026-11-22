@@ -336,8 +336,13 @@ export async function stagePintaCausalWrite(options: {
     if (!previous || previous.pending.preparation !== group.preparation)
       throw Error('Uma das mudanças guardadas foi atualizada em outra janela.')
     for (const member of group.members) held.set(member.itemId, member)
-    for (const asset of previous.assets) if (!output.has(asset.id)) output.set(asset.id, asset)
-    carriedReads.push(...group.readSet.filter((edge) => !authoredIds.has(edge.consumerId)))
+    for (const asset of previous.assets)
+      if (!output.has(asset.id) && deletion?.id !== asset.id) output.set(asset.id, asset)
+    carriedReads.push(
+      ...group.readSet.filter(
+        (edge) => !authoredIds.has(edge.consumerId) && deletion?.id !== edge.consumerId,
+      ),
+    )
     replaces.push({ opId: group.opId, preparation: group.preparation })
   }
   const deleted = new Set(

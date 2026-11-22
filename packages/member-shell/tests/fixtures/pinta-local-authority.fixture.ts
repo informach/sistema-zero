@@ -464,6 +464,51 @@ test('o espelho guarda dois cortes e desfaz um offline num grupo com mapa remoto
   }
 })
 
+test('apagar uma criação não enviada remove só seu candidato local', async () => {
+  const local = createPintaCausalPersistence({ namespace: 'discard-cloud-create' })
+  const discarded = createPixelSpriteAsset({ name: 'lua', frameSize: 8 })
+  const kept = createPixelSpriteAsset({ name: 'estrela', frameSize: 8 })
+  const map = createTilemapAsset({ name: 'vila', tilesetId: 'pecas', cols: 2, rows: 2 })
+  const { cloud, queued } = fakeCloud(map, 1)
+  const unused = async (): Promise<never> => {
+    throw Error('Operação inesperada')
+  }
+  const transport: PintaCausalCloud = {
+    snapshot: unused,
+    download: unused,
+    verifyEpoch: unused,
+    upload: unused,
+    backfill: unused,
+  }
+  expect(
+    await local.causal.applyPull({ fromEpoch: null, epoch: '1', transitions: [] }, () => true),
+  ).toBe(true)
+  const wrapper = createCloudMirroredPintaPersistence({
+    local,
+    cloud: { ...cloud, pintaCausal: transport },
+    viewerId: 'discard-create',
+    causal: {
+      local: local.causal,
+      holdOpen: async () => () => {},
+      withClosed: (_, apply) => apply(),
+    },
+  })
+  try {
+    await wrapper.persistAssets([discarded, kept], { resources: [] })
+    const current = await local.loadAssetById(discarded.id)
+    if (!current) throw Error('Criação ausente')
+    await wrapper.deleteAsset(current.id, current)
+    expect(await local.loadAssetById(discarded.id)).toBeNull()
+    expect(await local.loadAssetById(kept.id)).toEqual(kept)
+    const state = await local.causal.inspect()
+    expect(state.pending[0]?.members.map(({ itemId }) => itemId)).toEqual([kept.id])
+    expect(state.sealed).toBeNull()
+    expect(queued).toEqual([])
+  } finally {
+    wrapper.dispose?.()
+  }
+})
+
 test('um ACK antigo com a mesma revisão e hora não autentica outro documento na adoção', async () => {
   const map = createTilemapAsset({ name: 'cabana', cols: 2, rows: 2, tilesetId: 'pecas', now: 10 })
   const legacy = createPintaPersistence({ namespace: 'cloud-adoption-aba' })

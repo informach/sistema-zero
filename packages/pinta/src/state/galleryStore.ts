@@ -509,6 +509,12 @@ export function createGalleryStore(
         } else if (event.type === 'recovered') {
           store.setState({ recoveryNotice: COPY.gallery.recoveredLocal })
           reloadSoon()
+        } else if (event.type === 'account-removal-returned') {
+          store.setState({ recoveryNotice: COPY.gallery.accountRemovalReturned })
+          reloadSoon()
+        } else if (event.type === 'account-recovered') {
+          store.setState({ recoveryNotice: COPY.gallery.accountRecovered })
+          reloadSoon()
         } else if (event.type === 'sync-end') {
           if (reloadTimer) {
             clearTimeout(reloadTimer)
