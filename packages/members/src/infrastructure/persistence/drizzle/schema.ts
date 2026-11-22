@@ -17,6 +17,10 @@ import type {
   PintaCausalReservePage,
   PintaCausalResult,
 } from '@sistemazero/core/creations/pinta-causal'
+import type {
+  PintaPaletteCommitProof,
+  PintaPaletteTicket,
+} from '@sistemazero/core/creations/pinta-palette-writer'
 import type { HelpTutorialDocument } from '@sistemazero/core/help'
 import type {
   AdultCreatorCapability,
@@ -2279,6 +2283,8 @@ export const creations = members.table(
       revision: number
       version: number
     }>(),
+    pendingPaletteWrite: jsonb('pending_palette_write').$type<PintaPaletteTicket>(),
+    paletteWriteReceipt: jsonb('palette_write_receipt').$type<PintaPaletteCommitProof>(),
     /** Bytes reservados (o BFF assina exatamente esse Content-Length; o commit promove). */
     pendingBytes: integer('pending_bytes'),
     /** Nome/kind/updatedAt/thumb que o commit vai promover — a lista NÃO vê. */
@@ -2337,6 +2343,8 @@ export const creationInventoryFloors = members.table(
     requiredVersion: integer('required_version').notNull(),
     graphEpoch: bigint('graph_epoch', { mode: 'bigint' }).notNull().default(sql`0`),
     requiresCausalRead: boolean('requires_causal_read').notNull().default(false),
+    /** Sticky writer authority for the reserved item, independent of the graph and format floor. */
+    paletteGeneration: uuid('palette_generation'),
   },
   (t) => [
     primaryKey({ columns: [t.userId, t.audience, t.tool] }),

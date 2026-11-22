@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/bun'
+import type { PintaPaletteHead } from '@sistemazero/core/creations/pinta-palette-writer'
 import { DomainError } from '@sistemazero/core/errors'
 import type { HelpValidationIssue } from '@sistemazero/core/help'
 import {
@@ -26,6 +27,7 @@ import {
   CreationStaleBaseError,
 } from '../../domain/creations/creation.errors'
 import { PintaCausalError } from '../../domain/creations/pinta-causal-graph'
+import { PintaPaletteWriteError } from '../../domain/creations/pinta-palette-write'
 import { HelpTutorialConflictError, HelpTutorialInvalidError } from '../../domain/help/help.errors'
 
 export type { ErrorEnvelope }
@@ -178,7 +180,7 @@ export function buildErrorResponse(input: {
     details?:
       | { gate: string; missing: string[] }
       | { hashes: string[] }
-      | { currentRevision: number }
+      | { currentRevision: number; paletteHead?: PintaPaletteHead }
       | { requiredVersion: number }
       | { issues: HelpValidationIssue[] }
       | { revisaoAtual: number }
@@ -245,6 +247,25 @@ export function buildErrorResponse(input: {
   // cliente decide entre reenviar com a revisão autoritativa (exclusão dele, base velha) e
   // restaurar a versão da nuvem (alguém editou depois) SEM precisar baixar o item para
   // descobrir a revisão (06/09/2026).
+  if (error instanceof PintaPaletteWriteError) {
+    const code =
+      error.reason === 'protocol-required'
+        ? 'PINTA_PALETTE_WRITE_REQUIRED'
+        : error.reason === 'head-changed'
+          ? 'CREATION_STALE_BASE'
+          : error.reason === 'account-deleting'
+            ? 'ACCESS_DENIED'
+            : 'CREATION_REVISION_MISMATCH'
+    return {
+      status: error.reason === 'account-deleting' ? 403 : 409,
+      body: {
+        ...envelope(code, 'A biblioteca de paletas precisa ser conferida antes de guardar.'),
+        ...(error.head
+          ? { details: { currentRevision: error.head.revision, paletteHead: error.head } }
+          : {}),
+      },
+    }
+  }
   if (error instanceof PintaCausalError) {
     return {
       status: error.reason === 'not-found' ? 404 : 409,

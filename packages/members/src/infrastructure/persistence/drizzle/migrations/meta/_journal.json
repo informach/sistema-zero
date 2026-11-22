@@ -1198,6 +1198,20 @@
       "when": 1795367916453,
       "tag": "0170_pinta_causal_writer_fence",
       "breakpoints": true
+    },
+    {
+      "idx": 171,
+      "version": "7",
+      "when": 1795382483459,
+      "tag": "0171_pinta_palette_write_authority",
+      "breakpoints": true
+    },
+    {
+      "idx": 172,
+      "version": "7",
+      "when": 1795382487118,
+      "tag": "0172_pinta_palette_write_fence",
+      "breakpoints": true
     }
   ]
 }

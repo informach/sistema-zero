@@ -1,5 +1,12 @@
 import { randomUUID } from 'node:crypto'
 import { PINTA_INVENTORY_READER_VERSION, pintaInventoryFloor } from '@sistemazero/core/creations'
+import type { PintaCausalViewer } from '@sistemazero/core/creations/pinta-causal'
+import {
+  type PintaPaletteBase,
+  type PintaPaletteCommitProof,
+  type PintaPaletteTicket,
+  pintaPaletteBlobKey,
+} from '@sistemazero/core/creations/pinta-palette-writer'
 import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
 import { and, desc, eq, inArray, isNotNull, isNull, lt, or, sql } from 'drizzle-orm'
 import type { CourseAudience } from '../../../domain/course/course'
@@ -20,6 +27,7 @@ import {
   PALETTE_LIBRARY_TOOL,
 } from '../../../domain/creations/palette-library'
 import { PintaCausalError } from '../../../domain/creations/pinta-causal-graph'
+import { PintaPaletteWriteError } from '../../../domain/creations/pinta-palette-write'
 import type {
   CreationCommitResult,
   CreationListPage,
@@ -30,7 +38,18 @@ import type {
 } from '../../../domain/ports/creations-repository.port'
 import type { Database } from './db'
 import { clearPending, expirePintaUnits } from './pinta-causal-leases'
+import { retirePintaPointer, trackPaletteTicket } from './pinta-causal-retirement'
 import { assertIndividualPinta } from './pinta-causal-scope'
+import {
+  authorizePaletteTransaction,
+  checkPaletteBase,
+  ensurePaletteAccount,
+  newPaletteTicket,
+  paletteGeneration,
+  paletteHead,
+  publishPaletteGeneration,
+  requireLegacyPaletteWriter,
+} from './pinta-palette-write-state'
 import { accountDeletionFences, creationInventoryFloors, creations } from './schema'
 
 async function inventoryFloor(
@@ -91,6 +110,19 @@ function reservedReader(row: Row): number | undefined {
     receipt.version <= PINTA_INVENTORY_READER_VERSION
     ? receipt.version
     : undefined
+}
+
+function samePaletteTicket(left: PintaPaletteTicket, right: PintaPaletteTicket) {
+  return (
+    left.nonce === right.nonce &&
+    left.protocol === right.protocol &&
+    left.baseGeneration === right.baseGeneration &&
+    left.baseRevision === right.baseRevision &&
+    left.revision === right.revision &&
+    left.expiresAt === right.expiresAt &&
+    left.itemUpdatedAt === right.itemUpdatedAt &&
+    left.bytes === right.bytes
+  )
 }
 type SummaryRow = Pick<
   Row,
@@ -301,6 +333,10 @@ export class DrizzleCreationsRepository implements CreationsRepository {
           and(
             isNotNull(creations.deletedAt),
             isNull(creations.pendingUnit),
+            or(
+              isNull(creations.pendingPaletteWrite),
+              sql`(${creations.pendingPaletteWrite}->>'expiresAt')::timestamptz <= clock_timestamp()`,
+            ),
             lt(creations.deletedAt, cutoff),
           ),
         )
@@ -334,6 +370,77 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       .limit(1)
     await assertIndividualPinta(this.db, userId, audience, tool, itemId)
     return row ? toRecord(row) : null
+  }
+
+  async getPaletteHead(actor: PintaCausalViewer) {
+    return this.db.transaction(async (tx) => {
+      await tx.execute(
+        sql`select pg_advisory_xact_lock(hashtextextended(${`creation-quota:${actor.userId}`}, 0))`,
+      )
+      await ensurePaletteAccount(tx, actor.accountId)
+      const [row] = await tx
+        .select()
+        .from(creations)
+        .where(whereItem(actor.userId, 'pinta', PALETTE_LIBRARY_ITEM_ID, actor.audience))
+        .limit(1)
+      if (row && row.accountId !== actor.accountId)
+        throw new PintaPaletteWriteError('ticket-invalid')
+      const head = paletteHead(row, await paletteGeneration(tx, actor))
+      const download =
+        head.exists && row?.storageRef
+          ? {
+              storageKey: row.storageRef,
+              revision: head.revision,
+              bytes: row.bytes,
+              summary: toSummary(row),
+              parts: [],
+            }
+          : null
+      return { paletteHead: head, download }
+    })
+  }
+
+  async getPaletteTicket(actor: PintaCausalViewer, nonce: string, revision: number, now: Date) {
+    return this.db.transaction(async (tx) => {
+      await tx.execute(
+        sql`select pg_advisory_xact_lock(hashtextextended(${`creation-quota:${actor.userId}`}, 0))`,
+      )
+      await ensurePaletteAccount(tx, actor.accountId)
+      const [row] = await tx
+        .select()
+        .from(creations)
+        .where(whereItem(actor.userId, 'pinta', PALETTE_LIBRARY_ITEM_ID, actor.audience))
+        .limit(1)
+      if (!row || row.accountId !== actor.accountId)
+        throw new PintaPaletteWriteError('ticket-invalid')
+      const authority = await paletteGeneration(tx, actor)
+      const receipt = row.paletteWriteReceipt
+      if (
+        receipt &&
+        receipt.ticket.nonce === nonce &&
+        receipt.ticket.revision === revision &&
+        row.deletedAt === null &&
+        row.revision === revision &&
+        row.storageRef === pintaPaletteBlobKey(actor, receipt.ticket, 'sealed')
+      ) {
+        return {
+          committed: true as const,
+          paletteHead: paletteHead(row, authority),
+          item: toSummary(row),
+        }
+      }
+      const ticket = row.pendingPaletteWrite
+      if (
+        !ticket ||
+        ticket.nonce !== nonce ||
+        ticket.revision !== revision ||
+        row.pendingRevision !== revision ||
+        Date.parse(ticket.expiresAt) <= Math.max(now.getTime(), Date.now())
+      )
+        throw new PintaPaletteWriteError('ticket-invalid')
+      checkPaletteBase(paletteHead(row, authority), ticket.baseRevision, ticket.baseGeneration)
+      return { committed: false as const, ticket }
+    })
   }
 
   async usage(userId: string): Promise<CreationUsage> {
@@ -390,9 +497,12 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       const [existing] = await tx
         .select({
           revision: creations.revision,
+          id: creations.id,
+          accountId: creations.accountId,
           formatVersion: creations.formatVersion,
           pendingFormatVersion: creations.pendingFormatVersion,
           pendingUnit: creations.pendingUnit,
+          pendingPaletteWrite: creations.pendingPaletteWrite,
           lastReservedRevision: creations.lastReservedRevision,
           bytes: creations.bytes,
           storageRef: creations.storageRef,
@@ -404,6 +514,19 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         .where(whereItem(input.userId, input.tool, input.itemId, this.audience))
         .limit(1)
         .for('update')
+
+      const actor = { userId: input.userId, accountId: input.accountId, audience: this.audience }
+      const reservedPalette =
+        input.tool === PALETTE_LIBRARY_TOOL && input.itemId === PALETTE_LIBRARY_ITEM_ID
+      const authority = reservedPalette ? await paletteGeneration(tx, actor) : null
+      const observedPalette = reservedPalette ? paletteHead(existing, authority) : undefined
+      if (input.paletteWrite) {
+        if (!observedPalette || (existing && existing.accountId !== input.accountId))
+          throw new PintaPaletteWriteError('ticket-invalid')
+        checkPaletteBase(observedPalette, input.baseRevision, input.paletteWrite.baseGeneration)
+      } else if (observedPalette) {
+        requireLegacyPaletteWriter(observedPalette, existing?.pendingPaletteWrite, input.now)
+      }
 
       if (existing?.pendingUnit) {
         const expired = await expirePintaUnits(
@@ -418,7 +541,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       }
       const formatVersion = input.formatVersion ?? 1
       const floor = await inventoryFloor(tx, input.userId, this.audience, input.tool)
-      if ((input.maxReadFormatVersion ?? formatVersion) < floor)
+      if (!input.paletteWrite && (input.maxReadFormatVersion ?? formatVersion) < floor)
         return { ok: false, reason: 'client-outdated', requiredVersion: floor }
       // Sob o mesmo lock da reserva: uma aba velha não cancela um upload novo em voo.
       const requiredVersion = Math.max(
@@ -460,6 +583,10 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       // A revisão desta reserva (1 para linha nova; o contador NUNCA volta): é a chave no R2
       // do manifesto e das partes que subirem agora.
       const revision = existing ? existing.lastReservedRevision + 1 : 1
+      const paletteTicket =
+        input.paletteWrite && observedPalette
+          ? newPaletteTicket(observedPalette, revision, input.bytes, input.itemUpdatedAt, input.now)
+          : undefined
       const resolved = resolveParts(input.parts ?? [], committedParts, revision)
       if (resolved.unsized.length > 0) {
         return { ok: false, reason: 'parts-need-bytes', hashes: resolved.unsized }
@@ -496,14 +623,24 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       // A base é sempre comparada à revisão autoritativa, inclusive depois da compactação.
       // Isso impede uma edição velha de ressuscitar uma lápide ou item já removido do índice.
       const currentRevision = existing?.revision ?? 0
-      if (input.baseRevision !== undefined && input.baseRevision !== currentRevision) {
+      if (
+        !paletteTicket &&
+        input.baseRevision !== undefined &&
+        input.baseRevision !== currentRevision
+      ) {
         return { ok: false, reason: 'stale-base', currentRevision }
       }
 
       const nextFloor = pintaInventoryFloor(input.tool, input.kind, formatVersion)
       if (nextFloor > floor) await raiseInventoryFloor(tx, input, this.audience, nextFloor)
-      const receipt =
-        Math.max(floor, nextFloor) > 1 ? { inventoryFloor: Math.max(floor, nextFloor) } : {}
+      const receipt = {
+        ...(Math.max(floor, nextFloor) > 1 ? { inventoryFloor: Math.max(floor, nextFloor) } : {}),
+        ...(paletteTicket ? { paletteTicket } : {}),
+      }
+      if (paletteTicket) {
+        await authorizePaletteTransaction(tx)
+        await trackPaletteTicket(tx, actor, paletteTicket)
+      }
       const pending = {
         pendingRevision: 0,
         pendingInventoryReader:
@@ -511,6 +648,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
             ? null
             : { revision, version: input.maxReadFormatVersion },
         pendingFormatVersion: formatVersion,
+        pendingPaletteWrite: paletteTicket ?? null,
         pendingBytes: totalBytes,
         pendingName: input.name,
         pendingKind: input.kind,
@@ -565,6 +703,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
     uploadedParts?: readonly string[]
     verifiedPartHashes?: readonly string[]
     verifiedFormatVersion?: number
+    paletteProof?: PintaPaletteCommitProof & { accountId: string }
     now: Date
     limits: CreationUploadInput['limits']
   }): Promise<CreationCommitResult> {
@@ -582,6 +721,56 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         .limit(1)
         .for('update')
       await assertIndividualPinta(tx, input.userId, this.audience, input.tool, input.itemId)
+      const reservedPalette =
+        input.tool === PALETTE_LIBRARY_TOOL && input.itemId === PALETTE_LIBRARY_ITEM_ID
+      const owner = { userId: input.userId, audience: this.audience } as const
+      const authority = reservedPalette ? await paletteGeneration(tx, owner) : null
+      const observedPalette = reservedPalette ? paletteHead(row, authority) : undefined
+      const proof = input.paletteProof
+      const actor = proof ? { ...owner, accountId: proof.accountId } : undefined
+      if (proof && actor) {
+        if (
+          !observedPalette ||
+          !row ||
+          row.accountId !== actor.accountId ||
+          input.revision !== proof.ticket.revision
+        )
+          throw new PintaPaletteWriteError('ticket-invalid')
+        await ensurePaletteAccount(tx, actor.accountId)
+        const sealed = pintaPaletteBlobKey(actor, proof.ticket, 'sealed')
+        if (
+          row.revision === input.revision &&
+          row.storageRef === sealed &&
+          row.paletteWriteReceipt &&
+          samePaletteTicket(row.paletteWriteReceipt.ticket, proof.ticket) &&
+          row.paletteWriteReceipt.sha256 === proof.sha256
+        ) {
+          return {
+            ok: true,
+            alreadyCommitted: true,
+            previousStorageRef: null,
+            releasedPartRefs: [],
+            paletteHead: observedPalette,
+            paletteItem: toSummary(row),
+          }
+        }
+        if (
+          !row.pendingPaletteWrite ||
+          !samePaletteTicket(row.pendingPaletteWrite, proof.ticket) ||
+          Date.parse(proof.ticket.expiresAt) <= Math.max(input.now.getTime(), Date.now()) ||
+          row.pendingBytes !== proof.ticket.bytes
+        )
+          throw new PintaPaletteWriteError('ticket-invalid')
+        checkPaletteBase(observedPalette, proof.ticket.baseRevision, proof.ticket.baseGeneration)
+        await authorizePaletteTransaction(tx)
+      } else if (observedPalette) {
+        requireLegacyPaletteWriter(
+          observedPalette,
+          row?.pendingPaletteWrite,
+          input.now,
+          input.revision,
+        )
+      }
       if (row?.pendingUnit) throw new PintaCausalError('operation-conflict', input.itemId)
       if (!row) return { ok: false }
       // Retry de um 200 perdido: a revisão pedida JÁ é a corrente. Idempotente — MESMO com
@@ -604,7 +793,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         return { ok: false }
       }
       const floor = await inventoryFloor(tx, input.userId, this.audience, input.tool)
-      if ((reservedReader(row) ?? row.pendingFormatVersion ?? 1) < floor) {
+      if (!proof && (reservedReader(row) ?? row.pendingFormatVersion ?? 1) < floor) {
         await tx
           .update(creations)
           .set(clearPending())
@@ -680,7 +869,9 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         .filter((part) => !committedSet.has(part.hash) && !uploaded.has(part.hash))
         .map((part) => part.hash)
       if (missing.length > 0) return { ok: false, reason: 'parts-missing', hashes: missing }
-      await tx
+      const storageRef =
+        proof && actor ? pintaPaletteBlobKey(actor, proof.ticket, 'sealed') : input.storageRef
+      const publish = tx
         .update(creations)
         .set({
           revision: input.revision,
@@ -689,7 +880,8 @@ export class DrizzleCreationsRepository implements CreationsRepository {
           layoutRevision: null,
           backfillTicket: null,
           formatVersion,
-          storageRef: input.storageRef,
+          storageRef,
+          ...(proof ? { paletteWriteReceipt: { ticket: proof.ticket, sha256: proof.sha256 } } : {}),
           bytes: row.pendingBytes,
           name: row.pendingName,
           kind: row.pendingKind,
@@ -703,7 +895,23 @@ export class DrizzleCreationsRepository implements CreationsRepository {
           syncedAt: input.now,
         })
         .where(whereItem(input.userId, input.tool, input.itemId, this.audience))
-      const previous = row.storageRef && row.storageRef !== input.storageRef ? row.storageRef : null
+      const previous = row.storageRef && row.storageRef !== storageRef ? row.storageRef : null
+      if (actor) {
+        const generation = authority ?? randomUUID()
+        await publishPaletteGeneration(tx, actor, generation)
+        const [published] = await publish.returning()
+        if (!published) throw new PintaPaletteWriteError('ticket-invalid')
+        await retirePintaPointer(tx, actor, input.itemId, row.revision, previous, input.now)
+        return {
+          ok: true,
+          alreadyCommitted: false,
+          previousStorageRef: null,
+          releasedPartRefs: [],
+          paletteHead: paletteHead(published, generation),
+          paletteItem: toSummary(published),
+        }
+      }
+      await publish
       const nextFloor = pintaInventoryFloor(input.tool, row.pendingKind, formatVersion)
       if (nextFloor > floor) await raiseInventoryFloor(tx, row, this.audience, nextFloor)
       const nextSet = new Set(pendingParts.map((part) => part.hash))
@@ -723,6 +931,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
     baseRevision: number,
     now: Date,
     maxFormatVersion = 1,
+    paletteWrite?: PintaPaletteBase & { accountId: string },
   ): ReturnType<CreationsRepository['softDelete']> {
     return this.db.transaction(async (tx) => {
       if (tool === 'pinta')
@@ -734,6 +943,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       const [row] = await tx
         .select({
           storageRef: creations.storageRef,
+          id: creations.id,
           parts: creations.parts,
           accountId: creations.accountId,
           pendingUnit: creations.pendingUnit,
@@ -742,11 +952,35 @@ export class DrizzleCreationsRepository implements CreationsRepository {
           formatVersion: creations.formatVersion,
           pendingFormatVersion: creations.pendingFormatVersion,
           pendingRevision: creations.pendingRevision,
+          pendingPaletteWrite: creations.pendingPaletteWrite,
         })
         .from(creations)
         .where(whereItem(userId, tool, itemId, this.audience))
         .limit(1)
         .for('update')
+      const reservedPalette = tool === PALETTE_LIBRARY_TOOL && itemId === PALETTE_LIBRARY_ITEM_ID
+      const owner = { userId, audience: this.audience } as const
+      const authority = reservedPalette ? await paletteGeneration(tx, owner) : null
+      const observed = reservedPalette ? paletteHead(row, authority) : undefined
+      const actor = paletteWrite ? { ...owner, accountId: paletteWrite.accountId } : undefined
+      if (paletteWrite && actor) {
+        if (!observed || (row && row.accountId !== actor.accountId))
+          throw new PintaPaletteWriteError('ticket-invalid')
+        await ensurePaletteAccount(tx, actor.accountId)
+        checkPaletteBase(observed, baseRevision, paletteWrite.baseGeneration)
+        if (!row || (!observed.exists && row.pendingRevision === null))
+          return {
+            ok: true,
+            deleted: false,
+            storageRef: null,
+            partRefs: [],
+            revision: 0,
+            paletteHead: observed,
+          }
+        await authorizePaletteTransaction(tx)
+      } else if (observed) {
+        requireLegacyPaletteWriter(observed, row?.pendingPaletteWrite, now)
+      }
       if (!row) {
         return baseRevision === 0
           ? { ok: true, deleted: false, storageRef: null, partRefs: [], revision: 0 }
@@ -764,11 +998,11 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         row.pendingFormatVersion = null
         row.pendingRevision = null
       }
-      if (baseRevision !== row.revision) {
+      if (!actor && baseRevision !== row.revision) {
         return { ok: false, reason: 'stale-base', currentRevision: row.revision }
       }
       const requiredVersion = Math.max(floor, row.formatVersion, row.pendingFormatVersion ?? 1)
-      if (maxFormatVersion < requiredVersion) {
+      if (!actor && maxFormatVersion < requiredVersion) {
         return { ok: false, reason: 'client-outdated', requiredVersion }
       }
       if (row.deletedAt !== null && row.pendingRevision === null) {
@@ -782,6 +1016,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
           causalSha256: null,
           layoutRevision: null,
           backfillTicket: null,
+          ...(actor ? { paletteWriteReceipt: null } : {}),
           // Cancela a reserva em voo (o commit dela cai em 409); o contador NÃO volta.
           ...clearPending(),
           // O blob (e as partes) saem da linha — e do R2, pelo BFF: apagado não ocupa espaço
@@ -793,6 +1028,19 @@ export class DrizzleCreationsRepository implements CreationsRepository {
           syncedAt: now,
         })
         .where(whereItem(userId, tool, itemId, this.audience))
+      if (actor) {
+        const generation = randomUUID()
+        await publishPaletteGeneration(tx, actor, generation)
+        await retirePintaPointer(tx, actor, itemId, row.revision, row.storageRef, now)
+        return {
+          ok: true,
+          deleted: row.deletedAt === null && row.storageRef !== null,
+          storageRef: null,
+          partRefs: [],
+          revision: 0,
+          paletteHead: paletteHead(undefined, generation),
+        }
+      }
       return {
         ok: true,
         deleted: row.deletedAt === null,

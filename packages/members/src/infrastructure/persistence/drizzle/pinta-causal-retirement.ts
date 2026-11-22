@@ -1,10 +1,14 @@
 import { randomUUID } from 'node:crypto'
-import { creationStorageKey } from '@sistemazero/core/creations'
+import { creationStorageKey, PINTA_PALETTE_LIBRARY_ITEM_ID } from '@sistemazero/core/creations'
 import {
   type PintaCausalBackfillBinding,
   type PintaCausalBinding,
   pintaCausalBlobKey,
 } from '@sistemazero/core/creations/pinta-causal'
+import {
+  type PintaPaletteTicket,
+  pintaPaletteBlobKey,
+} from '@sistemazero/core/creations/pinta-palette-writer'
 import { and, eq, exists, inArray, isNull, lt, lte, notExists, or, sql } from 'drizzle-orm'
 import type { CreationCleanupJob } from '../../../domain/ports/creation-cleanup-repository.port'
 import type { Database } from './db'
@@ -18,6 +22,23 @@ import {
 } from './schema'
 
 const TTL_GRACE_MS = 20 * 60_000
+
+export async function trackPaletteTicket(tx: Tx, actor: Actor, ticket: PintaPaletteTicket) {
+  const stages = ['upload', 'sealed'] as const
+  await tx
+    .insert(objects)
+    .values(
+      stages.map((stage) => ({
+        ...actor,
+        id: randomUUID(),
+        itemId: PINTA_PALETTE_LIBRARY_ITEM_ID,
+        objectKey: pintaPaletteBlobKey(actor, ticket, stage),
+        requiresFence: false,
+        notBefore: new Date(Date.parse(ticket.expiresAt) + TTL_GRACE_MS),
+      })),
+    )
+    .onConflictDoNothing()
+}
 
 /** Persist before issuing any PUT. A crashed sealer cannot strand its private candidate. */
 export async function trackPintaObjects(
@@ -148,7 +169,16 @@ export class DrizzlePintaRetirementRepository {
                   eq(floors.userId, objects.userId),
                   eq(floors.audience, objects.audience),
                   eq(floors.tool, 'pinta'),
-                  eq(floors.requiresCausalRead, true),
+                  or(
+                    and(
+                      eq(objects.itemId, PINTA_PALETTE_LIBRARY_ITEM_ID),
+                      sql`${floors.paletteGeneration} is not null`,
+                    ),
+                    and(
+                      sql`${objects.itemId} <> ${PINTA_PALETTE_LIBRARY_ITEM_ID}`,
+                      eq(floors.requiresCausalRead, true),
+                    ),
+                  ),
                 ),
               ),
           ),

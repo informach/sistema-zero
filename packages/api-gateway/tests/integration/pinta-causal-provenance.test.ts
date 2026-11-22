@@ -17,12 +17,17 @@ const paths = [
   'units/abort',
   'backfill/ticket',
   'backfill/attest',
+  'palette/head',
+  'palette/reserve',
+  'palette/ticket',
+  'palette/commit',
+  'palette/delete',
 ].map((path) => `/members/internal/creations/pinta/${path}`)
 const trusted = 'test-private-pinta-member-shell-consumer-key'
 const unrelated = 'test-different-consumer-private-scope-key'
 const jwtSecret = 'test-private-pinta-jwt-at-least-32-characters'
 
-test('the ten Pinta proof paths forward only an authenticated member-shell body', async () => {
+test('private Pinta graph and palette paths forward only an authenticated member-shell body', async () => {
   const routes = config.routes.filter((route) => route.id.startsWith('members-pinta-causal-'))
   expect(routes.map((route) => route.pathPattern)).toEqual(paths)
   for (const route of routes)

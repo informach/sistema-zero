@@ -52,6 +52,7 @@ export function clearPending() {
     pendingRevision: null,
     pendingFormatVersion: null,
     pendingInventoryReader: null,
+    pendingPaletteWrite: null,
     pendingBytes: null,
     pendingName: null,
     pendingKind: null,

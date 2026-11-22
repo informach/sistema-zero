@@ -1,3 +1,9 @@
+import type {
+  PintaPaletteBase,
+  PintaPaletteCommitProof,
+  PintaPaletteHead,
+  PintaPaletteTicket,
+} from '@sistemazero/core/creations/pinta-palette-writer'
 import type { CourseAudience } from '../course/course'
 import type {
   CreationDraftState,
@@ -34,6 +40,8 @@ export interface CreationUploadInput {
   /** Ausente = formato legado (1); nunca pode rebaixar o formato corrente ou reservado. */
   formatVersion?: number
   maxReadFormatVersion?: number
+  /** Private writer negotiation, derived by the authenticated palette route. */
+  paletteWrite?: PintaPaletteBase
   /** Impressão digital do conteúdo (`v1:<sha256>`), promovida no commit. */
   contentFingerprint?: string | null
   now: Date
@@ -49,7 +57,13 @@ export interface CreationUploadInput {
 /** O que a reserva devolve. */
 export type CreationUploadReservation =
   /** A revisão nova (a chave do R2 é derivada dela) + as partes que FALTAM no R2 (a assinar). */
-  | { ok: true; revision: number; missingParts: CreationPartRef[]; inventoryFloor?: number }
+  | {
+      ok: true
+      revision: number
+      missingParts: CreationPartRef[]
+      inventoryFloor?: number
+      paletteTicket?: PintaPaletteTicket
+    }
   /** Partes faltantes vieram sem `bytes`: nada reservado; o cliente volta com eles. */
   | { ok: false; reason: 'parts-need-bytes'; hashes: string[] }
   /** Manifesto + partes passam do teto por item. */
@@ -92,9 +106,18 @@ export type CreationCommitResult =
       alreadyCommitted: false
       previousStorageRef: string | null
       releasedPartRefs: CreationPartRef[]
+      paletteHead?: PintaPaletteHead
+      paletteItem?: CreationSummary
     }
   /** A revisão pedida JÁ é a corrente (retry de um 200 perdido): idempotente. */
-  | { ok: true; alreadyCommitted: true; previousStorageRef: null; releasedPartRefs: [] }
+  | {
+      ok: true
+      alreadyCommitted: true
+      previousStorageRef: null
+      releasedPartRefs: []
+      paletteHead?: PintaPaletteHead
+      paletteItem?: CreationSummary
+    }
   /** Não é a revisão reservada (upload velho, outro navegador reservou depois, nada reservado). */
   | {
       ok: false
@@ -111,6 +134,7 @@ export type CreationDeleteResult =
       storageRef: string | null
       partRefs: CreationPartRef[]
       revision: number
+      paletteHead?: PintaPaletteHead
     }
   | { ok: false; reason: 'stale-base'; currentRevision: number }
 
@@ -170,6 +194,7 @@ export interface CreationsRepository {
     uploadedParts?: readonly string[]
     verifiedPartHashes?: readonly string[]
     verifiedFormatVersion?: number
+    paletteProof?: PintaPaletteCommitProof & { accountId: string }
     now: Date
     /** Revalidados no commit, depois do PUT, sob lock por perfil. */
     limits: CreationUploadInput['limits']
@@ -188,5 +213,6 @@ export interface CreationsRepository {
     baseRevision: number,
     now: Date,
     maxFormatVersion?: number,
+    paletteWrite?: PintaPaletteBase & { accountId: string },
   ): Promise<CreationDeleteResult>
 }

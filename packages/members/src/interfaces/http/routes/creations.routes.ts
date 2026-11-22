@@ -29,6 +29,14 @@ import {
 export interface CreationsRoutesDeps {
   causalQaProfiles?: readonly PintaCausalViewer[]
   causal?: import('../../../infrastructure/persistence/drizzle/pinta-causal-units.repository').DrizzlePintaCausalRepository
+  palette?: {
+    repository: Record<
+      'kids' | 'adult',
+      import('../../../infrastructure/persistence/drizzle/creations.repository').DrizzleCreationsRepository
+    >
+    clock: () => Date
+    qaProfiles: readonly PintaCausalViewer[]
+  }
   list: ListCreationsService
   reserveUpload: ReserveCreationUploadService
   commitUpload: CommitCreationUploadService

@@ -18,6 +18,11 @@ export function pintaCausalRoutes(transforms: Route['transforms']): Route[] {
     ['units/abort', SMALL_BODY_BYTES],
     ['backfill/ticket', SMALL_BODY_BYTES],
     ['backfill/attest', PAGE_OR_ATTESTATION_BYTES],
+    ['palette/head', SMALL_BODY_BYTES],
+    ['palette/reserve', SMALL_BODY_BYTES],
+    ['palette/ticket', SMALL_BODY_BYTES],
+    ['palette/commit', SMALL_BODY_BYTES],
+    ['palette/delete', SMALL_BODY_BYTES],
   ] as const
   return paths.map(([path, maxBodyBytes]) => ({
     id: `members-pinta-causal-${path.replace('/', '-')}`,

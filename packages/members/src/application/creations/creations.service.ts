@@ -4,6 +4,13 @@ import {
   PINTA_INVENTORY_READER_VERSION,
 } from '@sistemazero/core/creations'
 import {
+  type PintaPaletteBase,
+  type PintaPaletteCommitProof,
+  type PintaPaletteHead,
+  type PintaPaletteTicket,
+  pintaPaletteBlobKey,
+} from '@sistemazero/core/creations/pinta-palette-writer'
+import {
   STUDIO_PROJECT_FORMAT_VERSION,
   STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION,
 } from '@sistemazero/core/studio'
@@ -75,6 +82,7 @@ export interface CreationUploadTicket {
   bytes: number
   /** Só as partes que o item ainda não tem (cada uma ganha um PUT assinado). */
   parts: CreationPartTicket[]
+  paletteTicket?: PintaPaletteTicket
 }
 
 /**
@@ -88,6 +96,7 @@ export interface CreationCommitOutcome {
   /** Chave da revisão ANTERIOR no R2 (`null` = primeira revisão, ou retry idempotente). */
   previousStorageKey: string | null
   releasedStorageKeys: string[]
+  paletteHead?: PintaPaletteHead
 }
 
 export interface CreationDownloadTicket {
@@ -249,6 +258,7 @@ export class ReserveCreationUploadService {
     baseRevision?: number
     formatVersion?: number
     maxReadFormatVersion?: number
+    paletteWrite?: PintaPaletteBase
     /** Partes referenciadas (hash de conteúdo; `bytes` só para as que o item não tem). */
     parts?: ReadonlyArray<{ hash: string; bytes?: number }>
     /** Impressão digital do conteúdo (`v1:<sha256>`), opaca aqui. */
@@ -364,6 +374,7 @@ export class ReserveCreationUploadService {
       bytes: input.bytes,
       formatVersion,
       maxReadFormatVersion: reader,
+      ...(input.paletteWrite ? { paletteWrite: input.paletteWrite } : {}),
       thumb,
       ...(input.baseRevision !== undefined ? { baseRevision: input.baseRevision } : {}),
       ...(parts.length > 0 ? { parts } : {}),
@@ -404,18 +415,28 @@ export class ReserveCreationUploadService {
     }
     return {
       revision: reservation.revision,
+      ...(reservation.paletteTicket ? { paletteTicket: reservation.paletteTicket } : {}),
       ...(reservation.inventoryFloor === undefined
         ? {}
         : { inventoryFloor: reservation.inventoryFloor }),
       formatVersion,
       ...(reader === undefined ? {} : { maxReadFormatVersion: reader }),
-      storageKey: creationStorageKey(
-        input.userId,
-        input.tool,
-        input.itemId,
-        reservation.revision,
-        this.creations.audience ?? 'kids',
-      ),
+      storageKey: reservation.paletteTicket
+        ? pintaPaletteBlobKey(
+            {
+              userId: input.userId,
+              audience: this.creations.audience ?? 'kids',
+            },
+            reservation.paletteTicket,
+            'upload',
+          )
+        : creationStorageKey(
+            input.userId,
+            input.tool,
+            input.itemId,
+            reservation.revision,
+            this.creations.audience ?? 'kids',
+          ),
       bytes: input.bytes,
       parts: reservation.missingParts.map((part) => ({
         ...part,
@@ -451,6 +472,7 @@ export class CommitCreationUploadService {
     uploadedParts?: readonly string[]
     verifiedPartHashes?: readonly string[]
     verifiedFormatVersion?: number
+    paletteProof?: PintaPaletteCommitProof & { accountId: string }
   }): Promise<CreationCommitOutcome> {
     if (!Number.isInteger(input.revision) || input.revision <= 0) {
       throw new ValidationError('Revisão inválida')
@@ -493,6 +515,7 @@ export class CommitCreationUploadService {
       ...(input.verifiedFormatVersion !== undefined
         ? { verifiedFormatVersion: input.verifiedFormatVersion }
         : {}),
+      ...(input.paletteProof ? { paletteProof: input.paletteProof } : {}),
       now: this.clock(),
       limits: {
         maxItemBytes: CREATION_LIMITS.maxItemBytes,
@@ -519,8 +542,11 @@ export class CommitCreationUploadService {
       }
       throw new CreationRevisionMismatchError()
     }
-    const record = await this.creations.get(input.userId, input.tool, input.itemId)
-    if (!record) throw new CreationNotFoundError()
+    const record = result.paletteItem
+      ? null
+      : await this.creations.get(input.userId, input.tool, input.itemId)
+    const item = result.paletteItem ?? (record && toCreationSummary(record))
+    if (!item) throw new CreationNotFoundError()
     const releasedStorageKeys = [
       ...(result.previousStorageRef ? [result.previousStorageRef] : []),
       ...result.releasedPartRefs.map((part) =>
@@ -535,9 +561,10 @@ export class CommitCreationUploadService {
       ),
     ]
     return {
-      item: toCreationSummary(record),
+      item,
       previousStorageKey: result.previousStorageRef,
       releasedStorageKeys,
+      ...(result.paletteHead ? { paletteHead: result.paletteHead } : {}),
     }
   }
 }
@@ -590,12 +617,14 @@ export class DeleteCreationService {
     itemId: string,
     baseRevision: number,
     maxFormatVersion = 1,
+    paletteWrite?: PintaPaletteBase & { accountId: string },
   ): Promise<{
     deleted: boolean
     storageKey: string | null
     /** Tudo o que a lixeira soltou no R2 (blob principal + partes). */
     storageKeys: string[]
     revision: number
+    paletteHead?: PintaPaletteHead
   }> {
     if (!Number.isInteger(baseRevision) || baseRevision < 0) {
       throw new ValidationError('Revisão-base inválida')
@@ -610,6 +639,7 @@ export class DeleteCreationService {
       baseRevision,
       this.clock(),
       maxFormatVersion,
+      paletteWrite,
     )
     if (!result.ok && result.reason === 'client-outdated') {
       throw new CreationClientOutdatedError(result.requiredVersion)
@@ -632,6 +662,7 @@ export class DeleteCreationService {
         ),
       ],
       revision: result.revision,
+      ...(result.paletteHead ? { paletteHead: result.paletteHead } : {}),
     }
   }
 }

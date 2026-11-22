@@ -60,6 +60,7 @@ import { masteryRoutes } from './routes/mastery.routes'
 import { type MembersRoutesDeps, membersRoutes } from './routes/members.routes'
 import { type PensaRoutesDeps, pensaRoutes } from './routes/pensa.routes'
 import { pintaCausalRoutes } from './routes/pinta-causal.routes'
+import { pintaPaletteWriteRoutes } from './routes/pinta-palette-writes.routes'
 import { studioAiAccountRoutes } from './routes/studio-ai-account.routes'
 import { studioAiUsageRoutes } from './routes/studio-ai-usage.routes'
 import { studioBuilderRoutes } from './routes/studio-builder.routes'
@@ -338,6 +339,7 @@ export function createServer(deps: HttpDeps) {
     )
     .use(creationsRoutes(deps.creations))
     .use(pintaCausalRoutes(deps.creations))
+    .use(pintaPaletteWriteRoutes(deps.creations))
     .use(cenariosRoutes(deps.cenarios))
     .use(cenariosPublicacoesRoutes(deps.cenarios))
     .use(deps.adultProfiles ? adultProfileRoutes(deps.adultProfiles) : new Elysia())
