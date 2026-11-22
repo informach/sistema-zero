@@ -1,3 +1,4 @@
+import { parsePintaCausalQaProfiles } from '@sistemazero/core/creations/pinta-causal'
 import { galleryStudioStorageBaseURL } from '@sistemazero/core/learning'
 import { z } from 'zod'
 
@@ -143,8 +144,10 @@ const EnvSchema = z
       .string()
       .min(16, 'INTERNAL_API_TOKEN deve ter ao menos 16 caracteres')
       .optional(),
-    // Dedicated Auth→Members admission credential; missing always denies this private route.
+    // Nuvem causal em homologação por perfil, com a mesma lista do Member Shell.
     PINTA_CAUSAL_CANDIDATE: optionalBool(false).optional(),
+    PINTA_CAUSAL_QA_PROFILES: z.string().optional().transform(parsePintaCausalQaProfiles),
+    // Dedicated Auth→Members admission credential; missing always denies this private route.
     MEMBERS_PROFILE_ADMISSION_TOKEN: z.string().min(16).optional(),
 
     // Carência (dias) somada ao fim do ciclo da assinatura ao calcular `expiresAt`.
@@ -481,6 +484,14 @@ const EnvSchema = z
   )
 
 export type Env = z.infer<typeof EnvSchema>
+
+export function pintaCausalCandidateConfigured(env: Env): boolean {
+  return !!(
+    env.PINTA_CAUSAL_CANDIDATE &&
+    env.INTERNAL_API_TOKEN &&
+    env.PINTA_CAUSAL_QA_PROFILES.length
+  )
+}
 
 /** Valida e tipa as variáveis de ambiente no boot (fail-fast). */
 export function loadEnv(source: Record<string, string | undefined> = process.env): Env {

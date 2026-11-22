@@ -11,11 +11,15 @@ import {
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { isReadonlyImpersonation } from '../lib/act'
-import { getEnv } from '../lib/env'
 import { isPrivilegedRole } from '../lib/studio-tier'
 import { CREATION_BLOB_CONTENT_TYPE, CREATION_GET_TTL_SECONDS } from '../server/creation-download'
 import type { GatewayModule } from '../server/gateway'
 import { PintaCausalUnverifiedContent } from '../server/pinta-causal-content'
+import {
+  pintaCausalCandidateReady,
+  pintaCausalProfileAllowed,
+  pintaCausalViewer,
+} from '../server/pinta-causal-eligibility'
 import {
   attestPintaBackfill,
   attestPintaMember,
@@ -134,20 +138,6 @@ async function body<T>(req: Request, schema: z.ZodType<T>): Promise<T | null> {
   }
 }
 
-function candidateReady(): boolean {
-  const env = getEnv()
-  return (
-    env.PINTA_CAUSAL_CANDIDATE === '1' &&
-    Boolean(
-      env.MEMBER_SHELL_HMAC_SECRET &&
-        env.R2_ACCOUNT_ID &&
-        env.R2_ACCESS_KEY_ID &&
-        env.R2_SECRET_ACCESS_KEY &&
-        env.R2_UGC_BUCKET,
-    )
-  )
-}
-
 type Storage = PintaCausalStorage & {
   presignPut: typeof r2PresignPutUgc
   presignGet: typeof r2PresignGetUgc
@@ -164,7 +154,8 @@ export function createPintaCausalRoutes({
   gateway,
   session,
   storage = liveStorage,
-  enabled = candidateReady,
+  enabled = pintaCausalCandidateReady,
+  profileAllowed = pintaCausalProfileAllowed,
 }: {
   gateway: Pick<GatewayModule, 'gatewayFetchHmac' | 'refreshSession'>
   session: Pick<
@@ -173,6 +164,7 @@ export function createPintaCausalRoutes({
   >
   storage?: Storage
   enabled?: () => boolean
+  profileAllowed?: (actor: PintaCausalActor) => boolean
 }) {
   async function authorized(
     req: Request,
@@ -198,6 +190,14 @@ export function createPintaCausalRoutes({
         return verified.unavailable ? error(503, 'unavailable') : error(401, 'unauthenticated')
       const user = verified.user
       if (user.status !== 'active' || user.kids?.kind === 'parent') return error(403, 'forbidden')
+      const actor = PintaCausalActorSchema.safeParse({
+        ...pintaCausalViewer(user, session.audience),
+        ...(isPrivilegedRole(user.role) ? { privileged: true } : {}),
+      })
+      if (!actor.success) return error(401, 'unauthenticated')
+      if (actor.data.audience === 'adult' && actor.data.accountId !== actor.data.userId)
+        return error(403, 'forbidden')
+      if (!profileAllowed(actor.data)) return error(404, 'not-found')
       const claimed = req.headers.get('x-sz-viewer')
       const claimedAudience = req.headers.get('x-sz-viewer-audience')
       if (
@@ -214,15 +214,6 @@ export function createPintaCausalRoutes({
         return error(409, 'viewer-mismatch')
       const readOnly = isReadonlyImpersonation(user)
       if (write && readOnly) return error(403, 'impersonation-readonly')
-      const actor = PintaCausalActorSchema.safeParse({
-        userId: user.id,
-        accountId: user.activeProfile?.accountId ?? user.id,
-        audience: session.audience,
-        ...(isPrivilegedRole(user.role) ? { privileged: true } : {}),
-      })
-      if (!actor.success) return error(401, 'unauthenticated')
-      if (actor.data.audience === 'adult' && actor.data.accountId !== actor.data.userId)
-        return error(403, 'forbidden')
       return await operation(actor.data, readOnly)
     } catch (failure) {
       if (failure instanceof UpstreamFailure) return failure.response

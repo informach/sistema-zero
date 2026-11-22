@@ -8,7 +8,9 @@ import {
   type PintaCausalBinding,
   type PintaCausalEntry,
   type PintaCausalMember,
+  parsePintaCausalQaProfiles,
   pintaCausalBlobKey,
+  pintaCausalQaAllows,
 } from '@sistemazero/core/creations/pinta-causal'
 import { assetToJson, createAsset, isTileLayer } from '@sistemazero/pinta/assets'
 import { SignJWT } from 'jose'
@@ -93,10 +95,23 @@ function fixture(
     actor?: SessionUser
     audience?: 'adult' | 'kids'
     access?: string
+    qaConfiguration?: string
     renewal?: Awaited<ReturnType<Dependencies['gateway']['refreshSession']>>
     verify?: Dependencies['session']['verifyAccessToken']
   } = {},
 ) {
+  const user = options.actor ?? sessionUser
+  const audience = options.audience ?? 'kids'
+  const profiles = parsePintaCausalQaProfiles(
+    options.qaConfiguration ??
+      JSON.stringify([
+        {
+          userId: user.id,
+          accountId: audience === 'adult' ? user.id : (user.activeProfile?.accountId ?? user.id),
+          audience,
+        },
+      ]),
+  )
   const calls: { path: string; body: unknown }[] = []
   const objects = new Map<string, Uint8Array>()
   const signing: Parameters<NonNullable<Dependencies['storage']>['presignPut']>[0][] = []
@@ -159,13 +174,14 @@ function fixture(
   const routes = createPintaCausalRoutes({
     gateway,
     session: {
-      audience: options.audience ?? 'kids',
+      audience,
       getAccessToken: async () => options.access ?? 'qa-access',
       getRefreshToken: async () => 'qa-refresh',
       verifyAccessToken:
         options.verify ?? (async () => ({ ok: true, user: options.actor ?? sessionUser })),
     },
     enabled: () => options.enabled ?? true,
+    profileAllowed: (actor) => pintaCausalQaAllows(profiles, actor),
     storage: {
       open: async (key) => {
         const value = objects.get(key)
@@ -223,6 +239,42 @@ test('the private route scope rejects profile and audience drift before any upst
   expect(page.status).toBe(200)
   expect(page.headers.get('cache-control')).toBe('private, no-store')
   expect(calls[0]?.body).toEqual({ userId, accountId, audience: 'kids', payload: { reader: 7 } })
+})
+
+test('the candidate is private even with the flag on, matching headers and staff privileges', async () => {
+  const selected = { userId, accountId, audience: 'kids' }
+  const request = (actor: SessionUser, audience: 'adult' | 'kids') =>
+    new Request(`${link}/graph?reader=6`, {
+      headers: { 'x-sz-viewer': actor.id, 'x-sz-viewer-audience': audience },
+    })
+  const member = fixture({ qaConfiguration: JSON.stringify([selected]) })
+  expect((await member.routes.pintaCausalGraph.GET(request(sessionUser, 'kids'))).status).toBe(200)
+  const account = { ...sessionUser, activeProfile: undefined, role: 'staff' }
+  const sameAccountOtherProfile = { ...sessionUser, id: nonce }
+  const otherAccount = { ...sessionUser, activeProfile: { accountId: nonce } }
+  const outsiders = [
+    { actor: sessionUser, audience: 'kids', qaConfiguration: '[]' },
+    { actor: sessionUser, audience: 'kids', qaConfiguration: '[malformed' },
+    {
+      actor: sameAccountOtherProfile,
+      audience: 'kids',
+      qaConfiguration: JSON.stringify([selected]),
+    },
+    { actor: otherAccount, audience: 'kids', qaConfiguration: JSON.stringify([selected]) },
+    {
+      actor: account,
+      audience: 'adult',
+      qaConfiguration: JSON.stringify([{ userId, accountId: userId, audience: 'kids' }]),
+    },
+  ] as const
+  for (const options of outsiders) {
+    const { routes, calls, signing } = fixture(options)
+    const result = await routes.pintaCausalGraph.GET(request(options.actor, options.audience))
+    expect(result.status).toBe(404)
+    expect(await result.json()).toEqual({ reason: 'not-found' })
+    expect(calls).toEqual([])
+    expect(signing).toEqual([])
+  }
 })
 
 test('an advertised reader beyond this BFF cannot bypass the format floor', async () => {
@@ -474,17 +526,28 @@ test('an adult refresh rechecks the current actor and an unavailable refresh pre
     new Request(`${link}/graph?reader=7`, {
       headers: { 'x-sz-viewer': userId, 'x-sz-viewer-audience': 'adult' },
     })
-  const changed = fixture({
-    audience: 'adult',
+  const refreshed = {
+    audience: 'adult' as const,
     access: stale,
     verify: strict.verifyAccessToken,
-    renewal: { state: 'renewed', accessToken: await access(accountId, issued + 60) },
+    renewal: { state: 'renewed' as const, accessToken: await access(accountId, issued + 60) },
+  }
+  const changed = fixture({
+    ...refreshed,
+    qaConfiguration: JSON.stringify(
+      [userId, accountId].map((id) => ({ userId: id, accountId: id, audience: 'adult' })),
+    ),
   })
   const response = await changed.routes.pintaCausalGraph.GET(graph())
   expect(response.status).toBe(409)
   expect(await response.json()).toEqual({ reason: 'viewer-mismatch' })
   expect(changed.refreshCalls()).toBe(1)
   expect(changed.calls).toEqual([])
+
+  const unlisted = fixture(refreshed)
+  expect((await unlisted.routes.pintaCausalGraph.GET(graph())).status).toBe(404)
+  expect(unlisted.refreshCalls()).toBe(1)
+  expect(unlisted.calls).toEqual([])
 
   const offline = fixture({
     audience: 'adult',

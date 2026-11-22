@@ -1,4 +1,5 @@
 import { PintaClient } from '@sistemazero/member-shell/components/creator/pinta-client'
+import { pintaCausalPageEligible } from '@sistemazero/member-shell/server/pinta-causal-eligibility'
 import { ToolNotice } from '@/components/community/tool-notice'
 import { toolLock } from '@/lib/tool-lock'
 import { getCreativeToolsState } from '@/server/creative-tools'
@@ -20,6 +21,7 @@ export default async function PintaPage() {
       key={state.session.id}
       audience="adult"
       viewerId={state.session.id}
+      pintaCausalAllowed={pintaCausalPageEligible(state.session, 'adult')}
       studioAvailable={state.studioAvailable}
     />
   )

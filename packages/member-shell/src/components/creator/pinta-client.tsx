@@ -68,6 +68,7 @@ export function PintaClient({
   audience = 'kids',
   studioAvailable,
   narrationEnabled = false,
+  pintaCausalAllowed = false,
   onCompletionControlChange,
   initialCanvas,
 }: {
@@ -75,13 +76,14 @@ export function PintaClient({
   audience?: 'adult' | 'kids'
   studioAvailable: boolean
   narrationEnabled?: boolean
+  pintaCausalAllowed?: boolean
   onCompletionControlChange?: (control: EmbeddedCreationControl | null) => void
   /** O molde de um objeto do Arquipélago: o Pinta abre (ou reabre) a planificação dele. */
   initialCanvas?: PintaInitialCanvas
 }) {
   const localNamespace = creatorStorageNamespace(viewerId, audience)
   const [attempt, setAttempt] = useState(0)
-  const loadKey = JSON.stringify([viewerId, audience, attempt])
+  const loadKey = JSON.stringify([viewerId, audience, attempt, pintaCausalAllowed])
   const [load, setLoad] = useState<PintaLoad | null>(null)
   const current = load?.key === loadKey ? load : null
   const session = current?.status === 'ready' ? current : null
@@ -152,7 +154,8 @@ export function PintaClient({
             maxFormatVersion: PINTA_MAX_READ_FORMAT_VERSION,
             viewerId,
             audience,
-            pintaCausalEnabled: process.env.NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1 === '1',
+            pintaCausalEnabled:
+              pintaCausalAllowed && process.env.NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1 === '1',
           })
           const scoped = cloud.pintaCausal
             ? m.createPintaCausalPersistence({ namespace: localNamespace })
@@ -189,7 +192,7 @@ export function PintaClient({
       // The old profile's documents and outbox stay in its database for the next session.
       cloud?.dispose({ abort: true })
     }
-  }, [audience, loadKey, localNamespace, viewerId])
+  }, [audience, loadKey, localNamespace, pintaCausalAllowed, viewerId])
 
   // O selo acompanha a descida (a galeria já abriu com o local; os desenhos de outro aparelho
   // vão chegando). Ao trocar de persistência (perfil), a antiga desliga o que escutava por fora.

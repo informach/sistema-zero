@@ -118,6 +118,14 @@ test('Pinta commits the real gzip only after BFF, Gateway, Members and PostgreSQ
       grantId: randomUUID(),
     },
   }
+  const profiles = JSON.stringify([
+    {
+      audience: 'kids',
+      userId: user.id,
+      accountId: user.activeProfile.accountId,
+    },
+  ])
+  process.env.PINTA_CAUSAL_QA_PROFILES = profiles
   const accessToken = randomUUID()
   const refreshToken = randomUUID()
   const session = {
@@ -137,6 +145,7 @@ test('Pinta commits the real gzip only after BFF, Gateway, Members and PostgreSQ
       GATEWAY_HMAC_SECRET: randomUUID(),
       INTERNAL_API_TOKEN: internalToken,
       PINTA_CAUSAL_CANDIDATE: '1',
+      PINTA_CAUSAL_QA_PROFILES: profiles,
     }),
   )
   const gateway = await createApiGateway(

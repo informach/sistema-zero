@@ -2,6 +2,9 @@ import {
   PintaCausalAttestationSchema,
   PintaCausalBackfillAttestationSchema,
   PintaCausalReservePageSchema,
+  type PintaCausalViewer,
+  PintaCausalViewerSchema,
+  pintaCausalQaAllows,
 } from '@sistemazero/core/creations/pinta-causal'
 import { Elysia } from 'elysia'
 import { z } from 'zod'
@@ -9,10 +12,7 @@ import type { ReserveCreationUploadService } from '../../../application/creation
 import type { DrizzlePintaCausalRepository } from '../../../infrastructure/persistence/drizzle/pinta-causal-units.repository'
 import { assertInternalCaller, assertMemberShellConsumer } from '../auth'
 
-const actor = z.strictObject({
-  userId: z.uuid(),
-  accountId: z.uuid(),
-  audience: z.enum(['kids', 'adult']),
+const actor = PintaCausalViewerSchema.extend({
   privileged: z.boolean().optional(),
   payload: z.unknown(),
 })
@@ -29,6 +29,7 @@ const pinned = z.strictObject({
 const operation = z.strictObject({ opId: z.uuid() })
 
 interface CausalRouteDeps {
+  causalQaProfiles?: readonly PintaCausalViewer[]
   causal?: DrizzlePintaCausalRepository
   internalToken?: string
   reserveUpload: Pick<ReserveCreationUploadService, 'assertPersonalWrite'>
@@ -57,6 +58,8 @@ export function pintaCausalRoutes(deps: CausalRouteDeps) {
       const a = actor.safeParse(body)
       if (!a.success || (a.data.audience === 'adult' && a.data.userId !== a.data.accountId))
         return Response.json({ reason: 'invalid-actor' }, { status: 422 })
+      if (!pintaCausalQaAllows(deps.causalQaProfiles ?? [], a.data))
+        return Response.json({ reason: 'not-found' }, { status: 404 })
       const p = schema.safeParse(a.data.payload)
       if (!p.success) return Response.json({ reason: 'invalid-payload' }, { status: 422 })
       // Strip payload/privileged before passing the storage actor into inserts.

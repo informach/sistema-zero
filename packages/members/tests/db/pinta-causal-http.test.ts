@@ -20,6 +20,7 @@ const gateway = { 'x-internal-token': token, 'x-consumer-id': 'member-shell' }
 async function serving(
   flag: string | undefined,
   secret: string | undefined,
+  profiles: string | undefined,
   inspect: (base: string) => Promise<void>,
 ) {
   const socket = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch: () => new Response(null) })
@@ -33,6 +34,7 @@ async function serving(
     GATEWAY_HMAC_SECRET: 'owned-http-gateway-secret',
     INTERNAL_API_TOKEN: secret,
     PINTA_CAUSAL_CANDIDATE: flag,
+    PINTA_CAUSAL_QA_PROFILES: profiles,
   })
   const app = await createApplication(env)
   await app.start()
@@ -51,6 +53,7 @@ describe.skipIf(!target)('Pinta causal through the full Members HTTP server and 
   afterAll(() => conn?.close())
   test('private flags, authenticated reservations, large proof, publication, archive and protected rollback', async () => {
     const actor = { userId: randomUUID(), accountId: randomUUID(), audience: 'kids' as const }
+    const profiles = JSON.stringify([actor])
     const post = (
       base: string,
       path: string,
@@ -101,17 +104,19 @@ describe.skipIf(!target)('Pinta causal through the full Members HTTP server and 
       })),
     }
     expect(Buffer.byteLength(JSON.stringify(manifest))).toBeGreaterThan(64 * 1024)
-    for (const [flag, secret] of [
-      [undefined, token],
-      ['1', undefined],
+    for (const [flag, secret, list] of [
+      [undefined, token, profiles],
+      ['1', undefined, profiles],
+      ['1', token, undefined],
+      ['1', token, '[malformed'],
     ] as const) {
-      await serving(flag, secret, async (base) => {
+      await serving(flag, secret, list, async (base) => {
         expect(
           (await post(base, 'units/reserve', page, { actor: { privileged: true } })).status,
         ).toBe(404)
       })
     }
-    await serving('1', token, async (base) => {
+    await serving('1', token, profiles, async (base) => {
       const status = { opId: intent.opId }
       for (const headers of [
         { 'x-consumer-id': 'member-shell', 'x-internal-token': 'wrong' },
@@ -121,6 +126,16 @@ describe.skipIf(!target)('Pinta causal through the full Members HTTP server and 
           (await post(base, 'units/reserve', page, { actor: { privileged: true }, headers }))
             .status,
         ).toBe(401)
+      for (const other of [
+        { userId: randomUUID(), privileged: true },
+        { accountId: randomUUID(), privileged: true },
+        { audience: 'adult', accountId: actor.userId, privileged: true },
+      ]) {
+        const denied = await post(base, 'units/reserve', page, { actor: other })
+        expect(denied.status).toBe(404)
+        expect(await denied.json()).toEqual({ reason: 'not-found' })
+        expect((await post(base, 'graph/page', { reader: 6 }, { actor: other })).status).toBe(404)
+      }
       expect((await post(base, 'units/reserve', { ...page, trusted: true })).status).toBe(422)
       expect(
         (await post(base, 'units/reserve', page, { actor: { audience: 'adult' } })).status,
@@ -226,13 +241,18 @@ describe.skipIf(!target)('Pinta causal through the full Members HTTP server and 
           .status,
       ).toBe(413)
     })
-    await serving('0', token, async (base) => {
-      expect((await post(base, 'graph/page', { reader: 6 })).status).toBe(404)
-      const old = await fetch(`${base}/members/creations/pinta`, {
-        headers: { ...gateway, 'x-auth-user-id': actor.userId },
+    for (const [flag, list] of [
+      ['0', profiles],
+      ['1', JSON.stringify([{ ...actor, userId: randomUUID() }])],
+    ]) {
+      await serving(flag, token, list, async (base) => {
+        expect((await post(base, 'graph/page', { reader: 6 })).status).toBe(404)
+        const old = await fetch(`${base}/members/creations/pinta`, {
+          headers: { ...gateway, 'x-auth-user-id': actor.userId },
+        })
+        expect(old.status).toBe(409)
+        expect(await old.json()).toMatchObject({ reason: 'protocol-required' })
       })
-      expect(old.status).toBe(409)
-      expect(await old.json()).toMatchObject({ reason: 'protocol-required' })
-    })
+    }
   }, 60_000)
 })

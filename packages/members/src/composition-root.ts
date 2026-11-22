@@ -153,7 +153,7 @@ import type { LiveRewardsPort } from './domain/ports/live-rewards.port'
 import type { MasteryOwner } from './domain/ports/mastery-repository.port'
 import { createStudioRuntimeHosts } from './domain/studio/runtime-hosts'
 import { createStudioRuntimePolicy } from './domain/studio/runtime-policy'
-import type { Env } from './infrastructure/config/env'
+import { type Env, pintaCausalCandidateConfigured } from './infrastructure/config/env'
 import { loadStudioAuthoringPolicy } from './infrastructure/config/studio-authoring-policy'
 import { createAdminPublicationMediaClient } from './infrastructure/course-publication/admin-media.client'
 import { createAdminCourseTransferClient } from './infrastructure/course-publication/admin-transfer.client'
@@ -1516,8 +1516,11 @@ export async function createApplication(env: Env): Promise<Application> {
       internalToken: env.INTERNAL_API_TOKEN,
     },
     creations: {
-      ...(env.PINTA_CAUSAL_CANDIDATE && env.INTERNAL_API_TOKEN
-        ? { causal: new DrizzlePintaCausalRepository(db, clock) }
+      ...(pintaCausalCandidateConfigured(env)
+        ? {
+            causal: new DrizzlePintaCausalRepository(db, clock),
+            causalQaProfiles: env.PINTA_CAUSAL_QA_PROFILES,
+          }
         : {}),
       adult: {
         list: new ListCreationsService(adultCreationsRepo),

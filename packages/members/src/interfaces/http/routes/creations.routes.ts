@@ -1,3 +1,4 @@
+import type { PintaCausalViewer } from '@sistemazero/core/creations/pinta-causal'
 import { ForbiddenError } from '@sistemazero/core/http'
 import { Elysia } from 'elysia'
 import type {
@@ -26,6 +27,7 @@ import {
 } from '../dtos'
 
 export interface CreationsRoutesDeps {
+  causalQaProfiles?: readonly PintaCausalViewer[]
   causal?: import('../../../infrastructure/persistence/drizzle/pinta-causal-units.repository').DrizzlePintaCausalRepository
   list: ListCreationsService
   reserveUpload: ReserveCreationUploadService

@@ -3,6 +3,7 @@ import {
   hasKidsCapability,
   kidsJourneyAccess,
 } from '@sistemazero/member-shell/lib/kids-journey-access'
+import { pintaCausalPageEligible } from '@sistemazero/member-shell/server/pinta-causal-eligibility'
 import { KidsJourneyLockedPinta } from '@/components/kids/kids-journey-locked-pinta'
 import { KidsLockedPinta } from '@/components/kids/kids-locked-pinta'
 import { KidsPintaUnavailable } from '@/components/kids/kids-pinta-unavailable'
@@ -64,6 +65,7 @@ export default async function PintaPage() {
   return (
     <PintaClient
       viewerId={session?.id ?? null}
+      pintaCausalAllowed={pintaCausalPageEligible(session, 'kids')}
       studioAvailable={studioAvailable}
       narrationEnabled={Boolean(getEnv().ELEVENLABS_API_KEY)}
     />

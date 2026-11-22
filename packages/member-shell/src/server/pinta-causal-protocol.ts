@@ -10,6 +10,7 @@ import {
   type PintaCausalOperation,
   PintaCausalOperationSchema,
   PintaCausalStatusSchema,
+  PintaCausalViewerSchema,
 } from '@sistemazero/core/creations/pinta-causal'
 import { z } from 'zod'
 
@@ -18,10 +19,7 @@ export const causalEpoch = z.string().regex(/^(0|[1-9][0-9]{0,18})$/)
 export const causalReader = z.number().int().min(1).max(PINTA_INVENTORY_READER_VERSION)
 export const causalRevision = z.number().int().min(1).max(2_147_483_647)
 
-export const PintaCausalActorSchema = z.strictObject({
-  userId: z.uuid(),
-  accountId: z.uuid(),
-  audience: z.enum(['kids', 'adult']),
+export const PintaCausalActorSchema = PintaCausalViewerSchema.extend({
   privileged: z.literal(true).optional(),
 })
 export type PintaCausalActor = z.infer<typeof PintaCausalActorSchema>
