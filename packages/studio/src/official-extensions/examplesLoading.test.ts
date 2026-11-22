@@ -137,7 +137,10 @@ const goldenCatalogs = {
     // 19/11 (2932075e4): Herói do Molda recebe loadScene, sceneStart e os três
     // materiais do cenário. Reverter somente essas adições reproduz o hash
     // anterior 2b3f2a88…; os outros 19 exemplos e sua ordem permanecem idênticos.
-    sha256: 'bfde8f7f0597395776efc079cabb6b1fd8031434a3e3a84006096b0880e1e1a3',
+    // 22/11 (a3b5809c9, lote 6 da conclusão): o cenário do Herói do Molda ganhou as regiões
+    // Campo e Pomar (o id do cenário muda junto) e o exemplo, os dois "Quando o heroi entrar na
+    // região". Só o Herói mudou no diff do examples.ts; antes: bfde8f7f….
+    sha256: '3e0214183833802311505e033c6b735c00c1b81cb0bd58bcdec93f347e0dcda3',
   },
   'world-3d': {
     count: 14,
