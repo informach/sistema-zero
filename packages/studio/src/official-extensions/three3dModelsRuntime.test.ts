@@ -484,6 +484,28 @@ describe('createSzModels — carga', () => {
     const hit = await loaded(b, 'heroi')
     expect(compiled).toEqual([hit.scene])
   })
+
+  it('aquece pelo compile mesmo com compilação em paralelo: o compileAsync quebrava fora do catch', async () => {
+    // Ilha do Farol, Aula 2, Parte 6: a tecla R logo no começo descarta os materiais, e a
+    // conferência do compileAsync (num setTimeout) lia o programa que já não existia.
+    const chamadas: string[] = []
+    const scene = new RealTHREE.Scene()
+    const camera = new RealTHREE.PerspectiveCamera()
+    const renderer = {
+      extensions: { has: () => true },
+      compile: () => chamadas.push('compile'),
+      compileAsync: () => {
+        chamadas.push('compileAsync')
+        return Promise.resolve()
+      },
+    }
+    const b = bench(
+      { heroi: { kind: 'model3d', dataUrl: makeAnimatedGlb('Heroi') } },
+      { getRenderer: () => renderer, getScene: () => scene, getCamera: () => camera },
+    )
+    await loaded(b, 'heroi')
+    expect(chamadas).toEqual(['compile'])
+  })
 })
 
 describe('createSzModels — cópias com ossos', () => {
