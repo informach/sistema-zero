@@ -190,6 +190,25 @@ describe.skipIf(!PYTHON)('áreas do projeto no caminho do editor (CPython)', () 
     expect(source.split(marker('start')).length - 1).toBe(1)
   }, 30_000)
 
+  test('o comentário recuado que fecha uma função fica com ela, acima do comentário da área seguinte', async () => {
+    const opened = await open('def f():\n    return 1\n    # fim de f\nprint(7)\n')
+    blockWith(opened.ws, 'sz_py_integer', 'NUMBER', '7').setFieldValue('8', 'NUMBER')
+    const source = await commit(opened)
+    expect(source).toBe(
+      `${marker('molds')}\ndef f():\n    return 1\n    # fim de f\n\n${marker('start')}\nprint(8)\n`,
+    )
+  }, 30_000)
+
+  test('uma linha com dois comandos não tira os comentários de área do arquivo', async () => {
+    const opened = await open('import math\nA = 1; b = 2\nprint(7)\n')
+    blockWith(opened.ws, 'sz_py_integer', 'NUMBER', '7').setFieldValue('8', 'NUMBER')
+    const source = await commit(opened)
+    // O Ao iniciar começa no meio da linha (`b = 2`): o comentário dele vai para a próxima linha.
+    expect(source).toBe(
+      `${marker('libraries')}\nimport math\n\n${marker('settings')}\nA = 1; b = 2\n\n${marker('start')}\nprint(8)\n`,
+    )
+  }, 30_000)
+
   test('organizar e desfazer não deixam linha em branco no começo do arquivo', async () => {
     const typed = 'print(1)\ndef pular():\n    pass\n'
     const opened = await open(typed)
