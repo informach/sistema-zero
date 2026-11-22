@@ -8,9 +8,11 @@ import type {
   TilemapAsset,
   VersionablePintaAsset,
 } from '../core/project'
+import type { ProjectedTilemapAsset } from '../core/projectedDocument'
 import { sceneMapClosure } from '../core/sceneMapClosure'
 import { assetBundleToJson } from './assetJson'
 import { dataUrlToBlob } from './png'
+import type { ProjectedSceneAsset } from './projectedScene'
 import { galleryToPintaJson, importPintaJson } from './projectJson'
 import { exportPintaScene } from './scene'
 import {
@@ -35,16 +37,28 @@ export function buildScenePackage(
     imageOf?: (asset: VersionablePintaAsset) => Promise<string | null>
   },
 ): Promise<Record<string, Uint8Array | string>>
+export function buildScenePackage(
+  root: ProjectedTilemapAsset,
+  assets: readonly ProjectedSceneAsset[],
+  target: ScenePackageTarget,
+  options?: { imageOf?: (asset: VersionablePintaAsset) => Promise<string | null> },
+): Promise<Record<string, Uint8Array | string>>
 export async function buildScenePackage(
-  root: TilemapAsset | RegionTilemapAsset,
-  inventory: readonly PintaMemoryAsset[],
+  root: TilemapAsset | RegionTilemapAsset | ProjectedTilemapAsset,
+  inventory: readonly ProjectedSceneAsset[],
   target: ScenePackageTarget,
   options: {
     imageOf?: (asset: VersionablePintaAsset) => Promise<string | null>
   } = {},
 ): Promise<Record<string, Uint8Array | string>> {
   if ('origin' in root) {
-    const captured = structuredClone(sceneMapClosure(root, inventory))
+    // The door closure also walks projected maps (their references and selectors are typed).
+    const captured = structuredClone(
+      sceneMapClosure(
+        root as Extract<PintaMemoryAsset, { kind: 'tilemap' }>,
+        inventory as readonly PintaMemoryAsset[],
+      ),
+    )
     const { buildRegionScenePackage } = await import('./regionScenePackage')
     return buildRegionScenePackage(captured, target, options.imageOf)
   }

@@ -57,6 +57,14 @@ hexagonal. As fontes, sem dados de desenhos, têm 421.286 e 463.527
 caracteres frente aos tetos de 422.000 e 464.000. O validador de cabeçalhos
 fica na admissão do documento, e o runtime restaura o wire já conferido.
 
+O pacote Tiled inclui JSON e TMX com folhas TSX, além do `maps.json` com
+as cenas autorais. O Tiled 1.12.2 abriu e converteu a Vila isométrica e a
+Cabana hexagonal. As conversões conservaram coordenadas, GIDs, parâmetros
+de projeção e metadados de conjuntos. O contorno das elipses na vista
+isométrica do Tiled é aproximado por 48 vértices. O arquivo guarda a
+geometria analítica entre os metadados do Pinta. Instâncias cujo giro e
+escala produzam cisalhamento na arte são recusadas no destino Tiled.
+
 ## Integração
 
 1. Admitir o documento projetado e aplicar crescimento e pintura na mesma

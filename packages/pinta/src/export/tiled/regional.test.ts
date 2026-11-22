@@ -3,9 +3,15 @@ import { spawnSync } from 'node:child_process'
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { basename, dirname, join, resolve } from 'node:path'
-import { createRegionCellReader } from '@sistemazero/core/creations'
+import {
+  createRegionCellReader,
+  makePintaHexCell,
+  PINTA_HEX_EMPTY_CELL,
+} from '@sistemazero/core/creations'
 import type { PintaRegionSceneWire } from '@sistemazero/core/studio/pinta-region-scene'
 import { nativeImageOf } from '../../../scripts/homologacao/generate'
+import { isTileLayer } from '../../core/project'
+import type { ProjectedTilemapAsset } from '../../core/projectedDocument'
 import { regionVila } from '../../testing/regionVila'
 import { decodeRegionGalleryBackup } from '../regionBackup'
 import { exportPintaRegionScene } from '../regionScene'
@@ -244,6 +250,147 @@ test.skipIf(!tiledBinary)(
           const jsonMap = await importRegionalTiledScene(result, tmxSource.resolver)
           expect(tmxMap.scene).toEqual(jsonMap.scene)
           expect(tmxMap.scene.id).toBe(property(original.properties, 'pinta:id') as string)
+        }
+      }
+    } finally {
+      await rm(scratch, { force: true, recursive: true })
+    }
+  },
+  60_000,
+)
+
+async function projectedPackage() {
+  const { map, cabana, assets } = regionVila()
+  const diamond: ProjectedTilemapAsset = {
+    ...map,
+    schema: 9,
+    growth: 'expandable',
+    physics: 'precise',
+    projection: { kind: 'isometric', tileWidth: 32, tileHeight: 16 },
+  }
+  const hex: ProjectedTilemapAsset = {
+    ...cabana,
+    schema: 9,
+    growth: 'expandable',
+    physics: 'precise',
+    projection: {
+      kind: 'hexagonal',
+      tileWidth: 32,
+      tileHeight: 32,
+      hexSideLength: 16,
+      staggerAxis: 'y',
+      staggerIndex: 'odd',
+    },
+    layers: cabana.layers.map((layer) =>
+      isTileLayer(layer)
+        ? {
+            ...layer,
+            cells: {
+              kind: 'hex-regions',
+              version: 1,
+              side: 32,
+              chunks: layer.cells.chunks.map((chunk) => ({
+                ...chunk,
+                cells: Uint32Array.from(chunk.cells, (value) =>
+                  value < 0
+                    ? PINTA_HEX_EMPTY_CELL
+                    : makePintaHexCell(value, value === 3 ? { rotation: 60, flipY: true } : {})!,
+                ),
+              })),
+            },
+          }
+        : layer,
+    ),
+  }
+  return buildScenePackage(
+    diamond,
+    [...assets.filter((asset) => asset.id !== cabana.id), hex],
+    'tiled',
+    { imageOf: nativeImageOf },
+  )
+}
+
+test('projected Tiled packages use native orientations and preserve exact physical metadata', async () => {
+  const files = await projectedPackage()
+  const iso = JSON.parse(String(files['mapas/mapa-0/mapa.json'])) as TiledDocument
+  const hex = JSON.parse(String(files['mapas/mapa-1/mapa.json'])) as TiledDocument
+  expect(iso.orientation).toBe('isometric')
+  expect(hex.orientation).toBe('hexagonal')
+  expect(
+    flatten(hex.layers)
+      .flatMap((layer) => layer.chunks ?? [])
+      .find((chunk) => chunk.x === -64 && chunk.y === -64)?.data[0],
+  ).toBe(0x60000004)
+  expect(files['mapas/mapa-0/mapa.tmx']).toContain('orientation="isometric"')
+  expect(files['mapas/mapa-1/mapa.tmx']).toContain('hexsidelength="16"')
+  expect(files['mapas/mapa-1/mapa.tmx']).toContain('staggerindex="odd"')
+  expect(files['mapas/mapa-1/tiles-0.tsx']).toContain('objectalignment="bottomleft"')
+  const objects = flatten(iso.layers).flatMap((layer) => layer.objects ?? [])
+  const door = objects.find((object) =>
+    String(property(object.properties, 'pinta:object')).includes('"id":"door"'),
+  )!
+  expect([door.x, door.y]).toEqual([144, 48])
+  expect(JSON.parse(String(property(door.properties, 'pinta:object'))).geometry).toEqual({
+    x: 96,
+    y: 96,
+    width: 16,
+    height: 16,
+  })
+})
+
+test.skipIf(!tiledBinary)(
+  'Tiled opens projected JSON and external TSX, then round-trips signed GIDs',
+  async () => {
+    const files = await projectedPackage()
+    const tempRoot = resolve(tmpdir())
+    const scratch = await mkdtemp(join(tempRoot, 'pinta-tiled-regional-'))
+    if (dirname(scratch) !== tempRoot || !basename(scratch).startsWith('pinta-tiled-regional-'))
+      throw new Error('Diretório temporário inesperado.')
+    try {
+      for (const [file, content] of Object.entries(files)) {
+        const path = join(scratch, file)
+        await mkdir(dirname(path), { recursive: true })
+        await writeFile(path, content)
+      }
+      const convert = async (format: string, input: string, output: string): Promise<string> => {
+        const run = spawnSync(tiledBinary!, ['--export-map', format, input, output], {
+          encoding: 'utf8',
+          windowsHide: true,
+          timeout: 10_000,
+        })
+        if (run.status !== 0) throw new Error(run.stderr || run.error?.message || 'Tiled failed')
+        for (let n = 0; n < 60; n++) {
+          const content = await readFile(output, 'utf8').catch(() => '')
+          if (content.length) return content
+          await Bun.sleep(50)
+        }
+        throw new Error('Tiled did not write its conversion')
+      }
+      for (const [index, file] of ['mapas/mapa-0', 'mapas/mapa-1'].entries()) {
+        const folder = join(scratch, file)
+        const original = JSON.parse(String(files[`${file}/mapa.json`])) as TiledDocument
+        const nativeTmx = join(folder, `native-${index}.tmx`)
+        const xml = await convert('tmx', join(folder, 'mapa.json'), nativeTmx)
+        expect(xml).toContain('infinite="1"')
+        for (const [i, tmx] of [join(folder, 'mapa.tmx'), nativeTmx].entries()) {
+          const result = JSON.parse(
+            await convert('json', tmx, join(folder, `native-${index}-${i}.json`)),
+          ) as TiledDocument
+          expect(result.tiledversion).toBe('1.12.2')
+          expect(result.infinite).toBe(true)
+          expect(result.orientation).toBe(original.orientation)
+          expect(occupied(result)).toEqual(occupied(original))
+          expect(result.tilesets.map((sheet) => sheet.firstgid)).toEqual(
+            original.tilesets.map((sheet) => sheet.firstgid),
+          )
+          for (const key of [
+            'pinta:id',
+            'pinta:bounds',
+            'pinta:physics',
+            'pinta:sets',
+            'pinta:projection',
+          ])
+            expect(property(result.properties, key)).toEqual(property(original.properties, key))
         }
       }
     } finally {

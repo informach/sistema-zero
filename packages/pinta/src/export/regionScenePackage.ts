@@ -1,8 +1,13 @@
+import { PINTA_HEX_REGION_CHUNK_BYTES, PINTA_REGION_CHUNK_BYTES } from '@sistemazero/core/creations'
 import { readPngDataUrl } from '@sistemazero/core/studio/pinta-png-binary'
 import {
   PINTA_REGION_IMAGE_PNG_LIMITS,
   PINTA_REGION_WORLD_BUDGET,
 } from '@sistemazero/core/studio/pinta-region-image-limits'
+import type {
+  PintaProjectedScene,
+  PintaProjectedSceneWire,
+} from '@sistemazero/core/studio/pinta-projected-scene'
 import type {
   PintaRegionScene,
   PintaRegionSceneWire,
@@ -10,8 +15,9 @@ import type {
 import type { PintaMemoryAsset } from '../core/assetMemory'
 import { utf8ByteLength } from '../core/jsonBytes'
 import type { RegionTilemapAsset, VersionablePintaAsset } from '../core/project'
-import type { sceneMapClosure } from '../core/sceneMapClosure'
+import type { ProjectedMapSetAsset, ProjectedTilemapAsset } from '../core/projectedDocument'
 import { prepareMapRegions } from '../tiles/regionMap'
+import { exportPintaProjectedScene, type ProjectedSceneAsset } from './projectedScene'
 import { encodeRegionGalleryBackup } from './regionBackup'
 import { exportPintaRegionScene } from './regionScene'
 import type { ScenePackageTarget } from './scenePackage'
@@ -25,11 +31,36 @@ import {
 import { TILED_PACKAGE_LIMITS } from './tiled/package'
 
 type PackageFile = Uint8Array | string
-type MapAsset = Extract<PintaMemoryAsset, { kind: 'tilemap' }>
+type MapAsset = Extract<ProjectedSceneAsset, { kind: 'tilemap' }>
+type SceneWire = PintaRegionSceneWire | PintaProjectedSceneWire
+type DecodedScene = PintaRegionScene | PintaProjectedScene
 type ImageOf = (asset: VersionablePintaAsset) => Promise<string | null>
-type ScenePackageSource = ReturnType<typeof sceneMapClosure<PintaMemoryAsset>>
+/** The captured door closure (sceneMapClosure), including projected maps. */
+export interface ScenePackageSource {
+  maps: MapAsset[]
+  assets: ProjectedSceneAsset[]
+}
 
-function asRegional(map: MapAsset): RegionTilemapAsset {
+const isProjectedAsset = (
+  asset: ProjectedSceneAsset,
+): asset is ProjectedTilemapAsset | ProjectedMapSetAsset =>
+  'projection' in asset || (asset.kind === 'map-set' && 'projection' in asset.map)
+
+/** The projected writer reports no chunk budget; charge the widths its reader admits. */
+function projectedIndexBytes(scene: PintaProjectedSceneWire): number {
+  let bytes = 0
+  for (const map of [scene, ...(scene.sets ?? [])])
+    for (const layer of map.layers)
+      if (layer.kind === 'tiles')
+        bytes +=
+          layer.cells.chunks.length *
+          (layer.cells.kind === 'hex-regions'
+            ? PINTA_HEX_REGION_CHUNK_BYTES
+            : PINTA_REGION_CHUNK_BYTES)
+  return bytes
+}
+
+function asRegional(map: Exclude<MapAsset, ProjectedTilemapAsset>): RegionTilemapAsset {
   if ('origin' in map) return map
   const converted = prepareMapRegions(map)
   if (!converted.ok) throw new Error('Um dos mapas ligados não pôde ser preparado em regiões.')
@@ -52,15 +83,39 @@ export async function prepareRegionScenePackage(captured: ScenePackageSource, im
     totalBytes += size
     files[path] = file
   }
-  const maps = new Map<
-    string,
-    { folder: string; scene: PintaRegionSceneWire; decoded: PintaRegionScene }
-  >()
+  const maps = new Map<string, { folder: string; scene: SceneWire; decoded: DecodedScene }>()
   const remaining = { ...PINTA_REGION_WORLD_BUDGET }
+  function regionalResource(id: string): PintaMemoryAsset | null {
+    const asset = byId.get(id)
+    // A door may refer to a projected map by ID. Its own map is prepared
+    // below by the projected writer, and no playable regional fallback is made.
+    if (!asset) return null
+    if (isProjectedAsset(asset)) {
+      if (asset.kind !== 'tilemap') return null
+      const { projection: _projection, growth: _growth, ...identity } = asset
+      return { ...identity, schema: 8, layers: [] }
+    }
+    return asset
+  }
   for (const map of captured.maps) {
+    if ('projection' in map) {
+      const exported = await exportPintaProjectedScene(map, (id) => byId.get(id) ?? null, imageOf)
+      remaining.metadataBytes -= exported.bytes
+      remaining.indexBytes -= projectedIndexBytes(exported.wire)
+      if (remaining.metadataBytes < 0 || remaining.indexBytes < 0)
+        throw new Error(
+          'Os dados dos cenários excedem o limite do pacote. Exporte os mapas separadamente.',
+        )
+      maps.set(map.id, {
+        folder: `mapas/mapa-${maps.size}`,
+        scene: exported.wire,
+        decoded: exported.scene,
+      })
+      continue
+    }
     const exported = await exportPintaRegionScene(
       asRegional(map),
-      (id) => byId.get(id) ?? null,
+      regionalResource,
       imageOf,
       remaining,
     )
@@ -72,19 +127,23 @@ export async function prepareRegionScenePackage(captured: ScenePackageSource, im
       decoded: exported.scene,
     })
   }
-  const native = encodeRegionGalleryBackup(captured.assets)
-  if (!native) throw new Error('Não consegui reunir os desenhos editáveis deste cenário.')
-  put('desenhos.pinta.json', native.text)
+  // Projected maps are native 9; the regional backup reader does not open them yet.
+  const projected = captured.assets.some(isProjectedAsset)
+  if (!projected) {
+    const native = encodeRegionGalleryBackup(captured.assets as readonly PintaMemoryAsset[])
+    if (!native) throw new Error('Não consegui reunir os desenhos editáveis deste cenário.')
+    put('desenhos.pinta.json', native.text)
+  }
 
   const root = captured.maps[0]
   if (!root) throw new Error('O cenário inicial não veio no pacote.')
-  return { rootId: root.id, rootName: root.name, maps, files, put }
+  return { rootId: root.id, rootName: root.name, maps, files, put, projected }
 }
 
 type Prepared = Awaited<ReturnType<typeof prepareRegionScenePackage>>
 
 export function writeRegionPackageImages(world: Prepared) {
-  const maps: Record<string, PintaRegionSceneWire> = Object.create(null)
+  const maps: Record<string, SceneWire> = Object.create(null)
   let imagePixels = PINTA_REGION_WORLD_BUDGET.imagePixels
   for (const [id, { folder, scene }] of world.maps) {
     function capture<T extends { image: string }>(entry: T, name: string): T {
@@ -160,10 +219,13 @@ export async function buildRegionScenePackage(
   imageOf?: ImageOf,
 ) {
   const world = await prepareRegionScenePackage(captured, imageOf)
+  if (target !== 'tiled' && [...world.maps.values()].some(({ scene }) => scene.version === 5))
+    throw new Error('Este destino ainda precisa de um adaptador de projeção.')
   if (target === 'godot') {
     // The Godot script materializes every set instance; charge that fan-out first.
     const { assertGodotRegionWork } = await import('./godot/regionWork')
-    for (const { decoded } of world.maps.values()) assertGodotRegionWork(decoded)
+    for (const { decoded } of world.maps.values())
+      if (decoded.version === 4) assertGodotRegionWork(decoded)
   }
   await writeRegionTiledFiles(world, target)
   writeRegionPackageImages(world)
@@ -184,7 +246,9 @@ export async function buildRegionScenePackage(
       '',
       `Mapa inicial: ${world.rootName}`,
       ...instructions,
-      'desenhos.pinta.json conserva os desenhos originais editáveis.',
+      world.projected
+        ? 'Os mapas projetados ainda não saem num arquivo editável do Pinta. Guarde a galeria do Pinta para editá-los.'
+        : 'desenhos.pinta.json conserva os desenhos originais editáveis.',
       'maps.json conserva os dados do cenário e start.json indica o ID do mapa inicial.',
       'Leia COMPATIBILIDADE-TILED.txt para conferir o que o editor e o runtime interpretam.',
     ].join('\n'),
