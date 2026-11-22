@@ -927,3 +927,26 @@ pública do PNG 5. Também seguem em execução os leitores de partes imutáveis
 nuvem e o round-trip regional nos exportadores externos. As etapas macro 1–9
 continuam abertas; estes resultados não representam publicação, release Python
 ou homologação autenticada de todo o fluxo.
+
+### Revisão da composição V4 na coordenação
+
+As entregas preservadas da execução anterior foram auditadas junto aos negativos
+da continuação. A revisão encontrou perda de predecessores e de mundos com folhas
+alteradas, além da omissão do manifesto no ZIP. A recuperação agora compõe o
+catálogo próprio de cada operação e predecessor, preserva também o mundo atual
+do aparelho e exporta candidatos, recursos observados e vínculos da mesma foto
+transacional. Não tomar igualdade do JSON do mapa como igualdade de seus recursos.
+
+Passaram 20 aceitações/255 asserções com escritores reais anteriores, 29 casos/267
+asserções de recursos e arquivo v3, 32/390 da ponte local, 28/133 de persistência e
+oito ensaios de IndexedDB real no Chromium. Fontes, falhas da revisão, recibos e
+alcance em `qa/coordenacao-2026-11-22/`, na pasta da missão. O replay atual tem
+fontes próprias para registro v4 e ZIP com manifesto; os negativos v3 originais
+continuam arquivados com seus hashes. Nenhuma capacidade pública foi ativada.
+
+Python e os quatro exportadores regionais ortogonais foram entregues pelos
+implementadores. A coordenação ainda precisa integrar e homologar estes últimos.
+Automapping e a edição incremental também têm commits entregues; a abertura
+inicial sob demanda, a oficina pública, as projeções completas e o ciclo final
+autenticado continuam em desenvolvimento. As suítes completas anteriores não
+qualificam automaticamente os lotes seguintes.

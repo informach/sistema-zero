@@ -398,7 +398,7 @@ export function createCloudMirroredPintaPersistence(options: {
     const files = new Map<string, Blob>()
     if (!causalLocal) return files
     const signal = causalSession.signal
-    for (const [opId, { puts, blobs }] of await causalLocal.retainedArchive()) {
+    for (const [opId, { puts, blobs, manifest }] of await causalLocal.retainedArchive()) {
       for (const { itemId, sha256 } of puts) {
         signal.throwIfAborted()
         const blob = blobs.get(itemId)
@@ -406,6 +406,10 @@ export function createCloudMirroredPintaPersistence(options: {
           throw Error('Não consegui conferir os arquivos guardados neste aparelho.')
         files.set(`${opId}/${encodeURIComponent(itemId)}.pinta.json.gz`, blob)
       }
+      files.set(
+        `${opId}/revisoes-e-vinculos.json`,
+        new Blob([manifest], { type: 'application/json' }),
+      )
     }
     signal.throwIfAborted()
     return files

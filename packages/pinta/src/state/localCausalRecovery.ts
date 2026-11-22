@@ -182,7 +182,6 @@ export function recoverLocalAssets<Asset extends PintaMemoryAsset>(
   pull: PintaCausalLocalPull<Asset>,
   snapshot: LocalSnapshot<Asset>,
   official: ReadonlyMap<string, Asset>,
-  alreadyRestored: ReadonlySet<string> = new Set(),
 ): { writes: LocalAssetTransition<Asset>[]; copies: Asset[]; catalog: Map<string, Asset> } | null {
   const selected = ids
     .flatMap((id) => {
@@ -193,7 +192,6 @@ export function recoverLocalAssets<Asset extends PintaMemoryAsset>(
   if (selected.length !== ids.length) return null
   const written = new Set(pull.transitions.map(({ id }) => id))
   const destination = new Map(snapshot.assets)
-  for (const id of alreadyRestored) destination.delete(id)
   for (const original of selected) destination.delete(original.id)
   for (const id of written) destination.delete(id)
   for (const [id, after] of official) destination.set(id, after)
@@ -220,13 +218,7 @@ export function recoverLocalAssets<Asset extends PintaMemoryAsset>(
     beforeRevision: null,
     after,
   }))
-  for (const original of [
-    ...selected,
-    ...[...alreadyRestored].flatMap((id) => {
-      const before = snapshot.assets.get(id)
-      return before ? [before] : []
-    }),
-  ]) {
+  for (const original of selected) {
     if (official.has(original.id) || written.has(original.id)) continue
     const beforeRevision = snapshot.documents.get(original.id)?.revision
     if (!beforeRevision) return null

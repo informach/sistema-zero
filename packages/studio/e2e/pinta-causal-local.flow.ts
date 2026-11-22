@@ -655,11 +655,29 @@ test('terminal snapshot keeps seal and prepared Blobs until the complete copy co
   })
 })
 
-test('gallery downloads the original gzip when an exact historical resource is missing', async ({
+test('gallery downloads the original gzip when a pre-v4 historical resource is missing', async ({
   page,
 }) => {
   await proof(page)
   const work = await page.evaluate(() => window.pintaCausalRecovery.prepareRetainedRecovery())
+  // A queue written before observed-resource retention has no historical sheet bytes.
+  // Keep this fixture distinct from a V4 queue, which must recover the complete world.
+  await page.evaluate(async ({ namespace }) => {
+    const physical = window.pintaPhysicalRegions
+    const db = physical.createStore(`sistema-zero-pinta-${namespace}`, 'kv')
+    await physical.withAssetTransaction(
+      db,
+      (records) => {
+        const current = records.get('pinta:sync:causal')
+        if (!current || typeof current !== 'object' || !('pins' in current))
+          throw Error('Fila de preparação ausente')
+        const { pins: _pins, ...record } = current
+        records.set('pinta:sync:causal', { ...record, version: 3 })
+        records.delete('pinta:sync:observed-resources')
+      },
+      () => ['pinta:sync:causal', 'pinta:sync:observed-resources'],
+    )
+  }, work)
   await proof(page, 'pre-causal')
   await page.evaluate(async ({ namespace, sheetId }) => {
     const legacy = window.pinta026.createPintaPersistence({ namespace })
@@ -713,6 +731,46 @@ test('gallery downloads the original gzip when an exact historical resource is m
   expect(decodedName).toBe('vila-autoral')
   expect(zip[`${work.opId}/revisoes-e-vinculos.json`]).toBeDefined()
   expect(await inspect()).toEqual(before)
+})
+
+test('gallery restores both complete worlds from V4 observed bytes after an old tab edits the sheet', async ({
+  page,
+}) => {
+  await proof(page)
+  const work = await page.evaluate(() => window.pintaCausalRecovery.prepareRetainedRecovery())
+  await proof(page, 'pre-causal')
+  await page.evaluate(async ({ namespace, sheetId }) => {
+    const legacy = window.pinta026.createPintaPersistence({ namespace })
+    const sheet = await legacy.loadAssetById(sheetId)
+    if (sheet?.kind !== 'tileset') throw Error('Folha base ausente')
+    sheet.tiles[0]!.data[0] = 5
+    await legacy.persistAsset({ ...sheet, name: 'pecas-do-aparelho' })
+  }, work)
+  await proof(page)
+  await page.evaluate(
+    (state) => window.pintaCausalRecovery.mountRetainedRecoveryGallery(state),
+    work,
+  )
+  await expect
+    .poll(() =>
+      page.evaluate(async ({ namespace, mapId }) => {
+        const local = window.pinta026.createPintaCausalPersistence({ namespace })
+        const state = await local.causal.inspect()
+        if (state.epoch !== '2' || state.sealed || state.pending.length) return null
+        const assets = await local.listAllAssets()
+        const worlds = assets.filter((asset) => asset.kind === 'tilemap' && asset.id !== mapId)
+        return worlds
+          .map((map) => {
+            if (map.kind !== 'tilemap') throw Error('Cópia de mapa inválida')
+            const sheet = assets.find((asset) => asset.id === map.tilesetId)
+            if (sheet?.kind !== 'tileset') throw Error('Peças da cópia ausentes')
+            return sheet.tiles[0]?.data[0]
+          })
+          .sort()
+      }, work),
+    )
+    .toEqual([0, 5])
+  await expect(page.getByRole('button', { name: 'Baixar edições guardadas' })).toHaveCount(0)
 })
 
 test('an editor in another tab defers the complete delta before the final local CAS', async ({
@@ -883,7 +941,11 @@ test('gallery offers the exact original download after reopening a v3 queue offl
     if (!path) throw Error('Download ausente')
     const files = unzipSync(await readFile(path))
     expect(Object.keys(files).sort()).toEqual(
-      [`${recorded.opId}/${recorded.mapId}.pinta.json.gz`, 'LEIA-ME.txt'].sort(),
+      [
+        `${recorded.opId}/${recorded.mapId}.pinta.json.gz`,
+        `${recorded.opId}/revisoes-e-vinculos.json`,
+        'LEIA-ME.txt',
+      ].sort(),
     )
     const gzip = files[`${recorded.opId}/${recorded.mapId}.pinta.json.gz`]
     if (!gzip) throw Error('Arquivo nativo ausente')

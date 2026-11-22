@@ -1957,9 +1957,11 @@ test.each([
       ? [3]
       : mode === 'unbased-removed'
         ? [4]
-        : mode === 'successor' || unbased
-          ? [4, 5]
-          : [3, 5],
+        : mode === 'successor'
+          ? [3, 4, 5]
+          : unbased
+            ? [4, 5]
+            : [3, 5],
   )
   const settled = await reopened.causal.inspect()
   expect(settled.sealed).toBeNull()
@@ -2198,15 +2200,21 @@ test.each([
     }
     if (mode !== 'fila-antiga') {
       const assets = await local.listAllAssets()
-      const authorCopy = assets.find((asset) => asset.name === 'minha-vila-copia')
-      if (authorCopy?.kind !== 'tilemap') throw Error('Vila recuperada ausente')
-      const binding = authorCopy.layers.find(isObjectLayer)?.objects[0]?.properties.destino
-      const connected = nested ? assets.find((asset) => asset.id === binding) : authorCopy
-      if (connected?.kind !== 'tilemap') throw Error('Destino histórico ausente')
-      if (nested) expect(connected.name).toBe('cabana-copia')
-      const retainedSheet = assets.find((asset) => asset.id === connected.tilesetId)
-      if (retainedSheet?.kind !== 'tileset') throw Error('Folha histórica ausente')
-      expect(retainedSheet.tiles[0]?.data[0]).toBe(0)
+      const authorCopies = assets.filter(
+        (asset) => asset.kind === 'tilemap' && asset.name.startsWith('minha-vila-copia'),
+      )
+      expect(authorCopies).toHaveLength(2)
+      const worldPixels = authorCopies.map((authorCopy) => {
+        if (authorCopy.kind !== 'tilemap') throw Error('Vila recuperada ausente')
+        const binding = authorCopy.layers.find(isObjectLayer)?.objects[0]?.properties.destino
+        const connected = nested ? assets.find((asset) => asset.id === binding) : authorCopy
+        if (connected?.kind !== 'tilemap') throw Error('Destino histórico ausente')
+        if (nested) expect(connected.name.startsWith('cabana-copia')).toBe(true)
+        const retainedSheet = assets.find((asset) => asset.id === connected.tilesetId)
+        if (retainedSheet?.kind !== 'tileset') throw Error('Folha histórica ausente')
+        return retainedSheet.tiles[0]?.data[0]
+      })
+      expect(worldPixels.sort()).toEqual([0, 5])
       const artistLeaf = assets
         .flatMap((asset) =>
           asset.kind === 'tileset' && asset.name.startsWith('pecas')

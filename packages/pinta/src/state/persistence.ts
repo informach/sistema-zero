@@ -492,7 +492,7 @@ export interface PintaCausalLocalPort<Asset extends PintaMemoryAsset = PintaAsse
   ): Promise<boolean>
   prepared(opId: string): Promise<ReturnType<typeof readLocalCausalPrepared>>
   retained(opId: string): Promise<ReturnType<typeof readLocalCausalRetained>>
-  retainedArchive(): Promise<ReadonlyMap<string, PintaCandidateBytes>>
+  retainedArchive(): Promise<ReadonlyMap<string, PintaCandidateBytes & { manifest: string }>>
   pinned(opId: string): Promise<PintaCandidateBytes | null>
   seal(
     preparation: string,
@@ -937,10 +937,32 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
       transaction(
         (records) => {
           const state = readLocalCausalState(records)
-          const candidates = new Map<string, PintaCandidateBytes>()
+          const candidates = new Map<string, PintaCandidateBytes & { manifest: string }>()
+          const append = (opId: string, path: string, candidate: PintaCandidateBytes) => {
+            const operation =
+              state.sealed?.local.opId === opId
+                ? state.sealed
+                : (state.pending.find((unit) => unit.opId === opId) ?? state.unbased)
+            candidates.set(path, {
+              ...candidate,
+              manifest: JSON.stringify(
+                {
+                  format: 'pinta-causal-recovery',
+                  version: 1,
+                  recordVersion: state.version,
+                  epoch: state.epoch,
+                  operation,
+                  observedResources: state.pins?.get(opId) ?? [],
+                  puts: candidate.puts,
+                },
+                null,
+                2,
+              ),
+            })
+          }
           const saved = readLocalCausalUpload(records)
           if (saved)
-            candidates.set(saved.sealed.local.opId, {
+            append(saved.sealed.local.opId, saved.sealed.local.opId, {
               puts: saved.sealed.intent.members.filter((member) => member.action === 'put'),
               blobs: saved.blobs,
             })
@@ -949,11 +971,11 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
             ...(state.shadows?.keys() ?? []),
           ]) {
             const candidate = readLocalCausalRetained(records, opId)
-            if (candidate) candidates.set(opId, candidate)
+            if (candidate) append(opId, opId, candidate)
           }
           for (const [opId, pins] of state.pins ?? []) {
             const candidate = readPinnedCandidate(records, pins)
-            if (candidate?.puts.length) candidates.set(`${opId}/pecas-relacionadas`, candidate)
+            if (candidate?.puts.length) append(opId, `${opId}/pecas-relacionadas`, candidate)
           }
           return candidates
         },

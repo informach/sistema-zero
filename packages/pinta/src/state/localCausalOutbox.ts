@@ -769,12 +769,13 @@ export function localCausalPullImpact<Asset extends PintaMemoryAsset>(
     (pull.recoverUnit !== undefined && !terminal) ||
     archived.incomplete
   const affected = new Set([...written, ...archived.ids])
+  for (const id of archived.displacedResources) if (snapshot.assets.has(id)) seeds.add(id)
   for (const id of archived.diverged) if (snapshot.assets.has(id)) seeds.add(id)
   for (const member of terminal?.values() ?? []) {
     affected.add(member.itemId)
     if (member.action !== 'put') continue
     if (snapshot.assets.has(member.itemId)) {
-      if (!archived.restoredCurrent.has(member.itemId)) seeds.add(member.itemId)
+      seeds.add(member.itemId)
     } else if (!archived.diverged.has(member.itemId)) blocked = true
   }
   if (state.epoch !== null && official === null) blocked = true
@@ -887,7 +888,6 @@ export function installLocalCausalPull<Asset extends PintaMemoryAsset>(
     moved = new Set(impact.recover ?? [])
     const archive = planArchivedRecovery(pull, state, before)
     for (const id of archive.diverged) moved.add(id)
-    for (const id of archive.restoredCurrent) moved.add(id)
     for (const change of pull.transitions) {
       if (Boolean(change.after) !== Boolean(change.remote)) invalid()
       if (!terminal && ownsLocalCausalMember(state, change.id, false))
@@ -909,11 +909,10 @@ export function installLocalCausalPull<Asset extends PintaMemoryAsset>(
     const official = officialProjection(pull, state, before)
     if (!official) throw new PintaCausalPullDeferred()
     const recovery = recoverLocalAssets(
-      [...moved].filter((id) => before.assets.has(id) && !archive.restoredCurrent.has(id)),
+      [...moved].filter((id) => before.assets.has(id)),
       pull,
       before,
       official,
-      archive.restoredCurrent,
     )
     if (!recovery) throw new PintaCausalPullDeferred()
     const retained = copyArchivedRecovery(archive, recovery.catalog)

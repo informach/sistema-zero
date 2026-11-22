@@ -293,6 +293,51 @@
         "ensaios/fence-v4-review.inc"
       ],
       "sha256": "6c4713f5fd18727683577e38aa6f2d1049a250ed53a9438cbe8f1ac975bafcc4"
+    },
+    {
+      "alvo": "duravelV4",
+      "nome": "ponta-duravel-v4.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/ponta-duravel.inc"
+      ],
+      "sha256": "562bbc72f7976df0a33e9c706d79395e34662b2f32fe05402b3e8a7aea25dfcb"
+    },
+    {
+      "alvo": "duravelV4",
+      "nome": "versoes-do-mundo-v4.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/versoes-do-mundo-v4.inc"
+      ],
+      "sha256": "10f74139e54436748bead361770f2f8908e61e76e9a6df2445e0de9fe5f4a57f"
+    },
+    {
+      "alvo": "duravelV4",
+      "nome": "transacao-da-ponta-v4.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/transacao-da-ponta.inc"
+      ],
+      "sha256": "32db8e0f5a6ae80d8a35832a8016b541b1f20858885428e8ec33c9c98bd9c2b9"
+    },
+    {
+      "alvo": "duravelV4",
+      "nome": "leitores-do-registro-v4.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/leitores-do-registro-v4.inc"
+      ],
+      "sha256": "bdb81dda8614b18e5006fd548d247b51fa13bf5f8d182d58e5b85e976705f8ad"
+    },
+    {
+      "alvo": "leitorV3Manifest",
+      "nome": "offline-cross-manifest-review.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/offline-cross-manifest-review.inc"
+      ],
+      "sha256": "196dffd524ee31670298fc3b91dd02971bc4919908190db3c4da837e05daf99c"
     }
   ],
   "recibos": [
