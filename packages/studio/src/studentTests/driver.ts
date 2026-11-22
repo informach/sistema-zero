@@ -70,6 +70,11 @@ export function buildStudentTestDriver(options: StudentTestDriverOptions): strin
   return `(function () {
   var host = window.parent;
   if (!host || host === window) return;
+  // O palco escondido nunca pega o foco: a moldura não tem a permissão de focar sem um gesto, e o
+  // foco tirado da página é o que o teste não pode fazer. O pedido de foco do jogo (o menu do Jogo
+  // 2D Avançado foca o botão "Jogar") já não fazia nada ali; agora também não chega ao navegador,
+  // que registrava uma violação a cada tentativa (lote 3 da conclusão, 22/11/2026).
+  try { HTMLElement.prototype.focus = function () {}; } catch (focusError) {}
   var origin = ${JSON.stringify(options.parentOrigin)};
   var token = ${JSON.stringify(options.token)};
   var scope = ${JSON.stringify(options.scope)};
@@ -176,10 +181,23 @@ export function buildStudentTestDriver(options: StudentTestDriverOptions): strin
     var until = Date.now() + ${MODELS_WAIT_MS};
     while (Date.now() < until && Number(window.__szModelosPendentes) > 0) await wait(100);
   }
+  async function startFromMenu() {
+    // O Jogo 2D Avançado abre sempre no menu dele, e a partida só começa pelo botão (o Enter
+    // sintético não aperta o botão focado). O teste aperta o botão principal do menu, como a
+    // criança faria (o executor do servidor aperta o "Começar" dos kits do Pro do mesmo jeito).
+    // Só o menu: as outras telas (fim, vitória, pausa) são o jogo e ficam como estão.
+    var menu = document.querySelector('[data-szgk-screen="menu"].szgk-active');
+    var button = menu && menu.querySelector('button');
+    if (!button) return;
+    button.click();
+    await frame();
+    await frame();
+  }
   async function run() {
     await frame();
     await frame();
     await models();
+    await startFromMenu();
     await wait(${SETTLE_MS});
     var initial = read(plan.target);
     for (var i = 0; i < plan.steps.length; i++) {

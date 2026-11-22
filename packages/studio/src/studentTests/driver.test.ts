@@ -20,7 +20,11 @@ const onKey = (event: Event) => {
   keys.push(`${key.type}:${key.key}:${key.code}`)
 }
 
+// O piloto troca o `focus` do palco escondido; aqui o DOM é o mesmo dos outros arquivos de teste.
+const nativeFocus = HTMLElement.prototype.focus
+
 afterEach(() => {
+  HTMLElement.prototype.focus = nativeFocus
   keys.length = 0
   document.removeEventListener('keydown', onKey)
   document.removeEventListener('keyup', onKey)
@@ -111,6 +115,50 @@ describe('o piloto de "Meus testes"', () => {
     } finally {
       document.removeEventListener('keydown', ponto)
     }
+  })
+
+  it('o Jogo 2D Avançado no menu: aperta o botão principal antes de ler o começo, como a criança', async () => {
+    // A tela do menu do motor (`makeScreen('menu', …)` + `makeButton`), aberta.
+    const variables: Record<string, unknown> = { jogando: false, cliques: 0 }
+    document.body.innerHTML =
+      '<div class="szgk-panel szgk-active" data-szgk-screen="menu"><h1>Meu Jogo</h1><button>Jogar</button><button>Ajuda</button></div>'
+    const buttons = document.querySelectorAll('button')
+    buttons[0]?.addEventListener('click', () => {
+      variables.jogando = true
+      variables.cliques = Number(variables.cliques) + 1
+    })
+    buttons[1]?.addEventListener('click', () => {
+      variables.cliques = Number(variables.cliques) + 10
+    })
+    const { message } = await runDriver(
+      { steps: [], target: { kind: 'value', path: 'jogando' } },
+      variables,
+    )
+    expect(message.observation).toMatchObject({
+      initial: { found: true, value: encoded(true) },
+      final: { found: true, value: encoded(true) },
+    })
+    expect(variables.cliques).toBe(1)
+  })
+
+  it('o jogo não tira o foco: o pedido de foco dentro do palco escondido não faz nada', async () => {
+    document.body.innerHTML = '<button>Jogar</button>'
+    await runDriver({ steps: [], target: { kind: 'value', path: 'x' } }, { x: 1 })
+    document.querySelector('button')?.focus()
+    expect(document.activeElement).toBe(document.body)
+  })
+
+  it('outra tela do Jogo 2D Avançado (o fim) não é apertada', async () => {
+    const variables: Record<string, unknown> = { cliques: 0 }
+    document.body.innerHTML =
+      '<div class="szgk-panel szgk-active" data-szgk-screen="fim"><button>Jogar de novo</button></div>' +
+      '<div class="szgk-panel" data-szgk-screen="menu"><button>Jogar</button></div>'
+    for (const button of document.querySelectorAll('button'))
+      button.addEventListener('click', () => {
+        variables.cliques = Number(variables.cliques) + 1
+      })
+    await runDriver({ steps: [], target: { kind: 'value', path: 'cliques' } }, variables)
+    expect(variables.cliques).toBe(0)
   })
 
   it('lê um caminho dentro da variável (a posição x do sprite) e diz quando não acha', async () => {

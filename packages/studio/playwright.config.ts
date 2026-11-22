@@ -64,6 +64,7 @@ export default defineConfig({
         /preview-shell(?:-performance|-hostile)?\.spec\.ts/,
         /blockly-media\.spec\.ts/,
         /student-tests\.spec\.ts/,
+        /student-tests-hostile\.spec\.ts/,
         /pro-light-runtime\.spec\.ts/,
       ],
       use: {
@@ -91,6 +92,7 @@ export default defineConfig({
         /preview-shell(?:-performance)?\.spec\.ts/,
         /blockly-media\.spec\.ts/,
         /student-tests\.spec\.ts/,
+        /student-tests-hostile\.spec\.ts/,
         /pro-light-runtime\.spec\.ts/,
       ],
       use: { ...devices['Desktop Safari'] },

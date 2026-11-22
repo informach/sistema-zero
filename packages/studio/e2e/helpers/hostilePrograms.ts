@@ -109,13 +109,16 @@ export const PROGRAMAS_HOSTIS = {
   ].join('\n'),
 } as const
 
-/** Põe o Jogo 2D no projeto aberto, pelo mesmo caminho da criança (⋯ → Mais blocos). */
-export async function instalarJogo2D(page: Page): Promise<void> {
+/**
+ * Põe o Jogo 2D (ou outra extensão, pelo nome do cartão) no projeto aberto, pelo mesmo caminho da
+ * criança (⋯ → Mais blocos).
+ */
+export async function instalarJogo2D(page: Page, nome = 'Jogo 2D'): Promise<void> {
   await page.getByRole('button', { name: 'Mais opções' }).click()
   await page.getByRole('menuitem', { name: 'Mais blocos', exact: true }).click()
   const cartao = page
     .getByRole('listitem')
-    .filter({ has: page.getByText('Jogo 2D', { exact: true }) })
+    .filter({ has: page.getByText(nome, { exact: true }) })
     .first()
   await cartao.getByRole('button', { name: 'Pôr no meu jogo', exact: true }).click()
   await expect(cartao.getByText('No meu jogo', { exact: true })).toBeVisible()
