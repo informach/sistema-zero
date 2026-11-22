@@ -647,7 +647,9 @@ function safeEvaluate(
         if (op === 'Div')
           return right.nonzero && small(left) && small(right) ? { kind: 'float' } : undefined
         if (op === 'FloorDiv' || op === 'Mod')
-          return right.nonzero && (!floating || (small(left) && small(right))) ? { kind } : undefined
+          return right.nonzero && (!floating || (small(left) && small(right)))
+            ? { kind }
+            : undefined
         // Potência só de inteiros pequenos conhecidos: com float, `1e300 ** 2` dá OverflowError.
         if (op === 'Pow') {
           if (floating || left.exact === undefined || right.exact === undefined) return undefined
@@ -1455,7 +1457,11 @@ function collectUserCode(module: PythonNode, codecIds: readonly (string | undefi
     if (!isNode(value)) return
     if (value.kind === 'Global')
       for (const id of value.fields.names as string[]) user.globalsWritten.add(id)
-    if (value.kind === 'Attribute' && isNode(value.fields.ctx) && value.fields.ctx.kind !== 'Load') {
+    if (
+      value.kind === 'Attribute' &&
+      isNode(value.fields.ctx) &&
+      value.fields.ctx.kind !== 'Load'
+    ) {
       user.storedAttributes.add(str(value.fields.attr) ?? '')
       const owner = child(value, 'value')
       if (owner?.kind === 'Name') user.attributeOwners.add(str(owner.fields.id) ?? '')

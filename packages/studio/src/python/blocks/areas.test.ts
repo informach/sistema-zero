@@ -323,7 +323,11 @@ describe('efeitos e troca de lugar', () => {
   })
 
   test('duas chamadas não trocam; o registro de tecla só troca com o que não chama nada', () => {
-    const item = node('Subscript', { value: name('placar'), slice: integer('0'), ctx: node('Store') })
+    const item = node('Subscript', {
+      value: name('placar'),
+      slice: integer('0'),
+      ctx: node('Store'),
+    })
     const [, , , , bg, clear, score, register, draw] = info([
       line(imp('turtle')),
       line(assign('tela', call(attribute(name('turtle'), 'Screen')))),
