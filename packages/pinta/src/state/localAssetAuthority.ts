@@ -411,9 +411,20 @@ export function createLocalAssetAuthority<Asset extends PintaMemoryAsset>(
       )
         throw new PintaLocalStorageError('Um dos desenhos mudou. Confira antes de guardar de novo.')
     }
+    const names = new Set(
+      [...snapshot.assets.values()]
+        .filter((asset) => !ids.has(asset.id))
+        .map((asset) => asset.name),
+    )
     for (const { id, after } of transitions) {
-      if (after) protectAsset(records, snapshot, format.stamp(after))
-      else putTombstone(records, snapshot, id)
+      if (!after) {
+        putTombstone(records, snapshot, id)
+        continue
+      }
+      if (names.has(after.name))
+        throw new PintaLocalStorageError('Já existe outro desenho com um dos nomes desta mudança.')
+      names.add(after.name)
+      protectAsset(records, snapshot, format.stamp(after))
     }
     checkLocalBudget(snapshot.baseline, [...snapshot.assets.values()])
     return snapshot

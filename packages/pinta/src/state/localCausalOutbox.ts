@@ -63,8 +63,20 @@ export interface PintaCausalConfirmed {
   opId?: string
 }
 
+export interface PintaCausalLocalPull<Asset extends PintaMemoryAsset> {
+  fromEpoch: string | null
+  epoch: string
+  transitions: readonly (LocalAssetTransition<Asset> & {
+    remote: Pick<PintaCausalConfirmed, 'revision' | 'sha256' | 'layoutRevision'> | null
+    /** An exact native revision authenticated before this client started using the outbox. */
+    confirmedLegacy?: { revision: number; localRevision: string }
+  })[]
+}
+
 export interface LocalCausalState {
   version: 1
+  protocolKnown: boolean
+  epoch: string | null
   pending: PintaCausalPending[]
   sealed: PintaCausalSealed | null
   confirmed: Map<string, PintaCausalConfirmed>
@@ -133,17 +145,34 @@ function confirmedState(value: unknown): value is Map<string, PintaCausalConfirm
 
 export function readLocalCausalState(records: ReadonlyMap<string, unknown>): LocalCausalState {
   const value = records.get(PINTA_CAUSAL_OUTBOX_KEY)
-  if (value === undefined) return { version: 1, pending: [], sealed: null, confirmed: new Map() }
+  if (value === undefined)
+    return {
+      version: 1,
+      protocolKnown: false,
+      epoch: null,
+      pending: [],
+      sealed: null,
+      confirmed: new Map(),
+    }
   if (
     !object(value) ||
     value.version !== 1 ||
+    (value.protocolKnown !== undefined && typeof value.protocolKnown !== 'boolean') ||
+    (value.epoch != null && typeof value.epoch !== 'string') ||
     !Array.isArray(value.pending) ||
     !value.pending.every(pendingState) ||
     (value.sealed !== null && !sealedState(value.sealed)) ||
     !confirmedState(value.confirmed)
   )
     invalid()
-  return { version: 1, pending: value.pending, sealed: value.sealed, confirmed: value.confirmed }
+  return {
+    version: 1,
+    protocolKnown: value.protocolKnown === true,
+    epoch: value.epoch ?? null,
+    pending: value.pending,
+    sealed: value.sealed,
+    confirmed: value.confirmed,
+  }
 }
 
 export function ownsLocalCausalMember(state: LocalCausalState, id: string): boolean {
@@ -158,6 +187,54 @@ function saveState(records: Map<string, unknown>, state: LocalCausalState): void
   const bytes = new TextEncoder().encode(metadata).length + (state.sealed?.bytes ?? 0)
   if (bytes > MAX_BACKUP_FILE_BYTES) throw new PintaStorageBudgetError(bytes)
   records.set(PINTA_CAUSAL_OUTBOX_KEY, state)
+}
+
+export function rememberLocalCausalProtocol(records: Map<string, unknown>): void {
+  const state = readLocalCausalState(records)
+  if (!state.protocolKnown) saveState(records, { ...state, protocolKnown: true })
+}
+
+export function installLocalCausalPull<Asset extends PintaMemoryAsset>(
+  records: Map<string, unknown>,
+  pull: PintaCausalLocalPull<Asset>,
+  write: () => LocalSnapshot<Asset>,
+): LocalSnapshot<Asset> | null {
+  const state = readLocalCausalState(records)
+  if (
+    state.epoch !== pull.fromEpoch ||
+    (state.epoch !== null && BigInt(pull.epoch) < BigInt(state.epoch))
+  )
+    return null
+  for (const change of pull.transitions) {
+    if (ownsLocalCausalMember(state, change.id)) return null
+    const mark = state.confirmed.get(change.id) ?? change.confirmedLegacy
+    if (Boolean(change.after) !== Boolean(change.remote)) invalid()
+    if (
+      (change.before !== null || change.beforeRevision !== null) &&
+      mark?.localRevision !== change.beforeRevision
+    ) {
+      // A first download can adopt an identical local file. It never overwrites a different one.
+      if (!change.remote || !pintaValuesEqual(change.before, change.after)) return null
+    } else if (!change.remote && !mark) return null
+  }
+  const snapshot = write()
+  const confirmed = new Map(state.confirmed)
+  for (const change of pull.transitions) {
+    const localRevision = snapshot.documents.get(change.id)?.revision
+    if (!localRevision) invalid()
+    const previous = confirmed.get(change.id) ?? change.confirmedLegacy
+    const revision = change.remote?.revision ?? previous?.revision
+    if (!revision) invalid()
+    confirmed.set(change.id, {
+      localRevision,
+      revision,
+      deleted: change.remote === null,
+      sha256: change.remote?.sha256 ?? null,
+      layoutRevision: change.remote?.layoutRevision ?? null,
+    })
+  }
+  saveState(records, { ...state, protocolKnown: true, epoch: pull.epoch, confirmed })
+  return snapshot
 }
 
 export function stageLocalCausalDraft<Asset extends PintaMemoryAsset>(
@@ -203,6 +280,7 @@ export function stageLocalCausalDraft<Asset extends PintaMemoryAsset>(
   }
   saveState(records, {
     ...state,
+    protocolKnown: true,
     pending: [...state.pending.filter((unit) => !expected.has(unit.opId)), pending],
   })
   return { snapshot, pending }

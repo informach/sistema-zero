@@ -40,6 +40,7 @@ import {
   sha256Hex,
 } from '@sistemazero/core/creations'
 import { perfSpanAsync } from './perf'
+import { createPintaCausalCloud, type PintaCausalCloud } from './pinta-causal-cloud'
 
 export { canonicalJson, sha256Hex }
 
@@ -155,6 +156,7 @@ export type RemovedListener = (result: { revision: number }) => void
 
 export interface CreationsCloud {
   readonly tool: CreationTool
+  readonly pintaCausal?: PintaCausalCloud
   /** A nuvem funciona neste navegador? (`CompressionStream`; sem ele, tudo vira no-op). */
   readonly supported: boolean
   /**
@@ -461,6 +463,7 @@ export function createCreationsCloud(options: {
   maxFormatVersion?: number
   /** Perfil dono da fila: vai em `x-sz-viewer` (o BFF confere com a sessão). */
   viewerId?: string
+  audience?: 'adult' | 'kids'
   /** Injetável (testes). Default: o `fetch` global. */
   fetch?: FetchLike
   /**
@@ -543,6 +546,20 @@ export function createCreationsCloud(options: {
   let retryAfterMs: number | null = null
   let disposed = false
   const abort = new AbortController()
+  const causalSession =
+    tool === 'pinta' && supported && hashSupported() && options.viewerId && options.audience
+      ? new AbortController()
+      : null
+  const pintaCausal =
+    causalSession && options.viewerId && options.audience
+      ? createPintaCausalCloud({
+          viewerId: options.viewerId,
+          audience: options.audience,
+          reader: maxFormatVersion ?? 1,
+          signal: causalSession.signal,
+          fetch: doFetch,
+        })
+      : undefined
   // "Acorda" a espera do backoff (rede voltou / flush): promessa trocada a cada espera.
   // `wakeRequested` guarda um acordar que chegou ANTES de a fila começar a esperar (no
   // meio de um passo) — senão ele se perdia e a fila dormia o backoff inteiro.
@@ -1293,6 +1310,7 @@ export function createCreationsCloud(options: {
 
   return {
     tool,
+    ...(pintaCausal ? { pintaCausal } : {}),
     supported,
     list,
     upload,
@@ -1319,6 +1337,7 @@ export function createCreationsCloud(options: {
     },
     dispose(opts) {
       disposed = true
+      causalSession?.abort()
       if (timer) clearTimeout(timer)
       dueAt = Number.POSITIVE_INFINITY
       wakeUp()

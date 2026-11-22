@@ -50,15 +50,18 @@ import {
 } from './localAssetAuthority'
 import {
   acknowledgeLocalCausalDraft,
+  installLocalCausalPull,
   type LocalCausalState,
   ownsLocalCausalMember,
   PINTA_CAUSAL_BLOBS_KEY,
   PINTA_CAUSAL_OUTBOX_KEY,
   type PintaCausalLocalDraft,
+  type PintaCausalLocalPull,
   type PintaCausalPending,
   type PintaCausalSealed,
   readLocalCausalState,
   readLocalCausalUpload,
+  rememberLocalCausalProtocol,
   sealLocalCausalDraft,
   stageLocalCausalDraft,
 } from './localCausalOutbox'
@@ -361,6 +364,8 @@ export interface PintaPersistence<Asset extends PintaMemoryAsset = PintaAsset> {
   deleteAsset(id: string, base?: Asset): Promise<void>
   loadAssetById(id: string): Promise<Asset | null>
   listAllAssets(): Promise<Asset[]>
+  /** Account host holds the shared read lease until this editor closes. */
+  holdOpen?(id: string): Promise<() => void>
   /**
    * OPCIONAL: observar mudanças feitas por fora (ver `PintaPersistenceEvent`). O IndexedDB do
    * perfil emite mudanças da biblioteca entre stores/abas; o wrapper da nuvem do host acrescenta
@@ -432,6 +437,8 @@ export function createPintaPersistence(options: { namespace?: string } = {}): Pi
 export interface PintaCausalLocalPort<Asset extends PintaMemoryAsset = PintaAsset> {
   capture(ids: readonly string[]): Promise<readonly Omit<LocalAssetTransition<Asset>, 'after'>[]>
   inspect(): Promise<LocalCausalState>
+  rememberProtocol(): Promise<void>
+  applyPull(pull: PintaCausalLocalPull<Asset>, ready: () => boolean): Promise<boolean>
   stage(draft: PintaCausalLocalDraft<Asset>): Promise<PintaCausalPending>
   prepare(opId: string): Promise<{ pending: PintaCausalPending; assets: Asset[] } | null>
   seal(
@@ -441,7 +448,7 @@ export interface PintaCausalLocalPort<Asset extends PintaMemoryAsset = PintaAsse
     blobs: ReadonlyMap<string, Blob>,
   ): Promise<boolean>
   inFlight(): Promise<{ sealed: PintaCausalSealed; blobs: ReadonlyMap<string, Blob> } | null>
-  acknowledge(receipt: PintaCausalResult): Promise<boolean>
+  acknowledge(receipt: PintaCausalResult, ready?: () => boolean): Promise<boolean>
 }
 
 /** Account host entry point. The local drawing format is the same as in the ordinary workshop. */
@@ -583,6 +590,25 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
       }))
     },
     inspect: () => transaction(readLocalCausalState, () => causalKeys),
+    rememberProtocol: () => transaction(rememberLocalCausalProtocol, () => causalKeys),
+    applyPull: (pull, ready) =>
+      runSerializedWrite(storeHandle, async () => {
+        const snapshot = await transaction(
+          (records) =>
+            ready()
+              ? installLocalCausalPull(records, pull, () =>
+                  applyAssetTransitions(records, pull.transitions, false),
+                )
+              : null,
+          (records) => (records.has(PINTA_CAUSAL_OUTBOX_KEY) ? null : causalKeys),
+        )
+        if (!snapshot) return false
+        const ids = pull.transitions.map(({ id }) => id)
+        backupSizeCache.invalidate(ids)
+        accept(snapshot, ids)
+        if (ids.length) notifyOtherTabs(storeHandle, dbName, ids)
+        return true
+      }),
     stage: (draft) =>
       runSerializedWrite(storeHandle, async () => {
         const { snapshot, pending } = await transaction(
@@ -635,9 +661,9 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
       }, causalMembers(intent.opId)),
     inFlight: () =>
       transaction(readLocalCausalUpload, () => [PINTA_CAUSAL_OUTBOX_KEY, PINTA_CAUSAL_BLOBS_KEY]),
-    acknowledge: (receipt) =>
+    acknowledge: (receipt, ready) =>
       transaction(
-        (records) => acknowledgeLocalCausalDraft(records, receipt),
+        (records) => (ready?.() === false ? false : acknowledgeLocalCausalDraft(records, receipt)),
         () => [PINTA_CAUSAL_OUTBOX_KEY, PINTA_CAUSAL_BLOBS_KEY],
       ),
   }

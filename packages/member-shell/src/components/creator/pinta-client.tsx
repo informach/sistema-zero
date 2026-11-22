@@ -38,6 +38,16 @@ import {
 // effect (igual ao pensa-client) e o server renderiza só o placeholder.
 type PintaModule = typeof import('@sistemazero/pinta')
 
+type PintaLoad =
+  | {
+      key: string
+      status: 'ready'
+      mod: PintaModule
+      cloud: CreationsCloud | null
+      persistence: PintaPersistenceLike
+    }
+  | { key: string; status: 'error' }
+
 /**
  * O resultado da volta da ponte, COM o motivo (o mesmo contrato do Molda; o do Pinta está sendo
  * alargado em lockstep e deixa o `reason` opcional para o host continuar válido nas duas
@@ -70,11 +80,14 @@ export function PintaClient({
   initialCanvas?: PintaInitialCanvas
 }) {
   const localNamespace = creatorStorageNamespace(viewerId, audience)
-  const [mod, setMod] = useState<PintaModule | null>(null)
-  const [loadError, setLoadError] = useState(false)
-  // "Guardado na sua conta": a fila da nuvem (uma por montagem, por perfil) e o
-  // armazenamento local EMBRULHADO no espelho — o pacote continua sem backend.
-  const [cloud, setCloud] = useState<CreationsCloud | null>(null)
+  const [attempt, setAttempt] = useState(0)
+  const loadKey = JSON.stringify([viewerId, audience, attempt])
+  const [load, setLoad] = useState<PintaLoad | null>(null)
+  const current = load?.key === loadKey ? load : null
+  const session = current?.status === 'ready' ? current : null
+  const mod = session?.mod ?? null
+  const cloud = session?.cloud ?? null
+  const persistence = session?.persistence ?? null
   const pintaControl = useRef<PintaCompletionControl | null>(null)
   const registrarControle = useCallback((controle: PintaCompletionControl | null) => {
     pintaControl.current = controle
@@ -92,8 +105,8 @@ export function PintaClient({
   }, [cloud, onCompletionControlChange])
 
   // A DESCIDA está em andamento (o wrapper avisa `sync-start`/`sync-end`): selo "buscando…".
-  const [syncing, setSyncing] = useState(false)
-  const [persistence, setPersistence] = useState<PintaPersistenceLike | null>(null)
+  const [syncingSession, setSyncingSession] = useState<PintaPersistenceLike | null>(null)
+  const syncing = persistence !== null && syncingSession === persistence
   const router = useRouter()
   const { setWorkspaceActive } = useFocusMode()
   // O Pinta SEGUE a plataforma (hoje só claro) — sem toggle próprio.
@@ -120,84 +133,59 @@ export function PintaClient({
     if (initialAssetId && !taskId) router.replace('/pinta')
   }, [initialAssetId, taskId, router])
 
-  const loadPinta = useCallback(
-    async (isCurrent?: () => boolean) => {
-      setMod(null)
-      setLoadError(false)
+  useEffect(() => {
+    let retired = false
+    let cloud: CreationsCloud | null = null
+    let persistence: PintaPersistenceLike | null = null
+    async function loadWorkshop() {
       try {
         const m = await import('@sistemazero/pinta')
+        if (retired) return
         // Namespace por PERFIL ANTES de montar (mesmo contrato do /estudio):
         // irmãos no mesmo navegador não compartilham a galeria.
         m.setPintaStorageNamespace(localNamespace)
-        if (isCurrent && !isCurrent()) return
-        // Só com PERFIL: sem sessão de perfil não há dono na nuvem, e o Pinta abre
-        // como sempre (só local).
+        const local = m.createPintaPersistence({ namespace: localNamespace })
+        persistence = local
         if (viewerId) {
-          // `viewerId` vai em toda chamada (`x-sz-viewer`): o BFF recusa se a sessão já
-          // trocou de perfil (irmão que entrou no meio de um upload em voo).
-          const nextCloud = createCreationsCloud({
+          cloud = createCreationsCloud({
             tool: 'pinta',
-            // O teto do que este código lê: sem ele, apagar um desenho de formato novo era recusado.
             maxFormatVersion: PINTA_MAX_READ_FORMAT_VERSION,
             viewerId,
+            audience,
           })
-          // O desligar da fila ANTERIOR é o cleanup do efeito `[cloud]` (nunca dentro do
-          // updater: efeito colateral em updater roda duas vezes no StrictMode).
-          setCloud(nextCloud)
-          setPersistence(
-            createCloudMirroredPintaPersistence({
-              local: m.createPintaPersistence({ namespace: localNamespace }),
-              cloud: nextCloud,
-              viewerId,
-              localNamespace,
-              // A descida não grava por baixo de um desenho ABERTO no editor — e, ao fechar um
-              // que ficou pulado, traz a versão da nuvem na hora.
-              isAssetOpen: m.isPintaAssetOpen,
-              subscribeAssetOpenState: m.subscribePintaAssetOpenState,
-            }),
-          )
+          persistence = createCloudMirroredPintaPersistence({
+            local,
+            cloud,
+            viewerId,
+            localNamespace,
+            isAssetOpen: m.isPintaAssetOpen,
+            subscribeAssetOpenState: m.subscribePintaAssetOpenState,
+          })
         }
-        setMod(m)
+        setLoad({ key: loadKey, status: 'ready', mod: m, cloud, persistence })
       } catch {
-        if (isCurrent && !isCurrent()) return
-        setLoadError(true)
+        if (retired) return
+        setLoad({ key: loadKey, status: 'error' })
       }
-    },
-    [viewerId, localNamespace],
-  )
-
-  useEffect(() => {
-    let active = true
-    void loadPinta(() => active)
-    return () => {
-      active = false
     }
-  }, [loadPinta])
-
-  // Ao sair da página (ou trocar de fila), o que estiver pendente sobe INTEIRO e só
-  // então a fila fecha: `dispose()` antes do fim do `flush` deixava só um item subir.
-  // A troca de perfil no meio é barrada pelo BFF (`x-sz-viewer` ≠ sessão → 409).
-  useEffect(() => {
-    if (!cloud) return
+    void loadWorkshop()
     return () => {
-      // Com teto: sem internet a fila espera o backoff e a antiga nunca fecharia (idas e
-      // vindas na SPA acumulavam filas vivas). O que ficar sobe na próxima carga (reconcilia).
-      void cloud.flush({ timeoutMs: 5000 }).finally(() => cloud.dispose())
+      retired = true
+      persistence?.dispose?.()
+      // The old profile's documents and outbox stay in its database for the next session.
+      cloud?.dispose({ abort: true })
     }
-  }, [cloud])
+  }, [audience, loadKey, localNamespace, viewerId])
 
   // O selo acompanha a descida (a galeria já abriu com o local; os desenhos de outro aparelho
   // vão chegando). Ao trocar de persistência (perfil), a antiga desliga o que escutava por fora.
   useEffect(() => {
     if (!persistence) return
-    const unsubscribe = persistence.subscribe?.((event) => {
-      if (event.type === 'sync-start') setSyncing(true)
-      else if (event.type === 'sync-end') setSyncing(false)
+    return persistence.subscribe?.((event) => {
+      if (event.type === 'sync-start') setSyncingSession(persistence)
+      else if (event.type === 'sync-end')
+        setSyncingSession((active) => (active === persistence ? null : active))
     })
-    return () => {
-      unsubscribe?.()
-      persistence.dispose?.()
-    }
   }, [persistence])
 
   // O guia do Pensa recolhido, lembrado por CRIANÇA e valendo para as três oficinas. O painel
@@ -362,13 +350,13 @@ export function PintaClient({
           reason={handoff.availability.message}
           onBackToPlan={() => router.push(`/pensa?plano=${encodeURIComponent(handoff.project.id)}`)}
         />
-      ) : loadError ? (
+      ) : current?.status === 'error' ? (
         <div className="grid flex-1 place-items-center p-6 text-center">
           <div className="flex max-w-sm flex-col items-center gap-3">
             <p className="font-semibold">Não consegui carregar o Pinta.</p>
             <button
               type="button"
-              onClick={() => void loadPinta()}
+              onClick={() => setAttempt((value) => value + 1)}
               className="inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-4 font-bold text-primary-foreground"
             >
               <RefreshCw className="size-4" /> Tentar de novo
@@ -388,7 +376,7 @@ export function PintaClient({
           <div className="flex min-h-0 flex-1 flex-col">
             <mod.PintaHostChromeProvider value={hostChrome}>
               <mod.PintaApp
-                key={handoff?.mission.id ?? 'free'}
+                key={`${loadKey}:${handoff?.mission.id ?? 'free'}`}
                 adapter={adapter}
                 onCompletionControlChange={registrarControle}
                 onWorkspaceChange={setWorkspaceActive}

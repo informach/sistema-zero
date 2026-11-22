@@ -2,6 +2,12 @@ import { expect, test } from '@playwright/test'
 import type { PintaCausalIntent, PintaCausalResult } from '@sistemazero/core/creations/pinta-causal'
 import { openPintaAuthorityProof as proof } from './helpers/pintaAuthorityRealm'
 
+declare global {
+  interface Window {
+    releaseCausalEditor?: () => void
+  }
+}
+
 test('IndexedDB aborts the documents and outbox together, then reopens the whole edit', async ({
   page,
   context,
@@ -224,4 +230,81 @@ test('a sealed IndexedDB upload survives restart and acknowledges only the origi
     noUpload: true,
   })
   expect(result.successor).not.toBe(result.confirmed)
+})
+
+test('an editor in another tab defers the complete delta before the final local CAS', async ({
+  page,
+  context,
+}) => {
+  await proof(page)
+  const initial = await page.evaluate(async () => {
+    const p = window.pinta026
+    const namespace = crypto.randomUUID()
+    const local = p.createPintaCausalPersistence({ namespace })
+    const assets = ['vila', 'cabana'].map((name) =>
+      p.createPixelSpriteAsset({ name, frameSize: 8 }),
+    )
+    const installed = await local.causal.applyPull(
+      {
+        fromEpoch: null,
+        epoch: '3',
+        transitions: assets.map((asset) => ({
+          id: asset.id,
+          before: null,
+          beforeRevision: null,
+          after: asset,
+          remote: { revision: 1, sha256: 'a'.repeat(64), layoutRevision: null },
+        })),
+      },
+      () => true,
+    )
+    if (!installed) throw Error('fixture')
+    return { namespace, ids: assets.map((asset) => asset.id) }
+  })
+  const otherTab = await context.newPage()
+  await proof(otherTab)
+  await otherTab.evaluate(async ({ namespace, ids }) => {
+    window.releaseCausalEditor = await window.pintaPhysicalRegions.holdPintaEditorLock(
+      namespace,
+      ids[0]!,
+    )
+  }, initial)
+
+  const attemptDelta = (fromEpoch = '3', epoch = '4', race = false) =>
+    page.evaluate(
+      async ({ namespace, ids, fromEpoch, epoch, race }) => {
+        const local = window.pinta026.createPintaCausalPersistence({ namespace })
+        const transitions = (await local.causal.capture(ids)).map((base) => {
+          if (!base.before) throw Error('fixture')
+          return {
+            ...base,
+            after: { ...base.before, name: `${base.before.name}-nova` },
+            remote: { revision: 2, sha256: 'b'.repeat(64), layoutRevision: null },
+          }
+        })
+        const latest = transitions.at(-1)?.before
+        if (race && latest) await local.persistAsset({ ...latest, name: 'edicao-local' })
+        const applied = await window.pintaPhysicalRegions
+          .withClosedPintaEditors(namespace, ids, () =>
+            local.causal.applyPull({ fromEpoch, epoch, transitions }, () => true),
+          )
+          .catch((error) => {
+            if (race && String(error).includes('Um dos desenhos mudou')) return false
+            throw error
+          })
+        const names = (await local.listAllAssets()).map((asset) => asset.name).sort()
+        return { applied, names, epoch: (await local.causal.inspect()).epoch }
+      },
+      { ...initial, fromEpoch, epoch, race },
+    )
+  expect(await attemptDelta()).toEqual({ applied: false, names: ['cabana', 'vila'], epoch: '3' })
+  await otherTab.evaluate(() => window.releaseCausalEditor?.())
+  await expect
+    .poll(attemptDelta)
+    .toEqual({ applied: true, names: ['cabana-nova', 'vila-nova'], epoch: '4' })
+  const raced = await attemptDelta('4', '5', true)
+  expect(raced.applied).toBe(false)
+  expect(raced.epoch).toBe('4')
+  expect(raced.names).toContain('edicao-local')
+  expect(raced.names.some((name) => name.endsWith('-nova-nova'))).toBe(false)
 })

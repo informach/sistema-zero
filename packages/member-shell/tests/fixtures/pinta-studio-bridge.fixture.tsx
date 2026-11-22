@@ -20,12 +20,14 @@ const canonical: PintaExportedAsset = {
   },
 }
 let current: PintaHostAdapter | undefined
+let storageOwner: string | undefined
 let lookupGate = Promise.withResolvers<void>()
 let lookupEntered = Promise.withResolvers<void>()
 let linked = false
 let saveOk = true
 const lookups: Array<{ id: string; namespace: string }> = []
 const saves: Array<{ asset: PintaExportedAsset; namespace: string }> = []
+const retired: Array<{ viewerId: string; abort?: boolean }> = []
 const cleanups: Array<() => void> = []
 const router = { push: () => {}, replace: () => {} }
 const search = new URLSearchParams()
@@ -38,20 +40,33 @@ mock.module('next/navigation', () => ({
 }))
 mock.module('@sistemazero/pinta', () => ({
   setPintaStorageNamespace: () => {},
-  createPintaPersistence: () => ({}),
+  createPintaPersistence: ({ namespace }: { namespace: string }) => ({ namespace }),
   isPintaAssetOpen: () => false,
   subscribePintaAssetOpenState: () => () => {},
   PintaHostChromeProvider: ({ children }: { children: ReactNode }) => children,
-  PintaApp: ({ adapter }: { adapter: PintaHostAdapter }) => {
+  PintaApp: ({
+    adapter,
+    persistence,
+  }: {
+    adapter: PintaHostAdapter
+    persistence?: { namespace: string }
+  }) => {
     current = adapter
+    storageOwner = persistence?.namespace
     return null
   },
 }))
 mock.module('../../src/lib/creations-cloud', () => ({
-  createCreationsCloud: () => ({ flush: async () => {}, dispose: () => {} }),
+  createCreationsCloud: ({ viewerId }: { viewerId: string }) => ({
+    flush: async () => {},
+    dispose: (opts?: { abort?: boolean }) => retired.push({ viewerId, ...opts }),
+  }),
 }))
 mock.module('../../src/lib/pinta-cloud-persistence', () => ({
-  createCloudMirroredPintaPersistence: () => ({ dispose: () => {} }),
+  createCloudMirroredPintaPersistence: ({ local }: { local: { namespace: string } }) => ({
+    ...local,
+    dispose: () => {},
+  }),
 }))
 mock.module('../../src/components/creator/focus-mode', () => ({
   useFocusMode: () => ({ setWorkspaceActive: () => {} }),
@@ -96,9 +111,11 @@ function mountedAdapter(): PintaHostAdapter {
 
 beforeEach(() => {
   current = undefined
+  storageOwner = undefined
   linked = false
   saveOk = true
   lookups.length = saves.length = 0
+  retired.length = 0
   lookupGate = Promise.withResolvers<void>()
   lookupEntered = Promise.withResolvers<void>()
 })
@@ -120,7 +137,7 @@ async function harness(audience: 'kids' | 'adult', owned = true) {
     element.remove()
   }
   cleanups.push(unmount)
-  const render = async (viewerId: string) => {
+  const render = async (viewerId: string | null) => {
     current = undefined
     await act(async () => {
       root.render(<PintaClient viewerId={viewerId} audience={audience} studioAvailable={owned} />)
@@ -129,6 +146,17 @@ async function harness(audience: 'kids' | 'adult', owned = true) {
   }
   return { render, unmount: async () => act(unmount) }
 }
+
+test('switching to the local workshop retires the prior queue and changes the storage owner', async () => {
+  const view = await harness('adult')
+  await view.render('a')
+  expect(storageOwner).toBe('adult:a')
+  await view.render(null)
+  expect(storageOwner).toBe('')
+  expect(retired).toEqual([{ viewerId: 'a', abort: true }])
+  await view.render('b')
+  expect(storageOwner).toBe('adult:b')
+})
 
 test('unlinked resync does not create a canonical record or expose an unowned send button', async () => {
   const view = await harness('kids', false)

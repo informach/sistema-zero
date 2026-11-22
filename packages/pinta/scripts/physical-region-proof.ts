@@ -28,6 +28,7 @@ export { exportPintaRegionScene } from '../src/export/regionScene'
 export { exportPintaScene } from '../src/export/scene'
 export { drawScene, loadSceneImages, scenePng } from '../src/export/sceneDrawing'
 export { withAssetTransaction } from '../src/state/assetAuthorityDb'
+export { holdPintaEditorLock, withClosedPintaEditors } from '../src/state/causalEditorLocks'
 export { createLocalRegionAssetAuthority } from '../src/state/localRegionAssetAuthority'
 export { localRegionStorageCodec } from '../src/state/localRegionChunkStorage'
 export {

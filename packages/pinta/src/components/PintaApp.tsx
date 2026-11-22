@@ -217,12 +217,47 @@ export function PintaApp({
   // TODOS os cartões a cada clique, contra o invariante escrito no próprio `AssetCard`
   // ("callbacks POR ID, estáveis na galeria"). Com o `useCallback`, só quem lê o adapter
   // re-renderiza. Vale para todo host que troque o adapter por qualquer motivo.
-  const openAsset = useCallback((id: string) => setView({ screen: 'editor', assetId: id }), [])
-  const closeEditor = useCallback(() => setView({ screen: 'gallery' }), [])
-  const openFitted = useCallback(
-    (id: string) => setView({ screen: 'editor', assetId: id, fit: true }),
-    [],
+  const openGeneration = useRef(0)
+  const releaseEditor = useRef<(() => void) | null>(null)
+  const retireOpen = useCallback(() => {
+    openGeneration.current++
+    releaseEditor.current?.()
+    releaseEditor.current = null
+  }, [])
+  useEffect(() => retireOpen, [retireOpen])
+  const open = useCallback(
+    (id: string, fit?: boolean) => {
+      const generation = ++openGeneration.current
+      const nextView = { screen: 'editor' as const, assetId: id, ...(fit ? { fit } : {}) }
+      if (!store.persistence.holdOpen) {
+        setView(nextView)
+        return
+      }
+      void (async () => {
+        const release = await store.persistence.holdOpen?.(id)
+        try {
+          if (generation !== openGeneration.current) return
+          const asset = await store.persistence.loadAssetById(id)
+          if (!asset || generation !== openGeneration.current) return
+          gallery.getState().absorb(asset)
+          releaseEditor.current?.()
+          releaseEditor.current = release ?? null
+          setView(nextView)
+        } finally {
+          if (releaseEditor.current !== release) release?.()
+        }
+      })().catch(() => {
+        if (generation === openGeneration.current) void gallery.getState().load()
+      })
+    },
+    [gallery, store.persistence],
   )
+  const openAsset = useCallback((id: string) => open(id), [open])
+  const openFitted = useCallback((id: string) => open(id, true), [open])
+  const closeEditor = useCallback(() => {
+    retireOpen()
+    setView({ screen: 'gallery' })
+  }, [retireOpen])
   const context = useMemo<PintaAppContextValue>(
     () => ({
       adapter: resolvedAdapter,
@@ -240,7 +275,7 @@ export function PintaApp({
       initialIntentVersion,
       requestInitialIntent: (intent) => {
         initialIntentRef.current = intent
-        setView({ screen: 'gallery' })
+        closeEditor()
         setInitialIntentVersion((version) => version + 1)
       },
       takeInitialAssetId: () => {
@@ -343,7 +378,7 @@ export function PintaApp({
                   outputMissing={taskOutputMissing}
                   currentCreationId={view.screen === 'editor' ? view.assetId : null}
                   onRecreate={recreateTaskAsset}
-                  onRelink={() => setView({ screen: 'gallery' })}
+                  onRelink={closeEditor}
                   onReturn={returnToPlan}
                 />
               ) : null

@@ -69,6 +69,7 @@ export {
 export { PINTA_LESSON_MAP_LIMITS } from '../core/projectConfig'
 export { PINTA_TOOL_PRESETS, type PintaToolPreset } from '../core/toolCuration'
 export { type AssetImportResult, assetFromJson, assetToJson } from '../export/assetJson'
+export { MAX_BACKUP_FILE_BYTES } from '../export/projectJson'
 export { bitmapFromArt, cellsFromArt } from '../templates/art'
 export {
   buildPixelTileset,
