@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { sceneObjectTransformSource } from '@sistemazero/core/studio/pinta-scene-runtime'
+import { minify } from 'terser'
 import { sharedRegionGeometry } from '../src/official-extensions/map-2d/regionHostSource'
 
 const output = new URL(
@@ -17,7 +18,8 @@ const built = await Bun.build({
   entrypoints: ['pinta-region-runtime'],
   format: 'iife',
   target: 'browser',
-  minify: true,
+  // Bun assigns minified names differently across checkouts of the same sources.
+  minify: { syntax: true, whitespace: true, identifiers: false },
   plugins: [
     {
       name: 'pinta-region-factory',
@@ -49,7 +51,9 @@ const built = await Bun.build({
 })
 if (!built.success || built.outputs.length !== 1 || !linkedGeometry)
   throw new Error('Falha ao compor o runtime regional dos jogos 2D.', { cause: built.logs })
-const source = `var _pintaRegionFactory;${(await built.outputs[0]!.text()).trim()}`
+const { code } = await minify(await built.outputs[0]!.text(), { compress: false, mangle: true })
+if (!code) throw new Error('Falha ao compactar o runtime regional dos jogos 2D.')
+const source = `var _pintaRegionFactory;${code}`
 const literal = `'${JSON.stringify(source)
   .slice(1, -1)
   .replaceAll('\\"', '"')
