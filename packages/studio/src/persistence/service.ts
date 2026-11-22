@@ -526,7 +526,7 @@ export function createPersistenceService(
     pending.set(project.id, { timer, project, since })
   }
 
-  function flushPending(exiting = false): void {
+  function flushPending(exiting = false, pageAlive = false): void {
     if (suspended) return
     // O editor pode ainda estar dentro do debounce próprio (ex.: Blockly, 120ms),
     // sem nenhuma mutação visível na store. Materializá-lo DEVE vir antes até do
@@ -556,6 +556,7 @@ export function createPersistenceService(
         void adapter
           .flushOnExit(snapshotForSave(project), {
             incompleteBlocks: shouldStripBlocks(project.id),
+            ...(pageAlive ? { pageAlive: true } : {}),
           })
           .catch((error) => {
             const message = formatPersistenceError(error)
@@ -599,8 +600,10 @@ export function createPersistenceService(
     // Safari do iPad faz isso), e o `visibilitychange` para `hidden` é o último evento
     // com que dá para contar. Grava o que estiver pendente, como na saída. Voltar para
     // a aba não faz nada: o dedupe do `flushed` só re-arma com uma edição nova.
+    // A página segue viva (só escondida): a cópia nativa confirmada basta, mesmo quando a cópia
+    // síncrona não cabe (projeto grande; achado na conferência do staging de 21/11/2026).
     const flushWhenHidden = () => {
-      if (document.visibilityState === 'hidden') flushPending(true)
+      if (document.visibilityState === 'hidden') flushPending(true, true)
       else {
         const current = store.getState()
         if (adapter?.flushOnExit && flushed && current.project && current.isDirty) {

@@ -67,6 +67,24 @@ Fora das oito: o Python não tem prova de saída em navegador real (só IndexedD
 game-storage (o save do jogo da criança) lê um registro corrompido ou futuro como `{}` e o
 sobrescreve na próxima gravação.
 
+## Projeto grande com a aba escondida (conferência do staging, 21/11/2026)
+
+A saída grava a cópia nativa (o registro de recuperação no IndexedDB) e a cópia síncrona (o
+`localStorage`, teto de 2 milhões de caracteres e 500 mil nós). O Reino Zero Ultra aberto tem um
+registro de recuperação de 3.068.580 caracteres (blocos 1,77 milhão, estado 750 mil, medido no
+playground), então a síncrona não cabe. Antes, a saída rejeitava mesmo com a nativa confirmada, e
+a aba escondida (a criança trocou de aba; o Chrome conectado sempre) mostrava "Erro ao salvar",
+com o aviso de "sair da página".
+
+Agora o serviço avisa quando a página segue viva (`flushOnExit(…, {pageAlive: true})`, só no
+`visibilitychange → hidden`). Com a nativa confirmada, a saída resolve e o estado de recuperação
+diz "recuperável" (`nativeConfirmed`). No `pagehide`/`beforeunload` nada mudou: ali a página pode
+morrer antes de o IndexedDB confirmar, e a falha continua explícita (o teste "quota failure does
+not claim an exit copy…" segue valendo). Testes: `projectSynchronousRecovery.test.ts` ("page alive:
+a confirmed native copy is enough…") e `service.test.ts` ("o flush da aba escondida avisa que a
+página segue viva…"), os dois vermelhos no código antigo; no playground, o mesmo gesto passou de
+"Erro ao salvar" a "Alterações não salvas" (o mesmo de um projeto pequeno com a aba escondida).
+
 ## Outros itens da seção 13 conferidos neste lote
 
 - **"Abrir um projeto Python já o marca como mudado"** (visto no staging em 20/11): é de propósito na

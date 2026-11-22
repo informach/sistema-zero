@@ -26,8 +26,15 @@ export interface StudioPersistenceAdapter {
   save(project: Project): Promise<void>
   /** Local CAS capability; custom/remote adapters do not imply durable local undo. */
   localScope?: ProjectStorageScope
-  /** Exit-only recovery write. Resolving confirms the draft, not the live document. */
-  flushOnExit?(project: Project, options?: { incompleteBlocks?: boolean }): Promise<void>
+  /**
+   * Exit-only recovery write. Resolving confirms the draft, not the live document. `pageAlive`:
+   * the tab was only hidden (the page keeps running), so a confirmed native copy is enough even
+   * when the synchronous copy cannot be staged; absent on `pagehide`/`beforeunload`.
+   */
+  flushOnExit?(
+    project: Project,
+    options?: { incompleteBlocks?: boolean; pageAlive?: boolean },
+  ): Promise<void>
   /** Synchronous confirmation of a durable exit copy; never a live-document save ACK. */
   exitRecoveryStatus?(project: Project): { recoverable: boolean; error?: string }
   /** Optional durable outbox. Called immediately on edits, before remote autosave debounce. */

@@ -160,6 +160,8 @@ export interface PersistProjectOptions {
   /** Internal exit recovery: stages synchronously; it is not a saved-document ACK. */
   exit?: boolean
   incompleteBlocks?: boolean
+  /** Exit with the page still alive (tab hidden): a confirmed native copy is enough. */
+  pageAlive?: boolean
   /** `silent`: NÃO acorda o espelho da nuvem (restauro do que acabou de DESCER). */
   silent?: boolean
   /**
@@ -253,7 +255,9 @@ export async function persistProject(
     const write = { puts: pairs, deletes: stale }
     const done = (
       options.exit
-        ? stageProjectExit(project, write, scope, options.incompleteBlocks)
+        ? stageProjectExit(project, write, scope, options.incompleteBlocks, {
+            pageAlive: options.pageAlive === true,
+          })
         : coordinatedProjectWrite(project, write, scope, generation, options.replace === true)
     ).then(() => {
       // Só registra a referência DEPOIS de a transação concluir: se ela abortar (quota

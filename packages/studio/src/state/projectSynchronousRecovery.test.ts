@@ -438,6 +438,44 @@ test('quota failure does not claim an exit copy and still requests the native jo
   }
 })
 
+// Achado na conferência do staging (21/11/2026): com a aba só escondida a página segue viva, e a
+// cópia nativa confirmada basta. Um projeto grande demais para a cópia síncrona (o Reino Zero Ultra
+// aberto tem ~3 milhões de caracteres) marcava "Erro ao salvar" a cada troca de aba.
+test('page alive: a confirmed native copy is enough when the synchronous copy cannot be staged', async () => {
+  const f = await fixture()
+  try {
+    const storage = f.scope.exitJournalStorage!
+    const denied = new Proxy(storage, {
+      get(target, key) {
+        if (key === 'setItem')
+          return () => {
+            throw new DOMException('Full', 'QuotaExceededError')
+          }
+        const value = Reflect.get(target, key)
+        return typeof value === 'function' ? value.bind(target) : value
+      },
+    })
+    const scope = { ...f.scope, exitJournalStorage: denied }
+    const draft = f.edit('native copy is enough')
+    await stageProjectExit(draft, { puts: projectStorageEntries(draft) }, scope, false, {
+      pageAlive: true,
+    })
+    expect(projectExitRecoveryStatus(draft).recoverable).toBe(true)
+    const revision = readLocalRevision(draft)!
+    expect(
+      await readValue(f.scope.store, projectRecoveryKey(draft.id, revision.lineage.writer)),
+    ).toBeDefined()
+    // Sem a página viva (o pagehide), o mesmo caso continua sem cópia declarada.
+    const other = f.edit('page leaving')
+    await expect(
+      stageProjectExit(other, { puts: projectStorageEntries(other) }, scope),
+    ).rejects.toThrow()
+    expect(projectExitRecoveryStatus(other).recoverable).toBe(false)
+  } finally {
+    f.close()
+  }
+})
+
 test('a native revision replaced before the conditional write stays pending without a stale overwrite', async () => {
   const f = await fixture()
   try {

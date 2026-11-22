@@ -84,7 +84,14 @@ type Budget = Record<string, number>
 const snapshotTokens = new WeakMap<{ id: string }, string>()
 const exitCopies = new WeakMap<
   object,
-  { storage?: Storage; key?: string; encoded?: string; error?: string }
+  {
+    storage?: Storage
+    key?: string
+    encoded?: string
+    error?: string
+    /** Page still alive (tab hidden) and the native recovery transaction committed. */
+    nativeConfirmed?: true
+  }
 >()
 
 export function projectExitRecoveryStatus(project: { id: string }): {
@@ -93,6 +100,9 @@ export function projectExitRecoveryStatus(project: { id: string }): {
 } {
   const revision = readLocalRevision(project)
   const copy = revision && exitCopies.get(revision)
+  // A cópia nativa confirmada com a página ainda viva (aba escondida) é tão durável quanto a
+  // síncrona: o registro de recuperação já está no IndexedDB (conferência do staging, 21/11/2026).
+  if (copy?.nativeConfirmed) return { recoverable: true }
   try {
     if (
       copy?.storage &&
@@ -363,6 +373,7 @@ export function stageProjectExit(
   write: IdbWrite,
   scope: ProjectStorageScope,
   incompleteBlocks = false,
+  options: { pageAlive?: boolean } = {},
 ): Promise<void> {
   const incoming = { ...prepare(project, write, scope), incompleteBlocks }
   let synchronousFailure: unknown
@@ -410,7 +421,18 @@ export function stageProjectExit(
       if (!projectExitRecoveryStatus(project).recoverable) throw error
     })
     .then(() => {
-      if (synchronousFailure && scope.exitJournalStorage) throw synchronousFailure
+      if (!synchronousFailure || !scope.exitJournalStorage) return
+      // Aqui a transação nativa já confirmou (a falha dela, sem cópia síncrona, rejeita acima).
+      // Com a página viva (aba só escondida) isso basta: um projeto grande demais para a cópia
+      // síncrona (o Reino Zero Ultra aberto tem ~3 milhões de caracteres) marcava "Erro ao
+      // salvar" a cada troca de aba (conferência do staging, 21/11/2026). No `pagehide` a página
+      // pode morrer antes de o IndexedDB confirmar, e a falha continua explícita.
+      if (options.pageAlive) {
+        const copy = exitCopies.get(revision)
+        if (copy) copy.nativeConfirmed = true
+        return
+      }
+      throw synchronousFailure
     })
 }
 

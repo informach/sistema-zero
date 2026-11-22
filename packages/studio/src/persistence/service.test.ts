@@ -374,6 +374,38 @@ describe('PersistenceService — aba escondida', () => {
     detach()
   })
 
+  // Achado na conferência do staging (21/11/2026): num projeto grande demais para a cópia de
+  // recuperação síncrona, a aba escondida (página viva) marcava "Erro ao salvar" mesmo com a cópia
+  // nativa confirmada. O adaptador precisa saber que a página segue viva; no `pagehide`, não.
+  it('o flush da aba escondida avisa que a página segue viva; o do pagehide, não', async () => {
+    const calls: Array<{ name: string; pageAlive?: boolean }> = []
+    const service = createPersistenceService(useProjectStore, {
+      load: async () => null,
+      save: async () => {},
+      flushOnExit: async (project, options) => {
+        calls.push({
+          name: project.name,
+          ...(options?.pageAlive ? { pageAlive: options.pageAlive } : {}),
+        })
+      },
+    })
+    const detach = service.attach()
+
+    useProjectStore.getState().setProject(createEmptyProject('project-viva', 'escondida'))
+    setVisibility('hidden')
+    await Bun.sleep(0)
+    expect(calls).toEqual([{ name: 'escondida', pageAlive: true }])
+
+    setVisibility('visible')
+    await Bun.sleep(0)
+    useProjectStore.getState().rename('fechando')
+    window.dispatchEvent(new Event('pagehide'))
+    await Bun.sleep(0)
+    expect(calls.at(-1)).toEqual({ name: 'fechando' })
+
+    detach()
+  })
+
   it('depois do detach, esconder a aba não aciona o serviço', async () => {
     const { service, saves } = recordingService()
     const detach = service.attach()
