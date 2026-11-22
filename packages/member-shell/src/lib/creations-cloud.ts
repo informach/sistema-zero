@@ -139,7 +139,7 @@ export type UploadedListener = (result: {
   itemId: string
   updatedAt: number
   revision: number
-}) => void
+}) => void | Promise<void>
 
 /**
  * A nuvem recusou a reserva (ou o DELETE) porque a base enviada não é a revisão corrente
@@ -1019,7 +1019,7 @@ export function createCreationsCloud(options: {
           // avançar a marca e limpá-la aqui faria o item apagado voltar da nuvem.
           const replacement = pending.get(itemId)
           if (replacement?.kind !== 'remove') {
-            job.onUploaded?.({ itemId, updatedAt: meta.updatedAt, revision })
+            await job.onUploaded?.({ itemId, updatedAt: meta.updatedAt, revision })
           } else {
             // A remoção chegou durante ESTE upload. A revisão recém-confirmada também é nossa:
             // avance a base da lápide para ela não parecer uma exclusão velha no servidor.

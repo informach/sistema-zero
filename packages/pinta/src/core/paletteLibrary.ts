@@ -15,10 +15,13 @@
  * remove no merge — a cópia local dele sobrevivia e re-subia; medido no review,
  * excluir era um no-op de um ciclo). A régua é a mesma dos updatedAt: lápide
  * mais nova que a paleta MATA; edição mais nova que a lápide RESSUSCITA (o
- * comportamento desejado). Skew aceito: um kids antigo re-sobe o registro sem
- * o campo `removed` (o sanitize velho o poda) e exclusões daquela janela se
- * perdem — mesma classe do skew da `customPalette`.
+ * comportamento desejado). A sincronização moderna reaplica sobre a revisão
+ * remota só as edições locais posteriores à base confirmada. O protocolo
+ * individual histórico ainda permite que um cliente que poda lápides reserve
+ * e confirme depois de reler a revisão; a negociação do escritor é separada.
  */
+import { pintaValuesEqual } from './assetEquality'
+import { normalizeHex } from './color'
 import { type PintaCustomPalette, sanitizeCustomPalette } from './project'
 
 export interface SavedPalette extends PintaCustomPalette {
@@ -198,4 +201,46 @@ export function paletteLibraryContentKey(library: PaletteLibrary): string {
     .sort((a, b) => (a.id < b.id ? -1 : 1))
     .map((m) => ({ id: m.id, removedAt: m.removedAt }))
   return JSON.stringify({ palettes, removed })
+}
+
+/** The shared account item must round-trip without dropping fields, entries or versions. */
+export function readAccountPaletteLibrary(raw: unknown): PaletteLibrary | null {
+  const library = sanitizePaletteLibrary(raw)
+  if (
+    !library ||
+    !raw ||
+    typeof raw !== 'object' ||
+    !('palettes' in raw) ||
+    !Array.isArray(raw.palettes)
+  )
+    return null
+  const r = raw as Record<string, unknown>
+  const ordered = (entries: readonly { id: string }[]) => [...entries].sort(compareId)
+  if (
+    !Array.isArray(r.removed ?? []) ||
+    !raw.palettes.every((x) => x && typeof x.id === 'string') ||
+    !((r.removed as { id: string }[] | undefined) ?? []).every((x) => x && typeof x.id === 'string')
+  )
+    return null
+  const normalized = {
+    ...r,
+    removed: ordered((r.removed ?? []) as RemovedPaletteMark[]),
+    palettes: ordered(
+      raw.palettes.map((entry) => ({
+        ...entry,
+        colors: Array.isArray(entry.colors)
+          ? entry.colors.map((color: unknown) =>
+              typeof color === 'string' && color !== '' ? (normalizeHex(color) ?? color) : color,
+            )
+          : entry.colors,
+      })),
+    ),
+  }
+  return pintaValuesEqual(normalized, {
+    ...library,
+    removed: ordered(library.removed),
+    palettes: ordered(library.palettes),
+  })
+    ? library
+    : null
 }

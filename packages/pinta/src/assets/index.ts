@@ -30,6 +30,7 @@ export {
   PINTA_LESSON_ASSET_OPTIONS,
   type PintaLessonAssetKind,
 } from '../core/newAsset'
+export type { PaletteAccount, PaletteAccountSnapshot } from '../core/paletteAccount'
 export {
   emptyPaletteLibrary,
   MAX_SAVED_PALETTES,
@@ -37,6 +38,7 @@ export {
   type PaletteLibrary,
   paletteLibraryContentKey,
   type RemovedPaletteMark,
+  readAccountPaletteLibrary,
   type SavedPalette,
   sanitizePaletteLibrary,
 } from '../core/paletteLibrary'

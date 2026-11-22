@@ -17,13 +17,13 @@ import {
   pintaWriteFormatVersion,
 } from '@sistemazero/core/creations'
 import type { PintaCausalIntent, PintaCausalResult } from '@sistemazero/core/creations/pinta-causal'
-import { createStore, get, getMany, keys, update } from 'idb-keyval'
+import { createStore, getMany, keys } from 'idb-keyval'
 import { pintaValuesEqual } from '../core/assetEquality'
 import type { PintaMemoryAsset } from '../core/assetMemory'
 import { pintaLocalOriginOf, recordPintaLocalOrigin } from '../core/localAssetOrigin'
 import { withMapResourceVersions } from '../core/mapResourceVersions'
+import type { PaletteAccount } from '../core/paletteAccount'
 import type { PaletteLibrary } from '../core/paletteLibrary'
-import { mergePaletteLibraries, sanitizePaletteLibrary } from '../core/paletteLibrary'
 import { perfSpan, perfSpanAsync } from '../core/perf'
 import {
   type AnyTilesetAsset,
@@ -91,6 +91,11 @@ import {
 } from './localCausalOutbox'
 import { PINTA_CAUSAL_PIN_BLOBS_KEY, readPinnedCandidate } from './localCausalPins'
 import type { LocalStorageCodec } from './localChunkStorage'
+import {
+  createLocalPaletteAccount,
+  PALETTE_ACCOUNT_KEY,
+  PALETTE_LIBRARY_KEY,
+} from './localPaletteAccount'
 
 export {
   PintaLocalConflictError,
@@ -100,13 +105,6 @@ export {
 
 const ASSET_KEY_PREFIX = 'pinta:asset:'
 const assetKey = (id: string) => `${ASSET_KEY_PREFIX}${id}`
-/**
- * Registro ÚNICO da biblioteca "Minhas paletas". FORA do prefixo `pinta:asset:`
- * DE PROPÓSITO: assim ele nunca entra em `listAllAssets`, no backup
- * (`galeria.pinta.json`) nem no orçamento de 32 MiB — travado por teste.
- */
-const PALETTE_LIBRARY_KEY = 'pinta:palettes'
-
 let storageNamespace = ''
 type StoreHandle = ReturnType<typeof createStore>
 const stores = new Map<string, StoreHandle>()
@@ -415,8 +413,14 @@ export interface PintaPersistence<Asset extends PintaMemoryAsset = PintaAsset> {
    * isso de propósito — o desenho da aula é isolado da galeria pessoal).
    */
   loadPaletteLibrary?(): Promise<PaletteLibrary | null>
+  /** CAS da biblioteca e da sua base confirmada dentro do mesmo IndexedDB do perfil. */
+  paletteAccount?: PaletteAccount
   /** Devolve o valor autoritativo gravado depois do merge transacional. */
-  savePaletteLibrary?(library: PaletteLibrary, ready?: () => boolean): Promise<PaletteLibrary>
+  savePaletteLibrary?(
+    library: PaletteLibrary,
+    ready?: () => boolean,
+    observed?: PaletteLibrary,
+  ): Promise<PaletteLibrary>
 }
 
 /**
@@ -589,6 +593,13 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
     select?: AssetRecordSelection,
     inspectKeys?: (keys: readonly string[]) => void,
   ) => withAssetTransaction(storeHandle, plan, select, format.codec, inspectKeys)
+  const palettes = createLocalPaletteAccount(
+    (plan) =>
+      runSerializedWrite(storeHandle, () =>
+        transaction(plan, () => [PALETTE_LIBRARY_KEY, PALETTE_ACCOUNT_KEY]),
+      ),
+    () => notifyPaletteLibraryChanged(storeHandle, dbName),
+  )
   const accept = (
     snapshot: LocalSnapshot<Asset>,
     writtenIds?: readonly string[],
@@ -1189,38 +1200,9 @@ export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
       }
     },
     getReadIssues: () => readIssues,
-    async loadPaletteLibrary() {
-      const raw = await get<unknown>(PALETTE_LIBRARY_KEY, storeHandle)
-      return sanitizePaletteLibrary(raw)
-    },
-    async savePaletteLibrary(library, ready) {
-      // Ler-FUNDIR-gravar ATÔMICO: duas ABAS do mesmo perfil (o Estúdio abre o
-      // Pinta em aba nova) escrevem o MESMO registro, e gravar cego era
-      // last-write-wins — a paleta criada na outra aba sumia. ⚠️ O `update` do
-      // idb-keyval faz get+put numa ÚNICA transação readwrite — e transação de
-      // IndexedDB serializa ENTRE ABAS; um get e um set separados deixavam uma
-      // janela de milissegundos em que a outra aba lia o valor velho (a FIFO do
-      // runSerializedWrite só serializa DENTRO desta aba — full review 26/08).
-      // O merge com lápides é a régua única da nuvem, então a exclusão continua
-      // valendo (a lápide gravada aqui mata a cópia velha do disco).
-      let saved: PaletteLibrary | undefined
-      await runSerializedWrite(storeHandle, () =>
-        update<unknown>(
-          PALETTE_LIBRARY_KEY,
-          (raw) => {
-            if (ready && !ready())
-              throw new DOMException('A leitura da biblioteca mudou.', 'AbortError')
-            const current = sanitizePaletteLibrary(raw)
-            saved = current ? mergePaletteLibraries(current, library) : library
-            return saved
-          },
-          storeHandle,
-        ),
-      )
-      if (!saved) throw new Error('A transação não produziu uma biblioteca de paletas')
-      notifyPaletteLibraryChanged(storeHandle, dbName)
-      return saved
-    },
+    paletteAccount: palettes.account,
+    loadPaletteLibrary: palettes.load,
+    savePaletteLibrary: palettes.save,
   }
 }
 

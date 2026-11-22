@@ -58,21 +58,23 @@ import {
   pintaWriteFormatVersion,
 } from '@sistemazero/core/creations'
 import type { PintaCausalLocalPort, PintaEditorWriteContext } from '@sistemazero/pinta'
-import type { PaletteLibrary, PintaAsset } from '@sistemazero/pinta/assets'
+import type {
+  PaletteAccount,
+  PaletteAccountSnapshot,
+  PaletteLibrary,
+  PintaAsset,
+} from '@sistemazero/pinta/assets'
 import {
   assetFromJson,
   assetToJson,
-  emptyPaletteLibrary,
   inheritPintaLocalOrigin,
-  mergePaletteLibraries,
   observePintaReferences,
   PINTA_LIMITS,
   PINTA_MAX_SCHEMA,
   PintaLocalConflictError,
-  paletteLibraryContentKey,
   pintaAssetSchema,
   pintaLocalRevisionOf,
-  sanitizePaletteLibrary,
+  readAccountPaletteLibrary,
   sanitizePintaAsset,
 } from '@sistemazero/pinta/assets'
 import { conflictCopyName, uniqueCreationName } from './creation-names'
@@ -269,7 +271,12 @@ export interface PintaPersistenceLike {
   subscribe?(listener: (event: PintaCloudPersistenceEvent) => void): () => void
   /** Biblioteca "Minhas paletas" (registro único; ver o pacote). O wrapper a espelha na nuvem. */
   loadPaletteLibrary?(): Promise<PaletteLibrary | null>
-  savePaletteLibrary?(library: PaletteLibrary, ready?: () => boolean): Promise<PaletteLibrary>
+  paletteAccount?: PaletteAccount
+  savePaletteLibrary?(
+    library: PaletteLibrary,
+    ready?: () => boolean,
+    observed?: PaletteLibrary,
+  ): Promise<PaletteLibrary>
   /** Reconcilia apenas o item de paletas, sem baixar a galeria inteira. */
   syncPaletteLibrary?(): Promise<void>
   /** Desenhos da conta que este código não sabe ler (ver `PintaCloudReadIssue`). */
@@ -732,6 +739,7 @@ export function createCloudMirroredPintaPersistence(options: {
     return true
   }
   const now = options.now ?? (() => Date.now())
+  const paletteAccount = local.paletteAccount
   const loadLibrary = local.loadPaletteLibrary?.bind(local)
   const saveLibrary = local.savePaletteLibrary?.bind(local)
   const reconcileMinIntervalMs = options.reconcileMinIntervalMs ?? RECONCILE_MIN_INTERVAL_MS
@@ -1292,148 +1300,140 @@ export function createCloudMirroredPintaPersistence(options: {
     })
   }
 
-  let paletteGeneration = 0
   let paletteReadSequence = 0
-  let paletteObservedRevision = 0
   let paletteMinimumRevision = 0
   let paletteSyncInFlight: Promise<number> | null = null
 
   /** Sobe a biblioteca "Minhas paletas" (item especial) quando o registro local mudou. */
   function enqueuePaletteUpload(): void {
-    if (!loadLibrary || causalSession.signal.aborted) return
-    const generation = paletteGeneration
+    if (!paletteAccount || causalSession.signal.aborted) return
+    const account = paletteAccount
+    let produced: PaletteAccountSnapshot | null = null
     cloud.enqueueUpload(
       PALETTE_LIBRARY_ITEM_ID,
       async () => {
-        const library = await loadLibrary()
-        if (generation !== paletteGeneration || !library) return null
-        if (marks.get(PALETTE_LIBRARY_ITEM_ID) === library.updatedAt) return null
+        const read = await account.inspect()
+        produced = read
+        if (!read.dirty || !read.candidate || read.minimum > (read.revision ?? 0)) return null
         return {
-          json: JSON.stringify(library),
+          json: JSON.stringify(read.candidate),
           meta: {
-            name: 'Minhas paletas',
             kind: PALETTE_LIBRARY_KIND,
-            updatedAt: library.updatedAt,
-            baseRevision: marks.revision(PALETTE_LIBRARY_ITEM_ID) ?? 0,
+            name: 'Minhas paletas',
+            updatedAt: read.candidate.updatedAt,
+            baseRevision: read.revision ?? 0,
           },
         }
       },
-      ({ itemId, updatedAt, revision }) => {
+      async ({ itemId, updatedAt, revision }) => {
         if (
-          causalSession.signal.aborted ||
-          generation !== paletteGeneration ||
+          !produced?.candidate ||
           itemId !== PALETTE_LIBRARY_ITEM_ID ||
-          revision < Math.max(paletteObservedRevision, marks.revision(itemId) ?? 0)
+          updatedAt !== produced.candidate.updatedAt ||
+          causalSession.signal.aborted
         )
           return
-        marks.set(itemId, updatedAt, revision)
-        marks.clearTombstone(itemId)
+        const ack = await account.acknowledge(
+          produced,
+          produced.candidate,
+          revision,
+          () => !causalSession.signal.aborted,
+        )
+        if (ack && !causalSession.signal.aborted) {
+          marks.set(itemId, updatedAt, revision)
+          marks.clearTombstone(itemId)
+          if (ack.dirty) enqueuePaletteUpload()
+        }
       },
-      ({ currentRevision }) => {
-        if (generation !== paletteGeneration) return
-        // Older servers omit the revision. A GET started before their 409 cannot resolve it.
+      async ({ currentRevision }) => {
+        if (causalSession.signal.aborted || !produced) return
+        if (
+          !(await account.observeConflict(
+            produced,
+            currentRevision ?? 0,
+            () => !causalSession.signal.aborted,
+          ))
+        )
+          return
         if (!currentRevision && paletteSyncInFlight) paletteReadSequence++
-        return syncPaletteLibraryDirect(currentRevision)
+        await syncPaletteLibraryDirect(currentRevision, true)
       },
     )
   }
 
   /** Read and merge the reserved item. A stale result asks the callers to refresh once. */
   async function resolvePaletteConflict(): Promise<number> {
-    if (!loadLibrary || !saveLibrary) return 0
+    if (!paletteAccount)
+      throw Error('Este armazenamento mantém suas paletas somente neste aparelho.')
     const signal = causalSession.signal
     signal.throwIfAborted()
-    const before = marks.revision(PALETTE_LIBRARY_ITEM_ID)
     const sequence = paletteReadSequence
+    const active = () => !signal.aborted && sequence === paletteReadSequence
+    const token = await paletteAccount.inspect(0, () => !signal.aborted)
+    signal.throwIfAborted()
     const downloaded = await cloud.download(PALETTE_LIBRARY_ITEM_ID, { signal })
     signal.throwIfAborted()
-    if (!downloaded) {
-      const library = await loadLibrary()
-      signal.throwIfAborted()
-      if (
-        sequence !== paletteReadSequence ||
-        paletteMinimumRevision > 0 ||
-        before !== marks.revision(PALETTE_LIBRARY_ITEM_ID)
-      )
-        return -1
-      if ((before ?? 0) > 0 || paletteObservedRevision > 0) {
-        paletteObservedRevision = 0
-        paletteGeneration++
-        // The existing library may already have been synced before the remote item was removed.
-        // Keep that timestamp so an unchanged local copy does not recreate the row.
-        const lastSyncedAt = marks.get(PALETTE_LIBRARY_ITEM_ID)
-        if (lastSyncedAt === undefined) marks.delete(PALETTE_LIBRARY_ITEM_ID)
-        else marks.set(PALETTE_LIBRARY_ITEM_ID, lastSyncedAt, 0)
-      }
-      if (
-        library &&
-        library.updatedAt !== marks.get(PALETTE_LIBRARY_ITEM_ID) &&
-        (library.palettes.length > 0 || library.removed.length > 0)
-      )
-        enqueuePaletteUpload()
-      return 0
-    }
-    const { itemId, kind, revision, itemUpdatedAt } = downloaded.summary
-    if (itemId !== PALETTE_LIBRARY_ITEM_ID || kind !== PALETTE_LIBRARY_KIND)
-      throw Error('Não consegui conferir a biblioteca de paletas da conta.')
-    const ready = () =>
-      !signal.aborted &&
-      sequence === paletteReadSequence &&
-      revision >= Math.max(paletteObservedRevision, marks.revision(itemId) ?? 0)
-    if (!ready()) return -1
-    const remote = sanitizePaletteLibrary(JSON.parse(downloaded.json))
-    if (!remote) throw Error('Não consegui conferir a biblioteca de paletas da conta.')
-    const current = (await loadLibrary()) ?? emptyPaletteLibrary()
+    if (!active() || (!downloaded && paletteMinimumRevision > 0)) return -1
+    const summary = downloaded?.summary
+    if (
+      summary &&
+      (summary.itemId !== PALETTE_LIBRARY_ITEM_ID ||
+        summary.kind !== PALETTE_LIBRARY_KIND ||
+        summary.revision < paletteMinimumRevision)
+    )
+      return -1
+    const doc = downloaded ? readAccountPaletteLibrary(JSON.parse(downloaded.json)) : null
+    if (downloaded && !doc) throw Error('Não consegui conferir a biblioteca de paletas da conta.')
+    const result = await paletteAccount.receive(
+      token,
+      doc && summary
+        ? { library: doc, revision: summary.revision, updatedAt: summary.itemUpdatedAt }
+        : null,
+      active,
+      now(),
+      marks.get(PALETTE_LIBRARY_ITEM_ID),
+    )
     signal.throwIfAborted()
-    if (!ready()) return -1
-    const merged = mergePaletteLibraries(current, remote)
-    const remoteKey = paletteLibraryContentKey(remote)
-    let differs = paletteLibraryContentKey(merged) !== remoteKey
-    let saved: PaletteLibrary
-    try {
-      // The local transaction merges another tab's edits and checks the read is still current.
-      saved = await saveLibrary(
-        differs
-          ? { ...merged, updatedAt: Math.max(now(), merged.updatedAt + 1, itemUpdatedAt + 1) }
-          : merged,
-        ready,
-      )
-      signal.throwIfAborted()
-      if (!ready()) return -1
-      differs = paletteLibraryContentKey(saved) !== remoteKey
-      if (differs && saved.updatedAt <= itemUpdatedAt) {
-        saved = await saveLibrary(
-          { ...saved, updatedAt: Math.max(now(), itemUpdatedAt + 1) },
-          ready,
-        )
-        differs = paletteLibraryContentKey(saved) !== remoteKey
-      }
-    } catch (error) {
-      signal.throwIfAborted()
-      if (!ready()) return -1
-      throw error
+    if (!result) return -1
+    if (summary) marks.set(PALETTE_LIBRARY_ITEM_ID, summary.itemUpdatedAt, summary.revision)
+    else {
+      const last = marks.get(PALETTE_LIBRARY_ITEM_ID)
+      if (last !== undefined) marks.set(PALETTE_LIBRARY_ITEM_ID, last, 0)
     }
-    signal.throwIfAborted()
-    if (!ready()) return -1
-    marks.set(itemId, itemUpdatedAt, revision)
-    if (differs) enqueuePaletteUpload()
-    emit({ type: 'palette-library-changed' })
-    return revision
+    if (result.dirty) enqueuePaletteUpload()
+    if (doc) emit({ type: 'palette-library-changed' })
+    return result.revision ?? 0
   }
 
-  async function syncPaletteLibraryDirect(minimumRevision = 0): Promise<void> {
+  async function syncPaletteLibraryDirect(
+    minimumRevision = 0,
+    conflictObserved = false,
+  ): Promise<void> {
     if (!cloud.supported || !loadLibrary || !saveLibrary || causalSession.signal.aborted) return
-    paletteObservedRevision = Math.max(paletteObservedRevision, minimumRevision)
+    if (!paletteAccount)
+      throw Error('Este armazenamento mantém suas paletas somente neste aparelho.')
+    paletteMinimumRevision = Math.max(paletteMinimumRevision, minimumRevision)
+    if (minimumRevision && !conflictObserved)
+      await paletteAccount.inspect(minimumRevision, () => !causalSession.signal.aborted)
     for (let attempt = 0; attempt < 2; attempt++) {
       paletteMinimumRevision = Math.max(paletteMinimumRevision, minimumRevision)
-      paletteSyncInFlight ??= resolvePaletteConflict().finally(() => {
-        paletteSyncInFlight = null
-        paletteMinimumRevision = 0
-      })
+      paletteSyncInFlight ??= resolvePaletteConflict()
+        .catch((error) => {
+          if (
+            error instanceof DOMException &&
+            error.name === 'AbortError' &&
+            !causalSession.signal.aborted
+          )
+            return -1
+          throw error
+        })
+        .finally(() => {
+          paletteSyncInFlight = null
+          paletteMinimumRevision = 0
+        })
       const revision = await paletteSyncInFlight
       causalSession.signal.throwIfAborted()
-      if (revision >= Math.max(minimumRevision, marks.revision(PALETTE_LIBRARY_ITEM_ID) ?? 0))
-        return
+      if (revision >= minimumRevision) return
     }
     throw Error('A biblioteca de paletas mudou durante a leitura. Tente novamente.')
   }
@@ -1936,8 +1936,12 @@ export function createCloudMirroredPintaPersistence(options: {
     ...(loadLibrary ? { loadPaletteLibrary: () => loadLibrary() } : {}),
     ...(saveLibrary
       ? {
-          savePaletteLibrary: async (library: PaletteLibrary, ready?: () => boolean) => {
-            const saved = await saveLibrary(library, ready)
+          savePaletteLibrary: async (
+            library: PaletteLibrary,
+            ready?: () => boolean,
+            observed?: PaletteLibrary,
+          ) => {
+            const saved = await saveLibrary(library, ready, observed)
             enqueuePaletteUpload()
             return saved
           },

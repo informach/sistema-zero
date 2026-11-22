@@ -1,0 +1,29 @@
+paleta-host-green
+{"original":[],"revision":52,"reupload":[]}
+ 1 pass
+ 0 fail
+ 4 expect() calls
+Ran 1 test across 1 file. [696.00ms]
+
+paleta-community
+ 143 pass
+ 0 fail
+ 699 expect() calls
+Ran 143 tests across 2 files. [5.68s]
+
+paleta-local
+ 37 pass
+ 0 fail
+ 146 expect() calls
+Ran 37 tests across 4 files. [1300.00ms]
+
+paleta-http-pg
+ 1 pass
+ 0 fail
+ 54 expect() calls
+Ran 1 test across 1 file. [9.75s]
+
+paleta-cas-chrome
+atual d8b8e4be1387c1b888e24a482afa62b33b851b580579a78df5968c53a83f62fc
+antigo 4ec38b2c7fba619a086b19a37a8dcd02ddd98fa58913c5539f4ae1eea42a7080
+{"chrome":"157.0.8103.80","historical":"64c197d5332a36b73af54de6ae5bf045a4a7699e","lateGet":{"revision":52,"palettes":0,"uploads":0},"legacyWrite":{"recoveredCopies":1,"upload":false},"reopen":"same-copy"}

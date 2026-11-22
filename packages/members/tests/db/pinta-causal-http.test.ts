@@ -259,6 +259,51 @@ describe.skipIf(!target)('Pinta causal through the full Members HTTP server and 
         })
         expect(palette.status).toBe(200)
         expect(await palette.json()).toMatchObject({ storageKey: 'palettes/library.gz' })
+        if (flag === '1') {
+          // An unchanged legacy client still writes the reserved item with an observed current base.
+          const endpoint = `${base}/members/creations/pinta/sz-pinta-palettes`
+          const headers = {
+            ...gateway,
+            'content-type': 'application/json',
+            'x-auth-user-id': actor.userId,
+            'x-auth-account-id': actor.accountId,
+            'x-auth-user-status': 'active',
+            'x-auth-user-role': 'admin',
+          }
+          const upload = (baseRevision: number) =>
+            fetch(`${endpoint}/upload`, {
+              method: 'POST',
+              headers,
+              body: JSON.stringify({
+                baseRevision,
+                name: 'Minhas paletas',
+                kind: 'palette-library',
+                formatVersion: 1,
+                itemUpdatedAt: new Date().toISOString(),
+                bytes: 100,
+              }),
+            })
+          expect((await upload(0)).status).toBe(409)
+          const accepted = await upload(1)
+          expect(accepted.status).toBe(200)
+          const ticket = await accepted.json()
+          expect(
+            (
+              await fetch(`${endpoint}/commit`, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                  revision: ticket.revision,
+                  verifiedPartHashes: [],
+                  verifiedFormatVersion: 1,
+                }),
+              })
+            ).status,
+          ).toBe(200)
+          expect(await (await fetch(`${endpoint}/download`, { headers })).json()).toMatchObject({
+            revision: ticket.revision,
+          })
+        }
         const otherProfile = await fetch(
           `${base}/members/creations/pinta/sz-pinta-palettes/download`,
           { headers: { ...gateway, 'x-auth-user-id': randomUUID() } },

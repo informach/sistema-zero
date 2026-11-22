@@ -17,6 +17,10 @@ import {
   sanitizePintaAsset,
 } from '@sistemazero/pinta/assets'
 import { createPintaCausalCloud } from '../../member-shell/src/lib/pinta-causal-cloud'
+import {
+  createLocalPaletteAccount,
+  PALETTE_LIBRARY_KEY,
+} from '../../pinta/src/state/localPaletteAccount'
 import type {
   CloudCreationSummary,
   CreationsCloud,
@@ -46,7 +50,20 @@ function fakeLocal(initial: PintaAsset[] = []): PintaPersistenceLike & {
   library: { current: PaletteLibrary | null }
 } {
   const rows = new Map(initial.map((a) => [a.id, a]))
-  const library: { current: PaletteLibrary | null } = { current: null }
+  const records = new Map<string, unknown>()
+  const palette = createLocalPaletteAccount(
+    async (plan) => plan(records),
+    () => {},
+  )
+  const library = {
+    get current() {
+      return (records.get(PALETTE_LIBRARY_KEY) as PaletteLibrary) ?? null
+    },
+    set current(doc: PaletteLibrary | null) {
+      if (doc) void palette.save(doc)
+      else records.delete(PALETTE_LIBRARY_KEY)
+    },
+  }
   return {
     rows,
     library,
@@ -65,13 +82,9 @@ function fakeLocal(initial: PintaAsset[] = []): PintaPersistenceLike & {
     async listAllAssets() {
       return [...rows.values()]
     },
-    async loadPaletteLibrary() {
-      return library.current
-    },
-    async savePaletteLibrary(next) {
-      library.current = next
-      return next
-    },
+    paletteAccount: palette.account,
+    loadPaletteLibrary: palette.load,
+    savePaletteLibrary: palette.save,
   }
 }
 
@@ -787,6 +800,27 @@ const paletteSummaryOf = (library: PaletteLibrary, revision = 1): CloudCreationS
 })
 
 describe('biblioteca "Minhas paletas" no espelho da nuvem', () => {
+  test('adaptador sem transação de conta mantém a edição local e explica a ausência de sincronização', async () => {
+    const local = fakeLocal()
+    delete local.paletteAccount
+    const { cloud, uploads } = fakeCloud(new Map())
+    const host = createCloudMirroredPintaPersistence({
+      local,
+      cloud,
+      viewerId: 'local',
+      marks: createMemorySyncedMarks(),
+    })
+    try {
+      const saved = libraryOf([{ id: 'offline', name: 'Offline', updatedAt: 2, hex: '#112233' }])
+      expect(await host.savePaletteLibrary?.(saved)).toEqual(saved)
+      await expect(host.syncPaletteLibrary?.()).rejects.toThrow('somente neste aparelho')
+      expect(await host.loadPaletteLibrary?.()).toEqual(saved)
+      expect(uploads.size).toBe(0)
+    } finally {
+      host.dispose()
+    }
+  })
+
   test('o primeiro GET 404 recupera a subida de paletas salvas offline antes de montar o host', async () => {
     const id = PALETTE_LIBRARY_ITEM_ID,
       local = fakeLocal()
@@ -827,14 +861,15 @@ describe('biblioteca "Minhas paletas" no espelho da nuvem', () => {
     try {
       await mirrored.savePaletteLibrary?.(library)
       const oldAck = uploads.get(id)?.onUploaded
-      oldAck?.({ itemId: id, updatedAt: 10, revision: 8 })
+      await uploads.get(id)?.produce()
+      await oldAck?.({ itemId: id, updatedAt: 10, revision: 8 })
       uploads.clear()
       await mirrored.syncPaletteLibrary?.()
       await mirrored.syncPaletteLibrary?.()
       expect(marks.revision(id)).toBe(0)
       expect(uploads.size).toBe(0)
       expect(local.library.current).toEqual(library)
-      oldAck?.({ itemId: id, updatedAt: 10, revision: 8 })
+      await oldAck?.({ itemId: id, updatedAt: 10, revision: 8 })
       expect(marks.revision(id)).toBe(0)
       await mirrored.savePaletteLibrary?.(libraryOf([], 20, [{ id: 'minha', removedAt: 20 }]))
       const candidate = await uploads.get(id)?.produce()
@@ -870,6 +905,7 @@ describe('biblioteca "Minhas paletas" no espelho da nuvem', () => {
     const waiting = new Promise<void>((resolve) => {
       resume = resolve
     })
+    const started = Promise.withResolvers<void>()
     let reads = 0
     const mirrored = createCloudMirroredPintaPersistence({
       local,
@@ -877,7 +913,10 @@ describe('biblioteca "Minhas paletas" no espelho da nuvem', () => {
         ...cloud,
         download: async (id) => {
           const result = await cloud.download(id)
-          if (++reads === 1) await waiting
+          if (++reads === 1) {
+            started.resolve()
+            await waiting
+          }
           return result
         },
       },
@@ -887,7 +926,9 @@ describe('biblioteca "Minhas paletas" no espelho da nuvem', () => {
     try {
       await mirrored.savePaletteLibrary?.(localLibrary)
       const job = uploads.get(PALETTE_LIBRARY_ITEM_ID)
+      await job?.produce()
       const open = mirrored.syncPaletteLibrary?.()
+      await started.promise
       remote.set(PALETTE_LIBRARY_ITEM_ID, {
         summary: paletteSummaryOf(latest, 3),
         json: JSON.stringify(latest),
@@ -898,7 +939,7 @@ describe('biblioteca "Minhas paletas" no espelho da nuvem', () => {
       expect(reads).toBe(2)
       expect(local.library.current?.palettes.map(({ id }) => id)).toEqual(['minha', 'nova'])
       expect(marks.revision(PALETTE_LIBRARY_ITEM_ID)).toBe(3)
-      job?.onUploaded?.({ itemId: PALETTE_LIBRARY_ITEM_ID, updatedAt: 20, revision: 2 })
+      await job?.onUploaded?.({ itemId: PALETTE_LIBRARY_ITEM_ID, updatedAt: 20, revision: 2 })
       expect(marks.revision(PALETTE_LIBRARY_ITEM_ID)).toBe(3)
       expect(marks.get(PALETTE_LIBRARY_ITEM_ID)).toBe(30)
     } finally {
@@ -925,6 +966,7 @@ describe('biblioteca "Minhas paletas" no espelho da nuvem', () => {
     const gate = new Promise<void>((resolve) => {
       release = resolve
     })
+    const started = Promise.withResolvers<void>()
     const signals: AbortSignal[] = []
     const marks = createMemorySyncedMarks()
     const mirrored = createCloudMirroredPintaPersistence({
@@ -933,6 +975,7 @@ describe('biblioteca "Minhas paletas" no espelho da nuvem', () => {
         ...cloud,
         download: async (id, options) => {
           if (options?.signal) signals.push(options.signal)
+          started.resolve()
           await gate
           return cloud.download(id)
         },
@@ -941,6 +984,7 @@ describe('biblioteca "Minhas paletas" no espelho da nuvem', () => {
       marks,
     })
     const read = mirrored.syncPaletteLibrary?.()
+    await started.promise
     mirrored.dispose()
     release()
     await read?.catch(() => {})
@@ -975,6 +1019,7 @@ describe('biblioteca "Minhas paletas" no espelho da nuvem', () => {
       await mirrored.savePaletteLibrary?.(localLibrary)
       const job = uploads.get(id)
       if (!job?.onStale) throw Error('Subida de paletas não foi agendada')
+      await job.produce()
       await expect(
         Promise.resolve(job.onStale({ itemId: id, currentRevision: 3 })),
       ).rejects.toThrow()
@@ -1105,7 +1150,7 @@ describe('biblioteca "Minhas paletas" no espelho da nuvem', () => {
       updatedAt: 100,
       baseRevision: 0,
     })
-    job?.onUploaded?.({ itemId: PALETTE_LIBRARY_ITEM_ID, updatedAt: 100, revision: 2 })
+    await job?.onUploaded?.({ itemId: PALETTE_LIBRARY_ITEM_ID, updatedAt: 100, revision: 2 })
     expect(marks.get(PALETTE_LIBRARY_ITEM_ID)).toBe(100)
     // Nada mudou desde o commit: o produtor devolve null (zero HTTP).
     expect(await job?.produce()).toBeNull()
@@ -1165,20 +1210,15 @@ describe('biblioteca "Minhas paletas" no espelho da nuvem', () => {
     ])
     const local = fakeLocal()
     local.library.current = remoteLibrary
-    let saves = 0
-    local.savePaletteLibrary = async (next) => {
-      saves += 1
-      local.library.current =
-        saves === 1
-          ? libraryOf(
-              [
-                { id: 'remote', name: 'Remota', updatedAt: 100, hex: '#111111' },
-                { id: 'local', name: 'Outra aba', updatedAt: 100, hex: '#222222' },
-              ],
-              100,
-            )
-          : next
-      return local.library.current
+    const account = local.paletteAccount!
+    local.paletteAccount = {
+      ...account,
+      receive: async (...args) => {
+        await local.savePaletteLibrary!(
+          libraryOf([{ id: 'local', name: 'Outra aba', updatedAt: 100, hex: '#222222' }], 100),
+        )
+        return account.receive(...args)
+      },
     }
     const { cloud, uploads } = fakeCloud(remote)
     const mirrored = createCloudMirroredPintaPersistence({
@@ -1191,11 +1231,11 @@ describe('biblioteca "Minhas paletas" no espelho da nuvem', () => {
 
     await loadSettled(mirrored, local)
 
-    expect(saves).toBe(2)
+    expect((await local.paletteAccount?.inspect())?.candidate?.updatedAt).toBe(500)
     expect(local.library.current?.updatedAt).toBe(500)
     expect(local.library.current?.palettes.map((palette) => palette.id)).toEqual([
-      'remote',
       'local',
+      'remote',
     ])
     expect(await uploads.get(PALETTE_LIBRARY_ITEM_ID)?.produce()).not.toBeNull()
   })
@@ -1217,6 +1257,7 @@ describe('biblioteca "Minhas paletas" no espelho da nuvem', () => {
     const mirrored = createCloudMirroredPintaPersistence({ local, cloud, viewerId: 'p1', marks })
 
     await mirrored.savePaletteLibrary?.(local.library.current)
+    await uploads.get(PALETTE_LIBRARY_ITEM_ID)?.produce()
     await uploads.get(PALETTE_LIBRARY_ITEM_ID)?.onStale?.({ itemId: PALETTE_LIBRARY_ITEM_ID })
     await new Promise((resolve) => setTimeout(resolve, 20))
 
