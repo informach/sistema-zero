@@ -33,6 +33,7 @@ const funcoes = [
  * temporário. O resultado vai embrulhado numa função que devolve as oito com os nomes longos: os
  * nomes de uma letra nunca chegam ao escopo do motor (o fragmento entra no meio do Jogo 2D). É a
  * compensação de bytes que abre espaço para o cache e a pré-carga do tocador de cenas.
+ * A compactação de sintaxe inclui o caminho esparso partilhado na mesma cota.
  */
 async function compactar(): Promise<string> {
   const temporarios = resolve(tmpdir())
@@ -51,7 +52,7 @@ async function compactar(): Promise<string> {
       entrypoints: [entrada],
       format: 'esm',
       target: 'browser',
-      minify: { whitespace: true, identifiers: true, syntax: false },
+      minify: { whitespace: true, identifiers: true, syntax: true },
     })
     if (!resultado.success || resultado.outputs.length !== 1)
       throw new AggregateError(resultado.logs, 'Falha ao compactar o compositor portátil.')
