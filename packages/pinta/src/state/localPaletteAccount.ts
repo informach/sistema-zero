@@ -148,6 +148,25 @@ function supportedRecord(record: PaletteRecord): boolean {
   )
 }
 
+function validRevision(revision: number, minimum: number): void {
+  if (!Number.isSafeInteger(revision) || revision < minimum)
+    throw Error('Revisão de paletas inválida.')
+}
+
+function captureToken(token: PaletteAccountToken): PaletteAccountToken {
+  const { generation, revision, minimum } = token
+  if (!generation || typeof generation !== 'string') throw Error('Identidade das paletas inválida.')
+  validRevision(minimum, 0)
+  if (revision !== null) validRevision(revision, 0)
+  return { generation, revision, minimum }
+}
+
+function captureLibrary(input: PaletteLibrary): PaletteLibrary {
+  const accepted = readAccountPaletteLibrary(input)
+  if (!accepted) throw Error('Não consegui conferir o conteúdo da biblioteca de paletas.')
+  return accepted
+}
+
 function checkReady(ready?: () => boolean) {
   if (ready && !ready()) throw new DOMException('A leitura da biblioteca mudou.', 'AbortError')
 }
@@ -191,13 +210,16 @@ export function createLocalPaletteAccount(transaction: Transaction, notify: () =
   }
 
   const account: PaletteAccount = {
-    inspect(minimum = 0, ready) {
+    async inspect(minimum = 0, ready) {
+      validRevision(minimum, 0)
       return access((record) => {
         record.minimum = Math.max(record.minimum, minimum)
         return snapshot(record)
       }, ready)
     },
-    observeConflict(expected, minimum, ready) {
+    async observeConflict(origin, minimum, ready) {
+      const expected = captureToken(origin)
+      validRevision(minimum, 0)
       return access((record) => {
         if (
           record.generation !== expected.generation ||
@@ -208,7 +230,20 @@ export function createLocalPaletteAccount(transaction: Transaction, notify: () =
         return true
       }, ready)
     },
-    async receive(expected, remote, ready, now, previousSyncAt) {
+    async receive(origin, response, ready, now, previousSyncAt) {
+      const expected = captureToken(origin)
+      const remote = response
+        ? {
+            revision: response.revision,
+            updatedAt: response.updatedAt,
+            library: captureLibrary(response.library),
+          }
+        : null
+      if (remote) {
+        validRevision(remote.revision, 1)
+        if (!Number.isFinite(remote.updatedAt) || !Number.isFinite(now))
+          throw Error('Data da biblioteca de paletas inválida.')
+      }
       const result = await access((record) => {
         if (expected.generation !== record.generation) return null
         if (!remote) {
@@ -274,7 +309,10 @@ export function createLocalPaletteAccount(transaction: Transaction, notify: () =
       if (result && remote) notify()
       return result
     },
-    acknowledge(expected, sent, revision, ready) {
+    async acknowledge(origin, candidate, revision, ready) {
+      const expected = captureToken(origin),
+        sent = captureLibrary(candidate)
+      validRevision(revision, 1)
       return access((record) => {
         if (
           expected.generation !== record.generation ||

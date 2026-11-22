@@ -193,3 +193,71 @@ test('registro histórico sem lápides e cores hex abreviadas preserva a paleta'
   db().set(PALETTE_LIBRARY_KEY, row)
   expect((await open().loadPaletteLibrary!())?.palettes[0]?.colors[1]).toBe('#aabbcc')
 })
+
+test('GET e ACK capturam token e bytes antes de aguardar a fila transacional', async () => {
+  const local = open(),
+    p = local.paletteAccount!
+  async function withBlockedWrite<Output>(start: () => Promise<Output>, mutate: () => void) {
+    const gate = Promise.withResolvers<void>(),
+      entered = Promise.withResolvers<void>()
+    setIdbWriteGuard(async (key) => {
+      if (key === PALETTE_LIBRARY_KEY) {
+        entered.resolve()
+        await gate.promise
+      }
+    })
+    try {
+      const busy = local.savePaletteLibrary!(lib(crypto.randomUUID(), 9))
+      await entered.promise
+      const pending = start()
+      mutate()
+      gate.resolve()
+      await busy
+      return await pending
+    } finally {
+      gate.resolve()
+      setIdbWriteGuard(null)
+    }
+  }
+  const getToken = await p.inspect(),
+    body = remote(lib('original', 7), 3)
+  const result = await withBlockedWrite(
+    () => p.receive(getToken, body, active, 9),
+    () => {
+      getToken.generation = 'outra'
+      body.library.palettes[0]!.name = 'depois'
+      body.revision = 99
+    },
+  )
+  expect(result?.revision).toBe(3)
+  expect(db().get(PALETTE_ACCOUNT_KEY)).toMatchObject({ confirmed: lib('original', 7) })
+  const ackToken = await p.inspect(),
+    sent = ackToken.candidate!
+  const exact = structuredClone(sent)
+  const ack = await withBlockedWrite(
+    () => p.acknowledge(ackToken, sent, 12, active),
+    () => {
+      ackToken.generation = 'outra'
+      sent.palettes[0]!.colors[1] = '#ff0000'
+    },
+  )
+  expect(ack?.revision).toBe(12)
+  expect(db().get(PALETTE_ACCOUNT_KEY)).toMatchObject({ confirmed: exact })
+})
+
+test('entrada de rede inválida preserva bytes e revisão inclusive após reiniciar', async () => {
+  const p = open().paletteAccount!,
+    initial = lib('base', 1)
+  await p.receive(await p.inspect(), remote(initial, 2), active, 3)
+  const before = structuredClone([...db().entries()]),
+    token = await p.inspect()
+  const future = { ...initial, gradient: ['novo'] } as PaletteLibrary
+  for (const revision of [-1, 0, 1.5, Number.NaN, Number.MAX_SAFE_INTEGER + 1]) {
+    await expect(p.receive(token, remote(initial, revision), active, 3)).rejects.toThrow()
+    await expect(p.acknowledge(token, initial, revision, active)).rejects.toThrow()
+  }
+  await expect(p.receive(token, remote(future, 4), active, 4)).rejects.toThrow()
+  await expect(p.acknowledge(token, future, 4, active)).rejects.toThrow()
+  expect([...db().entries()]).toEqual(before)
+  expect((await open().paletteAccount!.inspect()).revision).toBe(2)
+})
