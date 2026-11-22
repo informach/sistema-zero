@@ -479,6 +479,17 @@ export function createPersistenceService(
           store.getState().markSaveFailed(message)
         } else {
           console.warn(message)
+          // O projeto já saiu do editor (navegação dentro do app, troca de projeto) e ninguém mais
+          // vai tentar gravá-lo: a recusa (outra aba gravou antes, cota) apagaria a edição calada.
+          // A página segue viva, então a cópia de saída nativa basta; na próxima leitura ela vira
+          // "(edição recuperada)" quando não puder entrar no projeto.
+          if (adapter?.flushOnExit && !isFenced(serviceScopeIdentity, project.id))
+            void adapter
+              .flushOnExit(snapshotForSave(project), {
+                incompleteBlocks: shouldStripBlocks(project.id),
+                pageAlive: true,
+              })
+              .catch((error) => emitError(formatPersistenceError(error)))
         }
         emitError(message)
       }
