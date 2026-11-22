@@ -20,6 +20,11 @@ import {
   isNetworkError,
   sha256Hex,
 } from '../src/lib/creations-cloud'
+import {
+  createStoredSyncedMarks,
+  resetStoredSyncedMarksForTests,
+  type SyncedMarks,
+} from '../src/lib/creations-sync'
 
 interface Call {
   url: string
@@ -1697,4 +1702,152 @@ describe('list com prazo POR PÁGINA (26/09/2026)', () => {
     expect(erro instanceof CloudListTimeoutError).toBe(false)
     cloud.dispose()
   })
+})
+
+// A página vai embora com a subida no meio (lote 1, item 9, 22/11/2026): reserva sem resposta, o
+// envio ao armazenamento parado, o commit sem resposta, e o commit que CHEGOU ao servidor sem a
+// resposta voltar. A marca (a revisão-base da próxima reserva) só avança no commit confirmado,
+// então a página seguinte sobe com a base de antes; no último caso a nuvem já está à frente e a
+// base vencida cai no `onStale` (o adaptador resolve sem cópia quando o conteúdo é o mesmo).
+describe('a subida interrompida pela página que vai embora', () => {
+  type Parada = 'reserva' | 'envio' | 'commit' | 'commit-chegou'
+  const KEY = 'sz:creations-synced:studio:perfil-ana'
+
+  function comArmazenamento<T>(run: () => Promise<T>): Promise<T> {
+    const backing = new Map<string, string>()
+    const storage = {
+      getItem: (k: string) => backing.get(k) ?? null,
+      setItem: (k: string, v: string) => {
+        backing.set(k, v)
+      },
+      removeItem: (k: string) => {
+        backing.delete(k)
+      },
+    }
+    const original = Object.getOwnPropertyDescriptor(globalThis, 'localStorage')
+    Object.defineProperty(globalThis, 'localStorage', { value: storage, configurable: true })
+    resetStoredSyncedMarksForTests()
+    return run().finally(() => {
+      resetStoredSyncedMarksForTests()
+      if (original) Object.defineProperty(globalThis, 'localStorage', original)
+      else Reflect.deleteProperty(globalThis, 'localStorage')
+    })
+  }
+
+  /** Um `fetch` que trava (até a página morrer) no passo escolhido. */
+  function morreEm(server: ReturnType<typeof fakeServer>, parada: Parada) {
+    let chegou = () => {}
+    const travou = new Promise<void>((resolve) => {
+      chegou = resolve
+    })
+    const fetchImpl: FetchLike = async (input, init) => {
+      const url = String(input)
+      const method = init?.method ?? 'GET'
+      const aqui =
+        (parada === 'reserva' && url.endsWith('/upload')) ||
+        (parada === 'envio' && method === 'PUT') ||
+        (parada.startsWith('commit') && url.endsWith('/commit'))
+      if (!aqui) return server.fetchImpl(input, init)
+      if (parada === 'commit-chegou') await server.fetchImpl(input, init)
+      chegou()
+      return new Promise<Response>((_, reject) => {
+        init?.signal?.addEventListener('abort', () =>
+          reject(new DOMException('Abortado', 'AbortError')),
+        )
+      })
+    }
+    return { fetchImpl, travou }
+  }
+
+  const produtor = (marks: SyncedMarks, v: number) => async () => ({
+    json: `{"v":${v}}`,
+    meta: {
+      name: 'Nave',
+      kind: 'classic',
+      updatedAt: v,
+      baseRevision: marks.revision('jogo') ?? 0,
+    },
+  })
+
+  for (const parada of ['reserva', 'envio', 'commit', 'commit-chegou'] as const)
+    test(`a página morre no ${parada}: a marca não avança e a próxima página sobe com a base de antes`, () =>
+      comArmazenamento(async () => {
+        const server = fakeServer({ checkBase: true })
+        // Uma sincronia confirmada antes: a nuvem e a marca estão na revisão 1.
+        const inicial = createCreationsCloud({
+          tool: 'studio',
+          fetch: server.fetchImpl,
+          wait: noWait,
+        })
+        const { revision } = await inicial.upload(
+          { itemId: 'jogo', name: 'Nave', kind: 'classic', updatedAt: 1 },
+          '{"v":1}',
+        )
+        inicial.dispose()
+        const marcas = createStoredSyncedMarks(KEY)
+        marcas.set('jogo', 1, revision)
+        marcas.flush?.()
+
+        // Página 1: a criança edita, a subida trava no passo e a página vai embora.
+        const morte = morreEm(server, parada)
+        const pagina1 = createCreationsCloud({
+          tool: 'studio',
+          fetch: morte.fetchImpl,
+          idleMs: 0,
+          wait: noWait,
+        })
+        let confirmou = false
+        pagina1.enqueueUpload('jogo', produtor(marcas, 2), (result) => {
+          confirmou = true
+          marcas.set('jogo', result.updatedAt, result.revision)
+        })
+        void pagina1.flush()
+        await morte.travou
+        window.dispatchEvent(new Event('pagehide'))
+        pagina1.dispose({ abort: true })
+        expect(confirmou).toBe(false)
+        expect(marcas.revision('jogo')).toBe(revision)
+        marcas.flush?.()
+
+        // Página 2: as marcas são relidas do armazenamento e a mesma edição sobe de novo.
+        resetStoredSyncedMarksForTests()
+        const marcas2 = createStoredSyncedMarks(KEY)
+        expect(marcas2.revision('jogo')).toBe(revision)
+        const pagina2 = createCreationsCloud({
+          tool: 'studio',
+          fetch: server.fetchImpl,
+          idleMs: 0,
+          wait: noWait,
+        })
+        const confirmadas: number[] = []
+        const vencidas: Array<number | undefined> = []
+        const reservasAntes = server.calls.filter((c) => c.url.endsWith('/upload')).length
+        pagina2.enqueueUpload(
+          'jogo',
+          produtor(marcas2, 2),
+          (result) => {
+            confirmadas.push(result.revision)
+            marcas2.set('jogo', result.updatedAt, result.revision)
+          },
+          (info) => {
+            vencidas.push(info.currentRevision)
+          },
+        )
+        await pagina2.flush()
+        const reserva = server.calls.filter((c) => c.url.endsWith('/upload'))[reservasAntes]
+        expect((reserva?.body as { baseRevision?: number }).baseRevision).toBe(revision)
+        if (parada === 'commit-chegou') {
+          // O commit da página 1 chegou: a nuvem está à frente e a base de antes venceu.
+          expect(vencidas).toEqual([revision + 1])
+          expect(confirmadas).toEqual([])
+        } else {
+          // A reserva pendurada da página 1 não segura nada: a nova reserva commita.
+          expect(vencidas).toEqual([])
+          expect(confirmadas).toHaveLength(1)
+          expect(marcas2.revision('jogo')).toBe(confirmadas[0])
+          const baixado = await pagina2.download('jogo')
+          expect(baixado?.json).toBe('{"v":2}')
+        }
+        pagina2.dispose()
+      }))
 })
