@@ -291,6 +291,16 @@ test.describe('site exportado', () => {
         pior = Math.max(pior, await passar(page, saida))
         await esperarQuadros(page, 10)
       }
+      // A sonda guarda o trabalho e o intervalo de CADA quadro (dois números de 8 bytes, numa
+      // lista que cresce 1,5× de cada vez): em 10 minutos são 36 mil quadros, quase 1 MB, e era
+      // ela que fazia a memória "subir" em degraus (CI 45075113828: +270 KB na volta 52, o que as
+      // duas listas de ~34 mil números ganham ao crescer). Esvaziada a cada volta, a conta é só
+      // do jogo. Nenhuma passagem está em curso aqui, então os índices de `passar` não mudam.
+      await page.evaluate(() => {
+        const m = (window as unknown as Janela).__medida
+        m.trabalho = []
+        m.intervalos = []
+      })
       voltas.push({
         memoria: await memoria(),
         imagens: await page.evaluate(() => (window as unknown as Janela).__medida.imagens),

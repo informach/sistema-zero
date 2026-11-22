@@ -11,6 +11,7 @@ import {
   pythonScratchRoots,
 } from './areaFrames'
 import { attachPythonAreaGuards } from './areaGuards'
+import { PYTHON_ORGANIZE_GROUPS } from './areaOrganize'
 import type { PythonAreaKind } from './areas'
 import { pythonVisualToWorkspace, pythonWorkspaceToVisual } from './blockly'
 import { attribute, call, expression, integer, moduleNode, name, node } from './nodes'
@@ -106,14 +107,93 @@ test('editar outra linha não mexe num programa que já vinha com algo depois do
   // `print('obrigado')` depois do `pgzrun.go()` roda quando o jogo fecha: é a intenção da criança.
   open([imp('pgzrun'), show(1), go, show(9)], ['libraries', 'start', 'start', 'start'])
   const before = JSON.stringify(program())
+  const order = lines()
   const another = ws.newBlock('sz_py_assign')
-  const last = ws.getBlockById(lines().at(-1)!)!
-  last.nextConnection!.connect(another.previousConnection!)
+  ws.getBlockById(order[1]!)!.nextConnection!.connect(another.previousConnection!)
   await tick()
   await tick()
-  another.unplug(false)
+  expect(lines()).toEqual([order[0]!, order[1]!, another.id, order[2]!, order[3]!])
+  another.unplug(true)
+  await tick()
   await tick()
   expect(JSON.stringify(program())).toBe(before)
+})
+
+test('uma linha solta embaixo da cauda sobe para antes do ligar o jogo', async () => {
+  open([imp('pgzrun'), show(1), go, show(9)], ['libraries', 'start', 'start', 'start'])
+  const order = lines()
+  const another = ws.newBlock('sz_py_pass')
+  ws.getBlockById(order[3]!)!.nextConnection!.connect(another.previousConnection!)
+  await tick()
+  await tick()
+  expect(lines()).toEqual([order[0]!, order[1]!, another.id, order[2]!, order[3]!])
+})
+
+test('uma linha nova numa área depois do ligar o jogo leva o fim (com a cauda) para o fim', async () => {
+  open([imp('pgzrun'), show(1), go, show(9)], ['libraries', 'start', 'start', 'start'])
+  const [, one, goId, nine] = lines()
+  // A criança põe uma linha nova no 🔁 (uma área depois do Ao iniciar).
+  const frame = ensurePythonAreaFrame(ws, 'loops')
+  const fresh = ws.newBlock('sz_py_pass')
+  appendToPythonAreaFrame(frame, fresh)
+  await tick()
+  await tick()
+  expect(lines()).toEqual([lines()[0]!, one!, fresh.id, goId!, nine!])
+  expect(ws.getBlockById(goId!)!.getSurroundParent()).toBe(frame)
+})
+
+test('mexer numa linha antes do fim não troca o ligar o jogo com a cauda dele', async () => {
+  open(
+    [imp('pgzrun'), show(1), show(2), go, show(9)],
+    ['libraries', 'start', 'start', 'start', 'start'],
+  )
+  const before = lines()
+  // A criança tira o print(1) e o solta de volta antes do print(2).
+  const one = ws.getBlockById(before[1]!)!
+  one.unplug(true)
+  pythonAreaFrames(ws)
+    .get('start')!
+    .getInput(PYTHON_AREA_INPUT)!
+    .connection!.connect(one.previousConnection!)
+  await tick()
+  await tick()
+  expect(lines()).toEqual(before)
+})
+
+test('o que cai embaixo da cauda volta para cima, e o resto religado fica com o fim', async () => {
+  const exit = expression(call(attribute(name('sys'), 'exit')))
+  open(
+    [imp('pgzrun'), show(1), go, show(9), exit],
+    ['libraries', 'start', 'start', 'start', 'start'],
+  )
+  const [lib, one, goId, nine, exitId] = lines()
+  // Solta uma pilha nova entre o print(9) e o sys.exit() (o Blockly religa o sys.exit embaixo dela).
+  const fresh = ws.newBlock('sz_py_pass')
+  const nineBlock = ws.getBlockById(nine!)!
+  Blockly.Events.setGroup(true)
+  nineBlock.nextConnection!.connect(fresh.previousConnection!)
+  Blockly.Events.setGroup(false)
+  expect(fresh.getNextBlock()?.id).toBe(exitId)
+  await tick()
+  await tick()
+  expect(lines()).toEqual([lib!, one!, fresh.id, goId!, nine!, exitId!])
+})
+
+test('o organizar não passa pela guarda do fim do jogo', async () => {
+  open([imp('pgzrun'), show(1), go, show(9)], ['libraries', 'start', 'start', 'start'])
+  const before = lines()
+  Blockly.Events.setGroup(true)
+  PYTHON_ORGANIZE_GROUPS.add(Blockly.Events.getGroup())
+  // Um religar do organizar que deixa o print(9) fora da cauda (o plano manda nele).
+  const nine = ws.getBlockById(before[3]!)!
+  const frame = ensurePythonAreaFrame(ws, 'loops')
+  nine.unplug(false)
+  appendToPythonAreaFrame(frame, nine)
+  Blockly.Events.setGroup(false)
+  await tick()
+  await tick()
+  expect(lines()).toEqual(before)
+  expect(nine.getSurroundParent()).toBe(frame)
 })
 
 test('o "guardar" que entra em Configurações com nome minúsculo ganha MAIÚSCULAS', async () => {
@@ -146,6 +226,35 @@ test('o "guardar" que entra em Configurações com nome minúsculo ganha MAIÚSC
   await tick()
   await tick()
   expect(String(stack.getInputTargetBlock('TARGET')!.getFieldValue('NAME'))).toBe('TEMPO')
+})
+
+test('o nome que já existe em MAIÚSCULAS não é trocado (não junta duas variáveis)', async () => {
+  const assign = (id: string, value: string) =>
+    node('Assign', { targets: [name(id, 'Store')], value: integer(value), type_comment: null })
+  // `VIDAS = 3` já está em Configurações; a criança digita `vidas` em outro "guardar" ali.
+  open([assign('VIDAS', '3')], ['settings'])
+  Blockly.Events.disable()
+  let stack: Blockly.Block
+  try {
+    pythonVisualToWorkspace(pythonASTToVisual(moduleNode([assign('tempo', '9')])), ws)
+    stack = ws
+      .getTopBlocks(false)
+      .find(
+        (block) =>
+          block.type === 'sz_py_assign' &&
+          String(block.getInputTargetBlock('TARGET')!.getFieldValue('NAME')) === 'tempo',
+      )!
+  } finally {
+    Blockly.Events.enable()
+  }
+  appendToPythonAreaFrame(pythonAreaFrames(ws).get('settings')!, stack)
+  await tick()
+  await tick()
+  expect(String(stack.getInputTargetBlock('TARGET')!.getFieldValue('NAME'))).toBe('TEMPO')
+  stack.getInputTargetBlock('TARGET')!.setFieldValue('vidas', 'NAME')
+  await tick()
+  await tick()
+  expect(String(stack.getInputTargetBlock('TARGET')!.getFieldValue('NAME'))).toBe('vidas')
 })
 
 test('a guarda ignora a carga (blocos criados sem evento)', async () => {

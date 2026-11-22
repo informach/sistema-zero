@@ -86,6 +86,47 @@ function withoutRepeatedAreas(raw: Record<string, unknown>) {
     : { ...raw, blocks: { ...(raw.blocks as object), blocks: kept } }
 }
 
+/**
+ * Os rascunhos que reabrem, bloco a bloco; os que não reabrem (salvos por uma versão com defeito,
+ * de uma extensão que saiu) ficam CRUS em `kept`, e o editor os grava de volta junto dos novos:
+ * o rascunho da criança nunca some porque não abriu (full review das áreas, 22/11/2026).
+ */
+export function preparePythonScratchRestoreKeeping(
+  raw: Record<string, unknown> | undefined,
+  codecs: readonly PythonBlockCodec[] = PYTHON_PROGRAMMING_CODECS,
+): { apply?: (workspace: Blockly.Workspace) => void; kept: unknown[] } {
+  if (!raw) return { kept: [] }
+  try {
+    return { apply: preparePythonScratchRestore(raw, codecs), kept: [] }
+  } catch {
+    // Um por um: o que passa sozinho volta; o resto fica guardado como estava.
+  }
+  const blocks = record(raw.blocks) && Array.isArray(raw.blocks.blocks) ? raw.blocks.blocks : []
+  const good: unknown[] = []
+  const kept: unknown[] = []
+  for (const block of blocks) {
+    try {
+      preparePythonScratchRestore(
+        { ...raw, blocks: { ...(raw.blocks as object), blocks: [block] } },
+        codecs,
+      )
+      good.push(block)
+    } catch {
+      kept.push(block)
+    }
+  }
+  if (!good.length) return { kept }
+  try {
+    const apply = preparePythonScratchRestore(
+      { ...raw, blocks: { ...(raw.blocks as object), blocks: good } },
+      codecs,
+    )
+    return { apply, kept }
+  } catch {
+    return { kept: blocks }
+  }
+}
+
 /** Validate separately, then append after binding Program origins to the current source. */
 export function preparePythonScratchRestore(
   raw: Record<string, unknown> | undefined,

@@ -144,7 +144,8 @@ export function pythonASTToVisual(
       const compatibleRole = codec.role === role || (role === 'format' && codec.id === 'sz_py_text')
       if (!compatibleRole) continue
       const binding = codec.bindingFor ? codec.bindingFor(value) : codec.binding
-      if ((codec.bindingFor && !binding) || !resolves(value, binding)) continue
+      const scoped = codec.bindingScopeNode ? codec.bindingScopeNode(value) : value
+      if ((codec.bindingFor && !binding) || !scoped || !resolves(scoped, binding)) continue
       if (codec.alsoBound?.some((extra) => !resolves(value, extra))) continue
       if (codec.receiverKinds) {
         // A command is an Expr statement around the call; the receiver is on the call.

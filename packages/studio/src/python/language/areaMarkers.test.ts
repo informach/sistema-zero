@@ -81,6 +81,17 @@ describe('comentários de área', () => {
     )
   })
 
+  test('o comentário que sai do meio da área leva a separação de cima (nada de linha em branco a mais)', () => {
+    // A primeira linha do Ao iniciar trocou de lugar com a segunda (o que a fase 1 deixa).
+    const source = `${marker('libraries')}\nimport math\nprint(2)\n\n${marker('start')}\nprint(1)\n`
+    expect(organize(source, ['libraries', 'start', 'start'])).toBe(
+      `${marker('libraries')}\nimport math\n\n${marker('start')}\nprint(2)\nprint(1)\n`,
+    )
+    // Uma linha em branco que a criança deixou entre duas linhas da área (sem comentário) fica.
+    const own = `${marker('start')}\nprint(1)\n\nprint(2)\n`
+    expect(organize(own, ['start', 'start'])).toBe(own)
+  })
+
   test('mantém o que está certo e tira o repetido, o da área errada e o do rodapé', () => {
     const source = [
       marker('start'),

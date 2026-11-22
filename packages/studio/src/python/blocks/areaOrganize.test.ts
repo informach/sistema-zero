@@ -125,7 +125,11 @@ test('programa incompleto (entrada vazia) não é organizado', () => {
   const frame = executablePythonAreaFrames(ws)[0]!
   const empty = ws.newBlock('sz_py_print')
   frame.getInputTargetBlock(PYTHON_AREA_INPUT)!.nextConnection!.connect(empty.previousConnection!)
-  expect(organizePythonWorkspace(ws, codecs)).toEqual({ changed: false, notes: [] })
+  expect(organizePythonWorkspace(ws, codecs)).toEqual({
+    changed: false,
+    notes: [],
+    incomplete: true,
+  })
 })
 
 test('a linha presa na fonte não sai do lugar e a nota diz por quê', () => {

@@ -94,14 +94,19 @@ export function pythonSettingNameBlock(block: Blockly.Block): Blockly.Block | un
   return target && name && name !== name.toUpperCase() ? target : undefined
 }
 
+/**
+ * O nome deste "guardar" aparece em outro bloco, com a grafia de agora OU já em MAIÚSCULAS? Nos
+ * dois casos trocar o nome mudaria o programa: o primeiro deixaria a outra linha para trás, o
+ * segundo juntaria duas variáveis numa só (`vidas` virando o `VIDAS` que já existe).
+ */
 export function pythonNameUsedElsewhere(target: Blockly.Block) {
   const name = String(target.getFieldValue('NAME'))
-  return target.workspace
-    .getAllBlocks(false)
-    .some(
-      (other) =>
-        other !== target && other.getField('NAME') && String(other.getFieldValue('NAME')) === name,
-    )
+  const upper = name.toUpperCase()
+  return target.workspace.getAllBlocks(false).some((other) => {
+    if (other === target || !other.getField('NAME')) return false
+    const value = String(other.getFieldValue('NAME'))
+    return value === name || value === upper
+  })
 }
 
 /** O bloco cabe nesta área? (O nome de uma configuração ganha maiúsculas ao entrar.) */

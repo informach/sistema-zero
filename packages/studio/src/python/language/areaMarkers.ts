@@ -78,7 +78,7 @@ export function planPythonAreaMarkers(
   const newline = /\r\n|\r|\n/.exec(source)?.[0] ?? '\n'
   const markers = document.tokens.filter((token) => isPythonAreaMarkerToken(token, lines))
   const header = pythonModuleHeaderEnd(source, lines)
-  const removals: { start: number; end: number; token: number }[] = []
+  const removals: { start: number; end: number; token: number; blankAbove?: number }[] = []
   const insertions: { offset: number; text: string }[] = []
   const markersIn = (start: number, end: number) =>
     markers.filter((token) => token.range.start >= start && token.range.start < end)
@@ -86,20 +86,29 @@ export function planPythonAreaMarkers(
     /^[\t \f]*$/.test(source.slice(line.start, line.end))
   const removeLine = (token: PythonToken) => {
     const line = lines.lineAt(token.range.start)
+    const start = line.start
     let end = line.next
+    const before = line.start > 0 ? lines.lineAt(line.start - 1) : undefined
+    const after = end < source.length ? lines.lineAt(end) : undefined
     // A separação que vinha depois dele também sai quando sobraria no começo do arquivo ou
     // grudada em outra linha em branco (organizar e desfazer não deixam buraco).
-    if (end < source.length) {
-      const after = lines.lineAt(end)
-      const before = line.start > 0 ? lines.lineAt(line.start - 1) : undefined
-      if (
-        blankLine(after) &&
-        after.next > end &&
-        (line.start <= header || !before || blankLine(before))
-      )
-        end = after.next
-    }
-    removals.push({ start: line.start, end, token: token.range.start })
+    if (
+      after &&
+      blankLine(after) &&
+      after.next > end &&
+      (line.start <= header || !before || blankLine(before))
+    )
+      end = after.next
+    // A linha em branco de cima é a separação que o comentário trouxe quando entrou: com o
+    // código logo embaixo, ela sobraria no meio da área (trocar a primeira linha e desfazer).
+    // Decidido no fim: se outro comentário de área entra ali, ela continua sendo a separação.
+    const blankAbove =
+      end === line.next && before && blankLine(before) && before.start >= header && after
+        ? !blankLine(after)
+          ? before.start
+          : undefined
+        : undefined
+    removals.push({ start, end, token: token.range.start, blankAbove })
   }
   let previousEnd = 0
   // O comentário de uma área que começou no meio de uma linha, à espera da próxima linha dela.
@@ -166,6 +175,19 @@ export function planPythonAreaMarkers(
     if (end > 0 && markerNext) removals.push({ start: 0, end, token: -1 })
   }
   if (!removals.length && !insertions.length) return NONE
+  // A separação de cima sai junto só onde nada entra nem sai no caminho dela.
+  for (const removal of removals) {
+    const above = removal.blankAbove
+    if (above === undefined) continue
+    const free =
+      !insertions.some(
+        (insertion) => insertion.offset >= above && insertion.offset <= removal.start,
+      ) &&
+      !removals.some(
+        (other) => other !== removal && other.start < removal.start && other.end > above,
+      )
+    if (free) removal.start = above
+  }
   // Uma remoção e uma inserção no mesmo lugar viram uma troca só.
   const byStart = new Map<number, PythonSourceEdit>()
   for (const removal of removals)

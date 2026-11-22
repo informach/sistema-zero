@@ -1,3 +1,4 @@
+import { PYTHON_AREA_MARKERS } from '../blocks/areas'
 import { type PythonSourceLines, pythonModuleHeaderEnd } from './sourceLines'
 import { pythonStatementLines } from './statementMoves'
 import type { PythonNode, PythonParsedDocument } from './types'
@@ -6,8 +7,32 @@ export interface PythonStatementInsertion {
   offset: number
   nodes: PythonNode[]
   leadingNewline: boolean
+  /** Uma linha em branco depois (a linha nova entra logo acima de um comentário de área). */
+  trailingBlankLine?: boolean
   indent: string
   header?: { keyword: 'else' | 'finally'; indent: string }
+}
+
+/**
+ * Onde entra uma linha nova de uma área anterior à da PRIMEIRA linha do arquivo: logo acima do
+ * comentário de área dela, se ele está no bloco de comentários colado a ela (o que vem acima dele,
+ * o título do arquivo, fica no topo); sem comentário de área, acima do bloco colado (os comentários
+ * da linha ficam com ela) e abaixo do que estiver separado por linha em branco.
+ */
+function firstLineOffset(document: PythonParsedDocument, lines: PythonSourceLines, start: number) {
+  const header = pythonModuleHeaderEnd(document.source, lines)
+  let offset = start
+  let marker: number | undefined
+  while (offset > header) {
+    const above = lines.lineAt(offset - 1)
+    const text = document.source.slice(above.start, above.end)
+    if (!text.startsWith('#')) break
+    offset = above.start
+    if (PYTHON_AREA_MARKERS.has(text.trimEnd())) marker = above.start
+  }
+  return marker !== undefined && marker >= header
+    ? { offset: marker, beforeMarker: true }
+    : { offset: Math.max(offset, header), beforeMarker: false }
 }
 
 /** Inserts into existing multiline suites without replacing their headers or retained statements. */
@@ -57,16 +82,19 @@ export function planPythonStatementInsertions(
         const range = pythonStatementLines(document, old, lines)
         if (!range) return
         let offset = range.start
+        let beforeMarker = false
         if (boundary(pending, value)) {
           const previous = index >= 2 ? originals[index - 2] : undefined
           const above = previous && pythonStatementLines(document, previous, lines)
           if (previous && !above) return
-          offset = above ? above.end : pythonModuleHeaderEnd(document.source, lines)
+          if (above) offset = above.end
+          else ({ offset, beforeMarker } = firstLineOffset(document, lines, range.start))
         }
         insertions.push({
           offset,
           nodes: pending,
           leadingNewline: offset > 0 && !/[\r\n]/.test(document.source[offset - 1]!),
+          ...(beforeMarker ? { trailingBlankLine: true } : {}),
           indent,
         })
         pending = []

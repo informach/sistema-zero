@@ -27,6 +27,8 @@ export function commitPythonWorkspaceGesture(options: {
   document: PythonParsedDocument
   workspace: Record<string, unknown>
   rootIds: readonly string[]
+  /** Rascunhos que não reabriram (crus): voltam para a gravação junto dos de agora. */
+  keptScratch?: readonly unknown[]
   /** A captured validation error may be thrown here *after* the draft is safe. */
   projection: PythonBlockProjection | (() => PythonBlockProjection)
   codecs: readonly PythonBlockCodec[]
@@ -60,6 +62,7 @@ export function commitPythonWorkspaceGesture(options: {
     document.identity.path,
     options.workspace,
     options.rootIds,
+    options.keptScratch,
   )
   const staged = store
     .getState()

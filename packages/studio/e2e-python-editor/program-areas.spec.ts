@@ -429,6 +429,36 @@ test('o código que veio de fora se organiza no primeiro clique nos blocos, e o 
   await expect.poll(source).toMatch(new RegExp(`^${MOLDS}\ndef pular`))
 })
 
+test('com um campo aberto o organizar espera: ele vem no gesto seguinte, com o campo fechado', async ({
+  page,
+}) => {
+  // Janela larga: o número cabe nos blocos sem arrastar o fundo (o arraste já seria o gesto que
+  // organiza, antes do clique no campo).
+  await page.setViewportSize({ width: 1800, height: 1000 })
+  await page.goto('/')
+  await page.waitForFunction(() => !!globalThis.pythonBridgeProbe)
+  await page.evaluate(() => pythonBridgeProbe.create())
+  const typed = 'print(1)\ndef pular():\n    pass\n'
+  await page.evaluate((value) => pythonBridgeProbe.replaceSavedSource(value), typed)
+  const source = () => page.evaluate(() => pythonBridgeProbe.state().source)
+  const number = page.locator('.blocklyTextInputField').filter({ hasText: /^1$/ }).first()
+  await expect(number).toBeVisible({ timeout: 20_000 })
+  const area = (await page.locator(BLOCKS_SVG).boundingBox())!
+  const box = (await number.boundingBox())!
+  expect(box.x + box.width).toBeLessThan(area.x + area.width - 24)
+  // O primeiro gesto nos blocos abre o campo do número: organizar agora fecharia o campo.
+  await number.click()
+  await expect(page.locator('.blocklyWidgetDiv .blocklyHtmlInput')).toBeVisible()
+  await page.waitForTimeout(1_000)
+  expect(await source()).toBe(typed)
+  await page.keyboard.press('Escape')
+  await expect(page.locator('.blocklyWidgetDiv .blocklyHtmlInput')).toBeHidden()
+  await clickBlocks(page)
+  await expect
+    .poll(source)
+    .toMatch(new RegExp(`^${MOLDS}\ndef pular\\(\\):\n {4}pass\n+${START}\nprint\\(1\\)\n$`))
+})
+
 test('a linha que não pode ir para a área dela fica no Ao iniciar, com nota e "Levar para"', async ({
   page,
 }) => {

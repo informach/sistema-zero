@@ -82,7 +82,7 @@ import {
 import { attachPythonCallLabels } from '../../python/blocks/pythonCallLabels'
 import { pythonResolverOptionsOf } from '../../python/blocks/resolverOptions'
 import {
-  preparePythonScratchRestore,
+  preparePythonScratchRestoreKeeping,
   preparePythonWorkspaceRestore,
 } from '../../python/blocks/restoreWorkspace'
 import type { PythonProjectModules } from '../../python/blocks/scope'
@@ -475,6 +475,8 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
     let rootIds: string[] = []
     const navigation = createPythonProgramNavigation(workspace, setProgram)
     let offer: PythonWorkspaceDraft | undefined
+    /** Os rascunhos deste arquivo que não reabriram: crus, voltam em toda gravação. */
+    let keptScratch: unknown[] = []
     let timer: ReturnType<typeof setTimeout> | undefined
     // `from settings import *` is understood from the project's own settings.py.
     const knownStarExports = pythonResolverOptionsOf(props.codecs).starExports
@@ -636,6 +638,10 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
         observer ||
         store.getState().editingAccess !== 'author' ||
         workspace.isDragging() ||
+        // Um campo aberto (texto, número, lista): mexer nos blocos agora fecharia ou deslocaria o
+        // campo no meio da digitação. Fica para o próximo gesto.
+        Blockly.WidgetDiv.isVisible() ||
+        Blockly.DropDownDiv.isVisible() ||
         !parsed?.tree ||
         loadedSource !== parsed.source
       )
@@ -644,11 +650,13 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
       if (!group) Blockly.Events.setGroup(true)
       try {
         if (arrange) layoutPythonAreaFrames(workspace)
-        const { notes } = organizePythonWorkspace(workspace, props.codecs, {
+        const result = organizePythonWorkspace(workspace, props.codecs, {
           context: areaContext(),
           movable,
         })
-        applyPythonAreaNotes(workspace, notes)
+        // Programa que não pôde ser lido agora: o pedido continua pendente (não organizou nada).
+        if (result.incomplete) return false
+        applyPythonAreaNotes(workspace, result.notes)
       } finally {
         if (!group) Blockly.Events.setGroup(false)
       }
@@ -658,8 +666,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
     ;(workspace as unknown as PythonOrganizerWorkspace).__szOrganizePython = observer
       ? undefined
       : () => {
-          organizePending = false
-          organizeNow(true)
+          if (organizeNow(true)) organizePending = false
         }
     function load(document: PythonParsedDocument, draft?: PythonWorkspaceDraft) {
       if (!document.tree) return
@@ -667,16 +674,13 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
         ? preparePythonWorkspaceRestore(draft, document, props.codecs)
         : undefined
       // Rascunho que não reabre (salvo por uma versão com defeito) não pode travar o arquivo nos
-      // blocos: o código abre sem ele (full review das áreas, 22/11/2026).
-      let restoreScratch: ReturnType<typeof preparePythonScratchRestore>
-      try {
-        restoreScratch = preparePythonScratchRestore(
-          readPythonScratchWorkspace(currentProject()!, props.path),
-          props.codecs,
-        )
-      } catch (error) {
-        console.warn('[python-blocos] rascunhos que não reabrem foram deixados de lado', error)
-      }
+      // blocos: o código abre sem ele, e ele fica GUARDADO como estava (`keptScratch` volta em
+      // toda gravação). Full review das áreas, 22/11/2026.
+      const savedScratch = readPythonScratchWorkspace(currentProject()!, props.path)
+      const scratchRestore = preparePythonScratchRestoreKeeping(savedScratch, props.codecs)
+      keptScratch = scratchRestore.kept
+      if (keptScratch.length)
+        console.warn('[python-blocos] rascunhos que não reabrem ficaram guardados sem aparecer')
       applying = true
       loadedSource = undefined
       // A arrumação das áreas que a criança fez sobrevive à volta do código (Ponte, desfazer).
@@ -718,7 +722,14 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
             props.codecs,
           )
         }
-        restoreScratch?.(workspace)
+        try {
+          scratchRestore.apply?.(workspace)
+        } catch (error) {
+          // Identificador repetido com o programa: o Blockly recusa antes de pôr qualquer bloco.
+          console.warn('[python-blocos] rascunhos que não reabrem ficaram guardados', error)
+          const blocks = savedScratch?.blocks as { blocks?: unknown[] } | undefined
+          keptScratch = blocks?.blocks ?? []
+        }
         if (!restored) {
           const frames = pythonAreaFrames(workspace)
           if (frames.size && [...frames.keys()].every((kind) => previousPositions.has(kind)))
@@ -764,6 +775,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
             props.path,
             saved,
             rootIds,
+            keptScratch,
           )
           initial.pending = false
           const issue = store
@@ -876,7 +888,13 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
           fingerprint &&
           samePythonWorkspaceProgram(JSON.parse(fingerprint), saved)
         ) {
-          const { draft, scratch } = capturePythonWorkspace(project, props.path, saved, rootIds)
+          const { draft, scratch } = capturePythonWorkspace(
+            project,
+            props.path,
+            saved,
+            rootIds,
+            keptScratch,
+          )
           draft.pending = false
           const issue = store
             .getState()
@@ -912,6 +930,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
           document: parsed,
           workspace: saved,
           rootIds,
+          keptScratch,
           codecs: props.codecs,
           projection: () => {
             if (!projection) throw issue

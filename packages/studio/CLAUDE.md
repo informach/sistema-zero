@@ -102,11 +102,25 @@ são TRECHOS do arquivo na ordem em que ele roda. Proposta aprovada e desenho t�
   conserto entra no MESMO grupo de eventos do gesto (um Ctrl+Z desfaz os dois). ⚠️ No workspace
   headless não há `isDragging` nem `moveTo` (são do `WorkspaceSvg`/`BlockSvg`): o `next build`
   do Kids reprovou por isso. ⚠️ Os eventos do Blockly headless chegam na tarefa seguinte; o
-  teste espera um tique.
+  teste espera um tique. O fim do jogo é o bloco que liga o jogo MAIS a cauda dele (o que vinha
+  depois sem mexer no gesto): ele vai para o fim só quando o gesto mexeu nele ou pôs uma LINHA
+  depois dele (nunca por uma edição dentro de uma linha que já estava lá), e os grupos do
+  organizar (`PYTHON_ORGANIZE_GROUPS`) ficam de fora. ⚠️ O Blockly religa embaixo da pilha solta
+  o que estava ali, e esse resto também recebe evento de movimento: é ele que separa a pilha nova
+  da cauda antiga. MAIÚSCULAS só se o nome não existe em outro bloco nem já em MAIÚSCULAS.
+- **Rascunho que não reabre fica guardado**: `preparePythonScratchRestoreKeeping` reabre bloco a
+  bloco e devolve os que não reabrem crus (`kept`); o editor os passa a TODA gravação
+  (`capturePythonWorkspace(…, kept)` e `commitPythonWorkspaceGesture({ keptScratch })`). Gravar
+  só o que está na tela apagava o rascunho da criança.
+- **Linha com `;`**: os comandos de uma linha são uma peça só no `statementMoves.ts` (andam
+  juntos); o `;` sozinho no fim não prende a linha. A edição de vários comandos da mesma peça vai
+  numa cópia só (`visualTransaction.ts` junta os filhos por cópia: o `composePythonCopiedEdit`
+  recusa dois filhos na mesma cópia).
 - **Layout fora do desfazer**: `pushOverlappingPythonAreas` (a área que cresce empurra a
   vizinha) roda com `Events.setRecordUndo(false)` e só fora do arraste.
 - **Organizar sozinho só depois de carga vinda do código** (abrir, Ponte, modo Código), no
-  primeiro `pointerup`/`focusin` nos blocos e só para quem edita; nunca enquanto a criança digita.
+  primeiro `pointerup`/`focusin` nos blocos e só para quem edita; nunca enquanto a criança digita
+  nem com um campo do Blockly aberto, e o pedido só é gasto quando organizou (`incomplete`).
   O `sz_organize` do JavaScript some quando o workspace tem `__szOrganizePython`.
 - **Rascunhos**: áreas vazias e blocos soltos são rascunho e sobrevivem à Ponte; rascunho com a
   área antiga `sz_py_program` é descartado (não há alunos de Python).
