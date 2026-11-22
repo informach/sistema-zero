@@ -78,3 +78,24 @@ O parâmetro `--v3` permite repetir esse caso com a mesma fila antiga e um leito
 ```powershell
 python ./repetir.py --retencao C:/caminho/do/checkout-leitor --legado C:/caminho/do/checkout-64c --v3 C:/caminho/do/checkout-4cf
 ```
+
+## Recursos observados na fila de disco v4
+
+No cliente `f1667cfaf7fee6f0cee49dd07f99a5f32f9cae87`, os 29 casos passaram com 264 asserções. Os 23 casos de retenção e leitura da fila v3 foram repetidos com os escritores originais. O arquivo de recuperação da fila v3 voltou a ficar disponível após reiniciar offline.
+
+Os seis controles adicionais usam a persistência e o host do candidato. Os testes verificam o conteúdo dos blobs pela descompressão e conferem o resultado no catálogo reaberto.
+
+| Sequência | Resultado observado |
+| --- | --- |
+| Dois mapas editados leem a mesma revisão da folha | A mesma chave guardou uma única cópia do gzip após coalescência, selagem e confirmação do primeiro mapa. Confirmar o último permitiu liberar o blob. Cada PUT continha somente seu mapa. |
+| A folha muda entre a compressão e a escrita final | A revisão do mapa e a fila permaneceram intactas. A edição feita em paralelo pela instalação antiga sobreviveu. |
+| Falha na gravação física do gzip da folha | O banco reverteu a transação. Uma nova tentativa gravou o mapa e uma cópia da folha. |
+| Restam 4 KiB na galeria, o mapa cabe e o gzip da folha supera 8 KiB | A escrita lançou o erro de quota antes de publicar o mapa. Reduzir um fundo e repetir permitiu guardar a edição completa. |
+| O único caminho até a folha é a porta por nome do mapa para a cabana | Depois que a instalação antiga mudou a folha para 5, a cópia da vila abriu a cabana com o pixel 3 observado pelo autor. A vila oficial exibiu o 7. A edição 5 também permaneceu na galeria. |
+| Um host v3 abre o mesmo banco após um host v4 gravar recursos | A leitura da fila e a escrita causais antigas falharam. A edição, o identificador da operação e os bytes da folha continuaram intactos. O host v4 pôde seguir editando. |
+
+Os recibos identificam o resultado anterior no 4cf e as execuções no f166. Estes controles do cliente usam armazenamento transacional em memória, respostas de rede controladas e o codec de ZIP real. [Índice de fontes e recibos](indice.json)
+
+```powershell
+python ./repetir.py --retencao C:/caminho/do/checkout-f166 --legado C:/caminho/do/checkout-64c --v3 C:/caminho/do/checkout-4cf --recursos-v4
+```

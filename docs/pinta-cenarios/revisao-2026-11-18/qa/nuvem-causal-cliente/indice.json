@@ -212,6 +212,51 @@
         "ensaios/offline-cross-review.inc"
       ],
       "sha256": "a1f8fc123360f27e6fc684d60ec662fe4aecad2ddd34cc8d95275af815428175"
+    },
+    {
+      "alvo": "recursosV4",
+      "nome": "physical-pins-review.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/physical-pins-review.inc"
+      ],
+      "sha256": "b8ee4f1676d936a7481f3aeee3ff3870513fe77d986dca674deee007a0a01702"
+    },
+    {
+      "alvo": "recursosV4",
+      "nome": "pins-cas-review.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/pins-cas-review.inc"
+      ],
+      "sha256": "52f04125e9cccd4b5b2a9fe89da789d5a89ce007dc829a18cf79d40af4153b73"
+    },
+    {
+      "alvo": "recursosV4",
+      "nome": "pins-quota-review.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/pins-quota-review.inc"
+      ],
+      "sha256": "e4e6392dc8938662dd7e746042523ad31be83eba3edf2ed131469976ed94db3c"
+    },
+    {
+      "alvo": "recursosV4",
+      "nome": "transitive-pins-review.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/transitive-pins-review.inc"
+      ],
+      "sha256": "4763c17fc497afc463fe71988058d8f329ea3d5bb77007551dcb8cfc274d3a16"
+    },
+    {
+      "alvo": "recursosV4",
+      "nome": "fence-v4-review.test.ts",
+      "fontes": [
+        "ensaios/contexto-host.inc",
+        "ensaios/fence-v4-review.inc"
+      ],
+      "sha256": "6c4713f5fd18727683577e38aa6f2d1049a250ed53a9438cbe8f1ac975bafcc4"
     }
   ],
   "recibos": [
@@ -312,6 +357,27 @@
       "sha256": "a24fc4cb2b5322f6d968351ec495d0a99cc29e51eb7469e35d2017a5f2cf7046",
       "commit": "4cfb1d323f78c7f96256fe9ffc84156df09aeb02",
       "resultado": "1 falha/9 asserções"
+    },
+    {
+      "arquivo": "recibos/v4-4cfb1d323.txt",
+      "originalSha256": "b7fe9aeef73ed990a8e3e8ad7826daa374f2b4527155c31dfa6440fa5c555539",
+      "sha256": "ecfabfee4e35b0706190f561721bd2bf0f85a981fbded32f0bc5a6b4e22bd260",
+      "commit": "4cfb1d323f78c7f96256fe9ffc84156df09aeb02",
+      "resultado": "5 falham/14 asserções"
+    },
+    {
+      "arquivo": "recibos/todos-f166.txt",
+      "originalSha256": "98fda086443412a02e7a62b523a7c7e0d89209c719edf78b3b0929104ff0fdb3",
+      "sha256": "dfeefdcd9207020c22aaa5c779c8c124c4a860ae52ea74b06b492c4c834f5043",
+      "commit": "f1667cfaf7fee6f0cee49dd07f99a5f32f9cae87",
+      "resultado": "23 passam/203 asserções"
+    },
+    {
+      "arquivo": "recibos/v4-f1667cfaf.txt",
+      "originalSha256": "1b290a28036ba56802663766d98427efc60919a1af22da23caff29997ecdcd66",
+      "sha256": "1b290a28036ba56802663766d98427efc60919a1af22da23caff29997ecdcd66",
+      "commit": "f1667cfaf7fee6f0cee49dd07f99a5f32f9cae87",
+      "resultado": "6 passam/61 asserções"
     }
   ],
   "arvoresGit": {
@@ -340,10 +406,16 @@
       "packages/pinta/src": "4571abd9d78a98fa589620364de6b8f411eae8b5",
       "packages/member-shell/src/lib": "f62f92aa48e5dab792d59d930cba4321a9f0b46d",
       "packages/core/src/creations": "d8194a9bf000900057970cef45b5209ead9fdefd"
+    },
+    "recursosV4": {
+      "packages/pinta/src": "5b2a07b6fd2cb4880e698d60379ad6a006252b53",
+      "packages/member-shell/src/lib": "3be6b587960b7ef888e9b54c6d34a6064e4b003c",
+      "packages/core/src/creations": "d8194a9bf000900057970cef45b5209ead9fdefd"
     }
   },
   "terminal": "5ef94cc8593c847d9c4a25c395f7a8a6f5797b94",
   "legado": "64c197d5332a36b73af54de6ae5bf045a4a7699e",
   "retencao": "85e506f85f1e2d23bceb69bcea2407c3076f734d",
-  "escritorDiscoV3": "4cfb1d323f78c7f96256fe9ffc84156df09aeb02"
+  "escritorDiscoV3": "4cfb1d323f78c7f96256fe9ffc84156df09aeb02",
+  "recursosV4": "f1667cfaf7fee6f0cee49dd07f99a5f32f9cae87"
 }

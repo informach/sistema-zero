@@ -25,7 +25,7 @@ def source(case):
     return text
 
 
-def run_candidate(root, database, legacy=None, retention=False, v3=None):
+def run_candidate(root, database, legacy=None, retention=False, v3=None, pins=False):
     package = root / "packages"
     members = package / "members"
     env = os.environ.copy()
@@ -41,6 +41,8 @@ def run_candidate(root, database, legacy=None, retention=False, v3=None):
                 raise SystemExit("Checkout do escritor de fila v3 sem a persistência.")
             env["PINTA_REVIEW_V3_ENTRY"] = str(v3_entry)
             targets["leitorV3"] = package / "member-shell"
+            if pins:
+                targets["recursosV4"] = package / "member-shell"
     elif database:
         url = urlsplit(os.environ.get("PINTA_CAUSAL_TEST_DATABASE_URL", ""))
         if url.hostname not in ("127.0.0.1", "localhost", "::1"):
@@ -88,11 +90,14 @@ def main():
     parser.add_argument("--retencao", type=Path, metavar="CHECKOUT")
     parser.add_argument("--legado", type=Path, metavar="CHECKOUT")
     parser.add_argument("--v3", type=Path, metavar="CHECKOUT")
+    parser.add_argument("--recursos-v4", action="store_true")
     args = parser.parse_args()
     if bool(args.terminal or args.retencao) != bool(args.legado):
         parser.error("--terminal e --retencao usam o checkout do escritor --legado")
     if args.v3 and not args.retencao:
         parser.error("--v3 requer o leitor --retencao")
+    if args.recursos_v4 and not args.v3:
+        parser.error("--recursos-v4 precisa do escritor --v3 para provar a recusa da escrita antiga")
     for receipt in INDEX["recibos"]:
         path = HERE / receipt["arquivo"]
         verify_text(path.read_text("utf-8"), receipt["sha256"], path.name)
@@ -105,7 +110,7 @@ def main():
         run_candidate(args.terminal.resolve(), False, args.legado.resolve())
     if args.retencao:
         run_candidate(args.retencao.resolve(), False, args.legado.resolve(),
-                      retention=True, v3=args.v3.resolve() if args.v3 else None)
+                      retention=True, v3=args.v3.resolve() if args.v3 else None, pins=args.recursos_v4)
     if args.members:
         run_candidate(args.members.resolve(), True)
 
