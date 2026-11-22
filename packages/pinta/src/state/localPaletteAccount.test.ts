@@ -238,7 +238,7 @@ test('GET e ACK capturam token e bytes antes de aguardar a fila transacional', a
     () => p.acknowledge(ackToken, sent, 12, active),
     () => {
       ackToken.generation = 'outra'
-      sent.palettes[0]!.colors[1] = '#ff0000'
+      Reflect.set(sent.palettes[0]!.colors, 1, '#ff0000')
     },
   )
   expect(ack?.revision).toBe(12)
