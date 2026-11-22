@@ -40,7 +40,8 @@ na região" usa os nomes. Formato e regras em
 - **No Python (Raylib 3D)**: o módulo oficial `cenario`
   (`packages/studio/src/runtime/python/raylib/py/cenario.py`, o mesmo no Estúdio e no Raylib do
   computador) carrega por regiões com as mesmas regras do JavaScript. `lugar =
-  cenario.carregar(cenario_vila)` (o módulo que a importação cria), `lugar.atualizar(x, z)` a cada
+  cenario.carregar(cenario_ab12)` (o módulo que a importação cria: `cenario_` e o começo do id do
+  cenário, na lista de arquivos do projeto), `lugar.atualizar(x, z)` a cada
   quadro com a posição do personagem, `lugar.desenhar()`, `lugar.regiao(x, z)` (o nome ou `None`),
   `lugar.entrou_na_regiao('Vila')` (verdadeiro uma vez por entrada) e
   `lugar.estado_das_regioes()`. `altura()` usa o relevo inteiro, então ninguém cai onde a região

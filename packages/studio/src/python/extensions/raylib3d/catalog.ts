@@ -99,7 +99,7 @@ function sceneCodecs(): PythonBlockCodec[] {
     category: SCENE,
     level: 1,
     role: 'value',
-    help: 'Abre o cenário que você trouxe do Molda: ponha aqui o módulo dele (cenario_…, que o Estúdio cria ao trazer o cenário). Guarde numa variável em ⚙️ Ao iniciar, como lugar = cenario.carregar(cenario_vila), depois de abrir a janela.',
+    help: 'Abre o cenário que você trouxe do Molda: ponha aqui o módulo dele, o arquivo cenario_… que o Estúdio criou ao trazer o cenário (o nome está na lista de arquivos do projeto; importe com import cenario_…). Guarde numa variável em ⚙️ Ao iniciar, como lugar = cenario.carregar(cenario_ab12), depois de abrir a janela.',
     api: 'cenario.carregar(cenario_do_molda)',
     callee: { kind: 'module', module: 'cenario', names: ['carregar'] },
     params: [p('caminho', 'do módulo', id('cenario_do_molda'))],

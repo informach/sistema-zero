@@ -189,11 +189,11 @@ for (const { key } of RAYLIB_GAMES)
 /**
  * Regiões no Raylib 3D (lote 7b da conclusão, 22/11/2026): o cenário de três regiões em fila
  * (`experiments/studio-python-runtime/raylibRegionFixtures.ts`), a rota Vila → Floresta →
- * Caverna → Floresta → Vila dez vezes. No fim de cada volta o programa escreve o que contou e
- * espera o N; a prova lê ali os objetos de GPU vivos do quadro. Reprova se uma entrada não contar
- * exatamente uma vez, se a Caverna (não vizinha da Vila) continuar carregada na volta à Vila, se
- * alguma região falhar, ou se os modelos, as texturas do runtime e os objetos de GPU mudarem nas
- * últimas quatro voltas.
+ * Caverna → Floresta → Vila dez vezes. Na Caverna e no fim de cada volta o programa escreve o que
+ * contou e espera o N; a prova lê ali os objetos de GPU vivos do quadro. Reprova se uma entrada não
+ * contar exatamente uma vez, se alguma região falhar, se uma parada não tiver exatamente os dois
+ * modelos e as duas texturas da janela (a liberação de verdade), se os objetos de GPU não forem
+ * medidos ou se mudarem nas paradas das últimas quatro voltas.
  */
 test('Raylib 3D: o cenário com regiões carrega e solta pela rota, dez voltas', async ({
   page,
@@ -246,38 +246,48 @@ test('Raylib 3D: o cenário com regiões carrega e solta pela rota, dez voltas',
   const frame = page.frames().find((candidate) => candidate.url().includes('/frame.html'))!
   const canvas = frame.locator('canvas')
   await expect(canvas).toHaveCount(1, { timeout: 30_000 })
-  const voltas: { linha: string; gpu: Record<string, number> }[] = []
-  for (let volta = 1; volta <= 10; volta++) {
-    const marca = `volta ${volta} `
-    await expect.poll(() => stdout(page), { timeout: 60_000 }).toContain(marca)
-    const saida = await stdout(page)
-    const linha = saida.slice(saida.lastIndexOf(marca)).split('fim')[0]!
-    // O programa espera o N desenhando o mesmo estado: os objetos de GPU estão estáveis aqui.
-    const gpu = await frame.evaluate(() =>
-      (window as unknown as { __szGpuVivos(): Record<string, number> }).__szGpuVivos(),
-    )
-    voltas.push({ linha, gpu })
-    await canvas.press('n')
-  }
-  await testInfo.attach('voltas', {
-    body: JSON.stringify(voltas, null, 2),
+  // Duas paradas por volta: na Caverna (a Vila, que não é vizinha, já saiu) e no fim da volta, de
+  // volta à Vila (a Caverna já saiu). Em cada uma o programa espera o N desenhando o mesmo estado.
+  const paradas: { marca: string; linha: string; gpu: Record<string, number> }[] = []
+  for (let volta = 1; volta <= 10; volta++)
+    for (const nome of ['caverna', 'volta']) {
+      const marca = `${nome} ${volta} `
+      await expect.poll(() => stdout(page), { timeout: 60_000 }).toContain(marca)
+      const saida = await stdout(page)
+      const linha = saida.slice(saida.lastIndexOf(marca)).split('fim')[0]!
+      const gpu = await frame.evaluate(() =>
+        (window as unknown as { __szGpuVivos(): Record<string, number> }).__szGpuVivos(),
+      )
+      paradas.push({ marca, linha, gpu })
+      await canvas.press('n')
+    }
+  await testInfo.attach('paradas', {
+    body: JSON.stringify(paradas, null, 2),
     contentType: 'application/json',
   })
   const state = await page.evaluate(() => globalThis.providerProbe.read('game'))
   expect(state.status, JSON.stringify(state.events.at(-1))).not.toBe('failed')
-  const ultima = voltas.at(-1)!.linha
   // Cada entrada uma vez: a Vila começa dentro (1) e volta uma vez por volta; a Floresta, duas.
-  expect(ultima).toContain('entradas 11 20 10')
-  expect(ultima).toContain('carregadas Vila+Floresta ')
-  for (const { linha } of voltas) expect(linha).toContain('falhas 0')
-  const ultimas = voltas.slice(-4)
-  const campo = (linha: string, nome: string) => linha.match(new RegExp(`${nome} (\\d+)`))?.[1]
-  for (const nome of ['modelos', 'texturas'])
-    expect(new Set(ultimas.map((v) => campo(v.linha, nome))).size, nome).toBe(1)
-  for (const nome of ['buffers', 'textures', 'vertexArrays'])
+  expect(paradas.at(-1)!.linha).toContain('entradas 11 20 10')
+  for (const { marca, linha } of paradas) {
+    expect(linha, marca).toContain('falhas 0')
+    // A liberação de verdade (revisão do lote 7b): em cada parada só ficam os dois modelos da
+    // janela, cada um com a sua textura. Um descarte que não solta o modelo daria 3.
+    expect(linha, marca).toContain('modelos 2 texturas 2')
+    expect(linha, marca).toContain(
+      marca.startsWith('caverna') ? 'carregadas Floresta+Caverna ' : 'carregadas Vila+Floresta ',
+    )
+  }
+  // Os objetos de GPU: medidos de verdade (anti-vácuo) e iguais nas paradas das últimas quatro
+  // voltas (nada cresce a cada ida e volta).
+  const ultimas = paradas.slice(-8)
+  for (const nome of ['buffers', 'textures', 'vertexArrays']) {
+    for (const { marca, gpu } of paradas)
+      expect(gpu[nome] ?? 0, `${nome} ${marca}`).toBeGreaterThan(0)
     expect(
-      new Set(ultimas.map((v) => v.gpu[nome] ?? 0)).size,
+      new Set(ultimas.map((v) => v.gpu[nome])).size,
       `${nome}: ${ultimas.map((v) => v.gpu[nome]).join(', ')}`,
     ).toBe(1)
+  }
   await page.evaluate(() => globalThis.providerProbe.dispose('game'))
 })

@@ -7,8 +7,8 @@ import { pythonFilesToTree } from '../../packages/studio/src/state/pythonProject
  * As regiões no Raylib 3D do Estúdio (lote 7b da conclusão do plano do Estúdio, 22/11/2026): um
  * cenário compilado com três regiões em fila (Vila, Floresta e Caverna, vizinhas em par), cada uma
  * com um modelo próprio com textura, e um programa que percorre a rota Vila → Floresta → Caverna →
- * Floresta → Vila dez vezes. No fim de cada volta ele escreve o que contou e espera a prova apertar
- * N, para a prova ler os objetos de GPU vivos do quadro no estado estável. Fica no servidor de
+ * Floresta → Vila dez vezes. Na Caverna e no fim de cada volta ele escreve o que contou e espera a
+ * prova apertar N, para a prova ler os objetos de GPU vivos do quadro no estado estável. Fica no servidor de
  * qualificação local; nada disto entra num artefato do runtime.
  */
 export const RAYLIB_REGIONS_FIXTURE = 'raylib-regioes-3d'
@@ -185,6 +185,17 @@ def quadro():
     end_drawing()
 
 
+def parar(marca, volta):
+    # Escreve o que contou e espera o N desenhando o mesmo estado: a prova lê ali os objetos de
+    # GPU vivos do quadro.
+    e = lugar.estado_das_regioes()
+    print(marca, volta, 'entradas', entradas['Vila'], entradas['Floresta'], entradas['Caverna'],
+          'carregadas', '+'.join(e['carregadas']), 'falhas', len(e['falhas']),
+          'modelos', e['modelos'], 'texturas', _rt._texture_count, 'fim')
+    while not is_key_pressed(KEY_N) and not window_should_close():
+        quadro()
+
+
 for volta in range(1, 11):
     for x in (-100, 0, 100, 0, -100):
         for _ in range(3):
@@ -194,12 +205,10 @@ for volta in range(1, 11):
                 if lugar.entrou_na_regiao(nome):
                     entradas[nome] += 1
             quadro()
-    e = lugar.estado_das_regioes()
-    print('volta', volta, 'entradas', entradas['Vila'], entradas['Floresta'], entradas['Caverna'],
-          'carregadas', '+'.join(e['carregadas']), 'falhas', len(e['falhas']),
-          'modelos', e['modelos'], 'texturas', _rt._texture_count, 'fim')
-    while not is_key_pressed(KEY_N) and not window_should_close():
-        quadro()
+        if x == 100:
+            # Na Caverna, a Vila (não vizinha) já saiu: a carga e a liberação contam aqui também.
+            parar('caverna', volta)
+    parar('volta', volta)
 lugar.descartar()
 close_window()
 `

@@ -26,6 +26,8 @@ try:
     p.disable_cursor()
     while not p.window_should_close():
         p.update_camera(camera, p.CAMERA_FREE)
+        # Com regiões, o cenário carrega a região da câmera, as vizinhas e as que estão perto.
+        lugar.atualizar(camera.position.x, camera.position.z)
         p.begin_drawing()
         p.clear_background(p.Color(163, 205, 233, 255))
         p.begin_mode_3d(camera)

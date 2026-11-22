@@ -15,6 +15,7 @@ import {
   type ItensDasRegioes,
   type RegiaoDaCarga,
 } from '@sistemazero/molda-cenarios-core/compilar'
+import { errosDasRegioesNoRetangulo } from '@sistemazero/molda-cenarios-core/v2'
 
 const DESTINO = fileURLToPath(
   new URL('../src/runtime/python/raylib/__tests__/regioes-casos.json', import.meta.url),
@@ -134,6 +135,67 @@ function percorrer(regioes: RegiaoDaCarga[], passos: Passo[]) {
   })
 }
 
+// A régua do documento (revisão do lote 7b): cada conjunto de regiões e o chão, e os recados que
+// o núcleo dá, na ordem.
+type R = { id: string; nome: string; caixa: ReturnType<typeof caixa>; vizinhas: string[] }
+const r = (id: string, nome: string, c: ReturnType<typeof caixa>, vizinhas: string[] = []): R => ({
+  id,
+  nome,
+  caixa: c,
+  vizinhas,
+})
+const CHAO = caixa(-100, -100, 100, 100)
+const NOVE = Array.from({ length: 9 }, (_, i) =>
+  r(`v${i}`, `V${i}`, caixa(-90 + i * 10, 50, -80 + i * 10, 60), ['a']),
+)
+const REGUA: { regioes: R[]; limite: ReturnType<typeof caixa> | null }[] = [
+  {
+    regioes: [r('a', 'Vila', caixa(0, 0, 10, 10)), r('b', 'Mata', caixa(10, 0, 20, 10))],
+    limite: CHAO,
+  },
+  {
+    regioes: [r('a', 'Vila', caixa(0, 0, 10, 10)), r('a', 'Outra', caixa(20, 20, 30, 30))],
+    limite: CHAO,
+  },
+  { regioes: [r('a', '   ', caixa(0, 0, 10, 10))], limite: CHAO },
+  {
+    regioes: [r('a', 'Vila', caixa(0, 0, 10, 10)), r('b', ' vila ', caixa(20, 20, 30, 30))],
+    limite: CHAO,
+  },
+  { regioes: [r('a', 'Vila', caixa(5, 0, 5, 10))], limite: CHAO },
+  { regioes: [r('a', 'Vila', caixa(90, 0, 140, 10))], limite: CHAO },
+  { regioes: [r('a', 'Vila', caixa(90, 0, 140, 10))], limite: null },
+  { regioes: [r('a', 'Vila', caixa(0, 0, 10, 10), ['a'])], limite: CHAO },
+  { regioes: [r('a', 'Vila', caixa(0, 0, 10, 10), ['zz'])], limite: CHAO },
+  {
+    regioes: [
+      r('a', 'Vila', caixa(0, 0, 10, 10), ['b', 'b']),
+      r('b', 'Mata', caixa(10, 0, 20, 10), ['a']),
+    ],
+    limite: CHAO,
+  },
+  {
+    regioes: [r('a', 'Vila', caixa(0, 0, 10, 10), ['b']), r('b', 'Mata', caixa(10, 0, 20, 10))],
+    limite: CHAO,
+  },
+  {
+    regioes: [r('a', 'Vila', caixa(0, 0, 10, 10)), r('b', 'Mata', caixa(9, 0, 20, 10))],
+    limite: CHAO,
+  },
+  {
+    regioes: [
+      r(
+        'a',
+        'Vila',
+        caixa(-90, 0, 0, 50),
+        NOVE.map((v) => v.id),
+      ),
+      ...NOVE,
+    ],
+    limite: CHAO,
+  },
+]
+
 export function casosDasRegioes() {
   return {
     pertenca: {
@@ -146,6 +208,10 @@ export function casosDasRegioes() {
         aguas,
       })),
     },
+    regua: REGUA.map((caso) => ({
+      ...caso,
+      esperado: errosDasRegioesNoRetangulo(caso.regioes, caso.limite),
+    })),
     plano: [
       { regioes: FILA, passos: percorrer(FILA, ROTA) },
       { regioes: FILA, passos: percorrer(FILA, DE_FORA) },

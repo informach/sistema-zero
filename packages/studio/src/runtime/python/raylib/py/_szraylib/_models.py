@@ -432,34 +432,46 @@ def load_model(fileName, /):
         raise ValueError(f'{f}: o Estúdio abre modelos .glb e .gltf (como os do Molda), e o arquivo '
                          f'{relative!r} é {extension or "sem extensão"}.')
     data = _gltf.load_model(absolute, f)
-    meshes = []
-    for part in data['meshes']:
-        mesh = make_mesh(part['vertices'], part['texcoords'], part['normals'], part['colors'],
-                         part['indices'], part['boneIds'], part['boneWeights'], part['texcoords2'])
-        meshes.append(mesh)
-    materials = [load_material_default()]
-    for entry in data['materials']:
-        material = load_material_default()
-        albedo = material.maps[K.MATERIAL_MAP_ALBEDO]
-        if entry['image'] is not None:
-            texture = _texture_from_bytes(entry['image'][0], f)
-            if texture is not None:
-                albedo.texture = texture
-        albedo.color = Color(*entry['color'])
-        material.maps[K.MATERIAL_MAP_ROUGHNESS].value = entry['roughness']
-        material.maps[K.MATERIAL_MAP_METALNESS].value = entry['metallic']
-        materials.append(material)
-    model = _model(meshes, materials, list(data['meshMaterial']))
-    bones = data['bones']
-    if len(bones) > MAX_BONES:
-        raise ValueError(f'{f}: o esqueleto tem {len(bones)} ossos; o Estúdio anima até {MAX_BONES}.')
-    model.skeleton.boneCount = len(bones)
-    model.skeleton.bones = [BoneInfo(name.encode('utf-8'), parent) for name, parent in bones]
-    model.skeleton.bindPose = [Transform(Vector3(*t), Vector4(*r), Vector3(*s))
-                               for t, r, s in data['bindPose']]
-    for mesh in meshes:
-        mesh.boneCount = len(bones)
-        upload(mesh, f)
+    meshes, textures = [], []
+    try:
+        for part in data['meshes']:
+            mesh = make_mesh(part['vertices'], part['texcoords'], part['normals'], part['colors'],
+                             part['indices'], part['boneIds'], part['boneWeights'], part['texcoords2'])
+            meshes.append(mesh)
+        materials = [load_material_default()]
+        for entry in data['materials']:
+            material = load_material_default()
+            albedo = material.maps[K.MATERIAL_MAP_ALBEDO]
+            if entry['image'] is not None:
+                texture = _texture_from_bytes(entry['image'][0], f)
+                if texture is not None:
+                    textures.append(texture)
+                    albedo.texture = texture
+            albedo.color = Color(*entry['color'])
+            material.maps[K.MATERIAL_MAP_ROUGHNESS].value = entry['roughness']
+            material.maps[K.MATERIAL_MAP_METALNESS].value = entry['metallic']
+            materials.append(material)
+        model = _model(meshes, materials, list(data['meshMaterial']))
+        bones = data['bones']
+        if len(bones) > MAX_BONES:
+            raise ValueError(f'{f}: o esqueleto tem {len(bones)} ossos; o Estúdio anima até {MAX_BONES}.')
+        model.skeleton.boneCount = len(bones)
+        model.skeleton.bones = [BoneInfo(name.encode('utf-8'), parent) for name, parent in bones]
+        model.skeleton.bindPose = [Transform(Vector3(*t), Vector4(*r), Vector3(*s))
+                                   for t, r, s in data['bindPose']]
+        for mesh in meshes:
+            mesh.boneCount = len(bones)
+            upload(mesh, f)
+    except BaseException:
+        # Uma falha no meio devolve o que já subiu (malhas e texturas): sem isso, cada nova
+        # tentativa de carregar o mesmo modelo vazava as texturas, que nem o descarte via
+        # (revisão do lote 7b).
+        for mesh in meshes:
+            unload_mesh(mesh)
+        for texture in textures:
+            rt.pending_free.append(texture.id)
+            rt.forget_texture(texture.width, texture.height)
+        raise
     if bones:
         model.currentPose = [Transform(Vector3(*t), Vector4(*r), Vector3(*s))
                              for t, r, s in data['bindPose']]

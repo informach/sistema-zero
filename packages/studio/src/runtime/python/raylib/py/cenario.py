@@ -499,6 +499,9 @@ class Cenario:
             if self._regioes:
                 self._plano = _PlanoDaCarga(self._regioes)
                 x, z = self._inicio()
+                # A janela inicial já passa pelo orçamento das 48 malhas: o motor JavaScript carrega
+                # as regiões do plano e corta no primeiro quadro; aqui, onde a memória é mais curta,
+                # nada além da janela chega a carregar.
                 self._carregar(self._dentro_do_orcamento(self._plano.atualizar(x, z, 0.0), x, z))
                 # A primeira chamada de atualizar (com o personagem) conta a entrada inicial.
                 self._plano.reiniciar()
@@ -537,10 +540,13 @@ class Cenario:
             modelo = _p.load_model(str(self._arquivos[no['arquivo']][0]))
             self._modelos[chave] = modelo
             self._usos[chave] = 0
-            self._registrar_texturas(chave, modelo)
-            if not _p.is_model_valid(modelo):
+            try:
+                self._registrar_texturas(chave, modelo)
+                if not _p.is_model_valid(modelo):
+                    raise ValueError(f'Não foi possível carregar o modelo de {no["id"]}.')
+            except BaseException:
                 self._liberar_modelo(chave)
-                raise ValueError(f'Não foi possível carregar o modelo de {no["id"]}.')
+                raise
         self._usos[chave] += 1
         self._nos[no['id']] = (no, self._modelos[chave])
 
@@ -615,9 +621,11 @@ class Cenario:
     def _dentro_do_orcamento(self, estado, x, z):
         # A janela obrigatória sempre carrega; as outras só enquanto tudo cabe em 48 malhas.
         conjunto = set(estado['obrigatorias'])
+        # No empate de distância, a que já está carregada vem antes (nada de trocar à toa).
         opcionais = sorted((r for r in self._regioes
                             if r['id'] in estado['carregadas'] and r['id'] not in conjunto),
-                           key=lambda r: _distancia_ate_caixa(x, z, r['caixa']))
+                           key=lambda r: (_distancia_ate_caixa(x, z, r['caixa']),
+                                          r['id'] not in self._carregadas))
         for r in opcionais:
             if self._malhas_do_conjunto(conjunto | {r['id']}) <= _MALHAS_POR_JANELA:
                 conjunto.add(r['id'])
@@ -856,9 +864,10 @@ class Cenario:
         for c in self.dados['colisoes']:
             if c['tipo'] not in tipos or c.get('entidade') in ignorar:
                 continue
-            # A colisão de uma região que não está carregada não conta (ali vale o relevo).
+            # A colisão de uma região que não está carregada não conta (ali vale o relevo); a da
+            # água vale sempre, como no motor JavaScript.
             regioes = self._regioes_da_colisao.get(c.get('id'))
-            if regioes is not None and not regioes & self._carregadas:
+            if regioes is not None and c['tipo'] != 'agua' and not regioes & self._carregadas:
                 continue
             a, b = _volume(c['volume'])
             if all(lo[i] <= b[i] and hi[i] >= a[i] for i in range(3)):
