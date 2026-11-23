@@ -3,8 +3,10 @@ import * as Blockly from 'blockly/core'
 import { ensureBlocklyInitialized } from './setup'
 import {
   differsOnlyInStackPositions,
+  expandForShowing,
   forgetShownWhenTouched,
   isBumpWhileShowing,
+  keepShownBlocksCollapsed,
   withShowingScope,
 } from './transientExpansion'
 
@@ -168,5 +170,39 @@ describe('o gesto de mostrar', () => {
     const bump = doAfastamento(eventos)
     // Sem marca nenhuma, nada acontece; a regra é conferida pelo e2e com a função de verdade.
     expect(() => forgetShownWhenTouched(workspace, bump)).not.toThrow()
+  })
+})
+
+// Full review final (F5): a marca de "só mostrado" sai quando a criança mexe no bloco ou em algo
+// DENTRO dele. Encaixar um bloco embaixo da função (no conector de baixo) não muda o corpo dela:
+// a função continua gravada recolhida.
+describe('a marca de só mostrado e o encaixe embaixo da função', () => {
+  const tique = () => new Promise((resolve) => setTimeout(resolve, 0))
+  /** O bloco sai recolhido no estado salvo (o mesmo caminho do `saveWorkspaceState`)? */
+  const gravadaRecolhida = (workspace: Blockly.Workspace, id: string) => {
+    const estado = Blockly.serialization.workspaces.save(workspace)
+    keepShownBlocksCollapsed(workspace, estado)
+    return new RegExp(`"id":"${id}"[^}]*?"collapsed":true`).test(JSON.stringify(estado))
+  }
+
+  it('encaixar embaixo mantém a marca; encaixar no corpo tira', async () => {
+    const workspace = new Blockly.Workspace()
+    try {
+      const funcao = workspace.newBlock('controls_repeat_ext', 'funcao')
+      funcao.setCollapsed(true)
+      await tique()
+      expandForShowing(funcao as unknown as Blockly.BlockSvg)
+      expect(gravadaRecolhida(workspace, 'funcao')).toBe(true)
+      const embaixo = workspace.newBlock('controls_repeat_ext', 'embaixo')
+      funcao.nextConnection!.connect(embaixo.previousConnection!)
+      await tique()
+      expect(gravadaRecolhida(workspace, 'funcao')).toBe(true)
+      const dentro = workspace.newBlock('controls_repeat_ext', 'dentro')
+      funcao.getInput('DO')!.connection!.connect(dentro.previousConnection!)
+      await tique()
+      expect(gravadaRecolhida(workspace, 'funcao')).toBe(false)
+    } finally {
+      workspace.dispose()
+    }
   })
 })

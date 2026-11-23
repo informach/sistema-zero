@@ -107,7 +107,21 @@ export function forgetShownWhenTouched(
   }
   const touched: Array<string | undefined> = []
   if (event instanceof Blockly.Events.BlockBase) touched.push(event.blockId)
-  if (event instanceof Blockly.Events.BlockMove) touched.push(event.oldParentId, event.newParentId)
+  if (event instanceof Blockly.Events.BlockMove)
+    for (const [parentId, inputName] of [
+      [event.oldParentId, event.oldInputName],
+      [event.newParentId, event.newInputName],
+    ] as const) {
+      if (!parentId) continue
+      // Encaixe numa ENTRADA do pai muda o corpo dele; no conector de baixo (sem entrada), o bloco
+      // fica ao lado do pai, e quem muda é o bloco que envolve os dois (full review final: encaixar
+      // embaixo da função mostrada tirava a marca dela).
+      touched.push(
+        inputName
+          ? parentId
+          : (workspace.getBlockById(parentId)?.getSurroundParent()?.id ?? undefined),
+      )
+    }
   for (const id of touched) {
     for (
       let block = id ? workspace.getBlockById(id) : null;
