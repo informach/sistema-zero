@@ -156,10 +156,15 @@ describe('manifestos da Cabana', () => {
       expect(m.lessonSlug).toBe(`aula-${i + 1}`)
       expect(m.sections.map((s: { key: string }) => s.key)).toEqual(
         d === '2d'
-          ? ['abertura', 'material', 'experiencia', 'emblema', 'porta', 'revisao', 'entrega']
-          : ['abertura', 'emblema', 'porta', 'revisao', 'entrega'],
+          ? ['abertura', 'material', 'experiencia', 'emblema', 'porta', 'revisao']
+          : ['abertura', 'emblema', 'porta', 'revisao'],
       )
-      expect(m.sections.filter((s: any) => s.completion.submissionUpToDate)).toHaveLength(1)
+      // O envio fecha a última construção (a pergunta da cabana), e o quiz fecha a aula depois dele.
+      expect(
+        m.sections.filter((s: any) => s.completion.submissionUpToDate).map((s: any) => s.key),
+      ).toEqual(['porta'])
+      expect(m.sections.find((s: any) => s.key === 'porta').intent).toBe('delivery')
+      expect(m.sections.at(-1).intent).toBe('closing')
       const studio = m.blocks.filter((b: any) => b.content?.kind === 'studio')
       expect(studio).toHaveLength(1)
       expect(studio[0].content.chain).toBe(`jornada-faisca-poder-2-${d}`)

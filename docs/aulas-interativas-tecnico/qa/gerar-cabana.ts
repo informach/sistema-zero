@@ -6,7 +6,7 @@ import { CABANA_CURSO, CABANA_ETAPAS, montarProjetoCabana } from './cabana-proje
 import { cabanaQuiz2d, cabanaQuiz3d } from './cabana-quiz'
 import { gerarPoder } from './poder-gerador'
 
-const help = `# Passo a passo do projeto — O segredo da cabana\n\nPoder do Faísca. Aqui está o que investigar na experiência e cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.\n\n## ${cabanaExperiencia.title}\n\n**A ideia:** ${cabanaExperiencia.idea}\n\n**O que investigar:**\n\n${cabanaExperiencia.goals.map((g) => `- ${g}`).join('\n')}\n\n${cabanaExperiencia.observe}\n\n${cabanaAulas
+const help = `# Passo a passo do projeto: O segredo da cabana\n\nPoder do Faísca. Aqui está o que investigar na experiência e cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.\n\n## ${cabanaExperiencia.title}\n\n**A ideia:** ${cabanaExperiencia.idea}\n\n**O que investigar:**\n\n${cabanaExperiencia.goals.map((g) => `- ${g}`).join('\n')}\n\n${cabanaExperiencia.observe}\n\n${cabanaAulas
   .map(
     (a) =>
       `## ${a.dimension === '2d' ? 'Aula 1 · Jogo 2D' : 'Aula 2 · Ilha 3D'}: ${a.title}\n\n${cabanaAjuda(
@@ -20,7 +20,7 @@ const help = `# Passo a passo do projeto — O segredo da cabana\n\nPoder do Fa�
   )
   .join(
     '\n\n',
-  )}\n\n## Entrega\n\nEm cada aula, jogue uma partida inteira, tente a cabana com uma peça só e com as duas. Toque na tecla R e confira que as peças voltam e a cabana volta fechada.\n\nDepois clique em Verificar projeto e corrija o que faltar.\n\nPor fim, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.\n`
+  )}\n\n## Entrega\n\nEm cada aula, o envio fecha a última montagem, a da cabana. Antes de enviar, jogue uma partida inteira e tente a cabana sem nenhuma peça, com uma peça só e com as duas. Toque na tecla R e confira que as peças voltam e a cabana volta fechada.\n\nDepois clique em Verificar projeto e corrija o que faltar. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.\n\nNa última parte de cada aula, responda às perguntas sobre a cabana. Quando terminar, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.\n`
 
 await gerarPoder({
   nome: 'O segredo da cabana',
@@ -80,14 +80,14 @@ await gerarPoder({
   cenaDoZappy: 'two-pieces',
   passoAPasso: help,
   modulos:
-    '# O segredo da cabana — organização do curso\n\nPoder 2 do posto Faísca (`jornada-faisca-poder-2`). Módulo: **O segredo da cabana**. Preservar o ID do curso, do módulo reservado e da `aula-1`; a `aula-2` é criada no Admin, no mesmo curso, antes da importação.\n\n' +
+    '# O segredo da cabana: organização do curso\n\nPoder 2 do posto Faísca (`jornada-faisca-poder-2`). Módulo: **O segredo da cabana**. Preservar o ID do curso, do módulo reservado e da `aula-1`; a `aula-2` é criada no Admin, no mesmo curso, antes da importação.\n\n' +
     cabanaAulas
       .map(
         (a, i) =>
           `## Aula ${i + 1}. ${a.title}\n\nIdentificador: ${a.slug}. Dimensão: ${a.dimension.toUpperCase()}.\n\n${a.trechos.map((t, n) => `${n + 1}. ${t.title}.`).join('\n')}\n\n[Manifesto](cabana-${a.slug}.manifesto.json) · [Roteiro](cabana-${a.slug}.roteiro.md).`,
       )
       .join('\n\n') +
-    '\n\nUma entrega por aula. O Poder conta com as duas aulas concluídas. Sem certificado nem publicação na comunidade. Produzir e anexar a mídia real antes de publicar; publicar o curso só depois da `aula-2`.\n',
+    '\n\nUma entrega por aula, na última montagem (a da cabana); depois dela, o quiz fecha a aula. O Poder conta com as duas aulas concluídas. Sem certificado nem publicação na comunidade. Produzir e anexar a mídia real antes de publicar; publicar o curso só depois da `aula-2`.\n',
   resumo:
     'Cabana: duas aulas, roteiros, voz, ajuda, inventário e quatro projetos portáteis gerados.',
 })

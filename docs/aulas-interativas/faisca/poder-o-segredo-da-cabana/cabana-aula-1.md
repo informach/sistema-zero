@@ -51,10 +51,10 @@ Guarde o emblema.
 
 A cabana pede as duas.
 
-- Intenção: application.
-- Blocos: video-porta, ponte-porta.
+- Intenção: delivery.
+- Blocos: video-porta, ponte-porta, projeto.
 - Estúdio: projeto.
-- Conclusão: video-porta.
+- Conclusão: video-porta, projeto; envio atualizado.
 
 - Retire o emblema dentro do encontro entre personagem e emblema.
 - Sem nenhuma peça, a cabana fica fechada e o aviso diz o que ela pede.
@@ -68,28 +68,13 @@ A cabana pede as duas.
 
 Pense na cabana.
 
-- Intenção: explanation.
+- Intenção: closing.
 - Blocos: ponte-revisao, quiz.
 - Estúdio: não.
 - Conclusão: quiz.
 
 
 
-## Parte 7. Envie o seu jogo com a cabana
-
-Envie o seu jogo com a cabana.
-
-- Intenção: delivery.
-- Blocos: video-entrega, ponte-entrega, projeto.
-- Estúdio: projeto.
-- Conclusão: video-entrega, projeto; envio atualizado.
-
-- Retire o emblema dentro do encontro entre personagem e emblema.
-- Sem nenhuma peça, a cabana fica fechada e o aviso diz o que ela pede.
-- Só com a chave, a cabana continua fechada.
-- Só com o emblema, a cabana continua fechada.
-- Com a chave e o emblema, a cabana abre.
-- Pegando o emblema antes da chave a cabana também abre, e uma nova partida (tecla R) a fecha.
-- O farol continua: com a chave, ele acende.
+Na edição kids, Debinha diz as frases das tabelas de substituição do roteiro.
 
 [Fala integral](cabana-aula-1.roteiro.md) · [Passo a passo](passo-a-passo.md).
