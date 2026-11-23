@@ -18,6 +18,11 @@ const Input = t.Object({
     t.Object({
       itemId: t.String({ pattern: '^[A-Za-z0-9_-]{1,64}$' }),
       revision: t.Integer({ minimum: 1 }),
+      /**
+       * Perfil com o Pinta causal: o hash da cabeça confirmada que o seletor mostrou. Declarado
+       * aqui de propósito: o normalize do Elysia apagaria o campo, e a cópia perderia a conferência.
+       */
+      causalSha256: t.Optional(t.String({ pattern: '^[0-9a-f]{64}$' })),
     }),
     { minItems: 1, maxItems: 12 },
   ),

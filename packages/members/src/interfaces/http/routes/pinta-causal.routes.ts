@@ -78,12 +78,18 @@ export function pintaCausalRoutes(deps: CausalRouteDeps) {
         z.union([
           z.strictObject({ epoch: epoch.optional(), cursor: id.optional(), reader }),
           z.strictObject({
-            mode: z.literal('archive'),
+            // `gallery`: o seletor da galeria da aula (o mesmo inventário, com a miniatura).
+            mode: z.enum(['archive', 'gallery']),
             epoch: epoch.optional(),
             cursor: id.optional(),
           }),
         ]),
-        (db, a, p) => ('mode' in p ? db.archivePage(a, p) : db.page(a, p)),
+        (db, a, p) =>
+          !('mode' in p)
+            ? db.page(a, p)
+            : p.mode === 'gallery'
+              ? db.galleryPage(a, p)
+              : db.archivePage(a, p),
       ),
     )
     .post(

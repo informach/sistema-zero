@@ -5,10 +5,12 @@ import {
   type PintaCausalArchivePage,
   type PintaCausalBackfillAttestation,
   type PintaCausalEntry,
+  type PintaCausalGalleryPage,
   type PintaCausalSnapshotPage,
   pintaCausalBlobKey,
 } from '@sistemazero/core/creations/pinta-causal'
 import { and, eq, gt, isNotNull, isNull, ne, sql } from 'drizzle-orm'
+import { CREATION_LIMITS } from '../../../domain/creations/creation'
 import { PALETTE_LIBRARY_ITEM_ID } from '../../../domain/creations/palette-library'
 import { PintaCausalError } from '../../../domain/creations/pinta-causal-graph'
 import type { Database } from './db'
@@ -112,34 +114,67 @@ export class DrizzlePintaGraphRepository {
     a: Actor,
     p: { epoch?: string; cursor?: string; reader: number },
   ): Promise<PintaCausalSnapshotPage> {
-    return { protocol: 1, ...(await this.readPage(a, p, p.reader)) }
+    const { rows, ...page } = await this.readPage(a, p, p.reader)
+    return { protocol: 1, ...page, entries: rows.map(entry) }
   }
 
   async archivePage(
     a: Actor,
     p: { epoch?: string; cursor?: string },
   ): Promise<PintaCausalArchivePage> {
-    return { archive: await this.readPage(a, p, 'archive') }
+    const { rows, ...page } = await this.readPage(a, p, 'archive')
+    return { archive: { ...page, entries: rows.map(entry) } }
   }
 
-  private readPage(a: Actor, p: { epoch?: string; cursor?: string }, mode: number | 'archive') {
+  /**
+   * Seletor da galeria da aula (23/11/2026): o MESMO inventário do dono, sem o piso de leitor do
+   * Pinta (a galeria não abre o documento), com a miniatura da cabeça confirmada de cada unidade.
+   */
+  async galleryPage(
+    a: Actor,
+    p: { epoch?: string; cursor?: string },
+  ): Promise<PintaCausalGalleryPage> {
+    const { rows, ...page } = await this.readPage(a, p, 'archive', true)
+    return {
+      gallery: {
+        ...page,
+        entries: rows.map((row) => ({
+          ...entry(row),
+          // A miniatura é enfeite da lista: uma fora do contrato da criação vira `null`.
+          thumb:
+            row.thumb?.startsWith('data:image/') &&
+            row.thumb.length <= CREATION_LIMITS.maxThumbChars
+              ? row.thumb
+              : null,
+        })),
+      },
+    }
+  }
+
+  private readPage(
+    a: Actor,
+    p: { epoch?: string; cursor?: string },
+    mode: number | 'archive',
+    withThumb = false,
+  ) {
     return this.db.transaction(async (tx) => {
       await lock(tx, a)
       if (p.cursor && !p.epoch) throw new PintaCausalError('epoch-changed')
       const state = await checkEpoch(tx, a, p.epoch, mode)
       const key = sql<string>`${c.itemId} collate "C"`
       const rows = await tx
-        .select(entryColumns)
+        // Só a galeria lê a miniatura (TOAST); o inventário do Pinta segue sem ela.
+        .select({ ...entryColumns, thumb: withThumb ? c.thumb : sql<string | null>`null` })
         .from(c)
         .where(and(wherePersonal(a), alive(), p.cursor ? gt(key, p.cursor) : undefined))
         .orderBy(key)
         .limit(PINTA_CAUSAL_LIMITS.page + 1)
-      const entries = rows.slice(0, PINTA_CAUSAL_LIMITS.page).map(entry)
+      const selected = rows.slice(0, PINTA_CAUSAL_LIMITS.page)
       return {
         epoch: state.epoch.toString(),
         requiredFormat: state.floor,
-        entries,
-        nextCursor: rows.length > entries.length ? entries.at(-1)!.itemId : null,
+        rows: selected,
+        nextCursor: rows.length > selected.length ? selected.at(-1)!.itemId : null,
       }
     })
   }
@@ -150,9 +185,16 @@ export class DrizzlePintaGraphRepository {
   async archiveItem(a: Actor, p: { epoch: string; itemId: string; revision: number }) {
     return { archive: await this.readItem(a, p, 'archive') }
   }
+  /**
+   * A entrega da galeria confere a cabeça confirmada pela revisão e pelo hash que o seletor viu,
+   * sem depender da época do grafo: outro desenho editado depois da lista não invalida este.
+   */
+  galleryItem(a: Actor, p: { itemId: string; revision: number }) {
+    return this.readItem(a, p, 'archive')
+  }
   private readItem(
     a: Actor,
-    p: { epoch: string; itemId: string; revision: number },
+    p: { epoch?: string; itemId: string; revision: number },
     mode: number | 'archive',
   ) {
     return this.db.transaction(async (tx) => {

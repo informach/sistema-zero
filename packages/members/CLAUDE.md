@@ -2759,12 +2759,21 @@ A escrita/leitura pública do Pinta continua em 6. Ordem de rollout, ensaios e l
 `docs/pinta-cenarios/missao-completa-2026-11-18/qa/piso-de-leitura-do-inventario-2026-11-22/`
 na raiz. A causalidade de alterações em várias criações por um escritor compatível segue aberta.
 
-**Galeria da aula × Pinta causal (23/11/2026): recusa explícita.** A galeria lista e copia os
-desenhos pela leitura antiga (`listCreations`/`get`), que num perfil adotado pelo protocolo causal
-é cercada (`protocol-required`). O preparo traduz a cerca em `GALLERY_PINTA_CAUSAL_UNSUPPORTED`
-(409, frase clara; o member-shell mostra a mesma frase também para o `PINTA_CAUSAL_CONFLICT` da
-listagem). Liberar exige decisão de produto: listagem própria da galeria, cópia que exija o
-`causal_sha256` de cada desenho e o destino dos desenhos sem certificado (cobertura `unknown`).
+**Galeria da aula × Pinta causal (23/11/2026): liberada pela cabeça confirmada.** Num perfil
+antigo nada muda (`listCreations`/`get`, cópia de `storageRef` + partes). Num perfil adotado, a
+listagem antiga responde `protocol-required` e o seletor (`member-shell/src/lib/gallery-choices.ts`)
+passa a listar por `GET /api/pinta/causal/gallery` → `graph/page` com `mode: 'gallery'`: o MESMO
+`readPage` do inventário (cerca de QA, conta + perfil dono, sem piso de leitor) com a miniatura da
+cabeça confirmada (`PintaCausalGalleryPageSchema`). Cada escolha leva `causalSha256`; o preparo lê
+`galleryItem` (o `readItem` do inventário pela revisão, sem época) e só copia o selo imutável
+cujo hash confere (`parts: []`; o hash cobre o arquivo inteiro). O BFF confere que o plano manteve
+o hash e o sha256 dos bytes da cópia antes de confirmar. Recusas: `GALLERY_PINTA_DRAWING_CHANGED`
+(outra revisão/hash, apagado, de outro perfil, ou lista antiga num perfil que virou causal) e
+`GALLERY_PINTA_DRAWING_UNCERTIFIED` (cobertura `unknown`: o desenho aparece bloqueado com "Abra
+este desenho no Pinta uma vez para poder enviar."; a sincronização do Pinta adota a unidade por
+backfill e o hash passa a existir). `GALLERY_PINTA_CAUSAL_UNSUPPORTED` fica só para perfil causal
+sem a leitura causal (protocolo desligado ou fora de `PINTA_CAUSAL_QA_PROFILES`). Pendência: o
+inventário pagina por id (100); o seletor ordena o que carregou do mais novo para o mais antigo.
 
 **Reserva (07/09):** ticket inclui `formatVersion` validada, independente da revisão.
 BFF e cliente conferem essa confirmação antes de PUT; omissão confirma só legado 1.

@@ -203,6 +203,8 @@ export function buildApp(
       import('../src/application/learning/studio-gallery-source.service').StudioGallerySourceService,
       'load'
     >
+    /** A leitura causal do Pinta na galeria da aula (o repositório real nos testes de banco). */
+    galleryPintaCausal?: import('../src/application/learning/gallery-delivery.service').PintaCausalGallery
     /** Para quem a oficina de cenários está aberta (padrão dos testes: `equipe`). */
     cenariosModo?: import('../src/domain/cenarios/cenarios').ModoDosCenarios
     cenariosLista?: string[]
@@ -503,6 +505,7 @@ export function buildApp(
     submitStudio,
     galleryCopies,
     opts.galleryStudioSource,
+    opts.galleryPintaCausal,
   )
   const getMissions = new GetMissionsService(
     gamification,

@@ -1310,6 +1310,11 @@ export async function createApplication(env: Env): Promise<Application> {
     studioRuntimePolicy,
     () => clock().getTime(),
   )
+  // O inventário causal do Pinta: as rotas causais e a galeria da aula leem o MESMO repositório,
+  // ligado e cercado pelos mesmos perfis de QA.
+  const pintaCausal = pintaCausalCandidateConfigured(env)
+    ? new DrizzlePintaCausalRepository(db, clock)
+    : undefined
   const server = createServer({
     coursePromotion:
       sourcePeer && env.COURSE_PUBLICATION_PEER_TOKEN
@@ -1389,6 +1394,7 @@ export async function createApplication(env: Env): Promise<Application> {
           storageBaseURL: env.STUDIO_GALLERY_STORAGE_BASE_URL,
           allowLoopbackHttp: env.NODE_ENV !== 'production',
         }),
+        pintaCausal ? { heads: pintaCausal, qaProfiles: env.PINTA_CAUSAL_QA_PROFILES } : undefined,
       ),
       preferences,
       learning,
@@ -1540,11 +1546,8 @@ export async function createApplication(env: Env): Promise<Application> {
             },
           }
         : {}),
-      ...(pintaCausalCandidateConfigured(env)
-        ? {
-            causal: new DrizzlePintaCausalRepository(db, clock),
-            causalQaProfiles: env.PINTA_CAUSAL_QA_PROFILES,
-          }
+      ...(pintaCausal
+        ? { causal: pintaCausal, causalQaProfiles: env.PINTA_CAUSAL_QA_PROFILES }
         : {}),
       adult: {
         list: new ListCreationsService(adultCreationsRepo),

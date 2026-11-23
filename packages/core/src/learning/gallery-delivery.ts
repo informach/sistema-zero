@@ -18,7 +18,13 @@ export const GALLERY_DRAWING_KINDS: readonly string[] = [
 export interface GallerySelection {
   itemId: string
   revision: number
+  /**
+   * Perfil com o Pinta causal (23/11/2026): o hash da revisão CONFIRMADA que o seletor mostrou.
+   * O members copia exatamente esses bytes e recusa se o desenho mudou depois da lista.
+   */
+  causalSha256?: string
 }
+const SHA256 = /^[0-9a-f]{64}$/
 export interface GallerySubmissionItem extends GallerySelection {
   name: string
   kind: string
@@ -90,6 +96,8 @@ export function isGallerySubmission(v: unknown): v is GallerySubmission {
         typeof i.name === 'string' &&
         typeof i.kind === 'string' &&
         typeof i.revision === 'number' &&
+        (i.causalSha256 === undefined ||
+          (typeof i.causalSha256 === 'string' && SHA256.test(i.causalSha256))) &&
         typeof i.storageKey === 'string' &&
         Array.isArray(i.parts) &&
         i.parts.every(
