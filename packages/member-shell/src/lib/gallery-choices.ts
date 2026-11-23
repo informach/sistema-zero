@@ -147,18 +147,10 @@ export async function loadGalleryChoices(options: {
   }
 }
 
-const newestFirst = (a: GalleryChoice, b: GalleryChoice) =>
-  a.itemUpdatedAt === b.itemUpdatedAt
-    ? a.itemId < b.itemId
-      ? -1
-      : 1
-    : a.itemUpdatedAt < b.itemUpdatedAt
-      ? 1
-      : -1
-
 /**
- * Junta uma página à lista do seletor. A listagem antiga já vem da mais nova para a mais antiga;
- * o inventário causal vem pela ordem dos ids, e a galeria mostra o mais novo primeiro.
+ * Junta uma página à lista do seletor. As duas listagens já vêm da mais nova para a mais antiga
+ * ATRAVÉS das páginas (a causal confere essa ordem em `PintaCausalGalleryPageSchema`): a página
+ * seguinte só continua a lista.
  */
 export function mergeGalleryChoices(
   previous: readonly GalleryChoice[],
@@ -166,10 +158,7 @@ export function mergeGalleryChoices(
   append: boolean,
 ): GalleryChoice[] {
   const kept = append && !loaded.restarted ? previous : []
-  const merged = [
-    ...new Map([...kept, ...loaded.items].map((item) => [item.itemId, item])).values(),
-  ]
-  return loaded.mode === 'causal' ? merged.sort(newestFirst) : merged
+  return [...new Map([...kept, ...loaded.items].map((item) => [item.itemId, item])).values()]
 }
 
 /** O que o envio leva de um trabalho escolhido: no perfil causal, o hash que o seletor mostrou. */

@@ -4,6 +4,7 @@ import {
   PintaCausalArchiveItemSchema,
   PintaCausalArchivePageSchema,
   type PintaCausalAttestation,
+  type PintaCausalGalleryPage,
   PintaCausalGalleryPageSchema,
   type PintaCausalIntent,
   type PintaCausalManifest,
@@ -1161,9 +1162,10 @@ describe.skipIf(!url)('Pinta causal over the real migration and existing quota l
         thumb,
       })),
     ).toEqual([
-      { itemId: 'cacto', coverage: 'certified', sha256: sha(11), thumb: null },
-      { itemId: 'dino', coverage: 'certified', sha256: sha(12), thumb },
+      // Do mais novo para o mais antigo; no mesmo milissegundo, pelo id decrescente.
       { itemId: 'velho', coverage: 'unknown', sha256: null, thumb: null },
+      { itemId: 'dino', coverage: 'certified', sha256: sha(12), thumb },
+      { itemId: 'cacto', coverage: 'certified', sha256: sha(11), thumb: null },
     ])
     type Selection = { itemId: string; revision: number; causalSha256?: string }
     const prepare = (items: Selection[]) =>
@@ -1181,11 +1183,13 @@ describe.skipIf(!url)('Pinta causal over the real migration and existing quota l
     }
 
     // O seletor viu a cabeça confirmada: a cópia sai do selo imutável que tem esse hash.
-    const chosen = listed.entries.flatMap(({ itemId, revision, sha256 }) =>
-      sha256 ? [{ itemId, revision, causalSha256: sha256 }] : [],
-    )
-    const [first] = chosen
-    if (!first) throw new Error('A lista não trouxe desenhos certificados.')
+    const seen = (id: string) => {
+      const shown = listed.entries.find((e) => e.itemId === id)
+      if (!shown?.sha256) throw new Error(`A lista não trouxe ${id} certificado.`)
+      return { itemId: id, revision: shown.revision, causalSha256: shown.sha256 }
+    }
+    const chosen = [seen('cacto'), seen('dino')]
+    const first = chosen[0]!
     const input = { requestId: randomUUID(), revision: ctx.revision, items: chosen }
     const prepared = await ctx.request(`${ctx.path}/gallery-prepare`, input)
     expect(prepared.status).toBe(200)
@@ -1253,5 +1257,61 @@ describe.skipIf(!url)('Pinta causal over the real migration and existing quota l
     const after = (await adopted.json()) as GalleryDeliveryPlan
     if (after.completed) throw new Error('Unexpected completion')
     expect(after.copies[1]?.source).toBe(pintaCausalBlobKey(adoption.binding, 'sealed'))
+  })
+  test('galeria da aula: mais de 100 desenhos paginam do mais novo para o mais antigo, com cursor estável', async () => {
+    const a = actor()
+    const sibling = { ...a, userId: randomUUID() }
+    // 230 desenhos com a ordem dos ids embaralhada em relação ao tempo, três por minuto (empates que
+    // cruzam a borda das páginas) e microssegundos que o fio não mostra. O mais novo tem o MAIOR id:
+    // pela ordem dos ids ele só apareceria na última página.
+    await conn.sql`insert into members.creations (id,user_id,account_id,audience,tool,item_id,name,kind,item_updated_at,revision,storage_ref,bytes,created_at,synced_at)
+     select gen_random_uuid(),${a.userId},${a.accountId},'kids','pinta','d'||lpad(n::text,3,'0'),'d'||n,'pixel-sprite',
+       '2026-11-01T00:00:00Z'::timestamptz + (((n*37)%230)/3) * interval '1 minute' + (n%7) * interval '1 microsecond',
+       1,'legacy/d'||n,5,now(),now() from generate_series(1,230) n`
+    await conn.sql`insert into members.creations (id,user_id,account_id,audience,tool,item_id,name,kind,item_updated_at,revision,storage_ref,bytes,created_at,synced_at,deleted_at)
+     values (gen_random_uuid(),${a.userId},${a.accountId},'kids','pinta','zzz-novo','novo','pixel-sprite','2026-11-02T00:00:00Z',1,'legacy/novo',5,now(),now(),null),
+            (gen_random_uuid(),${a.userId},${a.accountId},'kids','pinta','zzz-apagado','apagado','pixel-sprite','2026-11-03T00:00:00Z',1,'legacy/apagado',5,now(),now(),now()),
+            (gen_random_uuid(),${sibling.userId},${a.accountId},'kids','pinta','zzz-irmao','irmao','pixel-sprite','2026-11-04T00:00:00Z',1,'legacy/irmao',5,now(),now(),null)`
+    const minute = (n: number) => Math.floor(((n * 37) % 230) / 3)
+    const at = (m: number) => new Date(Date.UTC(2026, 10, 1, 0, m)).toISOString()
+    const seeded = Array.from({ length: 230 }, (_, i) => ({
+      itemId: `d${String(i + 1).padStart(3, '0')}`,
+      itemUpdatedAt: at(minute(i + 1)),
+    })).sort((x, y) =>
+      x.itemUpdatedAt === y.itemUpdatedAt
+        ? x.itemId < y.itemId
+          ? 1
+          : -1
+        : x.itemUpdatedAt < y.itemUpdatedAt
+          ? 1
+          : -1,
+    )
+    const expected = [{ itemId: 'zzz-novo', itemUpdatedAt: '2026-11-02T00:00:00.000Z' }, ...seeded]
+
+    const pages: PintaCausalGalleryPage['gallery'][] = []
+    let cursor: { epoch: string; cursor: string } | undefined
+    do {
+      const page = PintaCausalGalleryPageSchema.parse(await db.galleryPage(a, cursor ?? {})).gallery
+      pages.push(page)
+      cursor = page.nextCursor ? { epoch: page.epoch, cursor: page.nextCursor } : undefined
+    } while (cursor)
+    expect(pages.map((page) => page.entries.length)).toEqual([100, 100, 31])
+    expect(pages[0]!.entries[0]!.itemId).toBe('zzz-novo')
+    expect(
+      pages.flatMap((page) =>
+        page.entries.map(({ itemId, itemUpdatedAt }) => ({ itemId, itemUpdatedAt })),
+      ),
+    ).toEqual(expected)
+    // O mesmo cursor na mesma época devolve a mesma página.
+    const second = { epoch: pages[0]!.epoch, cursor: pages[0]!.nextCursor! }
+    expect((await db.galleryPage(a, second)).gallery).toEqual(pages[1]!)
+    // Um cursor que não está no inventário desta época recomeça a lista em vez de encurtá-la.
+    expect(
+      await rejection(db.galleryPage(a, { epoch: pages[0]!.epoch, cursor: 'zzz-apagado' })),
+    ).toMatchObject({ reason: 'epoch-changed' })
+    // O inventário do Pinta (e o arquivo do dono) segue pela ordem dos ids.
+    const inventory = await db.page(a, { reader: 6 })
+    expect(inventory.entries[0]!.itemId).toBe('d001')
+    expect(PintaCausalSnapshotPageSchema.safeParse(inventory).success).toBe(true)
   })
 })

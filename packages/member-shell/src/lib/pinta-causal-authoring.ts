@@ -3,6 +3,7 @@ import type {
   PintaCausalOperation,
 } from '@sistemazero/core/creations/pinta-causal'
 import type {
+  LocalRegionCausalUnit,
   PintaCausalLocalPort as NativeCausalPort,
   PintaEditorWriteContext,
 } from '@sistemazero/pinta'
@@ -27,6 +28,7 @@ type Transition = Draft['transitions'][number]
 type Unit = Awaited<ReturnType<PintaCausalLocalPort['stage']>>
 type QueueState = Awaited<ReturnType<PintaCausalLocalPort['inspect']>>
 type Read = Draft['readSet'][number]
+type Pins = NonNullable<Draft['pins']>
 type RemapEntry = Pick<PintaCausalEntry, 'revision' | 'sha256' | 'layoutRevision' | 'coverage'>
 
 type PintaCausalLocalPort = NativeCausalPort<PintaWorkshopAsset>
@@ -585,5 +587,119 @@ export async function stagePintaCausalWrite(options: {
           },
         }
       : {}),
+  }
+}
+
+/** The window's resources, pinned once when it opens: the gzip of each one and the revision read. */
+export interface PintaRegionCausalPins {
+  candidate: Pins['candidate']
+  revisions: ReadonlyMap<string, string | null>
+}
+
+const regionConflict = () =>
+  Error('O cenário ou suas peças mudaram. Reabra o cenário antes de guardar o gesto.')
+
+/** Each resource the window reads: the frozen predecessor that wrote it, else its confirmed head. */
+export function pintaRegionCausalReads(
+  state: QueueState,
+  consumerId: string,
+  reads: readonly { id: string; localRevision: string | null }[],
+): Read[] {
+  const epoch = state.writeEpoch ?? state.epoch
+  if (epoch === null) throw Error('Ainda estou conferindo os desenhos guardados na conta.')
+  const origins = frozenOrigins(state, epoch)
+  const readSet: Read[] = reads.map(({ id: targetId, localRevision }) => {
+    const sent = origins.get(targetId)
+    if (sent?.sha256 && sent.localRevision === localRevision)
+      return { source: 'predecessor', consumerId, targetId, base: sent }
+    const mark = state.confirmed.get(targetId)
+    if (!mark || mark.deleted || !mark.sha256 || mark.localRevision !== localRevision)
+      throw Error('Um recurso usado pelo desenho mudou desde que foi aberto.')
+    return {
+      source: 'snapshot',
+      consumerId,
+      targetId,
+      revision: mark.revision,
+      sha256: mark.sha256,
+      ...(mark.layoutRevision ? { layoutRevision: mark.layoutRevision } : {}),
+    }
+  })
+  return readSet.sort((a, b) => (a.targetId < b.targetId ? -1 : a.targetId > b.targetId ? 1 : 0))
+}
+
+/**
+ * The V4 unit of one focal revision, built INSIDE the gesture's transaction from the queue read
+ * there (`LocalRegionCausalBinding`). The map is the only member, with the same basis rules as
+ * `stagePintaCausalWrite`; later gestures coalesce into its mutable unit. A mutable unit that also
+ * carries other documents or a shadow belongs to another writer, so the gesture is refused.
+ */
+export function pintaRegionCausalUnit(
+  state: QueueState,
+  change: { id: string; beforeRevision: string },
+  reads: readonly { id: string; localRevision: string | null }[],
+  pins: PintaRegionCausalPins,
+): LocalRegionCausalUnit {
+  const epoch = state.writeEpoch ?? state.epoch
+  if (epoch === null) throw Error('Ainda estou conferindo os desenhos guardados na conta.')
+  const held = state.pending.filter(
+    (unit) =>
+      !state.prepared?.has(unit.opId) && unit.members.some((member) => member.itemId === change.id),
+  )
+  const unit = held[0]
+  const member = unit?.members[0]
+  if (
+    held.length > 1 ||
+    (unit &&
+      (unit.members.length !== 1 || state.shadows?.has(unit.opId) || unit.baseEpoch !== epoch))
+  )
+    throw regionConflict()
+  const sent = frozenOrigins(state, epoch).get(change.id)
+  const baseAfter =
+    member?.baseAfter ?? (sent?.localRevision === change.beforeRevision ? sent : undefined)
+  const confirmed = state.confirmed.get(change.id)
+  const baseRevision = member?.baseRevision ?? (confirmed?.deleted ? 0 : (confirmed?.revision ?? 0))
+  const operation =
+    member?.operation ??
+    (baseRevision === 0 && !baseAfter ? { type: 'create' as const } : { type: 'update' as const })
+  const readSet = pintaRegionCausalReads(state, change.id, reads)
+  const snapshots = new Map(
+    readSet.flatMap((edge) =>
+      edge.source === 'snapshot'
+        ? [
+            [
+              edge.targetId,
+              {
+                revision: edge.revision,
+                sha256: edge.sha256,
+                ...(edge.layoutRevision ? { layoutRevision: edge.layoutRevision } : {}),
+              },
+            ] as const,
+          ]
+        : [],
+    ),
+  )
+  const predecessor =
+    state.pending
+      .filter(({ opId, baseEpoch }) => baseEpoch === epoch && state.prepared?.has(opId))
+      .at(-1) ?? (state.sealed?.intent.baseEpoch === epoch ? state.sealed.local : undefined)
+  return {
+    opId: unit?.opId ?? crypto.randomUUID(),
+    baseEpoch: epoch,
+    readSet,
+    replaces: unit ? [{ opId: unit.opId, preparation: unit.preparation }] : [],
+    ...(predecessor ? { follows: predecessor.opId } : {}),
+    // Same bytes as at the opening; only the confirmed head of each direct read is re-read here.
+    pins: {
+      bases: pins.candidate.puts.map(({ itemId }) => {
+        const remote = snapshots.get(itemId)
+        return {
+          itemId,
+          localRevision: pins.revisions.get(itemId) ?? null,
+          ...(remote ? { remote } : {}),
+        }
+      }),
+      candidate: pins.candidate,
+    },
+    member: { baseRevision, operation, ...(baseAfter ? { baseAfter } : {}) },
   }
 }

@@ -28,7 +28,11 @@ import {
 } from './localRegionAssetAuthority'
 import { openLocalRegionAuthorSession } from './localRegionAuthorSession'
 import { readRegionCaptureSnapshot } from './localRegionCapture'
-import { persistLocalRegionRevision, readLocalRegionGalleryIndex } from './localRegionEditing'
+import {
+  type LocalRegionCausalBinding,
+  persistLocalRegionRevision,
+  readLocalRegionGalleryIndex,
+} from './localRegionEditing'
 import {
   captureLocalPintaAssetForImage,
   createLocalPintaPersistence,
@@ -141,8 +145,8 @@ export function createWorkshopPintaPersistence(
     workshopReader: true as const,
     observesReferences: true as const,
     persistRevision,
-    openRegionSession: (id: string, signal?: AbortSignal) =>
-      openLocalRegionAuthorSession(namespace, id, signal),
+    openRegionSession: (id: string, signal?: AbortSignal, causal?: LocalRegionCausalBinding) =>
+      openLocalRegionAuthorSession(namespace, id, signal, causal),
     listGalleryIndex: () => readLocalRegionGalleryIndex(namespace),
   }
 }

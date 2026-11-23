@@ -111,6 +111,50 @@ export type MarcadorCompilado = z.infer<typeof MarcadorCompiladoSchema>
 const ponto2 = z
   .object({ x: z.number().finite().min(-1e9).max(1e9), z: z.number().finite().min(-1e9).max(1e9) })
   .strict()
+const corHex = z.string().regex(/^#[a-fA-F0-9]{6}$/)
+/**
+ * Uma camada do chão do relevo "campo" (plano "Mundos de 2 km", lote 2, 23/11/2026): a cor, a
+ * textura repetida em metros e a cor MÉDIA da textura (quem não mistura texturas, o Python, pinta
+ * cada vértice com peso × cor × cor média).
+ */
+export const CamadaDoRelevoSchema = z
+  .object({
+    id: z.string().min(1).max(240),
+    cor: corHex,
+    textura: z
+      .object({
+        id: IdentificadorDeCenarioSchema,
+        repeticaoMetros: z.number().finite().min(0.1).max(100),
+      })
+      .strict()
+      .optional(),
+    corMedia: corHex,
+  })
+  .strict()
+export type CamadaDoRelevo = z.infer<typeof CamadaDoRelevoSchema>
+/**
+ * O relevo como CAMPO (plano "Mundos de 2 km"): o pacote leva só as alturas e os pesos das camadas
+ * (um PNG RGBA por quatro camadas, um pixel por vértice da grade); o jogo desenha o relevo em
+ * pedaços, com menos detalhe longe, e a colisão lê as alturas. Sem lotes de terreno nem colisão do
+ * chão no pacote. Sem este campo, o terreno é o de sempre (lotes e colisão compilados).
+ */
+export const RelevoCompiladoSchema = z
+  .object({
+    tipo: z.literal('campo'),
+    pesos: z.array(CaminhoCompiladoSchema).min(1).max(2),
+    camadas: z.array(CamadaDoRelevoSchema).min(1).max(8),
+  })
+  .strict()
+  .superRefine((r, ctx) => {
+    if (r.pesos.length !== Math.ceil(r.camadas.length / 4))
+      ctx.addIssue({
+        code: 'custom',
+        message: 'O relevo precisa de um arquivo de pesos para cada quatro camadas.',
+      })
+    if (new Set(r.camadas.map((c) => c.id)).size !== r.camadas.length)
+      ctx.addIssue({ code: 'custom', message: 'Há uma camada repetida no relevo.' })
+  })
+export type RelevoCompilado = z.infer<typeof RelevoCompiladoSchema>
 export const TerrenoCompiladoSchema = z
   .object({
     origem: ponto2,
@@ -132,9 +176,17 @@ export const TerrenoCompiladoSchema = z
     alturas: CaminhoCompiladoSchema,
     pngAlturas: CaminhoCompiladoSchema,
     buracos: CaminhoCompiladoSchema.optional(),
+    relevo: RelevoCompiladoSchema.optional(),
   })
   .strict()
   .superRefine((t, ctx) => {
+    if (t.relevo && (t.cobertura !== 'grade' || t.recortes.length > 0))
+      ctx.addIssue({
+        code: 'custom',
+        message:
+          'O relevo em campo só vale para o terreno que ocupa a grade inteira, sem recortes.',
+        path: ['relevo'],
+      })
     // Os mesmos limites/domínio da autoria, sem uma segunda definição de terreno.
     const base = BaseDeTerrenoSchema.safeParse({
       tipo: 'terreno',

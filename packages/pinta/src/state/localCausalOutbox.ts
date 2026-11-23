@@ -25,6 +25,7 @@ import type { LocalAssetTransition, LocalSnapshot } from './localAssetAuthority'
 import { copyArchivedRecovery, planArchivedRecovery } from './localCausalArchive'
 import {
   keepLivePins,
+  type LocalCausalDocuments,
   type LocalPins,
   type PintaPinDraft,
   retainPinnedWrites,
@@ -42,6 +43,8 @@ interface PintaCausalDraftMember {
   operation?: PintaCausalOperation
   baseAfter?: PintaCausalPredecessor
 }
+/** The account basis of one member: its remote revision, operation and queued predecessor. */
+export type PintaCausalMemberBasis = Omit<PintaCausalDraftMember, 'itemId'>
 
 interface PintaCausalPredecessor {
   opId: string
@@ -67,6 +70,19 @@ export interface PintaCausalLocalDraft<Asset extends PintaWorkshopAsset> {
   shadow?: PintaCandidateBytes
   authors?: ReadonlyMap<string, Asset>
   pins?: PintaPinDraft
+}
+
+/**
+ * The draft as the stage records it. Its writer callback owns the document bytes, so a member only
+ * says which revision it replaced and whether it writes (`after`) or removes (`null`) the document.
+ */
+export interface PintaCausalStageDraft
+  extends Omit<PintaCausalLocalDraft<PintaWorkshopAsset>, 'transitions' | 'authors'> {
+  transitions: readonly ({
+    id: string
+    beforeRevision: string | null
+    after: object | null
+  } & PintaCausalMemberBasis)[]
 }
 
 interface PintaLocalUnbasedRead {
@@ -1077,11 +1093,11 @@ function prepareUnbasedCreates<Asset extends PintaWorkshopAsset>(
   }
 }
 
-export function stageLocalCausalDraft<Asset extends PintaWorkshopAsset>(
+export function stageLocalCausalDraft<Written extends LocalCausalDocuments>(
   records: Map<string, unknown>,
-  draft: PintaCausalLocalDraft<Asset>,
-  write: () => LocalSnapshot<Asset>,
-): { snapshot: LocalSnapshot<Asset>; pending: PintaCausalPending } {
+  draft: PintaCausalStageDraft,
+  write: () => Written,
+): { snapshot: Written; pending: PintaCausalPending } {
   const state = readLocalCausalState(records)
   const items = new Set(draft.transitions.map(({ id }) => id))
   if (items.size === 0 || draft.opId === state.sealed?.local.opId) invalid()

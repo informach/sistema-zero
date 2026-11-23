@@ -8,10 +8,11 @@ import {
   type PacoteCompilado,
   regiaoDoPonto,
 } from '@sistemazero/molda-cenarios-core/compilar'
-import type { FonteDeAlturas } from '@sistemazero/molda-cenarios-core/v2'
+import { type FonteDeAlturas, lerPngDePesos } from '@sistemazero/molda-cenarios-core/v2'
 import {
   BoxGeometry,
   type Camera,
+  Fog,
   Group,
   type Intersection,
   Matrix4,
@@ -24,6 +25,7 @@ import {
 import { AmbienteDoPalco } from '../ambiente/ambiente'
 import { LuzesLocaisDoPalco } from '../ambiente/luzes-locais'
 import { type CacheDeImagens, lerGlb, type ModeloCarregado } from '../modelos'
+import type { CampoDeColisao } from '../teste/campo'
 import {
   type CacheDeArvores,
   type FonteDeColisao,
@@ -34,6 +36,7 @@ import { lerTextura, type TexturaCarregada } from '../texturas'
 import { conferirConteudoCompilado } from './conteudo'
 import { AguaDaCenaCompilada } from './runtime-agua'
 import { custoDaInstanciaCompilada, instanciarModeloCompilado } from './runtime-modelos'
+import { RelevoNoThree } from './runtime-relevo'
 
 export type { TrianguloDaConsulta } from '../teste/colisoes'
 export { resolverInicioDaCena } from './inicio'
@@ -97,6 +100,8 @@ export interface CenaNoThree {
   /** Na carga por regiões, o `alvo` é o foco que decide o que fica carregado. */
   quadro(camera: Camera, alvo: Vector3): void
   estadoDasRegioes(): EstadoDasRegioes | null
+  /** O relevo em campo desenhado em pedaços (`null` no terreno de sempre). */
+  estadoDoRelevo(): ReturnType<RelevoNoThree['estado']> | null
   /**
    * A região (pelo nome) onde está o `alvo` (um ponto `{x, z}`, um objeto com `position` ou uma
    * entidade com `mesh.position`), com a tolerância de meio metro na borda para quem estava em
@@ -158,6 +163,7 @@ export async function carregarCenaNoThree(
     aguas: AguaDaCenaCompilada | undefined,
     ambiente: AmbienteDoPalco | undefined,
     locais: LuzesLocaisDoPalco | undefined,
+    relevo: RelevoNoThree | undefined,
     ancora: Mesh | undefined,
     tempo = 0
   const descartar = () => {
@@ -165,6 +171,7 @@ export async function carregarCenaNoThree(
     descartado = true
     ambiente?.descartar()
     locais?.descartar()
+    relevo?.descartar()
     for (const { desfazerAgua } of nosCarregados.values()) desfazerAgua()
     aguas?.descartar()
     colisoes?.descartar()
@@ -189,6 +196,19 @@ export async function carregarCenaNoThree(
     raiz.clear()
     cena.clear()
   }
+  // O relevo em campo (plano "Mundos de 2 km", lote 2): a colisão lê as alturas conferidas, sem
+  // malha do chão nem cópia (a régua do "× 8" do orçamento da janela).
+  const campo: CampoDeColisao | undefined =
+    dados.terreno?.relevo && conferido.terreno
+      ? {
+          origem: dados.terreno.origem,
+          passo: dados.terreno.passo,
+          colunas: dados.terreno.colunas,
+          linhas: dados.terreno.linhas,
+          alturas: conferido.terreno.alturas,
+          ...(conferido.terreno.buracos ? { buracos: conferido.terreno.buracos } : {}),
+        }
+      : undefined
   const nosPorId = new Map(dados.nos.map((n) => [n.id, n])),
     colisoesPorId = new Map(dados.colisoes.map((c) => [c.id, c])),
     maresExternos = new Set(
@@ -342,7 +362,7 @@ export async function carregarCenaNoThree(
         })
     }
     const anterior = colisoes
-    colisoes = new MundoDoTeste(fontes, arvores)
+    colisoes = new MundoDoTeste(fontes, arvores, campo)
     anterior?.descartar()
   }
 
@@ -563,7 +583,14 @@ export async function carregarCenaNoThree(
           dados.ambiente.ceu?.tipo === 'panorama' &&
           t.id === dados.ambiente.ceu.textura,
       ),
-      total = usados.length + panoramas.length
+      texturasDoRelevo = (dados.terreno?.relevo?.camadas ?? []).flatMap((c) =>
+        c.textura ? [c.textura.id] : [],
+      ),
+      total =
+        usados.length +
+        panoramas.length +
+        new Set(texturasDoRelevo).size +
+        (dados.terreno?.relevo?.pesos.length ?? 0)
     let pronto = 0
     opcoes.progresso?.(pronto, total)
     // Cada imagem (o atlas de um kit repetido nos arquivos) é decodificada uma vez; na carga
@@ -591,6 +618,37 @@ export async function carregarCenaNoThree(
       )
       sinal.throwIfAborted()
       opcoes.progresso?.(++pronto, total)
+    }
+    if (dados.terreno?.relevo && campo) {
+      const r = dados.terreno.relevo
+      for (const id of new Set(texturasDoRelevo)) {
+        if (texturas.has(id)) continue
+        sinal.throwIfAborted()
+        const t = dados.texturas.find((x) => x.id === id)!,
+          meta = dados.arquivos.find((a) => a.caminho === t.arquivo)!
+        texturas.set(
+          id,
+          await lerTextura(pacote.arquivos.get(t.arquivo)!.slice().buffer, meta.digest, sinal),
+        )
+        opcoes.progresso?.(++pronto, total)
+      }
+      const pesos: Uint8Array[] = []
+      for (const caminho of r.pesos) {
+        sinal.throwIfAborted()
+        const img = await lerPngDePesos(pacote.arquivos.get(caminho)!)
+        if (img.largura !== campo.colunas + 1 || img.altura !== campo.linhas + 1)
+          throw Error('Os pesos do relevo não correspondem à grade.')
+        pesos.push(img.rgba)
+        opcoes.progresso?.(++pronto, total)
+      }
+      relevo = new RelevoNoThree({
+        forma: campo,
+        alturas: campo.alturas,
+        ...(campo.buracos ? { buracos: campo.buracos } : {}),
+        pesos,
+        camadas: r.camadas,
+      })
+      relevo.definirTexturas((id) => texturas.get(id)?.textura)
     }
     const custos = new Map<string, number>()
     let memoriaDasInstancias = 0
@@ -642,6 +700,20 @@ export async function carregarCenaNoThree(
     for (const n of dados.nos) {
       sinal.throwIfAborted()
       if (inicial.nos.has(n.id)) instanciarNo(n)
+    }
+    if (relevo && campo) {
+      const inicio =
+        dados.marcadores.find(
+          (m) => m.configuracao?.tipo === 'inicio' && m.configuracao.principal,
+        ) ?? dados.marcadores.find((m) => m.configuracao?.tipo === 'inicio')
+      const foco = inicio
+        ? inicio.posicao
+        : {
+            x: campo.origem.x + (campo.colunas * campo.passo) / 2,
+            z: campo.origem.z + (campo.linhas * campo.passo) / 2,
+          }
+      relevo.atualizar(foco, 1000, true)
+      raiz.add(relevo.grupo)
     }
     if (plano && dados.nos.length) {
       // Uma âncora invisível com a caixa da cena inteira: quem mede a cena pela raiz (o Mundo 3D)
@@ -720,6 +792,24 @@ export async function carregarCenaNoThree(
       quadro(camera, alvo) {
         if (descartado) return
         luz?.quadro(camera, alvo)
+        if (relevo) {
+          // Menos detalhe longe da CÂMERA; nada além do alcance dela nem da neblina, e a neblina
+          // termina antes do fim da vista (o relevo não acaba numa borda seca).
+          camera.getWorldPosition(posicaoDaCamera)
+          const longe = (camera as Camera & { far?: number }).far,
+            vista = typeof longe === 'number' && longe > 0 ? longe : 4000
+          if (cena.fog instanceof Fog && cena.fog.far > vista * 0.95) {
+            cena.fog.far = vista * 0.95
+            cena.fog.near = Math.min(cena.fog.near, cena.fog.far * 0.6)
+          }
+          const alcance = cena.fog instanceof Fog ? Math.min(vista, cena.fog.far) : vista
+          relevo.atualizar(
+            Number.isFinite(posicaoDaCamera.x) && Number.isFinite(posicaoDaCamera.z)
+              ? posicaoDaCamera
+              : alvo,
+            alcance,
+          )
+        }
         if (!plano) return
         // Um foco inválido (um "Levar … até" com NaN) mantém a carga como está: lançar aqui
         // derrubava o laço do jogo inteiro (revisão do lote 6).
@@ -768,6 +858,9 @@ export async function carregarCenaNoThree(
           anterior === null ? null : (todas.find((r) => r.nome === anterior)?.id ?? null)
         const id = regiaoDoPonto(todas, { x: p.x, z: p.z }, antes)
         return id === null ? null : todas.find((r) => r.id === id)!.nome
+      },
+      estadoDoRelevo() {
+        return relevo ? relevo.estado() : null
       },
       estadoDasRegioes() {
         if (!plano) return null

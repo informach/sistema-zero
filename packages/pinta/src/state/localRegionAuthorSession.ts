@@ -13,6 +13,7 @@ import { readStoredRegionMapViewport } from '../components/editor/mapTools/store
 import { pintaValuesEqual } from '../core/assetEquality'
 import { retainedAssetBytes, sharedAssetParts } from '../core/assetMemory'
 import { createHistory } from '../core/history'
+import type { PintaResourceObservation } from '../core/localAssetOrigin'
 import { PintaLocalStorageError } from '../core/localStorageErrors'
 import {
   type AnyTilesetAsset,
@@ -28,7 +29,11 @@ import { isCellPosition } from '../tiles/mapCellEdits'
 import { resolveMapTilesets } from '../tiles/mapTilesets'
 import { REGION_EDIT_LIMIT } from '../tiles/regionCells'
 import { localRegionChunkKey } from './localRegionChunkStorage'
-import { commitLocalRegionChange, readLocalRegionEditBase } from './localRegionEditing'
+import {
+  commitLocalRegionChange,
+  type LocalRegionCausalBinding,
+  readLocalRegionEditBase,
+} from './localRegionEditing'
 import { getPintaStorageNamespace } from './persistence'
 
 export type FocalRegionMap = ReturnType<typeof visualDocument>
@@ -153,12 +158,17 @@ type Patch = {
   after: RegionTilemapAsset
 }
 
+/**
+ * `causal`: the account writer's binding. Each gesture, undo and redo then commits its chunks and
+ * the V4 unit in one transaction; without it the session only opens on a purely local profile.
+ */
 export async function openLocalRegionAuthorSession(
   namespace: string,
   id: string,
   signal?: AbortSignal,
+  causal?: LocalRegionCausalBinding,
 ) {
-  const opened = await readLocalRegionEditBase(namespace, id, signal)
+  const opened = await readLocalRegionEditBase(namespace, id, signal, !!causal)
   if (opened?.directory.empty.kind !== 'tilemap') return null
   const root = opened.directory.empty
   const ids = tilemapTilesetIds(root)
@@ -260,6 +270,7 @@ export async function openLocalRegionAuthorSession(
           }
         },
         lifetime,
+        causal,
       )
       if (result.changed) history.record(result.value.patch)
       return {
@@ -282,6 +293,7 @@ export async function openLocalRegionAuthorSession(
         () => step.footprint,
         () => ({ asset: next, value: visualDocument(next) }),
         lifetime,
+        causal,
       )
       if (direction === 'undo') history.undo(step)
       else history.redo(step)
@@ -289,12 +301,21 @@ export async function openLocalRegionAuthorSession(
     })
   }
 
+  /** Every resource the window reads, at the revision each gesture's CAS confers. */
+  const resources: readonly PintaResourceObservation[] = [
+    ...opened.base.resources,
+    ...[...opened.base.inlineResources.keys()].map((resource) => ({
+      id: resource,
+      localRevision: null,
+    })),
+  ]
   return {
     id,
     namespace,
     store,
     tilesets,
     catalog: opened.assets as readonly (typeof opened.assets)[number][],
+    resources,
     apply,
     undo: () => restore('undo'),
     redo: () => restore('redo'),

@@ -1,6 +1,13 @@
 import { Box3, BufferGeometry, DoubleSide, Line3, type Matrix4, Ray, Vector3 } from 'three'
 import { ExtendedTriangle, MeshBVH } from 'three-mesh-bvh'
 import { IndiceDeCaixas } from '../indice-de-caixas'
+import {
+  type CampoDeColisao,
+  conferirCampo,
+  limitesDoCampo,
+  paraCadaTrianguloNaCaixa,
+  rastrearNoCampo,
+} from './campo'
 
 export interface FonteDeColisao {
   objeto?: string
@@ -83,6 +90,11 @@ export function liberarArvores(cache: CacheDeArvores, geometrias: Iterable<Buffe
 
 export class MundoDoTeste {
   readonly limiteInferior: number | null
+  /**
+   * O relevo como campo de alturas (plano "Mundos de 2 km", lote 2): as mesmas consultas, sem
+   * malha nem árvore do chão. Nos triângulos de uma caixa, ele é a instância `entradas.length`.
+   */
+  private readonly campo: CampoDeColisao | null
   private readonly geometrias: CacheDeArvores
   private readonly donoDasArvores: boolean
   /** As geometrias que este mundo usa (num cache dividido, o cache tem as dos outros também). */
@@ -104,10 +116,12 @@ export class MundoDoTeste {
     return this.usadas.size
   }
 
-  constructor(fontes: readonly FonteDeColisao[], cache?: CacheDeArvores) {
+  constructor(fontes: readonly FonteDeColisao[], cache?: CacheDeArvores, campo?: CampoDeColisao) {
     this.geometrias = cache ?? new Map()
     this.donoDasArvores = !cache
+    this.campo = campo ?? null
     try {
+      if (campo) conferirCampo(campo)
       for (const f of fontes) {
         if (
           !f.geometria.getAttribute('position')?.count ||
@@ -144,6 +158,7 @@ export class MundoDoTeste {
       }
       this.indice.definir(this.entradas.map((e) => e.caixa))
       const volume = this.indice.limites(new Box3())
+      if (campo) volume.union(limitesDoCampo(campo))
       this.limiteInferior = volume.isEmpty() ? null : volume.min.y
     } catch (e) {
       this.descartar()
@@ -164,6 +179,31 @@ export class MundoDoTeste {
         .setFromPoints([this.segmento.start, this.segmento.end])
         .expandByScalar(raio + margem)
       let maior = 0
+      /** O triângulo em `this.triangulo` (já no mundo) contra a cápsula desta rodada. */
+      const considerar = () => {
+        this.triangulo.needsUpdate = true
+        const distancia = this.triangulo.closestPointToSegment(
+          this.segmento,
+          this.naFace,
+          this.naCapsula,
+        )
+        if (distancia >= raio + margem) return
+        if (distancia > 1e-8)
+          this.normal.subVectors(this.naCapsula, this.naFace).multiplyScalar(1 / distancia)
+        else {
+          this.triangulo.getNormal(this.normal)
+          this.segmento.getCenter(this.naCapsula)
+          if (this.normal.dot(this.naCapsula.sub(this.triangulo.a)) < 0) this.normal.negate()
+        }
+        if (this.normal.lengthSq() < 0.9) return
+        const correcao = raio + margem - distancia
+        // Measure every constraint at the SAME pose. An internal diagonal can
+        // otherwise push sideways before its coplanar face resolves the ceiling.
+        if (correcao > maior) {
+          maior = correcao
+          this.normalMaisProfunda.copy(this.normal)
+        }
+      }
       for (const i of this.indice.sobrepor(this.caixa)) {
         candidatos++
         const e = this.entradas[i]!
@@ -176,30 +216,21 @@ export class MundoDoTeste {
             this.triangulo.a.applyMatrix4(e.matriz)
             this.triangulo.b.applyMatrix4(e.matriz)
             this.triangulo.c.applyMatrix4(e.matriz)
-            this.triangulo.needsUpdate = true
-            const distancia = this.triangulo.closestPointToSegment(
-              this.segmento,
-              this.naFace,
-              this.naCapsula,
-            )
-            if (distancia >= raio + margem) return false
-            if (distancia > 1e-8)
-              this.normal.subVectors(this.naCapsula, this.naFace).multiplyScalar(1 / distancia)
-            else {
-              this.triangulo.getNormal(this.normal)
-              this.segmento.getCenter(this.naCapsula)
-              if (this.normal.dot(this.naCapsula.sub(this.triangulo.a)) < 0) this.normal.negate()
-            }
-            if (this.normal.lengthSq() < 0.9) return false
-            const correcao = raio + margem - distancia
-            // Measure every constraint at the SAME pose. An internal diagonal can
-            // otherwise push sideways before its coplanar face resolves the ceiling.
-            if (correcao > maior) {
-              maior = correcao
-              this.normalMaisProfunda.copy(this.normal)
-            }
+            considerar()
             return false
           },
+        })
+      }
+      if (this.campo) {
+        const { min, max } = this.caixa
+        paraCadaTrianguloNaCaixa(this.campo, min.x, min.z, max.x, max.z, (_, a, b, c) => {
+          // A célula toca a caixa em x e z; em y, só se algum canto pode alcançá-la.
+          if (Math.max(a.y, b.y, c.y) < min.y || Math.min(a.y, b.y, c.y) > max.y) return undefined
+          this.triangulo.a.copy(a)
+          this.triangulo.b.copy(b)
+          this.triangulo.c.copy(c)
+          considerar()
+          return undefined
         })
       }
       if (maior > 0) {
@@ -255,6 +286,33 @@ export class MundoDoTeste {
         },
       })
     }
+    if (this.campo) {
+      const instancia = this.entradas.length,
+        contexto: TrianguloDaConsulta = {
+          a: this.triangulo.a,
+          b: this.triangulo.b,
+          c: this.triangulo.c,
+        }
+      paraCadaTrianguloNaCaixa(
+        this.campo,
+        caixa.min.x,
+        caixa.min.z,
+        caixa.max.x,
+        caixa.max.z,
+        (triangulo, a, b, c) => {
+          if (++visitas > maximo)
+            throw new Error('A região contém triângulos demais para preparar os apoios')
+          this.caixa.setFromPoints([a, b, c])
+          if (!this.caixa.intersectsBox(caixa)) return undefined
+          this.triangulo.a.copy(a)
+          this.triangulo.b.copy(b)
+          this.triangulo.c.copy(c)
+          if (incluir && !incluir(instancia, triangulo, contexto)) return undefined
+          posicoes.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z)
+          return undefined
+        },
+      )
+    }
     return Float64Array.from(posicoes)
   }
 
@@ -289,6 +347,10 @@ export class MundoDoTeste {
       const normal = b.sub(a).cross(c.sub(a)).normalize()
       if (normal.dot(this.raio.direction) > 0) normal.negate()
       resposta = { ponto: this.ponto.clone(), normal, distancia }
+    }
+    if (this.campo) {
+      const noCampo = rastrearNoCampo(this.campo, de, ate)
+      if (noCampo && (!resposta || noCampo.distancia < resposta.distancia)) resposta = noCampo
     }
     return resposta
   }

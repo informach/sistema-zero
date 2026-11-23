@@ -186,11 +186,15 @@ nada do Arquipélago. Detalhe e números em
 | Na galeria "Ver os jogos prontos" | `src/examples/bigExamples.test.ts` (o arquivo fora do pacote, conferido pelo hash e recusado sem programa), `src/projects/KitGallery.placement.test.ts` (o bloco fora do lugar vira código em vez de quebrar a carga) | Windows local e staging logado (22/11: na primeira conferência o jogo abria em branco e depois sem os blocos; consertado em `c9f69bf6b`, `73f8fbc34` e `b1b3de3ab`, ver [`../qa/2026-11-22-studio-lote9-staging.md`](../qa/2026-11-22-studio-lote9-staging.md)) |
 | A ferramenta Regiões no Molda Cenários (desenhar, nomear, vizinhas em par) | `packages/molda-cenarios/tests/regioes-formulario.test.ts`, `regioes-tela.test.tsx`, `playground/oficina/verificar-regioes.mjs` | Windows local e staging logado (22/11, com `CENARIOS_REGIOES` ligado: Vila e Floresta guardadas, vizinhas uma da outra; [`../qa/2026-11-22-studio-lote9-staging.md`](../qa/2026-11-22-studio-lote9-staging.md)) |
 
-O tamanho: com os tetos de hoje, o maior mundo que o Estúdio aceita fica perto de 384 m (o chão
-pintado a 8 pixels por metro passa dos 256 MiB do pacote em 1 km, dos 128 MiB por janela em 640 m
-e dos 24 MiB de materiais em 512 m). Um mundo de 1 km pede um chão mais leve no destino Estúdio ou
-tetos maiores: é uma decisão de produto, no relatório final. Os 30 quadros por segundo valem para
-GPU de verdade e não são medidos no CI (GPU emulada, SwiftShader).
+O tamanho: com os tetos de hoje, o maior mundo que o Estúdio aceita fica perto de 384 m. O motivo
+é a geometria do relevo (corrigido em 23/11/2026; a versão anterior culpava o chão pintado, que
+neste jogo sai a 2 pixels por metro): o terreno tem um vértice por metro e vai duas vezes no
+pacote, nos lotes desenhados e na colisão do chão, e por isso 512 m passa dos 24 MiB de arquivos
+por projeto e 1 km passa dos 256 MiB decodificados do pacote. Decisão dela em 23/11/2026: mundos
+de 2 km, sem subir nenhum teto, pelo plano
+[`docs/plans/2026-11-23-mundos-de-2km.md`](../plans/2026-11-23-mundos-de-2km.md). Os 30 quadros
+por segundo valem para GPU de verdade e não são medidos no CI (GPU emulada, SwiftShader); a medida
+local com placa de vídeo é o `e2e/grande-gpu.spec.ts` (`playwright.gpu.config.ts`).
 
 ## F. Projeto Pro grande
 

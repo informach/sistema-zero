@@ -14,9 +14,19 @@ import {
   type RegionTilemapAsset,
 } from '../core/project'
 import { pintaDoorBindings } from '../core/sceneMapClosure'
+import { MAX_BACKUP_FILE_BYTES } from '../export/projectJson'
 import { PINTA_CAUSAL_OUTBOX_KEY } from './assetAuthorityKeys'
 import { authorityKey, LOCAL_ASSET_PREFIX, mirrorKey } from './localAssetAuthority'
-import { localPreparedKey, PINTA_CAUSAL_BLOBS_KEY } from './localCausalOutbox'
+import {
+  type LocalCausalState,
+  localCausalBytes,
+  localPreparedKey,
+  PINTA_CAUSAL_BLOBS_KEY,
+  type PintaCausalMemberBasis,
+  type PintaCausalStageDraft,
+  readLocalCausalState,
+  stageLocalCausalDraft,
+} from './localCausalOutbox'
 import { PINTA_CAUSAL_PIN_BLOBS_KEY } from './localCausalPins'
 import {
   createLocalRegionAssetAuthority,
@@ -51,6 +61,23 @@ export interface LocalRegionEditBase {
   /** Confirmed revisions of the live references used during the gesture. */
   resources: readonly PintaResourceObservation[]
   inlineResources?: ReadonlyMap<string, PintaAsset>
+}
+
+/** The account unit of one focal revision: everything the stage needs except the written bytes. */
+export interface LocalRegionCausalUnit extends Omit<PintaCausalStageDraft, 'transitions'> {
+  member: PintaCausalMemberBasis
+}
+
+/**
+ * The account writer's side of a focal edit. It runs synchronously INSIDE the gesture's
+ * transaction, over the V4 queue read there, so the chunks, the queue and the pins commit (or abort)
+ * together. It throws when this map cannot join the queue as one focal member.
+ */
+export interface LocalRegionCausalBinding {
+  unit(
+    state: LocalCausalState,
+    change: { id: string; beforeRevision: string },
+  ): LocalRegionCausalUnit
 }
 
 class PintaRegionalEditUnavailable extends PintaLocalStorageError {
@@ -109,9 +136,9 @@ function inspectInventory(
 }
 
 /**
- * The regional CAS writes chunks outside the causal unit, so it only runs on a purely local
- * profile. Any V4 record (outbox, sealed blobs, observed-resource pins or a prepared shadow)
- * means the account's canonical writer owns the candidates.
+ * Without the account binding the regional CAS would write chunks outside the causal unit, so it
+ * only runs on a purely local profile. Any V4 record (outbox, sealed blobs, observed-resource pins
+ * or a prepared shadow) means the account's canonical writer owns the candidates.
  */
 function hasCausalInventory(
   records: ReadonlyMap<string, unknown>,
@@ -187,8 +214,16 @@ export async function readLocalRegionGalleryIndex(
   })
 }
 
-/** Directory and dependencies only. The incomplete domain values stay in the authority module. */
-export async function readLocalRegionEditBase(namespace: string, id: string, signal?: AbortSignal) {
+/**
+ * Directory and dependencies only. The incomplete domain values stay in the authority module.
+ * `causal`: the session will commit through the account binding, so a V4 queue does not close it.
+ */
+export async function readLocalRegionEditBase(
+  namespace: string,
+  id: string,
+  signal?: AbortSignal,
+  causal = false,
+) {
   let headers: readonly string[] = []
   let physicalKeys: ReadonlySet<IDBValidKey> = new Set()
   return readLocalPintaRecords(
@@ -205,7 +240,7 @@ export async function readLocalRegionEditBase(namespace: string, id: string, sig
         'tilemap'
       )
         return null
-      assertRegionalLocalState(records, physicalKeys)
+      if (!causal) assertRegionalLocalState(records, physicalKeys)
       const { directories, assets, documents } = inspectInventory(records, headers, physicalKeys)
       const directory = directories.get(id)
       if (directory?.empty.kind !== 'tilemap') return null
@@ -246,6 +281,7 @@ export function commitLocalRegionChange<T>(
   selectChunks: (directory: PreparedRegionDocument) => ReadonlySet<string>,
   mutate: (asset: RegionAsset) => { asset: RegionAsset; value: T },
   signal?: AbortSignal,
+  causal?: LocalRegionCausalBinding,
 ): Promise<{ revision: string; value: T; changed: boolean }> {
   const key = authorityKey(base.id)
   let headers: readonly string[] = []
@@ -263,9 +299,16 @@ export function commitLocalRegionChange<T>(
     (records) => {
       checkScope()
       if (!inventory) {
-        if (!records.has(PINTA_CAUSAL_OUTBOX_KEY) || headers.some((key) => !records.has(key)))
-          return [...new Set([...headers, PINTA_CAUSAL_OUTBOX_KEY])]
-        assertRegionalLocalState(records, physicalKeys)
+        // The account stage rewrites the shared pin store, so it must read the stored one first.
+        const queue = [
+          PINTA_CAUSAL_OUTBOX_KEY,
+          ...(causal && physicalKeys.has(PINTA_CAUSAL_PIN_BLOBS_KEY)
+            ? [PINTA_CAUSAL_PIN_BLOBS_KEY]
+            : []),
+        ]
+        if (queue.some((key) => !records.has(key)) || headers.some((key) => !records.has(key)))
+          return [...new Set([...headers, ...queue])]
+        if (!causal) assertRegionalLocalState(records, physicalKeys)
         const current = prepareLocalRegionDocument(key, records.get(key))
         if (!current || current.revision !== base.revision) throw new PintaRegionalEditUnavailable()
         inventory = inspectInventory(records, headers, physicalKeys)
@@ -306,17 +349,53 @@ export function commitLocalRegionChange<T>(
       )
       if (!Number.isFinite(projected)) throw new PintaStorageBudgetError(projected)
       checkScope()
-      records.set(key, patch.document.doc)
-      records.set(mirrorKey(base.id), {
-        kind: 'pinta-local-mirror',
-        version: 1,
-        capability: 8,
-        id: base.id,
-        revision,
-      })
-      for (const chunk of directory!.keys)
-        if (selection.has(chunk) && !patch.chunks.has(chunk)) records.delete(chunk)
-      for (const [chunk, cells] of patch.chunks) records.set(chunk, cells)
+      const writePatch = () => {
+        records.set(key, patch.document.doc)
+        records.set(mirrorKey(base.id), {
+          kind: 'pinta-local-mirror',
+          version: 1,
+          capability: 8,
+          id: base.id,
+          revision,
+        })
+        for (const chunk of directory!.keys)
+          if (selection.has(chunk) && !patch.chunks.has(chunk)) records.delete(chunk)
+        for (const [chunk, cells] of patch.chunks) records.set(chunk, cells)
+      }
+      if (causal) {
+        // Same transaction as the chunks: the V4 stage validates the queue it reads here (its
+        // CAS), records this map as one focal member and pins the resources the window read.
+        const { member, ...unit } = causal.unit(readLocalCausalState(records), {
+          id: base.id,
+          beforeRevision: base.revision,
+        })
+        stageLocalCausalDraft(
+          records,
+          {
+            ...unit,
+            transitions: [
+              {
+                id: base.id,
+                beforeRevision: base.revision,
+                after: patch.document.empty,
+                ...member,
+              },
+            ],
+          },
+          () => {
+            writePatch()
+            const documents = new Map<string, { revision: string; asset: unknown }>(
+              inventory!.documents,
+            )
+            for (const [id, item] of inventory!.directories)
+              documents.set(id, { revision: item.revision, asset: item.empty })
+            documents.set(base.id, { revision, asset: patch.document.empty })
+            return { documents }
+          },
+        )
+        const combined = projected + localCausalBytes(records)
+        if (combined > MAX_BACKUP_FILE_BYTES) throw new PintaStorageBudgetError(combined)
+      } else writePatch()
       const result = { revision, value, changed: true }
       return { value: result, changed: true }
     },

@@ -9,7 +9,7 @@ import {
   type PintaCausalSnapshotPage,
   pintaCausalBlobKey,
 } from '@sistemazero/core/creations/pinta-causal'
-import { and, eq, gt, isNotNull, isNull, ne, sql } from 'drizzle-orm'
+import { and, desc, eq, gt, isNotNull, isNull, ne, type SQL, sql } from 'drizzle-orm'
 import { CREATION_LIMITS } from '../../../domain/creations/creation'
 import { PALETTE_LIBRARY_ITEM_ID } from '../../../domain/creations/palette-library'
 import { PintaCausalError } from '../../../domain/creations/pinta-causal-graph'
@@ -129,12 +129,15 @@ export class DrizzlePintaGraphRepository {
   /**
    * Seletor da galeria da aula (23/11/2026): o MESMO inventário do dono, sem o piso de leitor do
    * Pinta (a galeria não abre o documento), com a miniatura da cabeça confirmada de cada unidade.
+   * A galeria pagina do mais novo para o mais antigo (`itemUpdatedAt` ao milissegundo, empate pelo
+   * id decrescente): o desenho mais novo está sempre na primeira página, e o cursor continua a
+   * mesma ordem dentro da época.
    */
   async galleryPage(
     a: Actor,
     p: { epoch?: string; cursor?: string },
   ): Promise<PintaCausalGalleryPage> {
-    const { rows, ...page } = await this.readPage(a, p, 'archive', true)
+    const { rows, ...page } = await this.readPage(a, p, 'archive', 'gallery')
     return {
       gallery: {
         ...page,
@@ -155,19 +158,38 @@ export class DrizzlePintaGraphRepository {
     a: Actor,
     p: { epoch?: string; cursor?: string },
     mode: number | 'archive',
-    withThumb = false,
+    view: 'inventory' | 'gallery' = 'inventory',
   ) {
     return this.db.transaction(async (tx) => {
       await lock(tx, a)
       if (p.cursor && !p.epoch) throw new PintaCausalError('epoch-changed')
       const state = await checkEpoch(tx, a, p.epoch, mode)
       const key = sql<string>`${c.itemId} collate "C"`
+      const gallery = view === 'gallery'
+      // A data da galeria é a do fio (milissegundos), para a ordem do banco ser a que o cliente confere.
+      const newest = sql<Date>`date_trunc('milliseconds', ${c.itemUpdatedAt})`.mapWith(
+        c.itemUpdatedAt,
+      )
+      let after: SQL | undefined
+      if (p.cursor && gallery) {
+        const [from] = await tx
+          .select({ at: newest })
+          .from(c)
+          .where(and(wherePersonal(a), alive(), eq(c.itemId, p.cursor)))
+        // Na mesma época o cursor existe; sem ele a página seguinte pularia desenhos em silêncio.
+        if (!from) throw new PintaCausalError('epoch-changed')
+        after = sql`(${newest}, ${key}) < (${from.at.toISOString()}::timestamptz, ${p.cursor} collate "C")`
+      } else if (p.cursor) after = gt(key, p.cursor)
       const rows = await tx
         // Só a galeria lê a miniatura (TOAST); o inventário do Pinta segue sem ela.
-        .select({ ...entryColumns, thumb: withThumb ? c.thumb : sql<string | null>`null` })
+        .select({
+          ...entryColumns,
+          itemUpdatedAt: gallery ? newest : c.itemUpdatedAt,
+          thumb: gallery ? c.thumb : sql<string | null>`null`,
+        })
         .from(c)
-        .where(and(wherePersonal(a), alive(), p.cursor ? gt(key, p.cursor) : undefined))
-        .orderBy(key)
+        .where(and(wherePersonal(a), alive(), after))
+        .orderBy(...(gallery ? [desc(newest), desc(key)] : [key]))
         .limit(PINTA_CAUSAL_LIMITS.page + 1)
       const selected = rows.slice(0, PINTA_CAUSAL_LIMITS.page)
       return {
