@@ -1,9 +1,8 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { readFile } from 'node:fs/promises'
-import { createServer, type Server } from 'node:http'
-import type { AddressInfo } from 'node:net'
-import { dirname, extname, resolve } from 'node:path'
+import { dirname, resolve } from 'node:path'
 import { expect, type Page, test } from '@playwright/test'
+import { gpuEmulada } from '../src/medida/mundoGrande'
+import { proveniencia, servirPasta } from './helpers/servirPasta'
 
 /**
  * A prova das regiões no motor (lote 7 da conclusão do plano do Estúdio, 22/11/2026), com o jogo
@@ -41,39 +40,15 @@ const ROTA = [
 const VOLTAS = 10
 const LIVE = ['buffers', 'textures', 'programs', 'vertexArrays'] as const
 
-let servidor: Server
+let servidor: Awaited<ReturnType<typeof servirPasta>>
 let base = ''
 
 test.beforeAll(async () => {
-  const tipos: Record<string, string> = {
-    '.html': 'text/html',
-    '.js': 'text/javascript',
-    '.json': 'application/json',
-  }
-  servidor = createServer(async (pedido, resposta) => {
-    const caminho = decodeURIComponent(new URL(pedido.url ?? '/', 'http://x').pathname)
-    const arquivo = resolve(JOGO_E, `.${caminho}`)
-    if (!arquivo.startsWith(JOGO_E)) {
-      resposta.writeHead(403)
-      resposta.end()
-      return
-    }
-    try {
-      const bytes = await readFile(arquivo)
-      resposta.writeHead(200, {
-        'content-type': tipos[extname(caminho)] ?? 'application/octet-stream',
-      })
-      resposta.end(bytes)
-    } catch {
-      resposta.writeHead(404)
-      resposta.end()
-    }
-  })
-  await new Promise<void>((pronto) => servidor.listen(0, '127.0.0.1', pronto))
-  base = `http://127.0.0.1:${(servidor.address() as AddressInfo).port}`
+  servidor = await servirPasta(JOGO_E)
+  base = servidor.base
 })
 test.afterAll(async () => {
-  await new Promise<void>((pronto) => servidor.close(() => pronto()))
+  await servidor.fechar()
 })
 
 test.beforeEach(async ({ page }) => {
@@ -243,7 +218,11 @@ function quantil(valores: number[], p: number) {
   )
 }
 
-function salvar(chave: string, linha: unknown) {
+/**
+ * A placa de vídeo e o commit são os DE VERDADE (plano "Mundos de 2 km", lote 0, 23/11/2026): a
+ * frase fixa "emulada" mentia quando a prova rodava numa placa de verdade.
+ */
+function salvar(chave: string, gpu: string, linha: unknown) {
   const anteriores = existsSync(OUTPUT)
     ? (JSON.parse(readFileSync(OUTPUT, 'utf8')) as { linhas: Record<string, unknown> }).linhas
     : {}
@@ -253,7 +232,10 @@ function salvar(chave: string, linha: unknown) {
     `${JSON.stringify(
       {
         medidoEm: new Date().toISOString(),
-        gpu: 'emulada no CI (SwiftShader); os tempos não reprovam',
+        ...proveniencia(),
+        gpu,
+        gpuEmulada: gpuEmulada(gpu),
+        nota: gpuEmulada(gpu) ? 'placa de vídeo emulada: os tempos não reprovam' : null,
         linhas: { ...anteriores, [chave]: linha },
       },
       null,
@@ -350,7 +332,15 @@ for (const versao of ['regioes', 'inteiro'] as const)
           ?.usedJSHeapSize ?? null,
     )
     const fps = 1000 / quantil(passagens, 0.5)
-    salvar(versao, {
+    const gpu = await page.evaluate(() => {
+      const gl = document.createElement('canvas').getContext('webgl2')
+      if (!gl) return 'sem WebGL2'
+      const info = gl.getExtension('WEBGL_debug_renderer_info')
+      return String(
+        info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER),
+      )
+    })
+    salvar(versao, gpu, {
       voltas: VOLTAS,
       quadro: {
         p50: quantil(passagens, 0.5),

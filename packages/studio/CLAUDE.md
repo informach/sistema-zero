@@ -51,7 +51,11 @@ Lotes 5 a 7b e 9 da conclusão do plano (especificação em
   recusa qualquer linha que vire código cru.
 - Provas: `e2e/engine-regions.spec.ts` (no `studio-engines.yml`), `moldaFullScenario.contract.test.ts`,
   os testes do bloco nos três motores, `__tests__/cenario_test.py`, `e2e-runtime/python-raylib.spec.ts`
-  e `examples/bigExamples.test.ts`. O mundo do jogo E tem 384 m (1 km passa dos tetos de hoje).
+  e `examples/bigExamples.test.ts`. O mundo do jogo E tem 384 m: 1 km passa dos tetos de hoje pela
+  GEOMETRIA do relevo (um vértice por metro, nos lotes e na colisão do chão), não pelo chão pintado
+  (2 px/m). Os mundos de 2 km: `docs/plans/2026-11-23-mundos-de-2km.md`. A medida numa placa de
+  vídeo de verdade é local e com janela: `e2e/grande-gpu.spec.ts` (`playwright.gpu.config.ts`,
+  recusa a placa emulada; a rota e os números saem de `src/medida/mundoGrande.ts`).
 
 ## O jogo D: o 2D de grande porte (22/11/2026)
 

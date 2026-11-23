@@ -84,5 +84,6 @@ regioes: z
 - **Python:** o `cenario.py` do Raylib carrega por regiões com as mesmas regras, e os blocos de
   cenário do Raylib 3D só ligam com o recurso `molda-scene-regions-v1` da distribuição.
 - **A medida da homologação E** é o jogo E (`e2e/engine-regions.spec.ts`, no `studio-engines.yml`).
-  O mundo dele tem 384 m: 1 km passa dos tetos de hoje
-  ([`evidencias/jogo-e-regioes-2026-11-22/`](evidencias/jogo-e-regioes-2026-11-22/README.md)).
+  O mundo dele tem 384 m: 1 km passa dos tetos de hoje pela geometria do relevo
+  ([`evidencias/jogo-e-regioes-2026-11-22/`](evidencias/jogo-e-regioes-2026-11-22/README.md)); os
+  mundos de 2 km estão em [`../plans/2026-11-23-mundos-de-2km.md`](../plans/2026-11-23-mundos-de-2km.md).

@@ -37,6 +37,8 @@ export default defineConfig({
         /engine-2d-offscreen\.spec\.ts/,
         /devtools-cost\.spec\.ts/,
         /engine-regions\.spec\.ts/,
+        // A medida dos mundos grandes só vale numa placa de vídeo de verdade (`playwright.gpu.config.ts`).
+        /grande-gpu\.spec\.ts/,
       ],
       use: {
         ...devices['Desktop Chrome'],

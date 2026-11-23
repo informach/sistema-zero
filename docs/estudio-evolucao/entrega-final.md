@@ -160,7 +160,7 @@ no Worker de staging).
 | A prévia isolada no WebKit (Safari, iPad) | decisão B4: nenhum arranjo de iframe isola no WebKit | nada: decisão dela |
 | Abrir nos blocos a sequência única de 10 mil | hoje abre pelo código, sem perda | carga de cadeia por partes no Blockly |
 | IR, avisos e código refeitos só no evento mexido | o gesto com 10 mil blocos leva 220 a 354 ms; a meta de 50 ms vale até cerca de 2 mil | processamento semântico incremental |
-| O jogo E com 1 km e 30 quadros por segundo com placa de vídeo de verdade | 1 km passa dos tetos de hoje; a medida dos quadros é com GPU emulada | decisão dela sobre os tetos; uma medida num aparelho real |
+| O jogo E com 1 km e 30 quadros por segundo com placa de vídeo de verdade | 1 km passa dos tetos de hoje (pela geometria do relevo, não pelo chão pintado; corrigido em 23/11/2026); a medida dos quadros é com GPU emulada | decidido em 23/11/2026: mundos de 2 km sem subir tetos e medida em aparelho real, no plano `docs/plans/2026-11-23-mundos-de-2km.md` |
 | Relatório consolidado de p50 e p95 por máquina e fixture | os números estão espalhados pelos documentos | um lote de medição |
 | A lentidão do Chrome conectado com projetos de milhares de blocos | o texto em SVG é cerca de 90 vezes mais lento naquele navegador; o trabalho do gesto caiu (5.752 para 393 blocos redesenhados), mas o tempo lá não foi medido de novo (a extensão do Chrome estava desconectada no fecho) | conferir o gesto num computador de família |
 | Aparelhos físicos | decisão da dona: só emulação no CI | nada: decisão dela |
