@@ -6,21 +6,21 @@
   "blocks": [
     {
       "key": "video-a5-acolher",
-      "plannedVideo": "Título: Acolher e ensinar para a próxima vez\n\nEnsinar a validar o sentimento e a mostrar a resposta desejada quando a criança já se acalmou. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-5.roteiro.md, Parte 1."
+      "plannedVideo": "Título: Acolher e ensinar para a próxima vez\n\nRespeitar a recuperação depois da crise, validar o sentimento e retomar um pedido de ajuda com a fala, uma figura ou um sinal que a criança está aprendendo. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-5.roteiro.md, Parte 1."
     },
     {
       "key": "video-a5-analise",
-      "plannedVideo": "Título: O gatilho, a consequência e os ajustes\n\nEnsinar a observar o que veio antes e depois da crise e a ajustar a abordagem. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-5.roteiro.md, Parte 2."
+      "plannedVideo": "Título: O gatilho, a consequência e os ajustes\n\nDesenvolver gatilho, comportamento, consequência, registros, ajustes estratégicos e treino sistemático em momentos tranquilos, sem concluir a função a partir de um caso isolado. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-5.roteiro.md, Parte 2."
     },
     {
       "key": "video-a5-fechamento",
-      "plannedVideo": "Título: Hoje eu escuto melhor\n\nReunir a ideia central do curso e encerrar com a mensagem final. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-5.roteiro.md, Parte 3."
+      "plannedVideo": "Título: Hoje eu escuto melhor\n\nRetomar a situação da brincadeira com os apoios de antes, durante e depois, compartilhar o cuidado com família, escola e equipe e encerrar com a mensagem final e o certificado. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-5.roteiro.md, Parte 3."
     },
     {
       "key": "resumo-a5",
       "content": {
         "kind": "rich_text",
-        "markdown": "## Para consultar\n\n- **Quando a criança se acalmar:** valide o sentimento e ensine a resposta para a próxima vez. Troque o \"obedeça\" por \"o que está difícil pra você agora?\".\n- **Gatilho e consequência:** o que aconteceu logo antes? O que aconteceu logo depois? Anote para enxergar o padrão.\n- **Ajustes:** mude a abordagem para prevenir crises parecidas. Se a crise virou um jeito de conseguir algo, ensine o pedido e atenda o pedido.\n- **Treino:** cada crise mostra o que a criança ainda precisa aprender.\n- A pergunta que fica: o que o comportamento está tentando me mostrar?"
+        "markdown": "## Para consultar\n\n- **Depois da recuperação:** procure um momento em que a criança consiga participar. Acolha o sentimento e retome um pedido de ajuda ou outra resposta que ela está aprendendo.\n- **Observe a sequência:** o que aconteceu antes, o que a criança fez e o que aconteceu depois. Consequência quer dizer o que veio depois, não um castigo.\n- **Registre e ajuste:** observações repetidas dão pistas para conversar com a equipe; uma situação sozinha não confirma a função. Ajuste a transição, o ambiente ou o apoio à comunicação.\n- **Treino sistemático:** pratique aos poucos, em momentos tranquilos, a habilidade que precisa de apoio. Mantenha o cuidado durante o sofrimento.\n- **Para levar:** antes, preparar; durante, proteger e reduzir sobrecarga; depois, acolher, observar e ajustar. A pergunta é: o que ficou difícil e como posso ajudar?"
       }
     },
     {
@@ -38,7 +38,7 @@
     {
       "key": "acolher",
       "title": "Acolher e ensinar para a próxima vez",
-      "objective": "Ensinar a validar o sentimento e a mostrar a resposta desejada quando a criança já se acalmou.",
+      "objective": "Respeitar a recuperação depois da crise, validar o sentimento e retomar um pedido de ajuda com a fala, uma figura ou um sinal que a criança está aprendendo.",
       "intent": "explanation",
       "blockKeys": ["video-a5-acolher"],
       "workspaceKey": null,
@@ -52,7 +52,7 @@
     {
       "key": "analise",
       "title": "O gatilho, a consequência e os ajustes",
-      "objective": "Ensinar a observar o que veio antes e depois da crise e a ajustar a abordagem.",
+      "objective": "Desenvolver gatilho, comportamento, consequência, registros, ajustes estratégicos e treino sistemático em momentos tranquilos, sem concluir a função a partir de um caso isolado.",
       "intent": "explanation",
       "blockKeys": ["video-a5-analise"],
       "workspaceKey": null,
@@ -66,7 +66,7 @@
     {
       "key": "fechamento",
       "title": "Hoje eu escuto melhor",
-      "objective": "Reunir a ideia central do curso e encerrar com a mensagem final.",
+      "objective": "Retomar a situação da brincadeira com os apoios de antes, durante e depois, compartilhar o cuidado com família, escola e equipe e encerrar com a mensagem final e o certificado.",
       "intent": "delivery",
       "blockKeys": ["video-a5-fechamento", "resumo-a5", "certificado"],
       "workspaceKey": null,

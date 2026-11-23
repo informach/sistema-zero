@@ -12,7 +12,7 @@
 
 ## Módulo 1: Entender a crise e saber o que fazer
 
-**Resumo:** Ver a crise como comunicação; conhecer as quatro raízes da frustração e observar a função do comportamento antes de julgar; prevenir com previsibilidade, treino e comunicação; intervir durante a crise com menos estímulo e menos palavras; e usar o depois da crise para acolher, ensinar e ajustar.
+**Resumo:** Entender a crise a partir de uma situação de casa; conhecer quatro fatores que podem contribuir para a frustração e observar o contexto; preparar a rotina, praticar pequenas esperas e ensinar um jeito de pedir ajuda; oferecer proteção e reduzir a sobrecarga durante a crise; e usar as observações do depois para acolher, ensinar e ajustar os apoios com a equipe.
 
 - [Crise não é desobediência, é comunicação](como-ajudar-seu-filho-autista-nas-frustracoes-aula-1.md)
 - [De onde vem a frustração](como-ajudar-seu-filho-autista-nas-frustracoes-aula-2.md)
@@ -23,3 +23,5 @@
 **Formato:** cinco aulas e 12 partes com vídeo. Sem quiz nem tarefas. Sem oferta no final. Apostila opcional de consulta.
 
 **Conclusão:** visualização dos vídeos e, na última parte, emissão do certificado como registro.
+
+**Condução revisada em 20/11/2026:** boas-vindas explícitas, apresentação da Vivi e propósito antes da primeira reflexão. A situação de parar de brincar para jantar liga o início ao fechamento. As explicações continuam conversadas, com exemplos e perguntas desenvolvidos, preservando todos os tópicos dos slides.
