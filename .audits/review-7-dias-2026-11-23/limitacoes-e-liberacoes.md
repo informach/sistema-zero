@@ -1,5 +1,7 @@
 # Funcionalidades, limitações e liberações — levantamento ampliado
 
+**Corte final da LG01 em qualificação:** `9a8a1a9f2`, com R13 e R14 corrigidos. R14 preserva a prévia dos gestos de espalhamento e biblioteca do Pinta quando o layout muda sem mover o ponteiro. Os quatro percursos desktop/toque, 76 testes UI e tipos dos pacotes passaram localmente; CI e implantação final ainda em acompanhamento.
+
 Atualização de 23/11/2026, incluindo o que entrou depois do início da auditoria.
 
 **Execução da primeira etapa:** a LG01 está sendo qualificada no PR #283, candidata `a5d684728`, incluindo a main concorrente e a correção R13 do menu incorporado. As miniaturas dos 24 modelos foram conferidas na prévia Admin; criação e reabertura passaram no perfil infantil. Aquecimento e reutilização por perfil ficam **fora da entrega**: a prova real reproduziu interferência entre duas abas quando uma execução falha (R12). Exigem correção de propriedade/limpeza do contêiner e nova qualificação, não apenas liberação de acesso. Os estados de produção das tabelas abaixo são históricos da coleta; [registro operacional atual](../../docs/qa/2026-11-23-lg01-melhorias-prontas.md) e [provas do executor](../../docs/qa/2026-11-23-lg02-executor-real.md).

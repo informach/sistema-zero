@@ -17,7 +17,7 @@ Os estados de produção citados pertencem ao levantamento de 23/11. Ao retomar 
 
 | ID | Frente | Prioridade | Dependência principal | Estado |
 | --- | --- | --- | --- | --- |
-| LG01 | Primeira versão com correções e melhorias prontas | 1 | Contratos, migrações e aplicativos compatíveis | Em execução: candidata isolada, implantação pendente |
+| LG01 | Primeira versão com correções e melhorias prontas | 1 | Contratos, migrações e aplicativos compatíveis | Em execução: candidata `9a8a1a9f2`, incluindo R13/R14; qualificação remota e implantação final pendentes |
 | LG02 | Qualificação do aquecimento da verificação no executor real | 1 | Corrigir a vida compartilhada do contêiner e repetir as provas | Não qualificada: falha entre abas reproduzida; excluída da LG01 |
 | LG03 | Publicação gradual das aulas | 1, em paralelo | Vídeos, atividades, materiais e Jornada conferidos | Pendente |
 | LG04 | Fluxo regional completo do Pinta até a conta e o Mural | 2 | Integração do cliente com armazenamento e publicação compatíveis | Pendente |
@@ -110,6 +110,7 @@ Escolher um ID do quadro e registrar seu escopo antes de executar. Ao concluir, 
 | Data | ID | Resultado e evidências |
 | --- | --- | --- |
 | 23/11/2026 | Registro | Proposta preservada para execução gradual; etapas pendentes |
+| 23/11/2026 | LG01 | R14 reproduzido e corrigido: gestos do Pinta conservam a prévia após deslocamento do papel. 76 testes UI e quatro percursos desktop/toque aprovados, tipos Pinta/Studio sem erros. Nova candidata `9a8a1a9f2` em CI e homologação |
 | 23/11/2026 | LG01 | Miniaturas dos 24 modelos conferidas na prévia Admin autenticada. Defeito R13 no menu incorporado corrigido em `a5d684728`, com testes de regressão e navegador. Nova rodada final de CI, plano e staging em andamento; produção ainda pendente |
 | 23/11/2026 | LG01 | Candidata em `release/lg01-melhorias-prontas-20261123`, baseada em `f8910ee05`, com aquecimento removido. [Escopo, dependências, provas e sequência de implantação](../qa/2026-11-23-lg01-melhorias-prontas.md) |
 | 23/11/2026 | LG02 | Consulta autenticada ao executor real de staging: `/v1/check/warm` respondeu 404. Aquecimento e reutilização excluídos da candidata; faltam implantação e provas reais de falhas, concorrência e isolamento |

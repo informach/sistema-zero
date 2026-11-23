@@ -1,5 +1,7 @@
 # Revisão do repositório — últimos sete dias
 
+**Achado posterior R14:** o CI revelou diferença entre prévia e gravação ao espalhar conjuntos no Pinta em toque. Uma atualização assíncrona deslocava o papel e o cálculo de `pointerup` incluía uma casa nova sem movimento do dedo. A reprodução mínima falhou com o mesmo objeto extra do CI. A confirmação passou a preservar a prévia nessa situação, mantendo a leitura de ponto final novo. Provas locais: 75 testes UI, 13 testes finais do hook e percurso de navegador em desktop/toque com deslocamento determinístico. Integra a qualificação final da LG01, ainda pendente de CI e implantação.
+
 **Aceite posterior da LG01:** os 24 modelos da biblioteca de uma aula foram inspecionados na prévia Admin já autenticada, sem alterar o progresso infantil ou publicar conteúdo. A navegação revelou **R13**, menu do editor incorporado fora da janela. Corrigido em `a5d684728`, com regressão antes/depois, seis testes do menu, tipos e três percursos no build de produção em Chrome. Esse SHA inclui também a main concorrente `8d87bbff8`; exige novos gates remotos antes da promoção. [Recibo detalhado e estado da entrega](../../docs/qa/2026-11-23-lg01-melhorias-prontas.md).
 
 **Continuidade:** a proposta de execução aos poucos está registrada no [plano de liberação gradual](../../docs/plans/2026-11-23-plano-de-liberacao-gradual.md), com prioridades, dependências e acompanhamento por etapa.

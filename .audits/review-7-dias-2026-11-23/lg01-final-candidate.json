@@ -1,0 +1,31 @@
+{
+  "candidate": "9a8a1a9f20e76106abbf4cb4c632bc9c0d6ac53e",
+  "incorporatedMain": "8d87bbff854b94b18be51793aa00ff6022fa7613",
+  "pullRequest": 283,
+  "localVerification": {
+    "embeddedMenuRegressionFailedBeforeFix": true,
+    "menuTestsPassed": 6,
+    "menuChromeProductionFlowsPassed": 3,
+    "scatterLayoutRegressionFailedBeforeFix": true,
+    "libraryLayoutRegressionFailedBeforeFix": true,
+    "pintaUiTestsPassed": 76,
+    "pintaUiExpectations": 1226,
+    "pintaProductionDesktopTouchFlowsPassed": 4,
+    "pintaTypecheckExitCode": 0,
+    "studioTypecheckExitCode": 0,
+    "biomeChangedFilesErrors": 0,
+    "diffCheckExitCode": 0
+  },
+  "remoteQualification": {
+    "prCiRun": 45281893853,
+    "railwayPlanRun": 45281894080,
+    "canonicalStagingRun": 45281918669,
+    "status": "pending"
+  },
+  "warmingIncluded": false,
+  "warmingBlocker": "R12: failed shared-container check interrupts another tab of the same identity",
+  "stagingWorkerVersion": "6406c751-d850-4e2c-b433-7f75a2b5337d",
+  "stagingPythonCatalog": "05294b0e0df2ed0a128bde227a927c7f88fef3db784baf59368ae0246ee22ead",
+  "productionPythonCatalogToPreserve": "2c53c74ce96be00412438117a39bbcf82af763c6c99be3783beaa6317a00b57d",
+  "productionDeployedByThisExecution": false
+}

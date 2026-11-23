@@ -1,5 +1,7 @@
 # LG01 — candidata às melhorias prontas
 
+**Estado atual da execução:** candidata `9a8a1a9f20e76106abbf4cb4c632bc9c0d6ac53e`, incluindo a main concorrente e as correções R13/R14. Verificações locais concluídas. CI do PR `45281893853`, plano Railway `45281894080` e onda explícita de staging `45281918669` em acompanhamento. Produção ainda não implantada por esta execução. As seções abaixo preservam a sequência e os resultados de cada corte anterior.
+
 Execução autorizada em 23/11/2026. A candidata parte de `f8910ee0547cba79a8dc38cc45ffa2a6efb66e5e`, em um checkout próprio na branch `release/lg01-melhorias-prontas-20261123`. Produção consultada nesta execução: Members e Kids em `3d7c532535a5474ce358709d00b78d6a7f23ce1a`.
 
 ## Entrega e dependências
@@ -148,3 +150,15 @@ Essa navegação encontrou **R13: menu incorporado abre fora da janela**. Com o 
 Correção `a5d684728a511f6e8c45f877f572166b1e1453f1`: regressão unitária reproduziu o erro antes da alteração (borda inferior 1.092 px para limite de 760 px) e passou depois. Foram aprovados os seis testes do menu, 19 expectativas, tipos completos do Studio e Biome dos três arquivos. O build de produção passou três percursos no Chrome: tela cheia, menu incorporado na borda inferior abrindo Modelos 3D, e upload/miniatura/reabertura de GLB. Logs `lg01-menu-red-unit.log`, `lg01-menu-green-unit.log`, `lg01-menu-typecheck.log` e `lg01-menu-browser.log` na pasta da auditoria.
 
 O CI completo de `40dd49db7` terminou com sucesso nos 13 jobs; seu staging foi cancelado antes de qualquer passo de implantação, pois a correção R13 exige outro SHA final. O PR #283 voltou a rascunho durante essa qualificação. A candidata final passa a `a5d684728…`, incluindo a main concorrente e R13. Gates: CI do PR `45279034681`, plano Railway `45279034397` e onda canônica explícita de staging `45279089312`, com os oito serviços já definidos. O run automático `45279020778` foi cancelado antes dos passos de implantação. Produção continua sem implantação desta execução até a aprovação desses gates.
+
+### R14 — gesto do Pinta após deslocamento do papel
+
+O CI `45279034681` encontrou um defeito adicional no percurso de toque do Pinta: os conjuntos salvos tinham um objeto a mais que a prévia. O trace registra uma resposta de sincronização com o Studio entre o movimento e a liberação do ponteiro. A reprodução mínima desloca o papel 32 px nesse intervalo: sem mover o ponteiro, o `pointerup` calculava uma casa na linha anterior e a acrescentava ao gesto. A regressão falhou com exatamente esse objeto extra, chave `30:0`, antes da correção.
+
+O gesto agora conserva a posição do último evento de entrada. Ao soltar sem nova posição, confirma o resultado já mostrado; quando o ponto final mudou, ainda incorpora essa posição, mesmo sem um último `pointermove`. As recusas por edição externa, captura perdida, limites e ponto fora da área continuam nos respectivos caminhos existentes. A prova não foi enfraquecida nem recebeu espera fixa ou repetição automática.
+
+O mesmo mecanismo foi reproduzido no arrasto da biblioteca: ao soltar sem mover, o objeto era gravado em y=48 em vez dos 64 exibidos. Esse caminho também conserva o último resultado mostrado quando a entrada não mudou, mantendo as recusas do host e da área de destino. Passaram 76 testes da UI (1.226 expectativas), incluindo as duas regressões e a contraprova do ponto final novo. Os quatro percursos de produção no Chromium passaram: espalhamento e biblioteca, em desktop e toque, agora com deslocamento determinístico do papel durante a prévia. Os tipos do Pinta passaram; os do Studio e a nova qualificação remota precisam terminar antes da promoção. Logs `lg01-scatter-layout-red.log`, `lg01-library-layout-red.log`, `lg01-scatter-library-green.log` e `lg01-scatter-library-browser.log` na auditoria.
+
+A onda `45279089312` foi cancelada antes dos passos de implantação. O plano de `a5d684728` passou com zero mudanças; o CI desse SHA não qualifica a versão sem R14. O Worker de staging foi alinhado ao código `a5d684728`, versão `6406c751-d850-4e2c-b433-7f75a2b5337d`, preservando a imagem anterior e o catálogo `05294b0…`; o diretório do runtime não mudou desde a candidata `3664ae334`. Produção permanece intacta.
+
+Os tipos finais do Pinta e do Studio concluíram com saída 0 após as duas correções. R14 foi incorporado em `9a8a1a9f20e76106abbf4cb4c632bc9c0d6ac53e`, sem alterações adicionais no runtime. O CI automático `45281870815` foi cancelado antes dos passos de implantação; a onda `45281918669` mantém o CSV explícito dos oito serviços. O PR #283 permanece em rascunho até essa qualificação. Os recibos desta etapa estão preservados também na branch `docs/lg01-acompanhamento-20261123`.
