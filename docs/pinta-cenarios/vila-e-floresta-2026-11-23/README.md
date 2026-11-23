@@ -76,3 +76,20 @@ cd ../studio
 bunx playwright test --config playwright.pinta.config.ts --project=desktop --retries=0 pinta-scenes.flow pinta-native-world-scenes.flow phaser-scenes.flow pinta-physics-scenes.flow
 bunx playwright test --config playwright.pinta-future-recovery.config.ts --retries=0
 ```
+
+## Repetição da metade que faltou (23/11, staging local `1bcc2198f`)
+
+Rodada uma de cada vez pela trava, na worktree da integração. Ferramentas: Tiled 1.12.2 e Godot 4.7.2
+de `.tmp/pinta-tools/` da árvore principal, e CPython 3.13.17 com pygame-ce 2.5.8 num venv temporário.
+
+| Bateria | Resultado |
+|---|---|
+| `check.ts --exigir-tiled --exigir-pygame --exigir-godot` | aprovado (Tiled, Pygame de verdade e Godot real; "Godot QA: 18 camadas, objetos, IDs únicos, referências, origem afim, animação, movimento, colisão e portas; falhas=false") |
+| `verify-region-pygame.ts` | aprovado |
+| `verify-region-godot.ts` | aprovado |
+| `verify-region-phaser.ts` | aprovado (Phaser 3.90.0, Chromium 159; início `(-8,-8)`, porta, pixels, imagem corrompida recusada; extensão 10.000 × 10.000 com `tilemaps: 0`, `tilemapLayers: 0`, heap 13,3 MB; `errors: []`) |
+| `playwright.pinta.config.ts --project=desktop`: `pinta-scenes`, `pinta-native-world-scenes`, `phaser-scenes`, `pinta-physics-scenes` | 11 aprovados |
+| `playwright.pinta-future-recovery.config.ts` | 5 aprovados |
+
+Com isso, a coluna "continua sem prova" desta rodada se reduz ao que exige conta autenticada, aparelhos
+físicos ou uma sessão manual na tela do Tiled.
