@@ -1,9 +1,15 @@
 import {
   PREVIEW_MESSAGE_SOURCE,
+  PREVIEW_STORAGE_MAX_KEY_CHARS,
   PREVIEW_STORAGE_MAX_KEYS,
   PREVIEW_STORAGE_MAX_TOTAL_CHARS,
+  PREVIEW_STORAGE_MAX_VALUE_CHARS,
   sanitizePreviewStorageData,
 } from './types'
+
+/** Frases do erro de salvar, com os números escritos como a criança lê. */
+const NOME_GRANDE = `Esse nome é grande demais para guardar (até ${PREVIEW_STORAGE_MAX_KEY_CHARS.toLocaleString('pt-BR')} letras).`
+const VALOR_GRANDE = `Isso é grande demais para guardar de uma vez (até ${PREVIEW_STORAGE_MAX_VALUE_CHARS.toLocaleString('pt-BR')} caracteres).`
 
 /**
  * Runtime injetado no `<head>` do iframe (ANTES de qualquer script de extensão e
@@ -77,6 +83,12 @@ export function buildStorageBridgeRuntime(options: StorageBridgeOptions = {}): s
   // estourar (semântica do localStorage real — também didático).
   var MAX_KEYS = ${PREVIEW_STORAGE_MAX_KEYS};
   var MAX_TOTAL_CHARS = ${PREVIEW_STORAGE_MAX_TOTAL_CHARS};
+  // Nome e valor: o parent CORTA o que passa disso ao guardar (sanitizePreviewStorageData),
+  // e o jogo voltava com o progresso truncado sem ninguém saber. Recusar aqui avisa na hora.
+  var MAX_KEY_CHARS = ${PREVIEW_STORAGE_MAX_KEY_CHARS};
+  var MAX_VALUE_CHARS = ${PREVIEW_STORAGE_MAX_VALUE_CHARS};
+  var NOME_GRANDE = ${JSON.stringify(NOME_GRANDE)};
+  var VALOR_GRANDE = ${JSON.stringify(VALOR_GRANDE)};
   // Canal de reload: window.name é o ÚNICO armazenamento síncrono que sobrevive a
   // um location.reload() DENTRO deste iframe de origem opaca (o mesmo
   // browsing-context é reusado; localStorage/sessionStorage reais lançam). O jogo
@@ -135,13 +147,14 @@ export function buildStorageBridgeRuntime(options: StorageBridgeOptions = {}): s
       }
       return n;
     }
-    function quotaError() {
+    function quotaError(message) {
       // Espelha o localStorage real: estourar a cota LANÇA QuotaExceededError. Onde
       // houver DOMException usamos ela (instanceof/name corretos); senão, um Error
       // com name marcado — o aluno aprende a tratar a cota como no navegador.
-      try { return new DOMException('Cota do armazenamento excedida.', 'QuotaExceededError'); }
+      var text = message || 'Cota do armazenamento excedida.';
+      try { return new DOMException(text, 'QuotaExceededError'); }
       catch (e) {
-        var err = new Error('Cota do armazenamento excedida.');
+        var err = new Error(text);
         err.name = 'QuotaExceededError';
         return err;
       }
@@ -154,6 +167,8 @@ export function buildStorageBridgeRuntime(options: StorageBridgeOptions = {}): s
       setItem: function (key, value) {
         var k = String(key);
         var v = String(value);
+        if (k.length > MAX_KEY_CHARS) throw quotaError(NOME_GRANDE);
+        if (v.length > MAX_VALUE_CHARS) throw quotaError(VALOR_GRANDE);
         var existed = Object.prototype.hasOwnProperty.call(data, k);
         // Cap de quantidade: só barra CHAVE NOVA (substituir uma existente não cresce
         // a contagem). Cap de total: desconta o valor antigo da chave que será trocada.
