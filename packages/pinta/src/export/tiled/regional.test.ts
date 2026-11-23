@@ -6,6 +6,7 @@ import { basename, dirname, join, resolve } from 'node:path'
 import { createRegionCellReader, PINTA_REGION_LIMITS } from '@sistemazero/core/creations'
 import type { PintaRegionSceneWire } from '@sistemazero/core/studio/pinta-region-scene'
 import { nativeImageOf } from '../../../scripts/homologacao/generate'
+import { warnSkippedInCi } from '../../testing/ciPython'
 import { projectedVila } from '../../testing/projectedVila'
 import { regionVila } from '../../testing/regionVila'
 import { decodeRegionGalleryBackup } from '../regionBackup'
@@ -256,6 +257,10 @@ test('missing linked maps fail instead of producing a partial package', async ()
 })
 
 const tiledBinary = process.env.PINTA_TILED_BIN
+warnSkippedInCi(
+  tiledBinary,
+  'Os ensaios do Tiled de verdade com cenários regionais pularam: o CI não tem o Tiled (PINTA_TILED_BIN).',
+)
 test.skipIf(!tiledBinary)(
   'Tiled opens JSON and external TSX, then round-trips signed GIDs',
   async () => {

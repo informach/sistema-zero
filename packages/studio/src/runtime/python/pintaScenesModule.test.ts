@@ -11,6 +11,7 @@ import {
   pintaBrowser2dProject,
   pintaSceneAssetPath,
 } from '../../../../../experiments/studio-python-runtime/pintaBrowser2dFixtures'
+import { pythonRequiredInCi, warnSkippedInCi } from '../../../../pinta/src/testing/ciPython'
 import { buildPythonSourceFiles } from '../../export/pythonSource'
 import { pythonOfficialModules } from '../../python/officialModules'
 import { pythonEnvironmentFixture } from '../../state/fixtures/pythonEnvironment'
@@ -29,11 +30,18 @@ const environment = {
 }
 const native = process.env.PYTHON ?? 'python'
 const raylib = process.env.PINTA_RAYLIB_PYTHON
-const pygame =
+warnSkippedInCi(
+  raylib,
+  'A prova nativa do módulo de cenários no Raylib 2D pulou: o CI não tem raylib com janela (PINTA_RAYLIB_PYTHON).',
+)
+const pygame = pythonRequiredInCi(
   spawnSync(native, ['-I', '-c', 'import pygame, pgzero.screen'], {
     env: environment,
     timeout: 5000,
   }).status === 0
+    ? native
+    : undefined,
+)
 
 /** `recusa` is where the Studio panel put the broken world for this extension. */
 const shared = (recusa: string) => `from pathlib import Path
@@ -206,12 +214,12 @@ for (const { extension, body, python } of [
   {
     extension: PYGAME_EXTENSION,
     body: sdl(true, recusa(PYGAME_EXTENSION)),
-    python: pygame ? native : undefined,
+    python: pygame,
   },
   {
     extension: PGZERO_EXTENSION,
     body: sdl(false, recusa(PGZERO_EXTENSION)),
-    python: pygame ? native : undefined,
+    python: pygame,
   },
   { extension: RAYLIB_2D_EXTENSION, body: ray(recusa(RAYLIB_2D_EXTENSION)), python: raylib },
 ])

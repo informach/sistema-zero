@@ -5,6 +5,7 @@ import { basename, dirname, join, resolve } from 'node:path'
 import { createCanvas } from '@napi-rs/canvas'
 import { encodePintaRegionLayers } from '@sistemazero/core/creations'
 import { nativeImageOf } from '../../scripts/homologacao/generate'
+import { pythonRequiredInCi } from '../testing/ciPython'
 import { regionPlatformPng } from '../testing/regionPlatformPng'
 import { regionVila } from '../testing/regionVila'
 import { pythonPygameAffine } from './pythonPygameAffine'
@@ -15,8 +16,10 @@ import { pythonSceneRuntime } from './pythonSceneRuntime'
 import { embedPintaRegionImage } from './regionImage'
 import { exportPintaRegionScene } from './regionScene'
 
-const python = [process.env.PYTHON, 'python3', 'python'].find(
-  (name) => name && spawnSync(name, ['-I', '-c', 'import pygame']).status === 0,
+const python = pythonRequiredInCi(
+  [process.env.PYTHON, 'python3', 'python'].find(
+    (name) => name && spawnSync(name, ['-I', '-c', 'import pygame']).status === 0,
+  ),
 )
 const source = [
   pythonRegionWorld,

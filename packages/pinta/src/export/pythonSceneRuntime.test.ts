@@ -7,6 +7,7 @@ import { readPintaRegionScene } from '@sistemazero/core/studio/pinta-region-scen
 import { createRegionSceneQueries } from '@sistemazero/core/studio/pinta-scene-query'
 import { scene4BudgetFixture } from '../../../core/tests/fixtures/pinta-region-scene'
 import { nativeImageOf } from '../../scripts/homologacao/generate'
+import { pythonRequiredInCi } from '../testing/ciPython'
 import { regionVila } from '../testing/regionVila'
 import { purePython, runPurePython } from '../testing/runPurePython'
 import { pygameSceneModule } from './pygameProject'
@@ -610,10 +611,11 @@ print(json.dumps([count,tracemalloc.get_traced_memory()[1],scene.ponto_inicial()
   20000,
 )
 
-const pygamePython =
+const pygamePython = pythonRequiredInCi(
   purePython && spawnSync(purePython, ['-I', '-c', 'import pygame']).status === 0
     ? purePython
-    : undefined
+    : undefined,
+)
 it.skipIf(!pygamePython)(
   'published Pygame scenes 2 and 3 match the regional policy for native tile pixels, walls and one-way platforms',
   async () => {

@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createCanvas } from '@napi-rs/canvas'
 import { nativeImageOf } from '../../scripts/homologacao/generate'
+import { pythonRequiredInCi, warnSkippedInCi } from '../testing/ciPython'
 import { regionVila } from '../testing/regionVila'
 import { pngChunk } from './pngText'
 import { pythonPgzeroRegional } from './pythonPgzeroRegional'
@@ -32,9 +33,13 @@ function compatiblePython(probe: string) {
   )
 }
 
-const pgzero = compatiblePython('import pygame, pgzero.screen')
+const pgzero = pythonRequiredInCi(compatiblePython('import pygame, pgzero.screen'))
 // The real Raylib binding requires a desktop/OpenGL context, even with a hidden window.
 const raylib = process.env.PINTA_RAYLIB_PYTHON
+warnSkippedInCi(
+  raylib,
+  'Os ensaios do Raylib nativo dos cenários do Pinta pularam: o CI não tem raylib com janela (PINTA_RAYLIB_PYTHON).',
+)
 
 function runNative(python: string, source: string, input: unknown = null) {
   const file = join(tmpdir(), `pinta-native-${randomUUID()}.py`)

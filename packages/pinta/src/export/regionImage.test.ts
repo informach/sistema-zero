@@ -10,6 +10,7 @@ import { readPintaRegionImageData } from '@sistemazero/core/studio/pinta-region-
 import { unzlibSync } from 'fflate'
 import { scene4Fixture } from '../../../core/tests/fixtures/pinta-region-scene'
 import { utf8ByteLength } from '../core/jsonBytes'
+import { pythonRequiredInCi } from '../testing/ciPython'
 import { pngCrc32, pngWithPintaData } from './pngText'
 import { embedPintaRegionImage, preparePintaRegionImageData } from './regionImage'
 
@@ -116,8 +117,10 @@ test('one-map PNG 5 preserves admitted world descriptors without treating them a
   ).toThrow('conferir os dados')
 })
 
-const pygame = [process.env.PYTHON, 'python3', 'python'].find(
-  (name) => name && spawnSync(name, ['-I', '-c', 'import pygame']).status === 0,
+const pygame = pythonRequiredInCi(
+  [process.env.PYTHON, 'python3', 'python'].find(
+    (name) => name && spawnSync(name, ['-I', '-c', 'import pygame']).status === 0,
+  ),
 )
 test.skipIf(!pygame)(
   'the authentic PNG-4 Pygame reader accepts the ordinary image and refuses PNG-5 metadata',
