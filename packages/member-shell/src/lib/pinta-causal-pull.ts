@@ -8,7 +8,7 @@ import {
   assetFromJson,
   isLegacyWorkshopAsset,
   MAX_BACKUP_FILE_BYTES,
-  type PintaMemoryAsset,
+  type PintaWorkshopAsset,
   pintaAssetSchema,
 } from '@sistemazero/pinta/assets'
 import {
@@ -19,7 +19,7 @@ import {
 } from './pinta-causal-cloud'
 
 /** A 404 is a compatibility signal only before the account has used the new protocol. */
-type PintaCausalLocalPort = NativeCausalPort<PintaMemoryAsset>
+type PintaCausalLocalPort = NativeCausalPort<PintaWorkshopAsset>
 
 export async function discoverPintaCausalSnapshot(options: {
   local: Pick<PintaCausalLocalPort, 'inspect' | 'rememberProtocol'>
@@ -95,11 +95,11 @@ async function readRetainedCandidates(
   ]
   const archived: NonNullable<LocalPull['archived']>[number][] = []
   const archivedPins: NonNullable<LocalPull['archivedPins']>[number][] = []
-  const decoded = new Map<string, PintaMemoryAsset>()
+  const decoded = new Map<string, PintaWorkshopAsset>()
   async function decode(
     put: NonNullable<Awaited<ReturnType<PintaCausalLocalPort['retained']>>>['puts'][number],
     blob: Blob | undefined,
-  ): Promise<PintaMemoryAsset> {
+  ): Promise<PintaWorkshopAsset> {
     if (!blob || blob.size !== put.bytes)
       throw Error('Não consegui conferir os arquivos guardados neste aparelho.')
     signal.throwIfAborted()
@@ -155,7 +155,7 @@ async function readRetainedCandidates(
 export function decodeCausalEntry(
   json: string,
   entry: PintaCloudSnapshot['entries'][number],
-  decode?: NativeCausalPort<PintaMemoryAsset>['decodeCandidate'],
+  decode?: NativeCausalPort<PintaWorkshopAsset>['decodeCandidate'],
 ) {
   const legacy = decode ? null : assetFromJson(json)
   const asset = decode ? decode(json) : legacy?.warnings.length ? null : legacy?.asset
@@ -229,7 +229,7 @@ export async function pullPintaCausalSnapshot(options: {
     changed.some((entry) => entry.formatVersion > (options.reader ?? PINTA_MAX_READ_FORMAT_VERSION))
   )
     return false
-  const staged = new Map<string, PintaMemoryAsset>()
+  const staged = new Map<string, PintaWorkshopAsset>()
   const budget = { remaining: MAX_BACKUP_FILE_BYTES }
   for (const entry of changed) {
     signal.throwIfAborted()

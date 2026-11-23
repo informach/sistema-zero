@@ -1,5 +1,5 @@
 import type { PintaCausalLocalPort as NativeCausalPort } from '@sistemazero/pinta'
-import type { PintaMemoryAsset } from '@sistemazero/pinta/assets'
+import type { PintaWorkshopAsset } from '@sistemazero/pinta/assets'
 import type {
   PintaCausalCloud,
   PintaCausalRequestError,
@@ -8,7 +8,7 @@ import type {
 import { discoverPintaCausalSnapshot, pullPintaCausalSnapshot } from './pinta-causal-pull'
 import { flushPintaCausalOutbox, PintaCausalUploadError } from './pinta-causal-queue'
 
-type PintaCausalLocalPort = NativeCausalPort<PintaMemoryAsset>
+type PintaCausalLocalPort = NativeCausalPort<PintaWorkshopAsset>
 
 export type PintaCausalSyncOutcome =
   | { mode: 'legacy' }

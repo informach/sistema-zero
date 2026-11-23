@@ -1,11 +1,11 @@
-import type { PintaMemoryAsset } from './assetMemory'
+import type { PintaWorkshopAsset } from './assetMemory'
 
 // Session-only provenance. Symbols survive object spreads used by editing commands,
 // but never enter IndexedDB structured clone, JSON, exported assets or cloud files.
 const LOCAL_ORIGIN = Symbol('pinta.localOrigin')
 type Origin = { database: string; id: string; revision: string | null }
-type WithOrigin = PintaMemoryAsset & { [LOCAL_ORIGIN]?: Origin }
-const exactReads = new WeakMap<PintaMemoryAsset, string>()
+type WithOrigin = PintaWorkshopAsset & { [LOCAL_ORIGIN]?: Origin }
+const exactReads = new WeakMap<PintaWorkshopAsset, string>()
 
 export interface PintaResourceObservation {
   id: string
@@ -13,24 +13,29 @@ export interface PintaResourceObservation {
 }
 
 /** A read of this object, not the latest revision in a mutable editor lineage. */
-export function pintaResourceObservation(asset: PintaMemoryAsset): PintaResourceObservation | null {
+export function pintaResourceObservation(
+  asset: PintaWorkshopAsset,
+): PintaResourceObservation | null {
   const localRevision = exactReads.get(asset)
   return localRevision ? { id: asset.id, localRevision } : null
 }
 
 /** Opaque identity of the confirmed native revision, for adapters' sync baselines. */
-export function pintaLocalRevisionOf(asset: PintaMemoryAsset): string | undefined {
+export function pintaLocalRevisionOf(asset: PintaWorkshopAsset): string | undefined {
   const origin = (asset as WithOrigin)[LOCAL_ORIGIN]
   return origin?.id === asset.id && origin.revision !== null ? origin?.revision : undefined
 }
 
-export function pintaLocalOriginOf(asset: PintaMemoryAsset, database: string): Origin | undefined {
+export function pintaLocalOriginOf(
+  asset: PintaWorkshopAsset,
+  database: string,
+): Origin | undefined {
   const origin = (asset as WithOrigin)[LOCAL_ORIGIN]
   return origin?.database === database && origin.id === asset.id ? origin : undefined
 }
 
 export function recordPintaLocalOrigin(
-  asset: PintaMemoryAsset,
+  asset: PintaWorkshopAsset,
   database: string,
   revision: string | null,
   exactRead = true,
@@ -50,9 +55,9 @@ export function recordPintaLocalOrigin(
 }
 
 /** Preserve the local base of an adapter replacement, instead of borrowing a later read. */
-export function inheritPintaLocalOrigin<T extends PintaMemoryAsset>(
+export function inheritPintaLocalOrigin<T extends PintaWorkshopAsset>(
   replacement: T,
-  base?: PintaMemoryAsset | null,
+  base?: PintaWorkshopAsset | null,
 ): T {
   const origin = (base as WithOrigin | undefined | null)?.[LOCAL_ORIGIN]
   return origin && origin.id === replacement.id

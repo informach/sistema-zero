@@ -1,9 +1,10 @@
 import { type JSX, useEffect, useState } from 'react'
 import { useStore } from 'zustand'
-import type { PintaMemoryAsset } from '../../core/assetMemory'
+import type { PintaWorkshopAsset } from '../../core/assetMemory'
 import { COPY } from '../../core/copy'
 import { pintaLocalRevisionOf } from '../../core/localAssetOrigin'
 import type { RegionTilemapAsset } from '../../core/project'
+import { isLocalRegionAsset } from '../../state/localRegionAssetAuthority'
 import type { LocalRegionAuthorSession } from '../../state/localRegionAuthorSession'
 import { markPintaAssetClosed, markPintaAssetOpen } from '../../state/persistence'
 import { createSessionStore, TILEMAP_ZOOM_LEVELS } from '../../state/sessionStore'
@@ -32,7 +33,7 @@ export function FocalEditorScreen({
   const [busy, setBusy] = useState(false)
   const [download, setDownload] = useState<{
     asset: RegionTilemapAsset
-    catalog: readonly PintaMemoryAsset[]
+    catalog: readonly PintaWorkshopAsset[]
   } | null>(null)
   const [session] = useState(() =>
     createSessionStore({
@@ -99,7 +100,7 @@ export function FocalEditorScreen({
               if (
                 !capture.ok ||
                 capture.source.kind !== 'tilemap' ||
-                !('origin' in capture.source) ||
+                !isLocalRegionAsset(capture.source) ||
                 pintaLocalRevisionOf(capture.source) !== revision ||
                 focal.store.getState().revision !== revision
               )

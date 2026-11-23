@@ -1,7 +1,7 @@
-import type { PintaMemoryAsset } from '../core/assetMemory'
+import type { PintaWorkshopAsset } from '../core/assetMemory'
 import { PintaLocalStorageError } from '../core/localStorageErrors'
 import { pintaAssetSchema } from '../core/project'
-import { pintaWorkshopBody } from '../export/workshopDocument'
+import { isWorkshopProjectedMap, pintaWorkshopBody } from '../export/workshopDocument'
 import { isPintaAuthoredMap } from '../tiles/automapping/model'
 import { LOCAL_ASSET_PREFIX } from './localAssetAuthority'
 import type { LocalStorageCodec } from './localChunkStorage'
@@ -40,9 +40,21 @@ function header(key: string, raw: unknown) {
   return { value, body }
 }
 
-/** Native 9 retains its book beside the original physical body. Only that body owns cell buffers. */
+function exact(raw: Record<string, unknown>, fields: string[]): boolean {
+  return (
+    Reflect.ownKeys(raw).length === fields.length &&
+    fields.every((field) => Object.hasOwn(raw, field))
+  )
+}
+
+/**
+ * Native 9 retains its book beside the original physical body. Only that body owns cell buffers.
+ * A projected map has no chunked physical form yet (hexagonal cells take 32 bits), so its
+ * checked logical record is stored whole, behind capability 9: older readers report a newer
+ * format and keep it, and this codec reads it back unchanged.
+ */
 export function createWorkshopStorageCodec(
-  sanitize: (raw: unknown) => PintaMemoryAsset | null,
+  sanitize: (raw: unknown) => PintaWorkshopAsset | null,
 ): LocalStorageCodec {
   return {
     keys(key, raw) {
@@ -56,7 +68,8 @@ export function createWorkshopStorageCodec(
       const map = record(decoded?.asset)
       if (decoded?.version !== 1 || map?.kind !== 'tilemap' || map.id !== stored.value.id) invalid()
       const asset = sanitize({ ...map, schema: 9, automapping: stored.value.book })
-      if (!asset || !isPintaAuthoredMap(asset)) invalid()
+      // Physical 4 holds only the rulebook variant; a projected map is never stored inside it.
+      if (!asset || isWorkshopProjectedMap(asset) || !isPintaAuthoredMap(asset)) invalid()
       const body = pintaWorkshopBody(asset)
       if (decoded.capability !== ('origin' in body ? 8 : Math.max(5, pintaAssetSchema(body))))
         invalid()
@@ -73,13 +86,19 @@ export function createWorkshopStorageCodec(
       const asset = sanitize(doc.asset)
       if (
         !asset ||
-        !isPintaAuthoredMap(asset) ||
         doc.capability !== 9 ||
         key !== LOCAL_ASSET_PREFIX + asset.id ||
         typeof doc.revision !== 'string' ||
         !doc.revision
       )
         invalid()
+      if (isWorkshopProjectedMap(asset)) {
+        const fields = ['version', 'capability', 'revision', 'asset']
+        if (!exact(doc, Object.hasOwn(doc, 'isolation') ? [...fields, 'isolation'] : fields))
+          invalid()
+        return { document: raw, chunks: new Map() }
+      }
+      if (!isPintaAuthoredMap(asset)) invalid()
       const body = pintaWorkshopBody(asset)
       const encoded = localRegionStorageCodec.encode(
         key,

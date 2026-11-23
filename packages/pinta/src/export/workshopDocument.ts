@@ -1,6 +1,7 @@
 /** Reader A transport. The active legacy writer and its declared cloud version remain independent. */
-import type { PintaMemoryAsset } from '../core/assetMemory'
+import type { PintaMemoryAsset, PintaWorkshopAsset } from '../core/assetMemory'
 import { utf8ByteLength } from '../core/jsonBytes'
+import type { WorkshopProjectedMap } from '../core/projectedDocument'
 import { type AutomapBook, readAutomapBook } from '../tiles/automapping/book'
 import { checkAutomapLayers } from '../tiles/automapping/engine'
 import { isPintaAuthoredMap, type PintaAuthoredMap } from '../tiles/automapping/model'
@@ -9,6 +10,7 @@ import {
   decodeAutomapGallery,
   encodeAutomapBodies,
   encodeAutomapGallery,
+  type ProjectedEntryCodec,
   readExactAutomapBodies,
 } from '../tiles/automapping/native'
 import type { AuthorMap } from '../tiles/mapCellEdits'
@@ -21,10 +23,20 @@ import {
   pintaEncodedBackupByteLength,
 } from './projectJson'
 import { decodeRegionGalleryBackup, encodeRegionGalleryBackup } from './regionBackup'
+import { decodeWorkshopProjectedMap, encodeWorkshopProjectedMap } from './workshopProjection'
 
-export { isLegacyWorkshopAsset, isWorkshopRegion, pintaWorkshopBody } from '../core/workshopAsset'
+export {
+  isLegacyWorkshopAsset,
+  isWorkshopProjectedMap,
+  isWorkshopRegion,
+  pintaWorkshopBody,
+} from '../core/workshopAsset'
 
-import { isLegacyWorkshopAsset, pintaWorkshopBody } from '../core/workshopAsset'
+import {
+  isLegacyWorkshopAsset,
+  isWorkshopProjectedMap,
+  pintaWorkshopBody,
+} from '../core/workshopAsset'
 export function attachWorkshopBook(asset: AuthorMap, book: AutomapBook): PintaAuthoredMap | null {
   if (checkAutomapLayers(asset, book)) return null
   return 'origin' in asset
@@ -32,14 +44,57 @@ export function attachWorkshopBook(asset: AuthorMap, book: AutomapBook): PintaAu
     : { ...asset, schema: 9, automapping: book }
 }
 
+/** Both native-9 variants: a map with a rulebook, or a projected map with or without one. */
+export type WorkshopNativeMap = PintaAuthoredMap | WorkshopProjectedMap
+export function isWorkshopNativeMap(asset: PintaWorkshopAsset): asset is WorkshopNativeMap {
+  return isWorkshopProjectedMap(asset) || isPintaAuthoredMap(asset)
+}
+
+const projectedEntries: ProjectedEntryCodec = {
+  encode: encodeWorkshopProjectedMap,
+  decode: decodeWorkshopProjectedMap,
+}
+
+/**
+ * The single native-9 item policy. The projected envelope is the only one with `capability`
+ * (five fields, or six with its book); the rulebook envelope has exactly five fields and a book.
+ * Every reader of one native-9 item (one-item document and causal manifest) goes here; the
+ * gallery reader places the same projected codec.
+ */
+export function readWorkshopNativeItem(raw: unknown): WorkshopNativeMap | null {
+  return raw && typeof raw === 'object' && Object.hasOwn(raw, 'capability')
+    ? decodeWorkshopProjectedMap(raw)
+    : readWorkshopBookEnvelope(raw)
+}
+/** The exact envelope `readWorkshopNativeItem` reads back, or `null` when it cannot be written. */
+export function encodeWorkshopNativeItem(asset: WorkshopNativeMap): object | null {
+  if (isWorkshopProjectedMap(asset)) return encodeWorkshopProjectedMap(asset)
+  const book = readAutomapBook(JSON.stringify(asset.automapping)),
+    body = pintaWorkshopBody(asset)
+  if (!book || !attachWorkshopBook(body, book)) return null
+  const encoded = encodeAutomapBodies([body])
+  if (!encoded || !readExactAutomapBodies(encoded)) return null
+  return automapDocumentEnvelope(encoded, new Map([[asset.id, book]])).assets[0] ?? null
+}
+
 export async function pintaWorkshopBackup(
-  assets: readonly PintaMemoryAsset[],
+  assets: readonly PintaWorkshopAsset[],
 ): Promise<string | null> {
   const books = new Map<string, AutomapBook>()
-  for (const asset of assets) if (isPintaAuthoredMap(asset)) books.set(asset.id, asset.automapping)
-  if (books.size) return encodeAutomapGallery({ assets: assets.map(pintaWorkshopBody), books })
-  if (assets.every(isLegacyWorkshopAsset)) return galleryToPintaJson(assets)
-  return encodeRegionGalleryBackup(assets)?.text ?? null
+  const bodies: PintaWorkshopAsset[] = []
+  for (const asset of assets) {
+    if (isWorkshopProjectedMap(asset)) {
+      bodies.push(asset)
+      continue
+    }
+    if (isPintaAuthoredMap(asset)) books.set(asset.id, asset.automapping)
+    bodies.push(pintaWorkshopBody(asset))
+  }
+  if (books.size || bodies.some(isWorkshopProjectedMap))
+    return encodeAutomapGallery({ assets: bodies, books }, projectedEntries)
+  const plain = assets.filter((asset): asset is PintaMemoryAsset => !isWorkshopProjectedMap(asset))
+  if (plain.every(isLegacyWorkshopAsset)) return galleryToPintaJson(plain)
+  return encodeRegionGalleryBackup(plain)?.text ?? null
 }
 
 function envelopeVersion(text: string): unknown {
@@ -53,24 +108,24 @@ function envelopeVersion(text: string): unknown {
 }
 export async function readPintaWorkshopBackup(
   text: string,
-): Promise<{ assets: PintaMemoryAsset[]; warnings: string[] }> {
+): Promise<{ assets: PintaWorkshopAsset[]; warnings: string[] }> {
   const version = envelopeVersion(text)
   if (version === 8) return decodeRegionGalleryBackup(text)
   if (version !== 9) return importPintaJson(text)
-  const document = await decodeAutomapGallery(text)
+  const document = await decodeAutomapGallery(text, projectedEntries)
   const refused = {
     assets: [],
     warnings: ['O mapa e suas regras não puderam ser validados por inteiro.'],
   }
   if (!document) return refused
-  const assets: PintaMemoryAsset[] = []
+  const assets: PintaWorkshopAsset[] = []
   for (const source of document.assets) {
     const book = document.books.get(source.id)
     if (!book) {
       assets.push(source)
       continue
     }
-    if (source.kind !== 'tilemap') return refused
+    if (source.kind !== 'tilemap' || isWorkshopProjectedMap(source)) return refused
     const asset = attachWorkshopBook(source, book)
     if (!asset) return refused
     assets.push(asset)
@@ -80,20 +135,17 @@ export async function readPintaWorkshopBackup(
 
 /** One exact ID in a causal shadow. A remote sheet may be a separate revision in the same group;
  * validating its content hash belongs to the closure, not this individual envelope. */
-export function pintaWorkshopAssetToJson(asset: PintaMemoryAsset): string | null {
+export function pintaWorkshopAssetToJson(asset: PintaWorkshopAsset): string | null {
+  if (isWorkshopNativeMap(asset)) {
+    const item = encodeWorkshopNativeItem(asset)
+    return item && pintaEncodedBackupByteLength([item], 9) <= MAX_BACKUP_FILE_BYTES
+      ? pintaBackupFromEncoded([item], 9)
+      : null
+  }
   if (isLegacyWorkshopAsset(asset)) return assetToJson(asset)
-  if (!isPintaAuthoredMap(asset)) return encodeRegionGalleryBackup([asset])?.text ?? null
-  const book = readAutomapBook(JSON.stringify(asset.automapping)),
-    body = pintaWorkshopBody(asset)
-  if (!book || !attachWorkshopBook(body, book)) return null
-  const encoded = encodeAutomapBodies([body])
-  if (!encoded || !readExactAutomapBodies(encoded)) return null
-  const wrapper = automapDocumentEnvelope(encoded, new Map([[asset.id, book]]))
-  return pintaEncodedBackupByteLength(wrapper.assets, 9) <= MAX_BACKUP_FILE_BYTES
-    ? pintaBackupFromEncoded(wrapper.assets, 9)
-    : null
+  return encodeRegionGalleryBackup([asset])?.text ?? null
 }
-export function pintaWorkshopAssetFromJson(text: string): PintaMemoryAsset | null {
+export function pintaWorkshopAssetFromJson(text: string): PintaWorkshopAsset | null {
   const version = envelopeVersion(text)
   if (version === 8) {
     const doc = decodeRegionGalleryBackup(text)
@@ -110,7 +162,7 @@ export function pintaWorkshopAssetFromJson(text: string): PintaMemoryAsset | nul
       Object.keys(doc).length === 3 &&
       Array.isArray(doc.assets) &&
       doc.assets.length === 1
-      ? readWorkshopBookEnvelope(record)
+      ? readWorkshopNativeItem(record)
       : null
   } catch {
     return null
@@ -149,8 +201,8 @@ export type WorkshopBundleResult =
   | { ok: false; reason: 'missing-dependency' | 'unwritable' }
 
 export async function workshopAssetBundleToJson(
-  asset: PintaMemoryAsset,
-  catalog: readonly PintaMemoryAsset[],
+  asset: PintaWorkshopAsset,
+  catalog: readonly PintaWorkshopAsset[],
 ): Promise<WorkshopBundleResult> {
   const { collectAssetBundle } = await import('./assetJson')
   const byId = new Map(catalog.map((item) => [item.id, item]))

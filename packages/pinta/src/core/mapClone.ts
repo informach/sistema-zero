@@ -3,16 +3,15 @@ import { newId } from './id'
 import {
   isObjectLayer,
   isTilesetKind,
+  type MapGraph,
   pintaAssetReferenceIds,
   remapTilemapTilesetIds,
-  type TilemapAsset,
-  type TilemapCells,
   type TilemapObject,
   type TilemapObjectPropertyValue,
   type TilemapResourceVersion,
 } from './project'
 
-export function cloneMapIds<Map extends TilemapAsset<TilemapCells>>(
+export function cloneMapIds<Map extends MapGraph>(
   map: Map,
   mapId = newId(),
   selectedObjectIds?: ReadonlySet<string>,
@@ -52,7 +51,7 @@ export function cloneMapIds<Map extends TilemapAsset<TilemapCells>>(
   return versions.size ? remapMapAssets(cloned, versions) : cloned
 }
 
-export function remapMapAssets<Map extends TilemapAsset<TilemapCells>>(
+export function remapMapAssets<Map extends MapGraph>(
   map: Map,
   idMap: ReadonlyMap<string, string>,
   names: ReadonlyMap<string, string> = new Map(),

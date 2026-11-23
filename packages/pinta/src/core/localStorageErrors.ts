@@ -1,4 +1,4 @@
-import type { PintaMemoryAsset } from './assetMemory'
+import type { PintaWorkshopAsset } from './assetMemory'
 import type { PintaAsset } from './project'
 
 export class PintaLocalStorageError extends Error {
@@ -9,7 +9,7 @@ export class PintaLocalStorageError extends Error {
 }
 /** Copies have already committed atomically; callers may continue editing the recovered ID. */
 export class PintaLocalConflictError<
-  Asset extends PintaMemoryAsset = PintaAsset,
+  Asset extends PintaWorkshopAsset = PintaAsset,
 > extends PintaLocalStorageError {
   constructor(readonly forks: ReadonlyMap<string, Asset>) {
     super('Guardei suas mudanças numa cópia para proteger as duas versões.')

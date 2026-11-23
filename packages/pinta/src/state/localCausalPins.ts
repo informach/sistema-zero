@@ -3,7 +3,7 @@ import {
   pintaCausalEpochSchema,
   pintaCausalRevisionSchema,
 } from '@sistemazero/core/creations/pinta-causal'
-import type { PintaMemoryAsset } from '../core/assetMemory'
+import type { PintaWorkshopAsset } from '../core/assetMemory'
 import { PintaLocalStorageError } from '../core/localStorageErrors'
 import type { LocalSnapshot } from './localAssetAuthority'
 import type { LocalCausalState, PintaCandidateBytes, PintaPreparedPut } from './localCausalOutbox'
@@ -95,7 +95,7 @@ export function readPinnedCandidate(
   return { puts: pins.map(({ put }) => put), blobs }
 }
 
-export function retainPinnedWrites<Asset extends PintaMemoryAsset>(
+export function retainPinnedWrites<Asset extends PintaWorkshopAsset>(
   records: Map<string, unknown>,
   snapshot: LocalSnapshot<Asset>,
   state: LocalCausalState,

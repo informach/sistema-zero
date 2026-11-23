@@ -1,7 +1,7 @@
 import type { PintaCausalLocalPort as NativeCausalPort } from '@sistemazero/pinta'
 import {
   observePintaReferences,
-  type PintaMemoryAsset,
+  type PintaWorkshopAsset,
   pintaLocalRevisionOf,
 } from '@sistemazero/pinta/assets'
 import type { PintaCausalRemapBase } from './pinta-causal-authoring'
@@ -13,13 +13,13 @@ type LocalState = Awaited<ReturnType<PintaCausalLocalPort['inspect']>>
 type Read = Stage['readSet'][number] | (StageUnbased['readSet'][number] & { source: 'local' })
 
 /** Pin the authors' reachable catalog without changing the members sent to the account. */
-type PintaCausalLocalPort = NativeCausalPort<PintaMemoryAsset>
+type PintaCausalLocalPort = NativeCausalPort<PintaWorkshopAsset>
 
 export async function encodePintaObservedResources(options: {
   local: PintaCausalLocalPort
   state: LocalState
-  candidates: readonly PintaMemoryAsset[]
-  catalog: readonly PintaMemoryAsset[]
+  candidates: readonly PintaWorkshopAsset[]
+  catalog: readonly PintaWorkshopAsset[]
   readSet: readonly Read[]
   remote?: PintaCausalRemapBase
   signal: AbortSignal
@@ -27,9 +27,9 @@ export async function encodePintaObservedResources(options: {
   const authored = new Map(options.candidates.map((asset) => [asset.id, asset]))
   const available = new Map(options.catalog.map((asset) => [asset.id, asset]))
   const remote = new Map(options.remote?.assets.map((asset) => [asset.id, asset]))
-  const pinned = new Map<string, { basis: Basis; asset: PintaMemoryAsset }>()
+  const pinned = new Map<string, { basis: Basis; asset: PintaWorkshopAsset }>()
   const visited = new Set<string>()
-  const todo: PintaMemoryAsset[] = [...options.candidates]
+  const todo: PintaWorkshopAsset[] = [...options.candidates]
   const reads = new Map(
     options.readSet.map((edge) => [`${edge.consumerId}/${edge.targetId}`, edge]),
   )

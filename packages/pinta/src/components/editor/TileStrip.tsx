@@ -8,7 +8,7 @@
 import { clsx } from 'clsx'
 import type { JSX } from 'react'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { PintaMemoryAsset } from '../../core/assetMemory'
+import { isPintaMemoryAsset, type PintaWorkshopAsset } from '../../core/assetMemory'
 import { COPY } from '../../core/copy'
 import {
   type AnyTilesetAsset,
@@ -173,12 +173,12 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
       if (limitToast) showToast(limitToast)
       return
     }
-    const apply = (catalog: readonly PintaMemoryAsset[]): void => {
+    const apply = (catalog: readonly PintaWorkshopAsset[]): void => {
       if (!active.current || editor.getState().asset !== current) return
       let accepted: boolean
       if (remap) {
         const linked = remapTilesetConsumers(
-          catalog,
+          catalog.filter(isPintaMemoryAsset),
           (workshopEditor ?? editor).getState().linkedAssets ?? [],
           current.id,
           remap,

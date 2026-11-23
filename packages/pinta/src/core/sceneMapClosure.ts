@@ -1,4 +1,4 @@
-import type { PintaMemoryAsset } from './assetMemory'
+import type { PintaMemoryAsset, PintaWorkshopAsset } from './assetMemory'
 import { COPY } from './copy'
 import { type PintaResourceObservation, pintaResourceObservation } from './localAssetOrigin'
 import { isObjectLayer, PINTA_DEPENDENCY_ASSET_LIMIT, pintaAssetDependencyIds } from './project'
@@ -29,7 +29,7 @@ export class SceneMapClosureError extends Error {
 }
 
 function* rawDoorSelectors(
-  asset: PintaMemoryAsset | ProjectedTilemapAsset,
+  asset: PintaWorkshopAsset | ProjectedTilemapAsset,
 ): IterableIterator<unknown> {
   const map = asset.kind === 'tilemap' ? asset : asset.kind === 'map-set' ? asset.map : null
   if (!map) return
@@ -48,7 +48,7 @@ function* rawDoorSelectors(
 
 /** The authored selector needs the complete current catalog for ID-first resolution. */
 export function* pintaDoorSelectors(
-  asset: PintaMemoryAsset | ProjectedTilemapAsset,
+  asset: PintaWorkshopAsset | ProjectedTilemapAsset,
 ): IterableIterator<string> {
   for (const destination of rawDoorSelectors(asset)) {
     if (typeof destination !== 'string') throw new SceneMapClosureError('missing-map')
@@ -75,8 +75,8 @@ export function pintaDoorBinding(
 
 /** A catalog update must preserve each selector's resolution, even in a partly configured map. */
 export function pintaDoorBindings(
-  asset: PintaMemoryAsset,
-  byId: ReadonlyMap<string, PintaMemoryAsset>,
+  asset: PintaWorkshopAsset,
+  byId: ReadonlyMap<string, PintaWorkshopAsset>,
 ) {
   return [...rawDoorSelectors(asset)].map((selector) => ({
     selector,
@@ -89,8 +89,8 @@ export function pintaDoorBindings(
 
 /** Door references share the same rules in playable worlds and editable files. */
 export function pintaDoorDependencyIds(
-  asset: PintaMemoryAsset,
-  byId: ReadonlyMap<string, PintaMemoryAsset>,
+  asset: PintaWorkshopAsset,
+  byId: ReadonlyMap<string, PintaWorkshopAsset>,
 ): string[] {
   const ids = new Set<string>()
   for (const destination of pintaDoorSelectors(asset)) {
@@ -103,7 +103,7 @@ export function pintaDoorDependencyIds(
 }
 
 /** Observe the revisions on screen before an authored reference is saved. */
-export function observePintaReferences<Asset extends PintaMemoryAsset>(
+export function observePintaReferences<Asset extends PintaWorkshopAsset>(
   asset: Asset,
   catalog: readonly Asset[],
 ): PintaResourceObservation[] {
@@ -125,7 +125,7 @@ export function observePintaReferences<Asset extends PintaMemoryAsset>(
 }
 
 /** Complete authored world, including hidden doors and doors inside linked sets. No raster or UI. */
-export function sceneMapClosure<Asset extends PintaMemoryAsset>(
+export function sceneMapClosure<Asset extends PintaWorkshopAsset>(
   root: Asset,
   assets: readonly Asset[],
 ): { maps: Extract<Asset, { kind: 'tilemap' }>[]; assets: Asset[] } {

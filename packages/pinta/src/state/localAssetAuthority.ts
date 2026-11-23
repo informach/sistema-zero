@@ -1,6 +1,6 @@
 import { isPintaVersionedKind } from '@sistemazero/core/creations'
 import { pintaValuesEqual as localValuesEqual } from '../core/assetEquality'
-import type { PintaMemoryAsset } from '../core/assetMemory'
+import type { PintaWorkshopAsset } from '../core/assetMemory'
 import { pintaLocalOriginOf } from '../core/localAssetOrigin'
 import { PintaLocalStorageError, PintaStorageBudgetError } from '../core/localStorageErrors'
 import {
@@ -29,7 +29,7 @@ export {
 export const LOCAL_ASSET_PREFIX = 'pinta:local:document:'
 export const mirrorKey = (id: string) => `pinta:asset:${id}`
 export const authorityKey = (id: string) => LOCAL_ASSET_PREFIX + id
-export interface LocalDocument<Asset extends PintaMemoryAsset = PintaAsset> {
+export interface LocalDocument<Asset extends PintaWorkshopAsset = PintaAsset> {
   version: 1
   capability: number
   revision: string
@@ -40,7 +40,7 @@ export type LocalReadIssue = { id: string; name: string; status: 'unsupported'; 
 
 export { pintaValuesEqual as localValuesEqual } from '../core/assetEquality'
 
-export interface LocalSnapshot<Asset extends PintaMemoryAsset = PintaAsset> {
+export interface LocalSnapshot<Asset extends PintaWorkshopAsset = PintaAsset> {
   assets: Map<string, Asset>
   documents: Map<string, LocalDocument<Asset>>
   issues: LocalReadIssue[]
@@ -49,7 +49,7 @@ export interface LocalSnapshot<Asset extends PintaMemoryAsset = PintaAsset> {
 }
 
 /** The local bytes and revision observed before preparing a multi-document change. */
-export interface LocalAssetTransition<Asset extends PintaMemoryAsset> {
+export interface LocalAssetTransition<Asset extends PintaWorkshopAsset> {
   id: string
   before: Asset | null
   beforeRevision: string | null
@@ -62,7 +62,7 @@ interface LocalBudgetBytes {
 }
 
 /** Internal format policy; the default exports retain the existing public 0–7 contract. */
-export interface LocalAssetFormat<Asset extends PintaMemoryAsset> {
+export interface LocalAssetFormat<Asset extends PintaWorkshopAsset> {
   readonly maxSchema: number
   sanitize(raw: unknown): Asset | null
   stamp(asset: Asset): Asset
@@ -73,7 +73,7 @@ export interface LocalAssetFormat<Asset extends PintaMemoryAsset> {
 }
 
 /** Same authority, causal revisions, tombstones and recovery for every admitted cell format. */
-export function createLocalAssetAuthority<Asset extends PintaMemoryAsset>(
+export function createLocalAssetAuthority<Asset extends PintaWorkshopAsset>(
   format: LocalAssetFormat<Asset>,
 ) {
   function validAsset(raw: unknown, id: string): Asset | null {

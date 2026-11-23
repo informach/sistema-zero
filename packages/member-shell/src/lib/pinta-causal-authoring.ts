@@ -11,7 +11,7 @@ import {
   isTilesetKind,
   MAX_BACKUP_FILE_BYTES,
   observePintaReferences,
-  type PintaMemoryAsset,
+  type PintaWorkshopAsset,
   pintaAssetDependencyIds,
   pintaLocalRevisionOf,
   pintaValuesEqual,
@@ -29,14 +29,14 @@ type QueueState = Awaited<ReturnType<PintaCausalLocalPort['inspect']>>
 type Read = Draft['readSet'][number]
 type RemapEntry = Pick<PintaCausalEntry, 'revision' | 'sha256' | 'layoutRevision' | 'coverage'>
 
-type PintaCausalLocalPort = NativeCausalPort<PintaMemoryAsset>
+type PintaCausalLocalPort = NativeCausalPort<PintaWorkshopAsset>
 
 export interface PintaCausalRemapBase {
   epoch: string
-  source: PintaMemoryAsset
+  source: PintaWorkshopAsset
   entries: ReadonlyMap<string, RemapEntry>
   verifiedConsumers: ReadonlySet<string>
-  assets: readonly PintaMemoryAsset[]
+  assets: readonly PintaWorkshopAsset[]
 }
 
 function frozenOrigins(state: QueueState, epoch: string) {
@@ -63,7 +63,7 @@ function frozenOrigins(state: QueueState, epoch: string) {
   return origins
 }
 
-function embeddedUses(asset: PintaMemoryAsset | null | undefined): string[] {
+function embeddedUses(asset: PintaWorkshopAsset | null | undefined): string[] {
   const map = asset?.kind === 'map-set' ? asset.map : asset?.kind === 'tilemap' ? asset : null
   if (!map?.resources?.length) return []
   const embedded = new Set(map.resources.map((version) => version.asset.id))
@@ -80,8 +80,8 @@ function embeddedUses(asset: PintaMemoryAsset | null | undefined): string[] {
 }
 
 export function pintaPinBoundary(
-  before: PintaMemoryAsset | null | undefined,
-  after: PintaMemoryAsset,
+  before: PintaWorkshopAsset | null | undefined,
+  after: PintaWorkshopAsset,
 ): boolean {
   const prior = new Set(embeddedUses(before))
   return embeddedUses(after).some((use) => !prior.has(use))
@@ -89,8 +89,8 @@ export function pintaPinBoundary(
 
 /** Complete verified local index, advanced only by this device's contiguous receipts. */
 export function preparePintaOfflineRemap(
-  source: PintaMemoryAsset,
-  assets: readonly PintaMemoryAsset[],
+  source: PintaWorkshopAsset,
+  assets: readonly PintaWorkshopAsset[],
   state: QueueState,
 ): PintaCausalRemapBase {
   const epoch = state.writeEpoch ?? state.epoch
@@ -131,9 +131,9 @@ export function preparePintaOfflineRemap(
 }
 
 export async function preparePintaCausalRemap(options: {
-  source: PintaMemoryAsset
+  source: PintaWorkshopAsset
   snapshot: PintaCloudSnapshot
-  local: readonly PintaMemoryAsset[]
+  local: readonly PintaWorkshopAsset[]
   decodeCandidate?: PintaCausalLocalPort['decodeCandidate']
   localState: QueueState
   cloud: PintaCausalCloud
@@ -146,7 +146,7 @@ export async function preparePintaCausalRemap(options: {
   const verifiedConsumers = new Set<string>()
   let sourceBase = catalog.get(source.id) ?? source
   const budget = { remaining: MAX_BACKUP_FILE_BYTES }
-  async function fetchVerified(entry: PintaCausalEntry): Promise<PintaMemoryAsset> {
+  async function fetchVerified(entry: PintaCausalEntry): Promise<PintaWorkshopAsset> {
     const archived = await cloud.download(entry, snapshot.epoch, signal)
     const asset = decodeCausalEntry(
       await readPintaCausalJson(archived, signal, budget),
@@ -270,15 +270,15 @@ function maskedSlots(mask: string | undefined): number[] {
 export interface PintaQueuedSlots {
   opId: string
   rootId: string
-  source: PintaMemoryAsset
+  source: PintaWorkshopAsset
   /** Runtime-only identities from the existing undo snapshot. */
   before: readonly symbol[]
   after: readonly symbol[]
 }
 
 function sheetOperation(
-  before: PintaMemoryAsset,
-  after: PintaMemoryAsset,
+  before: PintaWorkshopAsset,
+  after: PintaWorkshopAsset,
   context: PintaEditorWriteContext | undefined,
   previous?: PintaQueuedSlots,
   pending?: PintaCausalOperation,
@@ -330,10 +330,10 @@ function sheetOperation(
 export async function stagePintaCausalWrite(options: {
   local: PintaCausalLocalPort
   signal: AbortSignal
-  catalog: readonly PintaMemoryAsset[]
-  assets?: readonly PintaMemoryAsset[]
-  authors?: ReadonlyMap<string, PintaMemoryAsset>
-  deletion?: { id: string; before?: PintaMemoryAsset }
+  catalog: readonly PintaWorkshopAsset[]
+  assets?: readonly PintaWorkshopAsset[]
+  authors?: ReadonlyMap<string, PintaWorkshopAsset>
+  deletion?: { id: string; before?: PintaWorkshopAsset }
   context?: PintaEditorWriteContext
   remapBase?: PintaCausalRemapBase
   inverseReadBase?: PintaCausalRemapBase

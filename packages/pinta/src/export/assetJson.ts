@@ -15,7 +15,7 @@
  * certo; para RETOMAR o próprio trabalho seria fatal, porque cada abertura do bloco criaria um
  * desenho novo. Por isso este módulo fala com o `importPintaJson` DIRETO e nunca com o store.
  */
-import type { PintaMemoryAsset } from '../core/assetMemory'
+import type { PintaWorkshopAsset } from '../core/assetMemory'
 import {
   PINTA_DEPENDENCY_ASSET_LIMIT,
   type PintaAsset,
@@ -57,7 +57,7 @@ export function assetBundleToJson(
 }
 
 /** References only: the detector never repeatedly encodes cells or images. */
-export function collectAssetBundle<Asset extends PintaMemoryAsset>(
+export function collectAssetBundle<Asset extends PintaWorkshopAsset>(
   asset: Asset,
   byId: ReadonlyMap<string, Asset>,
   cache: Map<string, readonly string[] | null>,
@@ -106,7 +106,7 @@ export function collectAssetBundle<Asset extends PintaMemoryAsset>(
  * O arquivo é um cenário conectado completo? Inclui mundos com portas e ciclos.
  * A galeria restaura o pacote de forma ATÔMICA (ou volta tudo, ou nada).
  */
-export function isTilemapBundle(assets: readonly PintaMemoryAsset[]): boolean {
+export function isTilemapBundle(assets: readonly PintaWorkshopAsset[]): boolean {
   if (assets.length < 2 || assets.length > PINTA_DEPENDENCY_ASSET_LIMIT) return false
   if (!assets.some((asset) => asset.kind === 'tilemap')) return false
   const byId = new Map(assets.map((asset) => [asset.id, asset]))

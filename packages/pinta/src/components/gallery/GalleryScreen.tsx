@@ -20,6 +20,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import { isPintaMemoryAsset } from '../../core/assetMemory'
 import { COPY } from '../../core/copy'
 import {
   EMPTY_GALLERY_FILTERS,
@@ -355,8 +356,11 @@ export function GalleryScreen(): JSX.Element {
     setZipping(true)
     try {
       const snapshot = gallery.getState()
+      // The complete backup also carries the projected maps this version keeps but cannot open.
       const bytes = await zipGallery(
-        snapshot.regionCards.length ? await persistence.listAllAssets() : snapshot.assets,
+        snapshot.regionCards.length
+          ? await persistence.listAllAssets()
+          : [...snapshot.assets, ...snapshot.projected],
       )
       triggerDownload(
         new Blob([bytes.slice().buffer as ArrayBuffer], { type: 'application/zip' }),
@@ -384,7 +388,9 @@ export function GalleryScreen(): JSX.Element {
     try {
       const snapshot = gallery.getState()
       const expanded = expandSelection(
-        snapshot.regionCards.length ? await persistence.listAllAssets() : snapshot.assets,
+        snapshot.regionCards.length
+          ? (await persistence.listAllAssets()).filter(isPintaMemoryAsset)
+          : snapshot.assets,
         markedAtClick.ids,
       )
       if (expanded.assets.length === 0) {

@@ -19,7 +19,7 @@ import {
 import type { PintaCausalIntent, PintaCausalResult } from '@sistemazero/core/creations/pinta-causal'
 import { createStore, getMany, keys } from 'idb-keyval'
 import { pintaValuesEqual } from '../core/assetEquality'
-import type { PintaMemoryAsset } from '../core/assetMemory'
+import type { PintaWorkshopAsset } from '../core/assetMemory'
 import {
   type PintaResourceObservation,
   pintaLocalOriginOf,
@@ -347,7 +347,7 @@ export function updateLocalPintaRecords<T>(
   })
 }
 
-function reportLocalRecovery<Asset extends PintaMemoryAsset>(
+function reportLocalRecovery<Asset extends PintaWorkshopAsset>(
   storeHandle: StoreHandle,
   snapshot: LocalSnapshot<Asset>,
   legacyAssets?: readonly PintaAsset[],
@@ -429,7 +429,7 @@ export function runSerializedWrite<Result>(
  * "buscando…" e quem espera um desenho que ainda não chegou aguarda), `changed` diz que a lista
  * do disco mudou (a galeria relê, coalescido).
  */
-export interface PintaPersistence<Asset extends PintaMemoryAsset = PintaAsset> {
+export interface PintaPersistence<Asset extends PintaWorkshopAsset = PintaAsset> {
   readonly workshopReader?: true
   persistAsset(asset: Asset, context?: PintaEditorWriteContext): Promise<void>
   persistAssets(assets: readonly Asset[], context?: PintaEditorWriteContext): Promise<void>
@@ -523,7 +523,7 @@ export function createPintaPersistence(options: { namespace?: string } = {}): Pi
   return createLocalPintaPersistence(options, legacyPersistenceFormat)
 }
 
-export interface PintaCausalLocalPort<Asset extends PintaMemoryAsset = PintaAsset> {
+export interface PintaCausalLocalPort<Asset extends PintaWorkshopAsset = PintaAsset> {
   captureCandidate(asset: Asset): Asset
   encodeCandidates(assets: readonly Asset[], signal: AbortSignal): Promise<PintaCandidateBytes>
   decodeCandidate(json: string): Asset | null
@@ -575,7 +575,7 @@ export function createPintaCausalPersistence(options: { namespace: string }): Pi
 }
 
 /** Internal policy boundary. Public callers continue to select native 0–7 and physical 1/2. */
-export interface LocalPersistenceFormat<Asset extends PintaMemoryAsset> {
+export interface LocalPersistenceFormat<Asset extends PintaWorkshopAsset> {
   authority: Pick<
     ReturnType<typeof createLocalAssetAuthority<Asset>>,
     | 'resolveLocalRecords'
@@ -625,7 +625,7 @@ const legacyPersistenceFormat: LocalPersistenceFormat<PintaAsset> = {
   legacyAssets: (assets) => assets,
 }
 
-export function createLocalPintaPersistence<Asset extends PintaMemoryAsset>(
+export function createLocalPintaPersistence<Asset extends PintaWorkshopAsset>(
   options: { namespace?: string; guardCausalWrites?: boolean },
   format: LocalPersistenceFormat<Asset>,
 ): PintaPersistence<Asset> & { causal: PintaCausalLocalPort<Asset> } {
@@ -1319,7 +1319,7 @@ export function loadAssetById(id: string): Promise<PintaAsset | null> {
  * `tilemapTilesetIds` order, keeping only the ones present and compatible (the same rule as
  * `resolveMapTilesets`: a layer whose pieces are missing or incompatible is never drawn).
  */
-export type PintaAssetCapture<Asset extends PintaMemoryAsset = PintaAsset> =
+export type PintaAssetCapture<Asset extends PintaWorkshopAsset = PintaAsset> =
   | {
       ok: true
       source: Asset
@@ -1348,7 +1348,7 @@ export function capturePintaAssetForImage(
 }
 
 /** Complete snapshot from the same format policy/transaction used by persistence. */
-export async function captureLocalPintaAssetForImage<Asset extends PintaMemoryAsset>(
+export async function captureLocalPintaAssetForImage<Asset extends PintaWorkshopAsset>(
   id: string,
   options: PintaCaptureOptions,
   format: LocalPersistenceFormat<Asset>,

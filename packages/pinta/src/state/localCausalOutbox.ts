@@ -16,7 +16,7 @@ import {
   pintaCausalRevisionSchema,
 } from '@sistemazero/core/creations/pinta-causal'
 import { pintaValuesEqual } from '../core/assetEquality'
-import type { PintaMemoryAsset } from '../core/assetMemory'
+import type { PintaWorkshopAsset } from '../core/assetMemory'
 import { PintaLocalStorageError } from '../core/localStorageErrors'
 import { isTilesetKind, pintaAssetDependencyIds } from '../core/project'
 import { pintaDoorBindings } from '../core/sceneMapClosure'
@@ -53,7 +53,7 @@ export type PintaLocalCausalRead =
   | PintaCausalRead
   | { source: 'predecessor'; consumerId: string; targetId: string; base: PintaCausalPredecessor }
 
-export interface PintaCausalLocalDraft<Asset extends PintaMemoryAsset> {
+export interface PintaCausalLocalDraft<Asset extends PintaWorkshopAsset> {
   opId: string
   baseEpoch: string
   inverseOf?: string
@@ -75,7 +75,7 @@ interface PintaLocalUnbasedRead {
   localRevision: string | null
 }
 
-export interface PintaLocalUnbasedDraft<Asset extends PintaMemoryAsset> {
+export interface PintaLocalUnbasedDraft<Asset extends PintaWorkshopAsset> {
   transitions: readonly LocalAssetTransition<Asset>[]
   readSet: readonly PintaLocalUnbasedRead[]
   requireKnownInventory?: boolean
@@ -147,7 +147,7 @@ export interface PintaCausalConfirmed {
   originalOpId?: string
 }
 
-export interface PintaCausalLocalPull<Asset extends PintaMemoryAsset> {
+export interface PintaCausalLocalPull<Asset extends PintaWorkshopAsset> {
   fromEpoch: string | null
   epoch: string
   coveredIds?: readonly string[]
@@ -513,7 +513,7 @@ export function ownsLocalCausalMember(
   )
 }
 
-export function stageLocalUnbasedDraft<Asset extends PintaMemoryAsset>(
+export function stageLocalUnbasedDraft<Asset extends PintaWorkshopAsset>(
   records: Map<string, unknown>,
   draft: PintaLocalUnbasedDraft<Asset>,
   write: () => LocalSnapshot<Asset>,
@@ -673,7 +673,7 @@ export function rememberLocalCausalProtocol(records: Map<string, unknown>): void
   if (!state.protocolKnown) saveState(records, { ...state, protocolKnown: true })
 }
 
-function officialProjection<Asset extends PintaMemoryAsset>(
+function officialProjection<Asset extends PintaWorkshopAsset>(
   pull: PintaCausalLocalPull<Asset>,
   state: LocalCausalState,
   snapshot: LocalSnapshot<Asset>,
@@ -690,7 +690,7 @@ function officialProjection<Asset extends PintaMemoryAsset>(
   return official
 }
 
-function terminalLocalMembers<Asset extends PintaMemoryAsset>(
+function terminalLocalMembers<Asset extends PintaWorkshopAsset>(
   pull: PintaCausalLocalPull<Asset>,
   state: LocalCausalState,
 ): ReadonlyMap<string, PintaCausalPendingMember> | null {
@@ -718,7 +718,7 @@ function terminalLocalMembers<Asset extends PintaMemoryAsset>(
   )
 }
 
-export function localCausalPullImpact<Asset extends PintaMemoryAsset>(
+export function localCausalPullImpact<Asset extends PintaWorkshopAsset>(
   pull: PintaCausalLocalPull<Asset>,
   state: LocalCausalState,
   snapshot: LocalSnapshot<Asset>,
@@ -827,7 +827,7 @@ export function localCausalPullImpact<Asset extends PintaMemoryAsset>(
 }
 
 /** A removal made before observing the account cannot delete its now-certified document. */
-export function localRemovalsReturnedByPull<Asset extends PintaMemoryAsset>(
+export function localRemovalsReturnedByPull<Asset extends PintaWorkshopAsset>(
   state: LocalCausalState,
   pull: PintaCausalLocalPull<Asset>,
 ): readonly { id: string; name: string }[] {
@@ -855,7 +855,7 @@ export function localRemovalsReturnedByPull<Asset extends PintaMemoryAsset>(
   })
 }
 
-export function installLocalCausalPull<Asset extends PintaMemoryAsset>(
+export function installLocalCausalPull<Asset extends PintaWorkshopAsset>(
   records: Map<string, unknown>,
   pull: PintaCausalLocalPull<Asset>,
   write: (
@@ -1004,7 +1004,7 @@ export function installLocalCausalPull<Asset extends PintaMemoryAsset>(
   return snapshot
 }
 
-function prepareUnbasedCreates<Asset extends PintaMemoryAsset>(
+function prepareUnbasedCreates<Asset extends PintaWorkshopAsset>(
   unbased: PintaLocalUnbased | undefined,
   pull: PintaCausalLocalPull<Asset>,
   snapshot: LocalSnapshot<Asset>,
@@ -1077,7 +1077,7 @@ function prepareUnbasedCreates<Asset extends PintaMemoryAsset>(
   }
 }
 
-export function stageLocalCausalDraft<Asset extends PintaMemoryAsset>(
+export function stageLocalCausalDraft<Asset extends PintaWorkshopAsset>(
   records: Map<string, unknown>,
   draft: PintaCausalLocalDraft<Asset>,
   write: () => LocalSnapshot<Asset>,
@@ -1211,7 +1211,7 @@ export function stageLocalCausalDraft<Asset extends PintaMemoryAsset>(
 }
 
 /** The item has never had a remote reservation, so dropping it requires no remote action. */
-export function discardLocalCausalCreation<Asset extends PintaMemoryAsset>(
+export function discardLocalCausalCreation<Asset extends PintaWorkshopAsset>(
   records: Map<string, unknown>,
   id: string,
   write: (

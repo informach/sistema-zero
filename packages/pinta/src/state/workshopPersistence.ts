@@ -2,7 +2,7 @@
  * has a separate capability check; storing a revision on this device never declares it uploaded. */
 import { pintaWriteFormatVersion } from '@sistemazero/core/creations'
 import { pintaValuesEqual } from '../core/assetEquality'
-import type { PintaMemoryAsset } from '../core/assetMemory'
+import type { PintaWorkshopAsset } from '../core/assetMemory'
 import { PintaLocalStorageError } from '../core/localStorageErrors'
 import { pintaAssetSchema, sanitizePintaAsset, sanitizeRegionTilemapAsset } from '../core/project'
 import { galleryBackupByteLength } from '../export/projectJson'
@@ -10,10 +10,13 @@ import type { RegionBackupSizeCache } from '../export/regionBackupSize'
 import {
   attachWorkshopBook,
   isLegacyWorkshopAsset,
+  isWorkshopNativeMap,
+  isWorkshopProjectedMap,
   pintaWorkshopAssetFromJson,
   pintaWorkshopAssetToJson,
   pintaWorkshopBody,
 } from '../export/workshopDocument'
+import { sanitizeWorkshopProjectedMap } from '../export/workshopProjection'
 import { type AutomapBook, readAutomapBook } from '../tiles/automapping/book'
 import { isPintaAuthoredMap } from '../tiles/automapping/model'
 import { automapDocumentEnvelope } from '../tiles/automapping/native'
@@ -36,13 +39,16 @@ import {
 } from './persistence'
 import { createWorkshopStorageCodec } from './workshopStorageCodec'
 
-export function workshopNativeSchema(asset: PintaMemoryAsset): number {
-  if (isPintaAuthoredMap(asset)) return 9
+/** One native-9 classification: a rulebook map or a projected map, with or without its book. */
+export function workshopNativeSchema(asset: PintaWorkshopAsset): number {
+  if (isWorkshopNativeMap(asset)) return 9
   return isLocalRegionAsset(asset) ? 8 : pintaAssetSchema(asset)
 }
-export function sanitizeWorkshopAsset(raw: unknown): PintaMemoryAsset | null {
+/** The same native-9 policy as the documents: the projected body, else the rulebook map. */
+export function sanitizeWorkshopAsset(raw: unknown): PintaWorkshopAsset | null {
   if (!raw || typeof raw !== 'object' || !('schema' in raw) || raw.schema !== 9)
     return sanitizeLocalRegionAsset(raw)
+  if ('projection' in raw) return sanitizeWorkshopProjectedMap(raw)
   if (!('kind' in raw) || raw.kind !== 'tilemap' || !('automapping' in raw)) return null
   const { schema: _version, automapping, ...body } = raw
   const book = readAutomapBook(JSON.stringify(automapping))
@@ -56,29 +62,38 @@ export function sanitizeWorkshopAsset(raw: unknown): PintaMemoryAsset | null {
   if (!pintaValuesEqual(body, read)) return null
   return attachWorkshopBook(parsed, book)
 }
-function stamp(asset: PintaMemoryAsset) {
-  if (!isPintaAuthoredMap(asset)) return stampLocalRegionAsset(asset)
+function stamp(asset: PintaWorkshopAsset): PintaWorkshopAsset {
+  if (!isWorkshopNativeMap(asset)) return stampLocalRegionAsset(asset)
   if (!sanitizeWorkshopAsset(asset))
     throw new PintaLocalStorageError(
-      'As regras do mapa são incompatíveis. Seus dados foram mantidos.',
+      isWorkshopProjectedMap(asset)
+        ? 'Não consegui conferir este mapa inteiro. Seus dados foram mantidos.'
+        : 'As regras do mapa são incompatíveis. Seus dados foram mantidos.',
     )
   return asset
 }
+/** The gallery backup this policy writes: one envelope per native-9 map, in the same order. */
 export function workshopBackupSize(
   sizing: RegionBackupSizeCache,
-  assets: readonly PintaMemoryAsset[],
+  assets: readonly PintaWorkshopAsset[],
 ) {
   const books = new Map<string, AutomapBook>()
-  for (const asset of assets) if (isPintaAuthoredMap(asset)) books.set(asset.id, asset.automapping)
-  if (books.size)
-    return sizing.byteLength(assets.map(pintaWorkshopBody), (bodies) =>
-      automapDocumentEnvelope(bodies, books),
-    )
+  const bodies: PintaWorkshopAsset[] = []
+  for (const asset of assets) {
+    if (isWorkshopProjectedMap(asset)) {
+      bodies.push(asset)
+      continue
+    }
+    if (isPintaAuthoredMap(asset)) books.set(asset.id, asset.automapping)
+    bodies.push(pintaWorkshopBody(asset))
+  }
+  if (books.size || bodies.some(isWorkshopProjectedMap))
+    return sizing.byteLength(bodies, (items) => automapDocumentEnvelope(items, books))
   return assets.every(isLegacyWorkshopAsset)
     ? galleryBackupByteLength(assets)
     : sizing.byteLength(assets)
 }
-function workshopPolicy(): LocalPersistenceFormat<PintaMemoryAsset> {
+function workshopPolicy(): LocalPersistenceFormat<PintaWorkshopAsset> {
   return {
     authority: createLocalRegionAssetAuthority({
       sanitize: sanitizeWorkshopAsset,
@@ -107,9 +122,11 @@ export function createWorkshopPintaPersistence(
   const namespace = options.namespace ?? getPintaStorageNamespace()
   const local = createLocalPintaPersistence({ ...options, namespace }, workshopPolicy())
   const persistRevision: NonNullable<
-    PintaPersistence<PintaMemoryAsset>['persistRevision']
+    PintaPersistence<PintaWorkshopAsset>['persistRevision']
   > = async (previous, asset, resources) => {
     if (
+      !isWorkshopProjectedMap(previous) &&
+      !isWorkshopProjectedMap(asset) &&
       isLocalRegionAsset(previous) &&
       isLocalRegionAsset(asset) &&
       previous.schema === 8 &&

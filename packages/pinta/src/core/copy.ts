@@ -367,6 +367,11 @@ export const COPY = {
       'Antes de apagar este conjunto, apague os mapas abaixo ou crie versões deles com outras peças:',
     tilesetInUse: 'Estas peças ainda são usadas por um ou mais mapas.',
     drawingInUse: 'Este desenho ainda é usado por um mapa ou conjunto.',
+    /** Mapa feito numa versão que já abre mapas em losango ou colmeia: guardado, sem cartão. */
+    projectedUnavailable: (names: readonly string[]) =>
+      names.length === 1
+        ? `O mapa "${names[0]}" ainda não abre nesta versão do Pinta. Ele continua guardado.`
+        : `${names.length} mapas ainda não abrem nesta versão do Pinta. Eles continuam guardados.`,
     cancel: 'Cancelar',
     recoveredLocal:
       'Recuperei uma edição de outra janela numa cópia. Seus desenhos foram protegidos.',
