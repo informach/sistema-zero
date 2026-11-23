@@ -56,8 +56,8 @@ describe('worker durável de limpeza das criações', () => {
     // Todo claim DECLARA que este worker entende a limpeza de plano: sem isso o members
     // nunca entrega job de plano (um worker antigo finalizaria a conta da família).
     expect(claimBodies).toEqual([
-      { scopes: ['pensa', 'gallery'] },
-      { scopes: ['pensa', 'gallery'] },
+      { scopes: ['pensa', 'gallery', 'studio-seal'] },
+      { scopes: ['pensa', 'gallery', 'studio-seal'] },
     ])
   })
   test('recusa chamada sem o bearer do scheduler', async () => {
