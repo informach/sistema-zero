@@ -122,6 +122,7 @@ test.each([
   'cade-todo-mundo',
   'desafio-farol',
   'ilha-farol',
+  'meu-primeiro-desenho',
   'moedas-no-caminho',
   'o-segredo-da-cabana',
   'transformando-o-vilao-em-aliado',

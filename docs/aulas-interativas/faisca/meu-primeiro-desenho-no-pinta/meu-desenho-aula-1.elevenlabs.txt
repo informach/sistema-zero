@@ -22,7 +22,7 @@
 
 [long pause]
 
-[engaging, energetic, conversational voice] Este é o Pinta, aqui dentro da aula. Olha aqui: o quadrado branco no meio é o seu quadro, e tudo o que você desenhar nele vai virar a chave do jogo.
+[engaging, energetic, conversational voice] Este é o Pinta, aqui dentro da aula. Olha aqui: o quadrado no meio é o seu quadro, e tudo o que você desenhar nele vai virar a chave do jogo.
 
 [engaging, energetic, conversational voice] No jogo, a chave fica pequena. Por isso, desenhe bem grande, usando o quadro inteiro.
 
@@ -34,7 +34,7 @@
 
 [engaging, energetic, conversational voice] Repare: embaixo da caixa tem dois quadradinhos. O cheio é o Preenchimento, a cor de dentro da forma. O vazado é o Contorno, a cor da borda.
 
-[confident, clear, unhurried voice] Clique no Preenchimento e depois escolha uma cor no painel Cores, à direita. Eu vou escolher um rosa. O Contorno já vem preto, e pode ficar assim.
+[confident, clear, unhurried voice] Clique no Preenchimento e depois escolha uma cor no painel de cores, à direita. Eu vou escolher um rosa. O Contorno já vem preto, e pode ficar assim.
 
 [confident, clear, unhurried voice] Agora a argola, a parte redonda da chave. Clique na ferramenta Círculo, na caixa.
 
@@ -78,11 +78,11 @@
 
 [engaging, energetic, conversational voice] Com a chave é igual. O sprite continua se chamando chave, e só a aparência dele muda. Por isso, as regras do jogo continuam funcionando com o seu desenho.
 
-[confident, clear, unhurried voice] Se a pré-visualização cobrir o fim do bloco, clique no botão do olho, lá em cima, para esconder a pré-visualização. Depois, clique no olho de novo para ela voltar.
+[confident, clear, unhurried voice] Se o jogo cobrir o fim do bloco, clique no menu de três pontinhos e em Mostrar o jogo, para esconder o jogo. Depois, faça o mesmo para ele voltar.
 
 [confident, clear, unhurried voice] Agora clique em chave-dourada e, na lista, escolha minha-chave.
 
-[upbeat, encouraging voice] Agora teste: segure as setas e leve o personagem até a sua chave. Olha só: ela some e o aviso muda.
+[upbeat, encouraging voice] Agora teste: clique em Rodar de novo, no alto do Estúdio. Depois segure as setas e leve o personagem até a sua chave. Olha só: ela some e o aviso muda.
 
 [upbeat, encouraging voice] Depois leve o personagem até o farol. Olha só: ele acende!
 
