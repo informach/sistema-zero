@@ -265,6 +265,67 @@ test('a scene result is inferred only from direct initialization and an unchange
   )
 })
 
+test('a proven place that goes through its own door stays a scene', async () => {
+  const { project, loaded } = await load(PGZERO_EXTENSION.id, PGZERO_EXTENSION.version, [], true)
+  const options = {
+    codecs: loaded.codecs,
+    officialModules: pythonOfficialModules(project, features),
+  }
+  const loadScene = assignment('lugar', officialLoad)
+  const through = (receiver: string) =>
+    assignment('lugar', call(attribute(name(receiver), 'abrir_destino'), [name('porta')]))
+  const draw = paint('lugar', [name('screen')])
+  const enter = node('FunctionDef', {
+    name: 'entrar',
+    args: node('arguments', {
+      posonlyargs: [],
+      args: [],
+      vararg: null,
+      kwonlyargs: [],
+      kw_defaults: [],
+      kwarg: null,
+      defaults: [],
+    }),
+    body: [node('Global', { names: ['lugar'] }), through('lugar'), draw],
+    decorator_list: [],
+    returns: null,
+    type_comment: null,
+    type_params: [],
+  })
+  for (const program of [
+    [importar, loadScene, draw, through('lugar'), draw],
+    [importar, loadScene, enter, draw],
+  ]) {
+    const tree = moduleNode(program)
+    const visual = pythonASTToVisual(tree, options)
+    const visible = ids(visual.body)
+    expect(visible.filter((id) => id === 'sz_py_pgzero_pinta_scene_draw')).toHaveLength(2)
+    expect(visible).toContain('sz_py_pgzero_pinta_scene_open_door')
+    expect(pythonSemanticTree(pythonVisualToAST(visual, loaded.codecs))).toEqual(
+      pythonSemanticTree(tree),
+    )
+  }
+  // Another receiver, no scene before the door or a replaced door prove nothing about `lugar`.
+  const replaced = node('Assign', {
+    targets: [withTargetContext(attribute(name('lugar'), 'abrir_destino'), 'Store')],
+    value: name('outra_funcao'),
+    type_comment: null,
+  })
+  for (const program of [
+    [importar, loadScene, through('outro'), draw],
+    [importar, through('lugar'), draw],
+    [importar, loadScene, through('lugar'), assignment('lugar', call(name('Heroi'))), draw],
+    [importar, loadScene, replaced, through('lugar'), draw],
+  ]) {
+    const tree = moduleNode(program)
+    const visual = pythonASTToVisual(tree, options)
+    expect(ids(visual.body)).not.toContain('sz_py_pgzero_pinta_scene_draw')
+    expect(pythonSemanticTree(pythonVisualToAST(visual, loaded.codecs))).toEqual(
+      pythonSemanticTree(tree),
+    )
+  }
+})
+
 test('a learner field named descartar keeps the Raylib blocks when scenes are available', async () => {
   const sceneIds = suffixes.map((suffix) => `sz_py_rl2d_pinta_scene_${suffix}`)
   const { project, loaded } = await load(

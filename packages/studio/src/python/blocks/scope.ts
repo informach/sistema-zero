@@ -717,7 +717,38 @@ export function pythonBindingResolver(
   // OutraClasse()): proof that they hold another kind of object. Taking one from a list or a
   // draw (a = carros[0], alvo = random.choice(aliens)) proves nothing either way.
   const otherObjects = new Map<Scope, Set<string>>()
+  /**
+   * `lugar = lugar.abrir_destino(porta)`: the place behind a door of the place the name already
+   * holds. It counts with the name's other evidence only when that evidence is a Pinta scene:
+   * every value of the name is then a scene (or None, from a door to nowhere).
+   */
+  const ownDoors = new Map<Scope, Map<string, number>>()
+  function throughOwnDoor(candidate: (typeof typed)[number]) {
+    const func = candidate.value.kind === 'Call' ? candidate.value.fields.func : undefined
+    const receiver =
+      isNode(func) && func.kind === 'Attribute' && func.fields.attr === 'abrir_destino'
+        ? func.fields.value
+        : undefined
+    return (
+      !!options.pintaDoorResults &&
+      candidate.alone &&
+      isNode(receiver) &&
+      receiver.kind === 'Name' &&
+      receiver.fields.id === candidate.target &&
+      holder(scopes.get(receiver), candidate.target) === candidate.scope
+    )
+  }
+  const isPintaScene = (binding: Binding) =>
+    binding.kind === 'instance' &&
+    binding.module === 'pinta' &&
+    binding.instance === 'carregar_cenario'
   for (const candidate of typed) {
+    if (throughOwnDoor(candidate)) {
+      const doors = ownDoors.get(candidate.scope) ?? new Map<string, number>()
+      doors.set(candidate.target, (doors.get(candidate.target) ?? 0) + 1)
+      ownDoors.set(candidate.scope, doors)
+      continue
+    }
     const inferred = inferValue(candidate.value)
     const func = candidate.value.fields.func
     if (!inferred && candidate.value.kind === 'Call' && isNode(func) && func.kind === 'Name') {
@@ -803,7 +834,8 @@ export function pythonBindingResolver(
       // Augmented assignment keeps a collection's kind (lista += [x]); objects never use it.
       const builtinCollection =
         found.binding.kind === 'instance' && found.binding.module === 'builtins'
-      if (scope.writes.get(key) === found.count + (builtinCollection ? augmentedWrites : 0))
+      const doors = isPintaScene(found.binding) ? (ownDoors.get(scope)?.get(key) ?? 0) : 0
+      if (scope.writes.get(key) === found.count + (builtinCollection ? augmentedWrites : 0) + doors)
         scope.bindings.set(key, found.binding)
     }
   // A list made empty and filled only with `lista.append(Actor(...))` holds actors: a loop over
