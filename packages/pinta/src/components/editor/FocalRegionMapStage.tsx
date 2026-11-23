@@ -113,6 +113,9 @@ export function FocalRegionMapStage({
   // A geometria da janela pintada por último. Fica enquanto a próxima carrega: o palco segue
   // desenhado e os toques continuam valendo (a casa depende só da geometria, não do conteúdo).
   const viewport = useRef<{ bounds: MapViewport; cellPx: number } | null>(null)
+  /** A última janela pintada, sem prévia: volta por baixo da prévia enquanto a janela nova não
+   * chega, para a linha e o retângulo não deixarem rastro. */
+  const lastWindow = useRef<HTMLCanvasElement | null>(null)
   const windowView = useRef<NonNullable<Awaited<ReturnType<typeof focal.viewport>>> | null>(null)
   /** O tamanho de casa com que a janela atual foi lida. */
   const windowCellPx = useRef(0)
@@ -149,6 +152,31 @@ export function FocalRegionMapStage({
         )
     context.restore()
   }, [document, offsetX, offsetY, tileSize])
+  const rememberWindow = useCallback((source: HTMLCanvasElement) => {
+    const copy = lastWindow.current ?? globalThis.document?.createElement('canvas')
+    if (!copy) return
+    if (copy.width !== source.width) copy.width = source.width
+    if (copy.height !== source.height) copy.height = source.height
+    const context = copy.getContext('2d')
+    if (!context) return
+    context.clearRect(0, 0, copy.width, copy.height)
+    context.drawImage(source, 0, 0)
+    lastWindow.current = copy
+  }, [])
+  /** Repõe a última janela pintada (sem prévia) e pinta a prévia por cima. */
+  const repaintPreviewOverLastWindow = useCallback(() => {
+    const target = canvas.current
+    const copy = lastWindow.current
+    const context = target?.getContext('2d')
+    if (target && copy && context && copy.width === target.width && copy.height === target.height) {
+      context.save()
+      context.setTransform(1, 0, 0, 1, 0, 0)
+      context.clearRect(0, 0, target.width, target.height)
+      context.drawImage(copy, 0, 0)
+      context.restore()
+    }
+    paintPreview()
+  }, [paintPreview])
   const drawWindow = useCallback(() => {
     const view = windowView.current
     if (
@@ -166,11 +194,12 @@ export function FocalRegionMapStage({
     })
     if (!bounds) return false
     viewport.current = { bounds, cellPx: windowCellPx.current }
+    rememberWindow(canvas.current)
     paintPreview()
     setLoading(false)
     setViewError(null)
     return true
-  }, [focal, cache, sheets.sheetOf, document.tilesetId, paintPreview])
+  }, [focal, cache, sheets.sheetOf, document.tilesetId, paintPreview, rememberWindow])
   const animate = useCallback(
     (now: number) => {
       time.current = now
@@ -319,8 +348,8 @@ export function FocalRegionMapStage({
     }
     active.path.push(at)
     // A janela repinta com a prévia por cima (a linha e o retângulo mudam de forma). Enquanto a
-    // janela nova não chega, a prévia vai por cima da antiga.
-    if (!drawWindow()) paintPreview()
+    // janela nova não chega, a prévia vai por cima da última janela pintada, sem deixar rastro.
+    if (!drawWindow()) repaintPreviewOverLastWindow()
   }
   function stopHand(pointerId: number) {
     if (pan.current?.pointerId === pointerId) {
