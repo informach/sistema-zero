@@ -16,6 +16,7 @@ import { pintaDoorBindings } from '../core/sceneMapClosure'
 import { PINTA_CAUSAL_OUTBOX_KEY } from './assetAuthorityKeys'
 import { authorityKey, LOCAL_ASSET_PREFIX, mirrorKey } from './localAssetAuthority'
 import { localPreparedKey, PINTA_CAUSAL_BLOBS_KEY } from './localCausalOutbox'
+import { PINTA_CAUSAL_PIN_BLOBS_KEY } from './localCausalPins'
 import {
   createLocalRegionAssetAuthority,
   isLocalRegionAsset,
@@ -105,6 +106,11 @@ function inspectInventory(
   return { directories, assets, documents: snapshot.documents }
 }
 
+/**
+ * The regional CAS writes chunks outside the causal unit, so it only runs on a purely local
+ * profile. Any V4 record (outbox, sealed blobs, observed-resource pins or a prepared shadow)
+ * means the account's canonical writer owns the candidates.
+ */
 function assertRegionalLocalState(
   records: ReadonlyMap<string, unknown>,
   physicalKeys: ReadonlySet<IDBValidKey>,
@@ -112,6 +118,7 @@ function assertRegionalLocalState(
   if (
     records.get(PINTA_CAUSAL_OUTBOX_KEY) !== undefined ||
     physicalKeys.has(PINTA_CAUSAL_BLOBS_KEY) ||
+    physicalKeys.has(PINTA_CAUSAL_PIN_BLOBS_KEY) ||
     [...physicalKeys].some((key) => typeof key === 'string' && key.startsWith(localPreparedKey('')))
   )
     throw new PintaLocalStorageError('Abra o cenário pela sua conta para guardar as mudanças.')

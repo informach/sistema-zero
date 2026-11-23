@@ -29,6 +29,8 @@ const CONFERIDOS: Record<string, string> = {
     'move e compara células inteiras entre buffers densos e chunks físicos, preserva flags e valida valores por isValidCell',
   'state/localRegionChunkStorage.ts':
     'compara e transporta células inteiras nos chunks físicos 3 sem decodificar bits; o leitor nativo regional confere índices, flags, preenchimento e orçamento antes de admitir o documento',
+  'state/localRegionEditing.ts':
+    'indexa os buffers inteiros dos chunks por chave física para comparar a base confirmada com a edição e recortar o diretório; não lê índices nem decodifica flags',
   'export/godot/physics.ts':
     'GDScript usa a máscara de CELL_MAX_TILES para consultar sólidos; o contorno retangular da peça é simétrico aos flips e recebe a base afim da camada/conjunto',
   'export/godot/project.ts':
