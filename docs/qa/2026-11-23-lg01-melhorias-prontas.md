@@ -1,6 +1,6 @@
 # LG01 — candidata às melhorias prontas
 
-**Estado atual da execução:** candidata `9a8a1a9f20e76106abbf4cb4c632bc9c0d6ac53e`, incluindo a main concorrente e as correções R13/R14. Verificações locais concluídas. CI do PR `45281893853`, plano Railway `45281894080` e onda explícita de staging `45281918669` em acompanhamento. Produção ainda não implantada por esta execução. As seções abaixo preservam a sequência e os resultados de cada corte anterior.
+**Estado atual da execução:** candidata `9a8a1a9f20e76106abbf4cb4c632bc9c0d6ac53e`, incluindo a main concorrente e as correções R13/R14. CI do PR `45281893853` aprovado nos 13 jobs, tentativa 1; plano Railway `45281894080` aprovado com zero mudanças. A onda explícita de staging `45281918669` ainda conclui a checagem de tipos antes de implantar. Produção ainda não implantada por esta execução. As seções abaixo preservam a sequência e os resultados de cada corte anterior.
 
 Execução autorizada em 23/11/2026. A candidata parte de `f8910ee0547cba79a8dc38cc45ffa2a6efb66e5e`, em um checkout próprio na branch `release/lg01-melhorias-prontas-20261123`. Produção consultada nesta execução: Members e Kids em `3d7c532535a5474ce358709d00b78d6a7f23ce1a`.
 
@@ -162,3 +162,9 @@ O mesmo mecanismo foi reproduzido no arrasto da biblioteca: ao soltar sem mover,
 A onda `45279089312` foi cancelada antes dos passos de implantação. O plano de `a5d684728` passou com zero mudanças; o CI desse SHA não qualifica a versão sem R14. O Worker de staging foi alinhado ao código `a5d684728`, versão `6406c751-d850-4e2c-b433-7f75a2b5337d`, preservando a imagem anterior e o catálogo `05294b0…`; o diretório do runtime não mudou desde a candidata `3664ae334`. Produção permanece intacta.
 
 Os tipos finais do Pinta e do Studio concluíram com saída 0 após as duas correções. R14 foi incorporado em `9a8a1a9f20e76106abbf4cb4c632bc9c0d6ac53e`, sem alterações adicionais no runtime. O CI automático `45281870815` foi cancelado antes dos passos de implantação; a onda `45281918669` mantém o CSV explícito dos oito serviços. O PR #283 permanece em rascunho até essa qualificação. Os recibos desta etapa estão preservados também na branch `docs/lg01-acompanhamento-20261123`.
+
+### Qualificação do PR final
+
+O run `45281893853`, tentativa 1, terminou com sucesso às 23:42:26 UTC de 23/11: os 13 jobs passaram no SHA final `9a8a1a9f2`, incluindo os nove exigidos pelo controlador, na mesma tentativa. Também passaram `ten-thousand-blocks`, o preflight SSH somente de leitura e o plano Railway final `45281894080`, com zero mudanças, ambiente de produção correto e árvore `.railway/` `0bec132654ae9d0b8630a2d10e62f5fbc9e4bf13`. Na conferência às 23:58 UTC, main continuava em `8d87bbff8` e staging em `9a8a1a9f2`.
+
+A onda `45281918669` tem seus 12 jobs complementares aprovados e ainda executa a checagem global de tipos, iniciada às 23:28:39 UTC. Nenhum job de implantação começou nessa consulta. O PR não foi integrado e produção não recebeu esta versão até esse registro.
