@@ -13,6 +13,10 @@ export async function criarTransporteDeEnsaio({
   comRampa = false,
   comParedeAlta = false,
   comRegioes = false,
+  relevoEmCampo = false,
+  colunas = 64,
+  passo = 1,
+  juntar = false,
   fundo = 0,
 }: {
   comBuraco?: boolean
@@ -24,6 +28,13 @@ export async function criarTransporteDeEnsaio({
   comParedeAlta?: boolean
   /** Duas regiões vizinhas (Vila a oeste, Floresta a leste), como a oficina grava (lote 5). */
   comRegioes?: boolean
+  /** O relevo em campo (plano "Mundos de 2 km", lote 3): alturas e pesos, sem lotes de terreno. */
+  relevoEmCampo?: boolean
+  /** A grade do relevo (múltiplo de 64) e o espaçamento: 1024 × 2 m é um mundo de 2 km. */
+  colunas?: number
+  passo?: number
+  /** "Juntar peças", como o Estúdio faz ao trazer um cenário. */
+  juntar?: boolean
   fundo?: number
 } = {}) {
   const { host, resumo, fonte } = await criarFonteDeCenarioDeEnsaio(1),
@@ -142,9 +153,9 @@ export async function criarTransporteDeEnsaio({
               tipo: 'terreno',
               cobertura: 'grade',
               origem,
-              passo: 1,
-              colunas: 64,
-              linhas: 64,
+              passo,
+              colunas,
+              linhas: colunas,
               min: -2,
               max: 4,
               fundo,
@@ -182,7 +193,8 @@ export async function criarTransporteDeEnsaio({
     ),
     { pacote } = await fonte.preparar(resumo.id, salvo.revisao, {
       signal: new AbortController().signal,
-      juntar: false,
+      juntar,
+      ...(relevoEmCampo ? { relevo: 'campo' as const } : {}),
     })
   return prepararImportacaoDeCena3D(createEmptyProject('p', 'Meu jogo'), pacote)
 }

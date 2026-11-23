@@ -1,6 +1,6 @@
 # Leve sua missão para o 3D
 
-Missão Faísca · O Jardim Secreto · 3D. Um projeto contínuo, uma entrega. Ajuda livre; sem certificado nem publicação obrigatória.
+Missão do Faísca · O Jardim Secreto · 3D. Um projeto contínuo, enviado na última construção. Ajuda livre no Passo a passo do projeto; sem certificado nem publicação obrigatória.
 
 ## Parte 1. O mesmo desafio, com profundidade
 
@@ -56,10 +56,10 @@ Faça a flor responder.
 
 Encontre um novo lugar no chão.
 
-- Intenção: application.
-- Blocos: video-posicao, ponte-posicao.
+- Intenção: delivery.
+- Blocos: video-posicao, ponte-posicao, projeto.
 - Estúdio: projeto.
-- Conclusão: video-posicao.
+- Conclusão: video-posicao, projeto; envio atualizado.
 
 - Faça o personagem andar nas quatro direções e parar ao soltar a tecla.
 - Recolha o regador no encontro e mostre um aviso da coleta.
@@ -73,28 +73,13 @@ Encontre um novo lugar no chão.
 
 Pense nos seus testes.
 
-- Intenção: explanation.
+- Intenção: closing.
 - Blocos: ponte-revisao, quiz.
 - Estúdio: não.
 - Conclusão: quiz.
 
 
 
-## Parte 7. Entregue sua missão
+Na edição kids, Dedé diz as frases das tabelas de substituição do roteiro.
 
-Entregue sua missão.
-
-- Intenção: delivery.
-- Blocos: video-entrega, ponte-entrega, projeto.
-- Estúdio: projeto.
-- Conclusão: video-entrega, projeto; envio atualizado.
-
-- Faça o personagem andar nas quatro direções e parar ao soltar a tecla.
-- Recolha o regador no encontro e mostre um aviso da coleta.
-- Faça o jogo lembrar se o personagem já pegou o regador. No começo, ele ainda não pegou.
-- Antes da coleta, mantenha a flor fechada e avise o que falta.
-- Depois da coleta, faça a flor abrir e mostrar o sucesso; uma nova partida recomeça sem a coleta.
-- Com o regador, faça a flor abrir, saia dela e volte: ela continua aberta, sem florescer de novo.
-- Escolha outro lugar alcançável para o regador e confira as regras.
-
-[Fala integral](aula-2.roteiro.md) · [Ajuda completa](passo-a-passo.md).
+[Fala integral](aula-2.roteiro.md) · [Passo a passo](passo-a-passo.md).

@@ -598,6 +598,8 @@ export async function juntarEstaticosDoPacote(
       usados.add(cena.terreno.alturas)
       usados.add(cena.terreno.pngAlturas)
       if (cena.terreno.buracos) usados.add(cena.terreno.buracos)
+      // Os pesos do relevo em campo (plano "Mundos de 2 km"): sem eles a cena juntada é recusada.
+      for (const pesos of cena.terreno.relevo?.pesos ?? []) usados.add(pesos)
     }
     for (const caminho of usados)
       if (!arquivos.arquivos.has(caminho)) {

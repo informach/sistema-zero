@@ -1,6 +1,6 @@
 # Faça o jardim florescer em 2D
 
-Missão Faísca · O Jardim Secreto · 2D. Um projeto contínuo, uma entrega. Ajuda livre; sem certificado nem publicação obrigatória.
+Missão do Faísca · O Jardim Secreto · 2D. Um projeto contínuo, enviado na última construção. Ajuda livre no Passo a passo do projeto; sem certificado nem publicação obrigatória.
 
 ## Parte 1. Conheça sua missão
 
@@ -13,9 +13,9 @@ Conheça sua missão.
 
 
 
-## Parte 2. Ajuda quando você precisar
+## Parte 2. O seu Passo a passo do projeto
 
-Ajuda quando você precisar.
+O seu Passo a passo do projeto.
 
 - Intenção: material.
 - Blocos: video-material, ponte-material, materiais.
@@ -47,9 +47,9 @@ Fique dentro do jardim.
 - Faça o personagem andar nas quatro direções e parar ao soltar a tecla.
 - Mantenha o personagem na tela e permita voltar depois de chegar à borda.
 
-## Parte 5. Recolha e guarde a informação
+## Parte 5. Pegue e guarde o regador
 
-Recolha e guarde a informação.
+Pegue e guarde o regador.
 
 - Intenção: application.
 - Blocos: video-coleta, ponte-coleta.
@@ -76,31 +76,14 @@ Uma flor, duas respostas.
 - Antes da coleta, mantenha a flor fechada e avise o que falta.
 - Depois da coleta, faça a flor abrir e mostrar o sucesso; uma nova partida recomeça sem a coleta.
 
-## Parte 7. Escolha outro lugar
+## Parte 7. Escolha um lugar para o regador
 
-Escolha outro lugar.
-
-- Intenção: application.
-- Blocos: video-posicao, ponte-posicao.
-- Estúdio: projeto.
-- Conclusão: video-posicao.
-
-- Faça o personagem andar nas quatro direções e parar ao soltar a tecla.
-- Mantenha o personagem na tela e permita voltar depois de chegar à borda.
-- Recolha o regador no encontro e mostre um aviso da coleta.
-- Faça o jogo lembrar se o personagem já pegou o regador. No começo, ele ainda não pegou.
-- Antes da coleta, mantenha a flor fechada e avise o que falta.
-- Depois da coleta, faça a flor abrir e mostrar o sucesso; uma nova partida recomeça sem a coleta.
-- Escolha outro lugar alcançável para o regador e confira as regras.
-
-## Parte 8. Envie seu jardim 2D
-
-Envie seu jardim 2D.
+Escolha um lugar para o regador.
 
 - Intenção: delivery.
-- Blocos: video-entrega, ponte-entrega, projeto.
+- Blocos: video-posicao, ponte-posicao, projeto.
 - Estúdio: projeto.
-- Conclusão: video-entrega, projeto; envio atualizado.
+- Conclusão: video-posicao, projeto; envio atualizado.
 
 - Faça o personagem andar nas quatro direções e parar ao soltar a tecla.
 - Mantenha o personagem na tela e permita voltar depois de chegar à borda.
@@ -110,4 +93,6 @@ Envie seu jardim 2D.
 - Depois da coleta, faça a flor abrir e mostrar o sucesso; uma nova partida recomeça sem a coleta.
 - Escolha outro lugar alcançável para o regador e confira as regras.
 
-[Fala integral](aula-1.roteiro.md) · [Ajuda completa](passo-a-passo.md).
+Na edição kids, Debinha diz as frases das tabelas de substituição do roteiro.
+
+[Fala integral](aula-1.roteiro.md) · [Passo a passo](passo-a-passo.md).

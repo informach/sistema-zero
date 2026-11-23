@@ -8,8 +8,14 @@ import { RAYLIB_GAMES } from '../../src/examples/python/raylibGames.manifest'
 import { VISUAL_REFERENCE_GAMES } from '../../src/examples/python/visualReferenceGames.manifest'
 import { orderPythonAuthoringCodecs } from '../../src/python/blocks/authoring'
 import type { PythonBlockCodec } from '../../src/python/blocks/contract'
-import { PYTHON_PGZERO_CODECS } from '../../src/python/extensions/pgzero/catalog'
-import { PYTHON_RAYLIB_2D_CODECS } from '../../src/python/extensions/raylib2d/catalog'
+import {
+  PYTHON_PGZERO_CODECS,
+  PYTHON_PGZERO_PINTA_SCENE_CODECS,
+} from '../../src/python/extensions/pgzero/catalog'
+import {
+  PYTHON_RAYLIB_2D_CODECS,
+  PYTHON_RAYLIB_2D_PINTA_SCENE_CODECS,
+} from '../../src/python/extensions/raylib2d/catalog'
 import { PYTHON_RAYLIB_3D_CODECS } from '../../src/python/extensions/raylib3d/catalog'
 import { PYTHON_TURTLE_CODECS } from '../../src/python/extensions/turtle/catalog'
 import { writeGeneratedSource } from '../writeGeneratedSource'
@@ -71,7 +77,9 @@ const families: GalleryFamily[] = [
     evidence: '2026-10-24-python-pgzero-games-evidence',
     manifest: 'pgzeroGames.manifest.ts',
     extension: () => 'python-pgzero',
-    codecs: () => PYTHON_PGZERO_CODECS,
+    // A mesma lista do editor (loadPythonAuthoring): os blocos de cenário do Pinta vêm na frente
+    // e só ficam numa release com pinta-scene-regions-v1 (orderPythonAuthoringCodecs os filtra).
+    codecs: () => [...PYTHON_PGZERO_PINTA_SCENE_CODECS, ...PYTHON_PGZERO_CODECS],
   },
   {
     games: RAYLIB_GAMES,
@@ -80,7 +88,10 @@ const families: GalleryFamily[] = [
     evidence: '2026-10-24-python-raylib-games-evidence',
     manifest: 'raylibGames.manifest.ts',
     extension: (game) => (game.extension === '3d' ? 'python-raylib-3d' : 'python-raylib-2d'),
-    codecs: (game) => (game.extension === '3d' ? PYTHON_RAYLIB_3D_CODECS : PYTHON_RAYLIB_2D_CODECS),
+    codecs: (game) =>
+      game.extension === '3d'
+        ? PYTHON_RAYLIB_3D_CODECS
+        : [...PYTHON_RAYLIB_2D_PINTA_SCENE_CODECS, ...PYTHON_RAYLIB_2D_CODECS],
   },
 ]
 const check = args.includes('--check')

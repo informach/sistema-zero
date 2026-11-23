@@ -1,4 +1,4 @@
-# Passo a passo do projeto — A ponte apressada
+# Passo a passo do projeto: A ponte apressada
 
 Poder do Faísca. Aqui está o que investigar na experiência e cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.
 
@@ -63,6 +63,7 @@ Antes e depois de cada teste, observe a ponte, o caderninho do jogo e o relógio
 6. Logo abaixo, ainda no então, encaixe Trocar imagem do sprite, de Jogo 2D → Sprites → Criar e trocar aparência. Clique no primeiro heroi e escolha sino; no segundo, escolha pedra-do-sino-tocando.
 7. Embaixo, ainda no então, encaixe Alterar variável, escolha aviso, solte um texto em cima do 1 e escreva Você atravessou e tocou o sino!
 8. Dentro do senão, encaixe outro Alterar variável, escolha aviso, solte um texto em cima do 1 e escreva A ponte está levantada. Puxe a alavanca primeiro.
+9. Clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte e faça o quiz. No fim do quiz, clique em Concluir aula.
 
 **Teste:** Toque na tecla R e vá direto à ponte: o aviso pede para puxar a alavanca. Puxe e vá logo: o personagem atravessa e o sino toca. Toque na tecla R, puxe e espere a ponte subir antes de encostar: ele não atravessa.
 
@@ -110,10 +111,11 @@ Antes e depois de cada teste, observe a ponte, o caderninho do jogo e o relógio
 2. Dentro do fazer, encaixe Se, de Programação → Lógica e Se. Segure a pergunta x > 0 pelo sinal de maior e arraste até a lixeira.
 3. Abra Programação → Valores e solte valor da variável no lugar vazio ao lado de Se. Clique no x e escolha ponteAberta.
 4. Na linha de baixo do Se, clique no segundo sinal de mais, antes da palavra senão, para abrir o senão.
-5. Dentro do então, encaixe Colocar o objeto, de Jogo 3D → Objetos → Posição, giro e tamanho. Clique em caixa e escolha personagem. Coloque x -3.9, y 1.42 e z 3.8 (o número negativo começa com o sinal de menos; use ponto no lugar da vírgula).
+5. Dentro do então, encaixe Colocar o objeto, de Jogo 3D → Objetos → Posição, giro e tamanho. Clique em caixa e escolha personagem. Coloque x -3.9, y 1.4 e z 3.8 (o número negativo começa com o sinal de menos; use ponto no lugar da vírgula).
 6. Logo abaixo, ainda no então, encaixe Tocar a animação, de Jogo 3D → Objetos → Animação do modelo. Clique em Andar e escolha tocar. Clique em heroi e escolha sino. No modo, escolha uma vez.
 7. Embaixo, ainda no então, encaixe Alterar variável, escolha aviso, solte um texto em cima do 1 e escreva Você atravessou e tocou o sino!
 8. Dentro do senão, encaixe outro Alterar variável, escolha aviso, solte um texto em cima do 1 e escreva A ponte está levantada. Puxe a alavanca primeiro.
+9. Clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte e faça o quiz. No fim do quiz, clique em Concluir aula.
 
 **Teste:** Toque na tecla R e vá direto à ponte: o aviso pede para puxar a alavanca. Puxe e vá logo: o personagem atravessa e o sino toca. Toque na tecla R, puxe e espere a ponte subir antes de encostar: ele não atravessa.
 
@@ -121,4 +123,6 @@ Antes e depois de cada teste, observe a ponte, o caderninho do jogo e o relógio
 
 ## Entrega
 
-Em cada aula, jogue uma partida inteira: atravesse a tempo, chegue atrasado e puxe a alavanca de novo. Toque na tecla R e confira que a ponte volta levantada. Clique em Verificar projeto, corrija o que faltar, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.
+Em cada aula, o envio fica na última montagem: Atravesse a ponte, na Aula 1, e Atravesse até o sino, na Aula 2. Antes de enviar, jogue uma partida inteira: atravesse a tempo, chegue atrasado e puxe a alavanca de novo. Toque na tecla R e confira que a ponte volta levantada. Clique em Verificar projeto e corrija o que faltar. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.
+
+Depois do envio vem o quiz da aula: escolha uma resposta em cada pergunta e veja a explicação. Você pode tentar de novo. Quando terminar, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.

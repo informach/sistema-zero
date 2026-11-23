@@ -102,6 +102,7 @@ import {
 } from '../server/studio-reservation-cleanup'
 import { createStudioExampleFilesRoute } from './studio-example-files'
 import { createStudioPublicRuntimeRoute } from './studio-public-runtime'
+import { createStudioWorldMeasurementRoute } from './studio-world-measurement'
 
 export type StudioRoutes = ReturnType<typeof createStudioRoutes>
 
@@ -1880,6 +1881,9 @@ export function createStudioRoutes(deps: {
   return {
     studioPublicRuntime: createStudioPublicRuntimeRoute({ hub, members }),
     studioExampleFiles: createStudioExampleFilesRoute({
+      requireSession: (request) => media.requireUploadSession(request),
+    }),
+    studioWorldMeasurement: createStudioWorldMeasurementRoute({
       requireSession: (request) => media.requireUploadSession(request),
     }),
     studioDescribe,

@@ -28,7 +28,20 @@ Importe nas aulas **aula-1 e aula-2** já reservadas, no modo preservar. Não re
 
 Para a oferta adulta, projete somente o vínculo para `jornada-faisca-missao-adulto` com o adaptador editorial existente. A fonte, a ajuda e a gravação são comuns. Os testes exercitam importação e reimportação nas duas ofertas.
 
-Os vídeos estão como `plannedVideo`: grave e anexe a mídia real antes da publicação. Anexe o PDF ao bloco de materiais da parte 2 da aula 1; a versão textual já está incluída no manifesto. Nenhum endereço de mídia foi inventado. Publicar na comunidade é opcional e não entra nos objetivos. A missão não concede certificado nem substitui o Poder exigido para promoção.
+Os vídeos estão como `plannedVideo`: grave e anexe a mídia real antes da publicação. Anexe o PDF ao bloco de materiais da parte 2 da aula 1. O bloco de materiais leva o livro do PDF e os links do Como fazer, sem os passos em texto (desde 22/11/2026: a criança assiste ao vídeo, não lê). Nenhum endereço de mídia foi inventado. Publicar na comunidade é opcional e não entra nos objetivos. A missão não concede certificado nem substitui o Poder exigido para promoção.
+
+## Revisão de 23/11/2026: no padrão do Cadê, da Chave do Farol e da Ilha
+
+Com as mesmas regras da Ilha do Farol (o teste `qa/faisca-padrao.test.ts` confere este curso):
+
+- **Estrutura:** A posição, a última construção, monta e envia nas duas aulas; a parte só de envio (`entrega`) saiu. A Aula 1 termina no envio. Na Aula 2, o quiz vem por último, como fechamento (`closing`).
+- **Falas:** uma ideia por parágrafo, o porquê antes do como, o teste no jogo com "Tá vendo?" e a causa, "É este bloco que…" e cada clique na sua frase. As frases de conferir, verificar e enviar são as comuns (`faisca-comum.ts`). Nenhuma fala espera o "Salvo".
+- **Montagem no vídeo:** antes as construções ficavam para o Passo a passo; agora cada uma é montada inteira no vídeo, nas duas aulas. A decisão 3D guarda `ganhou` com o Se não ganhou, no molde da Ilha.
+- **Na tela:** cada gesto na sua palavra, nos verbos do palco (ESPEC-ROTEIRO, seção 9). Os tempos das setas são estimativas e se acertam no Verificar plano.
+- **Recados na página:** cada parte tem o seu, no formato da referência.
+- **Debinha e Dedé:** a Debinha na Aula 1 (três perguntas) e o Dedé na Aula 2 (três), com a tabela de substituições no roteiro, o `.edicao.json` e o arquivo de voz de cada personagem.
+
+**Pendências de produção:** gerar a voz nova da professora (`.elevenlabs.txt`) e a de cada personagem (`.debinha.elevenlabs.txt`, `.dede.elevenlabs.txt`); gravar com o palco e acertar os tempos das setas no Verificar plano; reimportar as duas aulas (a seção `entrega` saiu das duas), com o Jogo 3D 0.33.0 já no ambiente (os projetos 3D saem com essa versão); se a importação recusar um exemplo salvo do Estúdio por ter mudado, dar a ele um id novo; anexar o PDF novo no Admin.
 
 ## Regenerar e conferir
 

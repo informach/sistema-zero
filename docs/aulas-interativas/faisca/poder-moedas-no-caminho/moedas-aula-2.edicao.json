@@ -7,6 +7,40 @@
     "alvoDeEdicaoSegundos": 3,
     "duracaoGarantidaPelaTag": false
   },
-  "clipes": ["video-abertura", "video-coleta", "video-placar", "video-bau", "video-entrega"],
-  "intervencoes": []
+  "clipes": ["video-abertura", "video-coleta", "video-placar", "video-bau"],
+  "intervencoes": [
+    {
+      "id": "video-coleta-K1",
+      "clipe": "video-coleta",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "começa sem nenhuma moeda. Agora o encontro com as moedas. As moedas da ilha também estão num grupo, o moedasDoCaminho.",
+      "ancoraDepois": "Na área Quando acontecer, como no jogo 2D. Encontre essa área. Se ela não estiver aparecendo, arraste um espaço vazio",
+      "falaPrincipal": "E onde fica esse encontro no jogo 3D?",
+      "falaPersonagem": "E onde fica esse encontro no jogo 3D?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-placar-K1",
+      "clipe": "video-placar",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "trilha até o farol. Olha só: o número sobe a cada moeda, até 5! Volte um pouco pela ponte. Repare: o número continua 5.",
+      "ancoraDepois": "Porque as moedas do caminho já saíram da cena: voltar não encosta em moeda nenhuma. Toque na tecla R. O número volta",
+      "falaPrincipal": "Por que o número não sobe quando eu volto pelo caminho?",
+      "falaPersonagem": "Por que o número não sobe quando eu volto pelo caminho?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-bau-K1",
+      "clipe": "video-bau",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "é maior ou igual a cinco, ou seja, se o personagem tem pelo menos cinco moedas. Agora a resposta do sim: o baú abre.",
+      "ancoraDepois": "A animação abrir, que já vem pronta no modelo do baú. Você só escolhe quando ela toca. Ela vai dentro do então. Deixe",
+      "falaPrincipal": "E quem faz o baú abrir de verdade?",
+      "falaPersonagem": "E quem faz o baú abrir de verdade?",
+      "tags": ["[curious]"]
+    }
+  ]
 }

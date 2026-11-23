@@ -167,21 +167,19 @@ describe('manifestos da Ponte', () => {
       expect(isLearningManifest(m)).toBe(true)
       expect(m.courseSlug).toBe('jornada-faisca-poder-3')
       expect(m.lessonSlug).toBe(`aula-${i + 1}`)
+      // Desde 23/11/2026 o envio fecha a última construção (sem parte só de envio), e o quiz vem
+      // por último, como fechamento.
       expect(m.sections.map((s: { key: string }) => s.key)).toEqual(
         d === '2d'
-          ? [
-              'abertura',
-              'material',
-              'experiencia',
-              'alavanca',
-              'sobe',
-              'atravessar',
-              'revisao',
-              'entrega',
-            ]
-          : ['abertura', 'alavanca', 'atravessar', 'revisao', 'entrega'],
+          ? ['abertura', 'material', 'experiencia', 'alavanca', 'sobe', 'atravessar', 'revisao']
+          : ['abertura', 'alavanca', 'atravessar', 'revisao'],
       )
-      expect(m.sections.filter((s: any) => s.completion.submissionUpToDate)).toHaveLength(1)
+      expect(
+        m.sections
+          .filter((s: any) => s.completion.submissionUpToDate)
+          .map((s: any) => [s.key, s.intent]),
+      ).toEqual([['atravessar', 'delivery']])
+      expect(m.sections.at(-1)).toMatchObject({ key: 'revisao', intent: 'closing' })
       const studio = m.blocks.filter((b: any) => b.content?.kind === 'studio')
       expect(studio).toHaveLength(1)
       expect(studio[0].content.chain).toBe(`jornada-faisca-poder-3-${d}`)

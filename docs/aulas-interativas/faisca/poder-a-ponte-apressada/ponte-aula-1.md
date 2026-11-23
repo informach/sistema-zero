@@ -1,6 +1,6 @@
 # Aberta por um tempo
 
-Poder do Faísca · A ponte apressada · 2D. Um projeto contínuo, uma entrega. Ajuda livre no Passo a passo do projeto; sem certificado nem publicação obrigatória.
+Poder do Faísca · A ponte apressada · 2D. Um projeto contínuo, enviado na última construção. Ajuda livre no Passo a passo do projeto; sem certificado nem publicação obrigatória.
 
 ## Parte 1. A ponte do laguinho
 
@@ -65,10 +65,10 @@ A ponte sobe sozinha.
 
 Atravesse a ponte.
 
-- Intenção: application.
-- Blocos: video-atravessar, ponte-atravessar.
+- Intenção: delivery.
+- Blocos: video-atravessar, ponte-atravessar, projeto.
 - Estúdio: projeto.
-- Conclusão: video-atravessar.
+- Conclusão: video-atravessar, projeto; envio atualizado.
 
 - O "depois de segundos" fica dentro do encontro com a alavanca.
 - Puxando a alavanca e indo direto à ponte, o personagem atravessa e o sino toca.
@@ -81,27 +81,13 @@ Atravesse a ponte.
 
 Pense na ponte.
 
-- Intenção: explanation.
+- Intenção: closing.
 - Blocos: ponte-revisao, quiz.
 - Estúdio: não.
 - Conclusão: quiz.
 
 
 
-## Parte 8. Envie o seu jogo com a ponte
-
-Envie o seu jogo com a ponte.
-
-- Intenção: delivery.
-- Blocos: video-entrega, ponte-entrega, projeto.
-- Estúdio: projeto.
-- Conclusão: video-entrega, projeto; envio atualizado.
-
-- O "depois de segundos" fica dentro do encontro com a alavanca.
-- Puxando a alavanca e indo direto à ponte, o personagem atravessa e o sino toca.
-- Chegando depois que a ponte subiu, o personagem não atravessa.
-- Sem puxar a alavanca, a ponte não deixa atravessar e o aviso diz o que fazer.
-- Uma nova partida (tecla R) começa com a ponte levantada.
-- O farol continua: com a chave, ele acende.
+Na edição kids, Debinha diz as frases das tabelas de substituição do roteiro.
 
 [Fala integral](ponte-aula-1.roteiro.md) · [Passo a passo](passo-a-passo.md).

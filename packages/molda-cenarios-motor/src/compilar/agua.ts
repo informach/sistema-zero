@@ -106,12 +106,42 @@ export function rasterizarAguaCompilada(
   )
 }
 
+/** As resoluções que a água tenta, da mais fina à mais grossa (pixels por metro). */
+export const RESOLUCOES_DA_AGUA = [8, 4, 2, 1] as const
+
+/**
+ * A água na resolução pedida, ou na mais fina que cabe: um lago grande demais para 8 px/m (que
+ * estoura o limite de pixels por parte) sai com 4, 2 ou 1 px/m em vez de reprovar a compilação; com
+ * `tetoDePixels` (os mundos em campo, plano "Mundos de 2 km", lote 3), também desce até caber nele.
+ * O que já cabia a 8 px/m sai igual.
+ */
+export function rasterizarAguaNaResolucao(
+  fonte: FonteDeAguaCompilada,
+  sinal: AbortSignal,
+  pixelsPorMetro: number | undefined,
+  tetoDePixels: number | undefined,
+) {
+  if (pixelsPorMetro !== undefined) return rasterizarAguaCompilada(fonte, { pixelsPorMetro, sinal })
+  let erro: unknown
+  for (const ppm of RESOLUCOES_DA_AGUA) {
+    try {
+      const r = rasterizarAguaCompilada(fonte, { pixelsPorMetro: ppm, sinal })
+      if (tetoDePixels === undefined || r.largura * r.altura <= tetoDePixels || ppm === 1) return r
+    } catch (e) {
+      if (!(e instanceof Error) || !e.message.includes('excede o limite de pixels')) throw e
+      erro = e
+    }
+  }
+  throw erro
+}
+
 export async function prepararAguaCompilada(
   fonte: FonteDeAguaCompilada,
   sinal: AbortSignal,
-  pixelsPorMetro = 8,
+  pixelsPorMetro?: number,
+  tetoDePixels?: number,
 ) {
-  const r = rasterizarAguaCompilada(fonte, { pixelsPorMetro, sinal }),
+  const r = rasterizarAguaNaResolucao(fonte, sinal, pixelsPorMetro, tetoDePixels),
     png = await codificarPngCompilado(r, sinal),
     g = fonte.geometria.clone(),
     mapa = new DataTexture(r.pixels, r.largura, r.altura, RGBAFormat)

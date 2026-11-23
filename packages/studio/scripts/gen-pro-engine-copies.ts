@@ -1,6 +1,10 @@
 /**
- * Inventário das cópias do motor 2D que a conversão para o Pro escreveu (`public/sz-ext/<id>.js`),
- * usado pelo "Atualizar o motor" do Pro: só uma cópia ainda igual a uma destas é trocada.
+ * Inventário das cópias do motor 2D que a conversão para o Pro escreveu (`public/sz-ext/<id>.js`).
+ * Mora no core (`packages/core/src/studio/pro-engine-copies.generated.ts`), fonte única de quem o
+ * usa: o "Atualizar o motor" do Pro (só uma cópia ainda igual a uma destas é trocada) e a revisão
+ * do Pro no Estúdio, no BFF, no Members e no compilador remoto (uma cópia destas, intacta, fica fora
+ * do teto de 256 mil caracteres por arquivo da criança). O motor é composto pelo Estúdio, por isso
+ * o gerador mora aqui.
  *
  *   bun scripts/gen-pro-engine-copies.ts            acrescenta o motor de agora (rode ao mudar o motor)
  *   bun scripts/gen-pro-engine-copies.ts --check    falha se o motor de agora não está no inventário
@@ -36,7 +40,7 @@ type Variant = (typeof VARIANTS)[number]
 type Inventory = Record<Extension, Record<Variant, string[]>>
 const FONT_OUTSIDE_ENGINE_COMMIT = '15106f159'
 const output = fileURLToPath(
-  new URL('../src/modes/pro/proEngineCopies.generated.ts', import.meta.url),
+  new URL('../../core/src/studio/pro-engine-copies.generated.ts', import.meta.url),
 )
 const repo = fileURLToPath(new URL('../../..', import.meta.url))
 const sha256 = (text: string) => createHash('sha256').update(text, 'utf8').digest('hex')
@@ -73,12 +77,12 @@ function writeInventory(inventory: Inventory) {
   ).join('')
   writeFileSync(
     output,
-    `// Gerado por \`bun scripts/gen-pro-engine-copies.ts\`. Não editar à mão.
+    `// Gerado por \`bun run --cwd packages/studio gen:pro-engine-copies\`. Não editar à mão.
 // sha256 (UTF-8) de cada cópia \`public/sz-ext/<id>.js\` que a conversão para o Pro escreveu desde
 // 15106f159 (13/08/2026), na ordem em que apareceram. Ver o cabeçalho do script.
-import type { ProEngineInventory } from './proEngineCopies'
+import type { StudioProEngineInventory } from './pro-engine-copies'
 
-export const PRO_ENGINE_COPIES: ProEngineInventory = {
+export const STUDIO_PRO_ENGINE_COPIES: StudioProEngineInventory = {
 ${body}}
 `,
   )

@@ -6,14 +6,14 @@
   "blocks": [
     {
       "key": "video-abertura",
-      "plannedVideo": "Título: Os símbolos do Farol\n\nMaster integral da professora: simbolos-aula-1.roteiro.md, clipe video-abertura. Gravação pendente."
+      "plannedVideo": "Título: Os símbolos do Farol\n\nMaster integral da professora. Roteiro: simbolos-aula-1.roteiro.md, clipe video-abertura. Substituições kids: [{\"id\":\"video-abertura-K1\",\"clipe\":\"video-abertura\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"E se eu tocar um símbolo fora da ordem?\",\"falaPersonagem\":\"E se eu tocar um símbolo fora da ordem?\",\"ancoraAntes\":\"aqui: quando eu levo o personagem até o sol, o sol acende. Repare também no aviso aqui em cima: agora ele pede a lua.\",\"ancoraDepois\":\"Isso eu deixo para você descobrir. O farol continua como antes: com a chave, ele acende. Para começar outra partida,\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-abertura",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Clique no jogo e use as setas do teclado. Toque os símbolos na ordem da placa e abra o baú; depois erre a ordem de propósito e veja o que acontece. A tecla R começa outra partida. Depois clique em Próxima parte."
+        "text": "Sua vez! Jogue a versão pronta: segure as setas para andar, abra o baú e descubra o que acontece fora da ordem. A tecla R recomeça. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -2810,19 +2810,19 @@
     },
     {
       "key": "video-material",
-      "plannedVideo": "Título: O seu Passo a passo do projeto\n\nMaster integral da professora: simbolos-aula-1.roteiro.md, clipe video-material. Gravação pendente."
+      "plannedVideo": "Título: O seu Passo a passo do projeto\n\nMaster integral da professora. Roteiro: simbolos-aula-1.roteiro.md, clipe video-material. Gravação pendente."
     },
     {
       "key": "ponte-material",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Este é o seu Passo a passo do projeto, com o que investigar na experiência e cada montagem. Se quiser, leia aqui mesmo ou clique em Baixar para guardar. Depois clique em Próxima parte."
+        "text": "Este é o seu Passo a passo do projeto! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte."
       }
     },
     {
       "key": "video-experiencia",
-      "plannedVideo": "Título: A ordem dos símbolos\n\nMaster integral da professora: simbolos-aula-1.roteiro.md, clipe video-experiencia. Gravação pendente."
+      "plannedVideo": "Título: A ordem dos símbolos\n\nMaster integral da professora. Roteiro: simbolos-aula-1.roteiro.md, clipe video-experiencia. Substituições kids: [{\"id\":\"video-experiencia-K1\",\"clipe\":\"video-experiencia\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"E o que acontece com passo quando um símbolo vem fora da vez?\",\"falaPersonagem\":\"E o que acontece com passo quando um símbolo vem fora da vez?\",\"ancoraAntes\":\"minha vez? O baú pode conferir a senha de dois jeitos: só contando os símbolos tocados, ou conferindo a vez de cada um.\",\"ancoraDepois\":\"O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que acontece com passo quando os\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-experiencia",
@@ -2878,38 +2878,38 @@
     },
     {
       "key": "video-sol",
-      "plannedVideo": "Título: O sol começa\n\nMaster integral da professora: simbolos-aula-1.roteiro.md, clipe video-sol. Gravação pendente."
+      "plannedVideo": "Título: O sol começa\n\nMaster integral da professora. Roteiro: simbolos-aula-1.roteiro.md, clipe video-sol. Gravação pendente."
     },
     {
       "key": "ponte-sol",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora faça o sol começar a sequência: crie passo começando em 0 e, no encontro com o sol, guarde 1, acenda o sol e mude o aviso. Teste no jogo. Depois clique em Verificar projeto e em Próxima parte."
+        "text": "Agora faça o sol começar a senha! Crie passo com 0 em Ao iniciar e, no encontro com o sol, mude passo para 1, acenda o sol e mude o aviso. Teste no jogo. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
       "key": "video-lua",
-      "plannedVideo": "Título: A lua pergunta a vez\n\nMaster integral da professora: simbolos-aula-1.roteiro.md, clipe video-lua. Gravação pendente."
+      "plannedVideo": "Título: A lua pergunta a vez\n\nMaster integral da professora. Roteiro: simbolos-aula-1.roteiro.md, clipe video-lua. Substituições kids: [{\"id\":\"video-lua-K1\",\"clipe\":\"video-lua\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"E onde fica o que acontece quando não é a vez da lua?\",\"falaPersonagem\":\"E onde fica o que acontece quando não é a vez da lua?\",\"ancoraAntes\":\"Agora clique no 0, apague e escreva 1. Pronto: agora o Se pergunta se passo é igual a 1. Ou seja: o sol já foi tocado?\",\"ancoraDepois\":\"Num espaço do próprio Se. A resposta do sim fica no espaço do então, e a resposta do não fica no espaço do senão. Só\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-lua",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora a lua pergunta se é a vez dela: se passo = 1, guarde 2, acenda a lua e mude o aviso; senão, volte passo a 0, apague o sol e a lua e avise. Teste a ordem certa e a lua primeiro. Depois clique em Verificar projeto e em Próxima parte."
+        "text": "Agora a lua vai perguntar se é a vez dela! No encontro com a lua, monte o Se com passo = 1: no então, passo vira 2, a lua acende e o aviso muda; no senão, passo volta a 0, o sol e a lua apagam e o aviso pede o sol. Teste a ordem certa e a lua primeiro. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
       "key": "video-estrela",
-      "plannedVideo": "Título: A estrela abre o baú\n\nMaster integral da professora: simbolos-aula-1.roteiro.md, clipe video-estrela. Gravação pendente."
+      "plannedVideo": "Título: A estrela abre o baú\n\nMaster integral da professora. Roteiro: simbolos-aula-1.roteiro.md, clipe video-estrela. Substituições kids: [{\"id\":\"video-estrela-K1\",\"clipe\":\"video-estrela\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"E se eu errar a ordem, preciso começar outra partida?\",\"falaPersonagem\":\"E se eu errar a ordem, preciso começar outra partida?\",\"ancoraAntes\":\"até a estrela, sem passar pela lua. Olha só: o sol apaga, o baú continua fechado, e o aviso pede para começar pelo sol.\",\"ancoraDepois\":\"Não. É só voltar ao sol e seguir a placa de novo, na mesma partida. Sem tocar na tecla R, leve o personagem de volta\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-estrela",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora a estrela abre o baú: se passo = 2, acenda a estrela, abra o baú e mude o aviso; senão, recomece como na lua. Teste a ordem certa, uma ordem errada e recomeçar depois de errar. Depois clique em Verificar projeto e em Próxima parte."
+        "text": "Agora a estrela vai abrir o baú! No encontro com a estrela, monte o Se com passo = 2: no então, a estrela acende, o baú abre e o aviso muda; no senão, recomece como na lua. Teste a ordem certa, uma ordem errada e recomeçar pelo sol. Depois clique em Verificar projeto, em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte."
       }
     },
     {
@@ -2917,7 +2917,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de pensar na ordem! As perguntas retomam a vez da estrela, um símbolo fora da vez e o que pode estar errado nas perguntas do Se. Em cada uma tem uma explicação, e você pode tentar de novo. Nas perguntas com cena, escolha e clique em Ver o que acontece; nas outras, clique em Responder."
+        "text": "Escolha uma resposta e clique em Ver o que acontece ou, nas perguntas sem cena, em Responder. Observe a cena e a explicação. Você pode tentar de novo. Quando terminar, clique em Concluir aula."
       }
     },
     {
@@ -3009,18 +3009,6 @@
             "explanation": "Se o senão não volta passo para 0, o jogo continua lembrando o passo de antes do erro. Aí a lua e a estrela acham que ainda é a vez delas."
           }
         ]
-      }
-    },
-    {
-      "key": "video-entrega",
-      "plannedVideo": "Título: Envie o seu jogo com o baú\n\nMaster integral da professora: simbolos-aula-1.roteiro.md, clipe video-entrega. Gravação pendente."
-    },
-    {
-      "key": "ponte-entrega",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Confira os objetivos e clique em Enviar meu projeto. Confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula."
       }
     },
     {
@@ -15240,10 +15228,6 @@
             "estrela": {
               "entryExampleId": "fa15ca04-0000-4000-8000-000000000003",
               "solutionExampleId": "fa15ca04-0000-4000-8000-000000000004"
-            },
-            "entrega": {
-              "entryExampleId": "fa15ca04-0000-4000-8000-000000000004",
-              "solutionExampleId": "fa15ca04-0000-4000-8000-000000000004"
             }
           }
         }
@@ -15268,7 +15252,25 @@
             "url": "/como-fazer/estudio-achar-e-organizar-blocos"
           },
           {
-            "id": "pedir-ajuda",
+            "id": "plataforma-baixar-materiais",
+            "kind": "link",
+            "label": "Como abrir o Passo a passo do projeto e os materiais",
+            "url": "/como-fazer/plataforma-baixar-materiais"
+          },
+          {
+            "id": "plataforma-abrir-uma-aula",
+            "kind": "link",
+            "label": "Como abrir uma aula e trocar de parte",
+            "url": "/como-fazer/plataforma-abrir-uma-aula"
+          },
+          {
+            "id": "plataforma-ampliar-a-atividade",
+            "kind": "link",
+            "label": "Como dar mais espaço ao jogo e à experiência",
+            "url": "/como-fazer/plataforma-ampliar-a-atividade"
+          },
+          {
+            "id": "plataforma-pedir-ajuda",
             "kind": "link",
             "label": "Como pedir ajuda à equipe",
             "url": "/como-fazer/plataforma-pedir-ajuda"
@@ -15515,299 +15517,15 @@
     {
       "key": "estrela",
       "title": "A estrela abre o baú",
-      "intent": "application",
-      "objective": "A estrela abre o baú.",
-      "blockKeys": ["video-estrela", "ponte-estrela"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-estrela"],
-        "projectChecks": [
-          {
-            "id": "se-na-estrela",
-            "label": "O encontro com a estrela pergunta se é a vez dela (Se, com senão).",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_on_overlap",
-              "area": "events",
-              "fieldAlternatives": [
-                {
-                  "A": "personagem",
-                  "B": "estrela"
-                },
-                {
-                  "A": "estrela",
-                  "B": "personagem"
-                }
-              ],
-              "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_js_if_else"
-                }
-              }
-            }
-          },
-          {
-            "id": "ordem-certa",
-            "label": "Tocando o sol, a lua e a estrela, nessa ordem, o baú abre.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "sol",
-                  "timeoutMs": 2400,
-                  "avoidPaths": ["lua", "estrela", "chave"]
-                },
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "lua",
-                  "timeoutMs": 1800,
-                  "avoidPaths": ["estrela", "chave"]
-                },
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "estrela",
-                  "timeoutMs": 1800,
-                  "avoidPaths": ["sol", "chave"]
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "bau.image.url"
-                },
-                "compare": "contains",
-                "value": "IHk9IjM2IiB3aWR0aD0iMTEiIGhlaWdodD0iNyIgcng9IjIuNSIgZmlsbD0iI2YzYjEyMyIvPgogIDxyZWN0IHg9IjI2LjUiIHk9IjQwIiB3aWR0aD0iMTEiIGhlaWdodD0iMyIgcng9IjEuNSIgZmlsbD0iI2Q5OGMxYSIvPgo8L3N2Zz4="
-              }
-            }
-          },
-          {
-            "id": "fora-da-vez",
-            "label": "Um símbolo fora da vez recomeça: depois do sol e da estrela, o baú não abre e a lua não acende.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "sol",
-                  "timeoutMs": 2400,
-                  "avoidPaths": ["lua", "estrela", "chave"]
-                },
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "estrela",
-                  "timeoutMs": 2400,
-                  "avoidPaths": ["lua", "chave"]
-                },
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "lua",
-                  "timeoutMs": 1800,
-                  "avoidPaths": ["sol", "chave"]
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "lua.image.url"
-                },
-                "compare": "notContains",
-                "value": "IHN0cm9rZS13aWR0aD0iMS42Ii8+CiAgPHBhdGggZD0iTSAyOS4yOCAyOS4yNSBBIDYuMjAgNi4yMCAwIDEgMSAyNC4zNCAxOS44MSBBIDUuMzMgNS4zMyAwIDAgMCAyOS4yOCAyOS4yNSBaIiBmaWxsPSIjZjBiNDI5Ii8+Cjwvc3ZnPg=="
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 2,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "bau.image.url"
-                    },
-                    "compare": "notContains",
-                    "value": "IHk9IjM2IiB3aWR0aD0iMTEiIGhlaWdodD0iNyIgcng9IjIuNSIgZmlsbD0iI2YzYjEyMyIvPgogIDxyZWN0IHg9IjI2LjUiIHk9IjQwIiB3aWR0aD0iMTEiIGhlaWdodD0iMyIgcng9IjEuNSIgZmlsbD0iI2Q5OGMxYSIvPgo8L3N2Zz4="
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "id": "recomecar",
-            "label": "Depois de errar, começar de novo pelo sol abre o baú.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "lua",
-                  "timeoutMs": 2400,
-                  "avoidPaths": ["sol", "estrela", "chave"]
-                },
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "sol",
-                  "timeoutMs": 1800,
-                  "avoidPaths": ["estrela", "chave"]
-                },
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "lua",
-                  "timeoutMs": 1800,
-                  "avoidPaths": ["estrela", "chave"]
-                },
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "estrela",
-                  "timeoutMs": 1800,
-                  "avoidPaths": ["sol", "chave"]
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "bau.image.url"
-                },
-                "compare": "contains",
-                "value": "IHk9IjM2IiB3aWR0aD0iMTEiIGhlaWdodD0iNyIgcng9IjIuNSIgZmlsbD0iI2YzYjEyMyIvPgogIDxyZWN0IHg9IjI2LjUiIHk9IjQwIiB3aWR0aD0iMTEiIGhlaWdodD0iMyIgcng9IjEuNSIgZmlsbD0iI2Q5OGMxYSIvPgo8L3N2Zz4="
-              }
-            }
-          },
-          {
-            "id": "reinicio",
-            "label": "Uma nova partida (tecla R) começa com os símbolos apagados.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "sol",
-                  "timeoutMs": 2400,
-                  "avoidPaths": ["lua", "estrela", "chave"]
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                },
-                {
-                  "action": "press",
-                  "key": "r",
-                  "holdMs": 80
-                },
-                {
-                  "action": "wait",
-                  "ms": 400
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "sol.image.url"
-                },
-                "compare": "notContains",
-                "value": "bGluZWNhcD0icm91bmQiLz48bGluZSB4MT0iMjcuNjEiIHkxPSIyMi4zOSIgeDI9IjI5LjQ0IiB5Mj0iMjAuNTYiIHN0cm9rZT0iI2Y2YTkxZSIgc3Ryb2tlLXdpZHRoPSIxLjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4="
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 2,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "sol.image.url"
-                    },
-                    "compare": "contains",
-                    "value": "bGluZWNhcD0icm91bmQiLz48bGluZSB4MT0iMjcuNjEiIHkxPSIyMi4zOSIgeDI9IjI5LjQ0IiB5Mj0iMjAuNTYiIHN0cm9rZT0iI2Y2YTkxZSIgc3Ryb2tlLXdpZHRoPSIxLjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4="
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "id": "farol",
-            "label": "O farol continua: com a chave, ele acende.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "chave",
-                  "timeoutMs": 2500,
-                  "avoidPaths": ["sol", "lua", "estrela"]
-                },
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "farol",
-                  "timeoutMs": 3500
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "farol.image.url"
-                },
-                "compare": "contains",
-                "value": "IiB0cmFuc2Zvcm09InJvdGF0ZSgwLjggNzguNjM2MyAxMzguMjEzKSIvPgogICAgCiAgPGVsbGlwc2UgY3g9Ijc1LjA5NzUiIGN5PSIyLjUxNzUiIHJ4PSIyLjQxMDYyIiByeT0iMi40NDYyNSIgZmlsbD0iI2NmM2YzNiIvPgo8L3N2Zz4="
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "revisao",
-      "title": "Pense na ordem",
-      "intent": "explanation",
-      "objective": "Pense na ordem.",
-      "blockKeys": ["ponte-revisao", "quiz"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["quiz"]
-      }
-    },
-    {
-      "key": "entrega",
-      "title": "Envie o seu jogo com o baú",
       "intent": "delivery",
-      "objective": "Envie o seu jogo com o baú.",
-      "blockKeys": ["video-entrega", "ponte-entrega", "projeto"],
+      "objective": "A estrela abre o baú.",
+      "blockKeys": ["video-estrela", "ponte-estrela", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-entrega", "projeto"],
+        "blockIds": ["video-estrela", "projeto"],
         "projectChecks": [
           {
             "id": "se-na-estrela",
@@ -16065,6 +15783,20 @@
           }
         ],
         "submissionUpToDate": true
+      }
+    },
+    {
+      "key": "revisao",
+      "title": "Pense na ordem",
+      "intent": "closing",
+      "objective": "Pense na ordem.",
+      "blockKeys": ["ponte-revisao", "quiz"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz"]
       }
     }
   ]

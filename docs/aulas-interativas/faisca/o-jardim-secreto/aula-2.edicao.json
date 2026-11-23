@@ -7,13 +7,40 @@
     "alvoDeEdicaoSegundos": 3,
     "duracaoGarantidaPelaTag": false
   },
-  "clipes": [
-    "video-abertura",
-    "video-movimento",
-    "video-coleta",
-    "video-decisao",
-    "video-posicao",
-    "video-entrega"
-  ],
-  "intervencoes": []
+  "clipes": ["video-abertura", "video-movimento", "video-coleta", "video-decisao", "video-posicao"],
+  "intervencoes": [
+    {
+      "id": "video-abertura-K1",
+      "clipe": "video-abertura",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "o personagem anda até a flor. Repare no aviso aqui em cima: a flor continua fechada, e o aviso diz o que falta.",
+      "ancoraDepois": "Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R. Agora é a sua vez: jogue até a flor",
+      "falaPrincipal": "Será que o regador está no mesmo lugar do jardim 2D?",
+      "falaPersonagem": "Será que o regador está no mesmo lugar do jardim 2D?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-coleta-K1",
+      "clipe": "video-coleta",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "personagem encostar em chave. Arraste e solte logo abaixo do evento da tecla R. Não coloque um evento dentro do outro.",
+      "ancoraDepois": "Não tem. O bloco de encontro só chega com chave no segundo nome, e você troca pelo regador. Clique em chave e escolha",
+      "falaPrincipal": "Ué, mas tem chave no jardim?",
+      "falaPersonagem": "Ué, mas tem chave no jardim?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-decisao-K1",
+      "clipe": "video-decisao",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "que deu certo! Agora ande um pouco para a esquerda e volte até a flor. Tá vendo? A flor fechou e abriu tudo de novo.",
+      "ancoraDepois": "Porque, cada vez que o personagem encosta na flor, o encontro acontece de novo e manda florescer outra vez. Lembra do",
+      "falaPrincipal": "Ué, por que a flor abriu de novo?",
+      "falaPersonagem": "Ué, por que a flor abriu de novo?",
+      "tags": ["[curious]"]
+    }
+  ]
 }

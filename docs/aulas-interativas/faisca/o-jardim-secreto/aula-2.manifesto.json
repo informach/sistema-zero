@@ -6,14 +6,14 @@
   "blocks": [
     {
       "key": "video-abertura",
-      "plannedVideo": "Título: O mesmo desafio, com profundidade\n\nMaster integral da professora: aula-2.roteiro.md, clipe video-abertura. Gravação pendente."
+      "plannedVideo": "Título: O mesmo desafio, com profundidade\n\nMaster integral da professora. Roteiro: aula-2.roteiro.md, clipe video-abertura. Substituições kids: [{\"id\":\"video-abertura-K1\",\"clipe\":\"video-abertura\",\"personagem\":\"Dedé\",\"falaPrincipal\":\"Será que o regador está no mesmo lugar do jardim 2D?\",\"falaPersonagem\":\"Será que o regador está no mesmo lugar do jardim 2D?\",\"ancoraAntes\":\"o personagem anda até a flor. Repare no aviso aqui em cima: a flor continua fechada, e o aviso diz o que falta.\",\"ancoraDepois\":\"Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R. Agora é a sua vez: jogue até a flor\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-abertura",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Clique no jogo e experimente. Use as setas do teclado; R começa outra partida. Você pode seguir sem terminar. Depois clique em Próxima parte."
+        "text": "Sua vez! Jogue a versão pronta: segure as setas para andar, pegue o regador e leve o personagem até a flor. A tecla R recomeça. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -22,7 +22,7 @@
         "kind": "interactive",
         "title": "Jogue O Jardim Secreto",
         "required": true,
-        "instructions": "Clique no jogo e use as setas do teclado. Recolha o regador e leve o personagem à flor. R começa outra partida. Você pode seguir sem terminar.",
+        "instructions": "Clique no jogo e use as setas ou W, A, S e D. Pegue o regador e leve o personagem até a flor. R começa outra partida. Você pode seguir sem terminar.",
         "hints": [],
         "activity": {
           "type": "project-play",
@@ -1055,7 +1055,7 @@
             "installedExtensions": [
               {
                 "id": "game-3d",
-                "version": "0.32.0",
+                "version": "0.33.0",
                 "installedAt": 0
               }
             ]
@@ -1071,50 +1071,50 @@
     },
     {
       "key": "video-movimento",
-      "plannedVideo": "Título: Caminhe pelo jardim 3D\n\nMaster integral da professora: aula-2.roteiro.md, clipe video-movimento. Gravação pendente."
+      "plannedVideo": "Título: Caminhe pelo jardim 3D\n\nMaster integral da professora. Roteiro: aula-2.roteiro.md, clipe video-movimento. Gravação pendente."
     },
     {
       "key": "ponte-movimento",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Monte e teste a regra no seu jardim. Você pode experimentar e consultar a ajuda quantas vezes quiser. Clique em Verificar projeto, confira os objetivos desta parte e aguarde Salvo. Depois clique em Próxima parte."
+        "text": "Hora de fazer o seu personagem andar no jardim 3D! Coloque o movimento no começo de A cada quadro da cena e troque a velocidade por 4. Teste as quatro setas. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
       "key": "video-coleta",
-      "plannedVideo": "Título: Recolha o regador em 3D\n\nMaster integral da professora: aula-2.roteiro.md, clipe video-coleta. Gravação pendente."
+      "plannedVideo": "Título: Recolha o regador em 3D\n\nMaster integral da professora. Roteiro: aula-2.roteiro.md, clipe video-coleta. Substituições kids: [{\"id\":\"video-coleta-K1\",\"clipe\":\"video-coleta\",\"personagem\":\"Dedé\",\"falaPrincipal\":\"Ué, mas tem chave no jardim?\",\"falaPersonagem\":\"Ué, mas tem chave no jardim?\",\"ancoraAntes\":\"personagem encostar em chave. Arraste e solte logo abaixo do evento da tecla R. Não coloque um evento dentro do outro.\",\"ancoraDepois\":\"Não tem. O bloco de encontro só chega com chave no segundo nome, e você troca pelo regador. Clique em chave e escolha\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-coleta",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Monte e teste a regra no seu jardim. Você pode experimentar e consultar a ajuda quantas vezes quiser. Clique em Verificar projeto, confira os objetivos desta parte e aguarde Salvo. Depois clique em Próxima parte."
+        "text": "Agora ensine o jardim 3D a guardar o regador! Crie temRegador começando em falso e, no encontro com o regador, esconda o regador, guarde verdadeiro e mude o aviso. Teste no jogo. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
       "key": "video-decisao",
-      "plannedVideo": "Título: Faça a flor responder\n\nMaster integral da professora: aula-2.roteiro.md, clipe video-decisao. Gravação pendente."
+      "plannedVideo": "Título: Faça a flor responder\n\nMaster integral da professora. Roteiro: aula-2.roteiro.md, clipe video-decisao. Substituições kids: [{\"id\":\"video-decisao-K1\",\"clipe\":\"video-decisao\",\"personagem\":\"Dedé\",\"falaPrincipal\":\"Ué, por que a flor abriu de novo?\",\"falaPersonagem\":\"Ué, por que a flor abriu de novo?\",\"ancoraAntes\":\"que deu certo! Agora ande um pouco para a esquerda e volte até a flor. Tá vendo? A flor fechou e abriu tudo de novo.\",\"ancoraDepois\":\"Porque, cada vez que o personagem encosta na flor, o encontro acontece de novo e manda florescer outra vez. Lembra do\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-decisao",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Monte e teste a regra no seu jardim. Você pode experimentar e consultar a ajuda quantas vezes quiser. Clique em Verificar projeto, confira os objetivos desta parte e aguarde Salvo. Depois clique em Próxima parte."
+        "text": "Hora de fazer a flor responder, uma vez só! No encontro com a flor, monte o Se com temRegador: no então, florescer, ganhou verdadeiro e o aviso; no senão, o aviso que pede o regador. Ponha esse Se dentro de Se não ganhou. Teste sem o regador, com ele e voltando à flor. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
       "key": "video-posicao",
-      "plannedVideo": "Título: Encontre um novo lugar no chão\n\nMaster integral da professora: aula-2.roteiro.md, clipe video-posicao. Gravação pendente."
+      "plannedVideo": "Título: Encontre um novo lugar no chão\n\nMaster integral da professora. Roteiro: aula-2.roteiro.md, clipe video-posicao. Gravação pendente."
     },
     {
       "key": "ponte-posicao",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Monte e teste a regra no seu jardim. Você pode experimentar e consultar a ajuda quantas vezes quiser. Clique em Verificar projeto, confira os objetivos desta parte e aguarde Salvo. Depois clique em Próxima parte."
+        "text": "Agora escolha um lugar novo para o regador no jardim 3D! No bloco Colocar o objeto regador, troque o x −4 por −2 ou por outro número e deixe o y como está. Teste a flor sem o regador e com ele. Depois clique em Verificar projeto, em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte."
       }
     },
     {
@@ -1122,7 +1122,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Escolha uma resposta. Nas perguntas com cena, clique em Ver o que acontece; na outra, clique em Responder. Leia a explicação e tente de novo se precisar."
+        "text": "Escolha uma resposta e clique em Ver o que acontece ou, na pergunta sem cena, em Responder. Observe a cena e a explicação. Você pode tentar de novo. Quando terminar, clique em Concluir aula."
       }
     },
     {
@@ -1215,18 +1215,6 @@
             "explanation": "De lado, vemos um espaço entre os dois: o regador está alto demais. Em 3D, o encontro depende também da altura. A cor e o ponto de vista não desligam a coleta."
           }
         ]
-      }
-    },
-    {
-      "key": "video-entrega",
-      "plannedVideo": "Título: Entregue sua missão\n\nMaster integral da professora: aula-2.roteiro.md, clipe video-entrega. Gravação pendente."
-    },
-    {
-      "key": "ponte-entrega",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Confira os objetivos, aguarde Salvo e clique em Enviar meu projeto. Confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula."
       }
     },
     {
@@ -1956,7 +1944,7 @@
           "installedExtensions": [
             {
               "id": "game-3d",
-              "version": "0.32.0",
+              "version": "0.33.0",
               "installedAt": 0
             }
           ]
@@ -2655,7 +2643,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -3377,7 +3365,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -4209,7 +4197,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -5243,7 +5231,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -6277,7 +6265,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -6298,10 +6286,6 @@
             },
             "posicao": {
               "entryExampleId": "fa15ca00-0000-4000-8001-000000000005",
-              "solutionExampleId": "fa15ca00-0000-4000-8001-000000000006"
-            },
-            "entrega": {
-              "entryExampleId": "fa15ca00-0000-4000-8001-000000000006",
               "solutionExampleId": "fa15ca00-0000-4000-8001-000000000006"
             }
           }
@@ -7122,524 +7106,15 @@
     {
       "key": "posicao",
       "title": "Encontre um novo lugar no chão",
-      "intent": "application",
-      "objective": "Encontre um novo lugar no chão.",
-      "blockKeys": ["video-posicao", "ponte-posicao"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-posicao"],
-        "projectChecks": [
-          {
-            "id": "andar",
-            "label": "Faça o personagem andar nas quatro direções e parar ao soltar a tecla.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "press",
-                  "key": "ArrowRight",
-                  "holdMs": 300
-                },
-                {
-                  "action": "wait",
-                  "ms": 70
-                },
-                {
-                  "action": "press",
-                  "key": "ArrowLeft",
-                  "holdMs": 500
-                },
-                {
-                  "action": "wait",
-                  "ms": 70
-                },
-                {
-                  "action": "press",
-                  "key": "ArrowUp",
-                  "holdMs": 300
-                },
-                {
-                  "action": "wait",
-                  "ms": 70
-                },
-                {
-                  "action": "press",
-                  "key": "ArrowDown",
-                  "holdMs": 500
-                },
-                {
-                  "action": "wait",
-                  "ms": 70
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "personagem.userData.sz.vx"
-                },
-                "compare": "equals",
-                "value": 0
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 2,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "personagem.position.x"
-                    },
-                    "compare": "greaterThan",
-                    "value": -7
-                  }
-                },
-                {
-                  "afterStep": 4,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "personagem.position.x"
-                    },
-                    "compare": "lessThan",
-                    "value": -7
-                  }
-                },
-                {
-                  "afterStep": 6,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "personagem.position.z"
-                    },
-                    "compare": "lessThan",
-                    "value": 1
-                  }
-                },
-                {
-                  "afterStep": 8,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "personagem.position.z"
-                    },
-                    "compare": "greaterThan",
-                    "value": 1
-                  }
-                },
-                {
-                  "afterStep": 8,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "personagem.userData.sz.vz"
-                    },
-                    "compare": "equals",
-                    "value": 0
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "id": "coletar",
-            "label": "Recolha o regador no encontro e mostre um aviso da coleta.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "wait",
-                  "ms": 120
-                },
-                {
-                  "action": "approachObject3d",
-                  "actorPath": "personagem",
-                  "targetPath": "regador",
-                  "timeoutMs": 5500,
-                  "walkable": [
-                    {
-                      "minX": -9,
-                      "maxX": 9,
-                      "minZ": -4,
-                      "maxZ": 4
-                    }
-                  ]
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "regador.visible"
-                },
-                "compare": "equals",
-                "value": false
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 1,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "regador.visible"
-                    },
-                    "compare": "equals",
-                    "value": true
-                  }
-                },
-                {
-                  "afterStep": 2,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "aviso"
-                    },
-                    "compare": "changed"
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "id": "lembrar",
-            "label": "Faça o jogo lembrar se o personagem já pegou o regador. No começo, ele ainda não pegou.",
-            "rule": {
-              "type": "collectionMemory",
-              "dimension": "3d",
-              "actor": "personagem",
-              "item": "regador",
-              "destination": "flor"
-            }
-          },
-          {
-            "id": "sem-regador",
-            "label": "Antes da coleta, mantenha a flor fechada e avise o que falta.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachObject3d",
-                  "actorPath": "personagem",
-                  "targetPath": "flor",
-                  "timeoutMs": 5500,
-                  "walkable": [
-                    {
-                      "minX": -9,
-                      "maxX": 9,
-                      "minZ": -4,
-                      "maxZ": 4
-                    }
-                  ],
-                  "avoidPaths": ["regador"]
-                },
-                {
-                  "action": "wait",
-                  "ms": 1500
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "flor.userData.sz.animDone"
-                },
-                "compare": "notEquals",
-                "value": true
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 2,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "regador.visible"
-                    },
-                    "compare": "equals",
-                    "value": true
-                  }
-                },
-                {
-                  "afterStep": 2,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "aviso"
-                    },
-                    "compare": "changed"
-                  }
-                },
-                {
-                  "afterStep": 2,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "flor.userData.sz.animWant"
-                    },
-                    "compare": "notContains",
-                    "value": "florescer"
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "id": "com-regador",
-            "label": "Depois da coleta, faça a flor abrir e mostrar o sucesso; uma nova partida recomeça sem a coleta.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachObject3d",
-                  "actorPath": "personagem",
-                  "targetPath": "regador",
-                  "timeoutMs": 5500,
-                  "walkable": [
-                    {
-                      "minX": -9,
-                      "maxX": 9,
-                      "minZ": -4,
-                      "maxZ": 4
-                    }
-                  ]
-                },
-                {
-                  "action": "wait",
-                  "ms": 120
-                },
-                {
-                  "action": "approachObject3d",
-                  "actorPath": "personagem",
-                  "targetPath": "flor",
-                  "timeoutMs": 5500,
-                  "walkable": [
-                    {
-                      "minX": -9,
-                      "maxX": 9,
-                      "minZ": -4,
-                      "maxZ": 4
-                    }
-                  ]
-                },
-                {
-                  "action": "wait",
-                  "ms": 1500
-                },
-                {
-                  "action": "press",
-                  "key": "r",
-                  "holdMs": 80
-                },
-                {
-                  "action": "wait",
-                  "ms": 500
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "regador.visible"
-                },
-                "compare": "equals",
-                "value": true
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 2,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "regador.visible"
-                    },
-                    "compare": "equals",
-                    "value": false
-                  }
-                },
-                {
-                  "afterStep": 2,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "flor.userData.sz.animDone"
-                    },
-                    "compare": "notEquals",
-                    "value": true
-                  }
-                },
-                {
-                  "afterStep": 4,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "aviso"
-                    },
-                    "compare": "changed"
-                  }
-                },
-                {
-                  "afterStep": 4,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "flor.userData.sz.animDone"
-                    },
-                    "compare": "equals",
-                    "value": true
-                  }
-                },
-                {
-                  "afterStep": 4,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "flor.userData.sz.animWant"
-                    },
-                    "compare": "contains",
-                    "value": "florescer"
-                  }
-                },
-                {
-                  "afterStep": 6,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "flor.userData.sz.animDone"
-                    },
-                    "compare": "notEquals",
-                    "value": true
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "id": "uma-vez",
-            "label": "Com o regador, faça a flor abrir, saia dela e volte: ela continua aberta, sem florescer de novo.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachObject3d",
-                  "actorPath": "personagem",
-                  "targetPath": "regador",
-                  "timeoutMs": 3500,
-                  "walkable": [
-                    {
-                      "minX": -9,
-                      "maxX": 9,
-                      "minZ": -4,
-                      "maxZ": 4
-                    }
-                  ]
-                },
-                {
-                  "action": "wait",
-                  "ms": 120
-                },
-                {
-                  "action": "approachObject3d",
-                  "actorPath": "personagem",
-                  "targetPath": "flor",
-                  "timeoutMs": 5000,
-                  "walkable": [
-                    {
-                      "minX": -9,
-                      "maxX": 9,
-                      "minZ": -4,
-                      "maxZ": 4
-                    }
-                  ]
-                },
-                {
-                  "action": "wait",
-                  "ms": 1500
-                },
-                {
-                  "action": "press",
-                  "key": "ArrowLeft",
-                  "holdMs": 600
-                },
-                {
-                  "action": "press",
-                  "key": "ArrowRight",
-                  "holdMs": 700
-                },
-                {
-                  "action": "wait",
-                  "ms": 100
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "flor.userData.sz.animDone"
-                },
-                "compare": "equals",
-                "value": true
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 1,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "regador.visible"
-                    },
-                    "compare": "equals",
-                    "value": false
-                  }
-                },
-                {
-                  "afterStep": 4,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "flor.userData.sz.animDone"
-                    },
-                    "compare": "equals",
-                    "value": true
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "id": "posicao",
-            "label": "Escolha outro lugar alcançável para o regador e confira as regras.",
-            "rule": {
-              "type": "changedGamePosition",
-              "dimension": "3d",
-              "object": "regador",
-              "initial": [-4, -2]
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "revisao",
-      "title": "Pense nos seus testes",
-      "intent": "explanation",
-      "objective": "Pense nos seus testes.",
-      "blockKeys": ["ponte-revisao", "quiz"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["quiz"]
-      }
-    },
-    {
-      "key": "entrega",
-      "title": "Entregue sua missão",
       "intent": "delivery",
-      "objective": "Entregue sua missão.",
-      "blockKeys": ["video-entrega", "ponte-entrega", "projeto"],
+      "objective": "Encontre um novo lugar no chão.",
+      "blockKeys": ["video-posicao", "ponte-posicao", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-entrega", "projeto"],
+        "blockIds": ["video-posicao", "projeto"],
         "projectChecks": [
           {
             "id": "andar",
@@ -8122,6 +7597,20 @@
           }
         ],
         "submissionUpToDate": true
+      }
+    },
+    {
+      "key": "revisao",
+      "title": "Pense nos seus testes",
+      "intent": "closing",
+      "objective": "Pense nos seus testes.",
+      "blockKeys": ["ponte-revisao", "quiz"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz"]
       }
     }
   ]

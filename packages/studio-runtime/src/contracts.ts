@@ -8,7 +8,9 @@ import {
   STUDIO_PRO_TEMPLATE_IDS,
   type StudioProRemoteDependencies,
   type StudioProTemplateId,
+  type StudioProVerifiedPlatformFiles,
   studioProTemplate,
+  verifyStudioBuildPlatformFiles,
 } from '@sistemazero/core/studio'
 import {
   isStudioProScene3DFile,
@@ -67,8 +69,21 @@ export const PRO_BUILD_LIMITS = STUDIO_PRO_BUILD_LIMITS
 
 export { InvalidBuildRequestError } from '@sistemazero/core/studio'
 
-export function parseBuildRequest(value: unknown): ProBuildRequest {
-  const input = parseStudioBuildSubmission(value)
+/**
+ * O pedido de `/v1/build` e `/v1/preflight`. A cópia do motor 2D de um jogo convertido para o Pro
+ * (`public/sz-ext/<id>.js`, perto de 400 mil caracteres) passa do teto de 256 mil por arquivo; uma
+ * cópia publicada intacta (sha256 do inventário do core, no caminho dela) é da plataforma e fica
+ * fora do orçamento do autor. O envelope continua limitado pelos bytes lidos do corpo.
+ */
+export async function readBuildRequest(value: unknown): Promise<ProBuildRequest> {
+  return parseBuildRequest(value, await verifyStudioBuildPlatformFiles(value))
+}
+
+export function parseBuildRequest(
+  value: unknown,
+  platform?: StudioProVerifiedPlatformFiles,
+): ProBuildRequest {
+  const input = parseStudioBuildSubmission(value, platform)
   const manifest = input.files['package.json'] ?? trustedPackageJson(input.templateId)
   const lock = input.files['package-lock.json']
   let dependencies: StudioProRemoteDependencies

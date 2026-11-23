@@ -1,4 +1,5 @@
 import { ColorPicker } from '@sistemazero/molda/ui'
+import { passoDoTerreno, relevoCabeNoEstudio } from '@sistemazero/molda-cenarios-core/compilar'
 import {
   type BaseDeTerreno,
   BaseDeTerrenoSchema,
@@ -374,7 +375,11 @@ function Medidas({
       forma.origem.z > base.origem.z ||
       forma.origem.x + forma.colunas * forma.passo < base.origem.x + base.colunas * base.passo ||
       forma.origem.z + forma.linhas * forma.passo < base.origem.z + base.linhas * base.passo,
-    satura = forma.min > base.min || forma.max < base.max
+    satura = forma.min > base.min || forma.max < base.max,
+    // O Estúdio abre o relevo com até 1088 × 1088 células (plano "Mundos de 2 km", lote 4).
+    cabeNoEstudio = relevoCabeNoEstudio(forma.colunas, forma.linhas),
+    lado = Math.max(forma.colunas * forma.passo, forma.linhas * forma.passo),
+    sugerido = lado > 0 && lado <= 8192 ? passoDoTerreno(lado) : null
   return (
     <fieldset className="mcn-grupo" disabled={indisponivel || t.ocupado}>
       {(['colunas', 'linhas'] as const).map((c) => (
@@ -426,6 +431,12 @@ function Medidas({
         {(forma.colunas + 1) * (forma.linhas + 1)} amostras. O relevo é reamostrado nas coordenadas
         do mundo; objetos não são deslocados para compensar mudanças.
       </p>
+      {!cabeNoEstudio ? (
+        <p role="status" className="text-sm text-mld-muted">
+          Este relevo tem amostras demais para abrir no Estúdio (até 1088 × 1088 células).
+          {sugerido ? ` Para ${lado} m, use ${sugerido} m entre amostras.` : ''}
+        </p>
+      ) : null}
       {corte ? (
         <p role="status" className="text-sm text-mld-muted">
           A nova cobertura corta parte do relevo atual. O conteúdo fora dela será removido.

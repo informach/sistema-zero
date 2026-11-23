@@ -3,13 +3,13 @@ import { studioProDigest } from '@sistemazero/core/studio/pro-revision'
 import {
   classifyProEngineCopy,
   currentProEngineCopies,
+  PRO_ENGINE_COPIES,
   PRO_ENGINE_EXTENSION_IDS,
   PRO_ENGINE_VARIANTS,
   type ProEngineInventory,
   proEngineCopyPath,
   proEngineUpdatePlan,
 } from './proEngineCopies'
-import { PRO_ENGINE_COPIES } from './proEngineCopies.generated'
 
 test('o motor de agora está no inventário das cópias publicadas (rode bun scripts/gen-pro-engine-copies.ts)', async () => {
   // Quando este teste falha, o motor 2D mudou: a cópia que a conversão escreve hoje precisa entrar

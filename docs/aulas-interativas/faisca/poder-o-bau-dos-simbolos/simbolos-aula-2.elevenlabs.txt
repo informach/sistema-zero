@@ -1,49 +1,429 @@
-[upbeat, welcoming voice] O baú dos símbolos chegou à Ilha do Farol, em três dimensões! Ele funciona como no seu jogo 2D: o jogo guarda passo, e cada símbolo pergunta se é a vez dele.
+[upbeat, welcoming voice] Oi! Na Aula 1, você programou a senha do baú no jogo 2D. Agora o baú dos símbolos chegou à Ilha do Farol, em três dimensões!
 
-[engaging, energetic, conversational voice] Olha aqui: as pedras e o baú têm animações que já vêm prontas. Cada pedra acende e apaga, e o baú abre. Você vai escolher quando cada uma toca.
+[engaging, energetic, conversational voice] No gramado da frente ficam as três pedras: o sol, a lua e a estrela. E a placa ao lado delas mostra a ordem certa.
 
-[upbeat, encouraging voice] Agora clique no jogo aqui na página e use as setas ou W, A, S e D. Toque os símbolos na ordem da placa e abra o baú. Depois erre a ordem.
+[engaging, energetic, conversational voice] Para andar, clique dentro do jogo e segure uma seta do teclado. As letras W, A, S e D também funcionam.
 
-[reassuring, encouraging voice] A tecla R começa uma nova partida. Depois clique em Próxima parte.
+[interested, animated voice] Olha aqui: quando eu levo o personagem até o sol, a pedra acende com uma animação. Repare também no aviso aqui em cima: agora ele pede a lua.
 
-[long pause]
+[curious] Será que na ilha o baú também só abre na ordem certa?
 
-[engaging, energetic, conversational voice] Na ilha, o sol e a lua funcionam como no seu jogo 2D.
+[engaging, energetic, conversational voice] Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R.
 
-[engaging, energetic, conversational voice] Lembra? passo começa em 0, no fim de Ao iniciar. O sol faz passo virar 1 e acende.
-
-[interested, animated voice] A lua pergunta se é a vez dela: passo igual a 1? Com o sim, passo vira 2 e ela acende. Com o não, a tentativa recomeça: passo volta a 0 e o sol e a lua apagam.
-
-[engaging, energetic, conversational voice] O que muda no 3D é onde ficam alguns blocos. O encontro fica em Jogo 3D, na gaveta Encostar.
-
-[engaging, energetic, conversational voice] Para acender e apagar, você usa Tocar a animação, em Objetos, na Animação do modelo. É este bloco que acende e apaga as pedras da ilha.
-
-[reassuring, encouraging voice] A montagem completa, bloco por bloco, está no Passo a passo do projeto, que fica na primeira aula.
-
-[upbeat, encouraging voice] Agora teste. Toque o sol e a lua: os dois acendem. Toque na tecla R e toque a lua primeiro: nada acende.
-
-[confident, clear, unhurried voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, leia a dica, corrija os blocos e clique novamente. Depois clique em Próxima parte.
+[upbeat, encouraging voice] Agora é a sua vez: abra o baú da ilha. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] Agora a estrela da ilha. Ela pergunta se é a vez dela, como no 2D: passo igual a 2?
+[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Rodar de novo, no alto do Estúdio, e leve o personagem até o sol. Tá vendo? Ele encosta na pedra, e nada acontece, porque o jogo ainda não tem nenhuma reação para esse encontro.
 
-[interested, animated voice] Com o sim, a estrela acende, o baú toca a animação abrir e o aviso conta que o baú abriu. Com o não, a tentativa recomeça, como na lua.
+[engaging, energetic, conversational voice] Lembra da senha do baú que você programou no jogo 2D? Na ilha, ela funciona do mesmo jeito: passo começa em 0, e o sol muda passo para 1. Agora a gente vai montar isso no seu jogo da ilha!
 
-[engaging, energetic, conversational voice] Os blocos você já conhece: o encontro com a estrela fica em Jogo 3D, na gaveta Encostar, e a estrela e o baú tocam as animações com Tocar a animação, em Objetos, na Animação do modelo. A montagem completa está no Passo a passo do projeto.
+[engaging, energetic, conversational voice] Primeiro, a variável passo. Ela precisa existir desde o começo da partida, valendo 0. Por isso, ela nasce na área Ao iniciar, que roda quando o jogo começa.
 
-[upbeat, encouraging voice] Teste todos os casos. Toque o sol, a lua e a estrela: o baú abre.
+[confident, clear, unhurried voice] Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer. Lá dentro está o bloco Colocar o objeto bau, que põe o baú no lugar. O bloco novo vai logo abaixo dele. Deixe esse lugar à vista.
 
-[upbeat, encouraging voice] Toque na tecla R e toque o sol e a estrela: tudo apaga e o baú fica fechado. Depois, sem começar outra partida, recomece pelo sol: o baú abre.
+[confident, clear, unhurried voice] Abra Programação e depois Variáveis, e pegue o bloco Criar variável.
 
-[confident, clear, unhurried voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, leia a dica, corrija os blocos e clique novamente. Depois clique em Próxima parte.
+[confident, clear, unhurried voice] Arraste e solte logo abaixo do bloco do baú.
+
+[engaging, energetic, conversational voice] É este bloco que cria a variável passo, no começo de toda partida.
+
+[confident, clear, unhurried voice] Repare: ele chega com o nome contador. Clique em contador, apague e escreva passo.
+
+[engaging, energetic, conversational voice] O valor já vem com o número 0, e é isso mesmo: no começo da partida, nenhum símbolo foi tocado.
+
+[engaging, energetic, conversational voice] Agora, o encontro com o sol. Os encontros ficam na área Quando acontecer.
+
+[confident, clear, unhurried voice] Encontre essa área. Lá dentro, o último bloco é o encontro com o farol. O encontro novo vai logo abaixo dele, fora do fazer dele. Deixe esse espaço à vista.
+
+[confident, clear, unhurried voice] Abra Jogo 3D, depois Encostar e depois Encostar de novo, e pegue o bloco Quando personagem encostar em chave.
+
+[confident, clear, unhurried voice] Arraste e solte logo abaixo do encontro com o farol. Não coloque um encontro dentro do outro.
+
+[confident, clear, unhurried voice] Repare: o bloco chega com chave no segundo nome. Clique em chave e escolha sol.
+
+[engaging, energetic, conversational voice] É este bloco que percebe quando o personagem encosta no sol.
+
+[engaging, energetic, conversational voice] Agora as reações do encontro. A primeira é passo virar 1, porque o sol é o primeiro símbolo da senha. Ela vai no espaço ao lado da palavra fazer. Deixe esse espaço à vista.
+
+[confident, clear, unhurried voice] Abra Programação e depois Variáveis, e pegue o bloco Alterar variável para.
+
+[confident, clear, unhurried voice] Arraste e solte no espaço ao lado de fazer.
+
+[engaging, energetic, conversational voice] É este bloco que muda o valor de passo.
+
+[confident, clear, unhurried voice] Repare: ele chega com contador. Clique em contador e escolha passo.
+
+[engaging, energetic, conversational voice] O valor já vem com o número 1, e é isso mesmo: depois do sol, passo vale 1.
+
+[curious] No 3D, a pedra também troca de imagem?
+
+[engaging, energetic, conversational voice] Não. Na ilha, cada pedra é um modelo 3D, e ele já vem com duas animações prontas: acender e apagar. Para acender o sol, você vai tocar a animação acender.
+
+[confident, clear, unhurried voice] Esse bloco vai logo abaixo do bloco de passo. Deixe esse lugar à vista.
+
+[confident, clear, unhurried voice] Abra Jogo 3D, depois Objetos e depois Animação do modelo, e pegue o bloco Tocar a animação.
+
+[confident, clear, unhurried voice] Arraste e solte logo abaixo do bloco de passo.
+
+[engaging, energetic, conversational voice] É este bloco que acende o sol.
+
+[confident, clear, unhurried voice] Repare: ele chega com Andar, heroi e repetindo. Clique em heroi e escolha sol.
+
+[confident, clear, unhurried voice] Depois clique em Andar e escolha acender.
+
+[confident, clear, unhurried voice] Agora clique em repetindo e escolha uma vez, porque a pedra acende uma vez só.
+
+[confident, clear, unhurried voice] A última reação muda o aviso, para quem está jogando saber o que fazer depois. Ela vai logo abaixo do bloco que acende o sol. Deixe esse lugar à vista.
+
+[confident, clear, unhurried voice] Abra Programação e depois Variáveis, e pegue outro bloco Alterar variável para.
+
+[confident, clear, unhurried voice] Arraste e solte logo abaixo do bloco que acende o sol.
+
+[engaging, energetic, conversational voice] É este bloco que muda o aviso lá em cima do jogo.
+
+[confident, clear, unhurried voice] Clique em contador e escolha aviso.
+
+[engaging, energetic, conversational voice] O valor vem com um número, mas o aviso é uma mensagem. Por isso, troque o número por um texto.
+
+[confident, clear, unhurried voice] Abra Programação e depois Valores, e pegue o bloco texto. Solte em cima do número.
+
+[confident, clear, unhurried voice] Repare: o texto chega com Olá. Clique em Olá, apague e escreva: O sol acendeu! Agora a lua.
+
+[upbeat, encouraging voice] Agora vamos testar! Clique em Rodar de novo mais uma vez e leve o personagem até o sol.
+
+[interested, animated voice] Olha só: o sol acende, e o aviso lá em cima pede a lua.
+
+[engaging, energetic, conversational voice] A lua e a estrela ainda não respondem. Elas vêm nas próximas partes.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: logo abaixo de Colocar o objeto bau está Criar variável passo com valor 0, e no encontro entre personagem e sol estão Alterar variável passo para 1, Tocar a animação acender no sol e o aviso novo.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 [long pause]
 
-[pleased, lively voice] Pronto, você levou o passo para outro mundo: na ilha, o baú também só abre na ordem certa.
+[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Rodar de novo, no alto do Estúdio, e leve o personagem até o sol e depois até a lua. Tá vendo? O sol acende, mas a lua não, porque o jogo ainda não tem nenhuma reação para o encontro com a lua.
 
-[confident, clear, unhurried voice] Antes de enviar, jogue uma partida inteira: abra o baú na ordem certa, erre a ordem e recomece pelo sol. Depois toque na tecla R e confira que o baú volta fechado.
+[engaging, energetic, conversational voice] Como no jogo 2D, a lua pergunta se é a vez dela: passo igual a 1? Com a resposta sim, ela acende. Com a resposta não, a tentativa recomeça. Agora a lua da ilha vai fazer essa pergunta!
 
-[confident, clear, unhurried voice] Agora clique em Verificar projeto e corrija o que faltar.
+[engaging, energetic, conversational voice] Primeiro, o encontro com a lua. Os encontros ficam na área Quando acontecer, e o novo vai logo abaixo do encontro com o sol, fora do fazer dele.
 
-[confident, clear, unhurried voice] Quando os objetivos estiverem cumpridos, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
+[confident, clear, unhurried voice] Na área Quando acontecer, deixe à vista o encontro com o sol e o espaço logo abaixo dele.
+
+[confident, clear, unhurried voice] Abra Jogo 3D, depois Encostar e depois Encostar de novo, e pegue o bloco Quando personagem encostar em chave.
+
+[confident, clear, unhurried voice] Arraste e solte logo abaixo do encontro com o sol. Não coloque um encontro dentro do outro.
+
+[confident, clear, unhurried voice] Repare: o bloco chega com chave no segundo nome. Clique em chave e escolha lua.
+
+[engaging, energetic, conversational voice] É este bloco que percebe quando o personagem encosta na lua.
+
+[engaging, energetic, conversational voice] Agora a pergunta da lua: é a minha vez? Para fazer uma pergunta, o seu jogo usa o bloco Se. Ele vai no espaço ao lado da palavra fazer, dentro do encontro com a lua. Deixe esse espaço à vista.
+
+[confident, clear, unhurried voice] Abra Programação e depois Lógica e Se, e pegue o bloco Se.
+
+[confident, clear, unhurried voice] Arraste e solte no espaço ao lado de fazer.
+
+[engaging, energetic, conversational voice] É este bloco que faz a pergunta da lua.
+
+[engaging, energetic, conversational voice] Repare: o Se chega com uma pergunta pronta, x maior que 0. Ela compara dois valores, e a resposta é sim ou não. Desta vez, você vai aproveitar essa pergunta e trocar as partes dela.
+
+[confident, clear, unhurried voice] Clique no x e escolha passo.
+
+[confident, clear, unhurried voice] Depois clique no sinal de maior e escolha o sinal de igual.
+
+[confident, clear, unhurried voice] Agora clique no 0, apague e escreva 1.
+
+[engaging, energetic, conversational voice] Pronto: agora o Se pergunta se passo é igual a 1. Ou seja: o sol já foi tocado?
+
+[engaging, energetic, conversational voice] Lembra do Se no jogo 2D? A resposta do sim fica no espaço do então, e a resposta do não fica no espaço do senão. Só que o Se chega sem o senão, e você vai abrir esse espaço agora.
+
+[interested, animated voice] Olha aqui, na linha de baixo do bloco Se: tem dois sinais de mais. O primeiro fica antes de senão se, e o segundo fica antes da palavra senão, no fim da linha.
+
+[confident, clear, unhurried voice] Clique no segundo sinal de mais. Não clique no primeiro.
+
+[confident, clear, unhurried voice] Repare: apareceu o espaço do senão.
+
+[engaging, energetic, conversational voice] Agora a resposta do sim, no espaço do então. Ela tem três blocos, como o encontro com o sol: passo vira 2, a lua acende e o aviso muda. Deixe o espaço do então à vista.
+
+[confident, clear, unhurried voice] Abra Programação e depois Variáveis, e pegue o bloco Alterar variável para.
+
+[confident, clear, unhurried voice] Arraste e solte dentro do então.
+
+[engaging, energetic, conversational voice] É este bloco que guarda que a lua já foi tocada.
+
+[confident, clear, unhurried voice] Repare: ele chega com contador. Clique em contador e escolha passo.
+
+[confident, clear, unhurried voice] Depois clique no 1, apague e escreva 2, porque depois da lua passo vale 2.
+
+[confident, clear, unhurried voice] O bloco que acende a lua vai logo abaixo, ainda no então. Deixe esse lugar à vista.
+
+[confident, clear, unhurried voice] Abra Jogo 3D, depois Objetos e depois Animação do modelo, e pegue o bloco Tocar a animação.
+
+[confident, clear, unhurried voice] Arraste e solte logo abaixo do bloco de passo.
+
+[engaging, energetic, conversational voice] É este bloco que acende a lua.
+
+[confident, clear, unhurried voice] Clique em heroi e escolha lua.
+
+[confident, clear, unhurried voice] Depois clique em Andar e escolha acender.
+
+[confident, clear, unhurried voice] Agora clique em repetindo e escolha uma vez, como no sol.
+
+[confident, clear, unhurried voice] O aviso vai logo abaixo, ainda no então. Deixe esse lugar à vista.
+
+[confident, clear, unhurried voice] Abra Programação e depois Variáveis, e pegue outro bloco Alterar variável para.
+
+[confident, clear, unhurried voice] Arraste e solte logo abaixo do bloco que acende a lua.
+
+[engaging, energetic, conversational voice] É este bloco que muda o aviso.
+
+[confident, clear, unhurried voice] Clique em contador e escolha aviso.
+
+[engaging, energetic, conversational voice] O valor vem com um número, mas o aviso é uma mensagem. Por isso, troque o número por um texto.
+
+[confident, clear, unhurried voice] Abra Programação e depois Valores, e pegue o bloco texto. Solte em cima do número.
+
+[confident, clear, unhurried voice] Repare: o texto chega com Olá. Clique em Olá, apague e escreva: A lua acendeu! Agora a estrela.
+
+[engaging, energetic, conversational voice] Agora a resposta do não. Ela faz a tentativa recomeçar: passo volta a 0, o sol e a lua apagam, e o aviso pede para começar pelo sol.
+
+[confident, clear, unhurried voice] Ela vai no espaço do senão. Deixe esse espaço à vista.
+
+[confident, clear, unhurried voice] Abra Programação e depois Variáveis, e pegue outro bloco Alterar variável para.
+
+[confident, clear, unhurried voice] Arraste e solte dentro do senão.
+
+[engaging, energetic, conversational voice] É este bloco que faz a senha recomeçar do zero.
+
+[confident, clear, unhurried voice] Clique em contador e escolha passo.
+
+[confident, clear, unhurried voice] Depois clique no 1, apague e escreva 0, porque a senha volta para o começo.
+
+[confident, clear, unhurried voice] Logo abaixo, ainda no senão, vai Tocar a animação para apagar o sol. Deixe esse lugar à vista.
+
+[confident, clear, unhurried voice] Abra Jogo 3D, depois Objetos e depois Animação do modelo, e pegue outro bloco Tocar a animação.
+
+[confident, clear, unhurried voice] Arraste e solte logo abaixo do bloco de passo.
+
+[engaging, energetic, conversational voice] É este bloco que apaga o sol.
+
+[confident, clear, unhurried voice] Clique em heroi e escolha sol.
+
+[confident, clear, unhurried voice] Depois clique em Andar e escolha apagar.
+
+[confident, clear, unhurried voice] Agora clique em repetindo e escolha uma vez.
+
+[confident, clear, unhurried voice] Embaixo dele vai mais um Tocar a animação, para apagar a lua. Deixe esse lugar à vista.
+
+[confident, clear, unhurried voice] Abra Jogo 3D, depois Objetos e depois Animação do modelo, e pegue outro bloco Tocar a animação.
+
+[confident, clear, unhurried voice] Arraste e solte logo abaixo do bloco que apaga o sol.
+
+[engaging, energetic, conversational voice] É este bloco que apaga a lua.
+
+[confident, clear, unhurried voice] Clique em heroi e escolha lua.
+
+[confident, clear, unhurried voice] Depois clique em Andar e escolha apagar.
+
+[confident, clear, unhurried voice] Agora clique em repetindo e escolha uma vez.
+
+[confident, clear, unhurried voice] Por último, o aviso de recomeçar. Ele vai logo abaixo, ainda no senão. Deixe esse lugar à vista.
+
+[confident, clear, unhurried voice] Abra Programação e depois Variáveis, e pegue outro bloco Alterar variável para.
+
+[confident, clear, unhurried voice] Arraste e solte logo abaixo do bloco que apaga a lua.
+
+[engaging, energetic, conversational voice] É este bloco que pede para começar pelo sol.
+
+[confident, clear, unhurried voice] Clique em contador e escolha aviso.
+
+[confident, clear, unhurried voice] Abra Programação e depois Valores, e pegue o bloco texto. Solte em cima do número.
+
+[confident, clear, unhurried voice] Clique em Olá, apague e escreva: Fora da ordem. Comece de novo pelo sol.
+
+[upbeat, encouraging voice] Agora vamos testar! Clique em Rodar de novo mais uma vez e leve o personagem até o sol e depois até a lua.
+
+[interested, animated voice] Olha só: o sol e a lua acendem, e o aviso pede a estrela.
+
+[engaging, energetic, conversational voice] Agora teste fora da vez. Toque na tecla R e leve o personagem direto até a lua, sem passar pelo sol.
+
+[interested, animated voice] Olha só: a lua não acende, e o aviso pede para começar pelo sol. É a resposta do senão funcionando!
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro do encontro entre personagem e lua está o Se com passo igual a 1, no então estão Alterar variável passo para 2, Tocar a animação acender na lua e o aviso, e no senão estão Alterar variável passo para 0, as animações apagar no sol e na lua e o aviso de recomeçar.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Rodar de novo, no alto do Estúdio, e leve o personagem até o sol, a lua e a estrela. Tá vendo? O sol e a lua acendem, mas a estrela não, e o baú continua fechado, porque o jogo ainda não tem nenhuma reação para o encontro com a estrela.
+
+[engaging, energetic, conversational voice] Como no jogo 2D, a estrela pergunta se é a vez dela: passo igual a 2? Com a resposta sim, ela acende e o baú abre. Com a resposta não, a tentativa recomeça, como na lua. Agora a estrela da ilha vai fazer essa pergunta!
+
+[confident, clear, unhurried voice] Primeiro, o encontro com a estrela. Na área Quando acontecer, deixe à vista o encontro com a lua e o espaço logo abaixo dele, fora do fazer dele.
+
+[confident, clear, unhurried voice] Abra Jogo 3D, depois Encostar e depois Encostar de novo, e pegue o bloco Quando personagem encostar em chave.
+
+[confident, clear, unhurried voice] Arraste e solte logo abaixo do encontro com a lua. Não coloque um encontro dentro do outro.
+
+[confident, clear, unhurried voice] Repare: o bloco chega com chave no segundo nome. Clique em chave e escolha estrela.
+
+[engaging, energetic, conversational voice] É este bloco que percebe quando o personagem encosta na estrela.
+
+[engaging, energetic, conversational voice] Agora a pergunta da estrela: é a minha vez? Para fazer uma pergunta, o seu jogo usa o bloco Se. Ele vai no espaço ao lado da palavra fazer, dentro do encontro com a estrela. Deixe esse espaço à vista.
+
+[confident, clear, unhurried voice] Abra Programação e depois Lógica e Se, e pegue o bloco Se.
+
+[confident, clear, unhurried voice] Arraste e solte no espaço ao lado de fazer.
+
+[engaging, energetic, conversational voice] É este bloco que faz a pergunta da estrela.
+
+[confident, clear, unhurried voice] Repare: o Se chega de novo com a pergunta x maior que 0. Troque as partes dela, como na lua.
+
+[confident, clear, unhurried voice] Clique no x e escolha passo.
+
+[confident, clear, unhurried voice] Depois clique no sinal de maior e escolha o sinal de igual.
+
+[confident, clear, unhurried voice] Agora clique no 0, apague e escreva 2.
+
+[engaging, energetic, conversational voice] Pronto: agora o Se pergunta se passo é igual a 2. Ou seja: o sol e a lua já foram tocados, nessa ordem?
+
+[confident, clear, unhurried voice] Agora abra o espaço do senão, como na lua: na linha de baixo do Se, clique no segundo sinal de mais, o de antes da palavra senão.
+
+[confident, clear, unhurried voice] Repare: apareceu o espaço do senão.
+
+[engaging, energetic, conversational voice] Agora a resposta do sim, no espaço do então. Ela tem três blocos: a estrela acende, o baú abre e o aviso conta que deu certo. Deixe o espaço do então à vista.
+
+[confident, clear, unhurried voice] Abra Jogo 3D, depois Objetos e depois Animação do modelo, e pegue o bloco Tocar a animação.
+
+[confident, clear, unhurried voice] Arraste e solte dentro do então.
+
+[engaging, energetic, conversational voice] É este bloco que acende a estrela.
+
+[confident, clear, unhurried voice] Clique em heroi e escolha estrela.
+
+[confident, clear, unhurried voice] Depois clique em Andar e escolha acender.
+
+[confident, clear, unhurried voice] Agora clique em repetindo e escolha uma vez, como nas outras pedras.
+
+[curious] E o baú, como ele abre?
+
+[engaging, energetic, conversational voice] Com uma animação também. O modelo do baú já vem com a animação abrir.
+
+[confident, clear, unhurried voice] O bloco que abre o baú vai logo abaixo, ainda no então. Deixe esse lugar à vista.
+
+[confident, clear, unhurried voice] Abra Jogo 3D, depois Objetos e depois Animação do modelo, e pegue outro bloco Tocar a animação.
+
+[confident, clear, unhurried voice] Arraste e solte logo abaixo do bloco que acende a estrela.
+
+[engaging, energetic, conversational voice] É este bloco que abre o baú.
+
+[confident, clear, unhurried voice] Clique em heroi e escolha bau.
+
+[confident, clear, unhurried voice] Depois clique em Andar e escolha abrir.
+
+[confident, clear, unhurried voice] Agora clique em repetindo e escolha uma vez, porque o baú abre uma vez só.
+
+[confident, clear, unhurried voice] O aviso vai logo abaixo, ainda no então. Deixe esse lugar à vista.
+
+[confident, clear, unhurried voice] Abra Programação e depois Variáveis, e pegue o bloco Alterar variável para.
+
+[confident, clear, unhurried voice] Arraste e solte logo abaixo do bloco que abre o baú.
+
+[engaging, energetic, conversational voice] É este bloco que conta que deu certo.
+
+[confident, clear, unhurried voice] Repare: ele chega com contador. Clique em contador e escolha aviso.
+
+[engaging, energetic, conversational voice] O valor vem com um número, mas o aviso é uma mensagem. Por isso, troque o número por um texto.
+
+[confident, clear, unhurried voice] Abra Programação e depois Valores, e pegue o bloco texto. Solte em cima do número.
+
+[confident, clear, unhurried voice] Repare: o texto chega com Olá. Clique em Olá, apague e escreva: Na ordem certa! O baú abriu.
+
+[engaging, energetic, conversational voice] Agora a resposta do não. Ela é igual à da lua: passo volta a 0, o sol e a lua apagam, e o aviso pede para começar pelo sol.
+
+[confident, clear, unhurried voice] Ela vai no espaço do senão. Deixe esse espaço à vista.
+
+[confident, clear, unhurried voice] Abra Programação e depois Variáveis, e pegue outro bloco Alterar variável para.
+
+[confident, clear, unhurried voice] Arraste e solte dentro do senão.
+
+[engaging, energetic, conversational voice] É este bloco que faz a senha recomeçar do zero.
+
+[confident, clear, unhurried voice] Clique em contador e escolha passo.
+
+[confident, clear, unhurried voice] Depois clique no 1, apague e escreva 0, porque a senha volta para o começo.
+
+[confident, clear, unhurried voice] Logo abaixo, ainda no senão, vai Tocar a animação para apagar o sol. Deixe esse lugar à vista.
+
+[confident, clear, unhurried voice] Abra Jogo 3D, depois Objetos e depois Animação do modelo, e pegue outro bloco Tocar a animação.
+
+[confident, clear, unhurried voice] Arraste e solte logo abaixo do bloco de passo.
+
+[engaging, energetic, conversational voice] É este bloco que apaga o sol.
+
+[confident, clear, unhurried voice] Clique em heroi e escolha sol.
+
+[confident, clear, unhurried voice] Depois clique em Andar e escolha apagar.
+
+[confident, clear, unhurried voice] Agora clique em repetindo e escolha uma vez.
+
+[confident, clear, unhurried voice] Embaixo dele vai mais um Tocar a animação, para apagar a lua. Deixe esse lugar à vista.
+
+[confident, clear, unhurried voice] Abra Jogo 3D, depois Objetos e depois Animação do modelo, e pegue outro bloco Tocar a animação.
+
+[confident, clear, unhurried voice] Arraste e solte logo abaixo do bloco que apaga o sol.
+
+[engaging, energetic, conversational voice] É este bloco que apaga a lua.
+
+[confident, clear, unhurried voice] Clique em heroi e escolha lua.
+
+[confident, clear, unhurried voice] Depois clique em Andar e escolha apagar.
+
+[confident, clear, unhurried voice] Agora clique em repetindo e escolha uma vez.
+
+[confident, clear, unhurried voice] Por último, o aviso de recomeçar. Ele vai logo abaixo, ainda no senão. Deixe esse lugar à vista.
+
+[confident, clear, unhurried voice] Abra Programação e depois Variáveis, e pegue outro bloco Alterar variável para.
+
+[confident, clear, unhurried voice] Arraste e solte logo abaixo do bloco que apaga a lua.
+
+[engaging, energetic, conversational voice] É este bloco que pede para começar pelo sol.
+
+[confident, clear, unhurried voice] Clique em contador e escolha aviso.
+
+[confident, clear, unhurried voice] Abra Programação e depois Valores, e pegue o bloco texto. Solte em cima do número.
+
+[confident, clear, unhurried voice] Clique em Olá, apague e escreva: Fora da ordem. Comece de novo pelo sol.
+
+[upbeat, encouraging voice] Agora vamos testar! Clique em Rodar de novo mais uma vez e leve o personagem até o sol, a lua e a estrela.
+
+[interested, animated voice] Olha só: a estrela acende, e o baú abre!
+
+[engaging, energetic, conversational voice] Agora teste uma ordem errada. Toque na tecla R e leve o personagem até o sol e depois direto até a estrela, sem passar pela lua.
+
+[interested, animated voice] Olha só: o sol apaga, o baú continua fechado, e o aviso pede para começar pelo sol.
+
+[confident, clear, unhurried voice] E, depois de errar, dá para recomeçar na mesma partida. Sem tocar na tecla R, leve o personagem de volta até o sol, depois até a lua e até a estrela.
+
+[interested, animated voice] Olha só: recomeçando pelo sol, o baú abre de novo.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro do encontro entre personagem e estrela está o Se com passo igual a 2, no então estão as animações acender na estrela e abrir no baú e o aviso, e no senão está o mesmo recomeço da lua.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.
+
+[pleased, lively voice] Pronto, você levou a senha do baú para a ilha em três dimensões: lá também, só a ordem certa abre o baú!
+
+[engaging, energetic, conversational voice] Depois do envio, ainda tem algumas perguntas para você pensar na ordem dos símbolos. Quando aparecer Projeto enviado!, clique em Próxima parte.

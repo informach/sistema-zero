@@ -1,4 +1,4 @@
-# Passo a passo do projeto — Meu primeiro desenho no Pinta
+# Passo a passo do projeto: Meu primeiro desenho no Pinta
 
 Extra do Faísca. Aqui estão as duas montagens da aula: desenhar a chave no Pinta e colocar o desenho no jogo da Chave do Farol. Você pode consultar quantas vezes quiser.
 
@@ -28,7 +28,7 @@ Extra do Faísca. Aqui estão as duas montagens da aula: desenhar a chave no Pin
 3. Procure o bloco Criar sprite chave. Se a pré-visualização cobrir o fim dele, clique no botão do olho, lá em cima, para escondê-la.
 4. No fim do bloco, clique em chave-dourada e escolha minha-chave. Clique no olho de novo para a pré-visualização voltar.
 
-**Teste:** Clique no jogo e leve o personagem até a chave: ela some e o aviso muda. Depois vá até o farol: ele acende. Clique em Reduzir para voltar à aula e verificar.
+**Teste:** Segure as setas e leve o personagem até a chave: ela some e o aviso muda. Depois vá até o farol: ele acende. Clique em Verificar projeto.
 
 **Se não funcionar:** Se a chave dourada continuar aparecendo, confira se a troca foi no bloco Criar sprite chave. Se minha-chave não estiver na lista, volte à parte anterior, clique em Enviar meu desenho e abra a aula de novo.
 

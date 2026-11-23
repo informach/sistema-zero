@@ -14,8 +14,52 @@
     "video-contador",
     "video-coleta",
     "video-placar",
-    "video-bau",
-    "video-entrega"
+    "video-bau"
   ],
-  "intervencoes": []
+  "intervencoes": [
+    {
+      "id": "video-abertura-K1",
+      "clipe": "video-abertura",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "moeda. Ela some, e o número ao lado do ícone da moeda sobe para 1. E o baú? Ele só abre com moedas suficientes.",
+      "ancoraDepois": "Isso eu deixo para você descobrir. Repare também no aviso aqui em cima: ele diz o que fazer na partida. Para começar",
+      "falaPrincipal": "Quantas moedas será que o baú pede?",
+      "falaPersonagem": "Quantas moedas será que o baú pede?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-experiencia-K1",
+      "clipe": "video-experiencia",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "comprar alguma coisa. Só que dá para perguntar de dois jeitos: moedas é pelo menos cinco? Ou moedas é exatamente cinco?",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar quando o número moedas muda e quando",
+      "falaPrincipal": "E se o personagem voltar ao lugar de uma moeda que ele já pegou, ela conta de novo?",
+      "falaPersonagem": "E se o personagem voltar ao lugar de uma moeda que ele já pegou, ela conta de novo?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-contador-K1",
+      "clipe": "video-contador",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "começa. Repare: ele chega com o nome contador. Clique em contador e escreva moedas. O valor já vem 0. Deixe assim.",
+      "ancoraDepois": "Porque, no começo da partida, o personagem ainda não pegou nenhuma moeda. Jogando, você ainda não vê esse número,",
+      "falaPrincipal": "Por que o cofrinho começa em zero?",
+      "falaPersonagem": "Por que o cofrinho começa em zero?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-bau-K1",
+      "clipe": "video-bau",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "Pronto: agora o Se pergunta se moedas é maior ou igual a cinco, ou seja, se o personagem tem pelo menos cinco moedas.",
+      "ancoraDepois": "Abre, sim: seis é mais que cinco, e o maior ou igual aceita cinco ou mais. Com o sinal de igual, o baú ficaria fechado",
+      "falaPrincipal": "E se eu juntar seis moedas, o baú abre?",
+      "falaPersonagem": "E se eu juntar seis moedas, o baú abre?",
+      "tags": ["[curious]"]
+    }
+  ]
 }

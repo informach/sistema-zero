@@ -1,3 +1,4 @@
+import { passoDoTerreno } from '@sistemazero/molda-cenarios-core/compilar'
 import {
   abrirEdicaoDeTerreno,
   acrescentarCamadaDeChao,
@@ -33,8 +34,11 @@ export function baseInicialDeTerreno(base: BaseDeCenario): BaseDeTerreno {
   if (base.tipo === 'terreno') return base
   if (base.tipo === 'perfil')
     throw Error('Converta o perfil do jogo em terreno antes de editar o relevo.')
-  const colunas = Math.min(4096, Math.max(64, Math.ceil(base.largura / 64) * 64)),
-    linhas = Math.min(4096, Math.max(64, Math.ceil(base.comprimento / 64) * 64)),
+  // O espaçamento acompanha o tamanho (plano "Mundos de 2 km", lote 4): 1 m até 1 km, 2 m até
+  // 2 km, 4 m até 4 km; todo mundo novo fica com até 1024 × 1024 células.
+  const alvo = passoDoTerreno(Math.min(8192, Math.max(base.largura, base.comprimento))),
+    colunas = Math.min(4096, Math.max(64, Math.ceil(base.largura / alvo / 64) * 64)),
+    linhas = Math.min(4096, Math.max(64, Math.ceil(base.comprimento / alvo / 64) * 64)),
     passo = Math.max(base.largura / colunas, base.comprimento / linhas, 0.25)
   return BaseDeTerrenoSchema.parse({
     tipo: 'terreno',

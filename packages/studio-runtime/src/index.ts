@@ -46,7 +46,7 @@ import {
   PRO_BUILD_LIMITS,
   type ProBuildFailure,
   type ProBuildResponse,
-  parseBuildRequest,
+  readBuildRequest,
   SCENE3D_CANONICAL_COMMAND,
   trustedPackageJson,
   trustedViteConfig,
@@ -600,7 +600,7 @@ export function createStudioRuntimeHandler(
           }
         }
         const raw = await readJsonBodyWithLimit(request, PRO_BUILD_LIMITS.maxRequestBytes)
-        const input = parseBuildRequest(raw)
+        const input = await readBuildRequest(raw)
         await verifyBuildBinaries(input.binaries)
         const rate = await env.BUILD_RATE_LIMITER.limit({ key: input.executionId })
         if (!rate.success) {

@@ -16,6 +16,17 @@
  * personagem bate na pedra. Por isso o caminho até a ponte desce um pouco (z 1,6), passa na frente
  * da pedra e sobe de novo para a linha da ponte. São estimativas: acertar no Verificar plano.
  */
+import {
+  conferir,
+  entregar,
+  MOLDE_DA_EXPERIENCIA as MOLDE,
+  telaDaConferencia,
+  telaDaExperiencia,
+  telaDaSaida,
+  telaDoEnvio,
+  verificar,
+} from './faisca-comum'
+
 export type IlhaTrecho = {
   key: string
   title: string
@@ -53,31 +64,6 @@ export type IlhaTrecho = {
    */
   cena?: { scene: 'lighthouse-key'; cenario: 'ilha'; goals: string[] }
 }
-
-/** A conferência depois do teste e a verificação, na fórmula comum (Diretrizes, seção 6). */
-const verificar = (lista: string) =>
-  `[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: ${lista}. [reassuring, encouraging voice] Depois de corrigir, teste de novo. [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. [engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.`
-/** Quando o efeito não aparece no jogo (uma variável sem mostrador), a conferência é a única. */
-const conferir = (lista: string) =>
-  `[reassuring, encouraging voice] Confira se ficou assim: ${lista}. [engaging, energetic, conversational voice] Agora clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. [engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.`
-/** A conferência, a verificação e o envio da última montagem, com o reconhecimento no fim. */
-const entregar = (lista: string, pronto: string, depois: string) =>
-  `[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: ${lista}. [reassuring, encouraging voice] Depois de corrigir, teste de novo. [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. [engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. [pleased, lively voice] ${pronto} [engaging, energetic, conversational voice] ${depois}`
-
-/** Receita "Conferir os blocos" (ESPEC 9.8) e a saída de uma montagem. */
-const telaDaConferencia = (mostrar: string, apontes: [string, string][]) =>
-  `No "volte aos blocos e confira se ficou assim", deixar bem à vista os blocos conferidos [mostrar blocos ${mostrar}]. ${apontes
-    .map(([citacao, bloco]) => `No "${citacao}", apontar o bloco [apontar bloco "${bloco}"].`)
-    .join(' ')} No "Depois de corrigir, teste de novo", voltar a mão para o jogo [apontar prévia].`
-const telaDaSaida =
-  'No "Clique em Verificar projeto", verificar [verificar projeto]. No "Quando aparecer Objetivo cumprido", voltar ao tamanho da aula [reduzir estúdio]. No "clique em Próxima parte", clicar em **Próxima parte** [próxima parte].'
-const telaDoEnvio = (reconhecimento: string, saida: 'Concluir aula' | 'Próxima parte') =>
-  `No "Clique em Verificar projeto", verificar [verificar projeto]. No "Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto", clicar em **Enviar meu projeto** [clicar "Enviar meu projeto"]. No "e confirme em Enviar", confirmar em **Enviar**, na janela que abriu [clicar "Enviar"]. No "${reconhecimento}", voltar ao tamanho da aula [reduzir estúdio]. No "Quando aparecer Projeto enviado!, clique em ${saida}", clicar em **${saida}** [${saida === 'Concluir aula' ? 'concluir aula' : 'próxima parte'}].`
-/** Receita da experiência (ESPEC 9.8): só ampliar e mostrar o Zappy, sem tocar nos controles. */
-const telaDaExperiencia = (cena: string) =>
-  `No "Isso você vai testar na experiência", ampliar a experiência [ampliar experiência] e deixar a cena parada, ${cena}. No "O Zappy vai te mostrando", apontar o Zappy ao lado da fala dele [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", clicar em **Próxima parte** [próxima parte].`
-const MOLDE =
-  'Não falar de blocos nem de código. O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).'
 
 /** Os caminhos do personagem, em teclas, com a chave em x −3 e z −2 (da Aula 2 em diante). */
 const ATE_A_CHAVE = '[segurar tecla ArrowUp por 0,7 s] [segurar tecla ArrowRight por 0,9 s]'

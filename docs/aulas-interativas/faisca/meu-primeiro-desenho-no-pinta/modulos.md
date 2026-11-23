@@ -1,4 +1,4 @@
-# Meu primeiro desenho no Pinta — organização do curso
+# Meu primeiro desenho no Pinta: organização do curso
 
 Extra 2 do posto Faísca (`jornada-faisca-extra-2`). Módulo: **Meu primeiro desenho no Pinta**. Preservar o ID do curso, do módulo reservado e da `aula-1` criados pelo seed da jornada.
 

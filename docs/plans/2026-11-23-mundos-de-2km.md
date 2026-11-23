@@ -203,3 +203,42 @@ terreno `grade` nativo sem `recortes`:
   - a saia de cada pedaço tem a profundidade da maior fresta MEDIDA nas bordas dele (contra um
     vizinho um nível mais grosso e um mais fino), não um número fixo: o teste mostrou fresta de
     9,7 m com a saia fixa de 8,5 m.
+- Lote 3: feito na staging local (23/11/2026). O compilador grava o relevo em campo quando o
+  anfitrião pede (`relevo: 'campo'`; o Estúdio pede nos projetos JavaScript; a publicação para o
+  Arquipélago e as exportações não pedem e saem iguais). Um mundo de 2 km plano em campo ocupa
+  4,2 MB (quase tudo `alturas.bin`) e compila em 2,1 s (`studio/src/testing/scene3dCampo.test.ts`).
+  Fixture congelada `molda-scene3d-campo-v1.json`. Decisões, com o motivo:
+  - **caminhos colados no chão sobem 3 cm** na compilação em campo, em vez de um decalque no jogo: o
+    gravador de GLB não leva marca no material para o jogo saber quais eram decalques; e o relevo
+    desce ao detalhe máximo a até 160 m da câmera onde há caminho (`detalhe` em
+    `selecionarNosDoRelevo`), para um relevo mais grosso não cobri-los;
+  - **a água desce a resolução** (8, 4, 2, 1 px/m) quando estoura o limite de pixels por parte, em
+    qualquer cena (antes a compilação reprovava); em campo, também até caber em 1 Mpx por parte.
+    O que já cabia sai igual;
+  - **sem pintura no chão**, o campo leva três camadas (fundo, areia, grama) com o mesmo degradê
+    pela altura que o palco desenha;
+  - conserto achado pelo teste do detalhe: os filhos de um pedaço dividido para equilibrar a árvore
+    não entravam na fila e nunca se refinavam (perto da câmera o relevo podia ficar mais grosso).
+- Lote 4: feito na staging local (23/11/2026). `passoDoTerreno`: 1 m até 1 km, 2 m até 2 km, 4 m
+  até 4 km e 8 m até 8 km (todo mundo novo com até 1024 × 1024 células; antes acima de 2 km o
+  editor ainda aceitava, só que a 1 m). Achado: o Estúdio abre o relevo com até 1088 × 1088
+  células, porque as alturas vão num arquivo de dados 3D de até 5 MiB
+  (`relevoCabeNoEstudio`); a tela de medidas do terreno avisa e sugere o espaçamento. A medida
+  de desempenho do editor com 256 peças passa para o lote 7, quando o mundo de prova de 2 km é
+  montado na própria oficina.
+- Lote 5: feito na staging local (23/11/2026). Em campo, as matrizes saem com a posição a 1 mm e o
+  resto com 7 algarismos significativos (relativo: escala pequena nunca vira zero) e os volumes
+  arredondados para fora, ANTES das regiões (`molda-cenarios-motor/src/compilar/arredondar.ts`).
+  Só em campo: o Arquipélago e as exportações saem com os mesmos bytes. Medido no jogo E: matrizes e
+  volumes são quase todo o JSON (entidades 186 KB, colisões 198 KB, nós 64 KB de 476 KB).
+- Ordem: o lote 7 (mundo de prova de 2 km, JavaScript) vem antes do lote 6 (Python), para medir o
+  relevo em campo numa placa de vídeo antes de levar o formato ao Python.
+- Lote 7 (parte JavaScript): feito (23/11/2026). Mundo de prova de 2 km gerado pela oficina, em
+  campo, 1.194 objetos, 8,8 MiB, `cena.json` de 902 KB; na RTX 3050 com a CPU 4× mais lenta, 79
+  quadros/s na mediana e p95 de 17,7 ms (evidência em
+  `docs/estudio-evolucao/evidencias/mundos-2km-2026-11-23/`). A medida pediu um ajuste: no máximo
+  2 pedaços construídos por quadro (com 4, o p95 ia a 33 ms). Achado e consertado no caminho: o
+  "Juntar peças" perdia os pesos do relevo (`45ab37e0a`). Falta: a versão Python (lote 6) e a
+  troca do jogo E da galeria (lote 8, junto com a página de medida).
+- Próximas melhorias (não bloqueiam o aceite): juntar as colisões por lote, como os nós (as
+  colisões de cada objeto, com a matriz repetida, são 351 KB dos 924 KB do `cena.json`).

@@ -41,7 +41,15 @@ describe('O Jardim Secreto', () => {
       expect(isLearningManifest(m)).toBe(true)
       expect(m.courseSlug).toBe('jornada-faisca-missao')
       expect(m.lessonSlug).toBe(`aula-${i + 1}`)
-      expect(m.sections.length).toBe(i === 0 ? 8 : 7)
+      // Desde 23/11/2026 o envio fecha a última construção (a posição do regador), sem parte só
+      // de envio; na Aula 2, o quiz fecha a aula depois do envio.
+      expect(m.sections.map((s: any) => s.key)).toEqual(
+        i === 0
+          ? ['abertura', 'material', 'movimento', 'limite', 'coleta', 'decisao', 'posicao']
+          : ['abertura', 'movimento', 'coleta', 'decisao', 'posicao', 'revisao'],
+      )
+      expect(m.sections.find((s: any) => s.key === 'posicao').intent).toBe('delivery')
+      if (i === 1) expect(m.sections.at(-1).intent).toBe('closing')
       expect(
         learningImportBodyBytes(
           m,

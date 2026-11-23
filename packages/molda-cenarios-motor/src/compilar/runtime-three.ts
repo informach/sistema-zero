@@ -641,12 +641,23 @@ export async function carregarCenaNoThree(
         pesos.push(img.rgba)
         opcoes.progresso?.(++pronto, total)
       }
+      // Os caminhos (colados no chão) pedem o detalhe máximo do relevo perto da câmera.
+      const papelDoArquivo = new Map(dados.arquivos.map((a) => [a.caminho, a.papel]))
+      const detalhe = dados.nos
+        .filter((n) => papelDoArquivo.get(n.arquivo) === 'caminho')
+        .map((n) => ({
+          x0: n.volume.min.x - 2,
+          z0: n.volume.min.z - 2,
+          x1: n.volume.max.x + 2,
+          z1: n.volume.max.z + 2,
+        }))
       relevo = new RelevoNoThree({
         forma: campo,
         alturas: campo.alturas,
         ...(campo.buracos ? { buracos: campo.buracos } : {}),
         pesos,
         camadas: r.camadas,
+        detalhe,
       })
       relevo.definirTexturas((id) => texturas.get(id)?.textura)
     }

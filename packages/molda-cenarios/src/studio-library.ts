@@ -53,9 +53,15 @@ export async function prepararCenarioParaStudio(
     juntar?: boolean
     tamanhoDaRegiao?: number
     progresso?: (p: ProgressoDaCompilacao) => void
+    /**
+     * `'campo'`: o relevo vai como campo de alturas e pesos, sem lotes nem colisão de terreno
+     * (plano "Mundos de 2 km"). Só quem lê o formato pede: o Estúdio em JavaScript (e o Python com
+     * a distribuição que o declara).
+     */
+    relevo?: 'campo'
   },
 ): Promise<{ pacote: PacoteCompilado; avisos: string[] }> {
-  const { sinal, juntar, tamanhoDaRegiao, progresso } = opcoes
+  const { sinal, juntar, tamanhoDaRegiao, progresso, relevo } = opcoes
   sinal.throwIfAborted()
   // The source/revision is checked by the server and again at this consumer boundary.
   const preparo = await conferirPreparoDeExportacao(
@@ -79,6 +85,7 @@ export async function prepararCenarioParaStudio(
       sinal,
       {
         progresso,
+        ...(relevo ? { relevo } : {}),
         preservarHierarquia: (o) => Object.keys(o.propriedades ?? {}).length > 0,
         // 128 m: cada região junta 2x2 peças do relevo num atlas de 1024 px (sem perder resolução),
         // o bastante para uma ilha comum caber no orçamento de malhas do Estúdio.
