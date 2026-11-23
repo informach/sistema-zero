@@ -144,8 +144,9 @@ Fixtures: o dia 3 do Farol com os eventos repetidos até o tamanho pedido (`/aul
 
 ## D. Jogo 2D de grande porte
 
-**Feito no lote 8 da conclusão (22/11/2026), conferido no Windows local; a rodada do CI entra no
-lote 9.** O jogo D é o exemplo "Mundo das Portas": um mundo do Pinta de 96 × 72 peças com seis
+**Feito no lote 8 da conclusão (22/11/2026), conferido no Windows local e no CI Linux
+(`studio-engines.yml`, run 45087601282: as sete provas do `jogo-d.flow.ts` verdes, inclusive a
+sessão de 10 minutos).** O jogo D é o exemplo "Mundo das Portas": um mundo do Pinta de 96 × 72 peças com seis
 regiões, três cavernas e quatro casas ligadas por 14 portas, 603 entidades, sons e músicas, tudo
 feito por código, e um programa só com blocos que já existem no Jogo 2D. Detalhe e números em
 [`evidencias/jogo-d-2026-11-22/`](evidencias/jogo-d-2026-11-22/README.md).
@@ -159,7 +160,7 @@ feito por código, e um programa só com blocos que já existem no Jogo 2D. Deta
 | Carregamento progressivo: os destinos das portas prontos antes de passar, cache das cenas | `map-2d/__tests__/scenePlayerCache.test.ts` (também com "Quando entrar em área", o caso que a revisão pegou) e `jogoD.test.ts` (no jogo D, passar pela porta não lê nada) | Windows local |
 | Sprites fora do palco não chamam desenho nenhum | `game-2d/__tests__/offscreenCulling.test.ts`, `e2e/engine-2d-offscreen.spec.ts` (0 desenhos com os 400 fora) | Windows local |
 | 60 quadros por segundo: p95 ≤ 8 ms, p99 ≤ 16,7 ms, ≤ 1% acima de 20 ms | `jogo-d.flow.ts` (2,1 / 2,4 ms, 0%, com o herói andando) | Windows local |
-| Sessão longa: memória e imagens estáveis, sem aviso, sem recomeço | `jogo-d.flow.ts` (10 minutos no CI; 60 s e 6 voltas no Windows local; o robô põe o herói em cada ponto) | Windows local |
+| Sessão longa: memória e imagens estáveis, sem aviso, sem recomeço | `jogo-d.flow.ts` (10 minutos no CI: 55 voltas, 770 passagens, pior 14,3 ms, memória da última volta 3,7% acima da segunda, 11 imagens em todas; 60 s e 6 voltas no Windows local) | CI Linux (45087601282) e Windows local |
 | Destino quebrado: o herói fica e o aviso sai uma vez | `jogoD.test.ts` e `jogo-d.flow.ts` | Windows local |
 | Abre nos blocos e roda na prévia | `jogo-d.flow.ts` (importado no Estúdio do playground) | Windows local |
 
