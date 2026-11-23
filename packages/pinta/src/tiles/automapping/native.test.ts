@@ -12,12 +12,12 @@ import { prepareMapRegions } from '../regionMap'
 import { cellAt, setCell } from '../tilemapOps'
 import { createAutomapEditor, isAutomapEditorMap } from './editor'
 import { previewAutomapStroke } from './engine'
+import { importAutomapCopy } from './importCopy'
 import {
   automapSheetIndex,
   copyAutomapDocument,
   decodeAutomapGallery,
   encodeAutomapGallery,
-  importAutomapCopy,
 } from './native'
 
 test('documento nativo 9 preserva autoria e os recursos do mapa denso e do regional', async () => {

@@ -15,7 +15,6 @@ import {
   pintaEncodedBackupByteLength,
 } from '../../export/projectJson'
 import { decodeRegionGalleryBackup, encodeRegionGalleryBackup } from '../../export/regionBackup'
-import { planImport } from '../../state/importPlan'
 import type { AuthorMap } from '../mapCellEdits'
 import { type AutomapBook, automapSheetIdentity, readAutomapBook, type SheetIdentity } from './book'
 import { checkAutomapBindings } from './engine'
@@ -51,7 +50,7 @@ export async function automapSheetIndex(map: AuthorMap, assets: readonly PintaMe
   }
   return sheets
 }
-async function validGallery({ assets, books }: AutomapGallery) {
+export async function validGallery({ assets, books }: AutomapGallery) {
   const byId = new Map(assets.map((item) => [item.id, item]))
   if (!books.size || byId.size !== assets.length) return false
   const dependencies = new Map<string, readonly string[] | null>()
@@ -204,63 +203,33 @@ export async function copyAutomapDocument(
 }
 
 export async function rebindCopiedAutomapBook(
-  map: AuthorMap,copy:AuthorMap,book:AutomapBook,before:readonly PintaMemoryAsset[],assets:readonly PintaMemoryAsset[]
-):Promise<AutomapBook|null>{
-    if(map.layers.length!==copy.layers.length || checkAutomapBindings(map,book,await automapSheetIndex(map,before)))return null
-    const index = await automapSheetIndex(copy, assets)
-    const layers = new Map(map.layers.map((layer, i) => [layer.id, copy.layers[i]!]))
-    const next = structuredClone(book)
-    for (const rule of next.rules)
-      for (const planes of [rule.input, ...rule.outputs])
-        for (const plane of planes) {
-          const layer = layers.get(plane.layer)
-          if (!layer || !isTileLayer<TilemapCells>(layer)) return null
-          const sheet = tileLayerTilesetId(copy, layer),
-            identity = index.get(sheet)
-          if (!identity) return null
-          // Source bindings were checked by decode. The trusted import plan cloned the ordered
-          // slots exactly, including legitimate changes to typed references inside tile metadata.
-          plane.layer = layer.id
-          plane.sheet = sheet
-          plane.sha256 = identity.sha256
-        }
-    return checkAutomapBindings(copy,next,index)?null:next
-}
-
-/** Import into the existing gallery as new objects. Use the same graph, ID and name mapping as
- * gallery backup restoration, including doors, nested resources and object/animation references.
- * A failed check never publishes a partial collection or guesses which tile a slot refers to. */
-export async function importAutomapCopy(text: string, destination: AutomapGallery) {
-  const source = await decodeAutomapGallery(text)
-  if (!source) return null
-  const sheets = source.assets.filter(isTilesetKind)
-  const sorted = [...sheets, ...source.assets.filter((asset) => !isTilesetKind(asset))]
-  const plan = planImport(
-    sorted,
-    new Set(sheets.map((sheet) => sheet.id)),
-    new Set(destination.assets.map((asset) => asset.name)),
+  map: AuthorMap,
+  copy: AuthorMap,
+  book: AutomapBook,
+  before: readonly PintaMemoryAsset[],
+  assets: readonly PintaMemoryAsset[],
+): Promise<AutomapBook | null> {
+  if (
+    map.layers.length !== copy.layers.length ||
+    checkAutomapBindings(map, book, await automapSheetIndex(map, before))
   )
-  if (plan.skipped || plan.error || plan.idMap.size !== source.assets.length) return null
-  const restored = plan.pairs.map((pair) => pair.restored)
-  const assets = [...destination.assets, ...restored]
-  const restoredById = new Map(restored.map((asset) => [asset.id, asset]))
-  const books = new Map(destination.books)
-  for (const map of source.assets) {
-    const book = source.books.get(map.id)
-    if (!book) continue
-    const id = plan.idMap.get(map.id),
-      copy = id && restoredById.get(id)
-    if (
-      map.kind !== 'tilemap' ||
-      !copy ||
-      copy.kind !== 'tilemap' ||
-      copy.layers.length !== map.layers.length
-    )
-      return null
-    const next=await rebindCopiedAutomapBook(map,copy,book,source.assets,assets)
-    if(!next)return null
-    books.set(copy.id, next)
-  }
-  const gallery = { assets, books }
-  return (await validGallery(gallery)) ? { gallery, idMap: plan.idMap } : null
+    return null
+  const index = await automapSheetIndex(copy, assets)
+  const layers = new Map(map.layers.map((layer, i) => [layer.id, copy.layers[i]!]))
+  const next = structuredClone(book)
+  for (const rule of next.rules)
+    for (const planes of [rule.input, ...rule.outputs])
+      for (const plane of planes) {
+        const layer = layers.get(plane.layer)
+        if (!layer || !isTileLayer<TilemapCells>(layer)) return null
+        const sheet = tileLayerTilesetId(copy, layer),
+          identity = index.get(sheet)
+        if (!identity) return null
+        // Source bindings were checked by decode. The trusted import plan cloned the ordered
+        // slots exactly, including legitimate changes to typed references inside tile metadata.
+        plane.layer = layer.id
+        plane.sheet = sheet
+        plane.sha256 = identity.sha256
+      }
+  return checkAutomapBindings(copy, next, index) ? null : next
 }

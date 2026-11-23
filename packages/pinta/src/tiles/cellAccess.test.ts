@@ -42,7 +42,13 @@ const CONFERIDOS: Record<string, string> = {
   'export/godot/regions.ts':
     'o leitor GDScript valida os cabeçalhos antes de decodificar, confere o índice com CELL_MAX_TILES e entrega células inteiras ao render e à física',
   'export/godot/regionWork.ts':
-    'só conta células ocupadas (valor inteiro >= 0) dos chunks já admitidos para orçar as cópias dos conjuntos; não decodifica índice nem flags',
+    'só conta células ocupadas dos chunks já admitidos (inteiro >= 0 no quadrado, diferente do marcador vazio no hexágono) para orçar as cópias dos conjuntos; não decodifica índice nem flags',
+  'export/pintaCausalManifest.ts':
+    'confere o índice das células de cada exemplo das regras por cellTile contra a contagem da folha certificada; não altera células',
+  'export/pintaCausalTransition.ts':
+    'remapeia o índice das células dos exemplos das regras por cellTile e grava com withCellTile, conservando os bits de giro',
+  'export/workshopProjection.ts':
+    'no hexágono só aceita exemplos de regras com índice puro (célula igual a cellTile, sem bits de giro); não altera células',
   'tiles/sets.ts': 'recorta e expande células inteiras, conservando os bits de giro',
   'tiles/tilemapOps.ts':
     'pinta, apaga, preenche e cresce movendo células inteiras; achatar e a peça do topo leem por cellTile',
