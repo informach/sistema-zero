@@ -113,8 +113,8 @@ quem gera a versão, com as outras frentes. Os ensaios nativos que o CI roda nes
   no `cenario.py` é `b03aac268`.
 - **Mundos de 2 km** (`docs/plans/2026-11-23-mundos-de-2km.md`, lote 6). Traz um leitor v2 no
   `cenario.py` e o recurso novo `molda-scene-relevo-v1`. Está marcado como "uma versão só do motor…
-  combinada com a frente do Pinta". Os lotes 1 e 2 já estão na staging local (`5605c9d99`,
-  `0fc69bc92`), e o lote 6 ainda não.
+  combinada com a frente do Pinta". Os lotes 0 a 2 já estão na staging local (`6bb84d96f`,
+  `7f5ca68de`, `5605c9d99` e `0fc69bc92`), e o lote 6 ainda não.
 - **Áreas do Python:** já estão na `areas-1`. Se a frente acrescentar blocos, eles entram pela mesma
   geração, porque o plano aprova o que os codecs e os recursos da distribuição admitem.
 - **Ordem:** quem fechar por último monta a fonte com as três frentes e roda tudo abaixo uma vez. Se
