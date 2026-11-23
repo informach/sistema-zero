@@ -368,11 +368,12 @@ it('baixa os gzip originais e seus vínculos quando a recuperação depende de u
     const download = await screen.findByRole('button', {
       name: COPY.gallery.downloadRetainedRecovery,
     })
-    // The ZIP does not restore anything: the child is sent to "Preciso de ajuda", and the files
-    // are only for the team.
+    // The ZIP does not restore anything: the notice says the edits are kept and the files are
+    // for the team. It names no in-lesson button, which this screen does not have.
     const alert = download.closest('[role=alert]')?.textContent ?? ''
-    expect(alert).toContain('Preciso de ajuda')
-    expect(alert).toContain('equipe')
+    expect(alert).toContain('continuam guardadas')
+    expect(alert).toContain('Avise a equipe')
+    expect(alert).not.toContain('Preciso de ajuda')
     expect(COPY.gallery.downloadRetainedRecovery).toContain('equipe')
     fireEvent.click(download)
     await waitFor(() => expect(downloads).toHaveLength(1))

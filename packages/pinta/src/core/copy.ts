@@ -408,9 +408,10 @@ export const COPY = {
         : `${count} desenhos da sua conta foram feitos numa versão mais nova do Pinta. Atualize a página para ver.`,
     newerFormatReload: 'Atualizar a página',
     /** Só com a nuvem causal. O ZIP guarda os arquivos originais para a equipe; ele não restaura
-     *  nada sozinho, então o caminho da criança é o "Preciso de ajuda". */
+     *  nada sozinho. Não citar o botão "Preciso de ajuda": ele só existe dentro das aulas, e a
+     *  galeria fica fora delas. */
     retainedRecovery:
-      'Algumas edições precisam das peças da versão anterior para abrir. Use o botão Preciso de ajuda para avisar a equipe. Se a equipe pedir, baixe os arquivos guardados neste aparelho.',
+      'Algumas edições precisam das peças da versão anterior para abrir. Elas continuam guardadas neste aparelho. Avise a equipe e, se ela pedir, baixe os arquivos para enviar.',
     downloadRetainedRecovery: 'Baixar arquivos para a equipe',
     retainedRecoveryUnavailable:
       'Não encontrei arquivos de recuperação disponíveis neste aparelho.',
