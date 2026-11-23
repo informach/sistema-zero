@@ -117,6 +117,11 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
     await conn.sql.unsafe('drop function if exists members.pinta_graph_individual_write()')
     await conn.sql.unsafe('drop function if exists members.pinta_palette_write_fence()')
     await conn.sql.unsafe('drop function if exists members.pinta_palette_generation_fence()')
+    // 0174/0175 criam tabelas e funções sem `if not exists`; o banco de tests/db é compartilhado.
+    await conn.sql.unsafe('drop table if exists members.studio_sealed_heads')
+    await conn.sql.unsafe('drop table if exists members.studio_sealed_objects')
+    await conn.sql.unsafe('drop function if exists members.studio_sealed_creation_fence()')
+    await conn.sql.unsafe('drop function if exists members.studio_sealed_head_fence()')
     for (const name of [
       '0166_pinta_inventory_floor',
       '0167_backfill_pinta_inventory_floor',
