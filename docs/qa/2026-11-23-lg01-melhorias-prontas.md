@@ -103,3 +103,38 @@ Após a restauração, às 20:46:56 UTC, os quatro probes públicos de metadados
 Nova entrada concorrente em origin/staging: merge `b1220ea67`, posterior ao corte LG01, mantém `3664ae334` como pai e acrescenta somente o teto de 32 vozes de cena do Zappy (`a4beb3872`) e a correção de espera do operador de cursos (`143640eb4`, equivalente à já revisada `ca8c490a0`). O aumento de 12 para 32 cobre as 19 falas da Ilha e conserva o teto próprio do quiz; deve acompanhar a publicação LG03 e seus leitores. Não altera a candidata congelada nem cancela a onda LG01 já solicitada. O CI automático dessa nova entrada estava pendente atrás da onda serializada de staging na consulta. O registro local adicional `4d702c86e` informa vídeos finais da Ilha em staging e promoção ainda bloqueada; é evidência de outra execução, não prova de publicação em produção feita pela LG01. A aba de curso já em uso foi preservada; o aceite LG01 usa uma segunda aba própria.
 
 Essas duas alterações concorrentes passaram também 41 testes (126 expectativas) de voz de cena/quiz e ambiente/composição do operador de publicação, no checkout isolado exato `b1220ea67`, com instalação própria pelo lockfile. Log: `.audits/review-7-dias-2026-11-23/after-lg01-zappy.log`. Não houve execução do operador contra dados hospedados por esta revisão.
+
+## Onda canônica de homologação
+
+O segundo CI, run `45251978046`, concluiu todos os 13 jobs de verificação com sucesso às 20:41 UTC. O job de implantação `137998816441` passou baseline, CORS, SSH somente de leitura, plano/aplicação de configuração e a barreira Members/Auth/Jornada. Os aplicativos foram solicitados em paralelo às 20:48 UTC, no SHA congelado `3664ae334` (confirmado também nos metadados de build de Kids e Hub).
+
+Estado observado às 20:59 UTC, ainda anterior ao aceite das interfaces:
+
+| Serviço | Deployment | Estado |
+| --- | --- | --- |
+| Members | `589a798f-ae07-4e05-a6f5-0a0448b983f4` | Sucesso, saudável |
+| Auth | `bd60386c-5398-4c14-b75e-8f82df49b274` | Sucesso, saudável |
+| Hub | `6111614e-aaf6-4ec2-b387-b25e885a3d16` | Sucesso, saudável |
+| Gateway | `4afff360-8608-4bd0-b961-5558b1659bfb` | Sucesso, saudável |
+| Palco | `645313d5-8b0a-4c96-9834-c730b004db69` | Sucesso, saudável |
+| Kids | `0079670f-91a0-48a8-8b80-f80eec264bec` | Construção em andamento |
+| Community | `e41bd0f4-d247-4ed0-bcd2-f7d8e87dd1d1` | Construção em andamento |
+| Admin | `b8981c6e-28dc-483f-88a6-1b044fc76575` | Construção em andamento |
+
+Produção permanece na versão anterior até concluir a qualificação de homologação. Os estados intermediários desta seção não marcam LG01 concluída.
+
+### Resultado da primeira onda e aceite infantil
+
+O run `45251978046` terminou com **sucesso**: os oito deployments da tabela estão saudáveis, inclusive Kids, Community e Admin. No perfil infantil indicado, a criação JavaScript voltou a funcionar pela UI atualizada. Foi criado somente o projeto privado `QA LG01 — miniaturas e tela cheia`, item `01M853GQKW3CVQARHT02G4Y88B`. Upload, commit e consulta da lista retornaram 200. Após recarregar a página, ele apareceu entre os sete projetos e reabriu com o estado Salvo; a revisão na conta é 1, formato 2, 533 bytes. Os seis projetos anteriores e os dois desenhos visíveis do Pinta foram preservados. [Recibo sem credenciais](../../.audits/review-7-dias-2026-11-23/lg01-child-session-qa.json).
+
+O Chrome compartilhado recusou a chamada nativa de fullscreen com `TypeError: not granted`. A mesma chamada falhou numa página mínima de controle fora do Studio, com documento visível, focado e fullscreen habilitado. O servidor de controle, restrito a loopback, e sua aba foram encerrados. Não modificar permissões nem o código do produto para encobrir essa restrição do navegador. O fluxo de entrar/sair passou no Chrome real do playground e no CI, mas não foi aprovado manualmente nesta sessão compartilhada.
+
+Esse perfil apresenta somente Jogo 2D em Mais blocos. Não foram concedidos direitos para forçar a miniatura; foi solicitado o nome de um perfil já elegível a 3D. Upload/miniatura WebGL/reabertura permanecem aprovados no teste real de Chrome e no CI, com seu escopo explícito. O aceite manual 3D está pendente dessa identificação.
+
+A galeria do Pinta abriu normalmente e não tinha aviso de recuperação retida. O POST sintético inválido sem a prova da sessão foi recusado com 409 SESSION_CHANGED; repetido com a prova normal do documento, retornou 400 VALIDATION_ERROR, antes de qualquer envio ao Members. Isso comprova a rota e suas recusas no host atualizado; não é um pedido de ajuda real. Ajuda e atualização/identidade do Mural continuam aprovadas nas quatro provas HTTP com PostgreSQL real. Nenhum recado de suporte ou post compartilhado foi criado por esta conta QA.
+
+### Integração da main que avançou durante o aceite
+
+Às 20:51:51 UTC, outra execução integrou o PR #284, main `8d87bbff8`, com o teto de 32 falas e o operador de cursos já revisados nesta execução. Foi necessário incorporar a main para que a futura árvore promovida continue igual à árvore aprovada pelo CI. A candidata agora é `40dd49db7265c33d36b6f82ce9130382f46bef28`, com a mesma árvore de `b1220ea67`: somente aqueles dois arquivos diferem de `3664ae334`. Os 41 testes direcionados foram repetidos com sucesso e o perfil da imagem continua válido.
+
+Novos gates obrigatórios: CI do PR `45266872791`, plano Railway `45266872643` e onda canônica explícita de staging `45266896659`, com os mesmos oito serviços. O plano já passou com zero mudanças e a mesma árvore `.railway/` `0bec132654ae9d0b8630a2d10e62f5fbc9e4bf13`. Os runs automáticos `45255319315` e `45266840035` foram cancelados antes de iniciar deployments para preservar esta seleção. A primeira homologação aprovada não substitui os gates no novo SHA. Produção segue sem implantação desta LG01 até a qualificação final.
