@@ -6,7 +6,7 @@ import { MOEDAS_CURSO, MOEDAS_ETAPAS, montarProjetoMoedas } from './moedas-proje
 import { moedasQuiz2d, moedasQuiz3d } from './moedas-quiz'
 import { gerarPoder } from './poder-gerador'
 
-const help = `# Passo a passo do projeto — Moedas no caminho\n\nPoder do Faísca. Aqui está o que investigar na experiência e cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.\n\n## ${moedasExperiencia.title}\n\n**A ideia:** ${moedasExperiencia.idea}\n\n**O que investigar:**\n\n${moedasExperiencia.goals.map((g) => `- ${g}`).join('\n')}\n\n${moedasExperiencia.observe}\n\n${moedasAulas
+const help = `# Passo a passo do projeto: Moedas no caminho\n\nPoder do Faísca. Aqui está o que investigar na experiência e cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.\n\n## ${moedasExperiencia.title}\n\n**A ideia:** ${moedasExperiencia.idea}\n\n**O que investigar:**\n\n${moedasExperiencia.goals.map((g) => `- ${g}`).join('\n')}\n\n${moedasExperiencia.observe}\n\n${moedasAulas
   .map(
     (a) =>
       `## ${a.dimension === '2d' ? 'Aula 1 · Jogo 2D' : 'Aula 2 · Ilha 3D'}: ${a.title}\n\n${moedasAjuda(
@@ -20,7 +20,7 @@ const help = `# Passo a passo do projeto — Moedas no caminho\n\nPoder do Faís
   )
   .join(
     '\n\n',
-  )}\n\n## Entrega\n\nEm cada aula, jogue uma partida inteira, toque na tecla R e confira que o número volta para 0 e o baú volta fechado. Clique em Verificar projeto, corrija o que faltar, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.\n`
+  )}\n\n## Entrega\n\nEm cada aula, o envio fecha a última montagem, a do baú. Antes de enviar, jogue uma partida inteira, toque na tecla R e confira que o número volta para 0 e o baú volta fechado. Clique em Verificar projeto e corrija o que faltar. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte. Depois vem o quiz da aula: escolha uma resposta, observe a explicação e, quando terminar, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.\n`
 
 await gerarPoder({
   nome: 'Moedas no caminho',
@@ -38,8 +38,8 @@ await gerarPoder({
   jogoPronto: {
     title: 'Jogue Moedas no caminho',
     instrucoes: {
-      '2d': 'Clique no jogo e use as setas do teclado. Pegue moedas e tente o baú com poucas e com cinco ou mais. R começa outra partida. Você pode seguir sem terminar.',
-      '3d': 'Clique no jogo e use as setas ou W, A, S e D. Pegue moedas e tente o baú com poucas e com cinco ou mais. R começa outra partida. Você pode seguir sem terminar.',
+      '2d': 'Segure as setas no canto do jogo, ou clique no jogo e use as setas do teclado. Pegue moedas e tente o baú com poucas e com muitas. A tecla R começa outra partida. Você pode seguir sem terminar.',
+      '3d': 'Clique no jogo e use as setas ou W, A, S e D. Pegue moedas e tente o baú com poucas e com muitas. A tecla R começa outra partida. Você pode seguir sem terminar.',
     },
   },
   experiencia: {
@@ -84,14 +84,14 @@ await gerarPoder({
   cenaDoZappy: 'coin-counter',
   passoAPasso: help,
   modulos:
-    '# Moedas no caminho — organização do curso\n\nPoder 1 do posto Faísca (`jornada-faisca-poder-1`). Módulo: **Moedas no caminho**. Preservar o ID do curso, do módulo reservado e da `aula-1`; a `aula-2` é criada no Admin, no mesmo curso, antes da importação.\n\n' +
+    '# Moedas no caminho: organização do curso\n\nPoder 1 do posto Faísca (`jornada-faisca-poder-1`). Módulo: **Moedas no caminho**. Preservar o ID do curso, do módulo reservado e da `aula-1`; a `aula-2` é criada no Admin, no mesmo curso, antes da importação.\n\n' +
     moedasAulas
       .map(
         (a, i) =>
           `## Aula ${i + 1}. ${a.title}\n\nIdentificador: ${a.slug}. Dimensão: ${a.dimension.toUpperCase()}.\n\n${a.trechos.map((t, n) => `${n + 1}. ${t.title}.`).join('\n')}\n\n[Manifesto](moedas-${a.slug}.manifesto.json) · [Roteiro](moedas-${a.slug}.roteiro.md).`,
       )
       .join('\n\n') +
-    '\n\nUma entrega por aula. O Poder conta com as duas aulas concluídas. Sem certificado nem publicação na comunidade. Produzir e anexar a mídia real antes de publicar; publicar o curso só depois da `aula-2`.\n',
+    '\n\nUma entrega por aula, na última construção, e o quiz depois dela. O Poder conta com as duas aulas concluídas. Sem certificado nem publicação na comunidade. Produzir e anexar a mídia real antes de publicar; publicar o curso só depois da `aula-2`.\n',
   resumo:
     'Moedas: duas aulas, roteiros, voz, ajuda, inventário e quatro projetos portáteis gerados.',
 })

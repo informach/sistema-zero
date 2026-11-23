@@ -77,10 +77,10 @@ Mostre as moedas na tela.
 
 O baú pede pelo menos 5.
 
-- Intenção: application.
-- Blocos: video-bau, ponte-bau.
+- Intenção: delivery.
+- Blocos: video-bau, ponte-bau, projeto.
 - Estúdio: projeto.
-- Conclusão: video-bau.
+- Conclusão: video-bau, projeto; envio atualizado.
 
 - Crie a variável moedas começando em 0: sem encostar em nada, ela continua 0.
 - Conte cada moeda: depois de três moedas, o número é 3 e as três sumiram.
@@ -96,30 +96,13 @@ O baú pede pelo menos 5.
 
 Pense nas moedas.
 
-- Intenção: explanation.
+- Intenção: closing.
 - Blocos: ponte-revisao, quiz.
 - Estúdio: não.
 - Conclusão: quiz.
 
 
 
-## Parte 9. Envie o seu jogo com moedas
-
-Envie o seu jogo com moedas.
-
-- Intenção: delivery.
-- Blocos: video-entrega, ponte-entrega, projeto.
-- Estúdio: projeto.
-- Conclusão: video-entrega, projeto; envio atualizado.
-
-- Crie a variável moedas começando em 0: sem encostar em nada, ela continua 0.
-- Conte cada moeda: depois de três moedas, o número é 3 e as três sumiram.
-- A mesma moeda não conta duas vezes: voltar ao lugar dela não soma de novo.
-- Mostre o número de moedas na tela.
-- Com menos de 5 moedas, o baú fica fechado e o aviso diz o que falta.
-- Com exatamente 5 moedas o baú já abre ("pelo menos 5"), e voltar pelo caminho não conta de novo.
-- Com as 6 moedas o baú também abre.
-- Uma nova partida (tecla R) recomeça o contador em 0, com as seis moedas de volta.
-- O farol continua: com a chave, ele acende.
+Na edição kids, Debinha diz as frases das tabelas de substituição do roteiro.
 
 [Fala integral](moedas-aula-1.roteiro.md) · [Passo a passo](passo-a-passo.md).

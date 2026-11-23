@@ -13,7 +13,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Clique no jogo e use as setas ou W, A, S e D. Tente o baú com poucas moedas e com cinco ou mais. R começa outra partida. Depois clique em Próxima parte."
+        "text": "Sua vez! Jogue a versão pronta: segure as setas ou W, A, S e D, pegue moedas e tente o baú com poucas e com muitas. A tecla R recomeça. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -22,7 +22,7 @@
         "kind": "interactive",
         "title": "Jogue Moedas no caminho",
         "required": true,
-        "instructions": "Clique no jogo e use as setas ou W, A, S e D. Pegue moedas e tente o baú com poucas e com cinco ou mais. R começa outra partida. Você pode seguir sem terminar.",
+        "instructions": "Clique no jogo e use as setas ou W, A, S e D. Pegue moedas e tente o baú com poucas e com muitas. A tecla R começa outra partida. Você pode seguir sem terminar.",
         "hints": [],
         "activity": {
           "type": "project-play",
@@ -2433,38 +2433,38 @@
     },
     {
       "key": "video-coleta",
-      "plannedVideo": "Título: Conte as moedas da ilha\n\nMaster integral da professora. Roteiro: moedas-aula-2.roteiro.md, clipe video-coleta. Gravação pendente."
+      "plannedVideo": "Título: Conte as moedas da ilha\n\nMaster integral da professora. Roteiro: moedas-aula-2.roteiro.md, clipe video-coleta. Substituições kids: [{\"id\":\"video-coleta-K1\",\"clipe\":\"video-coleta\",\"personagem\":\"Dedé\",\"falaPrincipal\":\"E onde fica esse encontro no jogo 3D?\",\"falaPersonagem\":\"E onde fica esse encontro no jogo 3D?\",\"ancoraAntes\":\"começa sem nenhuma moeda. Agora o encontro com as moedas. As moedas da ilha também estão num grupo, o moedasDoCaminho.\",\"ancoraDepois\":\"Na área Quando acontecer, como no jogo 2D. Encontre essa área. Se ela não estiver aparecendo, arraste um espaço vazio\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-coleta",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora monte o contador e a coleta na ilha: a mesma ideia do 2D. Se precisar, a montagem completa está no Passo a passo do projeto. Teste, clique em Verificar projeto e depois em Próxima parte."
+        "text": "Agora conte as moedas da ilha! No fim de Ao iniciar, crie moedas com valor 0. Logo abaixo do encontro com o farol, coloque o encontro com o grupo moedasDoCaminho e, dentro dele, Remover moeda da cena e Somar 1 em variável moedas. Teste no jogo. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
       "key": "video-placar",
-      "plannedVideo": "Título: O número na tela da ilha\n\nMaster integral da professora. Roteiro: moedas-aula-2.roteiro.md, clipe video-placar. Gravação pendente."
+      "plannedVideo": "Título: O número na tela da ilha\n\nMaster integral da professora. Roteiro: moedas-aula-2.roteiro.md, clipe video-placar. Substituições kids: [{\"id\":\"video-placar-K1\",\"clipe\":\"video-placar\",\"personagem\":\"Dedé\",\"falaPrincipal\":\"Por que o número não sobe quando eu volto pelo caminho?\",\"falaPersonagem\":\"Por que o número não sobe quando eu volto pelo caminho?\",\"ancoraAntes\":\"trilha até o farol. Olha só: o número sobe a cada moeda, até 5! Volte um pouco pela ponte. Repare: o número continua 5.\",\"ancoraDepois\":\"Porque as moedas do caminho já saíram da cena: voltar não encosta em moeda nenhuma. Toque na tecla R. O número volta\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-placar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora mostre o número das moedas no canto de cima da tela. Teste, clique em Verificar projeto e depois em Próxima parte."
+        "text": "Agora mostre o número das moedas na tela da ilha! No fim de A cada quadro da cena, coloque Escrever na tela em cima, à esquerda, com valor da variável moedas. Teste no jogo. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
       "key": "video-bau",
-      "plannedVideo": "Título: O baú da ilha abre\n\nMaster integral da professora. Roteiro: moedas-aula-2.roteiro.md, clipe video-bau. Gravação pendente."
+      "plannedVideo": "Título: O baú da ilha abre\n\nMaster integral da professora. Roteiro: moedas-aula-2.roteiro.md, clipe video-bau. Substituições kids: [{\"id\":\"video-bau-K1\",\"clipe\":\"video-bau\",\"personagem\":\"Dedé\",\"falaPrincipal\":\"E quem faz o baú abrir de verdade?\",\"falaPersonagem\":\"E quem faz o baú abrir de verdade?\",\"ancoraAntes\":\"é maior ou igual a cinco, ou seja, se o personagem tem pelo menos cinco moedas. Agora a resposta do sim: o baú abre.\",\"ancoraDepois\":\"A animação abrir, que já vem pronta no modelo do baú. Você só escolhe quando ela toca. Ela vai dentro do então. Deixe\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-bau",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora do baú da ilha! A pergunta é a mesma do 2D: pelo menos 5 moedas. Teste os dois casos, clique em Verificar projeto e depois em Próxima parte."
+        "text": "Agora ensine o baú da ilha a decidir! No encontro com o baú, o Se pergunta se moedas é maior ou igual a 5: no então, o baú toca a animação abrir uma vez e o aviso conta; no senão, o aviso pede pelo menos 5 moedas. Teste os dois casos. Depois clique em Verificar projeto, em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte."
       }
     },
     {
@@ -2472,7 +2472,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de pensar nas moedas da ilha! As perguntas retomam o que acontece ao voltar ao lugar de uma moeda e onde fica a animação do baú. Em cada uma tem uma explicação, e você pode tentar de novo. Na pergunta com cena, clique em Ver o que acontece; na outra, clique em Responder."
+        "text": "Escolha uma resposta e clique em Ver o que acontece ou, nas perguntas sem cena, em Responder. Observe a cena e a explicação. Você pode tentar de novo. Quando terminar, clique em Concluir aula."
       }
     },
     {
@@ -2523,18 +2523,6 @@
             "explanation": "O \"então\" só roda quando a comparação é verdadeira, ou seja, com 5 moedas ou mais. No senão ou antes do Se, o baú abriria sem moedas suficientes."
           }
         ]
-      }
-    },
-    {
-      "key": "video-entrega",
-      "plannedVideo": "Título: Envie a sua ilha com moedas\n\nMaster integral da professora. Roteiro: moedas-aula-2.roteiro.md, clipe video-entrega. Gravação pendente."
-    },
-    {
-      "key": "ponte-entrega",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Confira os objetivos e clique em Enviar meu projeto. Confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula."
       }
     },
     {
@@ -13760,10 +13748,6 @@
             "bau": {
               "entryExampleId": "fa15ca01-0000-4000-8001-000000000004",
               "solutionExampleId": "fa15ca01-0000-4000-8001-000000000005"
-            },
-            "entrega": {
-              "entryExampleId": "fa15ca01-0000-4000-8001-000000000005",
-              "solutionExampleId": "fa15ca01-0000-4000-8001-000000000005"
             }
           }
         }
@@ -14194,690 +14178,15 @@
     {
       "key": "bau",
       "title": "O baú da ilha abre",
-      "intent": "application",
-      "objective": "O baú da ilha abre.",
-      "blockKeys": ["video-bau", "ponte-bau"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-bau"],
-        "projectChecks": [
-          {
-            "id": "placar",
-            "label": "Mostre o número de moedas na tela.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g3d_hud_text",
-              "inputBlocks": {
-                "TEXT": {
-                  "blockType": "sz_val_variable",
-                  "fields": {
-                    "NAME": "moedas"
-                  }
-                }
-              }
-            }
-          },
-          {
-            "id": "meta",
-            "label": "Com menos de 5 moedas, o baú fica fechado e o aviso diz o que falta.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachObject3d",
-                  "actorPath": "personagem",
-                  "targetPath": "bau",
-                  "timeoutMs": 4000,
-                  "walkable": [
-                    {
-                      "minX": -11,
-                      "maxX": -7.4,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -6.1,
-                      "maxX": -4.5,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -6.5,
-                      "maxX": -6.1,
-                      "minZ": -5,
-                      "maxZ": 4.04
-                    },
-                    {
-                      "minX": -6.5,
-                      "maxX": -6.1,
-                      "minZ": 4.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -6.5,
-                      "minZ": -5,
-                      "maxZ": -4.76
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -7,
-                      "minZ": -3.74,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.5,
-                      "minZ": -3.74,
-                      "maxZ": 4.04
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.5,
-                      "minZ": 4.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": -5,
-                      "maxZ": -1.46
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": 0.36,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": -5,
-                      "maxZ": -1.56
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": 0.36,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0.2,
-                      "maxX": 1,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": -5,
-                      "maxZ": -0.76
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": 1.26,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": 0,
-                      "minZ": -5,
-                      "maxZ": -2.46
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": -1.7,
-                      "minZ": 0.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -1.7,
-                      "maxX": 0,
-                      "minZ": 1.26,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0.6,
-                      "maxX": 4.1,
-                      "minZ": 0.4,
-                      "maxZ": 1.1
-                    },
-                    {
-                      "minX": 4,
-                      "maxX": 6.1,
-                      "minZ": -0.5,
-                      "maxZ": 1.7
-                    }
-                  ]
-                },
-                {
-                  "action": "wait",
-                  "ms": 400
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "bau.userData.sz.animWant"
-                },
-                "compare": "notContains",
-                "value": "abrir"
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 2,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "moedas"
-                    },
-                    "compare": "equals",
-                    "value": 0
-                  }
-                },
-                {
-                  "afterStep": 2,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "aviso"
-                    },
-                    "compare": "changed"
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "id": "cinco",
-            "label": "Com 5 moedas o baú abre (pelo menos 5), e voltar pelo caminho não conta de novo.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachObject3d",
-                  "actorPath": "personagem",
-                  "targetPath": "farol",
-                  "timeoutMs": 7000,
-                  "walkable": [
-                    {
-                      "minX": -11,
-                      "maxX": -7.4,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -6.1,
-                      "maxX": -4.5,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -6.5,
-                      "maxX": -6.1,
-                      "minZ": -5,
-                      "maxZ": 4.04
-                    },
-                    {
-                      "minX": -6.5,
-                      "maxX": -6.1,
-                      "minZ": 4.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -6.5,
-                      "minZ": -5,
-                      "maxZ": -4.76
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -7,
-                      "minZ": -3.74,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.5,
-                      "minZ": -3.74,
-                      "maxZ": 4.04
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.5,
-                      "minZ": 4.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": -5,
-                      "maxZ": -1.46
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": 0.36,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": -5,
-                      "maxZ": -1.56
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": 0.36,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0.2,
-                      "maxX": 1,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": -5,
-                      "maxZ": -0.76
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": 1.26,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": 0,
-                      "minZ": -5,
-                      "maxZ": -2.46
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": -1.7,
-                      "minZ": 0.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -1.7,
-                      "maxX": 0,
-                      "minZ": 1.26,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0.6,
-                      "maxX": 4.1,
-                      "minZ": 0.4,
-                      "maxZ": 1.1
-                    },
-                    {
-                      "minX": 4,
-                      "maxX": 6.1,
-                      "minZ": -0.5,
-                      "maxZ": 1.7
-                    }
-                  ]
-                },
-                {
-                  "action": "approachObject3d",
-                  "actorPath": "personagem",
-                  "targetPath": "bau",
-                  "timeoutMs": 7500,
-                  "walkable": [
-                    {
-                      "minX": -11,
-                      "maxX": -7.4,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -6.1,
-                      "maxX": -4.5,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -6.5,
-                      "maxX": -6.1,
-                      "minZ": -5,
-                      "maxZ": 4.04
-                    },
-                    {
-                      "minX": -6.5,
-                      "maxX": -6.1,
-                      "minZ": 4.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -6.5,
-                      "minZ": -5,
-                      "maxZ": -4.76
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -7,
-                      "minZ": -3.74,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.5,
-                      "minZ": -3.74,
-                      "maxZ": 4.04
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.5,
-                      "minZ": 4.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": -5,
-                      "maxZ": -1.46
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": 0.36,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": -5,
-                      "maxZ": -1.56
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": 0.36,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0.2,
-                      "maxX": 1,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": -5,
-                      "maxZ": -0.76
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": 1.26,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": 0,
-                      "minZ": -5,
-                      "maxZ": -2.46
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": -1.7,
-                      "minZ": 0.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -1.7,
-                      "maxX": 0,
-                      "minZ": 1.26,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0.6,
-                      "maxX": 4.1,
-                      "minZ": 0.4,
-                      "maxZ": 1.1
-                    },
-                    {
-                      "minX": 4,
-                      "maxX": 6.1,
-                      "minZ": -0.5,
-                      "maxZ": 1.7
-                    }
-                  ]
-                },
-                {
-                  "action": "wait",
-                  "ms": 400
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "bau.userData.sz.animWant"
-                },
-                "compare": "contains",
-                "value": "abrir"
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 2,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "moedas"
-                    },
-                    "compare": "equals",
-                    "value": 5
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "id": "reinicio",
-            "label": "Uma nova partida (tecla R) recomeça o contador em 0, com as seis moedas de volta.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachObject3d",
-                  "actorPath": "personagem",
-                  "targetPath": "farol",
-                  "timeoutMs": 7000,
-                  "walkable": [
-                    {
-                      "minX": -11,
-                      "maxX": -7.4,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -6.1,
-                      "maxX": -4.5,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -6.5,
-                      "maxX": -6.1,
-                      "minZ": -5,
-                      "maxZ": 4.04
-                    },
-                    {
-                      "minX": -6.5,
-                      "maxX": -6.1,
-                      "minZ": 4.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -6.5,
-                      "minZ": -5,
-                      "maxZ": -4.76
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -7,
-                      "minZ": -3.74,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.5,
-                      "minZ": -3.74,
-                      "maxZ": 4.04
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.5,
-                      "minZ": 4.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": -5,
-                      "maxZ": -1.46
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": 0.36,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": -5,
-                      "maxZ": -1.56
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": 0.36,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0.2,
-                      "maxX": 1,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": -5,
-                      "maxZ": -0.76
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": 1.26,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": 0,
-                      "minZ": -5,
-                      "maxZ": -2.46
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": -1.7,
-                      "minZ": 0.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -1.7,
-                      "maxX": 0,
-                      "minZ": 1.26,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0.6,
-                      "maxX": 4.1,
-                      "minZ": 0.4,
-                      "maxZ": 1.1
-                    },
-                    {
-                      "minX": 4,
-                      "maxX": 6.1,
-                      "minZ": -0.5,
-                      "maxZ": 1.7
-                    }
-                  ]
-                },
-                {
-                  "action": "press",
-                  "key": "r",
-                  "holdMs": 80
-                },
-                {
-                  "action": "wait",
-                  "ms": 600
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "moedas"
-                },
-                "compare": "equals",
-                "value": 0
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 3,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "moedasDoCaminho.length"
-                    },
-                    "compare": "equals",
-                    "value": 6
-                  }
-                }
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "revisao",
-      "title": "Pense nas moedas da ilha",
-      "intent": "explanation",
-      "objective": "Pense nas moedas da ilha.",
-      "blockKeys": ["ponte-revisao", "quiz"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["quiz"]
-      }
-    },
-    {
-      "key": "entrega",
-      "title": "Envie a sua ilha com moedas",
       "intent": "delivery",
-      "objective": "Envie a sua ilha com moedas.",
-      "blockKeys": ["video-entrega", "ponte-entrega", "projeto"],
+      "objective": "O baú da ilha abre.",
+      "blockKeys": ["video-bau", "ponte-bau", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-entrega", "projeto"],
+        "blockIds": ["video-bau", "projeto"],
         "projectChecks": [
           {
             "id": "placar",
@@ -15526,6 +14835,20 @@
           }
         ],
         "submissionUpToDate": true
+      }
+    },
+    {
+      "key": "revisao",
+      "title": "Pense nas moedas da ilha",
+      "intent": "closing",
+      "objective": "Pense nas moedas da ilha.",
+      "blockKeys": ["ponte-revisao", "quiz"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz"]
       }
     }
   ]

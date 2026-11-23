@@ -158,6 +158,7 @@ describe('manifestos das Moedas', () => {
       expect(isLearningManifest(m)).toBe(true)
       expect(m.courseSlug).toBe('jornada-faisca-poder-1')
       expect(m.lessonSlug).toBe(`aula-${i + 1}`)
+      // O envio fecha a última construção (o baú) e o quiz vem depois dele (padrão do Faísca).
       expect(m.sections.map((s: { key: string }) => s.key)).toEqual(
         d === '2d'
           ? [
@@ -169,11 +170,13 @@ describe('manifestos das Moedas', () => {
               'placar',
               'bau',
               'revisao',
-              'entrega',
             ]
-          : ['abertura', 'coleta', 'placar', 'bau', 'revisao', 'entrega'],
+          : ['abertura', 'coleta', 'placar', 'bau', 'revisao'],
       )
-      expect(m.sections.filter((s: any) => s.completion.submissionUpToDate)).toHaveLength(1)
+      expect(
+        m.sections.filter((s: any) => s.completion.submissionUpToDate).map((s: any) => s.key),
+      ).toEqual(['bau'])
+      expect(m.sections.at(-1)).toMatchObject({ key: 'revisao', intent: 'closing' })
       const studio = m.blocks.filter((b: any) => b.content?.kind === 'studio')
       expect(studio).toHaveLength(1)
       expect(studio[0].content.chain).toBe(`jornada-faisca-poder-1-${d}`)
