@@ -163,10 +163,11 @@ async function projectFor(extension: { id: string; version: string }, body: stri
   project.runtime = approved.runtime
   project.python.dependencyLock = approved.python.dependencyLock
   project.installedExtensions = [{ ...extension, installedAt: project.createdAt }]
-  project.assets = (project.assets ?? []).map((asset) => ({
-    ...asset,
-    proPath: pintaSceneAssetPath(extension.id, asset.name),
-  }))
+  project.assets = (project.assets ?? []).map((asset) => {
+    if (!asset || typeof asset !== 'object' || !('name' in asset) || typeof asset.name !== 'string')
+      throw new Error('Material da fixture sem nome')
+    return { ...asset, proPath: pintaSceneAssetPath(extension.id, asset.name) }
+  })
   project.tree = { 'main.py': { kind: 'file', content: body } }
   const validated = await refinePythonProjectDocument(project)
   if (validated.kind !== 'pro') throw new Error('Projeto profissional esperado')
