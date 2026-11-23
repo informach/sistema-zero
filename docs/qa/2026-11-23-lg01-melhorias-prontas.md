@@ -14,7 +14,7 @@ Execução autorizada em 23/11/2026. A candidata parte de `f8910ee0547cba79a8dc3
 
 A candidata conserva a árvore integrada revisada e suas dependências; não é um cherry-pick de quatro componentes isolados. A ajuda depende da recuperação causal e do armazenamento da conta do Pinta. A atualização do jogo depende do serviço de versões. O diff contra main inclui essas integrações e os leitores de compatibilidade: não deve ser apresentado como se contivesse somente os quatro elementos visuais.
 
-Os controles de Molda Cenários, regiões, galeria da equipe e prévia isolada mantêm a configuração de produção. A configuração declarada só acrescenta esses valores ao staging. O catálogo Python de produção mantém o hash de main; o hash novo continua restrito ao staging. Publicação de aulas, liberação das integrações regionais no Studio e estreia do Arquipélago V2 continuam nas respectivas etapas do [plano](../plans/2026-11-23-plano-de-liberacao-gradual.md).
+Os controles de Molda Cenários, regiões, galeria da equipe e prévia isolada mantêm a configuração de produção. A configuração declarada só acrescenta esses valores ao staging. O catálogo Python de produção deve preservar o valor efetivamente implantado, conferido abaixo; o valor declarado no arquivo não comprova o estado remoto. Publicação de aulas, liberação das integrações regionais no Studio e estreia do Arquipélago V2 continuam nas respectivas etapas do [plano](../plans/2026-11-23-plano-de-liberacao-gradual.md).
 
 ## Aquecimento fora desta candidata
 
@@ -56,3 +56,48 @@ O retorno deve usar a versão compatível anterior por onda, preservando dados j
 ## Estado
 
 Candidata e verificações locais concluídas; [PR #283](https://github.com/informach/sistema-zero/pull/283) em rascunho durante a qualificação remota. O plano Railway da primeira tentativa passou. A nova tentativa precisa validar o SHA com as correções de CI. Implantação e aceite no deployment atualizado de produção ainda não realizados por esta execução. LG02 pendente de implantação e qualificação do executor real.
+
+## Acompanhamento operacional posterior
+
+- A segunda tentativa de `railway-config-plan`, run `45245000878`, foi refeita no mesmo SHA `3664ae334` depois da preparação operacional das seis listas de `watchPatterns`. O plano ficou com **zero mudanças**, ambiente de produção correto e sem operações destrutivas. Os seis deployments ativos foram comparados antes/depois e mantiveram seus IDs, estado online e nenhuma operação pendente. [Recibo](../../.audits/review-7-dias-2026-11-23/lg01-watchpatterns-preparation.json).
+- O Worker de staging recebeu a candidata LG01, versão `29dac658-1fa6-4aa2-8778-e887cd8d2d1d`. A prova real de falha sobreposta entre abas passou para o projeto válido; o aquecimento continua excluído. [Achado R12 e contraprovas](2026-11-23-lg02-executor-real.md).
+- A paleta do Pinta passou também a prova com duas composições HTTP reais, usando como predecessor a árvore de produção `3d7c53253`: 2 testes, 43 expectativas; as escritas antigas foram recusadas após a adoção, preservando a leitura.
+- A prova adicional do **escritor selado futuro do Studio** contra esse mesmo predecessor falhou na primeira recusa de leitor: a árvore antiga responde 200 onde o contrato novo exige 409 sem negociação. O teste não foi enfraquecido nem contado como aprovado. O cliente público da LG01 anuncia o leitor, mas não chama o escritor interno selado nem adota os projetos nesse formato; essa adoção permanece na LG04. A LG01 fornece a etapa de leitores compatíveis que deve preceder aquela ativação. Não qualificar `3d7c53253` como retorno seguro após uma futura adoção selada apenas porque a paleta do Pinta passou.
+- A pilha local completa foi tentada pelo launcher canônico. O PostgreSQL portátil foi baixado com hash conferido e inicializado, mas o Windows recusou a abertura de `127.0.0.1:55432`: a porta pertence à faixa reservada `55430–55529`. Nenhuma regra de segurança ou reserva foi alterada. Os testes HTTP com PostgreSQL Docker em `15439` e os percursos do playground continuam válidos em seus escopos; não substituem a sessão infantil no aplicativo completo. Foi solicitada a identificação de um perfil QA de homologação para esse aceite.
+
+Até este registro, CI completo do PR ainda em execução e produção ainda na versão anterior. O plano não marca LG01 concluída antes da implantação e do aceite.
+
+## Alinhamento da homologação e entradas concorrentes
+
+A sessão infantil indicada foi localizada e sua vinculação à conta confirmada por consulta somente de leitura, retornando apenas um booleano. Nenhuma senha foi solicitada ou registrada. A tentativa de criar `QA LG01 2026-11-23` revelou que o host de staging ainda estava em `21b467bd6`: ele recusa as capacidades Python novas presentes na resposta de `/api/studio/free-options`, e essa recusa também impede a criação JavaScript. A mesma resposta foi validada contra o contrato exato daquele commit (recusada) e contra o da candidata (aceita). Não foi feita uma gravação direta para contornar a recusa da interface.
+
+Staging foi avançada por fast-forward para `3664ae334`. O workflow canônico foi solicitado com CSV explícito `auth,members,hub,api-gateway,admin,community,community-kids,palco-gravacao`, run `45251978046`. O run automático do mesmo push (`45251875558`) e o run anterior obsoleto (`45238397148`) foram cancelados, preservando a seleção dessa onda e todos os gates do workflow. O aceite nas telas deve ser retomado quando os aplicativos desse SHA estiverem implantados.
+
+Três commits locais surgiram durante o preparo e foram preservados, sem sobrescrever o trabalho concorrente:
+
+- `d86ce9eab`: O Jardim Secreto vira missão do posto; o vídeo orienta o desafio e aponta cursos-base, sem montar o jogo pela criança.
+- `9a03115e0`: o caderno Passo a passo aparece uma única vez, no final da Aula 1.
+- `ca8c490a0`: o operador de publicação aguarda `prepare`, `view` ou `command` antes de fechar a conexão no `finally`.
+
+São materiais e operação de publicação de cursos, pertencentes à LG03. Foram revisados os deltas e executados 81 testes de missão, Jardim, padrão Faísca e composição/ambiente da publicação, sem falhas. O operador de publicação não foi invocado contra um ambiente hospedado por esta execução. Esses commits locais não alteram o SHA congelado da candidata LG01 e precisam ser integrados na retomada da LG03.
+
+## CI qualificado e configuração efetiva dos runtimes
+
+O CI completo do PR, run `45245000574`, tentativa 1, terminou com sucesso no SHA `3664ae3347a6e8c55ce0b20a11b7d3f2873f0654`: 13 jobs aprovados, inclusive os nove exigidos pelo controlador de produção. O PR #283 foi retirado do estado de rascunho. O segundo CI canônico, run `45251978046`, continua sendo a barreira anterior à onda de homologação; às 20:25 UTC executava a verificação de tipos de todos os pacotes, sem falhas nos demais jobs.
+
+A leitura das versões efetivamente implantadas revelou valores diferentes dos arquivos de configuração:
+
+| Ambiente | Worker anterior | Catálogo efetivamente implantado antes da operação |
+| --- | --- | --- |
+| Staging | `6276e3b7-98a4-4a1c-a40d-172d5b0f6b17` | `f69814b9412125e9bb8f8f33aea2b682cf1e7dfdeb59f593c2067466ce140553` |
+| Produção | `1fb3fff1-053c-4199-b936-a5bd5c63f206` | `0c4482cff070b0dc1ea7d452db87d588116ef22b69fe40605fab16e99f2cb069` |
+
+Durante a qualificação do executor, o deploy inicial de staging usou o valor declarado `05294b0…`, promovendo também aquele catálogo. Essa alteração foi desfeita explicitamente: o Worker LG01 de staging está agora em `7b13b14a-18d0-4e80-a2b6-f2fb8512c6ed`, com o catálogo remoto anterior `f69814b…`, mesma implementação segura por pedido e sem recompilar/trocar a imagem. O deploy usou `--containers-rollout none` e override explícito da variável. O recibo está em `.cache/lg01/worker-staging-compatible-catalog.log` no checkout isolado.
+
+**Correção do diagnóstico:** o catálogo anunciado em `/api/studio/free-options` vem da política do Members, não do Worker. Portanto, a restauração acima não resolve a recusa do host antigo de staging. A política já carregada no Members `f8910ee05` é `9fbc43bc…`, com `2026-11-23-pinta-regioes-1` ativa; o host antigo `21b467bd6` não a entende. A solução da LG01 para a criação JavaScript é alinhar os aplicativos leitores com a versão validada, sem escrita direta ou concessão de acesso.
+
+Em produção, a política realmente carregada no Members `3d7c53253` é `022e5b54…`, com `2026-10-25-integrated-games-2` ativa, enquanto o Worker antigo só contém `2026-10-22-visual-games-3` ativa. Essa divergência já existia antes desta operação. Não afirmar que Python está integralmente qualificado nem ativar a distribuição nova para resolver isso incidentalmente. A conciliação das autoridades, serviços e destinos continua na LG08. O catálogo remoto antigo de produção foi baixado somente para leitura pelo seu endereço imutável em R2, teve o SHA-256 conferido e foi aceito pelo carregador atual. Uma implantação do Worker LG01 deve preservar explicitamente esse valor, em vez de assumir o valor `2c53c74…` declarado no arquivo.
+
+Nova entrada concorrente em origin/staging: merge `b1220ea67`, posterior ao corte LG01, mantém `3664ae334` como pai e acrescenta somente o teto de 32 vozes de cena do Zappy (`a4beb3872`) e a correção de espera do operador de cursos (`143640eb4`, equivalente à já revisada `ca8c490a0`). O aumento de 12 para 32 cobre as 19 falas da Ilha e conserva o teto próprio do quiz; deve acompanhar a publicação LG03 e seus leitores. Não altera a candidata congelada nem cancela a onda LG01 já solicitada. O CI automático dessa nova entrada estava pendente atrás da onda serializada de staging na consulta. O registro local adicional `4d702c86e` informa vídeos finais da Ilha em staging e promoção ainda bloqueada; é evidência de outra execução, não prova de publicação em produção feita pela LG01. A aba de curso já em uso foi preservada; o aceite LG01 usa uma segunda aba própria.
+
+Essas duas alterações concorrentes passaram também 41 testes (126 expectativas) de voz de cena/quiz e ambiente/composição do operador de publicação, no checkout isolado exato `b1220ea67`, com instalação própria pelo lockfile. Log: `.audits/review-7-dias-2026-11-23/after-lg01-zappy.log`. Não houve execução do operador contra dados hospedados por esta revisão.

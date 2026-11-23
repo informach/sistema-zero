@@ -18,7 +18,7 @@ Os estados de produção citados pertencem ao levantamento de 23/11. Ao retomar 
 | ID | Frente | Prioridade | Dependência principal | Estado |
 | --- | --- | --- | --- | --- |
 | LG01 | Primeira versão com correções e melhorias prontas | 1 | Contratos, migrações e aplicativos compatíveis | Em execução: candidata isolada, implantação pendente |
-| LG02 | Qualificação do aquecimento da verificação no executor real | 1 | Runtime, imagem e rotas do aquecimento implantados em staging | Pendente: executor consultado ainda responde 404 |
+| LG02 | Qualificação do aquecimento da verificação no executor real | 1 | Corrigir a vida compartilhada do contêiner e repetir as provas | Não qualificada: falha entre abas reproduzida; excluída da LG01 |
 | LG03 | Publicação gradual das aulas | 1, em paralelo | Vídeos, atividades, materiais e Jornada conferidos | Pendente |
 | LG04 | Fluxo regional completo do Pinta até a conta e o Mural | 2 | Integração do cliente com armazenamento e publicação compatíveis | Pendente |
 | LG05 | Regras e projeções novas do Pinta | 2 | Gravador, fila e leitores admitindo o formato novo | Pendente |
@@ -40,10 +40,10 @@ LG01 e LG03 podem avançar sem esperar LG04, LG05 ou LG10. LG02 só entra na ver
 
 **LG02** qualifica o aquecimento e a reutilização do contêiner em staging com o executor real.
 
-- [ ] Medir a primeira verificação e as seguintes.
-- [ ] Exercitar duas abas do mesmo perfil e falhas de aquecimento, execução e limpeza.
+- [x] Medir a primeira verificação e as seguintes no executor real, com jogos sintéticos; [resultados e limites da prova](../qa/2026-11-23-lg02-executor-real.md).
+- [ ] Concluir as provas de duas abas do perfil, aquecimento, execução e limpeza após corrigir a destruição compartilhada. A sobreposição com falha já reproduziu R12; o caminho seguro por pedido passou a contraprova.
 - [ ] Conferir isolamento entre perfis, limites de capacidade e comportamento quando o contêiner dorme.
-- [ ] Decidir sua entrada na versão pública com base nessas provas.
+- [x] Decisão desta rodada: excluir aquecimento e reutilização da LG01. Reabrir a decisão após corrigir e qualificar os pontos pendentes.
 
 ## Publicação das aulas
 
@@ -112,3 +112,7 @@ Escolher um ID do quadro e registrar seu escopo antes de executar. Ao concluir, 
 | 23/11/2026 | Registro | Proposta preservada para execução gradual; etapas pendentes |
 | 23/11/2026 | LG01 | Candidata em `release/lg01-melhorias-prontas-20261123`, baseada em `f8910ee05`, com aquecimento removido. [Escopo, dependências, provas e sequência de implantação](../qa/2026-11-23-lg01-melhorias-prontas.md) |
 | 23/11/2026 | LG02 | Consulta autenticada ao executor real de staging: `/v1/check/warm` respondeu 404. Aquecimento e reutilização excluídos da candidata; faltam implantação e provas reais de falhas, concorrência e isolamento |
+| 23/11/2026 | LG02 | Worker implantado em staging para a prova. Falha em uma aba derrubou outra verificação válida da mesma identidade; identidades diferentes passaram. [Reprodução R12 e contraprovas](../qa/2026-11-23-lg02-executor-real.md). A candidata LG01 passou no mesmo caso com contêineres exclusivos e substituiu o Worker de staging |
+| 23/11/2026 | LG01 | Preparadas somente as listas de dependências do build em seis serviços de produção; deployments ativos preservados. Plano Railway atualizado: zero diferenças. CI completo do PR e implantação ainda em acompanhamento |
+| 23/11/2026 | LG01 | Sessão QA localizada; host antigo de homologação recusava capacidades do catálogo novo, inclusive ao criar JavaScript. Contrato da candidata aceita a mesma resposta. Staging alinhada a `3664ae334`; implantação canônica restrita aos oito serviços da etapa no run `45251978046` |
+| 23/11/2026 | LG03 | Revisados os commits concorrentes `d86ce9eab`, `9a03115e0` e `ca8c490a0`, com 81 testes aprovados. Missão do Jardim, caderno único e correção do operador preservados no trabalho local, fora da candidata congelada da LG01 |
