@@ -25,6 +25,7 @@ import { createHash } from 'node:crypto'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
 import sharp from 'sharp'
+import { collectHTMLAccessibilityIssues } from '../src/html/accessibility'
 import { parseProjectFilesFromParts } from '../src/parsers/project'
 import { writeGeneratedSource } from './writeGeneratedSource'
 
@@ -56,13 +57,28 @@ const extensions = (projeto.installedExtensions ?? []).map((extensao) => ({
 if (!extensions.some((extensao) => extensao.extensionId === 'game-3d'))
   throw new Error('O jogo E precisa do Jogo 3D.')
 const programa = await readFile(join(pasta, 'regioes.programa.js'), 'utf8')
+// A tela leva a descrição para quem não vê a imagem: sem ela, o exemplo abria com o aviso do
+// bloco da tela em "Problemas" (conferência no staging, 22/11/2026).
+const DESCRICAO_DA_TELA =
+  'Jogo 3D: ande com as setas pelas seis regiões (Vila, Floresta, Caverna, Lago, Praia e Montanha) e pegue as moedas. O nome da região aparece no canto da tela.'
 const montada = parseProjectFilesFromParts({
-  html: [{ type: 'canvas', id: 'tela', width: 960, height: 600 }] as never,
+  html: [
+    {
+      type: 'canvas',
+      id: 'tela',
+      width: 960,
+      height: 600,
+      children: [{ type: 'text', text: DESCRICAO_DA_TELA }],
+    },
+  ] as never,
   cssSource: '',
   jsSource: programa,
 }).ir
 if (JSON.stringify(montada).includes('"rawJS"'))
   throw new Error('O programa do jogo E saiu como código cru.')
+const avisos = collectHTMLAccessibilityIssues(montada.html)
+if (avisos.length)
+  throw new Error(`A página do jogo E tem avisos: ${avisos.map((a) => a.message).join(' | ')}`)
 const ir = { ...(semIds(montada) as Record<string, unknown>), extensions }
 const comportamento = (ir as { behavior?: Record<string, unknown> }).behavior ?? {}
 if (!Object.values(comportamento).some((lista) => Array.isArray(lista) && lista.length > 0))

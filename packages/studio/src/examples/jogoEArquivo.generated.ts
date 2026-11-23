@@ -1,9 +1,9 @@
 // Gerado por scripts/gen-jogo-e-galeria.ts. Não edite.
 /** O arquivo do jogo E no R2 do ambiente (estudio-exemplos/<caminho>), conferido pelo hash. */
 export const JOGO_E_ARQUIVO = {
-  caminho: 'jogo-e/85c7fd554e755bb8de3248b18bbbb245686da427395459288dab7c07e42c855c.json',
-  sha256: '85c7fd554e755bb8de3248b18bbbb245686da427395459288dab7c07e42c855c',
-  bytes: 19875013,
+  caminho: 'jogo-e/6740b0f46dc44953fa4bd53b6e2c8095adcc11c267328b49dd120fd8d3b7a49e.json',
+  sha256: '6740b0f46dc44953fa4bd53b6e2c8095adcc11c267328b49dd120fd8d3b7a49e',
+  bytes: 19875211,
 } as const
 /** A capa: a foto da Floresta, tirada pela própria prova do jogo E (e2e/engine-regions.spec.ts). */
 export const JOGO_E_CAPA =
