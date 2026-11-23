@@ -1,4 +1,4 @@
-import { studioProDigest } from '@sistemazero/core/studio/pro-revision'
+import { type StudioProPlatformFiles, studioProDigest } from '@sistemazero/core/studio/pro-revision'
 import { isDocumentRecord } from '../../core/projectDocument'
 import type { ProjectTree } from '../../core/proProject'
 import { loadExtensionBootstrapScript } from '../../extensions/runtime'
@@ -37,6 +37,37 @@ export async function currentProEngineCopies(
     loadExtensionBootstrapScript(extension, { code: '' }),
   ])
   return { completo: full, 'sem-cenario-pinta': withoutScene }
+}
+
+/**
+ * As cópias do motor que a revisão do Pro aceita como da plataforma, nos caminhos do motor entre
+ * `paths`: o sha256 de toda cópia publicada (as duas variantes) e o das duas de agora. A cópia tem
+ * perto de 400 mil caracteres, acima do teto de 256 mil por arquivo da revisão; com um destes
+ * sha256 ela fica na revisão e no hash, mas fora do orçamento dos arquivos da criança. Uma cópia
+ * editada (ou o motor de um jogo em outro caminho) é dela e segue o teto como qualquer arquivo.
+ * `undefined` quando nenhum caminho é do motor: nada a carregar.
+ */
+export async function proEngineRevisionFiles(
+  paths: Iterable<string>,
+  known: ProEngineInventory = PRO_ENGINE_COPIES,
+): Promise<StudioProPlatformFiles | undefined> {
+  const present = new Set(paths)
+  const files: Record<string, string[]> = {}
+  for (const extensionId of PRO_ENGINE_EXTENSION_IDS) {
+    const path = proEngineCopyPath(extensionId)
+    if (!present.has(path)) continue
+    const current = await currentProEngineCopies(extensionId)
+    const digests = await Promise.all(
+      PRO_ENGINE_VARIANTS.map((variant) => studioProDigest(current[variant])),
+    )
+    files[path] = [
+      ...new Set([
+        ...PRO_ENGINE_VARIANTS.flatMap((variant) => known[extensionId][variant]),
+        ...digests,
+      ]),
+    ]
+  }
+  return Object.keys(files).length ? files : undefined
 }
 
 export type ProEngineCopyState =

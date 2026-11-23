@@ -4,6 +4,7 @@ import {
   applyStudioProChange,
   createStudioProRevision,
   type StudioProChange,
+  type StudioProPlatformFiles,
   type StudioProRevision,
 } from '@sistemazero/core/studio/pro-revision'
 import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
@@ -16,6 +17,7 @@ import {
 import { buildProAssetBundle } from '../core/proAssets'
 import { digestProAssistance, getProAssistance } from '../core/proAssistance'
 import type { ProjectTree } from '../core/proProject'
+import type { ProEngineInventory } from '../modes/pro/proEngineCopies'
 import { proHistoryRecorder } from './proHistoryRecorder'
 import { flushProjectOperations, projectPersistence } from './projectOperations'
 import { listProApplications, PRO_APPLICATION_LIMITS } from './projectStorageCoordinator'
@@ -28,15 +30,53 @@ import {
 import { captureProjectStorageScope } from './projectStorageRuntime'
 import type { ProjectStoreApi } from './projectStore'
 
-export async function captureProRevision(project: Project): Promise<StudioProRevision> {
-  return (await captureRevision(project, false)).base
+export interface ProRevisionOptions {
+  /** Inventário das cópias publicadas do motor 2D; os testes trocam por um conhecido. */
+  engines?: ProEngineInventory
 }
 
+/**
+ * A revisão LOCAL (operações com arquivos, Histórico, Vite, aplicações do Zappy): a cópia do motor
+ * 2D que o Estúdio escreveu num jogo convertido (perto de 400 mil caracteres) fica na revisão e no
+ * hash, mas fora do teto de 256 mil por arquivo da criança (`proEngineRevisionFiles`). De 15/10 a
+ * 23/11/2026 a revisão aplicava o teto também a ela, e nenhuma dessas operações funcionava num 2D
+ * convertido.
+ */
+export async function captureProRevision(
+  project: Project,
+  options: ProRevisionOptions = {},
+): Promise<StudioProRevision> {
+  return (await captureRevision(project, false, await localPlatformFiles(project, options))).base
+}
+
+/**
+ * O pedido ao Zappy vai ao servidor, que relê a revisão e a compila com o teto do compilador
+ * remoto para todo arquivo: aqui não há arquivo da plataforma, e a cópia do motor é recusada antes
+ * de sair do aparelho.
+ */
 export async function captureProRevisionPayload(project: Project) {
   return captureRevision(project, true)
 }
 
-async function captureRevision(project: Project, includeBinaries: boolean) {
+/** As cópias do motor nos caminhos do projeto e nos que a mudança escreve. */
+async function localPlatformFiles(
+  project: Project,
+  options: ProRevisionOptions,
+  change?: StudioProChange,
+): Promise<StudioProPlatformFiles | undefined> {
+  if (isPythonProject(project) || project.kind !== 'pro' || !project.tree) return undefined
+  const paths = Object.keys(project.tree)
+  for (const patch of Array.isArray(change?.patches) ? change.patches : [])
+    if (typeof patch?.path === 'string') paths.push(patch.path)
+  const { proEngineRevisionFiles } = await import('../modes/pro/proEngineCopies')
+  return proEngineRevisionFiles(paths, options.engines)
+}
+
+async function captureRevision(
+  project: Project,
+  includeBinaries: boolean,
+  platformFiles?: StudioProPlatformFiles,
+) {
   if (isPythonProject(project)) {
     const captured = copyStudioProjectJson(project)
     const { capturePythonProRevision, capturePythonProRevisionPayload } = await import(
@@ -62,21 +102,24 @@ async function captureRevision(project: Project, includeBinaries: boolean) {
       binaries[path] = { base64: encodeAssetBase64(bytes), sha256: assetHashes[path]! }
     }
   }
-  const base = await createStudioProRevision({
-    projectId: project.id,
-    templateId: project.proMeta.templateId,
-    devScript: project.proMeta.devScript,
-    files: Object.fromEntries(
-      Object.entries(project.tree).flatMap(([path, node]) =>
-        node.kind === 'file' ? [[path, node.content]] : [],
+  const base = await createStudioProRevision(
+    {
+      projectId: project.id,
+      templateId: project.proMeta.templateId,
+      devScript: project.proMeta.devScript,
+      files: Object.fromEntries(
+        Object.entries(project.tree).flatMap(([path, node]) =>
+          node.kind === 'file' ? [[path, node.content]] : [],
+        ),
       ),
-    ),
-    directories: Object.entries(project.tree).flatMap(([path, node]) =>
-      node.kind === 'dir' ? [path] : [],
-    ),
-    assets: JSON.stringify(manifest),
-    assetFiles: assetHashes,
-  })
+      directories: Object.entries(project.tree).flatMap(([path, node]) =>
+        node.kind === 'dir' ? [path] : [],
+      ),
+      assets: JSON.stringify(manifest),
+      assetFiles: assetHashes,
+    },
+    { platformFiles },
+  )
   return { base, binaries }
 }
 
@@ -100,6 +143,7 @@ async function applyRevision(
   assetEdit?: ProAssetEdit,
   request?: StudioProAssistanceRequest,
   expectedRevisionHash?: string,
+  engines?: ProEngineInventory,
 ): Promise<StudioProChange> {
   const scope = captureProjectStorageScope()
   const entryProject = store.getState().project
@@ -116,7 +160,10 @@ async function applyRevision(
     throw new Error('O projeto aberto mudou.')
   if (decisionsHash && (await digestProAssistance(getProAssistance(project))) !== decisionsHash)
     throw new Error('As decisões mudaram desde esta proposta. Revise ou gere uma nova proposta.')
-  const base = await captureProRevision(project)
+  // A mesma lista vale para a base, para os materiais e para o resultado: um motor que a mudança
+  // escreve (voltar para uma versão de antes do "Atualizar o motor") precisa ser uma cópia publicada.
+  const platformFiles = await localPlatformFiles(project, { engines }, change)
+  const { base } = await captureRevision(project, false, platformFiles)
   const scopeIssue = studioProChangeScopeIssue(request, base.files, change)
   if (scopeIssue) throw new Error(scopeIssue)
   let assetInverse: ProAssetEdit | undefined
@@ -158,7 +205,11 @@ async function applyRevision(
   }
   const { revision, inverse } = materials
     ? await (async () => {
-        const revision = await captureProRevision({ ...project, assets: materials.assets })
+        const { base: revision } = await captureRevision(
+          { ...project, assets: materials.assets },
+          false,
+          platformFiles,
+        )
         return {
           revision,
           inverse: {
@@ -168,7 +219,7 @@ async function applyRevision(
           } satisfies StudioProChange,
         }
       })()
-    : await applyStudioProChange(base, change)
+    : await applyStudioProChange(base, change, { platformFiles })
   if (expectedRevisionHash && revision.hash !== expectedRevisionHash)
     throw new Error(
       'As alterações não correspondem à proposta verificada. Consulte o estado e revise novamente.',
@@ -300,6 +351,8 @@ interface ProDocumentApplication extends Omit<ProProposalApplication, 'jobId' | 
   jobId?: string
   pathMap?: Record<string, string>
   assetEdit?: ProAssetEdit
+  /** Inventário das cópias publicadas do motor 2D; os testes trocam por um conhecido. */
+  engines?: ProEngineInventory
 }
 function validateApplication(input: ProDocumentApplication): void {
   if (input.assetEdit && input.source !== 'editor')
@@ -469,6 +522,7 @@ async function applyProDocument(
     input.assetEdit,
     input.request,
     input.expectedRevisionHash,
+    input.engines,
   )
   if (!applied) throw new Error('A revisão não foi publicada.')
   const { record, receipt } = applied
@@ -558,6 +612,7 @@ export async function undoProApplication(
   operationId: string,
   undoOperationId = `undo:${operationId}`,
   onPublish?: (tree: ProjectTree, pathMap: Record<string, string>) => void,
+  options: ProRevisionOptions = {},
 ): Promise<ProApplicationReceipt> {
   const scope = captureProjectStorageScope()
   const project = store.getState().project
@@ -595,6 +650,7 @@ export async function undoProApplication(
       undoOf: operationId,
       pathMap,
       ...(record.assetInverse ? { assetEdit: record.assetInverse } : {}),
+      ...(options.engines ? { engines: options.engines } : {}),
     },
     onPublish ? (tree) => onPublish(tree, pathMap) : undefined,
   )

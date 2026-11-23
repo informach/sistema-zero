@@ -20,8 +20,9 @@ export const PRO_ENGINE_UPDATE_SAVE_FAILED =
  * estava. Só quando a criança já editou outra coisa nesse meio tempo a troca continua aberta,
  * esperando o salvamento automático, como qualquer edição dela.
  *
- * Não passa pelas aplicações recuperáveis (`applyProEditorChange`): a revisão do Pro recusa arquivos
- * acima de 256 mil caracteres, e o motor de um jogo 2D convertido tem perto de 400 mil.
+ * Não passa pelas aplicações recuperáveis (`applyProEditorChange`): a volta é a versão que fica no
+ * Histórico do projeto ("Voltar para esta versão"), que devolve o motor antigo byte a byte (a
+ * revisão do Pro aceita as cópias publicadas do motor fora do teto por arquivo da criança).
  *
  * Devolve `false` quando não há nada a trocar.
  */

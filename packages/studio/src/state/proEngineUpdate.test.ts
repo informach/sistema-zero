@@ -1,150 +1,18 @@
 import { afterEach, expect, test } from 'bun:test'
-import { studioProDigest } from '@sistemazero/core/studio/pro-revision'
-import { IDBFactory } from 'fake-indexeddb'
-import { createEmptyProject, type Project, type ProjectAsset } from '../core/project'
 import { proRegionalEngineCopy } from '../modes/pro/pintaRegionalProRuntime'
 import {
   currentProEngineCopies,
-  type ProEngineExtensionId,
-  type ProEngineInventory,
-  type ProEngineVariant,
   proEngineCopyPath,
   proEngineUpdatePlan,
 } from '../modes/pro/proEngineCopies'
-import { convertClassicToProTree } from './convertToPro'
-import { persistProject } from './persistence'
+import { olderEngine, openConvertedPro, releaseConvertedPros } from '../testing/convertedProFixture'
 import {
   PRO_ENGINE_UPDATE_LABEL,
   PRO_ENGINE_UPDATE_SAVE_FAILED,
   updateProEngineCopies,
 } from './proEngineUpdate'
-import { setProHistoryRecorder } from './proHistoryRecorder'
-import { registerProjectPersistence } from './projectOperations'
-import type { ProjectStorageScope } from './projectStorageRuntime'
-import { createProjectStore, loadSanitizedProjectById } from './projectStore'
 
-const stores: ReturnType<typeof createProjectStore>[] = []
-afterEach(() => {
-  for (const store of stores.splice(0)) setProHistoryRecorder(store, null)
-})
-
-function database(): ProjectStorageScope {
-  const identity = `pro-engine-${crypto.randomUUID()}`
-  const opening = new Promise<IDBDatabase>((resolve, reject) => {
-    const request = new IDBFactory().open(identity, 1)
-    request.onupgradeneeded = () => request.result.createObjectStore('kv')
-    request.onsuccess = () => resolve(request.result)
-    request.onerror = () => reject(request.error)
-  })
-  return {
-    identity,
-    namespace: '',
-    store: async (mode, callback) =>
-      callback((await opening).transaction('kv', mode).objectStore('kv')),
-  }
-}
-
-const image: ProjectAsset = {
-  id: 'heroi',
-  name: 'heroi',
-  kind: 'image',
-  source: 'upload',
-  proPath: 'public/heroi.png',
-  width: 1,
-  height: 1,
-  dataUrl:
-    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
-}
-const blocksState = {
-  blocks: {
-    languageVersion: 0,
-    blocks: [
-      {
-        type: 'sz_js_console_log_text',
-        id: 'bloco-da-crianca',
-        x: 10,
-        y: 20,
-        fields: { VALUE: 'oi' },
-      },
-    ],
-  },
-}
-
-/** Um motor "antigo": o texto de agora com outra assinatura, reconhecido só pelo inventário dado. */
-async function olderEngine(id: ProEngineExtensionId, variant: ProEngineVariant) {
-  const content = `/* motor publicado antes */\n${(await currentProEngineCopies(id))[variant]}`
-  const digest = await studioProDigest(content)
-  const hashes = (wanted: ProEngineVariant) => (wanted === variant ? [digest] : [])
-  const listed = { completo: hashes('completo'), 'sem-cenario-pinta': hashes('sem-cenario-pinta') }
-  const none = { completo: [], 'sem-cenario-pinta': [] }
-  const known: ProEngineInventory = {
-    'game-2d': id === 'game-2d' ? listed : none,
-    'game-2d-advanced': id === 'game-2d-advanced' ? listed : none,
-  }
-  return { content, known }
-}
-
-/** Um jogo 2D convertido para o Pro, gravado no IndexedDB e aberto num editor com persistência local. */
-async function openConvertedPro(id: ProEngineExtensionId, engine: (current: string) => string) {
-  const scope = database()
-  const classic: Project = {
-    ...createEmptyProject(`convertido-${id}`, 'Meu jogo'),
-    assets: [image],
-    blocksState,
-    installedExtensions: [{ id, version: '2.0.0', installedAt: 1 }],
-    files: {
-      'index.html': '<canvas id="jogo"></canvas>',
-      'style.css': 'body{margin:0}',
-      'script.js': 'window.PROGRAMA_DA_CRIANCA = "continua";',
-    },
-  }
-  const tree = await convertClassicToProTree(classic)
-  const path = proEngineCopyPath(id)
-  const node = tree[path]
-  if (node?.kind !== 'file') throw new Error('A conversão não escreveu o motor.')
-  const project: Project = {
-    ...classic,
-    kind: 'pro',
-    mode: 'code',
-    tree: { ...tree, [path]: { kind: 'file', content: engine(node.content) } },
-    proMeta: {
-      templateId: 'vanilla-vite',
-      devScript: 'dev',
-      origin: { projectId: classic.id, revision: 0 },
-    },
-  }
-  await persistProject(project, {}, scope)
-  const store = createProjectStore()
-  stores.push(store)
-  const opened = await loadSanitizedProjectById(project.id, scope)
-  if (!opened) throw new Error('O projeto convertido não reabriu.')
-  store.getState().hydrateProject(opened)
-  let failure: Error | null = null
-  registerProjectPersistence(store, {
-    localScope: scope,
-    scopeIdentity: scope.identity,
-    load: (id) => loadSanitizedProjectById(id, scope),
-    save: async (next) => {
-      if (failure) throw failure
-      await persistProject(next, {}, scope)
-    },
-  })
-  const history: Array<{ tree: unknown; trigger: string; label?: string }> = []
-  setProHistoryRecorder(store, (before, trigger, info) =>
-    history.push({ tree: before, trigger, label: info.label }),
-  )
-  return {
-    scope,
-    store,
-    path,
-    history,
-    original: store.getState().project!,
-    stored: () => loadSanitizedProjectById(project.id, scope),
-    failSaves(error: Error) {
-      failure = error
-    },
-  }
-}
+afterEach(releaseConvertedPros)
 
 const withoutEngine = (tree: Record<string, unknown> | undefined, path: string) => {
   const { [path]: _engine, ...rest } = tree ?? {}
@@ -199,7 +67,7 @@ for (const [id, variant] of [
     expect(store.getState().isDirty).toBe(false)
     // Uma única versão no Histórico do projeto: a árvore de antes, com o nome da troca.
     expect(history).toEqual([
-      { tree: original.tree, trigger: 'operation', label: PRO_ENGINE_UPDATE_LABEL },
+      { tree: original.tree!, trigger: 'operation', label: PRO_ENGINE_UPDATE_LABEL },
     ])
     const stored = await opened.stored()
     expect(stored?.tree).toEqual(updated.tree)
