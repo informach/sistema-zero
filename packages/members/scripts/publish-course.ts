@@ -56,9 +56,10 @@ export async function runCoursePublicationOperator(value: unknown) {
           })
         : undefined
     const service = new CoursePublicationService(repository, input.environment, production)
-    if (input.action === 'preview') return service.prepare(input)
-    if (input.action === 'view') return service.view(input.id)
-    return service.command(input.id, input.action, input.version, input.planHash)
+    // await: sem ele, o finally fecha a conexão antes de a operação terminar (CONNECTION_ENDED).
+    if (input.action === 'preview') return await service.prepare(input)
+    if (input.action === 'view') return await service.view(input.id)
+    return await service.command(input.id, input.action, input.version, input.planHash)
   } finally {
     await connection.close()
   }
