@@ -55,16 +55,27 @@ Pelo serviço temporário (`promotion-worker/`), o mesmo caminho das promoções
 - O verificador do Worker da staging local (com a integração do Pinta, que soma o recurso
   `pinta-scene-regions-v1`) aceita o catálogo `1dd32fdc…` inteiro.
 
-## Para ativar
+## Ativação no staging (23/11/2026, feita)
 
-1. ~~R2 de staging~~ (feito, acima).
-2. Worker de staging com o seletor `1dd32fdc…` (`wrangler.jsonc`, de volta no commit do envio) e
-   `bun run deploy:staging`; conferir o `/healthz`.
-3. Os apps (já têm os blocos novos desde o deploy de `abc47abbe`).
-4. Members por último: `STUDIO_AUTHORING_POLICY_SHA256=01c079c1…` e `STUDIO_RUNTIME_HOSTS_JSON` =
-   `configuration.hosts` do plano (quatro releases, todas no Worker de staging), pela ordem de
-   `docs/operations/studio-authoring-catalog.md`.
-5. Até a troca, os 20 exemplos de blocos do Turtle e os blocos de região do Raylib 3D são
-   recusados pela release de agora (o catálogo dela não os tem).
+1. R2 de staging: acima.
+2. **Worker de staging** com o seletor `1dd32fdc…` (`06d7533f9`): `bun run deploy:staging` da
+   staging local (`06d7533f9`, com a integração do Pinta ainda sem push), versão
+   `087cca4a-c3e7-486b-b5a8-3bac014219b8`; os contêineres foram reconstruídos para o perfil de
+   validação da staging local. `/healthz` 200; `/v1/runtime-deployments/` da release nova e da
+   `pinta-cenarios-6` (agora `retired`) respondem 200; o `standalone.mjs` servido bate com o plano.
+3. **Apps**: sem deploy novo (já tinham os blocos novos desde o deploy de `abc47abbe`).
+4. **Members** (implantado em `21b467bd6`, que traz o catálogo `01c079c1…`): a base conferida
+   (política `12220f13…`, os três hosts do plano, sem `STUDIO_AUTHORING_POLICY_JSON`);
+   `variable set --skip-deploys` da política `01c079c1…` e dos quatro hosts de
+   `configuration.hosts`, relidos iguais ao plano; redeploy `e0b239ca` SUCCESS, servidor no ar.
+   Falta a conferência logada (abrir um exemplo de blocos do Turtle com o "repetir a cada").
+
+⚠️ Enquanto o `06d7533f9` não chega ao `origin`, o `wrangler.jsonc` de lá aponta o `fa8847d2…`:
+um deploy do Worker feito a partir do `origin` voltaria o seletor e deixaria a release que o
+Members anuncia fora do Worker. A próxima release (a do Pinta) parte desta base: Worker
+`1dd32fdc…`, Members `01c079c1…`.
+
+**Rollback**: no Members, a política `12220f13…` e os três hosts anteriores juntos (com
+`--skip-deploys`) e redeploy; depois o Worker com o seletor `fa8847d2…`.
 
 Produção pede o baseline lido por ela (sem imprimir segredos) e o mesmo `manifestSha256`.
