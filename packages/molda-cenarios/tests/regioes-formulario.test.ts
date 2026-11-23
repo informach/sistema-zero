@@ -206,3 +206,57 @@ describe('revisão do lote 7', () => {
     expect(caixaPelosCantos(plano(), antes, tres, null)).toEqual(antes)
   })
 })
+
+/**
+ * Full review final (22/11/2026): o arredondamento aos centímetros não pode tirar a região da base
+ * nem a pôr por cima da vizinha. A borda da base pode ser fracionária (um plano de 64,015 m vai de
+ * -32,0075 a 32,0075, e 32,0075 arredondado dá 32,01, fora dela), e uma vizinha gravada por comando pode ter mais casas que os centímetros.
+ */
+describe('arredondar sem sair da base nem invadir a vizinha', () => {
+  const fracionario = (regioes?: RegiaoDeCenario[]): DocumentoDeCenario => ({
+    ...criarDocumentoVazio('ilha', 'Ilha'),
+    base: { tipo: 'plano', largura: 64.015, comprimento: 64.015 },
+    ...(regioes ? { regioes } : {}),
+  })
+
+  test('dois cliques na borda de uma base fracionária ficam dentro dela', () => {
+    const doc = fracionario()
+    const caixa = caixaDeDoisPontos(doc, { x: 20, z: 20 }, { x: 40, z: 40 })
+    expect(caixa.x1).toBeLessThanOrEqual(32.0075)
+    expect(caixa.z1).toBeLessThanOrEqual(32.0075)
+    const r = novaRegiao(doc, 'canto', { x: 20, z: 20 }, { x: 40, z: 40 })
+    const caixaBaixa = caixaDeDoisPontos(doc, { x: -40, z: -40 }, { x: -20, z: -20 })
+    expect(caixaBaixa.x0).toBeGreaterThanOrEqual(-32.0075)
+    expect(problemasDaRegiao(doc, r)).toEqual([])
+  })
+
+  test('arrastar um canto não arredonda a borda que encosta na vizinha', () => {
+    // A vizinha termina em x = 10,005 (gravada por comando); a região começa ali, encostada.
+    const vizinha: RegiaoDeCenario = {
+      id: 'vizinha',
+      nome: 'Vizinha',
+      caixa: { x0: -20, z0: -20, x1: 10.005, z1: 20 },
+      vizinhas: ['regiao'],
+    }
+    const regiao: RegiaoDeCenario = {
+      id: 'regiao',
+      nome: 'Região',
+      caixa: { x0: 10.005, z0: -20, x1: 30, z1: 20 },
+      vizinhas: ['vizinha'],
+    }
+    const doc = plano([vizinha, regiao])
+    // Arrasta o canto (x1, z1): só as bordas x1 e z1 mudam.
+    const cantos = cantosDaRegiao(regiao.caixa)
+    cantos[2] = { x: 28.123, z: 18.456 }
+    const caixa = caixaPelosCantos(doc, regiao.caixa, cantos, 2)
+    expect(caixa.x0).toBe(10.005)
+    expect(caixa.z0).toBe(-20)
+    expect(caixa.x1).toBe(28.12)
+    expect(caixa.z1).toBe(18.46)
+    expect(problemasDaRegiao(doc, { ...regiao, caixa })).toEqual([])
+    // Mudar a largura pelo campo mantém o canto de menor x e z como está.
+    const medida = regiaoComMedidas(doc, regiao, 12, 40)
+    expect(medida.caixa.x0).toBe(10.005)
+    expect(problemasDaRegiao(doc, medida)).toEqual([])
+  })
+})
