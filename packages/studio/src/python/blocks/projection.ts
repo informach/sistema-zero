@@ -55,6 +55,12 @@ interface GuardedAttributes {
    * module replaces them, so `self.image = ...` in a sprite is ordinary object state.
    */
   onModules: ReadonlySet<string>
+  /**
+   * Method names guarded only for the objects of an optional provider (`descartar` of a pinta
+   * scene), by the module of the proven receiver. A store of one on an object the file cannot
+   * place drops only the blocks whose receiver is proven as that provider's object.
+   */
+  providerMethods?: ReadonlyMap<string, ReadonlySet<string>>
 }
 const guardedByCodecs = new WeakMap<readonly PythonBlockCodec[], GuardedAttributes>()
 /** Names that bound codecs resolve through: replacing one would change an official API. */
@@ -123,8 +129,28 @@ const explicitGuards = new WeakMap<
   {
     modules: Set<string>
     ordinary: readonly PythonBlockCodec[]
+    withProviders?: GuardedAttributes
   }
 >()
+/** Every guard, plus the method names that only an optional provider's objects have. */
+function providerGuards(
+  codecs: readonly PythonBlockCodec[],
+  ordinary: readonly PythonBlockCodec[],
+): GuardedAttributes {
+  const base = guardedAttributes(ordinary)
+  const providerMethods = new Map<string, Set<string>>()
+  for (const codec of codecs) {
+    const receiver = codec.explicitImport ? codec.bindingFor?.(codec.defaultNode()) : undefined
+    if (!receiver?.instance || !receiver.module) continue
+    for (const attr of guardedAttributes([codec]).anywhere) {
+      if (base.anywhere.has(attr) || base.onModules.has(attr)) continue
+      const names = providerMethods.get(receiver.module) ?? new Set<string>()
+      names.add(attr)
+      providerMethods.set(receiver.module, names)
+    }
+  }
+  return { ...guardedAttributes(codecs), providerMethods }
+}
 function guardsForProgram(
   codecs: readonly PythonBlockCodec[],
   tree: PythonNode,
@@ -142,6 +168,11 @@ function guardsForProgram(
   }
   const { modules, ordinary } = entry
   if (!modules.size) return guardedAttributes(codecs)
+  const known = entry
+  const withProviders = () => {
+    known.withProviders ??= providerGuards(codecs, ordinary)
+    return known.withProviders
+  }
   function importsProvider(value: PythonValue): boolean {
     if (Array.isArray(value)) return value.some(importsProvider)
     if (!isNode(value)) return false
@@ -157,8 +188,8 @@ function guardsForProgram(
   // A project module can re-export the constructor or the provider via a star import.
   for (const exports of projectModules?.values() ?? [])
     for (const binding of exports?.values() ?? [])
-      if (binding.kind === 'module' && modules.has(binding.module)) return guardedAttributes(codecs)
-  return guardedAttributes(importsProvider(tree) ? codecs : ordinary)
+      if (binding.kind === 'module' && modules.has(binding.module)) return withProviders()
+  return importsProvider(tree) ? withProviders() : guardedAttributes(ordinary)
 }
 
 export function pythonASTToVisual(
@@ -178,6 +209,7 @@ export function pythonASTToVisual(
     ...pythonResolverOptionsOf(codecs),
     projectModules: options.projectModules,
     moduleAttributes: guarded.onModules,
+    ...(guarded.providerMethods?.size ? { providerMethods: guarded.providerMethods } : {}),
   })
   const context = { isModule: resolves.isModule, functionParams: resolves.functionParams }
   const index = pythonCodecIndex(codecs)

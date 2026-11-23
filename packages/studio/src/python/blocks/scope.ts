@@ -77,6 +77,13 @@ export interface PythonResolverOptions {
    * when it is made on a module, never on an object such as `self`.
    */
   moduleAttributes?: ReadonlySet<string>
+  /**
+   * Method names only an optional provider's objects have (`descartar` of a pinta scene), by
+   * the module of those objects. A store of one on an object the file cannot place may hit any
+   * of them, even through its class: the blocks with a receiver proven as one of them lose
+   * their proof, and the rest of the file keeps its blocks.
+   */
+  providerMethods?: ReadonlyMap<string, ReadonlySet<string>>
   /** The supplied Pinta scene API can return another scene through a door. */
   pintaDoorResults?: true
 }
@@ -1147,6 +1154,9 @@ export function pythonBindingResolver(
       : !!found.module && found.module !== 'builtins' && officialModules.has(found.module))
   /** Proven official objects whose official method was replaced (`grupo.update = f`). */
   const replacedOn = new Map<Scope, Set<string>>()
+  /** Providers whose method name was stored on an object the file cannot place. */
+  const looseProviders = new Set<string>()
+  const providerMethods = options.providerMethods ?? new Map<string, ReadonlySet<string>>()
   let hasAttributeWrites = false
   collectBareReads(tree, false)
   for (const write of attributeWrites) {
@@ -1167,6 +1177,17 @@ export function pythonBindingResolver(
         continue
       }
       if (!klass && storesOnOwnObject(write, key)) continue
+    }
+    // `laser.descartar = True` with pinta imported: only the blocks of a proven scene receiver
+    // can show something else, not every block of the file.
+    if (!write.moduleMember && !write.private && !write.dunder) {
+      let provider = false
+      for (const [module, names] of providerMethods)
+        if (names.has(write.attr)) {
+          looseProviders.add(module)
+          provider = true
+        }
+      if (provider) continue
     }
     if (write.official || write.moduleMember) {
       hasAttributeWrites = true
@@ -1271,6 +1292,7 @@ export function pythonBindingResolver(
   const resolver = ((value: PythonNode, binding: PythonBlockBinding | undefined) => {
     if (!binding) return true
     if (hasAttributeWrites || hasDynamicBindings) return false
+    if (binding.instance && binding.module && looseProviders.has(binding.module)) return false
     let scope = scopes.get(value)
     if (binding.handler) {
       // A module-level function the extension calls by name, defined exactly once.

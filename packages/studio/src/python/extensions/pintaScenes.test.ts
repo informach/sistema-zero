@@ -292,3 +292,61 @@ test('a learner field named descartar keeps the Raylib blocks when scenes are av
     pythonSemanticTree(tree),
   )
 })
+
+test('with pinta imported, a scene method name stored on another object drops only the scene blocks', async () => {
+  const sceneIds = suffixes.map((suffix) => `sz_py_rl2d_pinta_scene_${suffix}`)
+  const { project, loaded } = await load(
+    RAYLIB_2D_EXTENSION.id,
+    RAYLIB_2D_EXTENSION.version,
+    [...PYTHON_RAYLIB_2D_CODECS.map(({ id }) => id), ...sceneIds],
+    true,
+  )
+  const field = (receiver: string) =>
+    node('Assign', {
+      targets: [withTargetContext(attribute(name(receiver), 'descartar'), 'Store')],
+      value: name('terminou'),
+      type_comment: null,
+    })
+  const tree = moduleNode([
+    node('Import', { names: [node('alias', { name: 'pyray', asname: 'ray' })] }),
+    importar,
+    assignment('lugar', officialLoad),
+    assignment('outro', officialLoad),
+    // `outro` reaches a function of the program, so `laser` may be that very scene.
+    expression(call(name('guardar'), [name('outro')])),
+    node('FunctionDef', {
+      name: 'apagar',
+      args: node('arguments', {
+        posonlyargs: [],
+        args: [node('arg', { arg: 'laser', annotation: null, type_comment: null })],
+        vararg: null,
+        kwonlyargs: [],
+        kw_defaults: [],
+        kwarg: null,
+        defaults: [],
+      }),
+      body: [field('laser')],
+      decorator_list: [],
+      returns: null,
+      type_comment: null,
+      type_params: [],
+    }),
+    field('outro'),
+    expression(call(attribute(name('ray'), 'close_window'))),
+    paint('lugar', []),
+    paint('outro', []),
+  ])
+  const visual = pythonASTToVisual(tree, {
+    codecs: loaded.codecs,
+    officialModules: pythonOfficialModules(project, features),
+  })
+  expect(ids([visual.body[2]!])).toContain('sz_py_rl2d_pinta_scene_load')
+  expect(ids([visual.body[3]!])).toContain('sz_py_rl2d_pinta_scene_load')
+  expect(visual.body[7]).toMatchObject({ codecId: 'sz_py_rl2d_close_window' })
+  // Any scene may be the object written (even through its class): no scene method is proven.
+  for (const line of visual.body.slice(8))
+    expect(ids([line]).some((id) => id.startsWith('sz_py_rl2d_pinta_scene_'))).toBe(false)
+  expect(pythonSemanticTree(pythonVisualToAST(visual, loaded.codecs))).toEqual(
+    pythonSemanticTree(tree),
+  )
+})
