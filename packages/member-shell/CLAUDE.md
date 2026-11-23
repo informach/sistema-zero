@@ -1,5 +1,20 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## A medida dos mundos grandes no staging (23/11/2026)
+
+Plano "Mundos de 2 km", lote 8. `/estudio/medida-mundos` (nos dois apps, só a equipe: 404 para os
+outros e sem `STUDIO_EXAMPLES_ORIGIN`) monta `components/creator/world-measurement-client.tsx`:
+baixa o projeto de medida pela rota dos exemplos grandes (`estudio-exemplos/medida-mundos/<sha256>.json`,
+conferido por tamanho e hash; o resumo é `world-measurement-file.generated.ts`, gerado por
+`studio/scripts/gen-medida-mundos.ts`), roda no `StudioProjectPlayer` em tela inteira e recebe a
+medida por `postMessage` (só da janela do próprio player). Os números de aceite moram em
+`lib/world-measurement.ts` (`aceiteDaMedida`). `routes/studio-world-measurement.ts`
+(`POST /api/studio/world-measurement`, `studioWorldMeasurement`): só a equipe, corpo até 64 KB,
+medida conferida campo a campo, grava `qa/medidas-mundos/<dia>/<hora>-<motor>-<id>.json` no R2
+PRIVADO com o commit do deploy (`RAILWAY_GIT_COMMIT_SHA`), o navegador e o id da conta (nunca o
+e-mail); com o R2 fora, o registro inteiro vai ao log com o prefixo `[medida-mundos]` (202). Testes:
+`tests/studio-world-measurement.test.ts`.
+
 ## Arquivos dos exemplos grandes do Estúdio (22/11/2026)
 
 `routes/studio-example-files.ts` (`createStudioExampleFilesRoute`, montada no `createStudioRoutes`

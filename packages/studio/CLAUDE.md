@@ -55,7 +55,10 @@ Lotes 5 a 7b e 9 da conclusão do plano (especificação em
   GEOMETRIA do relevo (um vértice por metro, nos lotes e na colisão do chão), não pelo chão pintado
   (2 px/m). Os mundos de 2 km: `docs/plans/2026-11-23-mundos-de-2km.md`. A medida numa placa de
   vídeo de verdade é local e com janela: `e2e/grande-gpu.spec.ts` (`playwright.gpu.config.ts`,
-  recusa a placa emulada; a rota e os números saem de `src/medida/mundoGrande.ts`).
+  recusa a placa emulada; a rota e os números saem de `src/medida/mundoGrande.ts`). No aparelho de
+  verdade (o notebook simples do aceite) a medida é a página `/estudio/medida-mundos` do staging, só da
+  equipe (CLAUDE.md do member-shell); o projeto dela sai de `scripts/gen-medida-mundos.ts`, e o mundo de
+  2 km entra na galeria por `scripts/gen-jogo-e-galeria.ts --mundo mundo-2km`.
 
 ## O jogo D: o 2D de grande porte (22/11/2026)
 
