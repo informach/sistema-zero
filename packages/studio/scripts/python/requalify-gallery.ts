@@ -36,6 +36,9 @@ const distribution = option('distribution')
 const distributionSha256 = option('distribution-sha256')
 const nodeExecutable = option('node')
 const selected = args.includes('--game') ? option('game') : undefined
+const extensions = args.includes('--extensions')
+  ? new Set(option('extensions').split(','))
+  : undefined
 interface GalleryGame {
   key: string
   receipt: string
@@ -80,6 +83,7 @@ const families: GalleryFamily[] = [
     codecs: (game) => (game.extension === '3d' ? PYTHON_RAYLIB_3D_CODECS : PYTHON_RAYLIB_2D_CODECS),
   },
 ]
+const check = args.includes('--check')
 let analysis: Awaited<ReturnType<typeof startVisualExampleAnalysis>> | undefined
 let count = 0
 const updates: {
@@ -93,6 +97,7 @@ try {
   for (const family of families)
     for (const game of family.games) {
       if (selected && game.key !== selected) continue
+      if (extensions && !extensions.has(family.extension(game))) continue
       // Keep batches below the analysis child's existing 120-second lifetime.
       if (count % 3 === 0) {
         await analysis?.close()
@@ -129,6 +134,24 @@ try {
         authoring,
         edits,
       })
+      if (check) {
+        const current = JSON.parse(await readFile(resolve(evidence, game.receipt), 'utf8'))
+        for (const key of [
+          'sourceSha256',
+          'codecOrderSha256',
+          'approvedBlockIdsSha256',
+          'analyzer',
+          'authoringRuntime',
+          'authoringRuntimeFeatures',
+          'blockCount',
+          'referencedBlocks',
+          'edits',
+        ] as const)
+          assert.deepEqual(receipt[key], current[key], game.key + ': ' + key)
+        count++
+        console.log(game.key + ': recibo conferido')
+        continue
+      }
       const match = /^(.*)-r(\d+)\.json\.snapshot$/.exec(game.receipt)
       assert(match, `Unrecognized receipt path: ${game.receipt}`)
       let number = Number(match[2]) + 1
@@ -159,7 +182,7 @@ try {
 } finally {
   await analysis?.close()
 }
-assert(updates.length > 0, 'No matching games')
+assert(count > 0, 'No matching games')
 // Publish the new evidence only after the complete requested batch has qualified.
 for (const update of updates)
   await writeFile(update.path, `${JSON.stringify(update.receipt, null, 2)}\n`, { flag: 'wx' })
@@ -175,4 +198,8 @@ for (const manifest of new Set(updates.map(({ manifest }) => manifest))) {
   }
   writeGeneratedSource(manifest, source)
 }
-console.log(`Qualified ${updates.length} games. Regenerate the gallery block metadata next.`)
+console.log(
+  check
+    ? `Checked ${count} games.`
+    : `Qualified ${updates.length} games. Regenerate the gallery block metadata next.`,
+)
