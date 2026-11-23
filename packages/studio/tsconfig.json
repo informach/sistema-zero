@@ -44,6 +44,7 @@
     "scripts/measure-pro-modular.ts",
     "scripts/python",
     "scripts/gen-pro-kit-*.ts",
+    "scripts/gen-pro-engine-copies.ts",
     "scripts/generate-scene3d-runtime.ts",
     "scripts/verify-canvas-*.ts",
     "scripts/verify-pro-*.ts",

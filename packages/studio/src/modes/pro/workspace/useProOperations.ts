@@ -1,6 +1,7 @@
 import { STUDIO_PRO_REVISION_LIMITS } from '@sistemazero/core/studio'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ProjectTree } from '../../../core/proProject'
+import { updateProEngineCopies } from '../../../state/proEngineUpdate'
 import { projectPersistence } from '../../../state/projectOperations'
 import { useProjectStoreApi } from '../../../state/projectStore'
 import {
@@ -184,6 +185,25 @@ export function useProOperations(
     retry: () =>
       run(async () => {
         if (pendingSave) receiptNotice(await retryProApplication(store, projectId!, pendingSave))
+      }),
+    /**
+     * "Atualizar o motor" (decisão de 23/11/2026): troca só as cópias antigas e intactas do motor 2D
+     * pelo motor de agora. O editor, a análise e a prévia acompanham, como nas operações.
+     */
+    updateEngine: () =>
+      run(async () => {
+        setNotice(null)
+        const updated = await updateProEngineCopies(store, {
+          onPublish: (tree) => {
+            language.current?.synchronizeDocument(tree, {})
+            onPublish.current(tree, {})
+          },
+        })
+        setNotice(
+          updated
+            ? 'Pronto! O jogo agora usa o motor novo, e o seu código continua igual.'
+            : 'O motor deste jogo já está em dia.',
+        )
       }),
   }
 }
