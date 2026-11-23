@@ -31,21 +31,39 @@ test('a recusa de conclusão usa a mesma instrução e preserva o erro de suport
   )
 })
 
-test('a galeria explica a recusa dos desenhos de um perfil causal, sem o código cru', () => {
+test('a galeria só diz "não podem ser enviados" para o que de fato não tem como ir', () => {
   const esperado =
     'Os desenhos deste perfil não podem ser enviados pela galeria. Fale com a equipe.'
-  // A listagem antiga do Pinta é cercada num perfil causal (o seletor da galeria a usa).
+  // A leitura causal desligada para este perfil, ou uma recusa causal inesperada no envio.
   expect(
     COMMON_LESSON_COPY.erroDoServidor(
-      { code: 'PINTA_CAUSAL_CONFLICT', message: 'protocol-required' },
+      { code: 'PINTA_CAUSAL_CONFLICT', message: 'account-deleting' },
       'Falhou',
     ),
   ).toBe(esperado)
-  // A entrega recusa os desenhos protegidos com um código próprio.
   expect(
     COMMON_LESSON_COPY.erroDoServidor(
       { code: 'GALLERY_PINTA_CAUSAL_UNSUPPORTED', message: 'qualquer' },
       'Falhou',
     ),
   ).toBe(esperado)
+})
+
+test('a galeria de um perfil causal pede para escolher de novo ou abrir o Pinta, sem o código cru', () => {
+  // O desenho mudou depois que a lista foi montada: a criança escolhe a versão nova.
+  expect(
+    COMMON_LESSON_COPY.erroDoServidor(
+      { code: 'GALLERY_PINTA_DRAWING_CHANGED', message: 'qualquer' },
+      'Falhou',
+    ),
+  ).toBe('Este desenho mudou. Escolha de novo para enviar a versão nova.')
+  // Um desenho do escritor antigo ainda sem certificado: aparece, e o Pinta o adota ao abrir.
+  const abra = 'Abra este desenho no Pinta uma vez para poder enviar.'
+  expect(
+    COMMON_LESSON_COPY.erroDoServidor(
+      { code: 'GALLERY_PINTA_DRAWING_UNCERTIFIED', message: 'qualquer' },
+      'Falhou',
+    ),
+  ).toBe(abra)
+  expect(COMMON_LESSON_COPY.galeria.abrirNoPinta).toBe(abra)
 })

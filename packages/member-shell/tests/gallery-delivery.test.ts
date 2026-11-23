@@ -329,6 +329,95 @@ describe('gallery delivery BFF confirmation', () => {
   })
 })
 
+describe('galeria × Pinta causal (23/11/2026)', () => {
+  const causalSha256 = createHash('sha256').update('bytes-confirmados').digest('hex')
+  const chosen = { ...input, items: [{ itemId: asset.id, revision: 1, causalSha256 }] }
+  function causal(snapshotHash: string | undefined, verify?: (key: string, sha?: string) => void) {
+    const calls: { path: string; opts: CallOpts }[] = []
+    const reads: { key: string; sha?: string }[] = []
+    const plan: GalleryDeliveryPlan = {
+      completed: false,
+      copyGeneration: randomUUID(),
+      snapshot: {
+        kind: 'gallery-delivery',
+        version: 1,
+        requestId,
+        tool: 'pinta',
+        items: [
+          {
+            itemId: asset.id,
+            revision: 1,
+            name: 'Dino',
+            kind: 'pixel-sprite',
+            storageKey: 'snapshot',
+            parts: [],
+            ...(snapshotHash ? { causalSha256: snapshotHash } : {}),
+          },
+        ],
+      },
+      copies: [{ source: 'units/selo/1.sealed.gz', destination: 'snapshot' }],
+    }
+    const route = createGalleryDeliveryRoutes(
+      { getSession: async () => user },
+      {
+        gatewayFetch: async (path, opts) => {
+          calls.push({ path, opts })
+          return { status: 200, body: plan }
+        },
+        gatewayFetchHmac: async (path, opts) => {
+          calls.push({ path, opts })
+          return { status: 200, body: { submittedAt: 'now' } }
+        },
+      },
+      {
+        read: async (key, sha) => {
+          reads.push({ key, ...(sha ? { sha } : {}) })
+          verify?.(key, sha)
+          return JSON.parse(assetToJson(asset))
+        },
+        copy: async () => {},
+      },
+    )
+    return { route, calls, reads }
+  }
+
+  test('o hash que o seletor viu segue até o members e confere os bytes da cópia', async () => {
+    const env = causal(causalSha256)
+    expect((await env.route.POST(req(chosen), ctx)).status).toBe(200)
+    expect(env.calls[0]?.opts.body).toMatchObject({ items: [{ causalSha256 }] })
+    expect(env.reads).toEqual([{ key: 'snapshot', sha: causalSha256 }])
+    expect(env.calls[1]?.opts.body).toMatchObject({ input: { items: [{ causalSha256 }] } })
+  })
+
+  test('bytes copiados com outro hash nunca chegam à confirmação', async () => {
+    const env = causal(causalSha256, () => {
+      throw new Error('A cópia não confere com o desenho escolhido. Atualize a galeria.')
+    })
+    expect((await env.route.POST(req(chosen), ctx)).status).toBe(503)
+    expect(env.calls).toHaveLength(1)
+  })
+
+  test('um plano que perdeu ou trocou o hash escolhido nunca chega à confirmação', async () => {
+    for (const snapshotHash of [undefined, 'f'.repeat(64)]) {
+      const env = causal(snapshotHash)
+      expect((await env.route.POST(req(chosen), ctx)).status).toBe(503)
+      expect(env.reads).toEqual([])
+      expect(env.calls).toHaveLength(1)
+    }
+    // Um pedido sem hash também não aceita um plano que traga um.
+    const legacy = causal(causalSha256)
+    expect((await legacy.route.POST(req(input), ctx)).status).toBe(503)
+    expect(legacy.calls).toHaveLength(1)
+  })
+
+  test('um hash fora do formato é recusado antes do members', async () => {
+    const env = causal(causalSha256)
+    const forged = { ...input, items: [{ itemId: asset.id, revision: 1, causalSha256: 'XYZ' }] }
+    expect((await env.route.POST(req(forged), ctx)).status).toBe(400)
+    expect(env.calls).toHaveLength(0)
+  })
+})
+
 describe('recado da galeria (14/10/2026)', () => {
   test('o recado falado segue com `messageSpoken` até a confirmação assinada', async () => {
     const env = setup()

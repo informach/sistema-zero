@@ -161,6 +161,8 @@ export interface LessonCopy {
     enviar: (quantos: number) => string
     recado: string
     erro: string
+    /** Desenho que o Pinta ainda não conferiu (perfil causal): aparece, mas não vai até ser aberto. */
+    abrirNoPinta: string
   }
   material: {
     tituloDoLivro: string
@@ -257,6 +259,8 @@ export const PALAVRAS_DA_ESCOLA =
 
 const GALERIA_SEM_DESENHOS_CAUSAIS =
   'Os desenhos deste perfil não podem ser enviados pela galeria. Fale com a equipe.'
+const GALERIA_DESENHO_MUDOU = 'Este desenho mudou. Escolha de novo para enviar a versão nova.'
+const GALERIA_ABRA_NO_PINTA = 'Abra este desenho no Pinta uma vez para poder enviar.'
 
 const ERRO_DO_SERVIDOR: Record<string, string> = {
   // O rascunho de uma parte com "envio em dia" não chegou à conta (`LessonDraftSaveError`).
@@ -279,10 +283,13 @@ const ERRO_DO_SERVIDOR: Record<string, string> = {
   LEARNING_CONFLICT: 'Esta aula foi atualizada. Abra a aula de novo para continuar.',
   GALLERY_DELIVERY_FAILED:
     'Não foi possível enviar. Suas criações continuam na galeria. Tente de novo.',
-  // Perfil com o Pinta causal: a listagem antiga (seletor da galeria) é cercada e a entrega recusa
-  // os desenhos protegidos. Na aula, o PINTA_CAUSAL_CONFLICT só chega por essa cerca.
+  // Perfil com o Pinta causal (23/11/2026): a galeria lista e copia pela cabeça confirmada de cada
+  // desenho. A frase "não podem ser enviados" fica só para o que de fato não tem como ir: a leitura
+  // causal desligada para este perfil ou uma recusa causal inesperada no envio.
   PINTA_CAUSAL_CONFLICT: GALERIA_SEM_DESENHOS_CAUSAIS,
   GALLERY_PINTA_CAUSAL_UNSUPPORTED: GALERIA_SEM_DESENHOS_CAUSAIS,
+  GALLERY_PINTA_DRAWING_CHANGED: GALERIA_DESENHO_MUDOU,
+  GALLERY_PINTA_DRAWING_UNCERTIFIED: GALERIA_ABRA_NO_PINTA,
   // Serve para guardar E para conferir: o 400 da validação chega dos dois caminhos.
   VALIDATION_ERROR: 'Não deu certo agora. Confira e tente de novo.',
   PAYLOAD_TOO_LARGE: 'Ficou grande demais para guardar.',
@@ -425,6 +432,7 @@ export const COMMON_LESSON_COPY: LessonCopy = {
     enviar: (quantos) => `Enviar${quantos ? ` (${quantos})` : ''}`,
     recado: 'Recado (opcional)',
     erro: 'Não foi possível carregar suas criações. Tente novamente.',
+    abrirNoPinta: GALERIA_ABRA_NO_PINTA,
   },
   material: {
     tituloDoLivro: 'Material do curso',

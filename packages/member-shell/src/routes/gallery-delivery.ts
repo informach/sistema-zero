@@ -24,6 +24,11 @@ const Input = z
           .object({
             itemId: z.string().regex(/^[A-Za-z0-9_-]{1,64}$/),
             revision: z.number().int().positive(),
+            // Perfil com o Pinta causal: o hash da cabeça confirmada que o seletor mostrou.
+            causalSha256: z
+              .string()
+              .regex(/^[0-9a-f]{64}$/)
+              .optional(),
           })
           .strict(),
       )
@@ -127,7 +132,14 @@ export function createGalleryDeliveryRoutes(
           for (const item of plan.snapshot.items) {
             const source = plan.copies.find((copy) => copy.destination === item.storageKey)
             if (!source) throw new Error('Referência do envio indisponível.')
-            const sourceJson = await owned(() => storage.read(item.storageKey))
+            // O desenho causal escolhido pelo hash só segue com ESSE hash, conferido nos bytes
+            // da cópia; um plano que perdeu ou trocou o hash nunca chega à confirmação.
+            const chosen = parsed.data.items.find((selected) => selected.itemId === item.itemId)
+            if (!chosen || chosen.causalSha256 !== item.causalSha256)
+              throw new Error(
+                'O envio não corresponde aos desenhos escolhidos. Atualize a galeria.',
+              )
+            const sourceJson = await owned(() => storage.read(item.storageKey, item.causalSha256))
             if (plan.snapshot.tool === 'pinta') {
               const asset = assetFromJson(JSON.stringify(sourceJson)).asset
               if (!asset || asset.id !== item.itemId)
