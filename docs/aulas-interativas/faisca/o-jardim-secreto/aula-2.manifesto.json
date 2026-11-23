@@ -6,7 +6,7 @@
   "blocks": [
     {
       "key": "video-abertura",
-      "plannedVideo": "Título: O mesmo desafio, com profundidade\n\nMaster integral da professora: aula-2.roteiro.md, clipe video-abertura. Gravação pendente."
+      "plannedVideo": "Título: O mesmo desafio, com profundidade\n\nMaster integral da professora. Roteiro: aula-2.roteiro.md, clipe video-abertura. Gravação pendente."
     },
     {
       "key": "ponte-abertura",
@@ -1055,7 +1055,7 @@
             "installedExtensions": [
               {
                 "id": "game-3d",
-                "version": "0.32.0",
+                "version": "0.33.0",
                 "installedAt": 0
               }
             ]
@@ -1071,7 +1071,7 @@
     },
     {
       "key": "video-movimento",
-      "plannedVideo": "Título: Caminhe pelo jardim 3D\n\nMaster integral da professora: aula-2.roteiro.md, clipe video-movimento. Gravação pendente."
+      "plannedVideo": "Título: Caminhe pelo jardim 3D\n\nMaster integral da professora. Roteiro: aula-2.roteiro.md, clipe video-movimento. Gravação pendente."
     },
     {
       "key": "ponte-movimento",
@@ -1083,7 +1083,7 @@
     },
     {
       "key": "video-coleta",
-      "plannedVideo": "Título: Recolha o regador em 3D\n\nMaster integral da professora: aula-2.roteiro.md, clipe video-coleta. Gravação pendente."
+      "plannedVideo": "Título: Recolha o regador em 3D\n\nMaster integral da professora. Roteiro: aula-2.roteiro.md, clipe video-coleta. Gravação pendente."
     },
     {
       "key": "ponte-coleta",
@@ -1095,7 +1095,7 @@
     },
     {
       "key": "video-decisao",
-      "plannedVideo": "Título: Faça a flor responder\n\nMaster integral da professora: aula-2.roteiro.md, clipe video-decisao. Gravação pendente."
+      "plannedVideo": "Título: Faça a flor responder\n\nMaster integral da professora. Roteiro: aula-2.roteiro.md, clipe video-decisao. Gravação pendente."
     },
     {
       "key": "ponte-decisao",
@@ -1107,7 +1107,7 @@
     },
     {
       "key": "video-posicao",
-      "plannedVideo": "Título: Encontre um novo lugar no chão\n\nMaster integral da professora: aula-2.roteiro.md, clipe video-posicao. Gravação pendente."
+      "plannedVideo": "Título: Encontre um novo lugar no chão\n\nMaster integral da professora. Roteiro: aula-2.roteiro.md, clipe video-posicao. Gravação pendente."
     },
     {
       "key": "ponte-posicao",
@@ -1219,7 +1219,7 @@
     },
     {
       "key": "video-entrega",
-      "plannedVideo": "Título: Entregue sua missão\n\nMaster integral da professora: aula-2.roteiro.md, clipe video-entrega. Gravação pendente."
+      "plannedVideo": "Título: Entregue sua missão\n\nMaster integral da professora. Roteiro: aula-2.roteiro.md, clipe video-entrega. Gravação pendente."
     },
     {
       "key": "ponte-entrega",
@@ -1956,7 +1956,7 @@
           "installedExtensions": [
             {
               "id": "game-3d",
-              "version": "0.32.0",
+              "version": "0.33.0",
               "installedAt": 0
             }
           ]
@@ -2655,7 +2655,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -3377,7 +3377,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -4209,7 +4209,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -5243,7 +5243,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -6277,7 +6277,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]

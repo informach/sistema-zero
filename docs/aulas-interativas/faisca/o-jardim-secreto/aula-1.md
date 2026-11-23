@@ -1,6 +1,6 @@
 # Faça o jardim florescer em 2D
 
-Missão Faísca · O Jardim Secreto · 2D. Um projeto contínuo, uma entrega. Ajuda livre; sem certificado nem publicação obrigatória.
+Missão do Faísca · O Jardim Secreto · 2D. Um projeto contínuo, enviado na última construção. Ajuda livre no Passo a passo do projeto; sem certificado nem publicação obrigatória.
 
 ## Parte 1. Conheça sua missão
 
@@ -110,4 +110,4 @@ Envie seu jardim 2D.
 - Depois da coleta, faça a flor abrir e mostrar o sucesso; uma nova partida recomeça sem a coleta.
 - Escolha outro lugar alcançável para o regador e confira as regras.
 
-[Fala integral](aula-1.roteiro.md) · [Ajuda completa](passo-a-passo.md).
+[Fala integral](aula-1.roteiro.md) · [Passo a passo](passo-a-passo.md).

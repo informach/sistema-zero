@@ -1,6 +1,7 @@
 /**
  * O gerador comum dos quatro Poderes do Faísca (Moedas no caminho, O segredo da cabana, A ponte
- * apressada e O baú dos símbolos). Antes eram quatro geradores quase iguais; cada `gerar-<poder>.ts`
+ * apressada e O baú dos símbolos) e da missão O Jardim Secreto, que tem o mesmo esqueleto sem a
+ * experiência. Antes eram quatro geradores quase iguais; cada `gerar-<poder>.ts`
  * agora só descreve o curso (`PoderConfig`) e chama `gerarPoder`.
  *
  * Revisão de 23/11/2026, no molde do Cadê, da Chave do Farol e da Ilha do Farol:
@@ -76,25 +77,33 @@ export interface PoderConfig<
   nome: string
   /** A pasta em docs/aulas-interativas/faisca. */
   pasta: string
-  /** O começo dos nomes dos arquivos ("moedas" → moedas-aula-1.manifesto.json). */
+  /** O começo dos nomes dos arquivos ("moedas" → moedas-aula-1.manifesto.json, moedas-2d.szproject.json). */
   prefixo: string
-  /** O número do Poder no posto (jornada-faisca-poder-N). */
-  numero: number
+  /** O nome dos arquivos de uma aula, quando não é `<prefixo>-<slug>` (o Jardim usa só `aula-1`). */
+  arquivoDaAula?: (slug: string) => string
+  /** "Poder do Faísca" ou "Missão do Faísca", no resumo de cada aula. */
+  tipo?: string
   curso: string
   etapas: readonly E[]
   etapaFinal: E
   montarProjeto: (dimensao: PoderDimensao, etapa: E) => P
   checks: (dimensao: PoderDimensao, etapa: E) => Objetivos
-  quiz: Record<PoderDimensao, unknown>
+  /** O quiz de cada dimensão (só as aulas com parte de quiz usam). */
+  quiz: Partial<Record<PoderDimensao, unknown>>
   aulas: PoderAula<E>[]
   /** Os ids dos exemplos do Estúdio: `${idBase}-0000-4000-800<aula>-<etapa>` (não mudam). */
   idBase: string
   /** O jogo pronto da abertura. */
-  jogoPronto: { title: string; instrucoes: Record<PoderDimensao, string> }
+  jogoPronto: {
+    title: string
+    instrucoes: Record<PoderDimensao, string>
+    /** O tamanho do jogo pronto; sem ele, 480 × 360 no 2D e 960 × 600 no 3D. */
+    palco?: Record<PoderDimensao, { width: number; height: number }>
+  }
   /** O conteúdo do bloco `experiencia` (interativo), igual ao que o curso já publicava. */
-  experiencia: Record<string, unknown>
+  experiencia?: Record<string, unknown>
   /** A cena das falas do Zappy dentro da experiência (`zappy-etapas.json`). */
-  cenaDoZappy: Parameters<typeof discoverySpeechSteps>[0]
+  cenaDoZappy?: Parameters<typeof discoverySpeechSteps>[0]
   /** O passo a passo em texto (`passo-a-passo.md`) e a organização do curso (`modulos.md`). */
   passoAPasso: string
   modulos: string
@@ -142,7 +151,8 @@ export async function gerarPoder<
       mapping: StudioProjectExamples['sections'] = {}
     let previous: E = inicio
     let entregue = false
-    const roteiro = `${cfg.prefixo}-${aula.slug}.roteiro.md`
+    const arquivo = cfg.arquivoDaAula?.(aula.slug) ?? `${cfg.prefixo}-${aula.slug}`
+    const roteiro = `${arquivo}.roteiro.md`
     const sections: LearningManifest['sections'] = [],
       blocks: LearningManifest['blocks'] = []
     for (const t of aula.trechos) {
@@ -176,7 +186,10 @@ export async function gerarPoder<
               type: 'project-play',
               project: projects[cfg.etapaFinal],
               stage:
-                aula.dimension === '2d' ? { width: 480, height: 360 } : { width: 960, height: 600 },
+                cfg.jogoPronto.palco?.[aula.dimension] ??
+                (aula.dimension === '2d'
+                  ? { width: 480, height: 360 }
+                  : { width: 960, height: 600 }),
               completion: 'participation',
               targets: [],
             },
@@ -187,12 +200,17 @@ export async function gerarPoder<
       if (t.kind === 'experience') {
         keys.push('experiencia')
         required.push('experiencia')
+        if (!cfg.experiencia)
+          throw Error(`${aula.slug}: parte de experiência sem a experiência do curso`)
         blocks.push({ key: 'experiencia', content: cfg.experiencia })
       }
       if (t.kind === 'quiz') {
         keys.push('quiz')
         required.push('quiz')
-        blocks.push({ key: 'quiz', content: cfg.quiz[aula.dimension] })
+        const quiz = cfg.quiz[aula.dimension]
+        if (!quiz)
+          throw Error(`${aula.slug}: parte de quiz sem o quiz da dimensão ${aula.dimension}`)
+        blocks.push({ key: 'quiz', content: quiz })
       }
       const studio = t.kind === 'build' || t.kind === 'delivery'
       if (t.kind === 'delivery') {
@@ -278,7 +296,7 @@ export async function gerarPoder<
       ) > LEARNING_IMPORT_BODY_MAX_BYTES
     )
       throw Error('Importação acima de 2 MiB')
-    write(`${cfg.prefixo}-${aula.slug}.manifesto.json`, manifest)
+    write(`${arquivo}.manifesto.json`, manifest)
 
     const avatar = avatarDaAula(index)
     const comKids = aula.trechos.some((t) => t.kids?.length)
@@ -303,10 +321,10 @@ export async function gerarPoder<
     script = sincronizarRecadosNaPagina(script, manifest)
     write(roteiro, script)
     for (const [ext, text] of derivadosDeVoz(extrairPartesElevenLabs(script)))
-      write(`${cfg.prefixo}-${aula.slug}${ext}`, text)
+      write(`${arquivo}${ext}`, text)
     write(
-      `${cfg.prefixo}-${aula.slug}.md`,
-      `# ${aula.title}\n\nPoder do Faísca · ${cfg.nome} · ${aula.dimension.toUpperCase()}. Um projeto contínuo, enviado na última construção. Ajuda livre no Passo a passo do projeto; sem certificado nem publicação obrigatória.\n\n${sections.map((s, i) => `## Parte ${i + 1}. ${s.title}\n\n${s.objective}\n\n- Intenção: ${s.intent}.\n- Blocos: ${s.blockKeys.join(', ')}.\n- Estúdio: ${s.workspaceKey ?? 'não'}.\n- Conclusão: ${s.completion?.blockIds.join(', ') || 'avanço livre'}${s.completion?.submissionUpToDate ? '; envio atualizado' : ''}.\n\n${s.completion?.projectChecks?.map((c: { label: string }) => `- ${c.label}`).join('\n') ?? ''}`).join('\n\n')}\n\n${comKids ? `Na edição kids, ${avatar} diz as frases das tabelas de substituição do roteiro.\n\n` : ''}[Fala integral](${roteiro}) · [Passo a passo](passo-a-passo.md).\n`,
+      `${arquivo}.md`,
+      `# ${aula.title}\n\n${cfg.tipo ?? 'Poder do Faísca'} · ${cfg.nome} · ${aula.dimension.toUpperCase()}. Um projeto contínuo, enviado na última construção. Ajuda livre no Passo a passo do projeto; sem certificado nem publicação obrigatória.\n\n${sections.map((s, i) => `## Parte ${i + 1}. ${s.title}\n\n${s.objective}\n\n- Intenção: ${s.intent}.\n- Blocos: ${s.blockKeys.join(', ')}.\n- Estúdio: ${s.workspaceKey ?? 'não'}.\n- Conclusão: ${s.completion?.blockIds.join(', ') || 'avanço livre'}${s.completion?.submissionUpToDate ? '; envio atualizado' : ''}.\n\n${s.completion?.projectChecks?.map((c: { label: string }) => `- ${c.label}`).join('\n') ?? ''}`).join('\n\n')}\n\n${comKids ? `Na edição kids, ${avatar} diz as frases das tabelas de substituição do roteiro.\n\n` : ''}[Fala integral](${roteiro}) · [Passo a passo](passo-a-passo.md).\n`,
     )
     const final = projects[cfg.etapaFinal]
     const comeco = projects[inicio]
@@ -321,10 +339,11 @@ export async function gerarPoder<
   }
   write('blocos.json', inventory)
   // As falas do Zappy dentro da experiência, para a gravação e a auditoria (como no Farol).
-  write('zappy-etapas.json', {
-    version: 1,
-    experiences: { experiencia: discoverySpeechSteps(cfg.cenaDoZappy) },
-  })
+  if (cfg.cenaDoZappy)
+    write('zappy-etapas.json', {
+      version: 1,
+      experiences: { experiencia: discoverySpeechSteps(cfg.cenaDoZappy) },
+    })
   write('modulos.md', cfg.modulos)
   console.log(cfg.resumo)
   // Os projetos dos manifestos já organizados, como o "Organizar blocos" do Estúdio (organizar-projetos.ts).

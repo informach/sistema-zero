@@ -26,7 +26,6 @@ await gerarPoder({
   nome: 'Moedas no caminho',
   pasta: 'poder-moedas-no-caminho',
   prefixo: 'moedas',
-  numero: 1,
   curso: MOEDAS_CURSO,
   etapas: MOEDAS_ETAPAS,
   etapaFinal: 'bau',

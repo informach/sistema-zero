@@ -1,6 +1,6 @@
 # Leve sua missão para o 3D
 
-Missão Faísca · O Jardim Secreto · 3D. Um projeto contínuo, uma entrega. Ajuda livre; sem certificado nem publicação obrigatória.
+Missão do Faísca · O Jardim Secreto · 3D. Um projeto contínuo, enviado na última construção. Ajuda livre no Passo a passo do projeto; sem certificado nem publicação obrigatória.
 
 ## Parte 1. O mesmo desafio, com profundidade
 
@@ -97,4 +97,4 @@ Entregue sua missão.
 - Com o regador, faça a flor abrir, saia dela e volte: ela continua aberta, sem florescer de novo.
 - Escolha outro lugar alcançável para o regador e confira as regras.
 
-[Fala integral](aula-2.roteiro.md) · [Ajuda completa](passo-a-passo.md).
+[Fala integral](aula-2.roteiro.md) · [Passo a passo](passo-a-passo.md).

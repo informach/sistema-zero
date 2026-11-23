@@ -1,8 +1,8 @@
 # Roteiro de produção · Faça o jardim florescer em 2D
 
-Master integral da professora. Montagem completa na ajuda opcional, sem resolver os encaixes no vídeo principal. Sem intervenções de personagens. Voz, escuta, gravação e publicação pendentes.
+A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para gerar a voz integral. Sem intervenções de personagens. Montagem guiada completa no vídeo, um gesto por vez, com o destino à vista antes da peça. Gravação e publicação desta revisão ainda não confirmadas.
 
-**Antes de gravar:** use um perfil de ensaio sem envio nesta aula. Mostre o projeto da dimensão correta. Não preencha Recado no envio. Mostre Salvo e Projeto enviado! só quando esses estados aparecerem de verdade.
+**Antes de gravar:** use um perfil de ensaio sem envio nesta aula. Mostre o projeto da dimensão correta. Não preencha Recado no envio. Mostre Objetivo cumprido! e Projeto enviado! só quando esses estados aparecerem de verdade.
 
 ## Parte 1. Conheça sua missão
 

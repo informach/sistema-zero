@@ -6,7 +6,7 @@
   "blocks": [
     {
       "key": "video-abertura",
-      "plannedVideo": "Título: Conheça sua missão\n\nMaster integral da professora: aula-1.roteiro.md, clipe video-abertura. Gravação pendente."
+      "plannedVideo": "Título: Conheça sua missão\n\nMaster integral da professora. Roteiro: aula-1.roteiro.md, clipe video-abertura. Gravação pendente."
     },
     {
       "key": "ponte-abertura",
@@ -955,7 +955,7 @@
     },
     {
       "key": "video-material",
-      "plannedVideo": "Título: Ajuda quando você precisar\n\nMaster integral da professora: aula-1.roteiro.md, clipe video-material. Gravação pendente."
+      "plannedVideo": "Título: Ajuda quando você precisar\n\nMaster integral da professora. Roteiro: aula-1.roteiro.md, clipe video-material. Gravação pendente."
     },
     {
       "key": "ponte-material",
@@ -967,7 +967,7 @@
     },
     {
       "key": "video-movimento",
-      "plannedVideo": "Título: Faça o personagem andar\n\nMaster integral da professora: aula-1.roteiro.md, clipe video-movimento. Gravação pendente."
+      "plannedVideo": "Título: Faça o personagem andar\n\nMaster integral da professora. Roteiro: aula-1.roteiro.md, clipe video-movimento. Gravação pendente."
     },
     {
       "key": "ponte-movimento",
@@ -979,7 +979,7 @@
     },
     {
       "key": "video-limite",
-      "plannedVideo": "Título: Fique dentro do jardim\n\nMaster integral da professora: aula-1.roteiro.md, clipe video-limite. Gravação pendente."
+      "plannedVideo": "Título: Fique dentro do jardim\n\nMaster integral da professora. Roteiro: aula-1.roteiro.md, clipe video-limite. Gravação pendente."
     },
     {
       "key": "ponte-limite",
@@ -991,7 +991,7 @@
     },
     {
       "key": "video-coleta",
-      "plannedVideo": "Título: Recolha e guarde a informação\n\nMaster integral da professora: aula-1.roteiro.md, clipe video-coleta. Gravação pendente."
+      "plannedVideo": "Título: Recolha e guarde a informação\n\nMaster integral da professora. Roteiro: aula-1.roteiro.md, clipe video-coleta. Gravação pendente."
     },
     {
       "key": "ponte-coleta",
@@ -1003,7 +1003,7 @@
     },
     {
       "key": "video-decisao",
-      "plannedVideo": "Título: Uma flor, duas respostas\n\nMaster integral da professora: aula-1.roteiro.md, clipe video-decisao. Gravação pendente."
+      "plannedVideo": "Título: Uma flor, duas respostas\n\nMaster integral da professora. Roteiro: aula-1.roteiro.md, clipe video-decisao. Gravação pendente."
     },
     {
       "key": "ponte-decisao",
@@ -1015,7 +1015,7 @@
     },
     {
       "key": "video-posicao",
-      "plannedVideo": "Título: Escolha outro lugar\n\nMaster integral da professora: aula-1.roteiro.md, clipe video-posicao. Gravação pendente."
+      "plannedVideo": "Título: Escolha outro lugar\n\nMaster integral da professora. Roteiro: aula-1.roteiro.md, clipe video-posicao. Gravação pendente."
     },
     {
       "key": "ponte-posicao",
@@ -1027,7 +1027,7 @@
     },
     {
       "key": "video-entrega",
-      "plannedVideo": "Título: Envie seu jardim 2D\n\nMaster integral da professora: aula-1.roteiro.md, clipe video-entrega. Gravação pendente."
+      "plannedVideo": "Título: Envie seu jardim 2D\n\nMaster integral da professora. Roteiro: aula-1.roteiro.md, clipe video-entrega. Gravação pendente."
     },
     {
       "key": "ponte-entrega",
@@ -6446,7 +6446,25 @@
             "url": "/como-fazer/estudio-achar-e-organizar-blocos"
           },
           {
-            "id": "pedir-ajuda",
+            "id": "plataforma-baixar-materiais",
+            "kind": "link",
+            "label": "Como abrir o Passo a passo do projeto e os materiais",
+            "url": "/como-fazer/plataforma-baixar-materiais"
+          },
+          {
+            "id": "plataforma-abrir-uma-aula",
+            "kind": "link",
+            "label": "Como abrir uma aula e trocar de parte",
+            "url": "/como-fazer/plataforma-abrir-uma-aula"
+          },
+          {
+            "id": "plataforma-ampliar-a-atividade",
+            "kind": "link",
+            "label": "Como dar mais espaço ao jogo e à experiência",
+            "url": "/como-fazer/plataforma-ampliar-a-atividade"
+          },
+          {
+            "id": "plataforma-pedir-ajuda",
             "kind": "link",
             "label": "Como pedir ajuda à equipe",
             "url": "/como-fazer/plataforma-pedir-ajuda"

@@ -26,7 +26,6 @@ await gerarPoder({
   nome: 'O segredo da cabana',
   pasta: 'poder-o-segredo-da-cabana',
   prefixo: 'cabana',
-  numero: 2,
   curso: CABANA_CURSO,
   etapas: CABANA_ETAPAS,
   etapaFinal: 'porta',

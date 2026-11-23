@@ -27,7 +27,6 @@ await gerarPoder({
   nome: 'O baú dos símbolos',
   pasta: 'poder-o-bau-dos-simbolos',
   prefixo: 'simbolos',
-  numero: 4,
   curso: SIMBOLOS_CURSO,
   etapas: SIMBOLOS_ETAPAS,
   etapaFinal: 'estrela',

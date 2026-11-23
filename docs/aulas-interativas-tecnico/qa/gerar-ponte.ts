@@ -27,7 +27,6 @@ await gerarPoder({
   nome: 'A ponte apressada',
   pasta: 'poder-a-ponte-apressada',
   prefixo: 'ponte',
-  numero: 3,
   curso: PONTE_CURSO,
   etapas: PONTE_ETAPAS,
   etapaFinal: 'atravessar',
