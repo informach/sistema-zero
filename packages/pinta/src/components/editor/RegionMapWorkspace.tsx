@@ -42,7 +42,7 @@ import { SessionZoomControls } from './ZoomControls'
 const RegionalRules = lazy(async () => ({
   default: (await import('./MapAutomappingPanel')).RegionAutomappingPanel,
 }))
-interface CompleteRegionMapWorkspaceProps {
+export interface CompleteRegionMapWorkspaceProps {
   editor: PintaEditorStore<PintaMemoryAsset>
   session: PintaSessionStore
   gallery: readonly PintaMemoryAsset[]

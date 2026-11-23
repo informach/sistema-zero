@@ -37,7 +37,8 @@ export type ProjectedMapLayer<Grid = ProjectedTileCells> =
   | ProjectedTileLayer<Grid>
   | TilemapObjectLayer
   | TilemapGroupLayer
-type ProjectedMap<Grid> = Omit<RegionTilemapAsset, 'schema' | 'layers'> & {
+/** The body never carries a rulebook; `WorkshopProjectedMap` adds the book beside it. */
+type ProjectedMap<Grid> = Omit<RegionTilemapAsset, 'schema' | 'layers' | 'automapping'> & {
   schema: typeof PROJECTED_TILEMAP_SCHEMA
   projection: PintaMapProjection
   growth: 'fixed' | 'expandable'

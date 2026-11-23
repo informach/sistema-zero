@@ -123,7 +123,7 @@ async function mapaDoDisco(): Promise<TilemapAsset> {
   const conferir = createGalleryStore()
   await conferir.getState().load()
   const map = conferir.getState().assets.find((a) => a.kind === 'tilemap')
-  if (map?.kind !== 'tilemap') throw new Error('mapa esperado no disco')
+  if (map?.kind !== 'tilemap' || 'origin' in map) throw new Error('mapa esperado no disco')
   return map
 }
 
@@ -162,7 +162,7 @@ describe('pintura do mapa pelo teclado', () => {
       const maps = createGalleryStore()
       await maps.getState().load()
       const map = maps.getState().assets.find((a) => a.kind === 'tilemap' && a.name === 'picker')
-      if (map?.kind !== 'tilemap') throw new Error('Mapa esperado')
+      if (map?.kind !== 'tilemap' || 'origin' in map) throw new Error('Mapa esperado')
       expect(map.layers.find(isTileLayer)!.cells[1 * COLS + 2]).toBe(1)
     })
   })

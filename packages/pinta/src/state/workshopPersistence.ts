@@ -122,7 +122,7 @@ export function createWorkshopPintaPersistence(
   return {
     ...local,
     workshopReader: true as const,
-    observesReferences: true,
+    observesReferences: true as const,
     persistRevision,
     openRegionSession: (id: string, signal?: AbortSignal) =>
       openLocalRegionAuthorSession(namespace, id, signal),

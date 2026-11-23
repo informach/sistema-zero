@@ -8,6 +8,7 @@
  */
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import type { PintaMemoryAsset } from '../../core/assetMemory'
 import { COPY } from '../../core/copy'
 import { createPixelSpriteAsset, type PintaAsset } from '../../core/project'
 import { clearIdbMock } from '../../testing/idbMock'
@@ -31,7 +32,7 @@ beforeEach(() => {
 })
 
 /** O que o IndexedDB do PERFIL tem agora — o que a curadoria de armazenamento promete não tocar. */
-async function noDiscoDoPerfil(): Promise<PintaAsset[]> {
+async function noDiscoDoPerfil(): Promise<PintaMemoryAsset[]> {
   const conferir = createGalleryStore()
   await conferir.getState().load()
   return conferir.getState().assets

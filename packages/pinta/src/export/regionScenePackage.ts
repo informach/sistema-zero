@@ -142,6 +142,17 @@ export async function prepareRegionScenePackage(captured: ScenePackageSource, im
 
 type Prepared = Awaited<ReturnType<typeof prepareRegionScenePackage>>
 
+/** Pygame reads Scene 4 only; a projected map refuses the whole world. */
+function pygameScenes(world: Prepared): Map<string, PintaRegionSceneWire> {
+  const scenes = new Map<string, PintaRegionSceneWire>()
+  for (const [id, { scene }] of world.maps) {
+    if (scene.version === 5)
+      throw new Error('Este destino ainda precisa de um adaptador de projeção.')
+    scenes.set(id, scene)
+  }
+  return scenes
+}
+
 export function writeRegionPackageImages(world: Prepared) {
   const maps: Record<string, SceneWire> = Object.create(null)
   let imagePixels = PINTA_REGION_WORLD_BUDGET.imagePixels
@@ -248,8 +259,7 @@ export async function buildRegionScenePackage(
   imageOf?: ImageOf,
 ) {
   const world = await prepareRegionScenePackage(captured, imageOf)
-  if (target === 'pygame' && [...world.maps.values()].some(({ scene }) => scene.version === 5))
-    throw new Error('Este destino ainda precisa de um adaptador de projeção.')
+  const pygame = target === 'pygame' ? pygameScenes(world) : null
   if (target === 'godot') {
     // The Godot script materializes every set instance; charge that fan-out first.
     const { assertGodotRegionWork } = await import('./godot/regionWork')
@@ -260,8 +270,8 @@ export async function buildRegionScenePackage(
   const instructions =
     target === 'phaser'
       ? (await import('./phaser/regionPackage')).writeRegionPhaserFiles(world.put)
-      : target === 'pygame'
-        ? await (await import('./pygameRegionProject')).writeRegionPygameFiles(world)
+      : pygame
+        ? await (await import('./pygameRegionProject')).writeRegionPygameFiles(world, pygame)
         : target === 'godot'
           ? await writeRegionGodotFiles(world)
           : [

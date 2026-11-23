@@ -245,13 +245,7 @@ describe('paletteLibraryStore', () => {
     expect(await disabled.getState().removePalette('p1')).toBe(false)
     expect(await persistence.loadPaletteLibrary?.()).toBeNull()
 
-    const bare = createPaletteLibraryStore({
-      persistAsset: async () => {},
-      persistAssets: async () => {},
-      deleteAsset: async () => {},
-      loadAssetById: async () => null,
-      listAllAssets: async () => [],
-    })
+    const bare = createPaletteLibraryStore({})
     expect(bare.getState().enabled).toBe(false)
   })
 })

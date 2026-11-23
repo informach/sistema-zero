@@ -24,7 +24,7 @@ export function MapSetEditor(): JSX.Element {
 export function RegionalSetEditor({
   workspace,
 }: {
-  workspace: import('./RegionMapWorkspace').RegionMapWorkspaceProps
+  workspace: import('./RegionMapWorkspace').CompleteRegionMapWorkspaceProps
 }): JSX.Element {
   const inner = useMemo(() => createRegionalMapSetEditorStore(workspace.editor), [workspace.editor])
   useEffect(

@@ -1,15 +1,15 @@
+import type { PintaRegionSceneWire } from '@sistemazero/core/studio/pinta-region-scene'
 import { buildPygamePintaScenesModule } from './pythonScenesModuleSource'
 import type { prepareRegionScenePackage } from './regionScenePackage'
 import { encodeRegionSceneWorldPng } from './regionSceneWorldPng'
 
-/** The desktop module reads the same complete PNG-5 as Studio's Python reader. */
+/** The desktop module reads the same complete PNG-5 as Studio's Python reader. It receives only
+ * Scene 4 maps: the package refuses a projected world before writing any file. */
 export async function writeRegionPygameFiles(
   world: Awaited<ReturnType<typeof prepareRegionScenePackage>>,
+  scenes: ReadonlyMap<string, PintaRegionSceneWire>,
 ): Promise<string[]> {
-  const { png } = await encodeRegionSceneWorldPng(
-    world.rootId,
-    new Map([...world.maps].map(([id, { scene }]) => [id, scene])),
-  )
+  const { png } = await encodeRegionSceneWorldPng(world.rootId, scenes)
   world.put('cenario.png', png)
   world.put('requirements.txt', 'pygame-ce==2.5.8\n')
   world.put('pinta_cenario.py', buildPygamePintaScenesModule())

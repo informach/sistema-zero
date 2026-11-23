@@ -4,6 +4,7 @@ import { type PintaAppContextValue, PintaAppProvider } from '../../src/component
 import { PintaEditorProvider } from '../../src/components/editor/editorContext'
 import { TileStrip } from '../../src/components/editor/TileStrip'
 import { ToastProvider } from '../../src/components/ui/Toast'
+import type { PintaMemoryAsset } from '../../src/core/assetMemory'
 import {
   createBitmap,
   createTilemapAsset,
@@ -14,6 +15,7 @@ import {
 import { createClipboardStore } from '../../src/state/clipboardStore'
 import { createEditorStore, type PintaEditorStore } from '../../src/state/editorStore'
 import { createGalleryStore } from '../../src/state/galleryStore'
+import { isLocalRegionAsset } from '../../src/state/localRegionAssetAuthority'
 import { createPaletteLibraryStore } from '../../src/state/paletteLibraryStore'
 import { createPintaPersistence } from '../../src/state/persistence'
 import { createSessionStore } from '../../src/state/sessionStore'
@@ -22,6 +24,13 @@ import { createMapSet } from '../../src/tiles/sets'
 import { addObjectLayer, setCell } from '../../src/tiles/tilemapOps'
 
 export type TileRemapMode = 'normal' | 'overflow' | 'supersede'
+
+/** The confirmed gallery of this host holds public dense assets only; a regional one is a host error. */
+function confirmedWire(asset: PintaMemoryAsset): unknown {
+  if (isLocalRegionAsset(asset))
+    throw new Error('A galeria deste ensaio só guarda desenhos públicos.')
+  return pintaAssetToWire(asset)
+}
 
 export async function createTilesetRemapHost(mode: TileRemapMode, namespace: string) {
   const sheet = {
@@ -129,7 +138,7 @@ export async function createTilesetRemapHost(mode: TileRemapMode, namespace: str
     snapshot: () => ({
       asset: pintaAssetToWire(editor.getState().asset),
       linked: (editor.getState().linkedAssets ?? []).map(pintaAssetToWire),
-      confirmed: gallery.getState().assets.map(pintaAssetToWire),
+      confirmed: gallery.getState().assets.map(confirmedWire),
       frame: session.getState().frameIndex,
       canUndo: editor.getState().canUndo,
       dirty: editor.getState().dirty,

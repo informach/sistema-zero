@@ -78,7 +78,7 @@ async function mapaDoDisco(): Promise<TilemapAsset> {
   const conferir = createGalleryStore()
   await conferir.getState().load()
   const map = conferir.getState().assets.find((a) => a.kind === 'tilemap')
-  if (map?.kind !== 'tilemap') throw new Error('mapa esperado no disco')
+  if (map?.kind !== 'tilemap' || 'origin' in map) throw new Error('mapa esperado no disco')
   return map
 }
 

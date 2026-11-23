@@ -840,7 +840,9 @@ export function FocalRegionObjectsPreview({
   scale: number
   catalog: readonly PintaMemoryAsset[]
 }): JSX.Element | null {
-  const layers = map.layers.filter((layer) => layer.kind === 'objects' && layer.placement.visible)
+  const layers = map.layers.flatMap((layer) =>
+    layer.kind === 'objects' && layer.placement.visible ? [layer] : [],
+  )
   if (!layers.length) return null
   const unit = 1 / Math.max(scale, 0.0001)
   return (
