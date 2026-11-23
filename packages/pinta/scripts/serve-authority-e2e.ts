@@ -12,7 +12,10 @@ const temporary = await mkdtemp(join(pinta, '.cache/authority-'))
 const { extracted } = await prepareAuthorityBaseline(root, temporary)
 const { extracted: previous } = await prepareAuthorityBaseline(root, temporary, '899d2596f')
 const { extracted: denseReader } = await prepareAuthorityBaseline(root, temporary, 'ec4e58066')
-const { extracted: preCausal } = await prepareAuthorityBaseline(root, temporary, '64c197d53')
+// 7ddb3b7d7 é o "Liga autoria do Pinta à sincronização causal da conta" que entrou no histórico
+// publicado. O 64c197d53 de antes ficou fora dele (o CI não o busca: "not our ref"), e o grafo
+// copiado daqui é o mesmo nos dois, salvo uma quebra de linha em core/project.ts.
+const { extracted: preCausal } = await prepareAuthorityBaseline(root, temporary, '7ddb3b7d7')
 const proof = join(temporary, 'proof')
 await mkdir(proof)
 for (const [version, src] of [
