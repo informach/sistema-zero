@@ -1,0 +1,387 @@
+{
+  "generatedAt": "2026-11-23T17:25:01.956Z",
+  "services": {
+    "packages": 47,
+    "allPassed": true,
+    "counts": {
+      "@sistemazero/agent-core": {
+        "pass": 1,
+        "fail": 0,
+        "skip": 0
+      },
+      "@sistemazero/admin": {
+        "pass": 1000,
+        "fail": 0,
+        "skip": 0
+      },
+      "@sistemazero/agent-integrations": {
+        "pass": 8,
+        "fail": 0,
+        "skip": 0
+      },
+      "@sistemazero/api-gateway": {
+        "pass": 334,
+        "fail": 0,
+        "skip": 2
+      },
+      "@sistemazero/arquipelago-admin": {
+        "pass": 10,
+        "fail": 0,
+        "skip": 0
+      },
+      "@sistemazero/arquipelago": {
+        "pass": 2197,
+        "fail": 0,
+        "skip": 1
+      },
+      "@sistemazero/arquipelago-contracts": {
+        "pass": 274,
+        "fail": 0,
+        "skip": 0
+      },
+      "@sistemazero/arquipelago-api": {
+        "pass": 319,
+        "fail": 0,
+        "skip": 146
+      },
+      "@sistemazero/avatar-quarto": {
+        "pass": 31,
+        "fail": 0,
+        "skip": 0
+      },
+      "@sistemazero/auth": {
+        "pass": 308,
+        "fail": 0,
+        "skip": 88
+      },
+      "@sistemazero/catalog": {
+        "pass": 163,
+        "fail": 0,
+        "skip": 13
+      },
+      "@sistemazero/community": {
+        "pass": 125,
+        "fail": 0,
+        "skip": 0
+      },
+      "@sistemazero/core": {
+        "pass": 3309,
+        "fail": 0,
+        "skip": 0
+      },
+      "@sistemazero/community-kids": {
+        "pass": 1734,
+        "fail": 0,
+        "skip": 0
+      },
+      "@sistemazero/creation-cleanup-cron": {
+        "pass": 4,
+        "fail": 0,
+        "skip": 0
+      },
+      "@sistemazero/fiscal": {
+        "pass": 147,
+        "fail": 0,
+        "skip": 14
+      },
+      "@sistemazero/funnel": {
+        "pass": 685,
+        "fail": 0,
+        "skip": 5
+      },
+      "@sistemazero/helpdesk": {
+        "pass": 232,
+        "fail": 0,
+        "skip": 84
+      },
+      "@sistemazero/helpdesk-app": {
+        "pass": 26,
+        "fail": 0,
+        "skip": 0
+      },
+      "@sistemazero/helpdesk-contracts": {
+        "pass": 9,
+        "fail": 0,
+        "skip": 0
+      },
+      "@sistemazero/hub": {
+        "pass": 197,
+        "fail": 0,
+        "skip": 57
+      },
+      "@sistemazero/live-recorder": {
+        "pass": 11,
+        "fail": 0,
+        "skip": 0
+      },
+      "@sistemazero/live-supervisor": {
+        "pass": 6,
+        "fail": 0,
+        "skip": 0
+      },
+      "@sistemazero/marketing": {
+        "pass": 303,
+        "fail": 0,
+        "skip": 166
+      },
+      "@sistemazero/marketing-app": {
+        "pass": 84,
+        "fail": 0,
+        "skip": 0
+      },
+      "@sistemazero/marketing-contracts": {
+        "pass": 8,
+        "fail": 0,
+        "skip": 0
+      },
+      "@sistemazero/marketing-import": {
+        "pass": 25,
+        "fail": 0,
+        "skip": 0
+      },
+      "@sistemazero/marketing-production": {
+        "pass": 6,
+        "fail": 0,
+        "skip": 0
+      },
+      "@sistemazero/marketing-workbench": {
+        "pass": 32,
+        "fail": 0,
+        "skip": 0
+      },
+      "@sistemazero/member-shell": {
+        "pass": 2747,
+        "fail": 0,
+        "skip": 0
+      },
+      "@sistemazero/members": {
+        "pass": 2406,
+        "fail": 0,
+        "skip": 769
+      },
+      "@sistemazero/messaging": {
+        "pass": 173,
+        "fail": 0,
+        "skip": 11
+      },
+      "@sistemazero/molda-cenarios": {
+        "pass": 178,
+        "fail": 0,
+        "skip": 0
+      },
+      "@sistemazero/molda-cenarios-agente": {
+        "pass": 22,
+        "fail": 0,
+        "skip": 0
+      },
+      "@sistemazero/molda-cenarios-core": {
+        "pass": 457,
+        "fail": 0,
+        "skip": 0
+      },
+      "@sistemazero/molda-cenarios-motor": {
+        "pass": 339,
+        "fail": 0,
+        "skip": 0
+      },
+      "@sistemazero/palco-gravacao": {
+        "pass": 54,
+        "fail": 0,
+        "skip": 0
+      },
+      "@sistemazero/payments": {
+        "pass": 442,
+        "fail": 0,
+        "skip": 219
+      },
+      "@sistemazero/pensa": {
+        "pass": 46,
+        "fail": 0,
+        "skip": 0
+      },
+      "@sistemazero/pinta": {
+        "pass": 3006,
+        "fail": 0,
+        "skip": 18
+      },
+      "@sistemazero/referrals": {
+        "pass": 214,
+        "fail": 0,
+        "skip": 50
+      },
+      "@sistemazero/studio-ai-reconcile-cron": {
+        "pass": 33,
+        "fail": 0,
+        "skip": 0
+      },
+      "@sistemazero/studio-language-service": {
+        "pass": 63,
+        "fail": 0,
+        "skip": 0
+      },
+      "@sistemazero/studio-runtime": {
+        "pass": 414,
+        "fail": 0,
+        "skip": 56
+      },
+      "@sistemazero/tui": {
+        "pass": 7,
+        "fail": 0,
+        "skip": 0
+      },
+      "@sistemazero/ui": {
+        "pass": 135,
+        "fail": 0,
+        "skip": 0
+      }
+    }
+  },
+  "suites": [
+    {
+      "log": "molda-locked.log",
+      "pass": 3678,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "log": "studio-locked.log",
+      "pass": 12592,
+      "fail": 1,
+      "skip": 7
+    },
+    {
+      "log": "studio-resumed.log",
+      "pass": 132,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "log": "ci-and-lessons.log",
+      "pass": 1296,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "log": "auth-final-db.log",
+      "pass": 76,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "log": "members-db-isolated-final.log",
+      "pass": 91,
+      "fail": 0,
+      "skip": 2
+    },
+    {
+      "log": "referrals-db.log",
+      "pass": 43,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "log": "hub-db.log",
+      "pass": 2,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "log": "commerce-db.log",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "log": "thumbnail-regression-final.log",
+      "pass": 15,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "log": "agent-runtime.log",
+      "pass": 62,
+      "fail": 4,
+      "skip": 0
+    }
+  ],
+  "types": {
+    "completed": [
+      "@sistemazero/admin",
+      "@sistemazero/agent-core",
+      "@sistemazero/agent-integrations",
+      "@sistemazero/agent-runtime",
+      "@sistemazero/api-gateway",
+      "@sistemazero/arquipelago",
+      "@sistemazero/arquipelago-admin",
+      "@sistemazero/arquipelago-api",
+      "@sistemazero/arquipelago-contracts",
+      "@sistemazero/auth",
+      "@sistemazero/avatar-quarto",
+      "@sistemazero/catalog",
+      "@sistemazero/community",
+      "@sistemazero/core",
+      "@sistemazero/creation-cleanup-cron",
+      "@sistemazero/edisvg",
+      "@sistemazero/fiscal",
+      "@sistemazero/funnel",
+      "@sistemazero/helpdesk",
+      "@sistemazero/helpdesk-app",
+      "@sistemazero/helpdesk-contracts",
+      "@sistemazero/hub",
+      "@sistemazero/live-recorder",
+      "@sistemazero/live-supervisor",
+      "@sistemazero/marketing",
+      "@sistemazero/marketing-app",
+      "@sistemazero/marketing-contracts",
+      "@sistemazero/marketing-import",
+      "@sistemazero/marketing-production",
+      "@sistemazero/marketing-workbench",
+      "@sistemazero/members",
+      "@sistemazero/messaging",
+      "@sistemazero/molda",
+      "@sistemazero/molda-cenarios",
+      "@sistemazero/molda-cenarios-agente",
+      "@sistemazero/molda-cenarios-core",
+      "@sistemazero/molda-cenarios-motor"
+    ],
+    "initialErrors": [
+      "error TS2352: Conversion of type 'object & Record<\"isTexture\", unknown>' to type '{ dispose(): void; image?: { close?: (() => void) | undefined; } | undefined; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.",
+      "error TS2352: Conversion of type 'object & Record<\"isTexture\", unknown>' to type '{ dispose(): void; image?: { close?: (() => void) | undefined; } | undefined; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.",
+      "error TS2322: Type 'WebGLRenderer' is not assignable to type '{ render(cena: unknown, camera: unknown): void; getContext(): WebGL2RenderingContext; domElement: HTMLCanvasElement; }'.",
+      "error TS2352: Conversion of type 'object & Record<\"isTexture\", unknown>' to type '{ dispose(): void; image?: { close?: (() => void) | undefined; } | undefined; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first."
+    ],
+    "correctedConsumersLog": "types-corrected-final.log",
+    "correctedConsumersOutput": "@sistemazero/community-kids:typecheck    | Done in 243.11s"
+  },
+  "biome": [
+    "Checked 18030 files in 39s. No fixes applied.\r",
+    "Found 309 warnings.\r",
+    "Found 297 infos.\r"
+  ],
+  "browser": {
+    "studio": [
+      "  37 passed (5.9m)\r"
+    ],
+    "pinta": [
+      "  6 passed (27.8s)\r"
+    ],
+    "studentTests": [
+      "  1 failed\r",
+      "  5 passed (2.7m)\r"
+    ],
+    "studentAdvancedRerun": [
+      "  1 passed (1.1m)\r"
+    ],
+    "cenarios": {
+      "scenarios": 8,
+      "log": "cenarios-browser.log"
+    }
+  },
+  "limits": [
+    "Agent-runtime: four native Windows helper launches blocked by Code Integrity 3033/3077.",
+    "Two opt-in Members predecessor deployment proofs were skipped without predecessor roots.",
+    "Members DB: nine files passed in individual Bun 1.3.11 processes. Combined restart failed under 1.3.11; same 25 cases passed under 1.4.4; nine combined files on 1.4.4 hit Cenarios hook timeouts. Combined mode is not approved.",
+    "No full OS/browser CI matrix or physical GPU qualification was run by this review.",
+    "Other sessions changed HEAD during verification; inventory is pinned to the initial HEAD."
+  ]
+}

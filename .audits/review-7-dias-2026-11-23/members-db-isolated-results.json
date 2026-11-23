@@ -1,0 +1,38 @@
+[
+  {
+    "file": "pinta-causal",
+    "exitCode": 0
+  },
+  {
+    "file": "pinta-causal-http",
+    "exitCode": 0
+  },
+  {
+    "file": "pinta-causal-adocao",
+    "exitCode": 0
+  },
+  {
+    "file": "pinta-palette-writes",
+    "exitCode": 0
+  },
+  {
+    "file": "pinta-palette-writes-http",
+    "exitCode": 0
+  },
+  {
+    "file": "studio-sealed-reader",
+    "exitCode": 0
+  },
+  {
+    "file": "studio-sealed-writer",
+    "exitCode": 0
+  },
+  {
+    "file": "cenarios.repository",
+    "exitCode": 0
+  },
+  {
+    "file": "cenarios-publicacoes",
+    "exitCode": 0
+  }
+]

@@ -1,0 +1,160 @@
+{
+  "generatedAt": "2026-11-23T17:25:01.956Z",
+  "services": {
+    "packages": 47,
+    "allPassed": true,
+    "counts": {
+      "pass": 22324,
+      "fail": 0,
+      "skip": 1699
+    }
+  },
+  "suites": [
+    {
+      "log": "molda-locked.log",
+      "pass": 3678,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "log": "studio-locked.log",
+      "pass": 12592,
+      "fail": 1,
+      "skip": 7
+    },
+    {
+      "log": "studio-resumed.log",
+      "pass": 132,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "log": "ci-and-lessons.log",
+      "pass": 1296,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "log": "auth-final-db.log",
+      "pass": 76,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "log": "members-db-isolated-final.log",
+      "pass": 91,
+      "fail": 0,
+      "skip": 2
+    },
+    {
+      "log": "referrals-db.log",
+      "pass": 43,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "log": "hub-db.log",
+      "pass": 2,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "log": "commerce-db.log",
+      "pass": 1,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "log": "thumbnail-regression-final.log",
+      "pass": 15,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "log": "agent-runtime.log",
+      "pass": 62,
+      "fail": 4,
+      "skip": 0
+    }
+  ],
+  "types": {
+    "completed": [
+      "@sistemazero/admin",
+      "@sistemazero/agent-core",
+      "@sistemazero/agent-integrations",
+      "@sistemazero/agent-runtime",
+      "@sistemazero/api-gateway",
+      "@sistemazero/arquipelago",
+      "@sistemazero/arquipelago-admin",
+      "@sistemazero/arquipelago-api",
+      "@sistemazero/arquipelago-contracts",
+      "@sistemazero/auth",
+      "@sistemazero/avatar-quarto",
+      "@sistemazero/catalog",
+      "@sistemazero/community",
+      "@sistemazero/core",
+      "@sistemazero/creation-cleanup-cron",
+      "@sistemazero/edisvg",
+      "@sistemazero/fiscal",
+      "@sistemazero/funnel",
+      "@sistemazero/helpdesk",
+      "@sistemazero/helpdesk-app",
+      "@sistemazero/helpdesk-contracts",
+      "@sistemazero/hub",
+      "@sistemazero/live-recorder",
+      "@sistemazero/live-supervisor",
+      "@sistemazero/marketing",
+      "@sistemazero/marketing-app",
+      "@sistemazero/marketing-contracts",
+      "@sistemazero/marketing-import",
+      "@sistemazero/marketing-production",
+      "@sistemazero/marketing-workbench",
+      "@sistemazero/members",
+      "@sistemazero/messaging",
+      "@sistemazero/molda",
+      "@sistemazero/molda-cenarios",
+      "@sistemazero/molda-cenarios-agente",
+      "@sistemazero/molda-cenarios-core",
+      "@sistemazero/molda-cenarios-motor"
+    ],
+    "initialErrors": [
+      "error TS2352: Conversion of type 'object & Record<\"isTexture\", unknown>' to type '{ dispose(): void; image?: { close?: (() => void) | undefined; } | undefined; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.",
+      "error TS2352: Conversion of type 'object & Record<\"isTexture\", unknown>' to type '{ dispose(): void; image?: { close?: (() => void) | undefined; } | undefined; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.",
+      "error TS2322: Type 'WebGLRenderer' is not assignable to type '{ render(cena: unknown, camera: unknown): void; getContext(): WebGL2RenderingContext; domElement: HTMLCanvasElement; }'.",
+      "error TS2352: Conversion of type 'object & Record<\"isTexture\", unknown>' to type '{ dispose(): void; image?: { close?: (() => void) | undefined; } | undefined; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first."
+    ],
+    "correctedConsumersLog": "types-corrected-final.log",
+    "correctedConsumersOutput": "@sistemazero/community-kids:typecheck    | Done in 243.11s"
+  },
+  "biome": [
+    "Checked 18030 files in 39s. No fixes applied.\r",
+    "Found 309 warnings.\r",
+    "Found 297 infos.\r"
+  ],
+  "browser": {
+    "studio": [
+      "  37 passed (5.9m)\r"
+    ],
+    "pinta": [
+      "  6 passed (27.8s)\r"
+    ],
+    "studentTests": [
+      "  1 failed\r",
+      "  5 passed (2.7m)\r"
+    ],
+    "studentAdvancedRerun": [
+      "  1 passed (1.1m)\r"
+    ],
+    "cenarios": {
+      "scenarios": 8,
+      "log": "cenarios-browser.log"
+    }
+  },
+  "limits": [
+    "Agent-runtime: four native Windows helper launches blocked by Code Integrity 3033/3077.",
+    "Two opt-in Members predecessor deployment proofs were skipped without predecessor roots.",
+    "Members DB: nine files passed in individual Bun 1.3.11 processes. Combined restart failed under 1.3.11; same 25 cases passed under 1.4.4; nine combined files on 1.4.4 hit Cenarios hook timeouts. Combined mode is not approved.",
+    "No full OS/browser CI matrix or physical GPU qualification was run by this review.",
+    "Other sessions changed HEAD during verification; inventory is pinned to the initial HEAD."
+  ]
+}
