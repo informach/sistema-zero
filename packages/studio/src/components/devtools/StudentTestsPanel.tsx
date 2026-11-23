@@ -135,7 +135,9 @@ export function StudentTestsPanel(): JSX.Element {
   // A aba saiu de cena (a gaveta fechou): a rodada para e o quadro escondido sai.
   useEffect(
     () => () => {
-      abort.current?.abort()
+      const controller = abort.current
+      abort.current = null
+      controller?.abort()
       results.setState({ running: null })
     },
     [results],
@@ -199,34 +201,41 @@ export function StudentTestsPanel(): JSX.Element {
       outcomes: {},
       running: { current: 1, total: tests.length },
     })
-    if (pro) {
-      await runOnServer(controller)
-      if (abort.current === controller) abort.current = null
-      results.setState({ running: null })
-      return
-    }
-    for (const [index, test] of tests.entries()) {
-      if (controller.signal.aborted) break
-      results.setState({ running: { current: index + 1, total: tests.length } })
-      const outcome = python
-        ? await import('../../studentTests/pythonRunner').then(({ runPythonStudentTest }) =>
-            runPythonStudentTest({
+    try {
+      if (pro) {
+        await runOnServer(controller)
+        return
+      }
+      for (const [index, test] of tests.entries()) {
+        if (controller.signal.aborted) break
+        results.setState({ running: { current: index + 1, total: tests.length } })
+        const outcome = python
+          ? await import('../../studentTests/pythonRunner').then(({ runPythonStudentTest }) =>
+              runPythonStudentTest({
+                test,
+                host: pythonHost?.get() ?? null,
+                signal: controller.signal,
+              }),
+            )
+          : await runStudentTest({
               test,
-              host: pythonHost?.get() ?? null,
+              documentFactory: previewDocument?.get() ?? null,
+              parentOrigin: window.location.origin,
               signal: controller.signal,
-            }),
-          )
-        : await runStudentTest({
-            test,
-            documentFactory: previewDocument?.get() ?? null,
-            parentOrigin: window.location.origin,
-            signal: controller.signal,
-          })
-      if (controller.signal.aborted) break
-      results.setState((s) => ({ outcomes: { ...s.outcomes, [test.id]: outcome } }))
+            })
+        if (controller.signal.aborted) break
+        results.setState((s) => ({ outcomes: { ...s.outcomes, [test.id]: outcome } }))
+      }
+    } catch (error) {
+      if (!controller.signal.aborted)
+        setRunError(error instanceof Error && error.message ? error.message : t('tests.runError'))
+    } finally {
+      // Uma rodada encerrada por uma montagem anterior não é dona da rodada atual.
+      if (abort.current === controller) {
+        abort.current = null
+        results.setState({ running: null })
+      }
     }
-    if (abort.current === controller) abort.current = null
-    results.setState({ running: null })
   }
 
   const save = (next: StudioStudentTest[], changedId: string | null) => {

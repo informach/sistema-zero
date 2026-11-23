@@ -12,8 +12,11 @@ import {
 } from '@testing-library/react'
 import { createEmptyProject } from '#core'
 import { javaScriptProject } from '../../core/editableProject'
+import type { PreviewDocumentResult } from '../../state/previewDocumentFactory'
 import { useProjectStore } from '../../state/projectStore'
+import { StudioStoresContext } from '../../state/storesContext'
 import { studentTestResultsFor } from '../../state/studentTestResults'
+import { createStudioStores } from '../../state/studioStores'
 import { useUIStoreApi } from '../../state/uiStore'
 import { StudentTestsPanel } from './StudentTestsPanel'
 
@@ -65,6 +68,73 @@ afterEach(() => {
 })
 
 describe('a aba Meus testes', () => {
+  it('uma falha ao preparar o jogo avisa e libera uma nova rodada', async () => {
+    const stores = createStudioStores({ persistence: 'none' })
+    stores.project.setState({
+      project: { ...createEmptyProject('falha-na-rodada', 'Jogo'), studentTests: [comecar] },
+    })
+    const release = stores.previewDocument.register(async () => {
+      throw new Error('Não consegui preparar o jogo. Tente novamente.')
+    })
+    try {
+      render(
+        <StudioStoresContext.Provider value={stores}>
+          <StudentTestsPanel />
+        </StudioStoresContext.Provider>,
+      )
+      const run = screen.getByRole('button', { name: /Rodar os testes/ })
+      fireEvent.click(run)
+      await waitFor(() => {
+        expect(screen.getByRole('alert').textContent).toContain('Não consegui preparar o jogo.')
+        expect(run).toHaveProperty('disabled', false)
+      })
+      expect(studentTestResultsFor(stores.ui).getState().running).toBeNull()
+    } finally {
+      release()
+    }
+  })
+
+  it('fechar e reabrir a aba não deixa a rodada antiga encerrar a nova', async () => {
+    const stores = createStudioStores({ persistence: 'none' })
+    stores.project.setState({
+      project: { ...createEmptyProject('rodadas', 'Jogo'), studentTests: [comecar] },
+    })
+    const first = Promise.withResolvers<PreviewDocumentResult>()
+    const second = Promise.withResolvers<PreviewDocumentResult>()
+    let calls = 0
+    const release = stores.previewDocument.register(() =>
+      ++calls === 1 ? first.promise : second.promise,
+    )
+    const mount = () =>
+      render(
+        <StudioStoresContext.Provider value={stores}>
+          <StudentTestsPanel />
+        </StudioStoresContext.Provider>,
+      )
+    try {
+      const initial = mount()
+      fireEvent.click(screen.getByRole('button', { name: /Rodar os testes/ }))
+      await waitFor(() => expect(calls).toBe(1))
+      initial.unmount()
+      mount()
+      const run = screen.getByRole('button', { name: /Rodar os testes/ })
+      fireEvent.click(run)
+      await waitFor(() => expect(calls).toBe(2))
+      await act(async () => {
+        first.resolve({ unavailable: 'loading' })
+        await first.promise
+      })
+      expect(studentTestResultsFor(stores.ui).getState().running).not.toBeNull()
+      expect(run).toHaveProperty('disabled', true)
+      second.resolve({ unavailable: 'loading' })
+      await waitFor(() => expect(run).toHaveProperty('disabled', false))
+    } finally {
+      first.resolve({ unavailable: 'loading' })
+      second.resolve({ unavailable: 'loading' })
+      release()
+    }
+  })
+
   it('sem testes, explica o que é um teste e só deixa criar', () => {
     seed()
     render(<StudentTestsPanel />)
