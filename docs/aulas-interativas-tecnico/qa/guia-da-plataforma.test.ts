@@ -124,6 +124,7 @@ test.each([
   'ilha-farol',
   'meu-primeiro-desenho',
   'moedas-no-caminho',
+  'o-bau-dos-simbolos',
   'o-segredo-da-cabana',
   'transformando-o-vilao-em-aliado',
 ])('o texto do Passo a passo de %s segue a régua das aulas', (curso) => {

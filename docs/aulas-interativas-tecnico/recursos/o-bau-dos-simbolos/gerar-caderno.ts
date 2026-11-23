@@ -1,5 +1,38 @@
+/**
+ * Passo a passo do projeto de O baú dos símbolos (Poder 4 do Faísca), na receita do caderno visual
+ * (23/11/2026, `../caderno-visual/README.md`), no molde do gerador de Moedas no caminho e da Ilha
+ * do Farol.
+ *
+ * Todo texto que a criança lê mora em `caderno-conteudo.json`, que acompanha a aula real
+ * (`qa/simbolos-conteudo.ts` e os roteiros): aqui ficam só a composição, os desenhos dos encaixes
+ * (com os rótulos que os blocos mostram no Estúdio, 2D na Aula 1 e 3D na Aula 2), a cena do jogo
+ * 2D, o quadro da senha e a capa. A arte da capa (`caderno-visual/arte/capa-o-bau-dos-simbolos.jpg`)
+ * é a fileira do sol, da lua e da estrela na ilha, com o baú aberto, renderizada com as peças
+ * publicadas por `docs/design/o-bau-dos-simbolos-capa/capa.py`. As folhas da Aula 1 levam no
+ * cabeçalho a cena do jogo 2D, montada com as artes e os lugares do próprio jogo
+ * (`qa/simbolos-projeto.ts`); as da Aula 2, a fileira da capa de perto.
+ *
+ * Itens do conteúdo: `text`, `step` (título "N. …" vira passo numerado), `box` (com `tone`),
+ * `note`, `activity` (com `pill`), `delivery` (o card escuro do envio, com `title` e `text`),
+ * `index` (o "O que você vai fazer" da primeira folha), `investigate` (o card "O que investigar"
+ * com a lista dos testes da experiência, em `goals`), `discoveries` (os cards do que a experiência
+ * mostrou), `figure` (o quadro da senha, com os rótulos em `senha`) e `drawing` (com `name`, um dos
+ * desenhos abaixo, `title`, o que já vem no projeto em `ready` e a explicação de cada ramo do Se em
+ * `branches`). Em todo texto, `<br/>` separa parágrafos e um caminho da paleta em negrito
+ * ("Jogo 2D &gt; …") ganha a cor de caminho. `{{pagina:<id>}}` vira o número da página.
+ *
+ * Gerar e conferir: `python docs/aulas-interativas-tecnico/recursos/desafio-farol/gerar-materiais.py o-bau-dos-simbolos`
+ * (o curso ainda precisa entrar na lista `outros` desse script) ou
+ * `bun …/o-bau-dos-simbolos/gerar-caderno.ts && node …/o-bau-dos-simbolos/renderizar-caderno.mjs`.
+ */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import {
+  FAROL_ASSETS,
+  FAROL_LAYOUT,
+  type FarolAssetName,
+  farolSvg,
+} from '../../../../packages/studio/src/arte/farol-assets'
 import { FRAME_BLOCKS } from '../../../../packages/studio/src/blockly/blocks/frames'
 import { JS_BLOCKS } from '../../../../packages/studio/src/blockly/blocks/js'
 import { VALUE_BLOCKS } from '../../../../packages/studio/src/blockly/blocks/values'
@@ -7,202 +40,517 @@ import { gameTwoDBlocks } from '../../../../packages/studio/src/official-extensi
 import { gameThreeDBlocks } from '../../../../packages/studio/src/official-extensions/game-3d/blocks'
 import { FONTE as baloo } from '../../../../packages/studio/src/official-extensions/gameUiFonts/baloo2'
 import { FONTE as nunito } from '../../../../packages/studio/src/official-extensions/gameUiFonts/nunito'
-import { simbolosAjuda, simbolosAulas, simbolosExperiencia } from '../../qa/simbolos-conteudo'
-import { SIMBOLOS_ASSETS_2D } from '../../qa/simbolos-projeto'
+import {
+  BAU_2D,
+  montarProjetoSimbolos,
+  PEDRAS_2D,
+  PLACA_2D,
+  SIMBOLOS,
+  SIMBOLOS_AVISO,
+  type Simbolo,
+  type SimbolosDimensao,
+} from '../../qa/simbolos-projeto'
+import {
+  arteDoCurso,
+  cabecalho,
+  caixa,
+  capaHtml,
+  criarBlocos,
+  cssDoCaderno,
+  entrega,
+  icone,
+  nota,
+  paragrafos,
+  passo,
+  rodape,
+  secao,
+} from '../caderno-visual/visual'
 
-// O mesmo template do Cadê Todo Mundo, com as fontes e as cores reais dos blocos do Estúdio,
-// como os cadernos dos Faróis e do Jardim Secreto.
-const root = resolve(import.meta.dirname, '../../../..'),
-  out = resolve(root, 'tmp/pdfs/o-bau-dos-simbolos')
-mkdirSync(out, { recursive: true })
-const reference = readFileSync(
-  resolve(import.meta.dirname, '../cade-todo-mundo/caderno-do-aluno.template.html'),
-  'utf8',
-)
-const base = reference.match(/<style>([\s\S]*?)<\/style>/)?.[1]
-if (!base) throw Error('Template do Cadê ausente')
-const css = base.replace(
-  '/* {{FONT_FACES}} */',
-  `@font-face{font-family:Nunito;src:url(data:font/woff2;base64,${nunito.base64}) format('woff2');font-weight:400 800}@font-face{font-family:'Baloo 2';src:url(data:font/woff2;base64,${baloo.base64}) format('woff2');font-weight:400 800}`,
-)
-const esc = (s: string) =>
-  s
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-const defs = new Map(
-  [...FRAME_BLOCKS, ...JS_BLOCKS, ...VALUE_BLOCKS, ...gameTwoDBlocks, ...gameThreeDBlocks].map(
-    (b) => [b.type, b],
-  ),
-)
-const attrs = (type: string) => {
-  const definition = defs.get(type)
-  const color = definition && 'colour' in definition ? definition.colour : undefined
-  if (typeof color !== 'string' || !/^#[0-9a-f]{6}$/i.test(color))
-    throw Error(`Cor ausente: ${type}`)
-  return `data-block-type="${type}" style="background-color:${color}"`
+type Senha = {
+  inicio: string
+  passos: { pergunta: string; resposta: string }[]
+  fora: string
 }
-const field = (s: string) => `<span class="field">${esc(s)}</span>`
-const value = (type: string, s: string) =>
-  `<span class="value-block" ${attrs(type)}>${type === 'sz_val_variable' ? 'valor da variável ' : ''}${field(s)}</span>`
-const block = (type: string, s: string) => `<div class="block" ${attrs(type)}>${s}</div>`
-const nested = (type: string, s: string, body: string) =>
-  block(
-    type,
-    `${s}<div class="do-row"><span class="do-label">fazer</span><div class="event-body">${body}</div></div>`,
-  )
-const area = (type: string, title: string, body: string) =>
-  `<div class="event-block" ${attrs(type)}><span class="tag">Áreas do projeto · ${title}</span><div class="event-body">${body}</div></div>`
-const prepared = (s: string) => `<div class="prepared">${esc(s)} (já vem no projeto)</div>`
-const num = (s: string) => value('sz_val_number', s)
-const message = (s: string) =>
-  block('sz_js_var_assign', `Alterar variável ${field('aviso')} para ${value('sz_val_text', s)}`)
-function drawings(three: boolean): Record<string, string> {
-  const events = (body: string) => area('sz_frame_events', 'Quando acontecer', body)
-  const encontro = (other: string, body: string) =>
-    nested(
-      three ? 'sz_g3d_on_touch' : 'sz_g2d_on_overlap',
-      three
-        ? `Quando ${field('personagem')} encostar em ${field(other)}`
-        : `Quando o sprite ${field('personagem')} começar a encostar no sprite ${field(other)}`,
-      body,
-    )
-  /** No 3D, uma animação do modelo; no 2D, a troca de imagem com a mesma ideia. */
-  const muda = (objeto: string, clipe: string, imagem: string) =>
-    three
-      ? block(
-          'sz_g3d_play_animation',
-          `Tocar a animação ${field(clipe)} em ${field(objeto)} ${field('uma vez')}`,
-        )
-      : block('sz_g2d_set_image', `Trocar imagem do sprite ${field(objeto)} para ${field(imagem)}`)
-  const acende = (s: string) => muda(s, 'acender', `pedra-${s}-acesa`)
-  const apaga = (s: string) => muda(s, 'apagar', `pedra-${s}`)
-  const passo = (n: string) =>
-    block('sz_js_var_assign', `Alterar variável ${field('passo')} para ${num(n)}`)
-  const recomeco =
-    passo('0') + apaga('sol') + apaga('lua') + message('Fora da ordem. Comece de novo pelo sol.')
-  const se = (n: string, entao: string, senao = recomeco) =>
-    block(
-      'sz_js_if_else',
-      `Se <span class="value-block" ${attrs('sz_val_compare')}>${value('sz_val_variable', 'passo')} ${field('=')} ${num(n)}</span><div class="branch-label">então</div><div class="event-body">${entao}</div><div class="branch-label">senão</div><div class="event-body">${senao}</div>`,
-    )
-  return {
-    sol:
-      area(
-        'sz_frame_start',
-        'Ao iniciar',
-        prepared(
-          three
-            ? 'A ilha, a placa da ordem, as três pedras e o baú'
-            : 'O jogo do Farol, a placa da ordem, as três pedras e o baú',
-        ) + block('sz_js_var_create', `Criar variável ${field('passo')} com valor ${num('0')}`),
-      ) +
-      events(
-        prepared('Evento da tecla R e as regras do Farol') +
-          encontro('sol', passo('1') + acende('sol') + message('O sol acendeu! Agora a lua.')),
-      ),
-    // O encontro com o sol fica de fora: o desenho inteiro não cabe na página.
-    lua: events(
-      encontro(
-        'lua',
-        se('1', passo('2') + acende('lua') + message('A lua acendeu! Agora a estrela.')),
-      ),
-    ),
+type Item = {
+  kind: string
+  title?: string
+  text?: string
+  tone?: string
+  name?: string
+  pill?: string
+  goals?: string[]
+  ready?: string[]
+  branches?: string[]
+  cards?: { icon: string; title: string; text: string }[]
+  senha?: Senha
+  days?: { kicker: string; title: string; text: string; pages: string }[]
+  extras?: { icon: string; title: string; text: string }[]
+}
+type Page = { id: string; kicker: string; title: string; subtitle: string; items: Item[] }
+const root = resolve(import.meta.dir, '../../../..')
+const pages = JSON.parse(
+  readFileSync(resolve(import.meta.dir, 'caderno-conteudo.json'), 'utf8'),
+) as Page[]
+const fontes = `@font-face{font-family:Nunito;src:url(data:font/woff2;base64,${nunito.base64}) format('woff2');font-weight:400 800}
+@font-face{font-family:'Baloo 2';src:url(data:font/woff2;base64,${baloo.base64}) format('woff2');font-weight:400 800}`
+const arte = arteDoCurso('capa-o-bau-dos-simbolos.jpg')
+const svgUrl = (svg: string) => `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`
+const imagem = (nome: FarolAssetName) => svgUrl(farolSvg(nome))
 
-    estrela: events(
-      prepared('Os encontros com o sol e com a lua') +
-        encontro(
-          'estrela',
-          se(
-            '2',
-            acende('estrela') +
-              muda('bau', 'abrir', 'bau-aberto') +
-              message('Na ordem certa! O baú abriu.'),
-            // O recomeço é o mesmo da lua (o desenho inteiro não cabe na página).
-            `<div class="prepared">${esc('O mesmo recomeço da lua: passo volta a 0, o sol e a lua apagam e o aviso pede para começar pelo sol')}</div>`,
+// ── A cena do jogo 2D (cabeçalho da Aula 1) ─────────────────────────────────────────────────────
+/** Uma arte do Farol no lugar e no tamanho do sprite, como o Jogo 2D desenha. */
+const peca = (nome: FarolAssetName, r: { x: number; y: number; w: number; h: number }) => {
+  const a = FAROL_ASSETS[nome]
+  return `<svg x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" viewBox="0 0 ${a.width} ${a.height}">${a.body}</svg>`
+}
+/**
+ * O jogo 2D do começo da Aula 1: o cenário, a chave, o farol, a placa da ordem, as três pedras
+ * apagadas, o baú fechado, o personagem, a faixa do aviso e a dica das teclas, nos lugares e com
+ * os textos do projeto da aula.
+ */
+function cena2d(): string {
+  type Expr = { type?: string; value?: unknown; name?: string }
+  const ir = montarProjetoSimbolos('2d').ir as unknown as {
+    behavior: {
+      start: {
+        type: string
+        varName?: string
+        name?: string
+        value?: Expr
+        x?: number
+        y?: number
+        w?: number
+        h?: number
+        color?: string
+      }[]
+      loops: { body: { type: string; text?: Expr; x?: number; y?: number; size?: number }[] }[]
+    }
+  }
+  const inicio = ir.behavior.start
+  const aviso = inicio.find((s) => s.type === 'var' && s.name === 'aviso')?.value?.value
+  const faixa = inicio.find((s) => s.varName === 'fundoAviso')
+  const quadro = ir.behavior.loops[0]?.body ?? []
+  const rotulos = quadro.filter((s) => s.type === 'g2d:drawLabel')
+  const doAviso = rotulos.find((s) => s.text?.type === 'var' && s.text.name === 'aviso')
+  const dica = rotulos.find((s) => s.text?.type === 'str')
+  if (
+    typeof aviso !== 'string' ||
+    !faixa?.color ||
+    !doAviso ||
+    typeof dica?.text?.value !== 'string'
+  )
+    throw new Error('O projeto 2D dos símbolos mudou: confira a cena do cabeçalho.')
+  const texto = (s: { x?: number; y?: number; size?: number }, conteudo: string) =>
+    `<text x="${s.x}" y="${s.y}" font-family="Nunito, Arial, sans-serif" font-weight="800" font-size="${s.size}" fill="#ffffff">${conteudo}</text>`
+  const { palco } = FAROL_LAYOUT
+  const pedras = SIMBOLOS.map((s) => peca(`pedra-${s}`, PEDRAS_2D[s])).join('')
+  // A imagem não enxerga as fontes da página: a Nunito do jogo vai dentro dela, para o aviso
+  // ocupar na cena a largura que ocupa no jogo.
+  const fonte = `<defs><style>@font-face{font-family:Nunito;src:url(data:font/woff2;base64,${nunito.base64}) format('woff2');font-weight:400 800}</style></defs>`
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${palco.w * 2}" height="${palco.h * 2}" viewBox="0 0 ${palco.w} ${palco.h}">${fonte}${peca('praia-tropical', { x: 0, y: 0, ...palco })}${peca('chave-dourada', FAROL_LAYOUT.chave)}${peca('farol-listrado-apagado', FAROL_LAYOUT.farol)}${peca('placa-da-ordem', PLACA_2D)}${pedras}${peca('bau-fechado', BAU_2D)}${peca('aventureiro', FAROL_LAYOUT.personagem)}<rect x="${faixa.x}" y="${faixa.y}" width="${faixa.w}" height="${faixa.h}" fill="${faixa.color}"/>${texto(doAviso, aviso)}${texto(dica, dica.text.value)}</svg>`
+  return svgUrl(svg)
+}
+const cena2D = cena2d()
+
+// ── Os blocos ───────────────────────────────────────────────────────────────────────────────────
+// As definições do Estúdio trazem a cor de cada tipo (os 2D em rosa, os 3D em tons de dourado).
+const B = criarBlocos([
+  ...FRAME_BLOCKS,
+  ...JS_BLOCKS,
+  ...VALUE_BLOCKS,
+  ...gameTwoDBlocks,
+  ...gameThreeDBlocks,
+])
+const lista = (valor: string) => B.campo(valor, { lista: true })
+/** A imagem de cada sprite do jogo 2D, que o seletor de sprite mostra ao lado do nome. */
+const IMAGEM_DO_SPRITE: Record<Simbolo | 'bau', FarolAssetName> = {
+  sol: 'pedra-sol',
+  lua: 'pedra-lua',
+  estrela: 'pedra-estrela',
+  bau: 'bau-fechado',
+}
+const sprite = (nome: Simbolo | 'bau' | 'personagem') =>
+  B.campo(nome, { miniatura: nome === 'personagem' ? 'pessoa' : imagem(IMAGEM_DO_SPRITE[nome]) })
+const variavel = (nome: string) => B.valor('sz_val_variable', `valor da variável ${lista(nome)}`)
+const criarPasso = () =>
+  B.bloco('sz_js_var_create', `Criar variável ${B.campo('passo')} com valor ${B.numero('0')}`)
+const mudaPasso = (n: string) =>
+  B.bloco('sz_js_var_assign', `Alterar variável ${lista('passo')} para ${B.numero(n)}`)
+const aviso = (texto: string) =>
+  B.bloco(
+    'sz_js_var_assign',
+    `Alterar variável ${lista('aviso')} para ${B.texto('sz_val_text', texto)}`,
+  )
+
+/** O que muda de uma dimensão para a outra: o encontro e como as pedras e o baú mudam. */
+type Dimensao = {
+  encontro: (com: Simbolo, corpo: string) => string
+  acende: (s: Simbolo) => string
+  apaga: (s: Simbolo) => string
+  abreBau: () => string
+}
+const troca = (s: Simbolo | 'bau', figura: FarolAssetName) =>
+  B.bloco(
+    'sz_g2d_set_image',
+    `Trocar imagem do sprite ${sprite(s)} para ${B.campo(figura, { lista: true, miniatura: imagem(figura) })}`,
+  )
+const animacao = (clipe: string, objeto: string) =>
+  B.bloco(
+    'sz_g3d_play_animation',
+    `Tocar a animação ${lista(clipe)} em ${lista(objeto)} ${lista('uma vez')}`,
+  )
+const DIMENSAO: Record<SimbolosDimensao, Dimensao> = {
+  '2d': {
+    encontro: (com, corpo) =>
+      B.comBoca(
+        'sz_g2d_on_overlap',
+        `Quando o sprite ${sprite('personagem')} começar a encostar no sprite ${sprite(com)}`,
+        corpo,
+      ),
+    acende: (s) => troca(s, `pedra-${s}-acesa`),
+    apaga: (s) => troca(s, `pedra-${s}`),
+    abreBau: () => troca('bau', 'bau-aberto'),
+  },
+  '3d': {
+    encontro: (com, corpo) =>
+      B.comBoca(
+        'sz_g3d_on_touch',
+        `Quando ${lista('personagem')} encostar em ${lista(com)}`,
+        corpo,
+      ),
+    acende: (s) => animacao('acender', s),
+    apaga: (s) => animacao('apagar', s),
+    abreBau: () => animacao('abrir', 'bau'),
+  },
+}
+
+/** O que já vem no projeto, com o texto do conteúdo, na cor da área onde fica. */
+const pronto = (item: Item, i: number, tipo: string) => {
+  const texto = item.ready?.[i]
+  if (!texto) throw new Error(`O desenho ${item.name} precisa do texto ${i + 1} em "ready".`)
+  return B.pronto(texto, B.cor(tipo))
+}
+const ramos = (item: Item) => {
+  if (item.branches?.length !== 2) throw new Error(`O desenho ${item.name} precisa de "branches".`)
+  return item.branches
+}
+/** O recomeço do senão, igual na lua e na estrela: passo volta a 0, o sol e a lua apagam. */
+const recomeco = (d: Dimensao) =>
+  mudaPasso('0') + d.apaga('sol') + d.apaga('lua') + aviso(SIMBOLOS_AVISO.errou)
+/** O Se de um símbolo: passo = n, com a resposta do sim no então e a do não no senão. */
+const pergunta = (n: string, entao: string, senao: string, explica: string[]) =>
+  B.se(
+    'sz_js_if_else',
+    B.valor('sz_val_compare', `${variavel('passo')} ${lista('=')} ${B.numero(n)}`),
+    [
+      { rotulo: 'então', explica: explica[0], corpo: entao },
+      { rotulo: 'senão', explica: explica[1], corpo: senao },
+    ],
+  )
+
+// Os desenhos dos encaixes. O conteúdo escolhe onde cada um entra e dá os textos dele.
+function desenhos(dimensao: SimbolosDimensao) {
+  const d = DIMENSAO[dimensao]
+  const eventos = (item: Item, i: number, corpo: string) =>
+    B.area('Quando acontecer', pronto(item, i, 'sz_frame_events') + corpo)
+  return {
+    // No 3D, Criar variável passo entra no meio de Ao iniciar (logo abaixo de Colocar o objeto
+    // bau); no 2D, no fim dela.
+    sol: {
+      area: 'Ao iniciar e Quando acontecer',
+      corpo: (item: Item) =>
+        B.area(
+          'Ao iniciar',
+          pronto(item, 0, 'sz_frame_start') +
+            criarPasso() +
+            (dimensao === '3d' ? pronto(item, 1, 'sz_frame_start') : ''),
+        ) +
+        eventos(
+          item,
+          dimensao === '3d' ? 2 : 1,
+          d.encontro('sol', mudaPasso('1') + d.acende('sol') + aviso(SIMBOLOS_AVISO.sol)),
+        ),
+    },
+    lua: {
+      area: 'Quando acontecer',
+      corpo: (item: Item) =>
+        eventos(
+          item,
+          0,
+          d.encontro(
+            'lua',
+            pergunta(
+              '1',
+              mudaPasso('2') + d.acende('lua') + aviso(SIMBOLOS_AVISO.lua),
+              recomeco(d),
+              ramos(item),
+            ),
           ),
         ),
-    ),
+    },
+    estrela: {
+      area: 'Quando acontecer',
+      corpo: (item: Item) =>
+        eventos(
+          item,
+          0,
+          d.encontro(
+            'estrela',
+            pergunta(
+              '2',
+              d.acende('estrela') + d.abreBau() + aviso(SIMBOLOS_AVISO.abriu),
+              recomeco(d),
+              ramos(item),
+            ),
+          ),
+        ),
+    },
   }
 }
-const asset = (name: string) => SIMBOLOS_ASSETS_2D.find((a) => a.name === name)!.dataUrl
-const image = asset('praia-tropical'),
-  chest = asset('bau-aberto'),
-  sun = asset('pedra-sol-acesa'),
-  moon = asset('pedra-lua-acesa'),
-  star = asset('pedra-estrela-acesa'),
-  sign = asset('placa-da-ordem')
-const box = (title: string, text: string, tone = 'note') =>
-  `<div class="soft-box box-${tone}"><h3>${esc(title)}</h3><p>${esc(text)}</p></div>`
-const pages: { title: string; kicker: string; subtitle: string; body: string; lesson: number }[] = [
-  {
-    title: 'O que você vai construir',
-    kicker: 'Poder do Faísca',
-    subtitle: 'Um baú que só abre com o sol, a lua e a estrela tocados na ordem certa.',
-    lesson: 1,
-    body: `${box('O seu jogo', 'No Farol aparecem três pedras com símbolos, uma placa com a ordem e um baú. O jogo guarda em passo até onde a sequência chegou, e cada símbolo pergunta se é a vez dele. O que acontece com passo na ordem certa e fora da vez você descobre na experiência. O farol continua pedindo a chave.') + box('Duas aulas, a mesma regra', 'Na primeira aula você monta tudo no jogo 2D, com o vídeo mostrando cada passo. Na segunda, leva a mesma regra para a Ilha do Farol, em 3D. Este Passo a passo tem as duas montagens completas.')}<div class="index"></div>${box('Consulte quando quiser', 'A experiência tem o que investigar. Cada montagem tem a ideia, o caminho na paleta, o desenho dos encaixes, um teste e o que conferir se algo não funcionar.', 'test')}`,
-  },
-  // A experiência só com a ideia (02/11/2026), no formato da Ponte: o que investigar, sem o resultado.
-  {
-    title: simbolosExperiencia.title.replace('A experiência: ', ''),
-    kicker: 'Aula 1 · Experiência',
-    subtitle: 'Investigue antes de montar.',
-    lesson: 1,
-    body: `${box('A ideia', simbolosExperiencia.idea)}<div class="steps">${simbolosExperiencia.goals.map((g, n) => `<div class="step"><span class="number">${n + 1}</span><p>${esc(g)}</p></div>`).join('')}</div>${box('Como investigar', simbolosExperiencia.observe, 'test')}`,
-  },
-]
-for (const [i, aula] of simbolosAulas.entries())
-  for (const h of simbolosAjuda(aula.dimension)) {
-    pages.push({
-      title: h.title,
-      kicker: `Aula ${i + 1} · ${aula.dimension === '2d' ? 'Jogo 2D' : 'Ilha 3D'}`,
-      subtitle: 'Relembre a ideia e monte.',
-      lesson: i + 1,
-      body: `${box('A ideia', h.idea)}<div class="steps">${h.steps.map((s, n) => `<div class="step"><span class="number">${n + 1}</span><p>${esc(s)}</p></div>`).join('')}</div>${box('Teste no seu jogo', h.test, 'test')}`,
-    })
-    pages.push({
-      title: 'Confira os encaixes',
-      kicker: `Aula ${i + 1} · ${aula.dimension === '2d' ? 'Jogo 2D' : 'Ilha 3D'} · ${h.title}`,
-      subtitle: 'Um jeito de montar a regra; conserve as regras que já estavam no jogo.',
-      lesson: i + 1,
-      body: `<div class="blocks"><h3>Esquema dos blocos</h3>${drawings(aula.dimension === '3d')[h.key]}<p class="diagram-note">As cores vêm das definições do Estúdio. O cinza representa o que já vem no projeto. Os textos dos avisos podem ser do seu jeito.</p></div>${box('Se não funcionar', h.correction)}`,
-    })
+const DESENHOS = { '2d': desenhos('2d'), '3d': desenhos('3d') }
+function drawing(item: Item): string {
+  const [simbolo, dimensao] = (item.name ?? '').split('-') as [Simbolo, SimbolosDimensao]
+  const desenho = DESENHOS[dimensao]?.[simbolo]
+  if (!desenho) throw new Error(`Desenho desconhecido: ${item.name}`)
+  return B.esquema(item.title ?? '', desenho.area, desenho.corpo(item))
+}
+
+// ── As peças de conteúdo próprias do curso ──────────────────────────────────────────────────────
+/** O card "O que investigar", com os testes da tela da experiência numa lista. */
+function investigate(item: Item): string {
+  const testes = (item.goals ?? []).map((g) => `<li>${g}</li>`).join('')
+  if (!testes) throw new Error('O card de investigar precisa dos testes em "goals".')
+  return `<div class="cartao cartao--amarelo">${icone('olho', 'cartao-icone')}<div class="cartao-corpo"><h3>${item.title ?? ''}</h3>${paragrafos(item.text ?? '')}<ol class="testes">${testes}</ol></div></div>`
+}
+
+/** O que a experiência mostrou: a pergunta de cada cartão da tela e a descoberta. */
+function discoveries(item: Item): string {
+  const cards = (item.cards ?? [])
+    .map(
+      (c) =>
+        `<div class="descoberta">${icone(c.icon, 'descoberta-icone')}<div><h3>${c.title}</h3><p>${c.text}</p></div></div>`,
+    )
+    .join('')
+  return `<div class="descobertas">${cards}</div>`
+}
+
+/**
+ * O quadro da senha: do passo 0 do começo da partida, cada símbolo aceso na ordem da placa, a
+ * pergunta dele e o que acontece na vez dele; embaixo, o que acontece fora da vez.
+ */
+function figure(item: Item): string {
+  const l = item.senha
+  if (item.name !== 'senha' || !l || l.passos.length !== SIMBOLOS.length)
+    throw new Error('Figura desconhecida.')
+  const seta = icone('seta', 'senha-seta')
+  const passos = SIMBOLOS.map((s, i) => {
+    const p = l.passos[i]
+    const bau =
+      s === 'estrela' ? `<img class="senha-bau" src="${imagem('bau-aberto')}" alt="">` : ''
+    return `${seta}<div class="senha-passo"><div class="senha-figuras"><img src="${imagem(`pedra-${s}-acesa`)}" alt="">${bau}</div><span class="senha-pergunta">${p?.pergunta ?? ''}</span><b>${p?.resposta ?? ''}</b></div>`
+  }).join('')
+  return `<figure class="senha"><figcaption>${icone('lista', 'senha-icone')}${item.title ?? ''}</figcaption><div class="senha-trilha"><div class="senha-inicio"><span class="senha-zero">0</span><span>${l.inicio}</span></div>${passos}</div><p class="senha-fora">${icone('repetir', 'senha-fora-icone')}<span>${l.fora}</span></p></figure>`
+}
+
+/** Card de cada caixa: o tom e o ícone seguem o que a caixa diz, como nas folhas de referência. */
+function boxStyle(item: Item): { tom: 'azul' | 'amarelo'; icone: string } {
+  const titulo = item.title ?? ''
+  if (/^Preciso de ajuda/.test(titulo)) return { tom: 'azul', icone: 'ajuda' }
+  if (/^Se mudar/.test(titulo)) return { tom: 'azul', icone: 'repetir' }
+  if (/^E |^No 3D/.test(titulo)) return { tom: 'azul', icone: 'ajuda' }
+  if (/^Comemore/.test(titulo)) return { tom: 'amarelo', icone: 'medalha' }
+  if (item.tone === 'experience') return { tom: 'amarelo', icone: 'setas' }
+  if (item.tone === 'test') return { tom: 'amarelo', icone: 'controle' }
+  return { tom: 'azul', icone: 'livro' }
+}
+
+function indexCards(item: Item): string {
+  const tons = ['noite', 'ilha']
+  const aulas = (item.days ?? [])
+    .map(
+      (d, i) =>
+        `<div class="indice-dia indice-dia--${tons[i] ?? 'noite'}"><div class="kicker">${d.kicker}</div><h3>${d.title}</h3><p>${d.text}</p><p class="indice-paginas">${d.pages}</p></div>`,
+    )
+    .join('')
+  const extras = (item.extras ?? [])
+    .map(
+      (e) =>
+        `<div class="indice-extra">${icone(e.icon, 'indice-icone')}<div><h3>${e.title}</h3><p>${e.text}</p></div></div>`,
+    )
+    .join('')
+  return `<h3 class="titulo-secao">${item.title ?? ''}</h3><p class="texto">${item.text ?? ''}</p><div class="indice-dias">${aulas}</div><div class="indice-extras">${extras}</div>`
+}
+
+function renderItem(item: Item, page: Page, index: number): string {
+  if (item.kind === 'drawing') return drawing(item)
+  if (item.kind === 'index') return indexCards(item)
+  if (item.kind === 'investigate') return investigate(item)
+  if (item.kind === 'discoveries') return discoveries(item)
+  if (item.kind === 'figure') return figure(item)
+  const text = item.text ?? ''
+  if (item.kind === 'text')
+    // Nas folhas de experiência, a ideia do vídeo abre a folha num card, antes do convite.
+    return /Experiência/i.test(page.kicker) && index === 0
+      ? caixa({ tom: 'azul', icone: 'filme', html: text })
+      : `<div class="texto">${paragrafos(text)}</div>`
+  if (item.kind === 'note') return nota(text)
+  if (item.kind === 'activity')
+    return caixa({ tom: 'amarelo', icone: 'controle', titulo: item.pill, html: text })
+  if (item.kind === 'step') {
+    const match = item.title?.match(/^(\d+)\.\s*(.*)$/)
+    return match ? passo(match[1] ?? '', match[2] ?? '', text) : secao(item.title ?? '', text)
   }
-pages.push({
-  title: 'Teste e envie o seu jogo',
-  kicker: 'Entrega',
-  subtitle: 'Um envio em cada aula, com a versão atual do projeto.',
-  lesson: 2,
-  body:
-    box(
-      'Antes de enviar',
-      'Jogue uma partida inteira: abra o baú com o sol, a lua e a estrela, na ordem. Toque na tecla R, toque o sol e a estrela, pulando a lua: tudo apaga. Recomece pelo sol: o baú abre. Toque na tecla R de novo: o baú volta fechado.',
-      'test',
-    ) +
-    box(
-      'Envie o projeto atual',
-      'Clique em Verificar projeto e corrija os objetivos que faltarem. Clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.',
-    ) +
-    box(
-      'Se mudar depois de enviar',
-      'Clique em Enviar de novo e confirme. Assim, a entrega acompanha a sua versão atual.',
-    ) +
-    box(
-      'O Poder fica registrado',
-      'O Poder conta na sua jornada quando as duas aulas estão concluídas: a do jogo 2D e a da ilha em 3D.',
-    ),
+  if (item.kind === 'delivery') return entrega(item.title ?? '', text)
+  if (item.kind === 'box') {
+    // "Verificar e continuar" fecha a folha no card escuro.
+    if (item.tone === 'test' && /^Verificar/.test(item.title ?? ''))
+      return entrega(item.title ?? '', text)
+    return caixa({ ...boxStyle(item), titulo: item.title, html: text })
+  }
+  throw new Error(`Item desconhecido no caderno: ${item.kind}`)
+}
+
+/** A cor de cada folha segue a aula: o violeta da noite no jogo 2D, o verde da ilha em 3D. */
+function tema(kicker: string): string {
+  if (/^Aula 2/.test(kicker)) return 'tema-ilha'
+  return ''
+}
+
+const ui = {
+  titulo: 'Passo a passo do projeto - O baú dos símbolos',
+  cena2dAlt: 'O jogo 2D dos símbolos no Farol: as três pedras, a placa da ordem e o baú',
+  cena3dAlt: 'O sol, a lua e a estrela acesos na Ilha do Farol, com o baú aberto',
+  curso: 'O baú dos símbolos',
+}
+const montadas = pages.map((page) => {
+  const body = page.items.map((item, i) => renderItem(item, page, i)).join('')
+  const doisD = /^Aula 1/.test(page.kicker)
+  const topo =
+    page.id === 'p1'
+      ? // A primeira folha apresenta o curso: título grande e a faixa da arte, sem cabeçalho.
+        `<div class="abertura"><div class="kicker">${page.kicker}</div><h2>${page.title}</h2><p>${page.subtitle}</p><div class="abertura-faixa"><div class="abertura-faixa-arte" role="img" aria-label="${ui.cena3dAlt}" style="background-image:url(${arte})"></div></div></div>`
+      : cabecalho({
+          cena: doisD ? cena2D : arte,
+          alt: doisD ? ui.cena2dAlt : ui.cena3dAlt,
+          kicker: page.kicker,
+          titulo: page.title,
+          resumo: page.subtitle,
+          enquadre: doisD ? 'center 92%' : '30% 58%',
+        })
+  return {
+    id: page.id,
+    html: (numero: string) =>
+      `<section class="page ${tema(page.kicker)}" data-id="${page.id}"><div class="inner">${topo}<div class="content">${body}</div></div>${rodape(ui.curso, numero)}</section>`,
+  }
 })
-pages[0]!.body = pages[0]!.body.replace(
-  '<div class="index"></div>',
-  box(
-    'Encontre a sua aula',
-    `Experiência: página 3. Jogo 2D: página 4. Ilha 3D: página ${pages.findIndex((p) => p.lesson === 2) + 2}. Entrega: página ${pages.length + 1}.`,
-  ),
-)
-const cover = `<section class="page cover" data-id="capa"><div class="cover-art"><img class="scene" src="${image}" alt="Praia do Farol"><img class="cabin" src="${chest}" alt="O baú aberto"><img class="piece p1" src="${sun}" alt=""><img class="piece p2" src="${moon}" alt=""><img class="piece p3" src="${star}" alt=""><img class="piece p4" src="${sign}" alt=""></div><div class="cover-copy"><span class="badge">Passo a passo do projeto</span><h1>O baú dos<br><em>símbolos</em></h1><p>Ajuda para construir o Poder em 2D e em 3D.</p><div class="cover-bottom">O sol, a lua e a estrela.<br>Só na ordem certa o baú abre.</div></div></section>`
-const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>O baú dos símbolos - Passo a passo do projeto</title><style>${css}
-.lesson-hero{min-height:35mm;margin-bottom:5mm}.lesson-hero .scene{width:28%;object-fit:cover}.lesson-hero h2{font-size:22pt;text-wrap:balance}.lesson-hero .kicker{font-size:8pt;letter-spacing:.02em}.content{display:grid;gap:4mm;font-size:11pt}.content p{font-size:11pt;line-height:1.5;text-wrap:pretty}.content h3{margin-bottom:2mm}.box-note{background:var(--blue-soft)}.box-test{background:var(--green-soft)}.blocks{margin:0;padding:14px}.block,.event-block{line-height:1.5}.value-block{border:1px solid #ffffff70}.field{white-space:normal;box-decoration-break:clone}.prepared{color:var(--muted);background:#edf0f7;border-radius:8px;padding:6px 10px;font-size:9pt;font-weight:600}.branch-label{color:white;margin-top:6px}.diagram-note{font-size:9pt!important;color:var(--muted);margin-top:12px}.cover-art{height:48%;position:relative}.cover-art .scene{object-fit:cover}.cover-art .cabin{position:absolute;width:16%;left:64%;top:40%}.cover-art .piece{position:absolute;width:11%}.cover-art .p1{left:12%;top:58%}.cover-art .p2{left:28%;top:58%}.cover-art .p3{left:44%;top:58%}.cover-art .p4{left:26%;top:76%;width:15%}.cover .cover-bottom{margin-top:12mm}.content .steps{gap:12px}@media print{body{background:white}.page{margin:0}}
-</style></head><body>${cover}${pages.map((p, i) => `<section class="page lesson-${p.lesson === 1 ? 'one' : 'two'}" data-id="${i + 2}"><div class="inner"><div class="lesson-hero"><img class="scene" src="${image}" alt="Praia do Farol"><div class="lesson-hero-text"><div class="kicker">${esc(p.kicker)}</div><h2>${esc(p.title)}</h2><p>${esc(p.subtitle)}</p></div></div><div class="content">${p.body}</div></div><div class="page-no"><span class="brand">O baú dos símbolos | Passo a passo do projeto</span><span>${i + 2} / ${pages.length + 1}</span></div></section>`).join('\n')}</body></html>`
+// A numeração conta a capa como página 1.
+function pageNumber(id: string): number {
+  const index = montadas.findIndex((sheet) => sheet.id === id)
+  if (index < 0) throw new Error(`Página citada no caderno não existe: ${id}`)
+  return index + 2
+}
+const withPages = (text: string) =>
+  text.replace(/\{\{pagina:([a-z0-9-]+)\}\}/g, (_, id: string) => String(pageNumber(id)))
+const total = montadas.length + 1
+const cover = capaHtml({
+  arte,
+  iconeSelo: 'brilho',
+  linha1: 'O baú dos',
+  linha2: 'símbolos',
+  frase: 'Todos os passos para programar a senha do baú no seu jogo em 2D e em 3D.',
+  fraseBaixo: 'Do sol aceso ao baú aberto, na ordem certa.',
+  tema: 'capa--simbolos',
+})
+const body = montadas
+  .map((sheet, index) => withPages(sheet.html(`${index + 2} / ${total}`)))
+  .join('\n')
+/**
+ * As folhas do desenho da lua, nas duas aulas: o Se com três blocos no então e quatro no senão,
+ * mais o Verificar, passa da folha no tamanho comum. Só elas ganham os encaixes mais justos.
+ */
+const COMPACTAS = ['lua-blocos', 'lua-3d-blocos']
+const naFolhaCompacta = (seletores: string) =>
+  seletores
+    .split(',')
+    .flatMap((s) => COMPACTAS.map((id) => `[data-id="${id}"] ${s.trim()}`))
+    .join(', ')
+// Cores dos símbolos: o violeta da noite do sol, da lua e da estrela no destaque da Aula 1, o
+// verde do gramado da ilha no da Aula 2, o azul do mar no caminho e no alto do painel da capa, o
+// dourado das pedras acesas no título e nos destaques do envio, e a faixa no verde do gramado.
+const cursoCss = `
+body { --fundo: #fbfaff; --tinta: #241d52; --texto: #44465c; --destaque: #5b3cc0; --destaque-claro: #eee9fc; --caminho: #2f5fd0;
+  --entrega-fundo: #2e2373; --entrega-borda: #2e2373; --entrega-texto: #ffffff; --entrega-rotulo: #ffd23f; --entrega-forte: #ffd23f; }
+.tema-ilha { --destaque: #0b7a5a; --destaque-claro: #e0f2ea; }
+.capa--simbolos { --capa-painel: #6c86d3; --capa-painel-fundo: linear-gradient(#6c86d3, #5a49b4 30%, #36257f 68%, #221852); --capa-amarelo: #ffd23f; --capa-frase: #ece8ff; --selo-fundo: #17865a; --selo-topo: 608px; --selo-altura: 62px; --selo-largura: 534px; --selo-letra: 27px; --titulo-topo: 692px; --frase-largura: 470px; }
+.abertura { margin-bottom: 4mm; }
+.abertura h2 { font-size: 28pt; margin: 1mm 0 1mm; }
+.abertura p { font-size: 13pt; font-weight: 800; color: var(--tinta); }
+.abertura-faixa { margin-top: 3mm; background: #fff; border: 1px solid #e6e1f3; border-radius: 16px; padding: 3mm; box-shadow: 0 4px 14px #24185210; }
+.abertura-faixa-arte { height: 37mm; border-radius: 10px; background-size: 100% auto; background-position: 50% 53%; }
+/* Na ilha, o cabeçalho aproxima a fileira: o sol, a lua, a estrela e o baú aberto. */
+.tema-ilha .cabecalho-cena { overflow: hidden; }
+.tema-ilha .cabecalho-cena img { transform: scale(1.5); transform-origin: 9% 66%; }
+/* O caminho da paleta não quebra no meio: a criança lê "Programação > Valores" de uma vez. */
+.caminho { white-space: nowrap; }
+.indice-dias { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3mm; }
+.indice-dia { border-radius: 14px; padding: 3mm 4mm; border: 1px solid; }
+.indice-dia h3 { font-size: 13pt; margin: 1mm 0 1.4mm; }
+.indice-dia p { font-size: 10pt; font-weight: 600; line-height: 1.4; }
+.indice-dia .indice-paginas { margin-top: 2mm; font-weight: 700; }
+.indice-dia--noite { background: #eee9fc; border-color: #d6ccf4; --destaque: #5b3cc0; }
+.indice-dia--ilha { background: #e0f2ea; border-color: #bfe0cd; --destaque: #0b7a5a; }
+.indice-extras { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2.4mm; }
+.indice-extra { display: flex; gap: 2.4mm; align-items: flex-start; background: #fff; border: 1px solid #e6e1f3; border-radius: 12px; padding: 2.6mm 3mm; }
+.indice-icone { flex: none; width: 5.4mm; height: 5.4mm; color: var(--destaque); }
+.indice-extra h3 { font-family: Nunito, Arial, sans-serif; font-size: 9.6pt; font-weight: 800; line-height: 1.2; margin: 0 0 .6mm; }
+.indice-extra p { font-size: 8.8pt; font-weight: 600; line-height: 1.3; }
+.testes { margin: 1.6mm 0 0; padding-left: 5.4mm; color: var(--texto); }
+.testes li { font-size: 10.2pt; line-height: 1.42; font-weight: 600; padding-left: .8mm; }
+.testes li + li { margin-top: .9mm; }
+.testes li::marker { color: #9a6400; font-weight: 800; }
+.descobertas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2.6mm; }
+.descoberta { display: flex; gap: 3mm; align-items: flex-start; background: #fff; border: 1px solid #e6e1f3; border-radius: 12px; padding: 3mm 3.6mm; }
+.descoberta-icone { flex: none; width: 5.6mm; height: 5.6mm; color: var(--destaque); margin-top: .4mm; }
+.descoberta h3 { font-family: Nunito, Arial, sans-serif; font-size: 10.2pt; font-weight: 800; line-height: 1.25; margin-bottom: .8mm; }
+.descoberta p { font-size: 10.2pt; font-weight: 700; line-height: 1.35; color: var(--destaque); }
+.senha { margin: 0; background: #fff; border: 1px solid #e6e1f3; border-radius: 16px; padding: 3.6mm 4.4mm 3.8mm; }
+.senha figcaption { display: flex; align-items: center; gap: 2.4mm; font-family: 'Baloo 2', Arial, sans-serif; font-size: 13pt; font-weight: 800; color: var(--tinta); margin-bottom: 2.6mm; }
+.senha-icone { width: 5.4mm; height: 5.4mm; color: var(--destaque); flex: none; }
+.senha-trilha { display: flex; align-items: stretch; gap: 1.6mm; }
+.senha-inicio, .senha-passo { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 1mm; border-radius: 12px; padding: 2.4mm 2mm; }
+.senha-inicio { flex: .8; background: #f1f2f7; color: #5a6578; font-size: 9.4pt; font-weight: 700; line-height: 1.3; }
+.senha-zero { display: grid; place-items: center; width: 11mm; height: 11mm; border-radius: 50%; background: #fff; border: 2px solid #c9cfdc; font-family: 'Baloo 2', Arial, sans-serif; font-size: 16pt; font-weight: 800; color: var(--tinta); }
+.senha-passo { background: #fff6d8; }
+.senha-figuras { display: flex; align-items: flex-end; justify-content: center; gap: 1mm; height: 13mm; }
+.senha-figuras img { width: 13mm; height: 13mm; }
+.senha-figuras .senha-bau { width: 11mm; height: 11mm; }
+.senha-pergunta { font-size: 9.6pt; font-weight: 700; color: #6b5a2a; }
+.senha-passo b { font-size: 10.4pt; color: var(--tinta); }
+.senha-seta { flex: none; align-self: center; width: 5mm; height: 5mm; color: var(--destaque); transform: rotate(-90deg); }
+.senha-fora { display: flex; align-items: center; gap: 2.4mm; margin-top: 2.6mm; font-size: 10.2pt; font-weight: 700; color: var(--texto); }
+.senha-fora-icone { flex: none; width: 5mm; height: 5mm; color: var(--destaque); }
+.bk-campo-mini { width: 5mm; height: 5mm; }
+/* As folhas da lua: os encaixes mais justos, para o aviso caber numa linha só. */
+${naFolhaCompacta('.esquema')} { padding: 3mm 3.6mm 2.2mm; }
+${naFolhaCompacta('.esquema-painel')} { padding: 2.4mm 2.8mm 2.8mm; gap: 1.8mm; }
+${naFolhaCompacta('.bk, .bk-boca-rotulo, .bk-chapeu')} { font-size: 9pt; }
+${naFolhaCompacta('.bk')} { padding: 1.1mm 2.4mm; gap: 1.1mm; }
+${naFolhaCompacta('.bk-boca-rotulo')} { min-width: 11.5mm; padding: 1.1mm 2.2mm; }
+${naFolhaCompacta('.bk-pilha')} { gap: .7mm; }
+${naFolhaCompacta('.bk-boca-meio > .bk-pilha')} { padding: .7mm 0 .7mm .8mm; }
+${naFolhaCompacta('.bk-campo')} { padding: .4mm 1.8mm; }
+${naFolhaCompacta('.bk-valor')} { padding: .5mm 1.4mm .5mm 2.4mm; gap: 1.1mm; }
+${naFolhaCompacta('.bk-numero')} { min-width: 5.6mm; height: 5.6mm; padding: 0 1.6mm; }
+${naFolhaCompacta('.bk-ramo, .bk-pronto, .bk-boca-pe--se')} { font-size: 8.6pt; }
+`
+const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${ui.titulo}</title><style>${cssDoCaderno(fontes)}\n${cursoCss}</style></head><body>${cover}${body}</body></html>`
+if (html.includes('{{')) throw new Error('Campo do caderno sem preencher.')
+const pasta = 'tmp/pdfs/o-bau-dos-simbolos'
+const out = resolve(root, pasta)
+mkdirSync(out, { recursive: true })
 writeFileSync(resolve(out, 'caderno.html'), html)
-console.log(`${pages.length + 1} páginas com o template, fontes e cores do Cadê e dos Faróis.`)
+writeFileSync(
+  resolve(out, 'cores-estudio.json'),
+  JSON.stringify(Object.fromEntries(B.usadas), null, 2),
+)
+console.log(`${total} páginas preparadas em ${pasta}/caderno.html`)
