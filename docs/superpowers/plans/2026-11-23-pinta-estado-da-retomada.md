@@ -1,136 +1,118 @@
-# Pinta Cenários 2D — estado da retomada (23/11/2026, pausa)
+# Pinta Cenários 2D — estado da retomada (23/11/2026, escopo reduzido concluído)
 
-O trabalho está **pausado a pedido da dona** (poucos créditos e pouco tempo). Este documento basta para retomar,
-nesta ou noutra sessão; o arquivo da conversa da sessão que conduziu a retomada não foi gravado em disco.
+A retomada terminou no **escopo reduzido** que a dona escolheu por causa dos créditos. Tudo está na
+staging LOCAL, sem push, PR nem deploy. Este documento basta para continuar o que ficou de fora, nesta ou
+noutra sessão. O arquivo da conversa da sessão que conduziu a retomada não foi gravado em disco.
 
-## O pedido e as regras
+## Regras que valem
 
-A sessão do Codex que evoluía o Pinta para um editor de cenários 2D "tipo Tiled para crianças" travou em 22/11.
-A dona pediu:
-1. juntar tudo na staging LOCAL;
-2. apagar as branches e worktrees integradas;
-3. fazer um full review;
-4. concluir o plano do Codex: [`2026-11-21-pinta-missao-retomada.md`](2026-11-21-pinta-missao-retomada.md), etapas 0–9.
-
-Regras que valem:
-- Commit e merge só na staging LOCAL. Sem PR, push nem deploy sem ela pedir.
-  - Ela promove à produção quando tudo estiver testado em staging.
-  - A correção do Zappy do Pro também espera a staging inteira; não fazer hotfix.
+- Commit e merge só na staging LOCAL, sem PR, push ou deploy sem a dona pedir.
+  - A dona promove à produção quando tudo estiver testado em staging.
+  - Isso vale também para a correção do Zappy no Pro: não fazer hotfix.
 - **Sem flag de nada** (decisão de 23/11).
 - `git add` escopado, nunca `-A`.
-- Uma tarefa pesada por vez.
-  - Trava compartilhada: `node ~/backup-pinta-codex-20261122/pesado.mjs "<rótulo>" -- <cmd>`. O código 75 significa ocupada.
-  - O `--grep` com espaço quebra no shell do Windows.
-- Nunca editar estes arquivos:
+- Uma tarefa pesada por vez. Trava compartilhada: `node ~/backup-pinta-codex-20261122/pesado.mjs "<rótulo>" -- <cmd>`.
+- Nunca editar:
   - `packages/molda-cenarios*`;
   - `packages/studio/src/python/blocks/areas.ts`;
   - `packages/studio/src/python/extensions/raylib/commonCatalog.ts`.
-- Cursos gravados não quebram. Antes de cada entrada na staging:
+- Cursos gravados não quebram. Antes de cada entrada na staging, rodar:
   - `bun test docs/aulas-interativas-tecnico/qa`;
-  - `cd packages/studio && bunx playwright test e2e/protected-lessons.spec.ts --project=chromium --retries=0`;
-  - `bun docs/aulas-interativas-tecnico/qa/ilha-do-farol-browser.ts`, com 7 casos `passed: true`.
+  - `protected-lessons.spec.ts`;
+  - `ilha-do-farol-browser.ts`.
 - A cada integração, rodar:
-  - `bun run --cwd packages/studio-runtime check:validation-profile`;
-  - `bun run --cwd packages/pinta check:region-phaser`;
-  - `bun run --cwd packages/studio check:pro-engine-copies`.
-
-  Outras frentes (Molda, Pinta) já deixaram arquivos gerados para trás duas vezes.
-- Testes de banco do members:
-  - container `pinta-causal-20261122-db` em 127.0.0.1:55553, bancos `kids_journey_*`;
-  - a senha só via `docker exec … printenv POSTGRES_PASSWORD`;
-  - `try/catch`, nunca `expect(...).rejects`.
-
-Backup e controle ficam em `~/backup-pinta-codex-20261122/`:
-- `mapa-integracao.tsv`;
-- o bundle das pontas;
-- `achados-review.md`;
-- `plano-correcoes.md`, com o andamento detalhado.
+  - `check:validation-profile` (studio-runtime);
+  - `check:region-phaser` (pinta);
+  - `check:pro-engine-copies` (studio).
+- O `COPY` do Pinta vai embutido no adaptador do Phaser: se o texto mudar, regenere o adaptador.
+- Backup e controle ficam em `~/backup-pinta-codex-20261122/`: `mapa-integracao.tsv`, bundle das pontas,
+  `achados-review.md`, `plano-correcoes.md` e os logs.
 
 ## Decisões da dona (23/11, nenhuma em aberto)
 
-- **Galeria num perfil causal:** liberada, com a cópia conferida pelo hash. Feito.
-- **Pro:** "Atualizar o motor" só troca cópia intacta. Feito.
-- **Motor Python:** versão ÚNICA, junto com Áreas do Python e Evolução do Estúdio. Documento:
-  [`2026-11-23-pinta-release-python.md`](2026-11-23-pinta-release-python.md).
-- **Física antiga do Python:** a peça de plataforma vira plataforma, igual ao JS. Lote B6, na staging (`f07b32e13`).
-- **"Preciso de ajuda":** só no aviso de recuperação da galeria, usando o canal de recados e os dados da recuperação. Etapa 6.
-- **Autorregras:** "Copiar o antes", "Guardar o depois", "🎲 Sortear de novo". Saem o UUID da camada e o "Uma folha
-  mudou" mostrado enquanto carrega. Etapa 6.
-- **Tetos do motor 2D de `f79c03025`:** aprovados. Registrar cada aumento futuro com a medida.
+- **Galeria num perfil causal:** liberada.
+- **Pro:** "Atualizar o motor" só troca cópia intacta.
+- **Física antiga do Python:** a plataforma funciona igual ao JS.
+- **"Preciso de ajuda":** só no aviso de recuperação.
+- **Autorregras:** "Copiar o antes", "Guardar o depois", "🎲 Sortear de novo".
+- **Tetos do motor 2D de `f79c03025`:** aprovados.
+- **Motor Python:** versão ÚNICA, junto com Áreas do Python e Evolução do Estúdio. Outra sessão começou a
+  montá-la em `97288bbd8`.
+- **Escopo reduzido:**
+  - etapa 8 cortada por ora;
+  - etapa 9 só com guias, Vila e Floresta e o full review final;
+  - etapas 3–5 ficam para depois.
 
-## Na staging local (`71b91cc56` no momento da pausa)
+## Feito (na staging local; topo `41487b1e5`)
 
-| Lote | Commits principais |
+| Parte | Commits principais |
 |---|---|
-| Integração + correções | ver `mapa-integracao.tsv`; `8ed124dab` `f32083d76` `08d5bf0df` `a8ed6421e` `0ea0ff319` |
-| Review R1a, R2, R3, R4, R1b | ver a versão anterior deste documento (`46abf1bc9`) e `plano-correcoes.md` |
-| F6-1 · revisão 9 numa política só | `bd4b2e76c` `9b57a1290` `14c59d0cd` |
-| B1 · Pro "Atualizar o motor" | `26ffdfad6` `9be03a90a` `8f66148a1` |
-| Galeria causal | `e3fe5cc10` `c16f4007f` |
-| B2 · Histórico do Pro com o motor publicado; capa regional | `e5ffc4fdb` `53914c23c` |
-| Impedimento 2 · janela focal pela conta + ordem da galeria | `c1b2c16fb` `947bead70` `3ca3784e7` |
-| B3 · Zappy e build hospedado aceitam o motor publicado | `3711cf203` `0fc69bc92` |
-| Etapa 1 · regiões sem flag ("Mundo gigante", host, transporte 8, cliente antigo) | `4834ff812` `0d3c0ed65` `9efadaa8c` `d9d63c1c2` `91a9232a5` |
-| B4 · Python: Zappy protege o motor, os 27 blocos entram na promoção, IR sem perda, documento da release | `4fa80d977` `1f5a86418` `d591afffe` `4e3fbeef9` `e58ea6d61` `cdb8df792` |
-| Etapa 7 · Tiled, Phaser, Pygame e Godot reais com a Vila e a Cabana | `d3131965d` `74cf296b0` `71b91cc56` |
-| B6 · peça de plataforma na física antiga do Python, igual ao JS (candidata local `447167f0…`, ver o documento da release, §2.1) | `f07b32e13` |
+| Integração do trabalho do Codex e correções | `mapa-integracao.tsv`; `8ed124dab` `f32083d76` `08d5bf0df` `a8ed6421e` `0ea0ff319` |
+| Full review e lotes R1a, R2, R3, R4, R1b | `plano-correcoes.md`; resumo na versão `46abf1bc9` deste documento |
+| Impedimento 1: revisão 9 numa política só | `bd4b2e76c` `9b57a1290` `14c59d0cd` |
+| Impedimento 2: janela focal pela conta e ordem da galeria | `c1b2c16fb` `947bead70` `3ca3784e7` |
+| Galeria causal liberada | `e3fe5cc10` `c16f4007f` |
+| Etapa 1: regiões sem flag ("Mundo gigante", host, transporte 8, cliente antigo) | `4834ff812` `0d3c0ed65` `9efadaa8c` `d9d63c1c2` `91a9232a5` |
+| Sem flags: conta do Pinta para todo aluno, com a adoção provada | `9126cd08b` `d6b427057` `a88354b9d` (`2026-11-23-pinta-sem-flags.md`) |
+| Etapa 2, JS e Pro: "Atualizar o motor", Histórico, capa, Zappy e build hospedado | `26ffdfad6` `9be03a90a` `8f66148a1` `e5ffc4fdb` `53914c23c` `3711cf203` `0fc69bc92` `4fa80d977` `2cbfe7cef` |
+| Etapa 2, Python: 27 blocos na promoção, IR sem perda e plataforma igual ao JS | `1f5a86418` `d591afffe` `4e3fbeef9` `f07b32e13` (`2026-11-23-pinta-release-python.md`) |
+| Etapa 6: mensagens sem jargão, autorregras, "Preciso de ajuda", níveis e teclado, prévia focal | `07ffbf384` `5ec1f4ea2` `e3642650f` `f84ce4327` `3752785dc` `6fdfa1e27` `7bd41e1cc` `41487b1e5` |
+| Etapa 7: Tiled, Phaser, Pygame e Godot reais com a Vila e a Cabana | `d3131965d` `74cf296b0` `71b91cc56` |
+| Etapa 9 reduzida: guias (T6) e Vila e Floresta (unidade, programas reais e 16 fluxos de navegador) | `6922fb2e0` `8e2a8e55a` `25d3b11c7` |
+| Full review final, com 2 revisores | Nuvem e acesso: nenhum achado. Pro, Python e UI: 3 achados, corrigidos em `2cbfe7cef` `7bd41e1cc` `41487b1e5` |
 
-Implantação da correção do Zappy, quando a staging for à produção: Worker studio-runtime → Members →
-community-kids, community e admin.
+Para quando a staging for à produção:
+- a correção do Zappy no Pro sai nesta ordem: Worker studio-runtime → Members → community-kids, community
+  e admin;
+- todo perfil adota a nuvem causal na primeira abertura do Pinta, então vale acompanhar os primeiros dias.
 
-## Interrompido, NÃO conferido, fora da staging
+## Fora do escopo reduzido (para quando houver créditos)
 
-| Branch (worktree) | Commit | O que é |
-|---|---|---|
-| `pinta-missao-retomada-20261121` (`~/projects/sistema-zero-pinta-integracao-20261120`) | `a59367346` (WIP desfeito) | Tirar as flags da missão (causal V1, perfis causais, paletas CAS…). **Concluído em 23/11 na branch**, com os portões; falta só o `--ff-only` na staging local. Inventário em [`2026-11-23-pinta-sem-flags.md`](2026-11-23-pinta-sem-flags.md). |
-
-**Para retomar:**
-1. Ler o diff do WIP (`git show <commit>`).
-2. Terminar o lote.
-3. Rodar os portões: testes, typecheck dos pacotes tocados e as provas dos cursos.
-4. Fazer o merge da staging na branch.
-5. Rodar `--ff-only` na staging local.
-
-Na regiões, a conta só funciona com a fila causal; com o lote "sem flags", ela vale para todo aluno ativo.
-
-## O que falta para fechar o plano (12 a 15 lotes, aproximadamente)
-
-1. Fechar o lote da tabela acima. O B6 entrou em `f07b32e13`; a worktree `pinta-linha-b-20261123` fica até o fecho.
-2. **Etapa 6**, a que a criança sente primeiro e a recomendada para retomar:
-   - mensagens sem jargão (U2);
-   - "Preciso de ajuda" e "Antes/Depois";
-   - 3 níveis, teclado e Esc no regional (U3);
-   - prévia e toques na janela focal (U1);
-   - medir p95 ≤33,3 ms por quadro e ≤100 ms por gesto em 1024×768.
-3. **Etapas 3–5:** primeiro levantar o que o Codex já deixou pronto (conjuntos, seleção, espalhamento e imagens de
-   peças têm lotes registrados no plano mestre). Depois completar terreno, objetos, caminhos, portas, animações e
-   profundidade nas regiões.
-4. **Versão única do motor Python**, seguindo o documento da release:
-   - depende do E9 da Evolução do Estúdio e do lote 6 dos mundos de 2 km do Molda;
-   - mexe no staging remoto (imagem, R2, Worker, Members), então avisar a dona antes;
-   - depois, requalificar os jogos gravados: 20 Turtle, 58 Pygame Zero, 9 Raylib 2D, 8 Raylib 3D e 18 Pygame.
-5. **Etapa 8** (a maior; pode esperar), as projeções:
-   - abrir e editar o mapa projetado na oficina;
-   - gestos, minimapa, seleção, histórico e backup;
-   - PNG 6 e os 3 jogadores Python projetados;
-   - paridade nos 5 players e nos 4 exportadores;
-   - anunciar o nativo 9 / nuvem 8.
-6. **Ensaios de navegador da oficina:** `pinta-causal-local.flow.ts`, `pinta-physical-regions` e
-   `automapping-browser/prove.py`.
-7. **Etapa 9:**
-   - os dez passos da Vila e Floresta, as variantes e o PyDew Valley;
-   - T6: `packages/pinta/CLAUDE.md` desatualizado e a API pública sem `./workshop-reader` e `./assets/causal`;
-   - T7: ~13 mil caminhos `C:\Users\…` em recibos antigos;
-   - full review final.
-8. **Fecho:**
-   - apagar as duas worktrees pelo script seguro (soltar as junções de `node_modules` antes);
-   - apagar as branches integradas;
-   - parar os containers `pinta-causal-20261122-db` e `pinta-floor-20261122-db`;
-   - apagar `.cache/linha-b`.
+1. **"Preciso de ajuda" de verdade:**
+   - o Pinta já tem o botão e o recado (`e3642650f`);
+   - falta uma rota no members para o aluno abrir conversa fora da aula, e a ligação no host;
+   - o recado leva só os identificadores, sem os bytes da recuperação.
+2. **Etapas 3–5:**
+   - primeiro, levantar o que o Codex já deixou pronto nas regiões (conjuntos, seleção, espalhamento e
+     imagens de peças têm lotes registrados no plano mestre);
+   - depois, completar terreno, objetos, caminhos, portas, animações e profundidade no "Mundo gigante".
+3. **Medição p95 da oficina regional:** não rodou na etapa 6. As metas são quadro ≤33,3 ms e gesto
+   ≤100 ms em 1024×768.
+4. **Versão única do motor Python:**
+   - está em montagem por outra sessão (`97288bbd8`); seguir o documento da release;
+   - a promoção mexe no staging remoto, então avisar a dona antes;
+   - depois, requalificar os jogos gravados.
+5. **Etapa 8, projeções em tudo:**
+   - abrir e editar mapa projetado na oficina;
+   - PNG 6 e jogadores Python projetados;
+   - paridade entre os players e os exportadores;
+   - anunciar o nativo 9 / nuvem 8 (`WORKSHOP_BODY_READABLE`).
+6. **Etapa 9 completa:**
+   - variantes;
+   - PyDew Valley;
+   - T7: ~13 mil caminhos `C:\Users\…` em recibos antigos.
+7. **Revisão dedicada da adoção no aparelho:** o `pinta-cloud-persistence.ts` reconcilia as edições
+   offline de antes do deploy com a fila causal. O full review final não leu essa parte inteira.
 
 Abertos menores:
-- ~97 `.rejects` em `packages/members/tests/db`;
-- `missionObserver.test.ts` instável sob carga;
-- 15 testes do Estúdio no community-kids instáveis na suíte cheia (passam isolados);
-- o Pro da aula não aceita o motor 2D convertido (só importa se uma aula Pro nascer de um 2D convertido);
-- o build da equipe (auth/agent-runtime) recusa o 2D convertido.
+- de outras sessões:
+  - 1 erro no typecheck do studio, vindo da sessão do Molda: `src/runtime/python/raylib/cenario-campo.test.ts`;
+  - 15 testes do Estúdio no community-kids, instáveis na suíte cheia;
+- da missão:
+  - `missionObserver.test.ts`, instável sob carga;
+  - uns 97 `.rejects` em `members/tests/db`;
+  - o Pro da aula e o build da equipe recusam o 2D convertido.
+
+## Fecho (feito em 23/11)
+
+- **Worktrees:** `sistema-zero-pinta-integracao-20261120` e `sistema-zero-pinta-linha-b-20261123` foram
+  apagadas pelo script seguro, com as junções soltas antes. O `node_modules/.bun` da árvore principal
+  ficou intacto (1.687). Log: `~/backup-pinta-codex-20261122/worktrees-fecho.log`.
+- **Branches:** `pinta-missao-retomada-20261121` e `pinta-linha-b-20261123` foram apagadas; as duas
+  estavam inteiras na staging. As remotas `origin/pinta-missao-retomada-20261121` e
+  `origin/pinta-rollout6-leitor-atual-20261121` ficam até o push da staging.
+- **Containers:** `pinta-causal-20261122-db` e `pinta-floor-20261122-db` estão **parados**, não apagados.
+  - Para religar: `docker start pinta-causal-20261122-db`.
+  - Quando não precisar mais: `docker rm`.
+- **Para retomar:** crie uma worktree a partir da staging local e rode `bun install --frozen-lockfile`
+  nela. Ao terminar, apague a worktree pelo script seguro.
