@@ -1,6 +1,6 @@
 {
   "environment": "staging",
-  "purpose": "Gravação das aulas no Kids; vídeos provisórios de 2 segundos",
+  "purpose": "Kids de staging com os vídeos finais (desde 24/11/2026); antes, vídeos provisórios de 2 segundos",
   "verifiedAt": "2026-11-22T12:55:47.982Z",
   "course": {
     "id": "081a0a6b-ea00-59ea-afc9-8842e0c9446f",
@@ -252,5 +252,20 @@
       "embedUrl": "https://player.vimeo.com/video/1249060193?h=96281963ac",
       "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/staging/ilha-farol-20261122/fba0d8291a430309770ae2c7275854213b798071b2514105d82f717ca195bc59.png"
     }
-  ]
+  ],
+  "videosFinais": {
+    "em": "2026-11-24",
+    "origem": "Downloads/A ilha do farol/FINALIZADAS (17 arquivos)",
+    "como": "cada vídeo do Vimeo recebeu o arquivo final como versão nova (mesmo id e endereço); a capa da parte foi aplicada de novo; a duração das partes nas aulas saiu de 2 s para a real, e as três aulas foram publicadas de novo",
+    "conferido": "17 vídeos disponíveis, duração igual à do arquivo (até 0,5 s), capa ativa"
+  },
+  "promocao": {
+    "em": "2026-11-24",
+    "estado": "bloqueada",
+    "motivo": "promote-kids (produção) e copy-adult (staging) falharam na validação da Aula 1 dentro da publicação de cursos: 'Configure a atividade e sua verificação...; A checagem deve pertencer à própria seção.' (course-sync.ts:306). Nada foi publicado; os cursos de produção e o adulto continuam em rascunho.",
+    "trabalhos": {
+      "promote-kids": "62dc63fe-fec6-4f35-ae63-7b419813d501",
+      "copy-adult-staging": "411bee30-e2a6-4c1c-ab29-57424e1edb9b"
+    }
+  }
 }
