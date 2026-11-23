@@ -12,6 +12,7 @@ import { mapBrushMessage } from '../components/editor/mapTools/mapBrushMessages'
 import { readStoredRegionMapViewport } from '../components/editor/mapTools/storedRegionMapCanvas'
 import { pintaValuesEqual } from '../core/assetEquality'
 import { retainedAssetBytes, sharedAssetParts } from '../core/assetMemory'
+import { COPY } from '../core/copy'
 import { createHistory } from '../core/history'
 import type { PintaResourceObservation } from '../core/localAssetOrigin'
 import { PintaLocalStorageError } from '../core/localStorageErrors'
@@ -71,9 +72,11 @@ function visualDocument(map: RegionTilemapAsset) {
 }
 
 const refusal = (message?: string | null) =>
-  new PintaLocalStorageError(
-    message ?? 'Não consegui conferir as casas deste gesto. Seus dados foram mantidos.',
-  )
+  new PintaLocalStorageError(message ?? COPY.scene.focal.refused)
+
+/** A frase que a criança lê: a do Pinta, nunca a mensagem crua do IndexedDB (em inglês). */
+const childMessage = (error: unknown) =>
+  error instanceof PintaLocalStorageError ? error.message : COPY.scene.focal.saveError
 
 function planRegionalBrush(
   map: RegionTilemapAsset,
@@ -230,7 +233,7 @@ export async function openLocalRegionAuthorSession(
           return { ok: true, changed, message }
         },
         (error: unknown) => {
-          const message = error instanceof Error ? error.message : String(error)
+          const message = childMessage(error)
           store.setState({ saving: false, error: message })
           failed = true
           return { ok: false, changed: false, message }

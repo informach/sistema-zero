@@ -1,5 +1,6 @@
 import { beforeEach, expect, test } from 'bun:test'
 import { DEFAULT_MAP_BRUSH } from '../components/editor/MapTerrainPanel'
+import { COPY } from '../core/copy'
 import { pintaLocalRevisionOf, pintaResourceObservation } from '../core/localAssetOrigin'
 import {
   createTilemapAsset,
@@ -325,7 +326,8 @@ test('pela conta, o gesto focal grava os chunks e a unidade V4 juntos; uma falha
     if (key === PINTA_CAUSAL_OUTBOX_KEY) throw quota
   })
   resetIdbMockStats()
-  expect(await gesture(5, 5)).toMatchObject({ ok: false, message: quota.message })
+  // A criança lê a frase do Pinta, não a mensagem crua do IndexedDB.
+  expect(await gesture(5, 5)).toMatchObject({ ok: false, message: COPY.scene.focal.saveError })
   expect(idbMockStats().atomic).toBe(1)
   expect([...db.keys()].map(String).sort()).toEqual([...before.keys()].map(String).sort())
   for (const [key, value] of before) expect(db.get(key)).toBe(value)

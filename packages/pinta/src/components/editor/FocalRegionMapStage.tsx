@@ -130,16 +130,17 @@ export function FocalRegionMapStage({
           if (request.signal.aborted) return
           if (!view) {
             setLoading(false)
-            setViewError(COPY.scene.gestureChanged)
+            setViewError(COPY.scene.focal.windowError)
             return
           }
           windowView.current = view
           drawWindow()
         },
-        (problem: unknown) => {
+        () => {
+          // A mensagem do IndexedDB vem crua e em inglês: a criança lê a frase do Pinta.
           if (request.signal.aborted) return
           setLoading(false)
-          setViewError(problem instanceof Error ? problem.message : String(problem))
+          setViewError(COPY.scene.focal.windowError)
         },
       )
   }, [focal, cellPx, collision, drawWindow, revision])
@@ -316,9 +317,15 @@ export function FocalRegionMapStage({
             />
           </MapPaper>
           {viewError ? (
-            <p role="status" className="pin-float absolute left-3 top-3 p-2">
-              {viewError}
-            </p>
+            <div
+              role="status"
+              className="pin-float absolute left-3 top-3 flex flex-wrap items-center gap-2 p-2"
+            >
+              <p>{viewError}</p>
+              <Button variant="barOutline" onClick={loadWindow}>
+                {COPY.gallery.retry}
+              </Button>
+            </div>
           ) : null}
         </div>
         <aside className="max-h-72 w-full shrink-0 overflow-y-auto bg-pin-surface md:max-h-none md:w-64">

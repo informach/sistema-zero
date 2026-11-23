@@ -112,6 +112,16 @@ export const COPY = {
     brushChanged: 'O cenário mudou. Comece a pincelada de novo.',
     gestureChanged: 'O cenário mudou. Comece de novo.',
     gestureRefused: 'Não consegui aplicar esta mudança. Tente de novo.',
+    /** Janela focal (cenário grande): a frase de cada tropeço, sem termo técnico. */
+    focal: {
+      exitWithoutChange: 'Sair sem esta mudança',
+      changeNotSaved: 'A última mudança não foi guardada. O cenário ficou como antes.',
+      saveError: 'Não consegui guardar esta mudança. O cenário ficou como antes.',
+      refused: 'Não consegui fazer esta mudança. O cenário ficou como antes.',
+      needsAdvanced: 'Esta mudança só dá para fazer no Avançado. Toque em Avançado.',
+      changedElsewhere: 'O cenário mudou em outro lugar. Volte e abra o cenário de novo.',
+      windowError: 'Não consegui mostrar esta parte do cenário.',
+    },
     nestedSet: 'Solte os conjuntos deste pedaço antes de guardar outro conjunto.',
     mapPanels: 'Peças, camadas e detalhes',
     dimensions: (cols: number, rows: number, layers: number) =>

@@ -1,6 +1,7 @@
 import { PINTA_REGION_SIDE } from '@sistemazero/core/creations'
 import { pintaValuesEqual } from '../core/assetEquality'
 import type { PintaMemoryAsset } from '../core/assetMemory'
+import { COPY } from '../core/copy'
 import {
   type PintaResourceObservation,
   pintaLocalOriginOf,
@@ -82,14 +83,14 @@ export interface LocalRegionCausalBinding {
 
 class PintaRegionalEditUnavailable extends PintaLocalStorageError {
   constructor() {
-    super('Esta edição precisa abrir o cenário completo. Seus dados foram mantidos.')
+    super(COPY.scene.focal.needsAdvanced)
     this.name = 'PintaRegionalEditUnavailable'
   }
 }
 
 class PintaRegionalEditConflict extends PintaLocalStorageError {
   constructor() {
-    super('O cenário ou suas peças mudaram. Reabra o cenário antes de guardar o gesto.')
+    super(COPY.scene.focal.changedElsewhere)
     this.name = 'PintaRegionalEditConflict'
   }
 }
