@@ -1,29 +1,36 @@
+import {
+  STUDIO_PRO_ENGINE_COPIES as PRO_ENGINE_COPIES,
+  STUDIO_PRO_ENGINE_EXTENSION_IDS as PRO_ENGINE_EXTENSION_IDS,
+  STUDIO_PRO_ENGINE_VARIANTS as PRO_ENGINE_VARIANTS,
+  type StudioProEngineExtensionId as ProEngineExtensionId,
+  type StudioProEngineInventory as ProEngineInventory,
+  type StudioProEngineVariant as ProEngineVariant,
+  studioProEngineCopyPath as proEngineCopyPath,
+} from '@sistemazero/core/studio/pro-engine-copies'
 import { type StudioProPlatformFiles, studioProDigest } from '@sistemazero/core/studio/pro-revision'
 import { isDocumentRecord } from '../../core/projectDocument'
 import type { ProjectTree } from '../../core/proProject'
 import { loadExtensionBootstrapScript } from '../../extensions/runtime'
 import { findExtension } from '../../official-extensions'
-import { PRO_ENGINE_COPIES } from './proEngineCopies.generated'
 
 /**
  * "Atualizar o motor" no Pro (decisão de 23/11/2026: sem troca automática, com uma troca segura).
  * A conversão para o Pro escreve o motor 2D como arquivo do projeto (`public/sz-ext/<id>.js`) e ele
  * fica parado na versão daquele dia. Só oferecemos o motor de agora quando a cópia ainda é, byte a
- * byte, um motor que o próprio Estúdio escreveu: o inventário `proEngineCopies.generated.ts` guarda
- * o sha256 de cada cópia publicada. Uma cópia que não está lá foi editada (ou é de antes de 13/08,
- * quando a fonte ainda morava dentro do motor) e não é trocada nem oferecida.
+ * byte, um motor que o próprio Estúdio escreveu: o inventário do core
+ * (`@sistemazero/core/studio/pro-engine-copies`, o mesmo que os servidores usam) guarda o sha256 de
+ * cada cópia publicada. Uma cópia que não está lá foi editada (ou é de antes de 13/08, quando a
+ * fonte ainda morava dentro do motor) e não é trocada nem oferecida.
  */
-export const PRO_ENGINE_EXTENSION_IDS = ['game-2d', 'game-2d-advanced'] as const
-export type ProEngineExtensionId = (typeof PRO_ENGINE_EXTENSION_IDS)[number]
-/** `completo` leva o cenário do Pinta; `sem-cenario-pinta` é a variante que a conversão escreve para quem não o usa. */
-export const PRO_ENGINE_VARIANTS = ['completo', 'sem-cenario-pinta'] as const
-export type ProEngineVariant = (typeof PRO_ENGINE_VARIANTS)[number]
-export type ProEngineInventory = Readonly<
-  Record<ProEngineExtensionId, Readonly<Record<ProEngineVariant, readonly string[]>>>
->
-
-export const proEngineCopyPath = (extensionId: ProEngineExtensionId) =>
-  `public/sz-ext/${extensionId}.js`
+export {
+  PRO_ENGINE_COPIES,
+  PRO_ENGINE_EXTENSION_IDS,
+  PRO_ENGINE_VARIANTS,
+  type ProEngineExtensionId,
+  type ProEngineInventory,
+  type ProEngineVariant,
+  proEngineCopyPath,
+}
 export const PRO_ENGINE_COPY_PATHS = PRO_ENGINE_EXTENSION_IDS.map(proEngineCopyPath)
 
 /** Os dois textos que a conversão escreve hoje para o motor (os mesmos que o build regional aceita). */

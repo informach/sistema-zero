@@ -1,9 +1,9 @@
-// Gerado por `bun scripts/gen-pro-engine-copies.ts`. Não editar à mão.
+// Gerado por `bun run --cwd packages/studio gen:pro-engine-copies`. Não editar à mão.
 // sha256 (UTF-8) de cada cópia `public/sz-ext/<id>.js` que a conversão para o Pro escreveu desde
 // 15106f159 (13/08/2026), na ordem em que apareceram. Ver o cabeçalho do script.
-import type { ProEngineInventory } from './proEngineCopies'
+import type { StudioProEngineInventory } from './pro-engine-copies'
 
-export const PRO_ENGINE_COPIES: ProEngineInventory = {
+export const STUDIO_PRO_ENGINE_COPIES: StudioProEngineInventory = {
   'game-2d': {
     completo: [
       'd9aef10dec9a392195fdced9b4f4c35336e9cc16cd4dc8eec124a744ea9dbfd8',

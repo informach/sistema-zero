@@ -1,7 +1,12 @@
 import { z } from 'zod'
 import { isStudioProArtifact, isStudioProValidationIdentity } from './pro-artifact'
-import { STUDIO_PRO_BUILD_LIMITS, studioProBuildFileLimitError } from './pro-build'
+import {
+  STUDIO_PRO_BUILD_LIMITS,
+  type StudioProVerifiedPlatformFiles,
+  studioProBuildFileLimitError,
+} from './pro-build'
 import { isStudioProBuilderEvidence } from './pro-builder'
+import { verifyStudioProPlatformFiles } from './pro-revision'
 import {
   isStudioProBuildMaterialPath,
   normalizeStudioProBuildPath,
@@ -79,7 +84,24 @@ export const studioBuildResponseSchema = z.discriminatedUnion('ok', [
   }),
 ])
 
-export function parseStudioBuildSubmission(value: unknown): StudioBuildSubmission {
+/**
+ * As cópias publicadas do motor 2D de um pedido de build ainda não validado, conferidas pelo
+ * sha256 (só nos caminhos do motor), para `parseStudioBuildSubmission` deixá-las fora do orçamento
+ * do autor. Quem compila (o Worker, e o BFF antes dele) confere; sem a conferência, vale o teto
+ * para todo arquivo.
+ */
+export function verifyStudioBuildPlatformFiles(
+  value: unknown,
+): Promise<StudioProVerifiedPlatformFiles> {
+  return verifyStudioProPlatformFiles(
+    value && typeof value === 'object' && 'files' in value ? value.files : undefined,
+  )
+}
+
+export function parseStudioBuildSubmission(
+  value: unknown,
+  platform?: StudioProVerifiedPlatformFiles,
+): StudioBuildSubmission {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     throw new InvalidBuildRequestError('O corpo da requisição precisa ser um objeto.')
   }
@@ -126,6 +148,8 @@ export function parseStudioBuildSubmission(value: unknown): StudioBuildSubmissio
 
   const limitError = studioProBuildFileLimitError(
     Object.fromEntries(Object.entries(files).filter(([path]) => !RESERVED_PATHS.has(path))),
+    undefined,
+    platform,
   )
   if (limitError === 'EMPTY' || limitError === 'TOO_MANY_FILES') {
     throw new InvalidBuildRequestError(

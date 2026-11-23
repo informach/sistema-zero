@@ -38,9 +38,9 @@ export interface ProRevisionOptions {
 /**
  * A revisão LOCAL (operações com arquivos, Histórico, Vite, aplicações do Zappy): a cópia do motor
  * 2D que o Estúdio escreveu num jogo convertido (perto de 400 mil caracteres) fica na revisão e no
- * hash, mas fora do teto de 256 mil por arquivo da criança (`proEngineRevisionFiles`). De 15/10 a
- * 23/11/2026 a revisão aplicava o teto também a ela, e nenhuma dessas operações funcionava num 2D
- * convertido.
+ * hash, mas fora do teto de 256 mil por arquivo da criança (`proEngineRevisionFiles`: as cópias
+ * publicadas do inventário do core e as de agora). De 15/10 a 23/11/2026 a revisão aplicava o teto
+ * também a ela, e nenhuma dessas operações funcionava num 2D convertido.
  */
 export async function captureProRevision(
   project: Project,
@@ -50,9 +50,10 @@ export async function captureProRevision(
 }
 
 /**
- * O pedido ao Zappy vai ao servidor, que relê a revisão e a compila com o teto do compilador
- * remoto para todo arquivo: aqui não há arquivo da plataforma, e a cópia do motor é recusada antes
- * de sair do aparelho.
+ * O pedido ao Zappy vai ao servidor, que relê a revisão (BFF e Members) e a compila no Worker. Aqui
+ * vale exatamente a regra do servidor: a revisão do core aceita as cópias publicadas do motor 2D (o
+ * inventário do core, o mesmo dos servidores) fora do orçamento da criança; uma cópia editada é
+ * dela e segue o teto de 256 mil caracteres, e o pedido é recusado antes de sair do aparelho.
  */
 export async function captureProRevisionPayload(project: Project) {
   return captureRevision(project, true)

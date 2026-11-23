@@ -13,12 +13,7 @@ import type { ProWorkspaceLanguage } from '../modes/pro/workspace/language'
 import { olderEngine, openConvertedPro, releaseConvertedPros } from '../testing/convertedProFixture'
 import { PRO_ENGINE_UPDATE_LABEL, updateProEngineCopies } from './proEngineUpdate'
 import { listProHistory, readProHistoryTree } from './proProjectHistory'
-import {
-  applyProEditorChange,
-  captureProRevision,
-  captureProRevisionPayload,
-  undoProApplication,
-} from './proRevision'
+import { applyProEditorChange, captureProRevision, undoProApplication } from './proRevision'
 import { updateProToolchainBeforeExecution } from './proToolchainUpdate'
 import {
   applyPreparedProWorkspaceOperation,
@@ -225,11 +220,6 @@ describe('o que continua recusado', () => {
     }
     await expect(captureProRevision({ ...original, tree })).rejects.toThrow(REFUSED)
   })
-
-  test('o pedido ao Zappy segue o contrato do compilador remoto: a cópia do motor não vai ao servidor', async () => {
-    // O construtor remoto (e o servidor que relê a revisão) aplica o teto a todo arquivo; aceitar
-    // o motor lá depende do servidor. Até lá o pedido é recusado aqui, antes de sair do aparelho.
-    const opened = await openConvertedPro('game-2d', (engine) => engine)
-    await expect(captureProRevisionPayload(opened.original)).rejects.toThrow(REFUSED)
-  })
+  // O pedido ao Zappy (o motor intacto vai ao servidor; o editado é recusado no aparelho, no BFF e
+  // no compilador) está em proEngineServer.test.ts.
 })

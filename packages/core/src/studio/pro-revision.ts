@@ -1,5 +1,10 @@
 import { canonicalJson } from '../creations/content-fingerprint'
-import { studioProBuildFileLimitError } from './pro-build'
+import {
+  type StudioProPlatformFiles,
+  type StudioProVerifiedPlatformFiles,
+  studioProBuildFileLimitError,
+} from './pro-build'
+import { STUDIO_PRO_PLATFORM_FILES } from './pro-engine-copies'
 import type { StudioProRevisionConfiguration } from './pro-revision-configuration'
 import { isStudioProScene3DFile } from './pro-scene3d'
 import { isStudioDocumentTemplateId, isStudioProjectId } from './project-format'
@@ -49,21 +54,40 @@ export const STUDIO_PRO_REVISION_LIMITS = {
   maxSummaryChars: 2_000,
 } as const
 
+export type { StudioProPlatformFiles, StudioProVerifiedPlatformFiles } from './pro-build'
 /**
- * Platform files the host knows byte for byte: path → accepted SHA-256 digests. A revision file
- * whose digest is listed for its own path stays in the revision (and in its hash) but outside the
- * author's source budget, like the verified engine of the local Pro build. Any other content at
- * that path is the author's and counts as usual. Only local hosts pass this list: the HTTP boundary
- * (`parseStudioProRevision`) and every server keep the remote compiler's budget for every file.
+ * Platform files: path → accepted SHA-256 digests. A revision file whose digest is listed for its
+ * own path stays in the revision (and in its hash) but outside the author's source budget; any
+ * other content at that path is the author's and counts as usual. A JavaScript revision accepts the
+ * published 2D engine copies (`STUDIO_PRO_PLATFORM_FILES`) on every host, the HTTP boundary
+ * (`parseStudioProRevision`) and every server included, so the client and the servers agree.
  */
-export type StudioProPlatformFiles = Readonly<Record<string, readonly string[]>>
 export interface StudioProRevisionOptions {
+  /** Replaces the published copies (the editor adds the copies it writes today; tests pass their own). */
   platformFiles?: StudioProPlatformFiles
 }
 
 export async function studioProDigest(text: string): Promise<string> {
   const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))
   return Array.from(new Uint8Array(bytes), (byte) => byte.toString(16).padStart(2, '0')).join('')
+}
+
+/**
+ * The platform files among `files` (untrusted input is fine): each file at an accepted path whose
+ * SHA-256 is accepted there, with the exact text that matched. Only the accepted paths are hashed.
+ */
+export async function verifyStudioProPlatformFiles(
+  files: unknown,
+  accepted: StudioProPlatformFiles = STUDIO_PRO_PLATFORM_FILES,
+): Promise<StudioProVerifiedPlatformFiles> {
+  const verified = new Map<string, string>()
+  if (!files || typeof files !== 'object' || Array.isArray(files)) return verified
+  for (const [path, content] of Object.entries(files)) {
+    const digests = Object.hasOwn(accepted, path) ? accepted[path] : undefined
+    if (typeof content === 'string' && digests?.includes(await studioProDigest(content)))
+      verified.set(path, content)
+  }
+  return verified
 }
 
 /** HTTP boundary parser, shared without bringing a validation framework into the editor bundle. */
@@ -142,36 +166,16 @@ export function isStudioProRevisionPath(path: string): boolean {
   )
 }
 
-/** The author's source files: the revision files minus each verified platform file. */
-async function authorSourceFiles(
-  files: Record<string, string>,
-  platformFiles: StudioProPlatformFiles | undefined,
-): Promise<Record<string, string>> {
-  if (!platformFiles) return files
-  const source: Record<string, string> = {}
-  for (const [path, content] of Object.entries(files)) {
-    const accepted = Object.hasOwn(platformFiles, path) ? platformFiles[path] : undefined
-    if (
-      typeof content === 'string' &&
-      accepted?.length &&
-      accepted.includes(await studioProDigest(content))
-    )
-      continue
-    source[path] = content
-  }
-  return source
-}
-
 function assertLayout(
   files: Record<string, string>,
   directories: string[],
   validPath = isStudioProRevisionPath,
-  sourceFiles = files,
+  platform?: StudioProVerifiedPlatformFiles,
 ) {
   if (
     directories.length > STUDIO_PRO_REVISION_LIMITS.maxDirectories ||
     Object.values(files).some((content) => typeof content !== 'string') ||
-    studioProBuildFileLimitError(sourceFiles)
+    studioProBuildFileLimitError(files, undefined, platform)
   )
     throw new Error('A revisão ultrapassou os limites de arquivos.')
   const seen = new Set<string>()
@@ -223,6 +227,7 @@ export async function createStudioProRevision(
       : undefined
   const python = configuration?.programmingLanguage === 'python'
   const validPath = await revisionPathValidator(python)
+  const accepted = platformFiles ?? (python ? undefined : STUDIO_PRO_PLATFORM_FILES)
   if (
     !isStudioProjectId(input.projectId) ||
     !isStudioDocumentTemplateId(input.templateId) ||
@@ -235,7 +240,7 @@ export async function createStudioProRevision(
     input.files,
     input.directories,
     validPath,
-    await authorSourceFiles(input.files, platformFiles),
+    accepted && (await verifyStudioProPlatformFiles(input.files, accepted)),
   )
   if (configuration?.programmingLanguage === 'python') {
     if (!Object.hasOwn(input.files, configuration.python.entrypoint))
