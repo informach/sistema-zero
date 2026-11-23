@@ -7,7 +7,10 @@ import {
   PYTHON_PINTA_REGIONS_FEATURE,
   PYTHON_PINTA_SCENE_MODULE_MAX_BYTES,
 } from '@sistemazero/core/studio/python-runtime-features'
-import { pintaBrowser2dProject } from '../../../../../experiments/studio-python-runtime/pintaBrowser2dFixtures'
+import {
+  pintaBrowser2dProject,
+  pintaSceneAssetPath,
+} from '../../../../../experiments/studio-python-runtime/pintaBrowser2dFixtures'
 import { buildPythonSourceFiles } from '../../export/pythonSource'
 import { pythonOfficialModules } from '../../python/officialModules'
 import { pythonEnvironmentFixture } from '../../state/fixtures/pythonEnvironment'
@@ -32,7 +35,8 @@ const pygame =
     timeout: 5000,
   }).status === 0
 
-const shared = `from pathlib import Path
+/** `recusa` is where the Studio panel put the broken world for this extension. */
+const shared = (recusa: string) => `from pathlib import Path
 import pinta
 assert Path(pinta.__file__).resolve() == Path('pinta.py').resolve()
 assert pinta.carregar_cenario.__module__ == 'pinta'
@@ -42,7 +46,7 @@ assert game.ponto_inicial() == (32,32)
 old = game.cena
 renderer = game._renderizador
 try:
-    game.substituir(Path('assets/recusa.png'))
+    game.substituir(Path('${recusa}'))
 except ValueError:
     pass
 else:
@@ -60,7 +64,7 @@ with game.abrir_destino(game.objeto_por_id('door')) as outro:
 game.descartar()
 print('Módulo nativo verificado',pinta.__file__)
 `
-function sdl(ce: boolean) {
+function sdl(ce: boolean, recusa: string) {
   return `import pygame
 ${ce ? '' : 'from pgzero.screen import Screen'}
 def pixel(cena,x,y):
@@ -70,11 +74,25 @@ def pixel(cena,x,y):
     cena.desenhar(target,frente=True,tempo=135)
     return tuple(surface.get_at((x,y)))[:3]
 
-${shared}
-${ce ? 'assert callable(pinta.carregar_mapa) and callable(pinta.fonte)' : "assert not hasattr(pinta,'carregar_mapa')"}
+${shared(recusa)}
+${ce ? 'assert callable(pinta.carregar_mapa) and callable(pinta.fonte)' : pgzeroRoot}
 `
 }
-const ray = `import pyray as ray
+// Pygame Zero opens `Actor('vila')` from images/ next to the MAIN file (pgzero.loaders.root,
+// e.g. src/images/ when the main file is src/main.py). A bare scenario name follows the same root.
+const pgzeroRoot = `assert not hasattr(pinta,'carregar_mapa')
+import os, shutil, tempfile, pgzero.loaders
+with tempfile.TemporaryDirectory() as pasta:
+    os.mkdir(os.path.join(pasta, 'images'))
+    shutil.copy('images/mundo.png', os.path.join(pasta, 'images', 'mundo.png'))
+    pgzero.loaders.set_root(os.path.join(pasta, 'main.py'))
+    try:
+        with pinta.carregar_cenario('mundo') as outra_raiz:
+            assert outra_raiz.ponto_inicial() == (32,32)
+    finally:
+        pgzero.loaders.set_root('main.py')
+print('Raiz do Pygame Zero seguida')`
+const ray = (recusa: string) => `import pyray as ray
 ray.set_config_flags(ray.FLAG_WINDOW_HIDDEN)
 ray.init_window(160,96,'prova do módulo Pinta')
 target = ray.load_render_texture(160,96)
@@ -93,7 +111,7 @@ def pixel(cena,x,y):
         ray.unload_image(image)
 
 try:
-${shared
+${shared(recusa)
   .split('\n')
   .map((line) => `    ${line}`)
   .join('\n')}
@@ -108,6 +126,10 @@ async function projectFor(extension: { id: string; version: string }, body: stri
   project.runtime = approved.runtime
   project.python.dependencyLock = approved.python.dependencyLock
   project.installedExtensions = [{ ...extension, installedAt: project.createdAt }]
+  project.assets = (project.assets ?? []).map((asset) => ({
+    ...asset,
+    proPath: pintaSceneAssetPath(extension.id, asset.name),
+  }))
   project.tree = { 'main.py': { kind: 'file', content: body } }
   const validated = await refinePythonProjectDocument(project)
   if (validated.kind !== 'pro') throw new Error('Projeto profissional esperado')
@@ -150,10 +172,19 @@ test('the desktop module is selected only by the pinned release and exact active
   }
 })
 
+const recusa = (extension: { id: string }) => pintaSceneAssetPath(extension.id, 'recusa')
 for (const { extension, body, python } of [
-  { extension: PYGAME_EXTENSION, body: sdl(true), python: pygame ? native : undefined },
-  { extension: PGZERO_EXTENSION, body: sdl(false), python: pygame ? native : undefined },
-  { extension: RAYLIB_2D_EXTENSION, body: ray, python: raylib },
+  {
+    extension: PYGAME_EXTENSION,
+    body: sdl(true, recusa(PYGAME_EXTENSION)),
+    python: pygame ? native : undefined,
+  },
+  {
+    extension: PGZERO_EXTENSION,
+    body: sdl(false, recusa(PGZERO_EXTENSION)),
+    python: pygame ? native : undefined,
+  },
+  { extension: RAYLIB_2D_EXTENSION, body: ray(recusa(RAYLIB_2D_EXTENSION)), python: raylib },
 ])
   test.skipIf(!python)(
     `${extension.id} runs the supplied desktop module against real Vila and Cabana PNGs`,
@@ -161,12 +192,14 @@ for (const { extension, body, python } of [
       const { project, catalog } = await projectFor(extension, body)
       const { files } = await buildPythonSourceFiles(project, catalog)
       expect(files['main.py']).toBe(body)
+      // The PNGs go where the panel puts them: `assets/` in Pygame-ce, `images/` in the others.
+      const pngs = ['mundo', 'recusa'].map((name) => pintaSceneAssetPath(extension.id, name))
       const root = mkdtempSync(join(tmpdir(), 'pinta-module-'))
-      const assets = join(root, 'assets')
+      const assets = join(root, pngs[0]!.slice(0, pngs[0]!.lastIndexOf('/')))
       const written: string[] = []
       mkdirSync(assets)
       try {
-        for (const name of ['main.py', 'pinta.py', 'assets/mundo.png', 'assets/recusa.png']) {
+        for (const name of ['main.py', 'pinta.py', ...pngs]) {
           const content = files[name]
           if (content === undefined) throw new Error(`Arquivo empacotado ausente: ${name}`)
           const path = join(root, name)
@@ -181,6 +214,8 @@ for (const { extension, body, python } of [
         })
         expect(result.status, `${result.stdout}\n${result.stderr}\n${result.error ?? ''}`).toBe(0)
         expect(result.stdout).toContain('Módulo nativo verificado')
+        if (extension.id === PGZERO_EXTENSION.id)
+          expect(result.stdout).toContain('Raiz do Pygame Zero seguida')
       } finally {
         for (const path of written) unlinkSync(path)
         rmdirSync(assets)

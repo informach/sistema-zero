@@ -4,17 +4,45 @@ import { pngChunk } from '../../packages/pinta/src/export/pngText'
 import { embedPintaRegionImage } from '../../packages/pinta/src/export/regionImage'
 import { exportPintaRegionScene } from '../../packages/pinta/src/export/regionScene'
 import { regionVila } from '../../packages/pinta/src/testing/regionVila'
+import { pgzeroMediaPath } from '../../packages/studio/src/core/pgzeroMediaPaths'
+import { raylibMediaPath } from '../../packages/studio/src/core/raylibMediaPaths'
 import { PGZERO_EXTENSION } from '../../packages/studio/src/runtime/python/pgzero/contract'
 import {
   pythonPintaPgzeroBrowser,
   pythonPintaRaylib2dBrowser,
 } from '../../packages/studio/src/runtime/python/pintaBrowserSceneSource'
-import { RAYLIB_2D_EXTENSION } from '../../packages/studio/src/runtime/python/raylib/contract'
+import {
+  RAYLIB_2D_EXTENSION,
+  RAYLIB_EXTENSION_IDS,
+} from '../../packages/studio/src/runtime/python/raylib/contract'
 import { documentFixture } from '../../packages/studio/src/state/fixtures/projectDocuments'
 import { pythonFilesToTree } from '../../packages/studio/src/state/pythonProjectValidation'
 
 export function isPintaBrowser2dFixture(name: string) {
   return /^pinta-regional-(?:pgzero|raylib2d)(?:-fornecido)?$/.test(name)
+}
+
+/**
+ * Where the Studio panel puts a PNG brought from the Pinta (projectStore addAsset): Pygame Zero
+ * and Raylib keep images in `images/`, Pygame-ce and Turtle in `assets/`. The proof uses the same
+ * rules, so a scenario module that looks in the wrong folder cannot pass by accident.
+ */
+export function pintaSceneAssetPath(extensionId: string, name: string, entrypoint = 'main.py') {
+  const input = {
+    entrypoint,
+    name,
+    kind: 'image' as const,
+    extension: 'png',
+    occupied: { files: [], directories: [] },
+  }
+  const placed =
+    extensionId === PGZERO_EXTENSION.id
+      ? pgzeroMediaPath(input)
+      : (RAYLIB_EXTENSION_IDS as readonly string[]).includes(extensionId)
+        ? raylibMediaPath(input)
+        : { path: `assets/${name}.png` }
+  if ('error' in placed) throw Error(placed.error)
+  return placed.path
 }
 
 function pngUrl(bytes: Uint8Array) {
@@ -67,15 +95,15 @@ async function worlds() {
   return Promise.all([world(child.json), world(broken)])
 }
 
-const setup = (supplied: boolean) => `import json,sys,struct,zlib
+const setup = (supplied: boolean, folder: string) => `import json,sys,struct,zlib
 from pathlib import Path
 assert sys.platform == 'emscripten'
-initial=bytearray(Path('assets/mundo.png').read_bytes())
+initial=bytearray(Path('${folder}/mundo.png').read_bytes())
 root=${supplied ? "pinta.carregar_cenario('mundo')" : 'Backend(initial)'}
 initial[:]=bytes(len(initial))
 owner=root._renderizador._owner
 assert owner > 0 and root.limites[2:]==(160000,160000)
-bad=Path('assets/recusa.png').read_bytes()
+bad=Path('${folder}/recusa.png').read_bytes()
 bad_registry=${supplied ? 'pinta.ler_mundo_png' : 'ler_mundo_png'}(bad)
 assert len(bad_registry['maps'])==2
 try:
@@ -118,7 +146,7 @@ def reload_world():
     if current is not root: current.descartar()
     current=root
     previous=root._renderizador
-    root.substituir(${supplied ? "'mundo'" : "Path('assets/mundo.png').read_bytes()"})
+    root.substituir(${supplied ? "'mundo'" : `Path('${folder}/mundo.png').read_bytes()`})
     assert previous._owner is None and root._renderizador._owner > owner+1
     print('Pinta substituição concluída',flush=True)
 
@@ -140,11 +168,11 @@ print('Pinta fornecido',pinta.__file__,flush=True)
 `
 }
 
-const pgzero = (supplied: boolean) => `
+const pgzero = (supplied: boolean, folder: string) => `
 from pgzero import _sz as transport
 ${supplied ? moduleImport('python-pgzero') : 'Backend=CenarioRegionalPygameZero'}
 WIDTH,HEIGHT=320,240
-${setup(supplied)}
+${setup(supplied, folder)}
 
 def draw():
     screen.fill((0,0,0))
@@ -161,13 +189,13 @@ def on_key_down(key):
     if key==keys.R: reload_world()
 `
 
-const raylib = (supplied: boolean) => `
+const raylib = (supplied: boolean, folder: string) => `
 import pyray as ray
 from _szraylib import _rt as transport
 ${supplied ? moduleImport('python-raylib') : 'Backend=CenarioRegionalRaylib2D'}
 ray.init_window(320,240,'Cenário do Pinta')
 ray.set_target_fps(30)
-${setup(supplied)}
+${setup(supplied, folder)}
 
 while not ray.window_should_close():
     if ray.is_key_pressed(ray.KEY_ENTER): place()
@@ -211,13 +239,14 @@ export async function pintaBrowser2dProject(name: string) {
       libOrigin: 'pinta',
       libId: `personal:${id}`,
       libRevision: 1,
-      proPath: `assets/${id}.png`,
+      proPath: pintaSceneAssetPath(extension.id, id),
       dataUrl: pngUrl(png),
       width,
       height,
     }
   })
-  const source = isPgzero ? pgzero(supplied) : raylib(supplied)
+  const folder = pintaSceneAssetPath(extension.id, 'mundo').slice(0, -'/mundo.png'.length)
+  const source = isPgzero ? pgzero(supplied, folder) : raylib(supplied, folder)
   const composed = isPgzero ? pythonPintaPgzeroBrowser : pythonPintaRaylib2dBrowser
   project.tree = pythonFilesToTree({ 'main.py': supplied ? source : `${composed}\n${source}` })
   return project
