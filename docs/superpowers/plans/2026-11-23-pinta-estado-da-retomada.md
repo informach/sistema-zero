@@ -81,7 +81,7 @@ community-kids, community e admin.
 
 | Branch (worktree) | Commit | O que é |
 |---|---|---|
-| `pinta-missao-retomada-20261121` (`~/projects/sistema-zero-pinta-integracao-20261120`) | `a59367346` | Tirar as flags da missão (causal V1, perfis causais, paletas CAS…). Parou na suíte do members. O inventário era para ir a `2026-11-23-pinta-sem-flags.md`. |
+| `pinta-missao-retomada-20261121` (`~/projects/sistema-zero-pinta-integracao-20261120`) | `a59367346` (WIP desfeito) | Tirar as flags da missão (causal V1, perfis causais, paletas CAS…). **Concluído em 23/11 na branch**, com os portões; falta só o `--ff-only` na staging local. Inventário em [`2026-11-23-pinta-sem-flags.md`](2026-11-23-pinta-sem-flags.md). |
 | `pinta-linha-b-20261123` (`~/projects/sistema-zero-pinta-linha-b-20261123`) | `dfd96d54a` | Plataforma na física antiga do Python (B6). Parou na refatoração do pouso de tamanho fixo. |
 
 **Para retomar cada um:**
@@ -91,7 +91,7 @@ community-kids, community e admin.
 4. Fazer o merge da staging na branch.
 5. Rodar `--ff-only` na staging local.
 
-Na regiões, a conta só funciona com a fila causal, que depende do lote "sem flags".
+Na regiões, a conta só funciona com a fila causal; com o lote "sem flags", ela vale para todo aluno ativo.
 
 ## O que falta para fechar o plano (12 a 15 lotes, aproximadamente)
 
