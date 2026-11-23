@@ -226,3 +226,10 @@ terreno `grade` nativo sem `recortes`:
   (`relevoCabeNoEstudio`); a tela de medidas do terreno avisa e sugere o espaçamento. A medida
   de desempenho do editor com 256 peças passa para o lote 7, quando o mundo de prova de 2 km é
   montado na própria oficina.
+- Lote 5: feito na staging local (23/11/2026). Em campo, as matrizes saem com a posição a 1 mm e o
+  resto com 7 algarismos significativos (relativo: escala pequena nunca vira zero) e os volumes
+  arredondados para fora, ANTES das regiões (`molda-cenarios-motor/src/compilar/arredondar.ts`).
+  Só em campo: o Arquipélago e as exportações saem com os mesmos bytes. Medido no jogo E: matrizes e
+  volumes são quase todo o JSON (entidades 186 KB, colisões 198 KB, nós 64 KB de 476 KB).
+- Ordem: o lote 7 (mundo de prova de 2 km, JavaScript) vem antes do lote 6 (Python), para medir o
+  relevo em campo numa placa de vídeo antes de levar o formato ao Python.

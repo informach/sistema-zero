@@ -33,3 +33,36 @@ test('um mundo de 2 km em campo cabe no Estúdio, sem lote nem colisão de terre
   expect(envelope.cena.arquivos.some((a) => a.papel === 'terreno')).toBe(false)
   expect(envelope.cena.colisoes.some((c) => c.tipo === 'terreno')).toBe(false)
 }, 120_000)
+
+test('em campo, a cena sai com os números curtos e as regiões conferem (lote 5)', async () => {
+  // A rampa tem rotação e volume com muitas casas: sem o arredondamento, o teste reprova.
+  const plano = await criarTransporteDeEnsaio({
+    relevoEmCampo: true,
+    comRegioes: true,
+    comRampa: true,
+  })
+  const cena = plano.assets.find((a) => a.kind === 'scene3d')!
+  const envelope = JSON.parse(new TextDecoder().decode(decodeProjectAsset(cena.dataUrl).bytes)) as {
+    cena: {
+      nos: Array<{ matriz: number[] }>
+      colisoes: Array<{ matriz: number[]; volume: { min: { x: number } } }>
+      regioes: Array<{ nos: string[] }>
+    }
+  }
+  const casas = (v: number) => (String(v).split('.')[1] ?? '').length
+  const algarismos = (v: number) =>
+    String(Math.abs(v))
+      .replace(/^0\.0*|\./g, '')
+      .replace(/e.*$/, '').length
+  let girados = 0
+  for (const item of [...envelope.cena.nos, ...envelope.cena.colisoes]) {
+    for (const i of [12, 13, 14]) expect(casas(item.matriz[i]!)).toBeLessThanOrEqual(3)
+    for (const i of [0, 1, 2, 4, 5, 6, 8, 9, 10])
+      expect(algarismos(item.matriz[i]!)).toBeLessThanOrEqual(7)
+    if (item.matriz.some((v) => v !== 0 && Math.abs(v) !== 1 && !Number.isInteger(v))) girados++
+  }
+  expect(girados).toBeGreaterThan(0)
+  for (const c of envelope.cena.colisoes)
+    for (const v of [c.volume.min.x]) expect(casas(v)).toBeLessThanOrEqual(3)
+  expect(envelope.cena.regioes.length).toBe(2)
+})

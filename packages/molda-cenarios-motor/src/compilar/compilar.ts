@@ -12,6 +12,7 @@ import {
 } from '@sistemazero/molda-cenarios-core/v2'
 import { compilarAguasDaCena } from './aguas'
 import { ArquivosDaCompilacao } from './arquivos'
+import { arredondarItensDaCena } from './arredondar'
 import { compilarChaoECaminhos, type SuperficiesDaCompilacao } from './chao-caminhos'
 import { conferirConteudoCompilado } from './conteudo'
 import { pixelsDaTexturaCompilada } from './imagens'
@@ -165,6 +166,9 @@ async function compilarBase(
         ? await gravarDadosDoTerreno(s.terreno, arquivos, sinal, emCampo ? { imagens } : undefined)
         : undefined,
       meta = compilarMetadadosDaCena(original, p, saida.ancoras(p))
+    // Em campo (mundos grandes), números mais curtos no JSON da cena, ANTES de calcular as regiões
+    // (lote 5): o leitor confere as listas com os números arredondados.
+    if (emCampo) arredondarItensDaCena(meta.entidades, saida.nos, saida.colisoes)
     opcoes.progresso?.({ etapa: 'arquivos', feitos: 0, total: 1 })
     await cederDuranteCompilacao(sinal)
     const { cena } = await conferirConteudoCompilado(
