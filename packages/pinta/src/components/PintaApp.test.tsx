@@ -111,7 +111,7 @@ describe('PintaApp — galeria', () => {
     expect(events).toEqual([`reserva:${map.id}`])
     fireEvent.click(await screen.findByRole('button', { name: COPY.editor.back }))
     await waitFor(() => expect(events).toEqual([`reserva:${map.id}`, `solta:${map.id}`]))
-  }, 30_000)
+  }, 90_000) // 11 s aqui; no CI passou de 31 s (23/11/2026), com a máquina três vezes mais lenta.
 
   it('aplica o tema no root (default light; host pode fixar dark)', async () => {
     const { container, unmount } = render(<PintaApp />)
