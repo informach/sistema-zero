@@ -68,7 +68,10 @@ type Objetivos = NonNullable<
   NonNullable<LearningManifest['sections'][number]['completion']>['projectChecks']
 >
 
-export interface PoderConfig<E extends string, P extends { blocksState?: unknown; assets?: Ativos }> {
+export interface PoderConfig<
+  E extends string,
+  P extends { blocksState?: unknown; assets?: Ativos },
+> {
   /** O nome do curso, como aparece para a criança ("Moedas no caminho"). */
   nome: string
   /** A pasta em docs/aulas-interativas/faisca. */

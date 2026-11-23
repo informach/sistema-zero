@@ -2,8 +2,8 @@
 // A estrutura das aulas, o roteiro e os derivados saem do gerador comum dos Poderes (poder-gerador.ts).
 import { cabanaAjuda, cabanaAulas, cabanaExperiencia } from './cabana-conteudo'
 import { cabanaChecks } from './cabana-criterios'
+import { CABANA_CURSO, CABANA_ETAPAS, montarProjetoCabana } from './cabana-projeto'
 import { cabanaQuiz2d, cabanaQuiz3d } from './cabana-quiz'
-import { montarProjetoCabana, CABANA_CURSO, CABANA_ETAPAS } from './cabana-projeto'
 import { gerarPoder } from './poder-gerador'
 
 const help = `# Passo a passo do projeto — O segredo da cabana\n\nPoder do Faísca. Aqui está o que investigar na experiência e cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.\n\n## ${cabanaExperiencia.title}\n\n**A ideia:** ${cabanaExperiencia.idea}\n\n**O que investigar:**\n\n${cabanaExperiencia.goals.map((g) => `- ${g}`).join('\n')}\n\n${cabanaExperiencia.observe}\n\n${cabanaAulas
@@ -43,40 +43,40 @@ await gerarPoder({
     },
   },
   experiencia: {
-          kind: 'interactive',
-          required: true,
-          title: 'A porta com duas peças',
-          semPerguntaFinal: true,
-          // ⭐ 08/11/2026 (proposta "Experiências do Faísca", aprovada): passar na chave ou no
-          // emblema é pegar, chegar à porta é a cabana perguntar, e o "e" se troca por "ou".
-          instructions:
-            'Vá até a cabana sem nada, com uma peça ou com as duas e troque o "e" pelo "ou". O Zappy te mostra o que testar, e você pode repetir quando quiser.',
-          hints: [
-            'Olhe o caderninho antes de ir à cabana: quais peças o personagem tem?',
-            'Compare a cabana sem nenhuma peça, com uma e com as duas. Jogue de novo e pegue as peças na outra ordem.',
-            'Vá até a cabana sem nada. Pegue a chave e volte. Pegue o emblema e volte. Jogue de novo, pegue o emblema e a chave e vá à cabana. Troque o "e" pelo "ou" e leve uma peça só.',
-          ],
-          activity: {
-            type: 'experimentation',
-            scene: 'two-pieces',
-            cenario: 'farol',
-            setup: {
-              freeExploration: true,
-              goalCopy: {
-                'none-closed': { pedido: 'Vá até a cabana antes de pegar qualquer peça.' },
-                'one-closed': { pedido: 'Pegue uma peça só e vá até a cabana.' },
-                'both-open': { pedido: 'Pegue as duas peças e vá até a cabana.' },
-                'any-order': {
-                  pedido: 'Jogue de novo e pegue as peças na outra ordem antes de ir à cabana.',
-                },
-                'and-vs-or': {
-                  label: 'Com "ou", uma peça só já abriu',
-                  pedido: 'Troque o "e" pelo "ou", pegue uma peça só e vá até a cabana.',
-                },
-              },
-            },
+    kind: 'interactive',
+    required: true,
+    title: 'A porta com duas peças',
+    semPerguntaFinal: true,
+    // ⭐ 08/11/2026 (proposta "Experiências do Faísca", aprovada): passar na chave ou no
+    // emblema é pegar, chegar à porta é a cabana perguntar, e o "e" se troca por "ou".
+    instructions:
+      'Vá até a cabana sem nada, com uma peça ou com as duas e troque o "e" pelo "ou". O Zappy te mostra o que testar, e você pode repetir quando quiser.',
+    hints: [
+      'Olhe o caderninho antes de ir à cabana: quais peças o personagem tem?',
+      'Compare a cabana sem nenhuma peça, com uma e com as duas. Jogue de novo e pegue as peças na outra ordem.',
+      'Vá até a cabana sem nada. Pegue a chave e volte. Pegue o emblema e volte. Jogue de novo, pegue o emblema e a chave e vá à cabana. Troque o "e" pelo "ou" e leve uma peça só.',
+    ],
+    activity: {
+      type: 'experimentation',
+      scene: 'two-pieces',
+      cenario: 'farol',
+      setup: {
+        freeExploration: true,
+        goalCopy: {
+          'none-closed': { pedido: 'Vá até a cabana antes de pegar qualquer peça.' },
+          'one-closed': { pedido: 'Pegue uma peça só e vá até a cabana.' },
+          'both-open': { pedido: 'Pegue as duas peças e vá até a cabana.' },
+          'any-order': {
+            pedido: 'Jogue de novo e pegue as peças na outra ordem antes de ir à cabana.',
+          },
+          'and-vs-or': {
+            label: 'Com "ou", uma peça só já abriu',
+            pedido: 'Troque o "e" pelo "ou", pegue uma peça só e vá até a cabana.',
           },
         },
+      },
+    },
+  },
   cenaDoZappy: 'two-pieces',
   passoAPasso: help,
   modulos:
@@ -88,5 +88,6 @@ await gerarPoder({
       )
       .join('\n\n') +
     '\n\nUma entrega por aula. O Poder conta com as duas aulas concluídas. Sem certificado nem publicação na comunidade. Produzir e anexar a mídia real antes de publicar; publicar o curso só depois da `aula-2`.\n',
-  resumo: 'Cabana: duas aulas, roteiros, voz, ajuda, inventário e quatro projetos portáteis gerados.',
+  resumo:
+    'Cabana: duas aulas, roteiros, voz, ajuda, inventário e quatro projetos portáteis gerados.',
 })

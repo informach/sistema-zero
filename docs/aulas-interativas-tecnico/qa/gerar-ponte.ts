@@ -1,10 +1,11 @@
 /** Autoria local do Poder "A ponte apressada". Importação, gravação e publicação são etapas à parte. */
 // A estrutura das aulas, o roteiro e os derivados saem do gerador comum dos Poderes (poder-gerador.ts).
+
+import { gerarPoder } from './poder-gerador'
 import { ponteAjuda, ponteAulas, ponteExperiencia } from './ponte-conteudo'
 import { ponteChecks } from './ponte-criterios'
-import { ponteQuiz2d, ponteQuiz3d } from './ponte-quiz'
 import { montarProjetoPonte, PONTE_CURSO, PONTE_ETAPAS } from './ponte-projeto'
-import { gerarPoder } from './poder-gerador'
+import { ponteQuiz2d, ponteQuiz3d } from './ponte-quiz'
 
 const help = `# Passo a passo do projeto — A ponte apressada\n\nPoder do Faísca. Aqui está o que investigar na experiência e cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.\n\n## ${ponteExperiencia.title}\n\n**A ideia:** ${ponteExperiencia.idea}\n\n**O que investigar:**\n\n${ponteExperiencia.goals.map((g) => `- ${g}`).join('\n')}\n\n${ponteExperiencia.observe}\n\n${ponteAulas
   .map(
@@ -43,46 +44,46 @@ await gerarPoder({
     },
   },
   experiencia: {
-          kind: 'interactive',
-          required: true,
-          title: 'A ponte apressada',
-          semPerguntaFinal: true,
-          // ⭐ 08/11/2026 (proposta "Experiências do Faísca", aprovada): o personagem ANDA até a
-          // alavanca e até a ponte, o relógio do jogo anda sozinho e onde ele começa é uma peça que
-          // se troca. A instrução, as pistas e os pedidos falam a língua dessa tela.
-          instructions:
-            'Ande até a alavanca e até a ponte, olhe o relógio do jogo e troque onde ele começa. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
-          hints: [
-            'Olhe a ponte e o relógio do jogo antes e depois de cada teste.',
-            'Compare ir até a ponte antes de puxar a alavanca, logo depois de puxar e quando o relógio já chegou a 4. Compare também o relógio começando com a partida.',
-            'Ande até a ponte sem puxar a alavanca. Ande até a alavanca e corra até a ponte. Jogue de novo, puxe a alavanca e espere o relógio chegar a 4; saia e volte à alavanca. Troque a peça para "quando a partida começa", puxe a alavanca e espere.',
-          ],
-          activity: {
-            type: 'experimentation',
-            scene: 'timed-bridge',
-            cenario: 'farol',
-            setup: {
-              freeExploration: true,
-              // O "Ainda falta" e o relatório da equipe com os botões desta tela.
-              goalCopy: {
-                'closed-start': { pedido: 'Ande até a ponte antes de puxar a alavanca.' },
-                'lever-opens': { pedido: 'Ande até a alavanca e olhe a ponte.' },
-                'in-time': {
-                  pedido: 'Puxe a alavanca e chegue à ponte antes de o relógio chegar a 4.',
-                },
-                'rises-alone': { pedido: 'Puxe a alavanca e espere o relógio chegar a 4.' },
-                'pull-again': {
-                  pedido: 'Depois que a ponte subir sozinha, saia e volte à alavanca.',
-                },
-                'timer-place': {
-                  label: 'Com o relógio começando junto com a partida, a ponte não subiu mais',
-                  pedido:
-                    'Troque a peça para "quando a partida começa", puxe a alavanca e espere 4 segundos.',
-                },
-              },
-            },
+    kind: 'interactive',
+    required: true,
+    title: 'A ponte apressada',
+    semPerguntaFinal: true,
+    // ⭐ 08/11/2026 (proposta "Experiências do Faísca", aprovada): o personagem ANDA até a
+    // alavanca e até a ponte, o relógio do jogo anda sozinho e onde ele começa é uma peça que
+    // se troca. A instrução, as pistas e os pedidos falam a língua dessa tela.
+    instructions:
+      'Ande até a alavanca e até a ponte, olhe o relógio do jogo e troque onde ele começa. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
+    hints: [
+      'Olhe a ponte e o relógio do jogo antes e depois de cada teste.',
+      'Compare ir até a ponte antes de puxar a alavanca, logo depois de puxar e quando o relógio já chegou a 4. Compare também o relógio começando com a partida.',
+      'Ande até a ponte sem puxar a alavanca. Ande até a alavanca e corra até a ponte. Jogue de novo, puxe a alavanca e espere o relógio chegar a 4; saia e volte à alavanca. Troque a peça para "quando a partida começa", puxe a alavanca e espere.',
+    ],
+    activity: {
+      type: 'experimentation',
+      scene: 'timed-bridge',
+      cenario: 'farol',
+      setup: {
+        freeExploration: true,
+        // O "Ainda falta" e o relatório da equipe com os botões desta tela.
+        goalCopy: {
+          'closed-start': { pedido: 'Ande até a ponte antes de puxar a alavanca.' },
+          'lever-opens': { pedido: 'Ande até a alavanca e olhe a ponte.' },
+          'in-time': {
+            pedido: 'Puxe a alavanca e chegue à ponte antes de o relógio chegar a 4.',
+          },
+          'rises-alone': { pedido: 'Puxe a alavanca e espere o relógio chegar a 4.' },
+          'pull-again': {
+            pedido: 'Depois que a ponte subir sozinha, saia e volte à alavanca.',
+          },
+          'timer-place': {
+            label: 'Com o relógio começando junto com a partida, a ponte não subiu mais',
+            pedido:
+              'Troque a peça para "quando a partida começa", puxe a alavanca e espere 4 segundos.',
           },
         },
+      },
+    },
+  },
   cenaDoZappy: 'timed-bridge',
   passoAPasso: help,
   modulos:
@@ -94,5 +95,6 @@ await gerarPoder({
       )
       .join('\n\n') +
     '\n\nUma entrega por aula. O Poder conta com as duas aulas concluídas. Sem certificado nem publicação na comunidade. Produzir e anexar a mídia real antes de publicar; publicar o curso só depois da `aula-2`.\n',
-  resumo: 'Ponte: duas aulas, roteiros, voz, ajuda, inventário e quatro projetos portáteis gerados.',
+  resumo:
+    'Ponte: duas aulas, roteiros, voz, ajuda, inventário e quatro projetos portáteis gerados.',
 })

@@ -77,61 +77,57 @@ for (const curso of CURSOS) {
       )
     })
 
-    test.each(curso.aulas.map((aula) => [aula.slug, aula] as const))(
-      '%s: nenhuma fala nem recado espera o "Salvo"',
-      (_, aula) => {
-        for (const t of aula.trechos) {
-          expect(`${t.key}: ${t.text}`).not.toMatch(/\bSalvo\b/)
-          expect(`${t.key}: ${recadoDe(t)}`).not.toMatch(/\bSalvo\b/)
-        }
-      },
-    )
+    test.each(
+      curso.aulas.map((aula) => [aula.slug, aula] as const),
+    )('%s: nenhuma fala nem recado espera o "Salvo"', (_, aula) => {
+      for (const t of aula.trechos) {
+        expect(`${t.key}: ${t.text}`).not.toMatch(/\bSalvo\b/)
+        expect(`${t.key}: ${recadoDe(t)}`).not.toMatch(/\bSalvo\b/)
+      }
+    })
 
-    test.each(curso.aulas.map((aula) => [aula.slug, aula] as const))(
-      '%s: o envio fecha a última construção, e depois dele só vêm fechamentos',
-      (slug, aula) => {
-        const manifesto = JSON.parse(
-          readFileSync(resolve(dir, `${curso.arquivo(slug)}.manifesto.json`), 'utf8'),
-        ) as { sections: Secao[] }
-        const s = manifesto.sections
-        const envio = s.findIndex((x) => x.intent === 'delivery')
-        expect(envio).toBeGreaterThan(0)
-        expect(s.filter((x) => x.intent === 'delivery')).toHaveLength(1)
-        expect(s[envio]!.completion.submissionUpToDate).toBe(true)
-        expect(s[envio]!.completion.projectChecks?.length).toBeGreaterThan(0)
-        expect(s.slice(envio + 1).every((x) => x.intent === 'closing')).toBe(true)
-        // Sem parte só de envio: no Na tela da parte do envio há montagem, não só os cliques do envio.
-        const trecho = aula.trechos.find((t) => t.key === s[envio]!.key)
-        expect(trecho?.screen ?? '').toMatch(/\[(encaixar|escolher|soltar|abrir campo|mover) /)
-      },
-    )
+    test.each(
+      curso.aulas.map((aula) => [aula.slug, aula] as const),
+    )('%s: o envio fecha a última construção, e depois dele só vêm fechamentos', (slug, aula) => {
+      const manifesto = JSON.parse(
+        readFileSync(resolve(dir, `${curso.arquivo(slug)}.manifesto.json`), 'utf8'),
+      ) as { sections: Secao[] }
+      const s = manifesto.sections
+      const envio = s.findIndex((x) => x.intent === 'delivery')
+      expect(envio).toBeGreaterThan(0)
+      expect(s.filter((x) => x.intent === 'delivery')).toHaveLength(1)
+      expect(s[envio]!.completion.submissionUpToDate).toBe(true)
+      expect(s[envio]!.completion.projectChecks?.length).toBeGreaterThan(0)
+      expect(s.slice(envio + 1).every((x) => x.intent === 'closing')).toBe(true)
+      // Sem parte só de envio: no Na tela da parte do envio há montagem, não só os cliques do envio.
+      const trecho = aula.trechos.find((t) => t.key === s[envio]!.key)
+      expect(trecho?.screen ?? '').toMatch(/\[(encaixar|escolher|soltar|abrir campo|mover) /)
+    })
 
-    test.each(curso.aulas.map((aula) => [aula.slug, aula] as const))(
-      '%s: o Na tela das construções abre o Estúdio e envia em dois cliques',
-      (_, aula) => {
-        for (const t of aula.trechos.filter(ehMontagem)) {
-          expect(`${t.key}: ${t.screen}`).toContain('[expandir estúdio]')
-          expect(t.screen).not.toContain('[enviar projeto]')
-          expect((t.screen.match(/\[[^\]]+\]/g) ?? []).length).toBeGreaterThan(8)
-        }
-        const envio = aula.trechos.find((t) => t.kind === 'delivery')!
-        expect(envio.screen).toContain('[clicar "Enviar meu projeto"]')
-        expect(envio.screen).toContain('[clicar "Enviar"]')
-      },
-    )
+    test.each(
+      curso.aulas.map((aula) => [aula.slug, aula] as const),
+    )('%s: o Na tela das construções abre o Estúdio e envia em dois cliques', (_, aula) => {
+      for (const t of aula.trechos.filter(ehMontagem)) {
+        expect(`${t.key}: ${t.screen}`).toContain('[expandir estúdio]')
+        expect(t.screen).not.toContain('[enviar projeto]')
+        expect((t.screen.match(/\[[^\]]+\]/g) ?? []).length).toBeGreaterThan(8)
+      }
+      const envio = aula.trechos.find((t) => t.kind === 'delivery')!
+      expect(envio.screen).toContain('[clicar "Enviar meu projeto"]')
+      expect(envio.screen).toContain('[clicar "Enviar"]')
+    })
 
-    test.each(curso.aulas.map((aula) => [aula.slug, aula] as const))(
-      '%s: as frases fixas de verificar e de sair, e o recado do material',
-      (_, aula) => {
-        for (const t of aula.trechos.filter(ehMontagem)) {
-          expect(`${t.key}: ${t.text}`).toMatch(
-            /(Funcionou\?|Agora) clique em Verificar projeto\. Se faltar alguma coisa, corrija os blocos e clique novamente\./i,
-          )
-          expect(`${t.key}: ${t.text}`).toContain('Quando aparecer Objetivo cumprido!, clique em')
-        }
-        for (const t of aula.trechos.filter((x) => x.kind === 'material'))
-          expect(recadoDe(t)).toBe(RECADO_DO_MATERIAL)
-      },
-    )
+    test.each(
+      curso.aulas.map((aula) => [aula.slug, aula] as const),
+    )('%s: as frases fixas de verificar e de sair, e o recado do material', (_, aula) => {
+      for (const t of aula.trechos.filter(ehMontagem)) {
+        expect(`${t.key}: ${t.text}`).toMatch(
+          /(Funcionou\?|Agora) clique em Verificar projeto\. Se faltar alguma coisa, corrija os blocos e clique novamente\./i,
+        )
+        expect(`${t.key}: ${t.text}`).toContain('Quando aparecer Objetivo cumprido!, clique em')
+      }
+      for (const t of aula.trechos.filter((x) => x.kind === 'material'))
+        expect(recadoDe(t)).toBe(RECADO_DO_MATERIAL)
+    })
   })
 }

@@ -1,10 +1,11 @@
 /** Autoria local do Poder "O baú dos símbolos". Importação, gravação e publicação são etapas à parte. */
 // A estrutura das aulas, o roteiro e os derivados saem do gerador comum dos Poderes (poder-gerador.ts).
+
+import { gerarPoder } from './poder-gerador'
 import { simbolosAjuda, simbolosAulas, simbolosExperiencia } from './simbolos-conteudo'
 import { simbolosChecks } from './simbolos-criterios'
-import { simbolosQuiz2d, simbolosQuiz3d } from './simbolos-quiz'
 import { montarProjetoSimbolos, SIMBOLOS_CURSO, SIMBOLOS_ETAPAS } from './simbolos-projeto'
-import { gerarPoder } from './poder-gerador'
+import { simbolosQuiz2d, simbolosQuiz3d } from './simbolos-quiz'
 
 const help = `# Passo a passo do projeto — O baú dos símbolos\n\nPoder do Faísca. Aqui está o que investigar na experiência e cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.\n\n## ${simbolosExperiencia.title}\n\n**A ideia:** ${simbolosExperiencia.idea}\n\n**O que investigar:**\n\n${simbolosExperiencia.goals.map((g) => `- ${g}`).join('\n')}\n\n${simbolosExperiencia.observe}\n\n${simbolosAulas
   .map(
@@ -43,45 +44,45 @@ await gerarPoder({
     },
   },
   experiencia: {
-          kind: 'interactive',
-          required: true,
-          title: 'A ordem dos símbolos',
-          semPerguntaFinal: true,
-          // ⭐ 08/11/2026 (proposta "Experiências do Faísca", aprovada): o personagem ANDA até as
-          // pedras, chegar numa pedra é tocar o símbolo, e como o baú decide é uma peça que se troca.
-          instructions:
-            'Ande até as pedras e toque os símbolos, na ordem da placa e fora dela, e troque como o baú decide. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
-          hints: [
-            'Olhe o caderninho depois de cada símbolo: em que passo da placa você está?',
-            'Compare a ordem da placa com um símbolo fora da vez: o que acontece com o passo e com os símbolos acesos?',
-            'Toque o sol, a lua e a estrela, nessa ordem. Jogue de novo, toque o sol e vá à estrela por cima da lua. Comece pela lua. Erre e siga a placa de novo. Troque a peça para "só quantos foram tocados" e toque fora da ordem.',
-          ],
-          activity: {
-            type: 'experimentation',
-            scene: 'symbol-sequence',
-            cenario: 'farol',
-            setup: {
-              freeExploration: true,
-              goalCopy: {
-                'step-moves': {
-                  pedido: 'Ande até o sol e depois até a lua, olhando o caderninho.',
-                },
-                'right-order': { pedido: 'Toque o sol, a lua e a estrela, na ordem da placa.' },
-                'out-of-turn': { pedido: 'Com o sol aceso, vá à estrela pulando a lua.' },
-                'middle-start': { pedido: 'Jogue de novo e comece pela lua.' },
-                'restart-works': {
-                  pedido: 'Erre a ordem e, sem jogar de novo, siga a placa até o fim.',
-                },
-                'count-vs-order': {
-                  label: 'No baú que só conta, a ordem errada também abriu',
-                  // O motor só conta a comparação depois de o baú da ordem responder.
-                  pedido:
-                    'Com o baú da ordem já testado, troque a peça para "só quantos foram tocados" e toque os símbolos fora da ordem.',
-                },
-              },
-            },
+    kind: 'interactive',
+    required: true,
+    title: 'A ordem dos símbolos',
+    semPerguntaFinal: true,
+    // ⭐ 08/11/2026 (proposta "Experiências do Faísca", aprovada): o personagem ANDA até as
+    // pedras, chegar numa pedra é tocar o símbolo, e como o baú decide é uma peça que se troca.
+    instructions:
+      'Ande até as pedras e toque os símbolos, na ordem da placa e fora dela, e troque como o baú decide. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
+    hints: [
+      'Olhe o caderninho depois de cada símbolo: em que passo da placa você está?',
+      'Compare a ordem da placa com um símbolo fora da vez: o que acontece com o passo e com os símbolos acesos?',
+      'Toque o sol, a lua e a estrela, nessa ordem. Jogue de novo, toque o sol e vá à estrela por cima da lua. Comece pela lua. Erre e siga a placa de novo. Troque a peça para "só quantos foram tocados" e toque fora da ordem.',
+    ],
+    activity: {
+      type: 'experimentation',
+      scene: 'symbol-sequence',
+      cenario: 'farol',
+      setup: {
+        freeExploration: true,
+        goalCopy: {
+          'step-moves': {
+            pedido: 'Ande até o sol e depois até a lua, olhando o caderninho.',
+          },
+          'right-order': { pedido: 'Toque o sol, a lua e a estrela, na ordem da placa.' },
+          'out-of-turn': { pedido: 'Com o sol aceso, vá à estrela pulando a lua.' },
+          'middle-start': { pedido: 'Jogue de novo e comece pela lua.' },
+          'restart-works': {
+            pedido: 'Erre a ordem e, sem jogar de novo, siga a placa até o fim.',
+          },
+          'count-vs-order': {
+            label: 'No baú que só conta, a ordem errada também abriu',
+            // O motor só conta a comparação depois de o baú da ordem responder.
+            pedido:
+              'Com o baú da ordem já testado, troque a peça para "só quantos foram tocados" e toque os símbolos fora da ordem.',
           },
         },
+      },
+    },
+  },
   cenaDoZappy: 'symbol-sequence',
   passoAPasso: help,
   modulos:
@@ -93,5 +94,6 @@ await gerarPoder({
       )
       .join('\n\n') +
     '\n\nUma entrega por aula. O Poder conta com as duas aulas concluídas. Sem certificado nem publicação na comunidade. Produzir e anexar a mídia real antes de publicar; publicar o curso só depois da `aula-2`.\n',
-  resumo: 'Baú dos símbolos: duas aulas, roteiros, voz, ajuda, inventário e quatro projetos portáteis gerados.',
+  resumo:
+    'Baú dos símbolos: duas aulas, roteiros, voz, ajuda, inventário e quatro projetos portáteis gerados.',
 })

@@ -2,8 +2,8 @@
 // A estrutura das aulas, o roteiro e os derivados saem do gerador comum dos Poderes (poder-gerador.ts).
 import { moedasAjuda, moedasAulas, moedasExperiencia } from './moedas-conteudo'
 import { moedasChecks } from './moedas-criterios'
+import { MOEDAS_CURSO, MOEDAS_ETAPAS, montarProjetoMoedas } from './moedas-projeto'
 import { moedasQuiz2d, moedasQuiz3d } from './moedas-quiz'
-import { montarProjetoMoedas, MOEDAS_CURSO, MOEDAS_ETAPAS } from './moedas-projeto'
 import { gerarPoder } from './poder-gerador'
 
 const help = `# Passo a passo do projeto — Moedas no caminho\n\nPoder do Faísca. Aqui está o que investigar na experiência e cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.\n\n## ${moedasExperiencia.title}\n\n**A ideia:** ${moedasExperiencia.idea}\n\n**O que investigar:**\n\n${moedasExperiencia.goals.map((g) => `- ${g}`).join('\n')}\n\n${moedasExperiencia.observe}\n\n${moedasAulas
@@ -43,51 +43,44 @@ await gerarPoder({
     },
   },
   experiencia: {
-          kind: 'interactive',
-          required: true,
-          title: 'O contador de moedas',
-          semPerguntaFinal: true,
-          // ⭐ 08/11/2026 (proposta "Experiências do Faísca", aprovada): passar numa moeda é pegar,
-          // sair de perto é se afastar e chegar ao baú é ele perguntar; o sumiço é um interruptor e o
-          // que o baú pergunta é uma peça que se troca.
-          instructions:
-            'Pegue moedas pelo caminho, olhe o número que o jogo guarda e troque o que o baú pergunta. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
-          hints: [
-            'Olhe o número de moedas antes e depois de cada moeda: quando ele muda e quando continua igual?',
-            'Compare passar de novo onde já pegou uma moeda, com o sumiço ligado e desligado. Leve ao baú menos de 5 moedas e mais de 5, nas duas perguntas.',
-            'Pegue duas moedas, afaste-se e passe de novo na primeira. Desligue o sumiço e passe duas vezes na mesma moeda. Leve menos de 5 moedas ao baú. Junte mais de 5, vá ao baú e troque "pelo menos" por "exatamente".',
-          ],
-          activity: {
-            type: 'experimentation',
-            scene: 'coin-counter',
-            cenario: 'farol',
-            setup: {
-              freeExploration: true,
-              goals: [
-                'each-adds',
-                'no-double',
-                'counts-again',
-                'kept',
-                'below-goal',
-                'compare-rules',
-              ],
-              // O "Ainda falta" e o relatório da equipe com os botões desta tela.
-              goalCopy: {
-                'each-adds': { pedido: 'Pegue duas moedas diferentes e olhe o número.' },
-                'no-double': {
-                  pedido: 'Com o sumiço ligado, passe de novo onde já pegou uma moeda.',
-                },
-                'counts-again': { pedido: 'Desligue o sumiço e passe de novo na mesma moeda.' },
-                kept: { pedido: 'Depois de pegar uma moeda, afaste-se e olhe o número.' },
-                'below-goal': { pedido: 'Leve de uma a quatro moedas até o baú.' },
-                'compare-rules': {
-                  label: 'Com mais de 5 moedas, "pelo menos 5" abriu e "exatamente 5" não',
-                  pedido: 'Com mais de 5 moedas no baú, troque "pelo menos 5" por "exatamente 5".',
-                },
-              },
-            },
+    kind: 'interactive',
+    required: true,
+    title: 'O contador de moedas',
+    semPerguntaFinal: true,
+    // ⭐ 08/11/2026 (proposta "Experiências do Faísca", aprovada): passar numa moeda é pegar,
+    // sair de perto é se afastar e chegar ao baú é ele perguntar; o sumiço é um interruptor e o
+    // que o baú pergunta é uma peça que se troca.
+    instructions:
+      'Pegue moedas pelo caminho, olhe o número que o jogo guarda e troque o que o baú pergunta. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
+    hints: [
+      'Olhe o número de moedas antes e depois de cada moeda: quando ele muda e quando continua igual?',
+      'Compare passar de novo onde já pegou uma moeda, com o sumiço ligado e desligado. Leve ao baú menos de 5 moedas e mais de 5, nas duas perguntas.',
+      'Pegue duas moedas, afaste-se e passe de novo na primeira. Desligue o sumiço e passe duas vezes na mesma moeda. Leve menos de 5 moedas ao baú. Junte mais de 5, vá ao baú e troque "pelo menos" por "exatamente".',
+    ],
+    activity: {
+      type: 'experimentation',
+      scene: 'coin-counter',
+      cenario: 'farol',
+      setup: {
+        freeExploration: true,
+        goals: ['each-adds', 'no-double', 'counts-again', 'kept', 'below-goal', 'compare-rules'],
+        // O "Ainda falta" e o relatório da equipe com os botões desta tela.
+        goalCopy: {
+          'each-adds': { pedido: 'Pegue duas moedas diferentes e olhe o número.' },
+          'no-double': {
+            pedido: 'Com o sumiço ligado, passe de novo onde já pegou uma moeda.',
+          },
+          'counts-again': { pedido: 'Desligue o sumiço e passe de novo na mesma moeda.' },
+          kept: { pedido: 'Depois de pegar uma moeda, afaste-se e olhe o número.' },
+          'below-goal': { pedido: 'Leve de uma a quatro moedas até o baú.' },
+          'compare-rules': {
+            label: 'Com mais de 5 moedas, "pelo menos 5" abriu e "exatamente 5" não',
+            pedido: 'Com mais de 5 moedas no baú, troque "pelo menos 5" por "exatamente 5".',
           },
         },
+      },
+    },
+  },
   cenaDoZappy: 'coin-counter',
   passoAPasso: help,
   modulos:
@@ -99,5 +92,6 @@ await gerarPoder({
       )
       .join('\n\n') +
     '\n\nUma entrega por aula. O Poder conta com as duas aulas concluídas. Sem certificado nem publicação na comunidade. Produzir e anexar a mídia real antes de publicar; publicar o curso só depois da `aula-2`.\n',
-  resumo: 'Moedas: duas aulas, roteiros, voz, ajuda, inventário e quatro projetos portáteis gerados.',
+  resumo:
+    'Moedas: duas aulas, roteiros, voz, ajuda, inventário e quatro projetos portáteis gerados.',
 })
