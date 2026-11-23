@@ -7,7 +7,7 @@ import { ponteChecks } from './ponte-criterios'
 import { montarProjetoPonte, PONTE_CURSO, PONTE_ETAPAS } from './ponte-projeto'
 import { ponteQuiz2d, ponteQuiz3d } from './ponte-quiz'
 
-const help = `# Passo a passo do projeto — A ponte apressada\n\nPoder do Faísca. Aqui está o que investigar na experiência e cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.\n\n## ${ponteExperiencia.title}\n\n**A ideia:** ${ponteExperiencia.idea}\n\n**O que investigar:**\n\n${ponteExperiencia.goals.map((g) => `- ${g}`).join('\n')}\n\n${ponteExperiencia.observe}\n\n${ponteAulas
+const help = `# Passo a passo do projeto: A ponte apressada\n\nPoder do Faísca. Aqui está o que investigar na experiência e cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.\n\n## ${ponteExperiencia.title}\n\n**A ideia:** ${ponteExperiencia.idea}\n\n**O que investigar:**\n\n${ponteExperiencia.goals.map((g) => `- ${g}`).join('\n')}\n\n${ponteExperiencia.observe}\n\n${ponteAulas
   .map(
     (a) =>
       `## ${a.dimension === '2d' ? 'Aula 1 · Jogo 2D' : 'Aula 2 · Ilha 3D'}: ${a.title}\n\n${ponteAjuda(
@@ -21,7 +21,7 @@ const help = `# Passo a passo do projeto — A ponte apressada\n\nPoder do Faís
   )
   .join(
     '\n\n',
-  )}\n\n## Entrega\n\nEm cada aula, jogue uma partida inteira: atravesse a tempo, chegue atrasado e puxe a alavanca de novo. Toque na tecla R e confira que a ponte volta levantada. Clique em Verificar projeto, corrija o que faltar, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.\n`
+  )}\n\n## Entrega\n\nEm cada aula, o envio fica na última montagem: Atravesse a ponte, na Aula 1, e Atravesse até o sino, na Aula 2. Antes de enviar, jogue uma partida inteira: atravesse a tempo, chegue atrasado e puxe a alavanca de novo. Toque na tecla R e confira que a ponte volta levantada. Clique em Verificar projeto e corrija o que faltar. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.\n\nDepois do envio vem o quiz da aula: escolha uma resposta em cada pergunta e veja a explicação. Você pode tentar de novo. Quando terminar, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.\n`
 
 await gerarPoder({
   nome: 'A ponte apressada',
@@ -39,8 +39,9 @@ await gerarPoder({
   jogoPronto: {
     title: 'Jogue A ponte apressada',
     instrucoes: {
-      '2d': 'Clique no jogo e use as setas do teclado. Puxe a alavanca e atravesse a ponte; depois tente chegar atrasado. R começa outra partida. Você pode seguir sem terminar.',
-      '3d': 'Clique no jogo e use as setas ou W, A, S e D. Puxe a alavanca e atravesse a ponte; depois tente chegar atrasado. R começa outra partida. Você pode seguir sem terminar.',
+      // ⭐ 23/11/2026: como o vídeo da abertura, o que a alavanca faz fica para a criança descobrir.
+      '2d': 'Use as setas da tela ou, no computador, clique no jogo e use as setas do teclado. Descubra o que a alavanca faz e tente atravessar a ponte. A tecla R começa outra partida.',
+      '3d': 'Clique no jogo e use as setas ou W, A, S e D. Descubra o que a alavanca faz e tente atravessar a ponte. A tecla R começa outra partida.',
     },
   },
   experiencia: {
@@ -87,14 +88,14 @@ await gerarPoder({
   cenaDoZappy: 'timed-bridge',
   passoAPasso: help,
   modulos:
-    '# A ponte apressada — organização do curso\n\nPoder 3 do posto Faísca (`jornada-faisca-poder-3`). Módulo: **A ponte apressada**. Preservar o ID do curso, do módulo reservado e da `aula-1`; a `aula-2` é criada no Admin, no mesmo curso, antes da importação.\n\n' +
+    '# A ponte apressada: organização do curso\n\nPoder 3 do posto Faísca (`jornada-faisca-poder-3`). Módulo: **A ponte apressada**. Preservar o ID do curso, do módulo reservado e da `aula-1`; a `aula-2` é criada no Admin, no mesmo curso, antes da importação.\n\n' +
     ponteAulas
       .map(
         (a, i) =>
           `## Aula ${i + 1}. ${a.title}\n\nIdentificador: ${a.slug}. Dimensão: ${a.dimension.toUpperCase()}.\n\n${a.trechos.map((t, n) => `${n + 1}. ${t.title}.`).join('\n')}\n\n[Manifesto](ponte-${a.slug}.manifesto.json) · [Roteiro](ponte-${a.slug}.roteiro.md).`,
       )
       .join('\n\n') +
-    '\n\nUma entrega por aula. O Poder conta com as duas aulas concluídas. Sem certificado nem publicação na comunidade. Produzir e anexar a mídia real antes de publicar; publicar o curso só depois da `aula-2`.\n',
+    '\n\nUma entrega por aula, na última montagem; o quiz vem depois do envio e fecha a aula. O Poder conta com as duas aulas concluídas. Sem certificado nem publicação na comunidade. Produzir e anexar a mídia real antes de publicar; publicar o curso só depois da `aula-2`.\n',
   resumo:
     'Ponte: duas aulas, roteiros, voz, ajuda, inventário e quatro projetos portáteis gerados.',
 })

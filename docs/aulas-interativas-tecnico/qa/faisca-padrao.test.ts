@@ -12,8 +12,13 @@ import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { avatarDaAula } from './avatares-video'
+import { cabanaAulas } from './cabana-conteudo'
 import { ilhaAulas } from './ilha-do-farol-conteudo'
+import { meuDesenhoAula } from './meu-desenho-conteudo'
+import { moedasAulas } from './moedas-conteudo'
+import { ponteAulas } from './ponte-conteudo'
 import { extrairPartesElevenLabs } from './roteiro-elevenlabs'
+import { simbolosAulas } from './simbolos-conteudo'
 
 type Trecho = {
   key: string
@@ -35,12 +40,43 @@ type Curso = {
 const faisca = resolve(import.meta.dirname, '../../aulas-interativas/faisca')
 const CURSOS: Curso[] = [
   { nome: 'A Ilha do Farol', pasta: 'a-ilha-do-farol', arquivo: (s) => s, aulas: ilhaAulas },
+  {
+    nome: 'Moedas no caminho',
+    pasta: 'poder-moedas-no-caminho',
+    arquivo: (s) => `moedas-${s}`,
+    aulas: moedasAulas,
+  },
+  {
+    nome: 'O segredo da cabana',
+    pasta: 'poder-o-segredo-da-cabana',
+    arquivo: (s) => `cabana-${s}`,
+    aulas: cabanaAulas,
+  },
+  {
+    nome: 'A ponte apressada',
+    pasta: 'poder-a-ponte-apressada',
+    arquivo: (s) => `ponte-${s}`,
+    aulas: ponteAulas,
+  },
+  {
+    nome: 'O baú dos símbolos',
+    pasta: 'poder-o-bau-dos-simbolos',
+    arquivo: (s) => `simbolos-${s}`,
+    aulas: simbolosAulas,
+  },
+  {
+    nome: 'Meu primeiro desenho no Pinta',
+    pasta: 'meu-primeiro-desenho-no-pinta',
+    arquivo: (s) => `meu-desenho-${s}`,
+    aulas: [meuDesenhoAula],
+  },
 ]
 
 const RECADO_DO_MATERIAL =
   'Este é o seu Passo a passo do projeto! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.'
 const recadoDe = (t: Trecho) => t.recado ?? t.ponte ?? ''
-const ehMontagem = (t: Trecho) => t.kind === 'build' || t.kind === 'delivery'
+// As partes de montar no Estúdio (no Pinta, a troca da imagem: o desenho não é no Estúdio).
+const ehMontagem = (t: Trecho) => ['build', 'delivery', 'swap'].includes(t.kind)
 
 type Secao = {
   key: string
@@ -93,12 +129,15 @@ for (const curso of CURSOS) {
         readFileSync(resolve(dir, `${curso.arquivo(slug)}.manifesto.json`), 'utf8'),
       ) as { sections: Secao[] }
       const s = manifesto.sections
-      const envio = s.findIndex((x) => x.intent === 'delivery')
-      expect(envio).toBeGreaterThan(0)
+      const entrega = s.findIndex((x) => x.intent === 'delivery')
+      expect(entrega).toBeGreaterThan(0)
       expect(s.filter((x) => x.intent === 'delivery')).toHaveLength(1)
-      expect(s[envio]!.completion.submissionUpToDate).toBe(true)
+      expect(s.slice(entrega + 1).every((x) => x.intent === 'closing')).toBe(true)
+      // O envio do projeto é o último com envio em dia: a entrega, ou o fechamento do Pinta
+      // (que entrega o desenho antes e o jogo por último).
+      const envio = s.map((x) => x.completion.submissionUpToDate === true).lastIndexOf(true)
+      expect(envio).toBeGreaterThanOrEqual(entrega)
       expect(s[envio]!.completion.projectChecks?.length).toBeGreaterThan(0)
-      expect(s.slice(envio + 1).every((x) => x.intent === 'closing')).toBe(true)
       // Sem parte só de envio: no Na tela da parte do envio há montagem, não só os cliques do envio.
       const trecho = aula.trechos.find((t) => t.key === s[envio]!.key)
       expect(trecho?.screen ?? '').toMatch(/\[(encaixar|escolher|soltar|abrir campo|mover) /)
@@ -112,7 +151,7 @@ for (const curso of CURSOS) {
         expect(t.screen).not.toContain('[enviar projeto]')
         expect((t.screen.match(/\[[^\]]+\]/g) ?? []).length).toBeGreaterThan(8)
       }
-      const envio = aula.trechos.find((t) => t.kind === 'delivery')!
+      const envio = aula.trechos.filter(ehMontagem).at(-1)!
       expect(envio.screen).toContain('[clicar "Enviar meu projeto"]')
       expect(envio.screen).toContain('[clicar "Enviar"]')
     })

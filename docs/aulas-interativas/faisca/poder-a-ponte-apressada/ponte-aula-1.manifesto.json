@@ -6,14 +6,14 @@
   "blocks": [
     {
       "key": "video-abertura",
-      "plannedVideo": "Título: A ponte do laguinho\n\nMaster integral da professora. Roteiro: ponte-aula-1.roteiro.md, clipe video-abertura. Gravação pendente."
+      "plannedVideo": "Título: A ponte do laguinho\n\nMaster integral da professora. Roteiro: ponte-aula-1.roteiro.md, clipe video-abertura. Substituições kids: [{\"id\":\"video-abertura-K1\",\"clipe\":\"video-abertura\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"E o que acontece quando ele encosta na alavanca?\",\"falaPersonagem\":\"E o que acontece quando ele encosta na alavanca?\",\"ancoraAntes\":\"pode clicar no jogo e usar as setas do teclado. Olha aqui: com a seta da direita, o personagem anda para a direita.\",\"ancoraDepois\":\"Isso eu deixo para você descobrir. Repare também no aviso aqui em cima: ele diz o que fazer na partida. O farol\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-abertura",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Clique no jogo e use as setas do teclado. Puxe a alavanca e atravesse a ponte; depois tente chegar atrasado. A tecla R começa outra partida. Depois clique em Próxima parte."
+        "text": "Sua vez! Jogue a versão pronta: use as setas, descubra o que a alavanca faz e tente atravessar a ponte. A tecla R recomeça. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -22,7 +22,7 @@
         "kind": "interactive",
         "title": "Jogue A ponte apressada",
         "required": true,
-        "instructions": "Clique no jogo e use as setas do teclado. Puxe a alavanca e atravesse a ponte; depois tente chegar atrasado. R começa outra partida. Você pode seguir sem terminar.",
+        "instructions": "Use as setas da tela ou, no computador, clique no jogo e use as setas do teclado. Descubra o que a alavanca faz e tente atravessar a ponte. A tecla R começa outra partida.",
         "hints": [],
         "activity": {
           "type": "project-play",
@@ -2539,12 +2539,12 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Este é o seu Passo a passo do projeto. Se quiser, leia aqui mesmo ou clique em Baixar para guardar. Depois clique em Próxima parte."
+        "text": "Este é o seu Passo a passo do projeto! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte."
       }
     },
     {
       "key": "video-experiencia",
-      "plannedVideo": "Título: A ponte apressada\n\nMaster integral da professora. Roteiro: ponte-aula-1.roteiro.md, clipe video-experiencia. Gravação pendente."
+      "plannedVideo": "Título: A ponte apressada\n\nMaster integral da professora. Roteiro: ponte-aula-1.roteiro.md, clipe video-experiencia. Substituições kids: [{\"id\":\"video-experiencia-K1\",\"clipe\":\"video-experiencia\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"E quando é que o relógio da ponte começa a contar?\",\"falaPersonagem\":\"E quando é que o relógio da ponte começa a contar?\",\"ancoraAntes\":\"guarda isso numa variável chamada ponteAberta: verdadeiro quando a ponte está baixada, falso quando ela está levantada.\",\"ancoraDepois\":\"O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que acontece com a ponte enquanto o\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-experiencia",
@@ -2600,26 +2600,26 @@
     },
     {
       "key": "video-alavanca",
-      "plannedVideo": "Título: A alavanca baixa a ponte\n\nMaster integral da professora. Roteiro: ponte-aula-1.roteiro.md, clipe video-alavanca. Gravação pendente."
+      "plannedVideo": "Título: A alavanca baixa a ponte\n\nMaster integral da professora. Roteiro: ponte-aula-1.roteiro.md, clipe video-alavanca. Substituições kids: [{\"id\":\"video-alavanca-K1\",\"clipe\":\"video-alavanca\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"Por que aqui fica verdadeiro, se lá em Ao iniciar ficou falso?\",\"falaPersonagem\":\"Por que aqui fica verdadeiro, se lá em Ao iniciar ficou falso?\",\"ancoraAntes\":\"baixada. Abra Programação e depois Lógica e Se, e pegue outro bloco verdadeiro. Solte em cima do 1 e deixe verdadeiro.\",\"ancoraDepois\":\"Porque cada um vale num momento. Em Ao iniciar, a partida começa com a ponte levantada. Aqui, o personagem acabou de\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-alavanca",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora faça a alavanca baixar a ponte: crie ponteAberta começando em falso e, no encontro com a alavanca, troque as duas imagens, guarde verdadeiro e mude o aviso. Teste, clique em Verificar projeto e depois em Próxima parte."
+        "text": "Agora faça a alavanca baixar a ponte! Crie ponteAberta com falso no fim de Ao iniciar e monte o encontro com a alavanca: as duas trocas de imagem, ponteAberta verdadeiro e o aviso. Teste no jogo. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
       "key": "video-sobe",
-      "plannedVideo": "Título: A ponte sobe sozinha\n\nMaster integral da professora. Roteiro: ponte-aula-1.roteiro.md, clipe video-sobe. Gravação pendente."
+      "plannedVideo": "Título: A ponte sobe sozinha\n\nMaster integral da professora. Roteiro: ponte-aula-1.roteiro.md, clipe video-sobe. Substituições kids: [{\"id\":\"video-sobe-K1\",\"clipe\":\"video-sobe\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"E se eu encostar na alavanca de novo?\",\"falaPersonagem\":\"E se eu encostar na alavanca de novo?\",\"ancoraAntes\":\"nada, e conte comigo: um, dois, três, quatro. Olha só: a ponte sobe sozinha, a alavanca volta para cima e o aviso muda!\",\"ancoraDepois\":\"A ponte baixa outra vez, e o relógio começa a contar de novo, como na experiência. Saia de cima da alavanca e encoste\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-sobe",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora a ponte vai saber esperar: dentro do encontro com a alavanca, coloque o depois de 4 segundos e, dentro dele, desfaça o que a alavanca fez. Teste puxando e contando até 4, puxe de novo, clique em Verificar projeto e depois em Próxima parte."
+        "text": "Agora faça a ponte subir sozinha! Dentro do encontro com a alavanca, logo abaixo do aviso, coloque o depois de 4 segundos e, dentro dele, desfaça o que a alavanca fez. Teste contando até 4 e puxe a alavanca de novo. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
@@ -2631,7 +2631,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de atravessar! Se ponteAberta, o personagem vai até a pedra e o sino toca; senão, o aviso diz que a ponte está levantada. Teste sem puxar, a tempo e atrasado, clique em Verificar projeto e depois em Próxima parte."
+        "text": "Hora de atravessar! Monte o encontro com a ponte e o Se com ponteAberta: no então, o personagem vai para a pedra, o sino toca e o aviso comemora; no senão, o aviso pede para puxar a alavanca. Teste os três casos. Depois clique em Verificar projeto, em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte."
       }
     },
     {
@@ -2639,7 +2639,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de pensar na ponte! As perguntas retomam chegar a tempo, chegar atrasado e o que pode estar errado no \"depois de\". Em cada uma tem uma explicação, e você pode tentar de novo. Nas perguntas com cena, escolha e clique em Ver o que acontece; nas outras, clique em Responder."
+        "text": "Escolha uma resposta e clique em Ver o que acontece ou, nas perguntas sem cena, em Responder. Observe a cena e a explicação. Você pode tentar de novo. Quando terminar, clique em Concluir aula."
       }
     },
     {
@@ -2731,18 +2731,6 @@
             "explanation": "O relógio só começa quando o bloco roda. No começo do jogo ele roda uma vez só; dentro do evento da alavanca, roda a cada puxada."
           }
         ]
-      }
-    },
-    {
-      "key": "video-entrega",
-      "plannedVideo": "Título: Envie o seu jogo com a ponte\n\nMaster integral da professora. Roteiro: ponte-aula-1.roteiro.md, clipe video-entrega. Gravação pendente."
-    },
-    {
-      "key": "ponte-entrega",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Confira os objetivos e clique em Enviar meu projeto. Confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula."
       }
     },
     {
@@ -14115,10 +14103,6 @@
             "atravessar": {
               "entryExampleId": "fa15ca03-0000-4000-8000-000000000003",
               "solutionExampleId": "fa15ca03-0000-4000-8000-000000000004"
-            },
-            "entrega": {
-              "entryExampleId": "fa15ca03-0000-4000-8000-000000000004",
-              "solutionExampleId": "fa15ca03-0000-4000-8000-000000000004"
             }
           }
         }
@@ -14467,276 +14451,15 @@
     {
       "key": "atravessar",
       "title": "Atravesse a ponte",
-      "intent": "application",
-      "objective": "Atravesse a ponte.",
-      "blockKeys": ["video-atravessar", "ponte-atravessar"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-atravessar"],
-        "projectChecks": [
-          {
-            "id": "depois-dentro",
-            "label": "O \"depois de segundos\" fica dentro do encontro com a alavanca.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_on_overlap",
-              "area": "events",
-              "fieldAlternatives": [
-                {
-                  "A": "personagem",
-                  "B": "alavanca"
-                },
-                {
-                  "A": "alavanca",
-                  "B": "personagem"
-                }
-              ],
-              "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_js_set_timeout_seconds"
-                }
-              }
-            }
-          },
-          {
-            "id": "a-tempo",
-            "label": "Puxando a alavanca e indo direto à ponte, o personagem atravessa e o sino toca.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "alavanca",
-                  "timeoutMs": 3500,
-                  "avoidPaths": ["ponte", "chave"]
-                },
-                {
-                  "action": "press",
-                  "key": "ArrowLeft",
-                  "holdMs": 600
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "sino.image.url"
-                },
-                "compare": "contains",
-                "value": "b3VuZCIvPgogIDxwYXRoIGQ9Ik0gNTcgMTUgQyA2MC42IDE5LjYgNjAuNiAyNi40IDU3IDMxIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmQ3NzQiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjwvc3ZnPg=="
-              }
-            }
-          },
-          {
-            "id": "atrasado",
-            "label": "Chegando depois que a ponte subiu, o personagem não atravessa.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "alavanca",
-                  "timeoutMs": 3500,
-                  "avoidPaths": ["ponte", "chave"]
-                },
-                {
-                  "action": "wait",
-                  "ms": 5800
-                },
-                {
-                  "action": "press",
-                  "key": "ArrowLeft",
-                  "holdMs": 600
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "sino.image.url"
-                },
-                "compare": "notContains",
-                "value": "b3VuZCIvPgogIDxwYXRoIGQ9Ik0gNTcgMTUgQyA2MC42IDE5LjYgNjAuNiAyNi40IDU3IDMxIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmQ3NzQiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjwvc3ZnPg=="
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 2,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "ponte.image.url"
-                    },
-                    "compare": "notContains",
-                    "value": "eD0iMiIgeT0iMjIiIHdpZHRoPSI2IiBoZWlnaHQ9IjE4IiByeD0iMS41IiBmaWxsPSIjNmE0YTMxIi8+CiAgPHJlY3QgeD0iMiIgeT0iMjAiIHdpZHRoPSI2IiBoZWlnaHQ9IjQiIHJ4PSIxLjUiIGZpbGw9IiM1YTNlMjkiLz4KPC9zdmc+"
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "id": "fechada",
-            "label": "Sem puxar a alavanca, a ponte não deixa atravessar e o aviso diz o que fazer.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "ponte",
-                  "timeoutMs": 3000,
-                  "avoidPaths": ["alavanca"]
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "sino.image.url"
-                },
-                "compare": "notContains",
-                "value": "b3VuZCIvPgogIDxwYXRoIGQ9Ik0gNTcgMTUgQyA2MC42IDE5LjYgNjAuNiAyNi40IDU3IDMxIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmQ3NzQiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjwvc3ZnPg=="
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 2,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "aviso"
-                    },
-                    "compare": "changed"
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "id": "reinicio",
-            "label": "Uma nova partida (tecla R) começa com a ponte levantada.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "alavanca",
-                  "timeoutMs": 3500,
-                  "avoidPaths": ["ponte", "chave"]
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                },
-                {
-                  "action": "press",
-                  "key": "r",
-                  "holdMs": 80
-                },
-                {
-                  "action": "wait",
-                  "ms": 400
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "ponte.image.url"
-                },
-                "compare": "notContains",
-                "value": "eD0iMiIgeT0iMjIiIHdpZHRoPSI2IiBoZWlnaHQ9IjE4IiByeD0iMS41IiBmaWxsPSIjNmE0YTMxIi8+CiAgPHJlY3QgeD0iMiIgeT0iMjAiIHdpZHRoPSI2IiBoZWlnaHQ9IjQiIHJ4PSIxLjUiIGZpbGw9IiM1YTNlMjkiLz4KPC9zdmc+"
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 2,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "ponte.image.url"
-                    },
-                    "compare": "contains",
-                    "value": "eD0iMiIgeT0iMjIiIHdpZHRoPSI2IiBoZWlnaHQ9IjE4IiByeD0iMS41IiBmaWxsPSIjNmE0YTMxIi8+CiAgPHJlY3QgeD0iMiIgeT0iMjAiIHdpZHRoPSI2IiBoZWlnaHQ9IjQiIHJ4PSIxLjUiIGZpbGw9IiM1YTNlMjkiLz4KPC9zdmc+"
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "id": "farol",
-            "label": "O farol continua: com a chave, ele acende.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "chave",
-                  "timeoutMs": 2500,
-                  "avoidPaths": ["alavanca", "ponte"]
-                },
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "farol",
-                  "timeoutMs": 3500
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "farol.image.url"
-                },
-                "compare": "contains",
-                "value": "IiB0cmFuc2Zvcm09InJvdGF0ZSgwLjggNzguNjM2MyAxMzguMjEzKSIvPgogICAgCiAgPGVsbGlwc2UgY3g9Ijc1LjA5NzUiIGN5PSIyLjUxNzUiIHJ4PSIyLjQxMDYyIiByeT0iMi40NDYyNSIgZmlsbD0iI2NmM2YzNiIvPgo8L3N2Zz4="
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "revisao",
-      "title": "Pense na ponte",
-      "intent": "explanation",
-      "objective": "Pense na ponte.",
-      "blockKeys": ["ponte-revisao", "quiz"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["quiz"]
-      }
-    },
-    {
-      "key": "entrega",
-      "title": "Envie o seu jogo com a ponte",
       "intent": "delivery",
-      "objective": "Envie o seu jogo com a ponte.",
-      "blockKeys": ["video-entrega", "ponte-entrega", "projeto"],
+      "objective": "Atravesse a ponte.",
+      "blockKeys": ["video-atravessar", "ponte-atravessar", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-entrega", "projeto"],
+        "blockIds": ["video-atravessar", "projeto"],
         "projectChecks": [
           {
             "id": "depois-dentro",
@@ -14971,6 +14694,20 @@
           }
         ],
         "submissionUpToDate": true
+      }
+    },
+    {
+      "key": "revisao",
+      "title": "Pense na ponte",
+      "intent": "closing",
+      "objective": "Pense na ponte.",
+      "blockKeys": ["ponte-revisao", "quiz"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz"]
       }
     }
   ]
