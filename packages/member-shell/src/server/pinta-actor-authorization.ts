@@ -1,8 +1,8 @@
 import 'server-only'
 import { isReadonlyImpersonation } from '../lib/act'
+import { learnerIdentity } from '../lib/learner-identity'
 import { isPrivilegedRole } from '../lib/studio-tier'
 import type { GatewayModule } from './gateway'
-import { pintaCausalViewer } from './pinta-causal-eligibility'
 import { type PintaCausalActor, PintaCausalActorSchema } from './pinta-causal-protocol'
 import type { SessionModule } from './session'
 
@@ -12,13 +12,12 @@ export interface PintaActorAuthorization {
     SessionModule,
     'getAccessToken' | 'getRefreshToken' | 'verifyAccessToken' | 'audience'
   >
-  profileAllowed: (actor: PintaCausalActor) => boolean
 }
 
 export async function authorizePintaActor(
   req: Request,
   write: boolean,
-  { gateway, session, profileAllowed }: PintaActorAuthorization,
+  { gateway, session }: PintaActorAuthorization,
 ): Promise<{ status: number; reason: string } | { actor: PintaCausalActor; readOnly: boolean }> {
   const denied = (status: number, reason: string) => ({ status, reason })
   // HMAC authenticates Member Shell, so the user token needs strict verification here.
@@ -33,15 +32,18 @@ export async function authorizePintaActor(
   if (!verified.ok)
     return verified.unavailable ? denied(503, 'unavailable') : denied(401, 'unauthenticated')
   const user = verified.user
-  if (user.status !== 'active' || user.kids?.kind === 'parent') return denied(403, 'forbidden')
+  // Sem lista de perfis (23/11/2026), a mesma regra do escopo da página (`pintaAccountViewer`): só o
+  // aluno ativo da sessão, com a conta dele. Pais, conta inativa, perfil kids sem conta responsável
+  // e adulto com perfil ativo (a conta de outra pessoa) ficam de fora antes de qualquer chamada.
+  const identity = learnerIdentity(user, session.audience)
+  if (!identity) return denied(403, 'forbidden')
   const actor = PintaCausalActorSchema.safeParse({
-    ...pintaCausalViewer(user, session.audience),
+    userId: identity.learnerId,
+    accountId: identity.accountId,
+    audience: identity.audience,
     ...(isPrivilegedRole(user.role) ? { privileged: true } : {}),
   })
   if (!actor.success) return denied(401, 'unauthenticated')
-  if (actor.data.audience === 'adult' && actor.data.accountId !== actor.data.userId)
-    return denied(403, 'forbidden')
-  if (!profileAllowed(actor.data)) return denied(404, 'not-found')
   const claimed = req.headers.get('x-sz-viewer')
   const claimedAudience = req.headers.get('x-sz-viewer-audience')
   if ((claimed && claimed !== user.id) || (claimedAudience && claimedAudience !== session.audience))

@@ -212,13 +212,12 @@ describe('gallery submission as a section criterion', () => {
 })
 
 describe('galeria da aula × Pinta causal (23/11/2026)', () => {
-  /** A leitura causal que o servidor monta para os perfis de QA; aqui conta quem a chamou. */
+  /** A leitura causal que o servidor monta para todo perfil; aqui conta quem a chamou. */
   function causal(
     heads: (item: { itemId: string; revision: number }) => Promise<{
       entry: PintaCausalEntry
       storageRef: string
     }>,
-    qa: 'owner' | 'none' = 'owner',
   ) {
     const calls: { itemId: string; revision: number }[] = []
     const owner = { userId: '', accountId: '' }
@@ -232,9 +231,6 @@ describe('galeria da aula × Pinta causal (23/11/2026)', () => {
           calls.push(item)
           return heads(item)
         },
-      },
-      get qaProfiles() {
-        return qa === 'owner' ? [{ ...owner, audience: 'kids' as const }] : []
       },
     }
     return { gallery, calls, owner }
@@ -294,11 +290,11 @@ describe('galeria da aula × Pinta causal (23/11/2026)', () => {
     expect(ctx.galleryCopies.attempts.size).toBe(0)
   })
 
-  test('perfil fora da lista de QA: o hash não abre a leitura causal e nada é copiado', async () => {
+  test('servidor sem a leitura causal: o hash não abre nada e nada é copiado', async () => {
     const probe = causal(async () => {
-      throw new Error('perfil fora da lista não lê o inventário causal')
-    }, 'none')
-    const ctx = setup('pinta', { galleryPintaCausal: probe.gallery })
+      throw new Error('sem a leitura causal o inventário não é consultado')
+    })
+    const ctx = setup('pinta')
     const response = await ctx.request(`${ctx.path}/gallery-prepare`, {
       requestId: randomUUID(),
       revision: ctx.revision,

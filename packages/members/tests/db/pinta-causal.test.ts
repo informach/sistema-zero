@@ -11,7 +11,6 @@ import {
   type PintaCausalMember,
   type PintaCausalRead,
   PintaCausalSnapshotPageSchema,
-  type PintaCausalViewer,
   pintaCausalBlobKey,
   pintaCausalIntentHash,
 } from '@sistemazero/core/creations/pinta-causal'
@@ -323,7 +322,6 @@ describe.skipIf(!url)('Pinta causal over the real migration and existing quota l
           causal: db,
           internalToken: token,
           reserveUpload,
-          causalQaProfiles: [a],
         }),
       )
       .compile()
@@ -336,9 +334,21 @@ describe.skipIf(!url)('Pinta causal over the real migration and existing quota l
         }),
       )
     const gateway = { 'x-internal-token': token, 'x-consumer-id': 'member-shell' }
-    expect((await call('graph/page', { ...actor(), payload: { reader: 6 } }, gateway)).status).toBe(
-      404,
+    // Sem lista de perfis (23/11/2026): todo perfil lê a própria galeria, e só ela. O dono é o par
+    // conta + perfil do envelope que o member-shell assinou; um par trocado não lê nada.
+    const b = actor(),
+      mine = put('mine', 1)
+    await complete(b, intent('0', [mine]), [manifest(mine)])
+    const owned = await call('graph/page', { ...b, payload: { reader: 6 } }, gateway)
+    expect(owned.status).toBe(200)
+    expect((await owned.json()).entries.map((e: { itemId: string }) => e.itemId)).toEqual(['mine'])
+    const crossed = await call(
+      'graph/page',
+      { ...b, accountId: a.accountId, payload: { reader: 6 } },
+      gateway,
     )
+    expect(crossed.status).not.toBe(200)
+    expect(await crossed.text()).not.toContain('mine')
     expect(
       (await call('graph/page', { ...a, payload: { reader: 6 } }, { 'x-internal-token': token }))
         .status,
@@ -1133,15 +1143,13 @@ describe.skipIf(!url)('Pinta causal over the real migration and existing quota l
     expect((await visible(a)).entries.map((e) => e.itemId)).toEqual(['new', 'old'])
   })
   test('galeria da aula: lista a cabeça confirmada com miniatura e hash, e copia exatamente esses bytes', async () => {
-    const qaProfiles: PintaCausalViewer[] = []
-    const ctx = galleryLesson('pinta', { galleryPintaCausal: { heads: db, qaProfiles } })
+    const ctx = galleryLesson('pinta', { galleryPintaCausal: { heads: db } })
     const a = {
       userId: ctx.owner.userId,
       accountId: ctx.owner.accountId,
       audience: 'kids' as const,
     }
     const sibling = { ...a, userId: ctx.sibling }
-    qaProfiles.push(a)
     const epoch = async (who: typeof a) => (await db.page(who, { reader: 6 })).epoch
     // Um desenho do escritor antigo, ainda não adotado pelo protocolo causal (cobertura unknown).
     await conn.sql`insert into members.creations (id,user_id,account_id,audience,tool,item_id,name,kind,item_updated_at,revision,storage_ref,bytes,created_at,synced_at)

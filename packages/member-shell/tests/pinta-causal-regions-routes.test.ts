@@ -105,7 +105,6 @@ function bff(plan: ReturnType<typeof candidate>) {
       verifyAccessToken: async () => ({ ok: true, user }),
     },
     enabled: () => true,
-    profileAllowed: () => true,
     storage: {
       open: async (key) => {
         const value = objects.get(key)

@@ -1,76 +1,39 @@
 import 'server-only'
-import {
-  type PintaCausalViewer,
-  pintaCausalQaAllows,
-} from '@sistemazero/core/creations/pinta-causal'
+import type { PintaCausalViewer } from '@sistemazero/core/creations/pinta-causal'
 import { isReadonlyImpersonation } from '../lib/act'
 import { getEnv } from '../lib/env'
 import { learnerIdentity } from '../lib/learner-identity'
 import type { SessionUser } from '../lib/types'
 
-export function pintaCausalCandidateReady(): boolean {
+/**
+ * A conta do Pinta (fila causal e paletas negociadas) vale para todo perfil desde 23/11/2026:
+ * sem flag e sem lista de perfis. O que resta é infraestrutura, não produto: o BFF só assina e
+ * confere bytes com o segredo HMAC do gateway e as credenciais do R2 privado de criações. Sem
+ * elas, as rotas respondem 404 e o host fica no armazenamento de sempre.
+ */
+export function pintaAccountStorageReady(): boolean {
   const env = getEnv()
-  return env.PINTA_CAUSAL_CANDIDATE === '1' && pintaPrivateStorageReady(env)
-}
-
-export function pintaPaletteWriteCandidateReady(): boolean {
-  const env = getEnv()
-  return env.PINTA_PALETTE_WRITE_CANDIDATE === '1' && pintaPrivateStorageReady(env)
-}
-
-function pintaPrivateStorageReady(env: ReturnType<typeof getEnv>): boolean {
-  return (
-    env.PINTA_CAUSAL_QA_PROFILES.length > 0 &&
-    Boolean(
-      env.MEMBER_SHELL_HMAC_SECRET &&
-        env.R2_ACCOUNT_ID &&
-        env.R2_ACCESS_KEY_ID &&
-        env.R2_SECRET_ACCESS_KEY &&
-        env.R2_UGC_BUCKET,
-    )
+  return Boolean(
+    env.MEMBER_SHELL_HMAC_SECRET &&
+      env.R2_ACCOUNT_ID &&
+      env.R2_ACCESS_KEY_ID &&
+      env.R2_SECRET_ACCESS_KEY &&
+      env.R2_UGC_BUCKET,
   )
 }
 
-export function pintaCausalViewer(
-  user: SessionUser,
-  audience: PintaCausalViewer['audience'],
-): PintaCausalViewer {
-  return {
-    userId: user.id,
-    accountId: user.activeProfile?.accountId ?? user.id,
-    audience,
-  }
-}
-
-export function pintaCausalProfileAllowed(viewer: PintaCausalViewer): boolean {
-  return pintaCausalQaAllows(getEnv().PINTA_CAUSAL_QA_PROFILES, viewer)
-}
-
-export function pintaCausalPageEligible(
-  user: SessionUser | null,
-  audience: PintaCausalViewer['audience'],
-): boolean {
-  return (
-    pintaCausalCandidateReady() &&
-    !!user &&
-    user.status === 'active' &&
-    user.kids?.kind !== 'parent' &&
-    !isReadonlyImpersonation(user) &&
-    pintaCausalProfileAllowed(pintaCausalViewer(user, audience))
-  )
-}
-
-export function pintaPalettePageViewer(
+/**
+ * Quem guarda o Pinta pela conta nesta página: o aluno ativo da sessão (perfil kids com a conta
+ * responsável; adulto = a própria conta). Pais, suporte em modo leitura e sessão sem aluno não
+ * recebem a fila causal nem as paletas negociadas. O escopo vale para todas as ferramentas que
+ * leem a conta do Pinta: o Pinta solto, o Pinta do Arquipélago e a biblioteca de paletas do Molda.
+ */
+export function pintaAccountViewer(
   user: SessionUser | null,
   audience: PintaCausalViewer['audience'],
 ): PintaCausalViewer | null {
-  if (
-    !user ||
-    !learnerIdentity(user, audience) ||
-    isReadonlyImpersonation(user) ||
-    !pintaPaletteWriteCandidateReady()
-  )
+  const identity = learnerIdentity(user, audience)
+  if (!user || !identity || isReadonlyImpersonation(user) || !pintaAccountStorageReady())
     return null
-  const viewer = pintaCausalViewer(user, audience)
-  return pintaCausalProfileAllowed(viewer) ? viewer : null
+  return { audience, userId: identity.learnerId, accountId: identity.accountId }
 }

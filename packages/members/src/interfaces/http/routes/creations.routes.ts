@@ -1,4 +1,3 @@
-import type { PintaCausalViewer } from '@sistemazero/core/creations/pinta-causal'
 import { STUDIO_SEALED_STORAGE_READER } from '@sistemazero/core/creations/studio-sealed-storage'
 import { ForbiddenError } from '@sistemazero/core/http'
 import { Elysia, t } from 'elysia'
@@ -33,7 +32,6 @@ const CreationDownloadQuery = t.Object({
 })
 
 export interface CreationsRoutesDeps {
-  causalQaProfiles?: readonly PintaCausalViewer[]
   causal?: import('../../../infrastructure/persistence/drizzle/pinta-causal-units.repository').DrizzlePintaCausalRepository
   palette?: {
     repository: Record<
@@ -41,7 +39,6 @@ export interface CreationsRoutesDeps {
       import('../../../infrastructure/persistence/drizzle/creations.repository').DrizzleCreationsRepository
     >
     clock: () => Date
-    qaProfiles: readonly PintaCausalViewer[]
   }
   studioSeal?: {
     repository: Record<
@@ -49,7 +46,6 @@ export interface CreationsRoutesDeps {
       import('../../../infrastructure/persistence/drizzle/creations.repository').DrizzleCreationsRepository
     >
     clock: () => Date
-    qaProfiles: readonly PintaCausalViewer[]
     authoring: Pick<
       import('../../../application/studio/free-studio-access.service').FreeStudioAccessService,
       'execute'

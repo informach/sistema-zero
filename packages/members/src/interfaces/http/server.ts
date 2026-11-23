@@ -20,11 +20,7 @@ import type { AuthorizeLiveRuntimeService } from '../../application/studio/autho
 import type { AuthorizePublicRuntimeService } from '../../application/studio/authorize-public-runtime.service'
 import type { AuthorizePythonAnalysisService } from '../../application/studio/authorize-python-analysis.service'
 import type { LiveBenefitsPort } from '../../domain/ports/live-benefits.port'
-import {
-  type Env,
-  pintaCausalCandidateConfigured,
-  studioSealedCandidateConfigured,
-} from '../../infrastructure/config/env'
+import type { Env } from '../../infrastructure/config/env'
 import type { CloudflareSfuMediaProvider } from '../../infrastructure/live/cloudflare-sfu.provider'
 import { liveMediaRoutes } from '../../infrastructure/live/live-media.routes'
 import { liveRecordingRoutes } from '../../infrastructure/live/live-recording.routes'
@@ -153,9 +149,7 @@ const STUDIO_SEALED_PROOF_PATH =
   /^\/members\/internal\/creations\/studio\/seal\/(?:reserve|commit)$/
 
 function bodyLimitForPath(pathname: string, env: Env): number {
-  if (pintaCausalCandidateConfigured(env) && PINTA_CAUSAL_PROOF_PATH.test(pathname))
-    return CREATION_PROOF_BODY_BYTES
-  if (studioSealedCandidateConfigured(env) && STUDIO_SEALED_PROOF_PATH.test(pathname))
+  if (PINTA_CAUSAL_PROOF_PATH.test(pathname) || STUDIO_SEALED_PROOF_PATH.test(pathname))
     return CREATION_PROOF_BODY_BYTES
   // O resumo do pacote (inventário + procedência); o manifesto em si nunca vem no corpo.
   if (pathname === '/members/internal/cenarios/publicacoes/confirmar')
@@ -221,9 +215,7 @@ export function createServer(deps: HttpDeps) {
     CENARIOS_DOCUMENTO_BODY_BYTES,
     deps.env.MAX_REQUEST_BODY_BYTES,
     deps.env.MAX_STUDIO_BODY_BYTES,
-    pintaCausalCandidateConfigured(deps.env) || studioSealedCandidateConfigured(deps.env)
-      ? CREATION_PROOF_BODY_BYTES
-      : 0,
+    CREATION_PROOF_BODY_BYTES,
     1024 * 1024,
   )
   const app = new Elysia({

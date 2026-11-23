@@ -341,9 +341,8 @@ export async function verifyWorkshopRuleSheets(
   return manifest
 }
 
-/** Cloud format of the native-9 workshop body. Only the private workshop reader (server flag
- * PINTA_WORKSHOP_SERVICE_READER, off by default) admits it; the reader negotiated by the
- * service stays PINTA_INVENTORY_READER_VERSION until the native-9/cloud-8 gate is separated. */
+/** Cloud format of the native-9 workshop body. Only `allowWorkshop` admits it. The BFF turns that
+ * on by capability, not by flag: when the inventory announces reader 8 (stage 8), never before. */
 const WORKSHOP_CLOUD_FORMAT_VERSION = 8
 
 export interface PintaCausalDocumentExpectation {

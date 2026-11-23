@@ -1,5 +1,5 @@
 import { ArquipelagoHost } from '@sistemazero/member-shell/components/arquipelago-host'
-import { PintaPaletteSession } from '@sistemazero/member-shell/components/creator/pinta-palette-session'
+import { PintaAccountSession } from '@sistemazero/member-shell/components/creator/pinta-account-session'
 import { getEnv } from '@sistemazero/member-shell/lib/env'
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
@@ -26,14 +26,14 @@ export default async function ArquipelagoPage() {
           <SessionBoundary kind="student" />
         </>
       ) : null}
-      <PintaPaletteSession audience="kids" session={session}>
+      <PintaAccountSession audience="kids" session={session}>
         <ArquipelagoHost
           publico="kids"
           perfil={{ id: session.id, primeiroNome }}
           voltarPara="/"
           narrationEnabled={Boolean(getEnv().ELEVENLABS_API_KEY)}
         />
-      </PintaPaletteSession>
+      </PintaAccountSession>
     </>
   )
 }

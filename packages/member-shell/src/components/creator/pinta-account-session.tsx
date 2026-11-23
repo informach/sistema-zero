@@ -1,10 +1,10 @@
 import type { PintaCausalViewer } from '@sistemazero/core/creations/pinta-causal'
 import type { ReactNode } from 'react'
 import type { SessionUser } from '../../lib/types'
-import { pintaPalettePageViewer } from '../../server/pinta-causal-eligibility'
-import { PintaPaletteScope } from './pinta-palette-scope'
+import { pintaAccountViewer } from '../../server/pinta-causal-eligibility'
+import { PintaAccountScope } from './pinta-account-scope'
 
-export function PintaPaletteSession({
+export function PintaAccountSession({
   session,
   audience,
   children,
@@ -14,8 +14,6 @@ export function PintaPaletteSession({
   children: ReactNode
 }) {
   return (
-    <PintaPaletteScope viewer={pintaPalettePageViewer(session, audience)}>
-      {children}
-    </PintaPaletteScope>
+    <PintaAccountScope viewer={pintaAccountViewer(session, audience)}>{children}</PintaAccountScope>
   )
 }

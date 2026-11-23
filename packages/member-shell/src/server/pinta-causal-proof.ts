@@ -1,5 +1,5 @@
 import 'server-only'
-import { creationStorageKey } from '@sistemazero/core/creations'
+import { creationStorageKey, PINTA_INVENTORY_READER_VERSION } from '@sistemazero/core/creations'
 import {
   type PintaCausalAttestation,
   type PintaCausalBackfillAttestation,
@@ -14,7 +14,6 @@ import {
   provePintaCausalPin,
 } from '@sistemazero/pinta/assets/causal'
 import { z } from 'zod'
-import { getEnv } from '../lib/env'
 import { CREATION_BLOB_CONTENT_TYPE } from './creation-download'
 import {
   type PintaCausalBlobExpectation,
@@ -53,17 +52,19 @@ export function isPintaPointer(
 }
 
 /**
- * Server configuration is separate from the browser's selected writer. All callers already passed
- * profile eligibility. Regions (native 8 / cloud 7) are admitted for every causal profile since
- * stage 1 (23/11/2026): the negotiated reader stays capped at `PINTA_INVENTORY_READER_VERSION`, so
- * the native-9 body (cloud 8) still cannot be reserved even where the workshop reader is on.
+ * Capacidade, não flag (23/11/2026). O corpo nativo 9 (nuvem 8: autorregras e projeções) ainda não
+ * está pronto: abrir, fechar, reexportar, recuperar e baixar o livro e as projeções é a etapa 8.
+ * Até lá o BFF não o lê, e o único lugar que muda isso é o leitor que o inventário anuncia no core
+ * (`PINTA_INVENTORY_READER_VERSION`, hoje 7). Não há variável de ambiente que o abra antes.
+ */
+const WORKSHOP_BODY_READABLE = PINTA_INVENTORY_READER_VERSION >= 8
+
+/**
+ * The server admits what the service can read, independent of the browser's selected writer.
+ * Regions (native 8 / cloud 7) are admitted for every profile since stage 1 (23/11/2026).
  */
 function readerOptions(expected: PintaCausalBlobExpectation): PintaCausalBlobExpectation {
-  return {
-    ...expected,
-    allowRegions: true,
-    allowWorkshop: getEnv().PINTA_WORKSHOP_SERVICE_READER === '1',
-  }
+  return { ...expected, allowRegions: true, allowWorkshop: WORKSHOP_BODY_READABLE }
 }
 
 async function read(

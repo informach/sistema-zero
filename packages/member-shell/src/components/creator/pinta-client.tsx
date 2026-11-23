@@ -29,7 +29,7 @@ import {
 import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { useFocusMode } from './focus-mode'
 import { PensaMissionBlocked } from './pensa-mission-blocked'
-import { usePintaPaletteAccount } from './pinta-palette-scope'
+import { usePintaAccount } from './pinta-account-scope'
 import { savePintaStudioBundle } from './save-pinta-studio-bundle'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
 import {
@@ -82,7 +82,6 @@ export function PintaClient({
   audience = 'kids',
   studioAvailable,
   narrationEnabled = false,
-  pintaCausalAllowed = false,
   onCompletionControlChange,
   initialCanvas,
 }: {
@@ -90,15 +89,16 @@ export function PintaClient({
   audience?: 'adult' | 'kids'
   studioAvailable: boolean
   narrationEnabled?: boolean
-  pintaCausalAllowed?: boolean
   onCompletionControlChange?: (control: EmbeddedCreationControl | null) => void
   /** O molde de um objeto do Arquipélago: o Pinta abre (ou reabre) a planificação dele. */
   initialCanvas?: PintaInitialCanvas
 }) {
-  const paletteAccount = usePintaPaletteAccount(viewerId, audience)
+  // A conta do Pinta (fila causal e paletas negociadas) vale para todo aluno desde 23/11/2026, sem
+  // flag: o escopo vem do servidor (`PintaAccountSession`) e cobre também o Pinta do Arquipélago.
+  const account = usePintaAccount(viewerId, audience)
   const localNamespace = creatorStorageNamespace(viewerId, audience)
   const [attempt, setAttempt] = useState(0)
-  const loadKey = JSON.stringify([viewerId, audience, attempt, pintaCausalAllowed, paletteAccount])
+  const loadKey = JSON.stringify([viewerId, audience, attempt, account])
   const [load, setLoad] = useState<PintaLoad | null>(null)
   const current = load?.key === loadKey ? load : null
   const session = current?.status === 'ready' ? current : null
@@ -176,9 +176,8 @@ export function PintaClient({
             maxFormatVersion: PINTA_MAX_READ_FORMAT_VERSION,
             viewerId,
             audience,
-            pintaPaletteWriteEnabled: !!paletteAccount,
-            pintaCausalEnabled:
-              pintaCausalAllowed && process.env.NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1 === '1',
+            pintaPaletteWriteEnabled: !!account,
+            pintaCausalEnabled: !!account,
             pintaCausalReader: PINTA_REGIONS_CLOUD_FORMAT,
           })
           if (cloud.pintaCausal) {
@@ -207,8 +206,9 @@ export function PintaClient({
               },
             })
           } else {
-            // A nuvem antiga declararia nuvem 6 para um documento nativo 8: sem a fila causal, a
-            // conta fica no armazenamento de sempre, e um regional deste aparelho vira aviso.
+            // Sem a fila causal (suporte em modo leitura, navegador sem gzip/SHA-256, servidor sem
+            // storage), a nuvem antiga declararia nuvem 6 para um documento nativo 8: a conta fica
+            // no armazenamento de sempre, e um regional deste aparelho vira aviso.
             persistence = createCloudMirroredPintaPersistence({
               local: m.createPintaPersistence({ namespace: localNamespace }),
               cloud,
@@ -232,7 +232,7 @@ export function PintaClient({
       // The old profile's documents and outbox stay in its database for the next session.
       cloud?.dispose({ abort: true })
     }
-  }, [audience, loadKey, localNamespace, pintaCausalAllowed, paletteAccount, viewerId])
+  }, [audience, loadKey, localNamespace, account, viewerId])
 
   // O selo acompanha a descida (a galeria já abriu com o local; os desenhos de outro aparelho
   // vão chegando). Ao trocar de persistência (perfil), a antiga desliga o que escutava por fora.

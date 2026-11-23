@@ -15,10 +15,7 @@ import { CREATION_BLOB_CONTENT_TYPE, CREATION_GET_TTL_SECONDS } from '../server/
 import type { GatewayModule } from '../server/gateway'
 import { authorizePintaActor } from '../server/pinta-actor-authorization'
 import { PintaCausalUnverifiedContent } from '../server/pinta-causal-content'
-import {
-  pintaCausalCandidateReady,
-  pintaCausalProfileAllowed,
-} from '../server/pinta-causal-eligibility'
+import { pintaAccountStorageReady } from '../server/pinta-causal-eligibility'
 import {
   attestPintaBackfill,
   attestPintaMember,
@@ -160,8 +157,7 @@ export function createPintaCausalRoutes({
   gateway,
   session,
   storage = liveStorage,
-  enabled = pintaCausalCandidateReady,
-  profileAllowed = pintaCausalProfileAllowed,
+  enabled = pintaAccountStorageReady,
 }: {
   gateway: Pick<GatewayModule, 'gatewayFetchHmac' | 'refreshSession'>
   session: Pick<
@@ -169,8 +165,8 @@ export function createPintaCausalRoutes({
     'getAccessToken' | 'getRefreshToken' | 'verifyAccessToken' | 'audience'
   >
   storage?: Storage
+  /** Infraestrutura (HMAC + R2 privado), não flag: sem ela as rotas respondem 404. */
   enabled?: () => boolean
-  profileAllowed?: (actor: PintaCausalActor) => boolean
 }) {
   async function authorized(
     req: Request,
@@ -179,7 +175,7 @@ export function createPintaCausalRoutes({
   ): Promise<NextResponse> {
     if (!enabled()) return error(404, 'not-found')
     try {
-      const auth = await authorizePintaActor(req, write, { gateway, session, profileAllowed })
+      const auth = await authorizePintaActor(req, write, { gateway, session })
       if ('status' in auth) return error(auth.status, auth.reason)
       return await operation(auth.actor, auth.readOnly)
     } catch (failure) {

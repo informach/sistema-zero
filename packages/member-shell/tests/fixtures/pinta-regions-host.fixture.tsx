@@ -1,12 +1,14 @@
 import { afterEach, beforeEach, expect, mock, test } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
+import type { PintaCausalViewer } from '@sistemazero/core/creations/pinta-causal'
 import type { ReactNode } from 'react'
-import { PintaPaletteScope } from '../../src/components/creator/pinta-palette-scope'
+import { PintaAccountScope } from '../../src/components/creator/pinta-account-scope'
 
-// Etapa 1 das regiões (23/11/2026), sem flag: o host do Pinta solto monta a oficina regional
-// (teto nativo 8) sempre que pode guardar o regional, e anuncia leitor e escritor 7 na fila
-// causal. Só as fronteiras externas (pacote, nuvem e espelho) são trocadas; o que se confere é a
-// escolha real do `PintaClient`.
+// Etapa 1 das regiões e o fim das flags (23/11/2026): o host do Pinta monta a oficina regional
+// (teto nativo 8) sempre que a conta do perfil pode guardar o regional, e anuncia leitor e escritor
+// 7 na fila causal. Quem decide é o escopo da conta que o servidor entrega a todo aluno ativo; não
+// há variável de ambiente. Só as fronteiras externas (pacote, nuvem e espelho) são trocadas; o que
+// se confere é a escolha real do `PintaClient`.
 GlobalRegistrator.register({ settings: { disableIframePageLoading: true } })
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
 const { act } = await import('react')
@@ -94,23 +96,23 @@ mock.module('../../src/components/creator/use-pensa-mission-session', () => ({
 }))
 const { PintaClient } = await import('../../src/components/creator/pinta-client')
 
-const savedFlag = process.env.NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1
+const account: PintaCausalViewer = { audience: 'kids', userId: 'perfil', accountId: 'conta' }
 beforeEach(() => {
   built.length = clouds.length = mirrors.length = 0
   mounted = null
-  process.env.NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1 = '1'
 })
 afterEach(async () => {
-  if (savedFlag === undefined) delete process.env.NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1
-  else process.env.NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1 = savedFlag
   await act(async () => {
     for (const cleanup of cleanups.splice(0)) cleanup()
   })
 })
 
-async function render(props: {
+async function render({
+  scope = null,
+  ...props
+}: {
   viewerId: string | null
-  pintaCausalAllowed?: boolean
+  scope?: PintaCausalViewer | null
   onCompletionControlChange?: () => void
 }) {
   const element = document.createElement('div')
@@ -122,9 +124,9 @@ async function render(props: {
   })
   await act(async () => {
     root.render(
-      <PintaPaletteScope viewer={null}>
+      <PintaAccountScope viewer={scope}>
         <PintaClient audience="kids" studioAvailable {...props} />
-      </PintaPaletteScope>,
+      </PintaAccountScope>,
     )
   })
   await act(async () => {
@@ -134,11 +136,12 @@ async function render(props: {
   return mounted
 }
 
-test('com a fila causal, o host monta a oficina com teto 8 e anuncia leitor e escritor 7', async () => {
-  const view = await render({ viewerId: 'perfil', pintaCausalAllowed: true })
+test('com a conta do perfil, o host monta a oficina com teto 8 e anuncia leitor e escritor 7', async () => {
+  const view = await render({ viewerId: 'perfil', scope: account })
   expect(clouds.at(-1)).toMatchObject({
     maxFormatVersion: 6,
     pintaCausalEnabled: true,
+    pintaPaletteWriteEnabled: true,
     pintaCausalReader: 7,
   })
   expect(built).toEqual([
@@ -154,11 +157,29 @@ test('com a fila causal, o host monta a oficina com teto 8 e anuncia leitor e es
   expect(view.persistence).toMatchObject({ mirrored: 'workshop' })
 })
 
-test('sem a fila causal, a conta fica no armazenamento de sempre e não recebe regiões', async () => {
-  await render({ viewerId: 'perfil', pintaCausalAllowed: false })
-  expect(clouds.at(-1)).toMatchObject({ pintaCausalEnabled: false })
+test('sem o escopo da conta (suporte em leitura, sem storage), fica o armazenamento de sempre', async () => {
+  await render({ viewerId: 'perfil' })
+  expect(clouds.at(-1)).toMatchObject({
+    pintaCausalEnabled: false,
+    pintaPaletteWriteEnabled: false,
+  })
   expect(built.map(({ kind }) => kind)).toEqual(['legacy'])
   expect(mirrors).toEqual([{ local: { kind: 'legacy', namespace: 'perfil' } }])
+})
+
+test('o escopo de outro perfil ou de outra audiência nunca liga a fila causal deste', async () => {
+  for (const scope of [
+    { ...account, userId: 'irmao' },
+    { ...account, audience: 'adult' as const },
+  ]) {
+    built.length = clouds.length = mirrors.length = 0
+    await render({ viewerId: 'perfil', scope })
+    expect(clouds.at(-1)).toMatchObject({
+      pintaCausalEnabled: false,
+      pintaPaletteWriteEnabled: false,
+    })
+    expect(built.map(({ kind }) => kind)).toEqual(['legacy'])
+  }
 })
 
 test('sem conta, a oficina regional fica só neste aparelho, com o mesmo teto', async () => {
@@ -172,12 +193,27 @@ test('sem conta, a oficina regional fica só neste aparelho, com o mesmo teto', 
 })
 
 test('a galeria focal só perde a vez para a missão que conclui pela oficina', async () => {
-  const free = await render({ viewerId: 'perfil', pintaCausalAllowed: true })
+  const free = await render({ viewerId: 'perfil', scope: account })
   expect(free.onCompletionControlChange).toBeUndefined()
   const mission = await render({
     viewerId: 'perfil',
-    pintaCausalAllowed: true,
+    scope: account,
     onCompletionControlChange: () => {},
   })
   expect(typeof mission.onCompletionControlChange).toBe('function')
+})
+
+// O Pinta do Arquipélago não recebe prop nenhuma da página: o mesmo escopo da conta o põe na
+// fila causal, e a conclusão do objeto confirma pela conta adotada (não pela listagem antiga,
+// que um perfil causal recusa).
+test('o Pinta do Arquipélago, sob o escopo da conta, monta a oficina causal e conclui por ela', async () => {
+  const view = await render({
+    viewerId: 'perfil',
+    scope: account,
+    onCompletionControlChange: () => {},
+  })
+  expect(clouds.at(-1)).toMatchObject({ pintaCausalEnabled: true })
+  expect(built.map(({ kind }) => kind)).toEqual(['workshop'])
+  expect(mirrors[0]?.causal).toMatchObject({ reader: 7, writer: 7 })
+  expect(typeof view.onCompletionControlChange).toBe('function')
 })

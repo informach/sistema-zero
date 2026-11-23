@@ -71,35 +71,6 @@ export const PintaCausalViewerSchema = z.strictObject({
 })
 export type PintaCausalViewer = z.infer<typeof PintaCausalViewerSchema>
 
-const qaProfiles = z.array(
-  PintaCausalViewerSchema.refine(
-    ({ audience, accountId, userId }) => audience === 'kids' || accountId === userId,
-  ),
-)
-
-/** A missing or malformed configuration grants access to no profile. */
-export function parsePintaCausalQaProfiles(
-  value: string | undefined,
-): readonly PintaCausalViewer[] {
-  if (!value) return []
-  try {
-    const parsed = qaProfiles.safeParse(JSON.parse(value))
-    return parsed.success ? parsed.data : []
-  } catch {
-    return []
-  }
-}
-
-export function pintaCausalQaAllows(
-  profiles: readonly PintaCausalViewer[],
-  viewer: PintaCausalViewer,
-): boolean {
-  return profiles.some(
-    ({ audience, accountId, userId }) =>
-      audience === viewer.audience && accountId === viewer.accountId && userId === viewer.userId,
-  )
-}
-
 const unique = <T>(values: readonly T[]) => new Set(values).size === values.length
 const sizeWithin = (value: unknown, limit: number) =>
   new TextEncoder().encode(JSON.stringify(value)).length <= limit

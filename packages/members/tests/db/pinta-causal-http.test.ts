@@ -16,12 +16,9 @@ const target = optInKidsJourneyDatabase('PINTA_CAUSAL_HTTP_TEST_DATABASE_URL')
 const token = 'owned-causal-http-test-token'
 const gateway = { 'x-internal-token': token, 'x-consumer-id': 'member-shell' }
 
-async function serving(
-  flag: string | undefined,
-  secret: string | undefined,
-  profiles: string | undefined,
-  inspect: (base: string) => Promise<void>,
-) {
+// Sem flag nem lista de perfis (23/11/2026): a composição real liga a nuvem causal para todo perfil.
+// Só o token interno do gateway continua obrigatório (sem ele, as rotas internas não existem).
+async function serving(secret: string | undefined, inspect: (base: string) => Promise<void>) {
   const socket = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch: () => new Response(null) })
   const port = socket.port!
   await socket.stop(true)
@@ -32,8 +29,6 @@ async function serving(
     PORT: String(port),
     GATEWAY_HMAC_SECRET: 'owned-http-gateway-secret',
     INTERNAL_API_TOKEN: secret,
-    PINTA_CAUSAL_CANDIDATE: flag,
-    PINTA_CAUSAL_QA_PROFILES: profiles,
   })
   const app = await createApplication(env)
   await app.start()
@@ -50,9 +45,8 @@ describe.skipIf(!target)('Pinta causal through the full Members HTTP server and 
     conn = await openKidsJourneyTestDatabase(target!)
   }, 60_000)
   afterAll(() => conn?.close())
-  test('private flags, authenticated reservations, large proof, publication, archive and protected rollback', async () => {
+  test('every profile by default: authenticated reservations, large proof, publication, archive and the old client', async () => {
     const actor = { userId: randomUUID(), accountId: randomUUID(), audience: 'kids' as const }
-    const profiles = JSON.stringify([actor])
     const post = (
       base: string,
       path: string,
@@ -105,19 +99,12 @@ describe.skipIf(!target)('Pinta causal through the full Members HTTP server and 
       })),
     }
     expect(Buffer.byteLength(JSON.stringify(manifest))).toBeGreaterThan(64 * 1024)
-    for (const [flag, secret, list] of [
-      [undefined, token, profiles],
-      ['1', undefined, profiles],
-      ['1', token, undefined],
-      ['1', token, '[malformed'],
-    ] as const) {
-      await serving(flag, secret, list, async (base) => {
-        expect(
-          (await post(base, 'units/reserve', page, { actor: { privileged: true } })).status,
-        ).toBe(404)
-      })
-    }
-    await serving('1', token, profiles, async (base) => {
+    await serving(undefined, async (base) => {
+      expect(
+        (await post(base, 'units/reserve', page, { actor: { privileged: true } })).status,
+      ).toBe(404)
+    })
+    await serving(token, async (base) => {
       const status = { opId: intent.opId }
       for (const headers of [
         { 'x-consumer-id': 'member-shell', 'x-internal-token': 'wrong' },
@@ -127,19 +114,26 @@ describe.skipIf(!target)('Pinta causal through the full Members HTTP server and 
           (await post(base, 'units/reserve', page, { actor: { privileged: true }, headers }))
             .status,
         ).toBe(401)
+      // Todo perfil lê a própria galeria, e nunca a deste: outro perfil da conta e o mesmo id como
+      // adulto veem só o próprio espaço (vazio); o perfil com outra conta não lê nada.
       for (const other of [
         { userId: randomUUID(), privileged: true },
-        { accountId: randomUUID(), privileged: true },
         { audience: 'adult', accountId: actor.userId, privileged: true },
       ]) {
         const denied = await post(base, 'units/reserve', page, { actor: other })
+        expect(denied.status).not.toBe(200)
+        for (const payload of [{ reader: 6 }, { mode: 'gallery' }]) {
+          const own = await post(base, 'graph/page', payload, { actor: other })
+          expect(own.status).toBe(200)
+          expect(await own.text()).not.toContain('"map"')
+        }
+      }
+      const crossed = { accountId: randomUUID(), privileged: true }
+      expect((await post(base, 'units/reserve', page, { actor: crossed })).status).not.toBe(200)
+      for (const payload of [{ reader: 6 }, { mode: 'gallery' }]) {
+        const denied = await post(base, 'graph/page', payload, { actor: crossed })
         expect(denied.status).toBe(404)
-        expect(await denied.json()).toEqual({ reason: 'not-found' })
-        expect((await post(base, 'graph/page', { reader: 6 }, { actor: other })).status).toBe(404)
-        // O seletor da galeria da aula passa pela mesma cerca: conta + perfil dono, na lista de QA.
-        expect((await post(base, 'graph/page', { mode: 'gallery' }, { actor: other })).status).toBe(
-          404,
-        )
+        expect(await denied.text()).not.toContain('"map"')
       }
       expect((await post(base, 'units/reserve', { ...page, trusted: true })).status).toBe(422)
       expect(
@@ -264,74 +258,109 @@ describe.skipIf(!target)('Pinta causal through the full Members HTTP server and 
           .status,
       ).toBe(413)
     })
-    for (const [flag, list] of [
-      ['0', profiles],
-      ['1', JSON.stringify([{ ...actor, userId: randomUUID() }])],
-    ]) {
-      await serving(flag, token, list, async (base) => {
-        expect((await post(base, 'graph/page', { reader: 6 })).status).toBe(404)
-        expect((await post(base, 'graph/page', { mode: 'gallery' })).status).toBe(404)
-        const old = await fetch(`${base}/members/creations/pinta`, {
-          headers: { ...gateway, 'x-auth-user-id': actor.userId },
+    // O cliente antigo (aba ou aparelho sem a fila causal) num perfil que virou causal: o servidor
+    // recusa com `protocol-required` a lista, o download, a gravação e a exclusão de um desenho,
+    // e nada muda na conta. A biblioteca de paletas fica fora da cerca dos desenhos.
+    await serving(token, async (base) => {
+      const rows = () =>
+        conn.sql`select item_id, revision, storage_ref, deleted_at, causal_sha256, pending_revision from members.creations where user_id=${actor.userId} and item_id <> 'sz-pinta-palettes' order by item_id`
+      const before = await rows()
+      const legacy = {
+        ...gateway,
+        'content-type': 'application/json',
+        'x-auth-user-id': actor.userId,
+        'x-auth-account-id': actor.accountId,
+        'x-auth-user-status': 'active',
+        'x-auth-user-role': 'admin',
+      }
+      const drawing = `${base}/members/creations/pinta/map`
+      const refusals = [
+        await fetch(`${base}/members/creations/pinta`, { headers: legacy }),
+        await fetch(`${drawing}/download`, { headers: legacy }),
+        await fetch(`${drawing}/upload`, {
+          method: 'POST',
+          headers: legacy,
+          body: JSON.stringify({
+            baseRevision: 2,
+            name: 'Map',
+            kind: 'tilemap',
+            formatVersion: 6,
+            itemUpdatedAt: new Date().toISOString(),
+            bytes: 100,
+          }),
+        }),
+        await fetch(`${drawing}/commit`, {
+          method: 'POST',
+          headers: legacy,
+          body: JSON.stringify({ revision: 2, verifiedPartHashes: [], verifiedFormatVersion: 6 }),
+        }),
+        await fetch(drawing, {
+          method: 'DELETE',
+          headers: legacy,
+          body: JSON.stringify({ baseRevision: 2, maxFormatVersion: 6 }),
+        }),
+      ]
+      for (const refused of refusals) {
+        expect(refused.status).toBe(409)
+        expect(await refused.json()).toMatchObject({
+          error: { code: 'PINTA_CAUSAL_CONFLICT' },
+          reason: 'protocol-required',
         })
-        expect(old.status).toBe(409)
-        expect(await old.json()).toMatchObject({ reason: 'protocol-required' })
-        const palette = await fetch(`${base}/members/creations/pinta/sz-pinta-palettes/download`, {
-          headers: { ...gateway, 'x-auth-user-id': actor.userId },
-        })
-        expect(palette.status).toBe(200)
-        expect(await palette.json()).toMatchObject({ storageKey: 'palettes/library.gz' })
-        if (flag === '1') {
-          // An unchanged legacy client still writes the reserved item with an observed current base.
-          const endpoint = `${base}/members/creations/pinta/sz-pinta-palettes`
-          const headers = {
-            ...gateway,
-            'content-type': 'application/json',
-            'x-auth-user-id': actor.userId,
-            'x-auth-account-id': actor.accountId,
-            'x-auth-user-status': 'active',
-            'x-auth-user-role': 'admin',
-          }
-          const upload = (baseRevision: number) =>
-            fetch(`${endpoint}/upload`, {
-              method: 'POST',
-              headers,
-              body: JSON.stringify({
-                baseRevision,
-                name: 'Minhas paletas',
-                kind: 'palette-library',
-                formatVersion: 1,
-                itemUpdatedAt: new Date().toISOString(),
-                bytes: 100,
-              }),
-            })
-          expect((await upload(0)).status).toBe(409)
-          const accepted = await upload(1)
-          expect(accepted.status).toBe(200)
-          const ticket = await accepted.json()
-          expect(
-            (
-              await fetch(`${endpoint}/commit`, {
-                method: 'POST',
-                headers,
-                body: JSON.stringify({
-                  revision: ticket.revision,
-                  verifiedPartHashes: [],
-                  verifiedFormatVersion: 1,
-                }),
-              })
-            ).status,
-          ).toBe(200)
-          expect(await (await fetch(`${endpoint}/download`, { headers })).json()).toMatchObject({
-            revision: ticket.revision,
-          })
-        }
-        const otherProfile = await fetch(
-          `${base}/members/creations/pinta/sz-pinta-palettes/download`,
-          { headers: { ...gateway, 'x-auth-user-id': randomUUID() } },
-        )
-        expect(otherProfile.status).toBe(404)
+      }
+      expect(await rows()).toEqual(before)
+      const palette = await fetch(`${base}/members/creations/pinta/sz-pinta-palettes/download`, {
+        headers: { ...gateway, 'x-auth-user-id': actor.userId },
       })
-    }
+      expect(palette.status).toBe(200)
+      expect(await palette.json()).toMatchObject({ storageKey: 'palettes/library.gz' })
+      // An unchanged legacy client still writes the reserved item with an observed current base.
+      const endpoint = `${base}/members/creations/pinta/sz-pinta-palettes`
+      const headers = {
+        ...gateway,
+        'content-type': 'application/json',
+        'x-auth-user-id': actor.userId,
+        'x-auth-account-id': actor.accountId,
+        'x-auth-user-status': 'active',
+        'x-auth-user-role': 'admin',
+      }
+      const upload = (baseRevision: number) =>
+        fetch(`${endpoint}/upload`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            baseRevision,
+            name: 'Minhas paletas',
+            kind: 'palette-library',
+            formatVersion: 1,
+            itemUpdatedAt: new Date().toISOString(),
+            bytes: 100,
+          }),
+        })
+      expect((await upload(0)).status).toBe(409)
+      const accepted = await upload(1)
+      expect(accepted.status).toBe(200)
+      const ticket = await accepted.json()
+      expect(
+        (
+          await fetch(`${endpoint}/commit`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+              revision: ticket.revision,
+              verifiedPartHashes: [],
+              verifiedFormatVersion: 1,
+            }),
+          })
+        ).status,
+      ).toBe(200)
+      expect(await (await fetch(`${endpoint}/download`, { headers })).json()).toMatchObject({
+        revision: ticket.revision,
+      })
+      const otherProfile = await fetch(
+        `${base}/members/creations/pinta/sz-pinta-palettes/download`,
+        { headers: { ...gateway, 'x-auth-user-id': randomUUID() } },
+      )
+      expect(otherProfile.status).toBe(404)
+    })
   }, 60_000)
 })

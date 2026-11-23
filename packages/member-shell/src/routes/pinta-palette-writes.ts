@@ -25,10 +25,7 @@ import {
   type PintaActorAuthorization,
 } from '../server/pinta-actor-authorization'
 import { PintaCausalUnverifiedContent, readVerifiedPintaGzip } from '../server/pinta-causal-content'
-import {
-  pintaCausalProfileAllowed,
-  pintaPaletteWriteCandidateReady,
-} from '../server/pinta-causal-eligibility'
+import { pintaAccountStorageReady } from '../server/pinta-causal-eligibility'
 import type { PintaCausalActor } from '../server/pinta-causal-protocol'
 import { r2CreateObjectUgc, r2GetObjectUgc, r2PresignGetUgc, r2PresignPutUgc } from '../server/r2'
 
@@ -153,14 +150,13 @@ export function createPintaPaletteWrites({
   gateway,
   session,
   storage = liveStorage,
-  enabled = pintaPaletteWriteCandidateReady,
-  profileAllowed = pintaCausalProfileAllowed,
+  enabled = pintaAccountStorageReady,
 }: {
   gateway: Pick<GatewayModule, 'gatewayFetchHmac' | 'refreshSession'>
   session: PintaActorAuthorization['session']
   storage?: Storage
+  /** Infraestrutura (HMAC + R2 privado), não flag: sem ela as rotas respondem 404. */
   enabled?: () => boolean
-  profileAllowed?: PintaActorAuthorization['profileAllowed']
 }) {
   async function internal(
     actor: PintaCausalActor,
@@ -188,7 +184,7 @@ export function createPintaPaletteWrites({
   ) {
     if (!enabled()) return failure(404, 'PINTA_PALETTE_UNAVAILABLE')
     try {
-      const verified = await authorizePintaActor(req, write, { gateway, session, profileAllowed })
+      const verified = await authorizePintaActor(req, write, { gateway, session })
       if ('status' in verified)
         return failure(verified.status, verified.reason.toUpperCase().replaceAll('-', '_'))
       return await handler(verified.actor)

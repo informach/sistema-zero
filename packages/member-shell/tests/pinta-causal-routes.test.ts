@@ -8,9 +8,7 @@ import {
   type PintaCausalBinding,
   type PintaCausalEntry,
   type PintaCausalMember,
-  parsePintaCausalQaProfiles,
   pintaCausalBlobKey,
-  pintaCausalQaAllows,
 } from '@sistemazero/core/creations/pinta-causal'
 import { assetToJson, createAsset, isTileLayer } from '@sistemazero/pinta/assets'
 import { SignJWT } from 'jose'
@@ -98,25 +96,13 @@ function fixture(
     actor?: SessionUser
     audience?: 'adult' | 'kids'
     access?: string
-    qaConfiguration?: string
     renewal?: Awaited<ReturnType<Dependencies['gateway']['refreshSession']>>
     verify?: Dependencies['session']['verifyAccessToken']
     /** Upstream answers that are not a success, by endpoint. */
     upstream?: Record<string, { status: number; body: unknown }>
   } = {},
 ) {
-  const user = options.actor ?? sessionUser
   const audience = options.audience ?? 'kids'
-  const profiles = parsePintaCausalQaProfiles(
-    options.qaConfiguration ??
-      JSON.stringify([
-        {
-          userId: user.id,
-          accountId: audience === 'adult' ? user.id : (user.activeProfile?.accountId ?? user.id),
-          audience,
-        },
-      ]),
-  )
   const calls: { path: string; body: unknown }[] = []
   const objects = new Map<string, Uint8Array>()
   const signing: Parameters<NonNullable<Dependencies['storage']>['presignPut']>[0][] = []
@@ -188,7 +174,6 @@ function fixture(
         options.verify ?? (async () => ({ ok: true, user: options.actor ?? sessionUser })),
     },
     enabled: () => options.enabled ?? true,
-    profileAllowed: (actor) => pintaCausalQaAllows(profiles, actor),
     storage: {
       open: async (key) => {
         const value = objects.get(key)
@@ -248,37 +233,48 @@ test('the private route scope rejects profile and audience drift before any upst
   expect(calls[0]?.body).toEqual({ userId, accountId, audience: 'kids', payload: { reader: 7 } })
 })
 
-test('the candidate is private even with the flag on, matching headers and staff privileges', async () => {
-  const selected = { userId, accountId, audience: 'kids' }
+// Sem flag nem lista de perfis (23/11/2026): todo aluno ativo chega à SUA galeria causal. O que
+// continua fechado é a identidade: o BFF assina só o ator da sessão estrita, nunca outro perfil ou
+// outra conta, e pais, sessões inativas e adulto com perfil ativo continuam de fora.
+test('every active learner reaches only its own namespace; staff privilege comes from the session', async () => {
   const request = (actor: SessionUser, audience: 'adult' | 'kids') =>
     new Request(`${link}/graph?reader=6`, {
       headers: { 'x-sz-viewer': actor.id, 'x-sz-viewer-audience': audience },
     })
-  const member = fixture({ qaConfiguration: JSON.stringify([selected]) })
-  expect((await member.routes.pintaCausalGraph.GET(request(sessionUser, 'kids'))).status).toBe(200)
-  const account = { ...sessionUser, activeProfile: undefined, role: 'staff' }
   const sameAccountOtherProfile = { ...sessionUser, id: nonce }
-  const otherAccount = { ...sessionUser, activeProfile: { accountId: nonce } }
-  const outsiders = [
-    { actor: sessionUser, audience: 'kids', qaConfiguration: '[]' },
-    { actor: sessionUser, audience: 'kids', qaConfiguration: '[malformed' },
-    {
-      actor: sameAccountOtherProfile,
-      audience: 'kids',
-      qaConfiguration: JSON.stringify([selected]),
-    },
-    { actor: otherAccount, audience: 'kids', qaConfiguration: JSON.stringify([selected]) },
-    {
-      actor: account,
-      audience: 'adult',
-      qaConfiguration: JSON.stringify([{ userId, accountId: userId, audience: 'kids' }]),
-    },
+  const otherAccount = { ...sessionUser, activeProfile: { accountId: nonce, name: 'Outra' } }
+  const staff = { ...sessionUser, activeProfile: undefined, role: 'staff' }
+  const learners = [
+    [sessionUser, 'kids', { userId, accountId, audience: 'kids' }],
+    [sameAccountOtherProfile, 'kids', { userId: nonce, accountId, audience: 'kids' }],
+    [otherAccount, 'kids', { userId, accountId: nonce, audience: 'kids' }],
+    [staff, 'adult', { userId, accountId: userId, audience: 'adult', privileged: true }],
   ] as const
-  for (const options of outsiders) {
-    const { routes, calls, signing } = fixture(options)
-    const result = await routes.pintaCausalGraph.GET(request(options.actor, options.audience))
-    expect(result.status).toBe(404)
-    expect(await result.json()).toEqual({ reason: 'not-found' })
+  for (const [actor, audience, signed] of learners) {
+    const { routes, calls } = fixture({ actor, audience })
+    const result = await routes.pintaCausalGraph.GET(request(actor, audience))
+    expect(result.status).toBe(200)
+    expect(calls).toEqual([
+      {
+        path: '/members/internal/creations/pinta/graph/page',
+        body: { ...signed, payload: { reader: 6 } },
+      },
+    ])
+  }
+  const parent = {
+    ...sessionUser,
+    kids: { kind: 'parent' as const, sessionId: nonce, authenticatedAt: 10 },
+  }
+  const outsiders = [
+    [parent, 'kids', 403],
+    [{ ...sessionUser, status: 'inactive' }, 'kids', 403],
+    // Adulto com perfil ativo seria a conta de outra pessoa: a via adulta exige perfil = conta.
+    [sessionUser, 'adult', 403],
+  ] as const
+  for (const [actor, audience, status] of outsiders) {
+    const { routes, calls, signing } = fixture({ actor, audience })
+    const result = await routes.pintaCausalGraph.GET(request(actor, audience))
+    expect(result.status).toBe(status)
     expect(calls).toEqual([])
     expect(signing).toEqual([])
   }
@@ -287,13 +283,12 @@ test('the candidate is private even with the flag on, matching headers and staff
 test('a galeria da aula lista a cabeça confirmada pela mesma cerca das rotas causais', async () => {
   const gallery = (query = '', headers: Record<string, string> = {}) =>
     new Request(`${link}/gallery${query}`, { headers })
+  // Sem a infraestrutura (HMAC + R2 privado) não há leitura causal: 404, sem ir ao Members.
   const disabled = fixture({ enabled: false })
-  expect((await disabled.routes.pintaCausalGallery.GET(gallery())).status).toBe(404)
-  const outsider = fixture({ qaConfiguration: '[]' })
-  const denied = await outsider.routes.pintaCausalGallery.GET(gallery())
+  const denied = await disabled.routes.pintaCausalGallery.GET(gallery())
   expect(denied.status).toBe(404)
   expect(await denied.json()).toEqual({ reason: 'not-found' })
-  expect(outsider.calls).toEqual([])
+  expect(disabled.calls).toEqual([])
 
   const { routes, calls, responses } = fixture()
   const certified = {
@@ -592,22 +587,24 @@ test('an adult refresh rechecks the current actor and an unavailable refresh pre
     verify: strict.verifyAccessToken,
     renewal: { state: 'renewed' as const, accessToken: await access(accountId, issued + 60) },
   }
-  const changed = fixture({
-    ...refreshed,
-    qaConfiguration: JSON.stringify(
-      [userId, accountId].map((id) => ({ userId: id, accountId: id, audience: 'adult' })),
-    ),
-  })
+  // A renovação trouxe OUTRA conta: a página ainda é da anterior, nada é assinado.
+  const changed = fixture(refreshed)
   const response = await changed.routes.pintaCausalGraph.GET(graph())
   expect(response.status).toBe(409)
   expect(await response.json()).toEqual({ reason: 'viewer-mismatch' })
   expect(changed.refreshCalls()).toBe(1)
   expect(changed.calls).toEqual([])
 
-  const unlisted = fixture(refreshed)
-  expect((await unlisted.routes.pintaCausalGraph.GET(graph())).status).toBe(404)
-  expect(unlisted.refreshCalls()).toBe(1)
-  expect(unlisted.calls).toEqual([])
+  // A mesma conta renovada segue, e o ator assinado é o do token novo.
+  const same = fixture({
+    ...refreshed,
+    renewal: { state: 'renewed' as const, accessToken: await access(userId, issued + 60) },
+  })
+  expect((await same.routes.pintaCausalGraph.GET(graph())).status).toBe(200)
+  expect(same.refreshCalls()).toBe(1)
+  expect(same.calls.map(({ body }) => body)).toEqual([
+    { userId, accountId: userId, audience: 'adult', payload: { reader: 7 } },
+  ])
 
   const offline = fixture({
     audience: 'adult',

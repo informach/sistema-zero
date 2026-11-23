@@ -1,5 +1,5 @@
 import { ArquipelagoHostAdulto } from '@sistemazero/member-shell/components/arquipelago-host-adulto'
-import { PintaPaletteSession } from '@sistemazero/member-shell/components/creator/pinta-palette-session'
+import { PintaAccountSession } from '@sistemazero/member-shell/components/creator/pinta-account-session'
 import { learnerIdentity } from '@sistemazero/member-shell/lib/learner-identity'
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
@@ -13,8 +13,8 @@ export default async function ArquipelagoPage() {
   if (!session || !learnerIdentity(session, 'adult')) redirect('/login')
   const primeiroNome = session.firstName?.trim().split(/\s+/)[0] || 'Criador'
   return (
-    <PintaPaletteSession audience="adult" session={session}>
+    <PintaAccountSession audience="adult" session={session}>
       <ArquipelagoHostAdulto perfil={{ id: session.id, primeiroNome }} voltarPara="/" />
-    </PintaPaletteSession>
+    </PintaAccountSession>
   )
 }
