@@ -143,11 +143,12 @@ describe('a pertença das regiões', () => {
   test('a conferência também cobra nomes únicos, vizinhas em par e caixas sem sobreposição', () => {
     const regioes = (vila: RegiaoDeCenario, floresta: RegiaoDeCenario) =>
       calcularPertencaDasRegioes([vila, floresta], itens())
-    for (const [vila, floresta] of [
+    const casos: [RegiaoDeCenario, RegiaoDeCenario][] = [
       [VILA, { ...FLORESTA, nome: 'vila' }],
       [VILA, { ...FLORESTA, vizinhas: [] }],
       [VILA, { ...FLORESTA, caixa: { ...FLORESTA.caixa, x0: -1 } }],
-    ] as const)
+    ]
+    for (const [vila, floresta] of casos)
       expect(
         conferirPertencaDasRegioes({ ...itens(), regioes: regioes(vila, floresta) }),
       ).not.toEqual([])

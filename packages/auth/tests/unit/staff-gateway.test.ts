@@ -99,3 +99,51 @@ test('staff gateway keeps HMAC and Studio credentials server-side and preserves 
     await server.stop(true)
   }
 })
+
+// Full review final do Estúdio (22/11/2026): o executor recusa o import de uma biblioteca que o
+// projeto não declarou com código próprio e o recado da criança; a operação da equipe devolve a
+// recusa como as outras falhas de build, em vez de tratá-la como resposta desconhecida.
+test('staff gateway preserves the undeclared dependency refusal from the Studio build', async () => {
+  const server = Bun.serve({
+    hostname: '127.0.0.1',
+    port: 0,
+    fetch: () =>
+      Response.json(
+        {
+          ok: false,
+          code: 'DEPENDENCY_NOT_DECLARED',
+          message: 'A biblioteca nanoid não está no package.json deste jogo.',
+        },
+        { status: 422 },
+      ),
+  })
+  try {
+    const gateway = createStaffGateway({
+      gatewayUrl: server.url.origin,
+      studioUrl: server.url.origin,
+      studioToken: 'studio-server-secret',
+      consumerId: 'auth',
+      hmacSecret: 'hmac-server-secret',
+    })
+    const build = await gateway.execute(
+      {
+        action: 'studio.build',
+        build: {
+          executionId: crypto.randomUUID(),
+          templateId: 'react-ts',
+          parentOrigin: 'https://kids.test',
+          validate: true,
+          files: { 'index.html': '<main/>', 'package.json': '{"dependencies":{}}' },
+        },
+      },
+      crypto.randomUUID(),
+      'access-secret',
+    )
+    expect(build).toMatchObject({
+      status: 200,
+      value: { ok: false, code: 'DEPENDENCY_NOT_DECLARED', upstreamStatus: 422 },
+    })
+  } finally {
+    server.stop(true)
+  }
+})

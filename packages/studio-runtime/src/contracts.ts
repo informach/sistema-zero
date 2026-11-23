@@ -53,6 +53,7 @@ export interface ProBuildFailure {
     | 'TYPECHECK_FAILED'
     | 'PLAYTEST_FAILED'
     | 'OUTPUT_TOO_LARGE'
+    | 'DEPENDENCY_NOT_DECLARED'
     | 'RATE_LIMITED'
   message: string
   output?: string

@@ -142,3 +142,16 @@ test('Studio response accepts expiring compiled artifacts and validation evidenc
     }),
   ).toMatchObject({ code: 'PLAYTEST_FAILED' })
 })
+
+// Full review final (22/11/2026): o executor recusa o import de uma biblioteca que o projeto não
+// declarou com o código próprio e o recado da criança; o contrato da resposta precisa aceitá-lo
+// (antes ele caía como resposta inválida para quem lê pelo contrato).
+test('Studio response accepts the undeclared dependency refusal with its message', () => {
+  expect(
+    studioBuildResponseSchema.parse({
+      ok: false,
+      code: 'DEPENDENCY_NOT_DECLARED',
+      message: 'A biblioteca nanoid não está no package.json deste jogo.',
+    }),
+  ).toMatchObject({ code: 'DEPENDENCY_NOT_DECLARED' })
+})
