@@ -66,3 +66,18 @@ test('em campo, a cena sai com os números curtos e as regiões conferem (lote 5
     for (const v of [c.volume.min.x]) expect(casas(v)).toBeLessThanOrEqual(3)
   expect(envelope.cena.regioes.length).toBe(2)
 })
+
+test('em campo com "Juntar peças" (como o Estúdio traz o cenário), os pesos continuam no pacote', async () => {
+  const plano = await criarTransporteDeEnsaio({
+    relevoEmCampo: true,
+    comRegioes: true,
+    juntar: true,
+  })
+  const cena = plano.assets.find((a) => a.kind === 'scene3d')!
+  const envelope = JSON.parse(new TextDecoder().decode(decodeProjectAsset(cena.dataUrl).bytes)) as {
+    cena: { terreno: { relevo?: { pesos: string[] } }; arquivos: Array<{ caminho: string }> }
+  }
+  const pesos = envelope.cena.terreno.relevo?.pesos ?? []
+  expect(pesos.length).toBe(1)
+  for (const p of pesos) expect(envelope.cena.arquivos.some((a) => a.caminho === p)).toBe(true)
+})

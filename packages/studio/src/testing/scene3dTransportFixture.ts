@@ -16,6 +16,7 @@ export async function criarTransporteDeEnsaio({
   relevoEmCampo = false,
   colunas = 64,
   passo = 1,
+  juntar = false,
   fundo = 0,
 }: {
   comBuraco?: boolean
@@ -32,6 +33,8 @@ export async function criarTransporteDeEnsaio({
   /** A grade do relevo (múltiplo de 64) e o espaçamento: 1024 × 2 m é um mundo de 2 km. */
   colunas?: number
   passo?: number
+  /** "Juntar peças", como o Estúdio faz ao trazer um cenário. */
+  juntar?: boolean
   fundo?: number
 } = {}) {
   const { host, resumo, fonte } = await criarFonteDeCenarioDeEnsaio(1),
@@ -190,7 +193,7 @@ export async function criarTransporteDeEnsaio({
     ),
     { pacote } = await fonte.preparar(resumo.id, salvo.revisao, {
       signal: new AbortController().signal,
-      juntar: false,
+      juntar,
       ...(relevoEmCampo ? { relevo: 'campo' as const } : {}),
     })
   return prepararImportacaoDeCena3D(createEmptyProject('p', 'Meu jogo'), pacote)
