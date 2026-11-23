@@ -217,7 +217,9 @@ describe.skipIf(!target)('Studio sealed writer authority', () => {
           ).json()
         ).ticket,
       )
-      expect(second.parts).toEqual([{ ...firstProof.parts[0], source: 'sealed' }])
+      const [firstPart] = firstProof.parts
+      if (!firstPart) throw Error('A primeira gravação tem uma parte.')
+      expect(second.parts).toEqual([{ ...firstPart, source: 'sealed' }])
       expect((await active.inner('commit', proof(second))).status).toBe(200)
 
       const locator = { ...owner, itemId }

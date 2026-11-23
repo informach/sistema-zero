@@ -1157,7 +1157,9 @@ export class DrizzleCreationsRepository implements CreationsRepository {
           formatVersion,
           storageRef,
           ...(proof ? { paletteWriteReceipt: { ticket: proof.ticket, sha256: proof.sha256 } } : {}),
-          ...(studioProof ? { studioSealReceipt: studioProof.receipt, studioSealProofSha256 } : {}),
+          ...(studioProof
+            ? { studioSealReceipt: studioProof.receipt, studioSealProofSha256: studioProofSha256 }
+            : {}),
           bytes: row.pendingBytes,
           name: row.pendingName,
           kind: row.pendingKind,
