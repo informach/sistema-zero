@@ -24,8 +24,8 @@ Curso bônus do Sistema Zero **para pais e responsáveis**, apresentado por Vivi
 
 - São **12 clipes**. Cada roteiro traz a **Fala para ElevenLabs** com as tags de direção, e cada aula tem o seu `.elevenlabs.txt`: é abrir, selecionar tudo e colar. As partes vêm separadas por `[long pause]`.
 - O `.elevenlabs.txt` é derivado do roteiro. Mudou a fala? Mude no `.roteiro.md` e gere o `.txt` de novo (o `validar-roteiros.py` recusa o arquivo desatualizado).
-- A voz precisa ser a da Vivianne no ElevenLabs, e o avatar, o dela. A fala foi escrita no jeito dela: "então, assim", "tá?", "gente", "os meninos", perguntas que ela mesma responde.
-- O **Na tela** de cada parte cita trechos da fala e indica os textos a inserir, que correspondem aos slides da Vivianne. Não há depoimentos em vídeo.
+- A voz precisa ser a da Vivianne no ElevenLabs, e o avatar, o dela. A fala segue a construção conversada dela: exemplos de casa, primeira pessoa na demonstração, perguntas que ela mesma desenvolve e expressões como "tá?", "gente" e "uai", usadas com medida.
+- O **Na tela** de cada parte cita trechos da fala e indica os textos e exemplos a inserir para desenvolver os tópicos dos slides da Vivianne. Não há depoimentos em vídeo.
 
 | Aula | Chave do clipe | Título da parte |
 | --- | --- | --- |
@@ -53,8 +53,18 @@ Curso bônus do Sistema Zero **para pais e responsáveis**, apresentado por Vivi
 
 ## Estado desta entrega
 
-Roteiros, resumos de aula, textos para o ElevenLabs e manifestos escritos em 19/11/2026. Faltam a conferência da Vivianne, a geração da voz e dos vídeos, a importação no Admin e a publicação.
+Roteiros, resumos de aula, textos para o ElevenLabs e manifestos escritos em 19/11/2026 e revisados em 20/11/2026, na direção aprovada pela responsável. A abertura recebe os pais e apresenta o curso antes de introduzir uma situação cotidiana; as cinco aulas desenvolvem perguntas com contexto e explicações ligadas entre si. Todos os tópicos dos slides permanecem nas cinco aulas e nos mesmos 12 clipes. Faltam a conferência da Vivianne, a geração da voz e dos vídeos, a importação no Admin e a publicação.
 
-**Apostila (19/11/2026):** 10 páginas de consulta, sem campos para preencher: o mapa das aulas, uma ou duas folhas por aula e um resumo final de antes, durante e depois. Só traz o que está nas falas. O texto mora em `docs/aulas-interativas-tecnico/recursos/como-ajudar-seu-filho-autista-nas-frustracoes/caderno-conteudo.json`; para gerar o PDF, `bun docs/aulas-interativas-tecnico/recursos/como-ajudar-seu-filho-autista-nas-frustracoes/gerar-caderno.ts`. Mudou uma fala? Confira se a apostila precisa acompanhar.
+**Apostila (revisão de 20/11/2026):** 10 páginas de consulta, sem campos para preencher: o mapa das aulas, uma ou duas folhas por aula e um resumo final de antes, durante e depois. Só traz o que está nas falas. O texto mora em `docs/aulas-interativas-tecnico/recursos/como-ajudar-seu-filho-autista-nas-frustracoes/caderno-conteudo.json`; para gerar o PDF, `bun docs/aulas-interativas-tecnico/recursos/como-ajudar-seu-filho-autista-nas-frustracoes/gerar-caderno.ts`. Mudou uma fala? Confira se a apostila precisa acompanhar.
 
 **Tema visual:** a capa foi desenhada para este curso, a pedido da dona: a tempestade que vira calmaria, com um adulto e uma criança de mãos dadas, a partir da mensagem final da Vivianne. Dela saem as cores: azul-petróleo, verde-água e amarelo. O desenho de origem é o `capa.svg`, na pasta do gerador, exportado para `docs/aulas-interativas-tecnico/recursos/caderno-visual/arte/capa-como-ajudar-seu-filho-autista-nas-frustracoes.jpg`. Se vier uma ilustração nova, basta trocar esse arquivo e gerar de novo.
+
+## Revisão didática de 20/11/2026
+
+A revisão mantém a ordem e os tópicos dos slides, com a cobertura atualizada em [Fontes](fontes.md). A situação de parar uma brincadeira para jantar aparece na abertura, ajuda a explicar os conceitos e volta no fechamento com os cuidados de antes, durante e depois.
+
+As perguntas abstratas e as sequências de frases de efeito deram lugar a explicações desenvolvidas com exemplos. Os textos da página e a apostila acompanham as mesmas explicações. As notas de edição foram refeitas a partir da fala de cada clipe, incluindo o encaminhamento final para emitir o certificado e concluir a aula.
+
+Conferência clínica da Vivianne, geração e escuta da voz, edição dos vídeos, importação no Admin e publicação continuam pendentes. A comparação de estilo nesta revisão foi textual, com a transcrição local usada na edição do MP3 de referência.
+
+**Conferência local da revisão:** os 20 tópicos da matriz de cobertura permanecem nas falas. IDs, ordem, cinco aulas, 12 clipes e critérios de conclusão foram comparados com a versão anterior e preservados. Os 32 testes existentes dos cursos para pais passaram; o validador dos roteiros conferiu os 12 clipes sem erros; os dez derivados de voz/edição foram gerados e conferidos. O validador geral aprovou os 51 manifestos das crianças, e os dois validadores Como Fazer passaram com sugestões editoriais preexistentes. A apostila foi regenerada, suas dez páginas foram inspecionadas visualmente e a extração não encontrou blocos de texto fora dos limites. Essas verificações não substituem a conferência clínica ou a escuta da voz produzida.

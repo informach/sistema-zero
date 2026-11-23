@@ -92,7 +92,7 @@
     "staging": {
       "name": "sistemazero-studio-runtime-staging",
       "vars": {
-        "STUDIO_PYTHON_DISTRIBUTIONS_SHA256": "1dd32fdc910646a12416c1f16fa12ee87e4a3d3f5c08bd825c79ba365ea0afb4",
+        "STUDIO_PYTHON_DISTRIBUTIONS_SHA256": "05294b0e0df2ed0a128bde227a927c7f88fef3db784baf59368ae0246ee22ead",
         "STUDIO_PYTHON_PREVIEW_ORIGIN": "https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev",
         "PUBLICATION_AUTHORIZATION_URL": "https://community-kids-staging.up.railway.app/api/internal/studio-play",
         "PUBLICATION_AUTHORIZATION_ADULT_URL": "https://community-staging-66f2.up.railway.app/api/internal/studio-play",

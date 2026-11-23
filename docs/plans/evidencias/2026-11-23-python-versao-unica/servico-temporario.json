@@ -1,0 +1,27 @@
+{
+  "nativeQualificationMode": "actual temporary staging Worker and R2; completion verified separately",
+  "promoterSourceUnchangedSince": "c9d70dfc8 (2026-10-25), the source used by the promotions of 20, 21 and 23/11",
+  "currentFrameBytes": 26482625,
+  "previousQualifiedFrameBytes": 26005469,
+  "versionId": "f24db1d7-82ff-47da-beb2-e5c5dd8ab36e",
+  "workerName": "sistemazero-python-promoter-staging-bd2973cdc391",
+  "operatorOrigin": "https://sistemazero-python-promoter-staging-bd2973cdc391.helena-bcc.workers.dev",
+  "bindings": [
+    {
+      "name": "CF_VERSION_METADATA",
+      "type": "version_metadata"
+    },
+    {
+      "name": "OPERATOR_HMAC_KEY",
+      "type": "secret_text"
+    },
+    {
+      "bucket_name": "sistemazero-studio-artifacts-staging",
+      "name": "PYTHON_RUNTIME",
+      "type": "r2_bucket"
+    }
+  ],
+  "unauthorizedStatus": 401,
+  "expiresAt": 1795454702303,
+  "activationPerformed": false
+}

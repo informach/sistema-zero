@@ -1,16 +1,17 @@
 # Fontes
 
-Documento interno. Registra de onde saiu cada parte do curso e o que a Vivianne precisa conferir antes de a voz ser gerada.
+Documento interno. Registra as fontes, a cobertura dos slides e os pontos para a Vivianne conferir antes de produzir a voz. Atualizado em 20/11/2026 após a revisão didática aprovada pela responsável.
 
-## Material recebido da dona (19/11/2026)
+## Materiais e decisões preservadas
 
-| Material | O que é | Como foi usado |
-| --- | --- | --- |
-| Slides da mini aula (9 slides) | O curso que a Vivianne montou: introdução, raiz da frustração, prevenção, durante a crise, depois da crise e mensagem final | **Espinha do curso.** A ordem das aulas é a ordem dos slides, e todo tópico dos slides está na fala |
-| "Quando o comportamento fala, quem está escutando?" (PDF, 20 páginas) | O material em que a Vivianne se inspirou | **Enriquece.** As frases e ideias entram onde conversam com o tópico da aula |
-| Cinco áudios (34 minutos) | Gravações da Vivianne falando | **Só o jeito de falar.** O assunto dos áudios não entra neste curso. Os áudios e a transcrição não ficam no repositório |
+| Material | Uso |
+| --- | --- |
+| `C:/Users/tocha/Downloads/Slide Mini Aula Pais.pptx.pptx` (9 slides) | Espinha do curso: ordem, tópicos e mensagem final. Os slides de conteúdo foram conferidos visualmente; as páginas de título e de dúvidas não acrescentam uma técnica. |
+| "Quando o comportamento fala, quem está escutando?" (PDF, 20 páginas) | Enriquecimento da ideia de escutar e compreender o comportamento no contexto. Não determina a abertura nem substitui as explicações dos slides. |
+| `C:/Users/tocha/Downloads/Palestra Vivi/Viviane - Transformando o vilão em aliado.mp3` | Referência do jeito de falar, sem transferir o assunto da gravação para este curso. A edição local registra 2.044,9 segundos e há cinco partes do mesmo áudio. |
+| Transcrição e cortes em `C:/Users/tocha/Downloads/Palestra Vivi/edicao_viviane/` | Comparação textual da condução da Vivianne: exemplos cotidianos, raciocínio em primeira pessoa e perguntas que ela mesma desenvolve. Os arquivos pessoais não são copiados para o repositório. |
 
-Decisões da dona: slides como espinha e PDF como enriquecimento; curso em Cursos para pais, com certificado e sem oferta no final; apostila depois dos roteiros; o nome se escreve Vivianne, com dois n.
+Decisões da responsável: slides como espinha; PDF como enriquecimento; curso para pais na área dos pais do Kids, com certificado e sem oferta; apostila opcional; nome Vivianne, com dois n. A revisão aprovada em 20/11 mantém todo o conteúdo dos slides, a fala conversada e a continuidade entre frases, melhorando acolhimento, contexto e clareza.
 
 ## Cobertura dos slides
 
@@ -30,68 +31,65 @@ Decisões da dona: slides como espinha e PDF como enriquecimento; curso em Curso
 | Prevenção | Comunicação alternativa: "preciso de ajuda", "estou nervoso", "posso esperar"; verbal, figuras (PECS) ou sinais | Aula 3, Parte 3 |
 | Durante a crise | Controle do ambiente | Aula 4, Parte 1 |
 | Durante a crise | Regulação pelo modelo: respirar fundo, falar baixo, frases curtas; o adulto é espelho | Aula 4, Parte 1 |
-| Durante a crise | Não negociar no auge; a criança não acessa o raciocínio lógico | Aula 4, Parte 2 |
+| Durante a crise | Não negociar no auge; dificuldade para raciocinar e acompanhar explicações longas nessa situação | Aula 4, Parte 2 |
 | Durante a crise | Reforço pós-crise: validar o sentimento e ensinar a resposta desejada | Aula 5, Parte 1 |
 | Depois da crise | Análise funcional: gatilho e consequência | Aula 5, Parte 2 |
 | Depois da crise | Ajustes estratégicos | Aula 5, Parte 2 |
-| Depois da crise | Treino sistemático: crises como oportunidade de treino | Aula 5, Parte 2 |
+| Depois da crise | Treino sistemático: o que aconteceu orienta a habilidade a praticar depois, em momento tranquilo | Aula 5, Parte 2 |
 | Mensagem final | "Quando você finalmente entende a crise..." | Aula 5, Parte 3 |
 
 O reforço pós-crise está no slide "Durante a crise", mas acontece quando a criança já se acalmou. Por isso abre a Aula 5.
 
-## O que veio do PDF
 
-| Aula | Do PDF |
+A redação foi desenvolvida para a fala, sem exigir que cada tópico seja repetido literalmente. Os quatro fatores são apresentados como possibilidades que podem se combinar, não como lista exaustiva. A ideia de dificuldade para raciocinar no auge permanece, sem descrever uma parte do cérebro como desligada. O treino sistemático continua no depois da crise, com a prática situada em momentos tranquilos.
+
+## Como o PDF de inspiração aparece nesta versão
+
+| Aula | Ideias desenvolvidas |
 | --- | --- |
-| 1 | A pergunta "quando o comportamento fala, quem está escutando?", que abre o curso e volta no fechamento; "a ABA não ensina a controlar, ensina a compreender"; "Nem toda fala é verbal"; o grito, o silêncio, o olhar e a fuga como tentativas de comunicação; escutar antes de rotular, corrigir ou julgar; o mundo que bombardeia de estímulos, com as perguntas "frustrado? confuso? com vontade de sair?", e o ambiente que dói; "Quando bati a cabeça, era porque o barulho me rasgava por dentro"; "Quando fugi da sala, era porque me esqueceram lá"; "Eu tentei dizer, mas vocês chamaram de birra"; "Essas frases não pedem pena. Pedem escuta"; a dor ignorada muda de forma |
-| 2 | "Função ou julgamento? Cada comportamento tem uma razão"; birra, desobediência e manha, ou fuga, busca de atenção e autorregulação; "você está ouvindo ou apenas esperando sua vez de falar?"; "escutar exige presença, não pressa"; "uma intervenção baseada em função não só reduz crises, ela fortalece relações"; "antes de julgar, observe a função" |
-| 3 | "O comportamento é a voz de quem ainda não tem palavras" |
-| 4 | "Escutar é, também, regular junto"; "a diferença entre controle e conexão é a escuta"; "a empatia muda a rota da crise" |
-| 5 | Trocar o "obedeça" por "o que está difícil pra você agora?"; "quando você muda o que faz, o comportamento muda o que diz"; "a escuta atenta transforma comportamentos em diálogos e intervenções em vínculos"; "entender é o primeiro passo para incluir"; escuta clínica, escolar, familiar e social; "o que o comportamento está tentando me mostrar?"; "entender o comportamento é uma forma de amor"; "Eu escolho ouvir o que o comportamento tenta me contar" |
+| 1 | Nem toda comunicação é verbal; olhar a situação e o que a criança mostra antes de rotular; sensibilidade aos estímulos e tentativa de se afastar de um incômodo. |
+| 2 | Função em vez de julgamento; observar com tempo e presença; compreender a dificuldade para oferecer ajuda adequada e construir confiança. |
+| 3 | Ampliar os caminhos de comunicação quando faltam palavras; ligar o pedido a uma resposta de ajuda. |
+| 4 | Regular junto; escuta, conexão e empatia traduzidas em proteção, ajuste do ambiente, observação e apoio. |
+| 5 | Acolher e perguntar o que ficou difícil; ajustar a própria resposta; compartilhar o cuidado entre família, escola e equipe. |
 
-Não entraram: a dinâmica com a plateia do material de origem, as referências ao evento em que ele foi apresentado e a frase "se você chama de birra, talvez ainda não aprendeu a escutar", que dita para quem está assistindo soaria como bronca.
+A pergunta "quando o comportamento fala, quem está escutando?" foi retirada da abertura e de sua retomada no encerramento. A ideia de escuta permanece, explicada pela pergunta "o que ficou difícil para o meu filho nessa situação?". As citações em primeira pessoa sobre sofrimento, antes lidas em sequência, deram lugar a exemplos explicitamente hipotéticos; não são apresentadas como depoimentos de uma criança real. A dinâmica com a plateia e o contexto do evento de origem continuam fora do curso.
 
-## Para a Vivianne conferir
+## Condução e voz da Vivianne
 
-Os slides são tópicos. Para virar fala, cada tópico ganhou explicação e exemplo. Nada disso acrescenta técnica nova, mas é texto que ela não escreveu, então precisa do olhar dela:
+A referência foi usada para preservar o raciocínio conversado, não apenas as expressões de fala. Na transcrição, a Vivianne parte de cenas concretas, pergunta o que acontece, responde desenvolvendo a situação e explica a ligação com a ideia que está ensinando. Usa "eu" dentro do exemplo, "a gente" para pensar junto e "você" para trazer a explicação para quem acompanha.
 
-1. **Aula 1, Parte 1.** A apresentação ("eu trabalho todos os dias com crianças e adolescentes autistas, e com as famílias deles") e a definição de ABA como "uma ciência que estuda o comportamento e que a gente usa bastante na terapia".
-2. **Aula 2, Parte 1.** As explicações das quatro raízes: a "caixinha de recursos" do adulto (respirar, sair de perto, tomar uma água); "saber o que vai acontecer é o que dá chão".
-3. **Aula 2, Parte 2.** A leitura de que, se parte da crise vem do contexto, parte está na mão do adulto; a definição de função como o "para que" do comportamento.
-4. **Aula 3, Parte 1.** O exemplo do quadro com as figuras do dia; a definição de transição; o exemplo de não desligar a televisão de uma vez.
-5. **Aula 3, Parte 2.** O exemplo do suco com a contagem até dez; a definição de reforçar ("reconhecer na hora, para aquele comportamento ter mais chance de acontecer de novo"); os exemplos de reforço (elogio, abraço, sorriso); a explicação de por que começar pequeno e aumentar aos poucos; a definição de limiar de frustração.
-6. **Aula 3, Parte 3.** A descrição do PECS ("a criança entrega ou aponta uma figura para comunicar"); a orientação de treinar na calma, brincando, e atender na hora quando a criança usa o cartão; os exemplos da tampa do pote e do brinquedo que trava.
-7. **Aula 4, Parte 1.** Os exemplos de controle do ambiente (desligar a televisão, abaixar a luz, pedir espaço, tirar do barulho); "emprestar a calma".
-8. **Aula 4, Parte 2.** A lista do que não fazer no auge (explicar, perguntar o porquê, sermão, combinar castigo, prometer prêmio) e a orientação de ficar perto, com poucas palavras, esperando passar.
-9. **Aula 5, Parte 1.** O exemplo de validação ("Eu vi que ficou muito difícil quando a gente teve que desligar o desenho") e os exemplos de resposta ensinada.
-10. **Aula 5, Parte 2.** Os exemplos de gatilho (mudança de última hora, um "não", lugar barulhento, fome, sono, cansaço) e de consequência (sair de uma tarefa, ganhar o que queria, receber atenção); a sugestão de anotar num caderno para enxergar o padrão.
-11. **Aula 5, Parte 2, a ligação entre consequência e pedido.** "Se a crise virou o jeito de conseguir alguma coisa, o ajuste é ensinar o pedido e passar a atender o pedido, e não a crise." Junta dois tópicos dos slides (comunicação alternativa e ajustes estratégicos), mas a formulação é minha. É o ponto que mais precisa do olhar dela.
-12. **Aula 5, Parte 3.** A frase "cada criança é única [...] a equipe que acompanha o seu filho pode te ajudar a adaptar cada estratégia". É um cuidado que acrescentei; se ela preferir outra formulação, é só trocar.
+A revisão mantém essa construção. Expressões como "tá?", "né?", "gente", "os meninos" e "uai" aparecem com medida. Cada parágrafo prepara o seguinte; perguntas têm uma situação de referência e são desenvolvidas. A situação de parar uma brincadeira para jantar liga abertura, conceitos, prevenção, acolhimento e fechamento. O exemplo da espera breve e o pedido de ajuda mantêm situações próprias para não forçar uma única cena em todos os tópicos.
 
-### Acrescentado por decisão da dona
+Tags e pausas seguem `docs/aulas-interativas-tecnico/qa/direcoes-voz.json`, com direção aplicável por segmento e mudanças locais de intenção. Cada **Na tela** foi refeito com trechos reais da fala. Os arquivos `.elevenlabs.txt` e `.edicao.json` são derivados pelo exportador existente. A revisão de estilo foi textual; geração e escuta da voz da Vivianne continuam pendentes.
 
-**Segurança física durante a crise (Aula 4, Parte 1).** Não está nos slides nem no material de origem; a dona pediu para incluir em 19/11/2026. O trecho fica no básico: tirar de perto o que pode machucar (vidro, objetos pesados ou pontudos), pôr algo macio se a criança bate a cabeça, afastar os irmãos e quem estiver em volta, ficar perto com calma, sem segurar com força, usando o corpo só para proteger, e levar para a equipe que acompanha a criança quando o risco é frequente. Não ensina contenção. Precisa da conferência da Vivianne antes de a voz ser gerada.
+## Para a Vivianne conferir nesta revisão
 
-## Revisão de 19/11/2026
+Os slides são tópicos. As explicações e os exemplos dos roteiros são desenvolvimento editorial e precisam de conferência clínica antes da produção:
 
-Segunda passada em todas as aulas, sem mudar estrutura, clipes ou ordem:
+1. **Aula 1.** Apresentação profissional, definição introdutória de ABA, exemplo da brincadeira e distinção entre pistas do comportamento e uma tradução pronta do que a criança sente.
+2. **Aula 2.** Explicação dos quatro fatores, função como o que um comportamento pode produzir, exemplos de afastamento de algo difícil, atenção e regulação; observação de antes, comportamento e depois sem atribuir intenção ou confirmar uma função a partir de um caso.
+3. **Aula 3, Parte 1.** Quadro de rotina e aviso de cinco minutos antes de parar de brincar para jantar. Tempo e recurso adaptados com a equipe.
+4. **Aula 3, Parte 2.** Espera breve numa brincadeira de carrinho, dez segundos como exemplo e não como regra, reconhecimento positivo, avanço conforme a participação e explicação de limiar de frustração. O exemplo antigo de esperar para receber suco foi substituído por uma situação de brincadeira.
+5. **Aula 3, Parte 3.** Mensagens "preciso de ajuda", "estou nervoso" e "posso esperar"; fala, figuras e sinais; PECS como sistema estruturado de comunicação por troca de figuras; escolha do recurso e ensino com orientação da equipe.
+6. **Aula 4.** Segurança, ajuste de estímulos, tom calmo, frases curtas, dificuldade para acompanhar explicações e tempo de recuperação. Não há ensino de contenção nem promessa de interrupção imediata da crise.
+7. **Aula 5.** Validar o sentimento, esperar a recuperação, retomar um pedido aprendido e acolher a forma de comunicação possível. O termo "reforço pós-crise" dos slides foi mantido como referência a acolher e ensinar.
+8. **Aula 5, Parte 2.** Gatilho, descrição do comportamento e consequência; observação de fome, sono e cansaço como parte do contexto; registro de padrões para discutir com a equipe; ajustes e prática em momentos tranquilos. A frase "atender o pedido, e não a crise" foi substituída pelo ensino e acolhimento do pedido, mantendo apoio durante o sofrimento.
+9. **Aula 5, Parte 3.** Síntese aplicada à situação inicial e colaboração entre família, escola e equipe. A mensagem final dos slides continua na íntegra.
 
-- **Arco do curso:** a pergunta "quando o comportamento fala, quem está escutando?" abre a Aula 1 e é respondida no fechamento; "de pais reativos a pais estrategistas", da Aula 3, volta na última parte.
-- **Promessas fechadas:** na Aula 2, o "vai vendo se reconhece o seu filho" ganhou a volta ("reconheceu algum?"); as Aulas 2 e 4 passaram a terminar com uma recapitulação curta, como a Aula 3.
-- **Do PDF:** entraram seis trechos que tinham ficado de fora (tabela acima).
-- **Aula 5:** os exemplos de consequência ganharam saída prática (ensinar o pedido).
-- **Fala:** menos fórmulas repetidas ("tem uma frase que", "e por quê?"); "o pai reativo" virou "quando a gente é reativo", para não deixar as mães de fora; "o menino" no singular virou "a criança".
-- **Tags:** a abertura da Aula 4 saiu do tom animado para `[warmly]`.
-- **Para consultar:** o texto de cada aula virou lista.
+### Segurança acrescentada pela responsável em 19/11/2026
 
-## A apostila
+A segurança física durante a crise não estava nos slides nem no PDF e foi acrescentada a pedido da responsável: afastar objetos perigosos, proteger de impactos com algo macio quando for seguro, afastar irmãos e pessoas muito próximas e ficar por perto sem segurar com força. O cuidado continua na Aula 4 e deve ser conferido pela Vivianne. Risco recorrente pede um plano específico com a equipe que acompanha a criança.
 
-Gerada em 19/11/2026, depois da revisão dos roteiros. Traz só o que está nas falas, resumido em cards; nenhuma estratégia aparece nela sem estar numa aula. A Vivianne confere a apostila junto com os roteiros. A capa foi desenhada para o curso (não veio da Laopa nem da Vivianne) e pode ser trocada.
+## Referências de apoio para conferir precisão
 
-## A voz
+A ordem e os assuntos vêm dos slides. Estas referências foram consultadas para conferir a redação de pontos já presentes, sem acrescentar uma nova técnica:
 
-Marcas tiradas dos áudios e usadas na fala: "então, assim", "tá?", "né?", "gente", "os meninos", "uai", perguntas que ela mesma responde ("E por quê?", "E o que quer dizer isso?"), a primeira pessoa dentro da cena ("o que eu faço? Eu aviso antes"), exemplos de casa e diminutivos ("quadrinho", "caderninho", "devagarzinho"). As muletas aparecem com medida, para a voz gerada soar natural e não caricata.
+- [NHS, Supporting an autistic child](https://www.nhs.uk/conditions/autism/supporting-a-child/), consultado em 20/11/2026: diferenças individuais, ajuste de luz e ruído, antecipação de mudanças e apoio gradual. Apoia a redação sobre ambiente, previsibilidade e adaptação ao filho.
+- [Pyramid Educational Consultants, PECS](https://pecsusa.com/pecs/), consultado em 20/11/2026: PECS tem protocolo e fases de ensino e envolve troca de figuras. A redação anterior tratava qualquer entrega ou apontar de uma figura como PECS; a revisão distingue o sistema de outros apoios visuais.
 
-A fala é conversada, com um parágrafo ligado no outro; cada aula abre retomando a anterior e fecha anunciando a próxima. Os termos técnicos (ABA, autorregulação, comunicação funcional, reforço, limiar de frustração, PECS, análise funcional, gatilho, consequência) são explicados na primeira vez em que aparecem.
+## Apostila e estado de produção
 
-Tags: só as de `docs/aulas-interativas-tecnico/qa/direcoes-voz.json`, uma no início de cada parágrafo e nas viradas de tom. Nos trechos de crise predominam `[reassuring, encouraging voice]`, `[warmly]`, `[thoughtful]` e `[confident, clear, unhurried voice]`.
+A apostila usa o gerador e a identidade visual existentes. O texto em `docs/aulas-interativas-tecnico/recursos/como-ajudar-seu-filho-autista-nas-frustracoes/caderno-conteudo.json` acompanha as falas revisadas e conserva dez páginas, incluindo a capa. A revisão não adiciona tarefas ou campos para preencher.
+
+Texto, derivados e PDF são entregas locais. Conferência clínica, voz gerada, voz escutada, edição dos vídeos, importação e publicação precisam de registros separados e continuam pendentes.

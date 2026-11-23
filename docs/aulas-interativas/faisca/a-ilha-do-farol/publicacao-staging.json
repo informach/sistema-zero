@@ -1,0 +1,256 @@
+{
+  "environment": "staging",
+  "purpose": "Gravação das aulas no Kids; vídeos provisórios de 2 segundos",
+  "verifiedAt": "2026-11-22T12:55:47.982Z",
+  "course": {
+    "id": "081a0a6b-ea00-59ea-afc9-8842e0c9446f",
+    "slug": "jornada-faisca-base-3d",
+    "title": "A Ilha do Farol",
+    "status": "published",
+    "version": 6,
+    "moduleTitle": "Sua aventura em três dimensões",
+    "portalLessonCount": 3,
+    "recordingViewUnlocked": true
+  },
+  "url": "https://community-kids-staging.up.railway.app/cursos/jornada-faisca-base-3d",
+  "lessons": [
+    {
+      "id": "f63fe236-5862-42c9-81c8-cb26a113eac2",
+      "slug": "ilha-aula-1",
+      "published": true,
+      "sections": 4,
+      "videos": 4,
+      "publishedRevision": "772f99d215131f59e87731fb2b38622a847b3ef029a7304f9e0b205405c437cf"
+    },
+    {
+      "id": "972c7cd4-7c5d-4395-853b-f263724c4348",
+      "slug": "ilha-aula-2",
+      "published": true,
+      "sections": 6,
+      "videos": 6,
+      "publishedRevision": "04e96610d1a1778ddee20b5d718c910c85d25e34ec5ce3be3c14a37bb19015ba"
+    },
+    {
+      "id": "0769f0d5-42d4-4a20-b3b8-d259936843d3",
+      "slug": "ilha-aula-3",
+      "published": true,
+      "sections": 8,
+      "videos": 7,
+      "publishedRevision": "cde0be9682a9b884d8c5dbf27b66e1e94926905b5add91f24c79ad142b2ff2df",
+      "ordemDesde": "2026-11-23: o quiz passou da Parte 5 para a Parte 7, antes do fecho"
+    }
+  ],
+  "workbook": {
+    "file": "passo-a-passo-do-projeto.pdf",
+    "pages": 29,
+    "sizeBytes": 2904088,
+    "sha256": "5f16f44de3c1090da32b0268202bb6bd243c19f35b0968118a1c989bb0122f81",
+    "lessonId": "f63fe236-5862-42c9-81c8-cb26a113eac2",
+    "attachmentId": "e113d920-5e9a-47e3-9ff5-2acab25547b8"
+  },
+  "placeholder": {
+    "file": "../../../aulas-interativas-tecnico/recursos/video-provisorio/video-provisorio-2s.mp4",
+    "durationSeconds": 2,
+    "sizeBytes": 3744
+  },
+  "parts": [
+    {
+      "aula": 1,
+      "parte": 1,
+      "title": "Jogue na ilha",
+      "cover": "capas-das-aulas/aula-01-parte-01.png",
+      "coverSha256": "9e5b5f2947ab36d1c93ee1322e73d44b4aa28e382c0cb37207a2423244b774c5",
+      "videoManifestKey": "video-abertura",
+      "vimeoId": "1249059699",
+      "embedUrl": "https://player.vimeo.com/video/1249059699?h=5e32db5c1d",
+      "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/staging/ilha-farol-20261122/9e5b5f2947ab36d1c93ee1322e73d44b4aa28e382c0cb37207a2423244b774c5.png"
+    },
+    {
+      "aula": 1,
+      "parte": 2,
+      "title": "Seu passo a passo do projeto",
+      "cover": "capas-das-aulas/aula-01-parte-02.png",
+      "coverSha256": "5a04e440bba69de9930fe8caff9534146e6202692952ba92ba2fd7e9c616654a",
+      "videoManifestKey": "video-material",
+      "vimeoId": "1249059700",
+      "embedUrl": "https://player.vimeo.com/video/1249059700?h=efd433f9b9",
+      "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/staging/ilha-farol-20261122/5a04e440bba69de9930fe8caff9534146e6202692952ba92ba2fd7e9c616654a.png"
+    },
+    {
+      "aula": 1,
+      "parte": 3,
+      "title": "O que aparece quando você muda de lugar?",
+      "cover": "capas-das-aulas/aula-01-parte-03.png",
+      "coverSha256": "dd1afd0624d59ad3b9d5268d08ec2e9447ae142b38ef3add6ae650fb005dd56b",
+      "videoManifestKey": "video-ponto-de-vista",
+      "vimeoId": "1249059698",
+      "embedUrl": "https://player.vimeo.com/video/1249059698?h=bdf2ad4489",
+      "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/staging/ilha-farol-20261122/dd1afd0624d59ad3b9d5268d08ec2e9447ae142b38ef3add6ae650fb005dd56b.png"
+    },
+    {
+      "aula": 1,
+      "parte": 4,
+      "title": "Faça o personagem andar",
+      "cover": "capas-das-aulas/aula-01-parte-04.png",
+      "coverSha256": "15b1717612616661f201673164b595032a8d4ee1b16a65ae9ee6f9adfd08e650",
+      "videoManifestKey": "video-movimento",
+      "vimeoId": "1249059712",
+      "embedUrl": "https://player.vimeo.com/video/1249059712?h=ba94c8d69e",
+      "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/staging/ilha-farol-20261122/15b1717612616661f201673164b595032a8d4ee1b16a65ae9ee6f9adfd08e650.png"
+    },
+    {
+      "aula": 2,
+      "parte": 1,
+      "title": "Para onde vai a chave?",
+      "cover": "capas-das-aulas/aula-02-parte-01.png",
+      "coverSha256": "b3e6fd984fddd7053663d1f5ed6518166d02d0621f7c525aebdc7e6fe0677186",
+      "videoManifestKey": "video-posicao-3d",
+      "vimeoId": "1249059713",
+      "embedUrl": "https://player.vimeo.com/video/1249059713?h=a08c897fb1",
+      "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/staging/ilha-farol-20261122/b3e6fd984fddd7053663d1f5ed6518166d02d0621f7c525aebdc7e6fe0677186.png"
+    },
+    {
+      "aula": 2,
+      "parte": 2,
+      "title": "Coloque a chave na ilha",
+      "cover": "capas-das-aulas/aula-02-parte-02.png",
+      "coverSha256": "a67ef0c6a6bacf47c5240b77c85b8436403c69927e010480cf6dec2ba6575001",
+      "videoManifestKey": "video-posicao",
+      "vimeoId": "1249060122",
+      "embedUrl": "https://player.vimeo.com/video/1249060122?h=eabe88399c",
+      "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/staging/ilha-farol-20261122/a67ef0c6a6bacf47c5240b77c85b8436403c69927e010480cf6dec2ba6575001.png"
+    },
+    {
+      "aula": 2,
+      "parte": 3,
+      "title": "Parece junto, mas está encostando?",
+      "cover": "capas-das-aulas/aula-02-parte-03.png",
+      "coverSha256": "aaaa60cd2d95c8d1e00b2568bd6ce05bba319000b2addcabe44964ff901b2bb9",
+      "videoManifestKey": "video-contato-3d",
+      "vimeoId": "1249060126",
+      "embedUrl": "https://player.vimeo.com/video/1249060126?h=bee4726e9b",
+      "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/staging/ilha-farol-20261122/aaaa60cd2d95c8d1e00b2568bd6ce05bba319000b2addcabe44964ff901b2bb9.png"
+    },
+    {
+      "aula": 2,
+      "parte": 4,
+      "title": "Recolha a chave",
+      "cover": "capas-das-aulas/aula-02-parte-04.png",
+      "coverSha256": "93e22bfb4de78d4a1d5914c9e05ab4c61acc9d19a3332d67efb1f2685859afb3",
+      "videoManifestKey": "video-recolher",
+      "vimeoId": "1249060137",
+      "embedUrl": "https://player.vimeo.com/video/1249060137?h=931768c766",
+      "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/staging/ilha-farol-20261122/93e22bfb4de78d4a1d5914c9e05ab4c61acc9d19a3332d67efb1f2685859afb3.png"
+    },
+    {
+      "aula": 2,
+      "parte": 5,
+      "title": "Guarde que você pegou a chave",
+      "cover": "capas-das-aulas/aula-02-parte-05.png",
+      "coverSha256": "9b8f34f932ec256e7ec834c1ddf0d3a2b9442bc5a3ecd5e144147bb64fd1fdf3",
+      "videoManifestKey": "video-memoria",
+      "vimeoId": "1249060144",
+      "embedUrl": "https://player.vimeo.com/video/1249060144?h=173237a717",
+      "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/staging/ilha-farol-20261122/9b8f34f932ec256e7ec834c1ddf0d3a2b9442bc5a3ecd5e144147bb64fd1fdf3.png"
+    },
+    {
+      "aula": 2,
+      "parte": 6,
+      "title": "Conte que a chave foi recolhida",
+      "cover": "capas-das-aulas/aula-02-parte-06.png",
+      "coverSha256": "ef1500e84c0b7c4ba72e407c274733a51dc9685b80a1d7e46efe4203381373d5",
+      "videoManifestKey": "video-aviso",
+      "vimeoId": "1249060158",
+      "embedUrl": "https://player.vimeo.com/video/1249060158?h=c4a99fab79",
+      "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/staging/ilha-farol-20261122/ef1500e84c0b7c4ba72e407c274733a51dc9685b80a1d7e46efe4203381373d5.png"
+    },
+    {
+      "aula": 3,
+      "parte": 1,
+      "title": "O farol precisa conferir a chave",
+      "cover": "capas-das-aulas/aula-03-parte-01.png",
+      "coverSha256": "1e8f0a66dadf7bdc42f27fe4e1a766f88bd453bb3fc105ba52af230fcfe24be4",
+      "videoManifestKey": "video-sem-chave",
+      "vimeoId": "1249060160",
+      "embedUrl": "https://player.vimeo.com/video/1249060160?h=db3b26339a",
+      "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/staging/ilha-farol-20261122/1e8f0a66dadf7bdc42f27fe4e1a766f88bd453bb3fc105ba52af230fcfe24be4.png"
+    },
+    {
+      "aula": 3,
+      "parte": 2,
+      "title": "Acenda o farol com a chave",
+      "cover": "capas-das-aulas/aula-03-parte-02.png",
+      "coverSha256": "ccc52b34ad0400a5b2e3a8184c0a4f226f1c75f0606fe8626130cabe13e17b68",
+      "videoManifestKey": "video-decisao",
+      "vimeoId": "1249060176",
+      "embedUrl": "https://player.vimeo.com/video/1249060176?h=0634c6445e",
+      "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/staging/ilha-farol-20261122/ccc52b34ad0400a5b2e3a8184c0a4f226f1c75f0606fe8626130cabe13e17b68.png"
+    },
+    {
+      "aula": 3,
+      "parte": 3,
+      "title": "O que muda com o não?",
+      "cover": "capas-das-aulas/aula-03-parte-03.png",
+      "coverSha256": "61eddf0404fcd779d112bae5f81a759529fbfdf52ccea814c267266c2bd2fa66",
+      "videoManifestKey": "video-pergunta-com-nao",
+      "vimeoId": "1249060177",
+      "embedUrl": "https://player.vimeo.com/video/1249060177?h=26997c62c5",
+      "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/staging/ilha-farol-20261122/61eddf0404fcd779d112bae5f81a759529fbfdf52ccea814c267266c2bd2fa66.png"
+    },
+    {
+      "aula": 3,
+      "parte": 4,
+      "title": "O farol acende uma vez só",
+      "cover": "capas-das-aulas/aula-03-parte-04.png",
+      "coverSha256": "36ce4b541dd469fc4b45ab2c1c2138b667e4e14ff852d444573a5ca4caf8c94a",
+      "videoManifestKey": "video-uma-vez",
+      "vimeoId": "1249060179",
+      "embedUrl": "https://player.vimeo.com/video/1249060179?h=7fa5c0900e",
+      "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/staging/ilha-farol-20261122/36ce4b541dd469fc4b45ab2c1c2138b667e4e14ff852d444573a5ca4caf8c94a.png"
+    },
+    {
+      "aula": 3,
+      "parte": 5,
+      "title": "Deixe o jogo com a sua cara",
+      "cover": "capas-das-aulas/aula-03-parte-05.png",
+      "coverSha256": "120e5b2cf091290a7da32b1cbd4b7966aacf9a62c0bb8f4b77377ea025104c23",
+      "videoManifestKey": "video-aparencia",
+      "vimeoId": "1249060190",
+      "embedUrl": "https://player.vimeo.com/video/1249060190?h=dc61091969",
+      "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/staging/ilha-farol-20261122/120e5b2cf091290a7da32b1cbd4b7966aacf9a62c0bb8f4b77377ea025104c23.png"
+    },
+    {
+      "aula": 3,
+      "parte": 6,
+      "title": "Escolha seu esconderijo e teste de verdade",
+      "cover": "capas-das-aulas/aula-03-parte-06.png",
+      "coverSha256": "c58c5f3a22371f5bf3c0788aa8a73460a2acc01929a02be4fed4ba62a92a2056",
+      "videoManifestKey": "video-personalizar",
+      "vimeoId": "1249059722",
+      "embedUrl": "https://player.vimeo.com/video/1249059722?h=b465d9f813",
+      "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/staging/ilha-farol-20261122/c58c5f3a22371f5bf3c0788aa8a73460a2acc01929a02be4fed4ba62a92a2056.png"
+    },
+    {
+      "aula": 3,
+      "parte": 7,
+      "title": "O que você descobriu no 3D",
+      "cover": "capas-das-aulas/aula-03-parte-07.png",
+      "coverSha256": "e0e18318571da6052b816b30cce07135770b6a23b51da9b20035a24b32021b0d",
+      "videoManifestKey": null,
+      "vimeoId": null,
+      "embedUrl": null,
+      "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/staging/ilha-farol-20261122/e0e18318571da6052b816b30cce07135770b6a23b51da9b20035a24b32021b0d.png"
+    },
+    {
+      "aula": 3,
+      "parte": 8,
+      "title": "Sua ilha está pronta",
+      "cover": "capas-das-aulas/aula-03-parte-08.png",
+      "coverSha256": "fba0d8291a430309770ae2c7275854213b798071b2514105d82f717ca195bc59",
+      "videoManifestKey": "video-fecho",
+      "vimeoId": "1249060193",
+      "embedUrl": "https://player.vimeo.com/video/1249060193?h=96281963ac",
+      "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/staging/ilha-farol-20261122/fba0d8291a430309770ae2c7275854213b798071b2514105d82f717ca195bc59.png"
+    }
+  ]
+}

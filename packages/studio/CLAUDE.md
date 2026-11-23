@@ -1,5 +1,25 @@
 # @sistemazero/studio
 
+## Miniaturas dos modelos 3D (23/11/2026)
+
+Pedido dela: no seletor de modelo do bloco só aparecia o 📦, e a criança escolhia pelo nome.
+`three/modelThumbnails.ts` desenha cada modelo uma vez, na hora em que a grade do bloco
+(`FieldAssetPicker`) ou a aba "Modelos 3D" (`ModelThumbnail` em `Models3DTab.tsx`) pede, e guarda a
+imagem na memória da página (as últimas 64, chave = id + conteúdo). Nada muda no projeto.
+
+- Um desenho por vez num único quadro WebGL 2 de 96 px; sem WebGL 2 o three.js nem é baixado e fica
+  o 📦 (também quando o arquivo não abre). O modelo dos cursos (referência compacta) é resolvido antes.
+- ⚠️ O enquadramento sai dos PIXELS do primeiro desenho (`recorteDoDesenho` + `setViewOffset`), não
+  da caixa calculada: num boneco espelhado com ossos (o espelho do Molda) a caixa e o desenho não
+  batem, e a miniatura saía minúscula num canto. Vazio ou encostado na beirada: afasta e tenta de
+  novo (até 4 vezes).
+- O three.js entra por `import()`: o seletor não o põe na carga dos modos
+  (`initialBundleBudget.test.ts` conta só os imports estáticos).
+- Provas: `three/__tests__/modelThumbnails.test.ts` (fila, memória, cursos, recorte) e
+  `components/assets/tabs/Models3DTab.thumbnail.test.tsx` (a aba e a grade, com quem desenha trocado
+  por `trocarDesenhoDasMiniaturasParaTestes`). O desenho com WebGL é conferido num Chromium de
+  verdade (o happy-dom não tem WebGL).
+
 ## Regiões 3D e os exemplos grandes da galeria (22/11/2026)
 
 Lotes 5 a 7b e 9 da conclusão do plano (especificação em

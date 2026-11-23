@@ -82,7 +82,7 @@ Use o teclado para jogar: setas ou WASD. R recomeça.
 1. Clique em Rodar de novo, pegue a chave e acenda o farol. Ande para trás pelo cais e volte: a luz apaga e acende de novo.
 2. Em Quando acontecer, deixe à vista o encontro com o farol.
 3. Em Programação → Lógica e Se, pegue Se e solte no espaço ao lado de fazer do encontro com o farol. O Se temChave desce e fica logo abaixo do Se novo.
-4. Arraste a pergunta x maior que 0 do Se novo até a lixeira. Em Programação → Lógica e Se, pegue não e solte no lugar vazio ao lado do Se novo.
+4. Arraste a pergunta x maior que 0 do Se novo até a lixeira. Em Programação → Lógica e Se, pegue não e solte no lugar vazio ao lado do Se novo. O não também chega com a pergunta x maior que 0: arraste essa pergunta até a lixeira.
 5. Em Programação → Valores, pegue valor da variável e solte no espaço do não. Clique no x e escolha ganhou.
 6. Segure o Se temChave pela palavra Se e arraste até o espaço do então do Se novo. Tudo o que está dentro dele vai junto.
 7. Clique em Rodar de novo. Pegue a chave, acenda o farol, ande para trás e volte: a luz continua acesa. Toque na tecla R e vá ao farol sem a chave: ele continua pedindo a chave.

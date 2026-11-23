@@ -165,7 +165,7 @@ Missão do Faísca. Aqui está cada montagem das duas aulas: o que a regra faz, 
 1. Em Ao iniciar, logo abaixo de temRegador, crie a variável ganhou com o valor falso, do mesmo jeito que criou temRegador.
 2. No então do Se temRegador, logo abaixo de Tocar a animação, encaixe Alterar variável. Escolha ganhou, encaixe o bloco verdadeiro no valor e deixe verdadeiro.
 3. Em Programação → Lógica e Se, pegue Se e solte no espaço ao lado de fazer do encontro com flor, em cima do Se que já está lá. O Se temRegador desce e fica logo abaixo do Se novo.
-4. Arraste a comparação que veio na pergunta do Se novo até a lixeira. Em Programação → Lógica e Se, pegue não e encaixe no lugar vazio. Em Programação → Valores, pegue valor da variável, encaixe dentro do não e escolha ganhou.
+4. Arraste a comparação que veio na pergunta do Se novo até a lixeira. Em Programação → Lógica e Se, pegue não e encaixe no lugar vazio. O não também chega com uma comparação: arraste essa comparação até a lixeira. Em Programação → Valores, pegue valor da variável, encaixe dentro do não e escolha ganhou.
 5. Pegue o Se temRegador pela palavra Se e arraste até o então do Se novo; tudo o que está dentro dele vai junto.
 
 **Teste:** Recolha o regador e vá à flor: ela abre. Saia de perto e volte: ela continua aberta, sem florescer de novo. Numa partida nova, vá à flor sem o regador: ela continua pedindo o regador.

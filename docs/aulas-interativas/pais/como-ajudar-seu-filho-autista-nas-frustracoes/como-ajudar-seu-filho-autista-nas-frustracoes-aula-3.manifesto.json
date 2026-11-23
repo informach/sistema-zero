@@ -6,21 +6,21 @@
   "blocks": [
     {
       "key": "video-a3-rotina",
-      "plannedVideo": "Título: Rotina visual e clareza do que vai acontecer\n\nEnsinar a dar previsibilidade com apoios visuais e avisos antes das transições. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-3.roteiro.md, Parte 1."
+      "plannedVideo": "Título: Rotina visual e clareza do que vai acontecer\n\nExplicar a passagem de reagir a planejar e demonstrar rotina visual e aviso antes da transição de brincar para jantar, incluindo o exemplo dos cinco minutos. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-3.roteiro.md, Parte 1."
     },
     {
       "key": "video-a3-treino",
-      "plannedVideo": "Título: Treino de pequenas frustrações\n\nEnsinar a treinar a espera em situações mínimas e seguras, reconhecendo cada conquista. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-3.roteiro.md, Parte 2."
+      "plannedVideo": "Título: Treino de pequenas frustrações\n\nDesenvolver uma pequena espera numa brincadeira, o reconhecimento positivo e o limiar de frustração, esclarecendo que dez segundos são um exemplo a adaptar. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-3.roteiro.md, Parte 2."
     },
     {
       "key": "video-a3-pedir",
-      "plannedVideo": "Título: Ensinar um jeito de pedir\n\nEnsinar a criança a comunicar necessidade e emoção de um jeito que funcione, com fala, figuras ou sinais. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-3.roteiro.md, Parte 3."
+      "plannedVideo": "Título: Ensinar um jeito de pedir\n\nLigar a dificuldade de pedir ajuda a mensagens e recursos de comunicação, incluindo fala, figuras, PECS e sinais, com prática em momento tranquilo. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-3.roteiro.md, Parte 3."
     },
     {
       "key": "resumo-a3",
       "content": {
         "kind": "rich_text",
-        "markdown": "## Para consultar\n\n- **Rotina visual e clareza:** quadros, agendas ilustradas ou cartões. Antes de cada transição, avise e mostre: \"Faltam cinco minutos para parar de brincar e jantar.\"\n- **Treino de pequenas frustrações:** comece com esperas mínimas e seguras, como dez segundos, e reconheça na hora cada vez que a criança esperar. Aumente aos poucos.\n- **Um jeito de pedir:** ensine, na calma, \"preciso de ajuda\", \"estou nervoso\" e \"posso esperar\", com a fala, com figuras ou com sinais."
+        "markdown": "## Para consultar\n\n- **Rotina visual:** use quadros, agendas ou cartões para mostrar o que está acontecendo e o que vem depois.\n- **Transições:** avise e mostre antes da mudança. Exemplo: \"Faltam cinco minutos para parar de brincar e jantar.\" Adapte o aviso e o tempo à criança.\n- **Pequenas frustrações:** pratique uma espera breve e possível numa situação tranquila. Dez segundos são um exemplo; o tempo pode ser menor. Reconheça o que a criança conseguiu e aumente aos poucos, conforme ela participa.\n- **Comunicação:** ensine mensagens como \"preciso de ajuda\", \"estou nervoso\" e \"posso esperar\", usando fala, figuras ou sinais. PECS é um sistema estruturado de comunicação por troca de figuras.\n- Pratique os pedidos em momentos tranquilos e responda quando a criança os usar. A equipe ajuda a escolher e ensinar recursos adequados."
       }
     }
   ],
@@ -28,7 +28,7 @@
     {
       "key": "rotina",
       "title": "Rotina visual e clareza do que vai acontecer",
-      "objective": "Ensinar a dar previsibilidade com apoios visuais e avisos antes das transições.",
+      "objective": "Explicar a passagem de reagir a planejar e demonstrar rotina visual e aviso antes da transição de brincar para jantar, incluindo o exemplo dos cinco minutos.",
       "intent": "explanation",
       "blockKeys": ["video-a3-rotina"],
       "workspaceKey": null,
@@ -42,7 +42,7 @@
     {
       "key": "treino",
       "title": "Treino de pequenas frustrações",
-      "objective": "Ensinar a treinar a espera em situações mínimas e seguras, reconhecendo cada conquista.",
+      "objective": "Desenvolver uma pequena espera numa brincadeira, o reconhecimento positivo e o limiar de frustração, esclarecendo que dez segundos são um exemplo a adaptar.",
       "intent": "explanation",
       "blockKeys": ["video-a3-treino"],
       "workspaceKey": null,
@@ -56,7 +56,7 @@
     {
       "key": "pedir",
       "title": "Ensinar um jeito de pedir",
-      "objective": "Ensinar a criança a comunicar necessidade e emoção de um jeito que funcione, com fala, figuras ou sinais.",
+      "objective": "Ligar a dificuldade de pedir ajuda a mensagens e recursos de comunicação, incluindo fala, figuras, PECS e sinais, com prática em momento tranquilo.",
       "intent": "explanation",
       "blockKeys": ["video-a3-pedir", "resumo-a3"],
       "workspaceKey": null,

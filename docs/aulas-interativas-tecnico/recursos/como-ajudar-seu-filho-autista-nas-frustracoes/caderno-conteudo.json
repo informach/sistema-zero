@@ -4,7 +4,7 @@
     "theme": "azul",
     "kicker": "Apostila de consulta",
     "title": "Frustrações e crises",
-    "subtitle": "As ideias e as estratégias das cinco aulas, para consultar quando precisar.",
+    "subtitle": "Cinco aulas com a Vivi para entender as dificuldades do seu filho e preparar apoios no dia a dia.",
     "items": [
       {
         "kind": "map",
@@ -13,12 +13,12 @@
           {
             "pageId": "a1",
             "title": "Aula 1. Crise não é desobediência, é comunicação",
-            "text": "O que ninguém te contou sobre a crise. Página {{pagina:a1}}."
+            "text": "Entender o que pode estar difícil para a criança. Página {{pagina:a1}}."
           },
           {
             "pageId": "a2",
             "title": "Aula 2. De onde vem a frustração",
-            "text": "As quatro raízes e a função do comportamento. Página {{pagina:a2}}."
+            "text": "Quatro fatores e o contexto do comportamento. Página {{pagina:a2}}."
           },
           {
             "pageId": "a3",
@@ -28,7 +28,7 @@
           {
             "pageId": "a4",
             "title": "Aula 4. Durante a crise",
-            "text": "A intervenção inteligente. Página {{pagina:a4}}."
+            "text": "Segurança, ambiente e poucas palavras. Página {{pagina:a4}}."
           },
           {
             "pageId": "a5",
@@ -39,7 +39,7 @@
       },
       {
         "kind": "note",
-        "text": "Esta apostila acompanha os vídeos da psicóloga Vivianne Lima e é opcional. Não há nada para preencher: use para relembrar uma ideia ou uma estratégia quando precisar. A última página traz um resumo de tudo."
+        "text": "Esta apostila acompanha os vídeos da psicóloga Vivianne Lima. Você pode consultar ou baixar para retomar uma ideia quando precisar. A última página reúne os cuidados de antes, durante e depois da crise."
       }
     ]
   },
@@ -48,39 +48,39 @@
     "theme": "azul",
     "kicker": "Aula 1",
     "title": "Crise não é desobediência, é comunicação",
-    "subtitle": "Quando o comportamento fala, quem está escutando?",
+    "subtitle": "Antes de corrigir, observe o que aconteceu e o que a criança está mostrando.",
     "items": [
       {
         "kind": "box",
-        "title": "O que ninguém te contou",
-        "text": "Quando uma criança autista entra em crise diante de uma frustração, não estamos vendo um mau comportamento. Estamos vendo uma criança que não está dando conta.",
+        "title": "A situação por trás da crise",
+        "text": "Na hora de parar uma brincadeira, a criança pode ter dificuldade com a mudança, estar sobrecarregada ou precisar de uma ajuda que ainda não consegue pedir.",
         "tone": "amarelo",
         "icon": "mensagem"
       },
       {
         "kind": "steps",
-        "title": "Ela não está dando conta de quê?",
+        "title": "O que pode ter ficado difícil?",
         "steps": [
-          "De um <b>excesso de estímulos</b>: barulho, luz, gente falando ao mesmo tempo.",
-          "De uma <b>mudança que não esperava</b>.",
-          "De uma <b>barreira</b> que ainda não sabe como atravessar."
+          "Um <b>excesso de estímulos</b>, como barulho, luz e muitas pessoas falando.",
+          "Uma <b>mudança inesperada</b>, como terminar uma atividade sem aviso.",
+          "Uma <b>barreira</b> que ela ainda precisa de ajuda para enfrentar."
         ]
       },
       {
         "kind": "box",
         "title": "Nem toda fala é verbal",
-        "text": "O grito, o silêncio, o olhar e a fuga também são tentativas de comunicar. O desafio do adulto é escutar o que o comportamento diz antes de rotular, corrigir ou julgar.",
+        "text": "O olhar, o silêncio, o grito e a tentativa de se afastar podem dar pistas. Observe a situação: o comportamento sozinho não conta a história toda.",
         "tone": "azul",
         "icon": "olho"
       },
       {
         "kind": "quote",
-        "text": "Eu tentei dizer, mas vocês chamaram de birra.",
-        "author": "Essas frases não pedem pena. Pedem escuta."
+        "text": "O que ficou difícil para o meu filho nessa situação?",
+        "author": "Uma pergunta para orientar a observação."
       },
       {
         "kind": "note",
-        "text": "A ABA, Análise do Comportamento Aplicada, é a ciência que embasa as estratégias deste curso. Ela não ensina a controlar: ensina a compreender."
+        "text": "ABA é Análise do Comportamento Aplicada, uma área da ciência que estuda o comportamento. Neste curso, esse olhar ajuda a compreender a criança e a relação com o ambiente para antecipar, prevenir e intervir."
       }
     ]
   },
@@ -89,50 +89,48 @@
     "theme": "verde",
     "kicker": "Aula 2",
     "title": "De onde vem a frustração",
-    "subtitle": "As crises costumam nascer de quatro lugares. Pode ser mais de um ao mesmo tempo.",
+    "subtitle": "Quatro fatores que podem contribuir para a frustração. Mais de um pode estar presente.",
     "items": [
       {
         "kind": "pairs",
         "pairs": [
           [
-            "Poucas estratégias para se acalmar",
-            "A criança ainda não tem, dentro dela, recursos para se regular. A frustração vem e ela não sabe o que fazer com aquilo."
+            "Recursos para se reorganizar",
+            "Autorregulação: a criança pode precisar de ajuda para lidar com o que sente e aprender estratégias."
           ],
           [
-            "Dificuldade de comunicar",
-            "Ela não consegue expressar o que precisa e o que sente de um jeito que funcione."
+            "Conseguir pedir o que precisa",
+            "Comunicação funcional: expressar uma necessidade de um jeito que o outro compreenda."
           ],
           [
-            "Quebra da previsibilidade",
-            "Mudanças bruscas de rotina ativam um estado de insegurança. Saber o que vai acontecer é o que dá chão."
+            "Saber o que vai acontecer",
+            "Previsibilidade: um aviso e um apoio visual podem ajudar a preparar uma mudança de atividade."
           ],
           [
-            "Sensibilidade sensorial",
-            "O ambiente (som, luz, cheiro, gente) pode deixar a criança no limite antes mesmo da frustração."
+            "Como o ambiente é percebido",
+            "Sensibilidade sensorial: o som da televisão pode estar confortável para você e incomodar muito o seu filho."
           ]
         ]
       },
       {
         "kind": "box",
-        "title": "Uma parte está na sua mão",
-        "text": "Toda crise nasce do encontro entre dois lados: a criança, com as habilidades e as limitações dela, e o contexto, que inclui o ambiente e o jeito como o adulto conduz. Dá para mexer no ambiente, no nosso jeito e no que a criança sabe fazer.",
+        "title": "A criança e o contexto",
+        "text": "Os recursos e as dificuldades da criança se encontram com o ambiente e com a maneira como a situação acontece. Observar essa combinação ajuda a escolher o que ajustar.",
         "tone": "verde",
         "icon": "brilho"
       },
       {
-        "kind": "compare",
-        "left": {
-          "title": "Julgamento",
-          "text": "\"Isso é birra.\"<br/>\"É desobediência.\"<br/>\"É manha.\""
-        },
-        "right": {
-          "title": "Pergunta",
-          "text": "É uma fuga de algo difícil?<br/>É uma busca de atenção?<br/>É um jeito de se regular?"
-        }
+        "kind": "steps",
+        "title": "Para investigar a função",
+        "steps": [
+          "O que aconteceu <b>antes</b>?",
+          "O que a criança <b>fez</b>?",
+          "O que aconteceu <b>depois</b>?"
+        ]
       },
       {
         "kind": "note",
-        "text": "Antes de julgar, observe a função: o \"para que\" daquele comportamento. Uma resposta baseada na função não só reduz as crises, ela fortalece a relação de vocês."
+        "text": "Função é o que o comportamento pode produzir naquela situação, como sair de algo difícil, conseguir atenção ou aliviar um incômodo. São possibilidades para investigar; não uma intenção para adivinhar."
       }
     ]
   },
@@ -141,32 +139,32 @@
     "theme": "ambar",
     "kicker": "Aula 3 · Prevenção",
     "title": "Antes da crise",
-    "subtitle": "De pais reativos a pais estrategistas: agir antes de a frustração virar crise.",
+    "subtitle": "De pais reativos a pais estrategistas: preparar apoios antes da dificuldade.",
     "items": [
       {
         "kind": "box",
         "title": "1. Rotina visual e clareza",
-        "text": "Use quadros visuais, agendas ilustradas ou cartões para a criança antecipar o que vem depois. Pode ser um quadro simples na parede com as figuras do dia.",
+        "text": "Use quadros, agendas ilustradas ou cartões para mostrar o que está acontecendo e o que vem depois. Prepare a passagem de uma atividade para outra.",
         "tone": "azul",
         "icon": "mapa"
       },
       {
         "kind": "quote",
         "text": "Faltam cinco minutos para parar de brincar e jantar.",
-        "author": "Antes de cada transição, avise e mostre."
+        "author": "Avise e mostre a próxima atividade. Adapte o tempo ao seu filho."
       },
       {
         "kind": "steps",
-        "title": "2. Treino de pequenas frustrações",
+        "title": "2. Pequenas frustrações, com apoio",
         "steps": [
-          "Comece com uma espera <b>mínima e segura</b>, como dez segundos por algo que a criança deseja.",
-          "<b>Reconheça na hora</b> cada vez que ela esperar: um elogio, um abraço, um sorriso.",
-          "<b>Aumente aos poucos.</b> A criança precisa conseguir para aprender que dá conta."
+          "Numa brincadeira tranquila, pratique uma <b>espera breve e possível</b>. Dez segundos são um exemplo; o começo pode ser menor.",
+          "<b>Reconheça o que a criança conseguiu</b>: um elogio, um sorriso ou um abraço, se ela gostar.",
+          "<b>Aumente aos poucos</b>, conforme a criança consegue participar, com orientação da equipe."
         ]
       },
       {
         "kind": "note",
-        "text": "Esse treino aumenta o limiar de frustração, que é o quanto a criança aguenta antes de explodir."
+        "text": "Limiar de frustração é o limite de dificuldade que a criança consegue suportar naquele momento. O objetivo é ampliar recursos para lidar com pequenas esperas, respeitando o que ela consegue."
       }
     ]
   },
@@ -175,31 +173,37 @@
     "theme": "ambar",
     "kicker": "Aula 3 · Prevenção",
     "title": "Um jeito de pedir",
-    "subtitle": "O comportamento é a voz de quem ainda não tem palavras.",
+    "subtitle": "Um caminho para a criança mostrar o que precisa e ser compreendida.",
     "items": [
       {
         "kind": "box",
         "title": "3. Ensinar comunicação alternativa",
-        "text": "Se a criança não tem outro jeito de dizer, o jeito que sobra é a crise. O trabalho é dar a ela um caminho mais fácil de ser entendida.",
+        "text": "Quando falta um jeito de pedir ajuda, uma dificuldade no brinquedo pode crescer. Ensine um recurso de comunicação adequado para o seu filho.",
         "tone": "amarelo",
         "icon": "mensagem"
       },
       {
         "kind": "steps",
-        "title": "Três mensagens para ensinar",
+        "title": "Mensagens para trabalhar",
         "steps": ["\"Preciso de ajuda.\"", "\"Estou nervoso.\"", "\"Posso esperar.\""]
       },
       {
         "kind": "pairs",
         "pairs": [
-          ["Com a fala", "Dizendo a frase, quando a criança já fala."],
-          ["Com figuras", "Entregando ou apontando uma figura, como no PECS."],
-          ["Com sinais", "Com um gesto que vocês combinam."]
+          [
+            "Pela fala",
+            "Ajudando a expressar a mensagem com palavras, quando esse recurso é adequado."
+          ],
+          [
+            "Por figuras",
+            "Com recursos escolhidos e ensinados com a equipe. PECS é um sistema estruturado de comunicação por troca de figuras."
+          ],
+          ["Por sinais", "Com gestos que a criança e quem convive com ela compreendam."]
         ]
       },
       {
         "kind": "note",
-        "text": "Treine na calma, num momento tranquilo, e não no meio da crise. Quando a criança usar o pedido, atenda na hora: é assim que ela aprende que pedir funciona."
+        "text": "Pratique num momento tranquilo. Se a tampa do pote do brinquedo não abre, ajude a criança a fazer o pedido que está aprendendo e responda ajudando a abrir. Assim ela percebe que o pedido comunica uma necessidade."
       }
     ]
   },
@@ -208,43 +212,43 @@
     "theme": "roxo",
     "kicker": "Aula 4",
     "title": "Durante a crise",
-    "subtitle": "A intervenção inteligente: fazer menos, e fazer do jeito certo.",
+    "subtitle": "Proteger, reduzir a sobrecarga e oferecer apoio enquanto a criança se reorganiza.",
     "items": [
       {
         "kind": "box",
         "title": "Segurança primeiro",
-        "text": "Tire de perto o que pode machucar: vidro, objetos pesados ou pontudos. Se a criança bate a cabeça, coloque algo macio. Afaste os irmãos e quem estiver em volta. Fique perto, com calma, sem segurar com força.",
+        "text": "Afaste vidro, objetos pesados ou pontudos e pessoas muito próximas. Se a criança bate a cabeça, algo macio pode ajudar a proteger, se você conseguir agir com segurança. Fique por perto, sem segurar com força.",
         "tone": "vermelho",
         "icon": "boia"
       },
       {
         "kind": "box",
         "title": "Controle do ambiente",
-        "text": "Afaste o que aumenta a sobrecarga: desligue a televisão, diminua a luz, peça espaço, tire a criança do barulho.",
+        "text": "Reduza o que está sobrecarregando: televisão, luz forte, muitas pessoas falando. Procure oferecer um espaço mais tranquilo, respeitando a segurança e como a criança aceita a ajuda.",
         "tone": "azul",
         "icon": "olho"
       },
       {
         "kind": "box",
-        "title": "O seu tom é o espelho",
-        "text": "Respire fundo, fale baixo e use frases curtas. A sua calma é a que a criança ainda não consegue ter sozinha.",
+        "title": "Regulação pelo modelo",
+        "text": "Respire fundo, fale baixo e use frases curtas. O seu tom faz parte do ambiente. Ofereça apoio e tempo; a crise pode continuar enquanto a criança se reorganiza.",
         "tone": "verde",
         "icon": "pessoa"
       },
       {
         "kind": "compare",
         "left": {
-          "title": "No auge, não é hora de",
-          "text": "Explicar.<br/>Perguntar por que fez aquilo.<br/>Dar sermão.<br/>Combinar castigo ou prêmio."
+          "title": "Guarde para depois",
+          "text": "Explicações longas.<br/>Muitas perguntas.<br/>Negociação, sermão, ameaças ou promessas."
         },
         "right": {
-          "title": "No auge, é hora de",
-          "text": "Ficar perto.<br/>Usar poucas palavras.<br/>Acalmar o ambiente.<br/>Esperar a onda passar."
+          "title": "Ofereça agora",
+          "text": "Proteção.<br/>Menos estímulos.<br/>Poucas palavras e tempo."
         }
       },
       {
         "kind": "note",
-        "text": "Durante a explosão, a criança não acessa o raciocínio lógico. Se as crises na sua casa costumam trazer risco de alguém se machucar, leve isso para a equipe que acompanha o seu filho."
+        "text": "No auge, uma explicação pode ser difícil de acompanhar. Se as crises trazem risco de se machucar, prepare um plano de proteção com a equipe que acompanha o seu filho."
       }
     ]
   },
@@ -253,38 +257,33 @@
     "theme": "verde",
     "kicker": "Aula 5",
     "title": "Depois da crise",
-    "subtitle": "Quando a criança se acalma, ela volta a conseguir ouvir e aprender.",
+    "subtitle": "Respeite a recuperação e procure um momento em que seu filho consiga participar.",
     "items": [
       {
         "kind": "steps",
-        "title": "Reforço pós-crise, em dois passos",
+        "title": "Acolher e ensinar para a próxima vez",
         "steps": [
-          "<b>Valide o sentimento.</b> \"Eu vi que ficou muito difícil quando a gente teve que desligar o desenho. Você ficou muito bravo, né?\"",
-          "<b>Ensine o caminho para a próxima vez.</b> \"Quando ficar difícil assim, você pode me mostrar o cartão de ajuda.\""
+          "<b>Valide o sentimento.</b> \"Eu vi que foi difícil parar de brincar para jantar. Você queria continuar, né?\"",
+          "<b>Retome uma alternativa.</b> \"Quando você precisar de ajuda, pode me mostrar esse cartão.\""
         ]
       },
       {
-        "kind": "compare",
-        "left": {
-          "title": "Em vez de",
-          "text": "\"Obedeça.\""
-        },
-        "right": {
-          "title": "Experimente",
-          "text": "\"O que está difícil pra você agora?\""
-        }
+        "kind": "box",
+        "title": "Dê espaço para a comunicação",
+        "text": "\"O que está difícil para você agora?\" A resposta pode vir com uma palavra, um gesto, uma figura ou com a sua observação. Dê tempo e acompanhe a forma de comunicação da criança.",
+        "tone": "azul",
+        "icon": "mensagem"
       },
       {
         "kind": "box",
-        "title": "Validar não é aprovar",
-        "text": "Você não está dizendo que a crise foi boa. Está dizendo que o sentimento da criança faz sentido, e mostrando uma saída melhor.",
+        "title": "Ligue o pedido à ajuda",
+        "text": "Retome o recurso que a criança está aprendendo e responda quando ela o usar. Acolher o sentimento e ensinar uma alternativa se completam.",
         "tone": "amarelo",
         "icon": "mensagem"
       },
       {
-        "kind": "quote",
-        "text": "Quando você muda o que faz, o comportamento muda o que diz.",
-        "author": "A diferença entre controle e conexão é a escuta."
+        "kind": "note",
+        "text": "Esse é o cuidado apresentado como reforço pós-crise: quando a criança puder participar, validar o sentimento e ensinar uma resposta para a próxima vez."
       }
     ]
   },
@@ -293,32 +292,36 @@
     "theme": "azul",
     "kicker": "Aula 5 · Olhar de detetive",
     "title": "O gatilho, a consequência e os ajustes",
-    "subtitle": "Na ABA, isso se chama análise funcional do comportamento.",
+    "subtitle": "Anote a sequência para perceber padrões e conversar com a equipe.",
     "items": [
       {
         "kind": "pairs",
         "pairs": [
           [
-            "Gatilho: o que veio logo antes?",
-            "Uma mudança de última hora, um \"não\", um lugar barulhento, fome, sono, cansaço."
+            "Antes: o que aconteceu?",
+            "Mudou o combinado? A brincadeira terminou sem aviso? Havia barulho? Observe também fome, sono e cansaço."
           ],
           [
-            "Consequência: o que veio logo depois?",
-            "A criança saiu de uma tarefa difícil? Ganhou o que queria? Todo mundo parou para olhar?"
+            "Comportamento: o que a criança fez?",
+            "Descreva o que observou: chorou, gritou, tentou sair da sala."
+          ],
+          [
+            "Depois: o que aconteceu?",
+            "Saiu do barulho? A tarefa parou? Recebeu ajuda, atenção ou um objeto? Consequência significa o que veio depois, não um castigo."
           ]
         ]
       },
       {
         "kind": "note",
-        "text": "Se puder, anote. Depois de algumas anotações o padrão aparece: \"é sempre na hora de sair de casa\", \"é sempre quando muda o combinado\"."
+        "text": "Observações repetidas dão pistas para a análise funcional com a equipe. Uma situação sozinha não confirma a função nem revela o que a criança estava pensando."
       },
       {
         "kind": "steps",
-        "title": "O que fazer com o que você descobriu",
+        "title": "Use as observações para preparar apoios",
         "steps": [
-          "<b>Ajuste a abordagem</b> para prevenir crises parecidas: avise antes, use o quadro visual, dê os cinco minutos.",
-          "<b>Se a crise virou um jeito de conseguir algo</b>, ensine o pedido e passe a atender o pedido.",
-          "<b>Trate cada crise como treino:</b> ela mostra o que a criança ainda precisa aprender."
+          "<b>Ajustes estratégicos:</b> prepare a transição, reduza o barulho ou ajuste o apoio à tarefa, conforme a dificuldade observada.",
+          "<b>Ensine e acolha um pedido:</b> planeje com a equipe uma resposta consistente e mantenha o apoio durante o sofrimento.",
+          "<b>Treino sistemático:</b> pratique aos poucos, em momentos tranquilos, o recurso que a criança está aprendendo."
         ]
       }
     ]
@@ -328,26 +331,26 @@
     "theme": "roxo",
     "kicker": "Para guardar",
     "title": "Antes, durante e depois",
-    "subtitle": "O curso inteiro em uma página.",
+    "subtitle": "Retome esses cuidados na situação de casa que você quer compreender melhor.",
     "items": [
       {
         "kind": "box",
         "title": "Antes",
-        "text": "Rotina visual e aviso antes das transições. Treino de pequenas esperas. Um jeito de pedir ajuda, de dizer que está nervoso e de esperar.",
+        "text": "Avise e mostre o que vai acontecer. Pratique pequenas esperas possíveis e um jeito de pedir ajuda.",
         "tone": "azul",
         "icon": "mapa"
       },
       {
         "kind": "box",
         "title": "Durante",
-        "text": "Segurança primeiro. Menos estímulo, menos palavras, tom calmo. Não negociar no auge.",
+        "text": "Cuide da segurança. Reduza a sobrecarga, mantenha um tom calmo e use poucas palavras. Dê tempo para a criança se reorganizar.",
         "tone": "vermelho",
         "icon": "boia"
       },
       {
         "kind": "box",
         "title": "Depois",
-        "text": "Validar o sentimento e ensinar a resposta. Olhar o gatilho e a consequência. Ajustar e treinar.",
+        "text": "Quando a criança puder participar, acolha e retome uma alternativa. Observe a sequência, converse com a equipe e ajuste os apoios.",
         "tone": "verde",
         "icon": "repetir"
       },
@@ -358,7 +361,7 @@
       },
       {
         "kind": "note",
-        "text": "Cada criança é única. Este material é um caminho, e a equipe que acompanha o seu filho pode ajudar a adaptar cada estratégia à realidade dele."
+        "text": "Cada criança tem o seu jeito. Retome as aulas e converse com a equipe para adaptar as estratégias à realidade do seu filho."
       }
     ]
   }

@@ -6,17 +6,17 @@
   "blocks": [
     {
       "key": "video-a1-abertura",
-      "plannedVideo": "Título: Boas-vindas\n\nApresentar a Vivianne, o tema do curso e o caminho das cinco aulas. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-1.roteiro.md, Parte 1."
+      "plannedVideo": "Título: Boas-vindas\n\nAcolher mães, pais e responsáveis, apresentar a Vivi, partir da hora de parar uma brincadeira e explicar o caminho das cinco aulas e o objetivo de antecipar, prevenir e intervir. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-1.roteiro.md, Parte 1."
     },
     {
       "key": "video-a1-comunicacao",
-      "plannedVideo": "Título: O que ninguém te contou sobre a crise\n\nMostrar que a crise comunica um excesso de estímulos, uma mudança inesperada ou uma barreira, e convidar à escuta. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-1.roteiro.md, Parte 2."
+      "plannedVideo": "Título: O que ninguém te contou sobre a crise\n\nDesenvolver a ideia de crise como comunicação com uma situação cotidiana e mostrar como observar mudanças, estímulos e dificuldades antes de corrigir ou julgar. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-1.roteiro.md, Parte 2."
     },
     {
       "key": "resumo-a1",
       "content": {
         "kind": "rich_text",
-        "markdown": "## Para consultar\n\n- Crise não é desobediência. É comunicação.\n- A criança não está dando conta de um excesso de estímulos, de uma mudança inesperada ou de uma barreira que não sabe atravessar.\n- Nem toda fala é verbal: o grito, o silêncio, o olhar e a fuga também comunicam.\n- Antes de rotular, corrigir ou julgar, escute o que o comportamento está dizendo."
+        "markdown": "## Para consultar\n\n- Crise não é desobediência. É comunicação: pode expressar uma dificuldade que a criança não está conseguindo enfrentar.\n- Mudanças inesperadas, excesso de estímulos ou uma barreira podem contribuir para a crise. Observar a situação ajuda a entender o que ficou difícil.\n- Nem toda fala é verbal. O olhar, o silêncio, o grito e a tentativa de se afastar podem dar pistas; não são uma tradução pronta do que toda criança sente.\n- Antes de corrigir ou chamar de birra, pergunte: o que ficou difícil para o meu filho nessa situação?\n- O curso segue por cinco aulas: entender a crise, conhecer fatores da frustração e cuidar do antes, do durante e do depois."
       }
     },
     {
@@ -33,7 +33,7 @@
     {
       "key": "abertura",
       "title": "Boas-vindas",
-      "objective": "Apresentar a Vivianne, o tema do curso e o caminho das cinco aulas.",
+      "objective": "Acolher mães, pais e responsáveis, apresentar a Vivi, partir da hora de parar uma brincadeira e explicar o caminho das cinco aulas e o objetivo de antecipar, prevenir e intervir.",
       "intent": "explanation",
       "blockKeys": ["video-a1-abertura"],
       "workspaceKey": null,
@@ -47,7 +47,7 @@
     {
       "key": "comunicacao",
       "title": "O que ninguém te contou sobre a crise",
-      "objective": "Mostrar que a crise comunica um excesso de estímulos, uma mudança inesperada ou uma barreira, e convidar à escuta.",
+      "objective": "Desenvolver a ideia de crise como comunicação com uma situação cotidiana e mostrar como observar mudanças, estímulos e dificuldades antes de corrigir ou julgar.",
       "intent": "explanation",
       "blockKeys": ["video-a1-comunicacao", "resumo-a1", "apostila"],
       "workspaceKey": null,

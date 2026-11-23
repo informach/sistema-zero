@@ -1,6 +1,8 @@
 # Full review: Aula 7, identidade infantil e comércio na plataforma
 
-Revisão original: **5 achados, 1 P1 e 4 P2**. A rodada de correções está registrada em [verificação das correções](qa/correcoes-verificacao.md); os ajustes de código estão versionados e a publicação aguarda a CI completa. As suítes existentes passaram; quatro testes adicionais reproduzem falhas que elas não cobriam.
+Revisão original: **5 achados, 1 P1 e 4 P2**. **Os cinco foram corrigidos e publicados em staging e produção em 20/11/2026.** A [verificação das correções](qa/correcoes-verificacao.md) registra as fontes aprovadas por CI completa, os 22 processos conferidos e as jornadas reais com contas sintéticas. A Aula 7 original permanece em rascunho, aguardando os três vídeos do usuário.
+
+As fontes efetivamente publicadas da Aula 7 são `c7e9c70a4de5ea889c1af4819283887a33add461` (staging) e `5440aa0ddf9180476eb59a006b375e9b394879fc` (produção). A integração com a branch staging também preservou o trabalho concorrente. Seu CI posterior foi cancelado por um novo commit de Molda Cenários; a CI desse novo conjunto continua em andamento e não é apresentada como aprovada neste fechamento.
 
 | ID | Prioridade | Achado |
 | --- | --- | --- |

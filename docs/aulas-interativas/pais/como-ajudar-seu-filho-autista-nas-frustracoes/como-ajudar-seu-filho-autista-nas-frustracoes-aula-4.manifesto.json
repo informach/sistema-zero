@@ -6,17 +6,17 @@
   "blocks": [
     {
       "key": "video-a4-ambiente",
-      "plannedVideo": "Título: O ambiente e o seu tom\n\nEnsinar a reduzir os estímulos, a cuidar da segurança e a regular a criança pelo próprio modelo. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-4.roteiro.md, Parte 1."
+      "plannedVideo": "Título: O ambiente e o seu tom\n\nRetomar que a crise pode acontecer mesmo com prevenção e desenvolver segurança, controle do ambiente e regulação pelo modelo com exemplos concretos. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-4.roteiro.md, Parte 1."
     },
     {
       "key": "video-a4-auge",
-      "plannedVideo": "Título: O que não fazer no auge\n\nExplicar por que não se negocia nem se explica no auge da crise. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-4.roteiro.md, Parte 2."
+      "plannedVideo": "Título: O que não fazer no auge\n\nExplicar por que evitar negociação, sermão e explicações longas no auge, mostrando o que o adulto pode fazer para oferecer apoio. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-4.roteiro.md, Parte 2."
     },
     {
       "key": "resumo-a4",
       "content": {
         "kind": "rich_text",
-        "markdown": "## Para consultar\n\n- **Segurança primeiro:** tire de perto o que pode machucar, proteja a criança e afaste quem está em volta. Se o risco de se machucar é frequente, leve para a equipe que acompanha o seu filho.\\n- **Ambiente:** afaste o que aumenta a sobrecarga (som, luz, gente em volta).\n- **O seu tom:** respire fundo, fale baixo e com frases curtas. Você é o espelho da criança.\n- **Não negocie no auge:** nessa hora ela não acessa o raciocínio lógico. Explicação, sermão e combinado ficam para depois.\n- Fique perto, com poucas palavras, e espere a onda passar."
+        "markdown": "## Para consultar\n\n- **Segurança primeiro:** afaste vidro, objetos pesados ou pontudos e pessoas muito próximas. Se a criança bate a cabeça, algo macio pode ajudar a proteger, se for possível agir com segurança. Fique por perto sem segurar com força.\n- **Ambiente:** reduza o que está sobrecarregando, como televisão, luz e muitas pessoas falando.\n- **Tom e palavras:** respire, fale baixo e use frases curtas, dando tempo para a criança se reorganizar.\n- **No auge:** evite negociação, sermão, ameaças, promessas e muitas perguntas. Uma explicação longa pode ser difícil de acompanhar naquele momento.\n- Se as crises trazem risco de se machucar, prepare um plano específico de proteção com a equipe que acompanha o seu filho."
       }
     }
   ],
@@ -24,7 +24,7 @@
     {
       "key": "ambiente",
       "title": "O ambiente e o seu tom",
-      "objective": "Ensinar a reduzir os estímulos, a cuidar da segurança e a regular a criança pelo próprio modelo.",
+      "objective": "Retomar que a crise pode acontecer mesmo com prevenção e desenvolver segurança, controle do ambiente e regulação pelo modelo com exemplos concretos.",
       "intent": "explanation",
       "blockKeys": ["video-a4-ambiente"],
       "workspaceKey": null,
@@ -38,7 +38,7 @@
     {
       "key": "auge",
       "title": "O que não fazer no auge",
-      "objective": "Explicar por que não se negocia nem se explica no auge da crise.",
+      "objective": "Explicar por que evitar negociação, sermão e explicações longas no auge, mostrando o que o adulto pode fazer para oferecer apoio.",
       "intent": "explanation",
       "blockKeys": ["video-a4-auge", "resumo-a4"],
       "workspaceKey": null,

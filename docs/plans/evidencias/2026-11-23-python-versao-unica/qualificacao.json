@@ -1,0 +1,56 @@
+{
+  "at": "2026-11-23T16:45:00Z",
+  "source": "1e5b2934837cb3fee5b4be8e9d3d3b550fff74ac",
+  "distributionSha256": "5a8682a9d7ad84d454028510d6497979292b968d9870fcad25e1187c4cde62d5",
+  "imageRun": 45211802910,
+  "imageWorkflow": "studio-runtime-image.yml",
+  "activationQualified": false,
+  "equivalence": {
+    "comparedWith": "688d426c7da884bb52231c852f6e306c40a10458ac5d22042b78915ea2362374",
+    "files": 129,
+    "logicalDifferences": ["LICENSE-font-bungee.txt (line endings only)"],
+    "gzipRepresentations": 16,
+    "note": "the local Windows build of the same source; only gzip bytes and one license line ending differ"
+  },
+  "browserContracts": {
+    "server": "experiments/studio-python-runtime/server.ts (Bun 1.4.4) serving this exact Linux distribution on port 5297",
+    "browser": "Chrome channel of the official configs (the regional config also runs Chromium)"
+  },
+  "tests": [
+    {
+      "name": "pygame",
+      "config": "playwright.python-pygame.config.ts",
+      "passed": 44,
+      "logSha256": "719feab40894878ba02cedb18fb6154cdb4a7d84b5325b6aacbf2dcc4f65ac07"
+    },
+    {
+      "name": "raylib",
+      "config": "playwright.python-raylib.config.ts",
+      "passed": 27,
+      "logSha256": "24a679a52e9e9a6cc05e394a7aad5442ccbc2a2ceb0648ffc1bc6132f8d0663e"
+    },
+    {
+      "name": "pgzero",
+      "config": "playwright.python-pgzero.config.ts",
+      "passed": 63,
+      "logSha256": "30c9577273340308df677f6b749682caa5b50a567994a4259136cc7925491ca6"
+    },
+    {
+      "name": "pinta-scenes-2d",
+      "config": "playwright.pinta-python-2d-browser.config.ts",
+      "passed": 16,
+      "logSha256": "7baba8ae010817975e5e448e69b7df99b5cd6fd5fb4f619eb9a7ea2d376e315f"
+    },
+    {
+      "name": "pinta-scenes-regional",
+      "config": "playwright.pinta-python-regional.config.ts",
+      "passed": 6,
+      "env": "PYTHON_PROBE_PINTA_SCENES=1",
+      "logSha256": "0babd4cbc86110e25dee983867fccd38a5ad6d5c9e66bc51c49072707616d4e8"
+    }
+  ],
+  "notRun": [
+    "requalification of the 95 visual receipts (they record their own runtime features; the app does not read them)",
+    "pygame-block-coverage --check (needs CPython 3.14)"
+  ]
+}
