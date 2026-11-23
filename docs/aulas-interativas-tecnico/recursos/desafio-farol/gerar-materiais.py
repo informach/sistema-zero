@@ -24,6 +24,7 @@ def main():
         'a-ponte-apressada': 'docs/aulas-interativas/faisca/poder-a-ponte-apressada/passo-a-passo-do-projeto.pdf',
         'meu-primeiro-desenho': 'docs/aulas-interativas/faisca/meu-primeiro-desenho-no-pinta/passo-a-passo-do-projeto.pdf',
         'o-bau-dos-simbolos': 'docs/aulas-interativas/faisca/poder-o-bau-dos-simbolos/passo-a-passo-do-projeto.pdf',
+        'jardim-secreto': 'docs/aulas-interativas/faisca/o-jardim-secreto/passo-a-passo-do-projeto.pdf',
     }
     if curso != 'desafio-farol' and curso not in outros:
         raise SystemExit(f'Curso desconhecido: {curso}')
