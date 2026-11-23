@@ -52,9 +52,18 @@ export function isPintaPointer(
   )
 }
 
-/** Server configuration is separate from the browser's selected writer. All callers already passed profile eligibility. */
+/**
+ * Server configuration is separate from the browser's selected writer. All callers already passed
+ * profile eligibility. Regions (native 8 / cloud 7) are admitted for every causal profile since
+ * stage 1 (23/11/2026): the negotiated reader stays capped at `PINTA_INVENTORY_READER_VERSION`, so
+ * the native-9 body (cloud 8) still cannot be reserved even where the workshop reader is on.
+ */
 function readerOptions(expected: PintaCausalBlobExpectation): PintaCausalBlobExpectation {
-  return { ...expected, allowWorkshop: getEnv().PINTA_WORKSHOP_SERVICE_READER === '1' }
+  return {
+    ...expected,
+    allowRegions: true,
+    allowWorkshop: getEnv().PINTA_WORKSHOP_SERVICE_READER === '1',
+  }
 }
 
 async function read(
