@@ -294,6 +294,8 @@
 
 [confident, clear, unhurried voice] Solte no lugar vazio ao lado do Se novo.
 
+[confident, clear, unhurried voice] Repare: o não também chega com uma pergunta pronta, x maior que 0. Segure essa pergunta pelo sinal de maior e arraste até a lixeira.
+
 [confident, clear, unhurried voice] Abra Programação e depois Valores, e pegue o bloco valor da variável.
 
 [confident, clear, unhurried voice] Solte no espaço do não. Depois clique no x e escolha ganhou.

@@ -637,7 +637,7 @@
       {
         "kind": "step",
         "title": "11. Pergunte não ganhou",
-        "text": "<b>Programação &gt; Lógica &amp; Se.</b> Pegue o bloco <b>não</b> e solte no lugar vazio ao lado do Se novo. <b>Programação &gt; Valores.</b> Pegue <b>valor da variável</b>, solte no espaço do não, clique no x e escolha <b>ganhou</b>. Agora o Se novo pergunta: a partida ainda não foi ganha?"
+        "text": "<b>Programação &gt; Lógica &amp; Se.</b> Pegue o bloco <b>não</b> e solte no lugar vazio ao lado do Se novo. O <b>não</b> também chega com uma pergunta pronta: segure essa pergunta pelo sinal de maior e arraste até a lixeira. <b>Programação &gt; Valores.</b> Pegue <b>valor da variável</b>, solte no espaço do não, clique no x e escolha <b>ganhou</b>. Agora o Se novo pergunta: a partida ainda não foi ganha?"
       },
       {
         "kind": "drawing",

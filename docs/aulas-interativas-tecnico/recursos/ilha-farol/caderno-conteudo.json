@@ -581,7 +581,7 @@
       {
         "kind": "step",
         "title": "2. Pergunte não ganhou",
-        "text": "Arraste a pergunta <b>x maior que 0</b> do Se novo até a lixeira.<br/><b>Programação &gt; Lógica &amp; Se.</b> Pegue <b>não</b> e solte no lugar vazio ao lado do Se novo.<br/><b>Programação &gt; Valores.</b> Pegue <b>valor da variável</b> e solte no espaço do não. Clique no <b>x</b> e escolha <b>ganhou</b>."
+        "text": "Arraste a pergunta <b>x maior que 0</b> do Se novo até a lixeira.<br/><b>Programação &gt; Lógica &amp; Se.</b> Pegue <b>não</b> e solte no lugar vazio ao lado do Se novo.<br/>O <b>não</b> também chega com a pergunta <b>x maior que 0</b>: segure essa pergunta pelo sinal de maior e arraste até a lixeira.<br/><b>Programação &gt; Valores.</b> Pegue <b>valor da variável</b> e solte no espaço do não. Clique no <b>x</b> e escolha <b>ganhou</b>."
       },
       {
         "kind": "step",
