@@ -10,7 +10,6 @@
 import type { JSX } from 'react'
 import { useCallback, useMemo, useState } from 'react'
 import { COPY } from '../../../core/copy'
-import type { PintaAsset } from '../../../core/project'
 import { normalizeSearchText } from '../../../core/searchText'
 import { insertableAssets, insertKindFor } from '../../../vector/insertAsset'
 import { usePintaGallery } from '../../appContext'

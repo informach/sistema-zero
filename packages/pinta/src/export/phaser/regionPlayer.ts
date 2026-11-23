@@ -1,11 +1,6 @@
 import { PINTA_IMAGE_WORLD_LIMITS } from '@sistemazero/core/studio/pinta-image'
 import { readPngDimensions } from '@sistemazero/core/studio/pinta-png-binary'
 import {
-  PINTA_REGION_IMAGE_PNG_LIMITS,
-  PINTA_REGION_WORLD_BUDGET,
-} from '@sistemazero/core/studio/pinta-region-image-limits'
-import { checkAdmittedPintaPngPixels } from '@sistemazero/core/studio/pinta-region-png-pixels'
-import {
   type PintaProjectedScenePlan,
   preparePintaProjectedScene,
 } from '@sistemazero/core/studio/pinta-projected-scene'
@@ -13,6 +8,11 @@ import {
   createProjectedLegacyCharacterMover,
   createProjectedSceneQueries,
 } from '@sistemazero/core/studio/pinta-projected-scene-query'
+import {
+  PINTA_REGION_IMAGE_PNG_LIMITS,
+  PINTA_REGION_WORLD_BUDGET,
+} from '@sistemazero/core/studio/pinta-region-image-limits'
+import { checkAdmittedPintaPngPixels } from '@sistemazero/core/studio/pinta-region-png-pixels'
 import {
   type PintaRegionScenePlan,
   preparePintaRegionScene,

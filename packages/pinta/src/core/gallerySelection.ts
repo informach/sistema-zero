@@ -1,4 +1,4 @@
-import type {PintaMemoryAsset} from './assetMemory'
+import type { PintaMemoryAsset } from './assetMemory'
 import { isTilesetKind, pintaAssetDependencyIds } from './project'
 
 /**

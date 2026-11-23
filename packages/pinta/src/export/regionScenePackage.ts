@@ -1,13 +1,13 @@
 import { PINTA_HEX_REGION_CHUNK_BYTES, PINTA_REGION_CHUNK_BYTES } from '@sistemazero/core/creations'
 import { readPngDataUrl } from '@sistemazero/core/studio/pinta-png-binary'
-import {
-  PINTA_REGION_IMAGE_PNG_LIMITS,
-  PINTA_REGION_WORLD_BUDGET,
-} from '@sistemazero/core/studio/pinta-region-image-limits'
 import type {
   PintaProjectedScene,
   PintaProjectedSceneWire,
 } from '@sistemazero/core/studio/pinta-projected-scene'
+import {
+  PINTA_REGION_IMAGE_PNG_LIMITS,
+  PINTA_REGION_WORLD_BUDGET,
+} from '@sistemazero/core/studio/pinta-region-image-limits'
 import type {
   PintaRegionScene,
   PintaRegionSceneWire,

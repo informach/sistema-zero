@@ -6,7 +6,7 @@ import {
   pintaHexCellTile,
 } from '@sistemazero/core/creations'
 import { pintaValuesEqual } from '../core/assetEquality'
-import { type TilemapObject } from '../core/project'
+import type { TilemapObject } from '../core/project'
 import { isProjectedTileLayer, type ProjectedTileCells } from '../core/projectedDocument'
 import { cellTile, withCellTile } from '../tiles/cell'
 import type { WorkshopProjectedMap } from './workshopProjection'

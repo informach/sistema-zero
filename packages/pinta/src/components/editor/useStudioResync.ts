@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { dependentTilemaps } from '../../core/dependentTilemaps'
 import type { PintaMemoryAsset } from '../../core/assetMemory'
+import { dependentTilemaps } from '../../core/dependentTilemaps'
 import type { PintaHostAdapter, PintaStudioResyncResult } from '../../core/types'
 import { buildStudioMapBundle } from '../../export/studioMapBundle'
 import type { PintaGalleryStore } from '../../state/galleryStore'

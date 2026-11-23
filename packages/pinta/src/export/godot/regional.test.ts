@@ -95,7 +95,7 @@ test('a projected world goes to Godot with the projected reader, its layouts and
   expect(Object.values(maps).map((scene) => scene.version)).toEqual([5, 5])
   expect(files['desenhos.pinta.json']).toBeUndefined()
   expect(String(files['LEIA-ME.txt'])).toContain('projections.json')
-  await expect(buildScenePackage(map, assets, 'pygame', { imageOf: nativeImageOf })).rejects.toThrow(
-    'adaptador de projeção',
-  )
+  await expect(
+    buildScenePackage(map, assets, 'pygame', { imageOf: nativeImageOf }),
+  ).rejects.toThrow('adaptador de projeção')
 })

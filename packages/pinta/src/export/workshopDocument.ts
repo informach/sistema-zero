@@ -1,14 +1,7 @@
 /** Reader A transport. The active legacy writer and its declared cloud version remain independent. */
 import type { PintaMemoryAsset } from '../core/assetMemory'
 import { utf8ByteLength } from '../core/jsonBytes'
-import {
-  isTileLayer,
-  PINTA_MAX_SCHEMA,
-  type PintaAsset,
-  type TilemapCells,
-  tileLayerTilesetId,
-  withPintaSchemaStamp,
-} from '../core/project'
+import { isTileLayer, type TilemapCells, tileLayerTilesetId } from '../core/project'
 import { type AutomapBook, readAutomapBook } from '../tiles/automapping/book'
 import { isPintaAuthoredMap, type PintaAuthoredMap } from '../tiles/automapping/model'
 import {

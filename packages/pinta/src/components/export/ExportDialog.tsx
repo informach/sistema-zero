@@ -23,7 +23,6 @@ import {
   tilemapNeedsV3,
 } from '../../core/project'
 import { gifBlob, pixelAnimationGif, vectorAnimationGif } from '../../export/animationGif'
-import { assetBundleToJson } from '../../export/assetJson'
 import { triggerDownload } from '../../export/download'
 import { bitmapToPngDataUrl, dataUrlToBlob, PNG_SCALES } from '../../export/png'
 import { exportPintaScene } from '../../export/scene'

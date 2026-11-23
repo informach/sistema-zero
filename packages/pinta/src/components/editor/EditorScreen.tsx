@@ -79,13 +79,7 @@ import {
 import { PanelLook } from '../ui/Panel'
 import { useToast } from '../ui/Toast'
 import { CoachMarks } from './CoachMarks'
-import {
-  PintaEditorProvider,
-  useEditor,
-  useEditorStores,
-  useSession,
-  useToolCuration,
-} from './editorContext'
+import { PintaEditorProvider, useEditor } from './editorContext'
 import { LayerPanel } from './LayerPanel'
 import { MapSetEditor, RegionalSetEditor } from './MapSetEditor'
 import { PaletteBar } from './PaletteBar'

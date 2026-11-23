@@ -1,4 +1,3 @@
-import type {PintaMemoryAsset} from './assetMemory'
 /**
  * A "cara" de um asset: o que a miniatura da galeria mostra dele.
  *
@@ -10,6 +9,7 @@ import type {PintaMemoryAsset} from './assetMemory'
 import { flattenCels } from '../pixel/layers'
 import { resolveMaskScene } from '../vector/mask'
 import type { VectorShape } from '../vector/model'
+import type { PintaMemoryAsset } from './assetMemory'
 import type { PintaBitmap } from './project'
 
 /** Visíveis + fontes escondidas ainda necessárias ao recorte, na ordem original. */

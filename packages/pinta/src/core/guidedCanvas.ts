@@ -115,7 +115,7 @@ export function findInitialCanvasAsset(
     name === canvas.name ||
     (name.startsWith(`${canvas.name}-`) && /^\d+$/.test(name.slice(canvas.name.length + 1)))
   return (
-    assets.find((asset):asset is Extract<PintaAsset,{kind:'pixel-background'}> => {
+    assets.find((asset): asset is Extract<PintaAsset, { kind: 'pixel-background' }> => {
       if (!doMolde(asset.name) || asset.kind !== 'pixel-background') return false
       const cel = asset.cels[0]
       return cel?.width === canvas.width && cel.height === canvas.height

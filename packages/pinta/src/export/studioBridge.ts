@@ -1,5 +1,5 @@
-import { readPintaRegionScene } from '@sistemazero/core/studio/pinta-region-scene'
 import { PINTA_STUDIO_LEGACY_LIMITS } from '@sistemazero/core/studio/pinta-limits'
+import { readPintaRegionScene } from '@sistemazero/core/studio/pinta-region-scene'
 import { sceneFitsStudio } from '@sistemazero/core/studio/pinta-scene'
 import { tilemapNeedsV3 } from '../core/project'
 import { exportPintaScene } from './scene'

@@ -26,7 +26,6 @@ import {
   previewAutomapStroke,
 } from '../../tiles/automapping/engine'
 import { automapImportLayers, bindAutomapImport } from '../../tiles/automapping/import'
-import type { AutomapEditorMap } from '../../tiles/automapping/model'
 import type { CellRect } from '../../tiles/cellGeometry'
 import { Button } from '../ui/Button'
 import { Panel } from '../ui/Panel'

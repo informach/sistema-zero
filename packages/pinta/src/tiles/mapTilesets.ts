@@ -1,4 +1,4 @@
-import type {PintaMemoryAsset} from '../core/assetMemory'
+import type { PintaMemoryAsset } from '../core/assetMemory'
 /**
  * As PEÇAS de um mapa com várias peças: o tileset padrão do mapa + os que as
  * camadas escolheram. Os renderizadores recebem `MapTilesets` — UM tileset (o
