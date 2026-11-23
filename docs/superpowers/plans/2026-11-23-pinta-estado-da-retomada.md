@@ -52,7 +52,7 @@ Backup e controle ficam em `~/backup-pinta-codex-20261122/`:
 - **Pro:** "Atualizar o motor" só troca cópia intacta. Feito.
 - **Motor Python:** versão ÚNICA, junto com Áreas do Python e Evolução do Estúdio. Documento:
   [`2026-11-23-pinta-release-python.md`](2026-11-23-pinta-release-python.md).
-- **Física antiga do Python:** a peça de plataforma vira plataforma, igual ao JS. Lote B6, interrompido.
+- **Física antiga do Python:** a peça de plataforma vira plataforma, igual ao JS. Lote B6, na staging (`f07b32e13`).
 - **"Preciso de ajuda":** só no aviso de recuperação da galeria, usando o canal de recados e os dados da recuperação. Etapa 6.
 - **Autorregras:** "Copiar o antes", "Guardar o depois", "🎲 Sortear de novo". Saem o UUID da camada e o "Uma folha
   mudou" mostrado enquanto carrega. Etapa 6.
@@ -73,6 +73,7 @@ Backup e controle ficam em `~/backup-pinta-codex-20261122/`:
 | Etapa 1 · regiões sem flag ("Mundo gigante", host, transporte 8, cliente antigo) | `4834ff812` `0d3c0ed65` `9efadaa8c` `d9d63c1c2` `91a9232a5` |
 | B4 · Python: Zappy protege o motor, os 27 blocos entram na promoção, IR sem perda, documento da release | `4fa80d977` `1f5a86418` `d591afffe` `4e3fbeef9` `e58ea6d61` `cdb8df792` |
 | Etapa 7 · Tiled, Phaser, Pygame e Godot reais com a Vila e a Cabana | `d3131965d` `74cf296b0` `71b91cc56` |
+| B6 · peça de plataforma na física antiga do Python, igual ao JS (candidata local `447167f0…`, ver o documento da release, §2.1) | `f07b32e13` |
 
 Implantação da correção do Zappy, quando a staging for à produção: Worker studio-runtime → Members →
 community-kids, community e admin.
@@ -82,9 +83,8 @@ community-kids, community e admin.
 | Branch (worktree) | Commit | O que é |
 |---|---|---|
 | `pinta-missao-retomada-20261121` (`~/projects/sistema-zero-pinta-integracao-20261120`) | `a59367346` | Tirar as flags da missão (causal V1, perfis causais, paletas CAS…). Parou na suíte do members. O inventário era para ir a `2026-11-23-pinta-sem-flags.md`. |
-| `pinta-linha-b-20261123` (`~/projects/sistema-zero-pinta-linha-b-20261123`) | `dfd96d54a` | Plataforma na física antiga do Python (B6). Parou na refatoração do pouso de tamanho fixo. |
 
-**Para retomar cada um:**
+**Para retomar:**
 1. Ler o diff do WIP (`git show <commit>`).
 2. Terminar o lote.
 3. Rodar os portões: testes, typecheck dos pacotes tocados e as provas dos cursos.
@@ -95,7 +95,7 @@ Na regiões, a conta só funciona com a fila causal, que depende do lote "sem fl
 
 ## O que falta para fechar o plano (12 a 15 lotes, aproximadamente)
 
-1. Terminar os dois lotes interrompidos acima.
+1. Terminar o lote interrompido acima. O B6 entrou em `f07b32e13`; a worktree `pinta-linha-b-20261123` fica até o fecho.
 2. **Etapa 6**, a que a criança sente primeiro e a recomendada para retomar:
    - mensagens sem jargão (U2);
    - "Preciso de ajuda" e "Antes/Depois";
