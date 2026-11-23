@@ -41,8 +41,8 @@ class Jogo:
         self.velocidade_y = 0
         self.no_chao = False
         lugar = self.cena.cena
-        self.plataforma = (lugar.fisica == 'precise'
-                           and next(lugar._colliders(lugar.limites, platforms=True), None) is not None)
+        # Peças de plataforma colocadas no lugar pedem gravidade e pulo, nas duas físicas do Pinta.
+        self.plataforma = next(lugar._colliders(lugar.limites, platforms=True), None) is not None
 
     def mover_eixo(self, delta, eixo):
         passos = max(1, ceil(abs(delta)))

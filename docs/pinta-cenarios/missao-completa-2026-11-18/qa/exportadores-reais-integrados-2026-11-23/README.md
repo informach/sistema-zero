@@ -79,6 +79,9 @@ mesma regra: `pouso` devolve `None` nas cenas 1 e 2 (`pygameProject.ts`). Já no
 de mão única na física antiga. Mudar o lado Python altera o módulo das extensões do
 Estúdio, então ficou para decisão; nada foi alterado.
 
+**Resolvida em `f07b32e13` (lote B6):** a dona decidiu igualar ao JS. O Python agora pousa na peça
+de plataforma nas duas físicas, e `verify-region-pygame.ts` roda a física precisa e a antiga.
+
 ## Portões
 
 - `pinta-typecheck.log`: `tsc --noEmit` do Pinta.

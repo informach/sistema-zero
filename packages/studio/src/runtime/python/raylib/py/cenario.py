@@ -6,7 +6,7 @@
     # dentro de begin_mode_3d: lugar.desenhar()
     # lugar.altura(x, z) retorna None onde não há chão
     # lugar.colide_caixa(minimo, maximo) consulta aproximações AABB
-    # lugar.entrou_na_regiao('Vila') é verdadeiro uma vez por entrada
+    # lugar.entrou_na_regiao('Vila') é verdadeiro no quadro em que entrou
     lugar.descartar()                        # antes de close_window
 
 Não inicia loop, câmera ou física. Água é estática; ambiente e regras continuam
@@ -781,6 +781,26 @@ class _RelevoDoCampo:
             _p.unload_model(m)
 
 
+def _expandir_colisoes(d):
+    """Em campo, a colisão gravada sem matriz e sem volume herda os da entidade dela: o envelope
+    do Estúdio tira a cópia (`colisoes-herdadas.ts` do molda-cenarios-core). Fora do campo, nada."""
+    t = d.get('terreno') if isinstance(d, dict) else None
+    if not (isinstance(t, dict) and isinstance(t.get('relevo'), dict)
+            and isinstance(d.get('colisoes'), list) and isinstance(d.get('entidades'), list)):
+        return d
+    entidades = {e['id']: e for e in d['entidades']
+                 if isinstance(e, dict) and isinstance(e.get('id'), str)}
+    colisoes = []
+    for c in d['colisoes']:
+        e = None
+        if isinstance(c, dict) and 'matriz' not in c and 'volume' not in c:
+            e = entidades.get(c.get('entidade'))
+        if e is not None and 'matriz' in e and 'volume' in e:
+            c = {**c, 'matriz': e['matriz'], 'volume': e['volume']}
+        colisoes.append(c)
+    return {**d, 'colisoes': colisoes}
+
+
 class Cenario:
     """Cena carregada. ``dados`` conserva fonte, entidades, marcadores e licenças.
 
@@ -790,6 +810,7 @@ class Cenario:
     ``atualizar(x, z)`` leva a carga junto com o personagem.
     """
     def __init__(self, raiz, dados, *, arquivos=None):
+        dados = _expandir_colisoes(dados)
         self.dados = dados
         self._fechado = False
         self._modelos = {}
@@ -1052,9 +1073,10 @@ class Cenario:
         return None if ident is None else next(r['nome'] for r in self._regioes if r['id'] == ident)
 
     def entrou_na_regiao(self, nome):
-        """Verdadeiro uma vez por entrada do personagem na região ``nome``, contada pelo último
-        ``atualizar`` (inclusive quando ele já começa dentro). Um nome que o cenário não tem é
-        avisado uma vez."""
+        """Verdadeiro no quadro em que o personagem entrou na região ``nome``, contado pelo
+        último ``atualizar`` (inclusive quando ele já começa dentro). Perguntar mais de uma vez no
+        mesmo quadro dá a mesma resposta; o próximo ``atualizar`` zera. Um nome que o cenário não
+        tem é avisado uma vez."""
         self._ativo()
         if not any(r['nome'] == nome for r in self._regioes):
             if nome not in self._avisadas:
@@ -1062,10 +1084,7 @@ class Cenario:
                 print(f'O cenário não tem a região "{nome}". '
                       'Desenhe as regiões no Molda Cenários, na aba Jogo.')
             return False
-        if nome in self._entradas:
-            self._entradas.discard(nome)
-            return True
-        return False
+        return nome in self._entradas
 
     def estado_das_regioes(self):
         """``None`` sem regiões; com elas, a região atual, as carregadas e as que falharam (pelos

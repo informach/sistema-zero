@@ -4,6 +4,7 @@ import { pngChunk } from '../../packages/pinta/src/export/pngText'
 import { embedPintaRegionImage } from '../../packages/pinta/src/export/regionImage'
 import { exportPintaRegionScene } from '../../packages/pinta/src/export/regionScene'
 import { regionVila } from '../../packages/pinta/src/testing/regionVila'
+import { regionVilaPlatform } from '../../packages/pinta/src/testing/regionVilaPlatform'
 import { pgzeroMediaPath } from '../../packages/studio/src/core/pgzeroMediaPaths'
 import { raylibMediaPath } from '../../packages/studio/src/core/raylibMediaPaths'
 import { PGZERO_EXTENSION } from '../../packages/studio/src/runtime/python/pgzero/contract'
@@ -92,8 +93,18 @@ async function worlds() {
       },
     })
   }
-  return Promise.all([world(child.json), world(broken)])
+  // Física antiga com peças de plataforma (decisão de 23/11): seguram por cima, como no JS.
+  const platform = regionVilaPlatform()
+  const legacy = await exportPintaRegionScene(
+    { ...platform.map, physics: undefined },
+    (id) => platform.assets.find((asset) => asset.id === id) ?? null,
+    nativeImageOf,
+  )
+  if (legacy.scene.physics !== 'legacy')
+    throw Error('A Vila com plataforma devia sair na física antiga')
+  return Promise.all([world(child.json), world(broken), embedPintaRegionImage(cover, legacy.json)])
 }
+const ASSET_IDS = ['mundo', 'recusa', 'plataforma'] as const
 
 const setup = (supplied: boolean, folder: string) => `import json,sys,struct,zlib
 from pathlib import Path
@@ -156,6 +167,18 @@ def accent():
         if retire_overlay:
             overlay.descartar()
             print('Pinta recorte descartado',flush=True)
+
+# Física antiga: a peça de plataforma (linha -4, topo y = -64) segura por cima e deixa passar por
+# baixo; o chão sólido continua parede. A Vila, sem peça de plataforma, não segura nada.
+platform=${supplied ? "pinta.carregar_cenario('plataforma')" : `Backend(Path('${folder}/plataforma.png').read_bytes())`}
+assert platform.cena.fisica=='legacy', platform.cena.fisica
+assert tuple(platform.pouso((8,-80,12,12),(8,-60,12,12)))==(8,-76,12,12)
+assert platform.pouso((8,-50,12,12),(8,-70,12,12)) is None
+assert platform.pouso((8,-80,12,12),(8,-60,12,12),0) is None
+assert not platform.bloqueado((8,-60,12,12)) and platform.bloqueado((8,-30,12,12))
+assert root.pouso((8,-80,12,12),(8,-60,12,12)) is None
+platform.descartar()
+print('Pinta plataforma de mão única',flush=True)
 
 print('Pinta pronta',json.dumps({'platform':sys.platform,'world':root.cena.mapa_id,
       'width':root.limites[2],'rollback':True,'owner':owner}),flush=True)
@@ -230,7 +253,7 @@ export async function pintaBrowser2dProject(name: string) {
   project.installedExtensions = [{ ...extension, installedAt: project.createdAt }]
   project.python.entrypoint = 'main.py'
   project.assets = pngs.map(({ png, width, height }, index) => {
-    const id = index === 0 ? 'mundo' : 'recusa'
+    const id = ASSET_IDS[index]!
     return {
       id,
       name: id,

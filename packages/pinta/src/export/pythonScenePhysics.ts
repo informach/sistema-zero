@@ -1,4 +1,7 @@
-/** Engine-free queries. Keep the two authored physics policies independent of storage version. */
+/** Engine-free queries. Keep the two authored physics policies independent of storage version.
+ * They differ only in authored object outlines: platform tiles are one-way in both, like the
+ * Pinta playtest and the JavaScript players (owner's decision, 23/11/2026).
+ */
 export const pythonScenePhysics = `def _tile_intersects(points, body):
     # Match the authored-shape query's inward margin, including tile seams.
     inset = min(body.width, body.height, 1) * 1e-9
@@ -107,11 +110,11 @@ class _ScenePhysics:
         return False
 
     def pouso(self, anterior, atual, gravidade=1, *, _body_epsilon=1e-6):
-        """Resolve a precise one-way platform after solid motion. Does not mutate either body."""
+        """Resolve a one-way platform tile after solid motion, in either physics.
+        Does not mutate either body."""
         before, after = _body_box(anterior), _body_box(atual)
         if (
-            self.fisica != 'precise'
-            or not before.valid()
+            not before.valid()
             or not after.valid()
             or not math.isfinite(gravidade)
             or not gravidade

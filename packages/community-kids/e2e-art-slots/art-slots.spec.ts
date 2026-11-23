@@ -53,7 +53,7 @@ test('o desenho do Pinta da aula entra no jogo do Estúdio', async ({ page }) =>
   await page.getByRole('button', { name: 'Reduzir' }).click()
   await page.getByRole('button', { name: 'Enviar meu desenho' }).click()
   await page.getByRole('dialog').getByRole('button', { name: 'Enviar', exact: true }).click()
-  await expect(page.getByText('Desenho enviado!')).toBeVisible({ timeout: 30_000 })
+  await expect(page.getByText(/^Desenho enviado!/)).toBeVisible({ timeout: 30_000 })
   await expect(proxima).toBeEnabled()
   await proxima.click()
 
@@ -91,7 +91,7 @@ test('o desenho do Pinta da aula entra no jogo do Estúdio', async ({ page }) =>
   await page.getByRole('button', { name: 'Enviar meu projeto' }).click()
   await page.getByRole('dialog').getByRole('button', { name: 'Enviar', exact: true }).click()
   // O aviso do envio COMEÇA com a frase; o texto da aula também a cita (sem âncora o
-  // localizador acha os dois e reprova no modo estrito).
+  // localizador acha os dois e reprova no modo estrito). Vale também para "Desenho enviado!".
   await expect(page.getByText(/^Projeto enviado!/)).toBeVisible({ timeout: 30_000 })
   await page.screenshot({ path: '.cache/art-slots-05.png' })
 
@@ -111,7 +111,7 @@ test('o desenho do Pinta da aula entra no jogo do Estúdio', async ({ page }) =>
   )
   await page.getByRole('dialog').getByRole('button', { name: 'Enviar', exact: true }).click()
   expect((await reenvio).ok()).toBe(true)
-  await expect(page.getByText(/Desenho enviado!/)).toBeVisible({ timeout: 30_000 })
+  await expect(page.getByText(/^Desenho enviado!/)).toBeVisible({ timeout: 30_000 })
   await page.reload()
   // A aula reabre onde a criança estava (a parte do desenho).
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Desenhe a sua chave')

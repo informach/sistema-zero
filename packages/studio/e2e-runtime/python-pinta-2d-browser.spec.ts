@@ -241,6 +241,7 @@ for (const engine of ['pgzero', 'raylib2d']) {
       expect(logs).toContain('Pinta fornecido /studio/extensions/python-')
     expect(logs).toContain('"platform": "emscripten"')
     expect(logs).toContain('"rollback": true')
+    expect(logs).toContain('Pinta plataforma de mão única')
     await info.attach('pixels-e-saida', {
       body: JSON.stringify({ art, logs }, null, 2),
       contentType: 'application/json',

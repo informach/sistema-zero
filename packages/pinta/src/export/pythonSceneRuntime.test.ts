@@ -423,31 +423,33 @@ print(json.dumps(dict(moved=moved, turned=turned)))`,
   },
 )
 
-it.skipIf(!purePython)(
-  'world-space objects, bounds, solids and one-way landings agree with Core on rotated signed sets',
-  async () => {
-    const scene = fixture(),
-      context = createRegionSceneQueries(readPintaRegionScene(JSON.stringify(scene))!)
-    const boxes: Box[] = [
-      [-33 * size - 1, 0, 3, 3],
-      [-33 * size, 0, 3, 3],
-    ]
-    for (let y = -3; y < 65; y += 3)
-      for (let x = -21; x < 50; x += 3) boxes.push([x + 0.125, y + 0.125, 2, 2])
-    const body = ([x, y, width, height]: Box) => ({ x, y, width, height })
-    const pairs = boxes
-      .filter((_, i) => i % 5 === 0)
-      .flatMap((b) =>
-        [1, -1, 0].map((g) => ({
-          before: b,
-          after: [b[0], b[1] + 11 * g, b[2], b[3]] as Box,
-          g,
-        })),
-      )
-    const doubled = (b: number[]) => b.map((v) => v * 2)
-    const values = (await runPurePython(
-      runtime,
-      `${setup}
+// Decisão de 23/11: a peça de plataforma é de mão única nas duas físicas, como nos jogadores JS.
+for (const physics of ['precise', 'legacy'] as const)
+  it.skipIf(!purePython)(
+    `world-space objects, bounds, solids and one-way landings agree with Core on rotated signed sets (${physics})`,
+    async () => {
+      const scene = fixture(physics),
+        context = createRegionSceneQueries(readPintaRegionScene(JSON.stringify(scene))!)
+      const boxes: Box[] = [
+        [-33 * size - 1, 0, 3, 3],
+        [-33 * size, 0, 3, 3],
+      ]
+      for (let y = -3; y < 65; y += 3)
+        for (let x = -21; x < 50; x += 3) boxes.push([x + 0.125, y + 0.125, 2, 2])
+      const body = ([x, y, width, height]: Box) => ({ x, y, width, height })
+      const pairs = boxes
+        .filter((_, i) => i % 5 === 0)
+        .flatMap((b) =>
+          [1, -1, 0].map((g) => ({
+            before: b,
+            after: [b[0], b[1] + 11 * g, b[2], b[3]] as Box,
+            g,
+          })),
+        )
+      const doubled = (b: number[]) => b.map((v) => v * 2)
+      const values = (await runPurePython(
+        runtime,
+        `${setup}
 start=cena.objeto_por_id('instance/start')
 altered=cena.objeto_por_id('instance/start')
 altered['properties']['target']['value']='changed'
@@ -458,46 +460,48 @@ print(json.dumps(dict(spawn=cena.ponto_inicial(),bounds=cena.limites,objects=[o[
     tile=cena.propriedade_peca('A',0,'blocked'),invalid=cena.propriedade_peca('A',True,'blocked'),
     image=cena.recurso_imagem('B') in mundo['images'],
     hits=[cena.bloqueado(b) for b in request['boxes']],
-    land=[cena.pouso(a,b,g) for a,b,g in request['pairs']])))`,
-      {
-        png: await envelope(scene, 2),
-        boxes: boxes.map(doubled),
-        pairs: pairs.map((p) => [doubled(p.before), doubled(p.after), p.g]),
-      },
-    )) as {
-      spawn: number[]
-      bounds: Box
-      objects: string[]
-      property: string
-      layer: number
-      tile: boolean
-      invalid: null
-      image: boolean
-      hits: boolean[]
-      land: (Box | null)[]
-    }
-    const spawn = context.spawn()
-    expect(values.spawn[0]).toBeCloseTo(spawn.x * 2, 8)
-    expect(values.spawn[1]).toBeCloseTo(spawn.y * 2, 8)
-    expect(values.bounds).toEqual([-528, -512, 160000, 160000])
-    expect(values.objects).toEqual(context.objects().map((o) => o.id))
-    expect([values.property, values.layer, values.tile, values.invalid, values.image]).toEqual([
-      'instance/child',
-      0,
-      false,
-      null,
-      true,
-    ])
-    expect(values.hits).toEqual(boxes.map((b) => context.intersectsBox(body(b))))
-    expect(values.land.some(Boolean)).toBe(true)
+    land=[cena.pouso(a,b,g) for a,b,g in request['pairs']],physics=cena.fisica)))`,
+        {
+          png: await envelope(scene, 2),
+          boxes: boxes.map(doubled),
+          pairs: pairs.map((p) => [doubled(p.before), doubled(p.after), p.g]),
+        },
+      )) as {
+        spawn: number[]
+        bounds: Box
+        objects: string[]
+        property: string
+        layer: number
+        tile: boolean
+        invalid: null
+        image: boolean
+        hits: boolean[]
+        land: (Box | null)[]
+        physics: string
+      }
+      expect(values.physics).toBe(physics)
+      const spawn = context.spawn()
+      expect(values.spawn[0]).toBeCloseTo(spawn.x * 2, 8)
+      expect(values.spawn[1]).toBeCloseTo(spawn.y * 2, 8)
+      expect(values.bounds).toEqual([-528, -512, 160000, 160000])
+      expect(values.objects).toEqual(context.objects().map((o) => o.id))
+      expect([values.property, values.layer, values.tile, values.invalid, values.image]).toEqual([
+        'instance/child',
+        0,
+        false,
+        null,
+        true,
+      ])
+      expect(values.hits).toEqual(boxes.map((b) => context.intersectsBox(body(b))))
+      expect(values.land.some(Boolean)).toBe(true)
 
-    for (const [i, p] of pairs.entries()) {
-      const landing = context.platformLanding(body(p.before), body(p.after), p.g)
-      if (!landing) expect(values.land[i]).toBeNull()
-      else expect(values.land[i]![1]).toBeCloseTo(landing.y * 2, 7)
-    }
-  },
-)
+      for (const [i, p] of pairs.entries()) {
+        const landing = context.platformLanding(body(p.before), body(p.after), p.g)
+        if (!landing) expect(values.land[i]).toBeNull()
+        else expect(values.land[i]![1]).toBeCloseTo(landing.y * 2, 7)
+      }
+    },
+  )
 
 it.skipIf(!purePython)(
   'bloqueado and pouso read a Raylib Rectangle by its fields, like the (x, y, w, h) tuple',
@@ -643,19 +647,28 @@ it.skipIf(!pygamePython)(
       layers: [layer],
     }
     const samples = []
-    for (const [version, physics] of [
-      [2, 'legacy'],
-      [3, 'precise'],
+    // Decisão de 23/11: a peça de plataforma segura por cima também na cena 2 (física antiga).
+    // A terceira amostra declara a peça na folha sem colocá-la: nada muda nela.
+    for (const [version, physics, platform] of [
+      [2, 'legacy', true],
+      [3, 'precise', true],
+      [2, 'legacy', false],
     ] as const) {
+      const placed = platform ? placements : placements.filter(([, , v]) => v !== 1)
+      const flat = Array<number>(bounds.cols * bounds.rows).fill(-1)
+      for (const [x, y, v] of placed) flat[y * bounds.cols + x] = v
       const scene = {
         ...dense,
         version: 4,
         physics,
         origin: { col: 0, row: 0 },
-        layers: [{ ...layer, cells: grid(bounds, placements) }],
+        layers: [{ ...layer, cells: grid(bounds, placed) }],
       }
       const { png } = await embedPintaRegionImage(cover, JSON.stringify(scene))
-      samples.push({ dense: { ...dense, version }, png: Buffer.from(png).toString('base64') })
+      samples.push({
+        dense: { ...dense, version, layers: [{ ...layer, cells: flat }] },
+        png: Buffer.from(png).toString('base64'),
+      })
     }
     const facadePath = fileURLToPath(
       new URL('../../../studio/src/runtime/python/pygame/py/pinta.py', import.meta.url),
@@ -664,6 +677,7 @@ it.skipIf(!pygamePython)(
 ${pygameSceneModule}
 ${runtime}
 Mapa=runpy.run_path(facade_path)['Mapa']
+results=[]
 for sample in samples:
     old=Mundo.__new__(Mundo)
     old.mapas={'map':sample['dense']}
@@ -703,6 +717,7 @@ for sample in samples:
         for x in range(62):
             box=(x,y,2,2)
             assert old.bloqueado(pygame.FRect(box))==cena.bloqueado(box)
+    landings=0
     for g in (1,-1,0):
         for y in range(0,27):
             for x in range(0,60,4):
@@ -711,7 +726,15 @@ for sample in samples:
                 original=old.pouso(before,after,g)
                 new=cena.pouso(before,after,g)
                 assert (None if original is None else tuple(original))==new
-print('ok')
+                landings+=new is not None
+    # The package's own motion: with gravity it stops on the platform top (y = 16).
+    old.jogador=pygame.FRect(32,4,2,2)
+    old.mover(0,20,gravidade=1)
+    gravity=old.jogador.y
+    old.jogador=pygame.FRect(32,4,2,2)
+    old.mover(0,20)
+    results.append(dict(version=sample['dense']['version'],landings=landings,gravity=gravity,free=old.jogador.y))
+print(json.dumps(results))
 `
     const check = spawnSync(
       pygamePython!,
@@ -724,7 +747,19 @@ print('ok')
       },
     )
     expect(check.status, check.stderr || check.error?.message).toBe(0)
-    expect(check.stdout.trim()).toBe('ok')
+    const [legacy, precise, empty] = JSON.parse(check.stdout) as {
+      version: number
+      landings: number
+      gravity: number
+      free: number
+    }[]
+    for (const result of [legacy!, precise!]) {
+      expect(result.landings).toBeGreaterThan(0)
+      expect([result.gravity, result.free]).toEqual([14, 24])
+    }
+    expect(legacy!.landings).toBe(precise!.landings)
+    // Without a placed platform the old scene answers exactly as before: no support at all.
+    expect(empty).toEqual({ version: 2, landings: 0, gravity: 24, free: 24 })
   },
 )
 

@@ -1,6 +1,7 @@
 import { expect, test } from 'bun:test'
 import { LIMITES_DA_EXPORTACAO } from '@sistemazero/molda-cenarios-core/compilar'
 import { decodeProjectAsset } from '../core/assetBinary'
+import { lerAssetDeCena3D } from '../core/scene3d/referencias'
 import { criarTransporteDeEnsaio } from './scene3dTransportFixture'
 
 /**
@@ -42,7 +43,8 @@ test('em campo, a cena sai com os números curtos e as regiões conferem (lote 5
     comRampa: true,
   })
   const cena = plano.assets.find((a) => a.kind === 'scene3d')!
-  const envelope = JSON.parse(new TextDecoder().decode(decodeProjectAsset(cena.dataUrl).bytes)) as {
+  // A leitura de sempre: em campo, a colisão herda a matriz e o volume da entidade.
+  const envelope = lerAssetDeCena3D(cena) as unknown as {
     cena: {
       nos: Array<{ matriz: number[] }>
       colisoes: Array<{ matriz: number[]; volume: { min: { x: number } } }>
@@ -80,4 +82,45 @@ test('em campo com "Juntar peças" (como o Estúdio traz o cenário), os pesos c
   const pesos = envelope.cena.terreno.relevo?.pesos ?? []
   expect(pesos.length).toBe(1)
   for (const p of pesos) expect(envelope.cena.arquivos.some((a) => a.caminho === p)).toBe(true)
+})
+
+test('em campo, a colisão é gravada sem a matriz e o volume da entidade, e a leitura os devolve', async () => {
+  const plano = await criarTransporteDeEnsaio({
+    relevoEmCampo: true,
+    comRegioes: true,
+    comRampa: true,
+  })
+  const cena = plano.assets.find((a) => a.kind === 'scene3d')!
+  const gravado = JSON.parse(new TextDecoder().decode(decodeProjectAsset(cena.dataUrl).bytes)) as {
+    cena: {
+      entidades: Array<{ id: string; matriz?: number[]; volume?: unknown }>
+      colisoes: Array<{ entidade: string | null; matriz?: number[]; volume?: unknown }>
+    }
+  }
+  const herdadas = gravado.cena.colisoes.filter((c) => c.matriz === undefined)
+  // Anti-vácuo: a cena tem colisões de entidades, e todas elas saem sem a cópia.
+  expect(herdadas.length).toBeGreaterThan(0)
+  for (const c of herdadas) expect(c.volume).toBeUndefined()
+  const lida = lerAssetDeCena3D(cena)
+  const entidades = new Map(
+    lida.cena.entidades.map((e) => [e.id, e as { matriz?: number[]; volume?: unknown }]),
+  )
+  for (const c of lida.cena.colisoes) {
+    expect(c.matriz).toHaveLength(16)
+    const e = c.entidade ? entidades.get(c.entidade) : undefined
+    if (e && herdadas.some((h) => h.entidade === c.entidade)) {
+      expect(c.matriz).toEqual(e.matriz!)
+      expect(c.volume).toEqual(e.volume)
+    }
+  }
+})
+
+test('fora do campo, a cena é gravada como sempre (a colisão leva a matriz)', async () => {
+  const plano = await criarTransporteDeEnsaio({ comRegioes: true, comRampa: true })
+  const cena = plano.assets.find((a) => a.kind === 'scene3d')!
+  const gravado = JSON.parse(new TextDecoder().decode(decodeProjectAsset(cena.dataUrl).bytes)) as {
+    cena: { colisoes: Array<{ matriz?: number[] }> }
+  }
+  expect(gravado.cena.colisoes.length).toBeGreaterThan(0)
+  for (const c of gravado.cena.colisoes) expect(c.matriz).toHaveLength(16)
 })
