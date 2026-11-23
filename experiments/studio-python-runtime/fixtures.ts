@@ -186,6 +186,8 @@ export async function runtimeFixtureProject(
   if (isPintaRegionalFixture(name)) return pintaRegionalProject(name)
   const { isRaylibRegionsFixture, raylibRegionsProject } = await import('./raylibRegionFixtures')
   if (isRaylibRegionsFixture(name)) return raylibRegionsProject(name)
+  const { isRaylibRelevoFixture, raylibRelevoProject } = await import('./raylibRelevoFixtures')
+  if (isRaylibRelevoFixture(name)) return raylibRelevoProject(name)
   const { isPintaPhysicsFixture, pintaPhysicsProject } = await import('./pintaPhysicsFixtures')
   if (isPintaPhysicsFixture(name)) return pintaPhysicsProject(name)
   const { isPintaPlatformFixture, pintaPlatformProject } = await import('./pintaPlatformFixtures')

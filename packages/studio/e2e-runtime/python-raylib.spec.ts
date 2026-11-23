@@ -186,20 +186,9 @@ for (const { key } of RAYLIB_GAMES)
     await page.evaluate(() => globalThis.providerProbe.dispose('game'))
   })
 
-/**
- * Regiões no Raylib 3D (lote 7b da conclusão, 22/11/2026): o cenário de três regiões em fila
- * (`experiments/studio-python-runtime/raylibRegionFixtures.ts`), a rota Vila → Floresta →
- * Caverna → Floresta → Vila dez vezes. Na Caverna e no fim de cada volta o programa escreve o que
- * contou e espera o N; a prova lê ali os objetos de GPU vivos do quadro. Reprova se uma entrada não
- * contar exatamente uma vez, se alguma região falhar, se uma parada não tiver exatamente os dois
- * modelos e as duas texturas da janela (a liberação de verdade), se os objetos de GPU não forem
- * medidos ou se mudarem nas paradas das últimas quatro voltas.
- */
-test('Raylib 3D: o cenário com regiões carrega e solta pela rota, dez voltas', async ({
-  page,
-}, testInfo) => {
-  test.setTimeout(240_000)
-  await page.addInitScript(() => {
+/** Conta os objetos de GPU vivos de cada contexto WebGL2 (`window.__szGpuVivos()` no frame). */
+function vigiarGpu(page: Page) {
+  return page.addInitScript(() => {
     const kinds: Array<[string, string, string]> = [
       ['createBuffer', 'deleteBuffer', 'buffers'],
       ['createTexture', 'deleteTexture', 'textures'],
@@ -237,6 +226,22 @@ test('Raylib 3D: o cenário com regiões carrega e solta pela rota, dez voltas',
       },
     })
   })
+}
+
+/**
+ * Regiões no Raylib 3D (lote 7b da conclusão, 22/11/2026): o cenário de três regiões em fila
+ * (`experiments/studio-python-runtime/raylibRegionFixtures.ts`), a rota Vila → Floresta →
+ * Caverna → Floresta → Vila dez vezes. Na Caverna e no fim de cada volta o programa escreve o que
+ * contou e espera o N; a prova lê ali os objetos de GPU vivos do quadro. Reprova se uma entrada não
+ * contar exatamente uma vez, se alguma região falhar, se uma parada não tiver exatamente os dois
+ * modelos e as duas texturas da janela (a liberação de verdade), se os objetos de GPU não forem
+ * medidos ou se mudarem nas paradas das últimas quatro voltas.
+ */
+test('Raylib 3D: o cenário com regiões carrega e solta pela rota, dez voltas', async ({
+  page,
+}, testInfo) => {
+  test.setTimeout(240_000)
+  await vigiarGpu(page)
   await page.goto('/provider')
   await page.waitForFunction(() => !!globalThis.providerProbe)
   await page.evaluate(() => globalThis.providerProbe.prepare('game', 'raylib-regioes-3d'))
@@ -288,6 +293,70 @@ test('Raylib 3D: o cenário com regiões carrega e solta pela rota, dez voltas',
       new Set(ultimas.map((v) => v.gpu[nome])).size,
       `${nome}: ${ultimas.map((v) => v.gpu[nome]).join(', ')}`,
     ).toBe(1)
+  }
+  await page.evaluate(() => globalThis.providerProbe.dispose('game'))
+})
+
+/**
+ * O relevo de mundo grande no Raylib 3D (plano "Mundos de 2 km", lote 6, 23/11/2026): um mundo de
+ * 2 km com colinas, compilado em campo e trazido pelo importador do Estúdio
+ * (`experiments/studio-python-runtime/raylibRelevoFixtures.ts`), quatro voltas num quadrado de
+ * 1,6 km. Reprova se o relevo não completar em volta de um canto, se o personagem ficar sem chão,
+ * se os pedaços guardados passarem do teto, se os objetos de GPU não forem medidos ou se mudarem
+ * entre as duas últimas voltas (o cache dos pedaços não cresce a cada volta).
+ */
+test('Raylib 3D: o relevo de mundo grande anda 2 km, quatro voltas', async ({ page }, testInfo) => {
+  test.setTimeout(420_000)
+  await vigiarGpu(page)
+  await page.goto('/provider')
+  await page.waitForFunction(() => !!globalThis.providerProbe)
+  await page.evaluate(() => globalThis.providerProbe.prepare('game', 'raylib-relevo-2km'))
+  const ready = await page.evaluate(() => globalThis.providerProbe.read('game'))
+  expect(ready.status, JSON.stringify(ready)).toBe('ready')
+  await page.evaluate(() => globalThis.providerProbe.run('game'))
+  const frame = page.frames().find((candidate) => candidate.url().includes('/frame.html'))!
+  const canvas = frame.locator('canvas')
+  await expect(canvas).toHaveCount(1, { timeout: 60_000 })
+  const paradas: { marca: string; linha: string; gpu: Record<string, number> }[] = []
+  for (let volta = 1; volta <= 4; volta++)
+    for (let canto = 0; canto < 4; canto++) {
+      const marca = `parada ${volta} ${canto} `
+      await expect.poll(() => stdout(page), { timeout: 120_000 }).toContain(marca)
+      const saida = await stdout(page)
+      const linha = saida.slice(saida.lastIndexOf(marca)).split('fim')[0]!
+      const gpu = await frame.evaluate(() =>
+        (window as unknown as { __szGpuVivos(): Record<string, number> }).__szGpuVivos(),
+      )
+      paradas.push({ marca, linha, gpu })
+      if (volta === 1 && canto === 0)
+        await testInfo.attach('relevo-no-canto.png', {
+          body: await canvas.screenshot(),
+          contentType: 'image/png',
+        })
+      await canvas.press('n')
+    }
+  await testInfo.attach('paradas', {
+    body: JSON.stringify(paradas, null, 2),
+    contentType: 'application/json',
+  })
+  const state = await page.evaluate(() => globalThis.providerProbe.read('game'))
+  expect(state.status, JSON.stringify(state.events.at(-1))).not.toBe('failed')
+  for (const { marca, linha } of paradas) {
+    expect(linha, marca).toContain('faltam 0 ')
+    expect(linha, marca).toContain('altura ok')
+    const numero = (nome: string) => Number(new RegExp(`${nome} (\\d+)`).exec(linha)?.[1])
+    expect(numero('completos'), marca).toBeGreaterThan(0)
+    expect(numero('grossos'), marca).toBeGreaterThan(0)
+    expect(numero('guardados'), marca).toBeLessThanOrEqual(24 + 160)
+  }
+  // Os objetos de GPU: medidos (anti-vácuo) e iguais, canto a canto, nas duas últimas voltas.
+  for (const nome of ['buffers', 'vertexArrays']) {
+    for (const { marca, gpu } of paradas)
+      expect(gpu[nome] ?? 0, `${nome} ${marca}`).toBeGreaterThan(0)
+    expect(
+      paradas.slice(8, 12).map((p) => p.gpu[nome]),
+      `${nome} nas voltas 3 e 4`,
+    ).toEqual(paradas.slice(12, 16).map((p) => p.gpu[nome]))
   }
   await page.evaluate(() => globalThis.providerProbe.dispose('game'))
 })
