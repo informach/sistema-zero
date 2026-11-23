@@ -5,7 +5,7 @@
  * "Trazer de volta" — com o tileset de um mapa marcado incluído SOZINHO.
  */
 import { beforeEach, describe, expect, it } from 'bun:test'
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { gzipSync, strToU8, unzipSync } from 'fflate'
 import { COPY } from '../../core/copy'
 import type { PintaAsset } from '../../core/project'
@@ -429,7 +429,11 @@ it('o Preciso de ajuda da recuperação manda à equipe o perfil, as edições e
   expect(screen.getAllByRole('button', { name: COPY.gallery.recoveryHelp })).toHaveLength(1)
   expect(help.closest('[role=alert]')?.textContent).toContain(COPY.gallery.retainedRecoveryHelp)
   fireEvent.click(help)
-  await screen.findByText(COPY.gallery.recoveryHelpSent('nos seus recados'), { exact: false })
+  // A confirmação é curta e infantil (toast); a linha do aviso diz onde a resposta aparece.
+  await screen.findByText(COPY.gallery.recoveryHelpSent)
+  screen.getByText(COPY.gallery.recoveryHelpAnswer('nos seus recados'), { exact: false })
+  // Já está com a equipe: o botão não manda o mesmo pedido de novo.
+  expect((help as HTMLButtonElement).disabled).toBe(true)
   expect(sent).toHaveLength(1)
   expect(sent[0]).toMatchObject({
     kind: 'retained-recovery',
@@ -452,4 +456,66 @@ it('o Preciso de ajuda da recuperação manda à equipe o perfil, as edições e
       .getByRole('link', { name: COPY.gallery.recoveryHelpSeeConversation })
       .getAttribute('href'),
   ).toBe('/recados/conversa-1')
+})
+
+function recoveryFixture(options: { retained: boolean; fail?: boolean; help?: boolean }) {
+  setPintaStorageNamespace('perfil-recuperacao')
+  const vila = createPixelSpriteAsset({ name: 'vila', frameSize: 8 })
+  let sends = 0
+  const persistence: PintaPersistence = {
+    persistAsset: async () => {},
+    persistAssets: async () => {},
+    deleteAsset: async () => {},
+    loadAssetById: async () => null,
+    listAllAssets: async () => [vila],
+    needsRetainedRecovery: () => options.retained,
+    loadRetainedRecoveryFiles: async () => new Map(),
+    describeRetainedRecovery: async () => [{ opId: 'op-1', itemIds: [vila.id] }],
+  }
+  const chrome: PintaHostChrome = {
+    menu: null,
+    status: null,
+    back: null,
+    account: null,
+    help:
+      options.help === false
+        ? null
+        : {
+            async send() {
+              sends += 1
+              if (options.fail) throw new Error('fora do ar')
+              return { label: 'nos seus recados', href: '/recados/conversa-1' }
+            },
+          },
+  }
+  render(
+    <PintaHostChromeProvider value={chrome}>
+      <PintaApp persistence={persistence} />
+    </PintaHostChromeProvider>,
+  )
+  return { sends: () => sends }
+}
+
+it('o Preciso de ajuda só aparece no aviso de recuperação, e só com o canal de recados do host', async () => {
+  recoveryFixture({ retained: false })
+  await screen.findByRole('button', { name: /Abrir vila/ })
+  expect(screen.queryByRole('button', { name: COPY.gallery.recoveryHelp })).toBeNull()
+  expect(screen.queryByText(COPY.gallery.retainedRecoveryHelp)).toBeNull()
+  cleanup()
+
+  recoveryFixture({ retained: true, help: false })
+  await screen.findByRole('button', { name: COPY.gallery.downloadRetainedRecovery })
+  expect(screen.queryByRole('button', { name: COPY.gallery.recoveryHelp })).toBeNull()
+  // Sem o canal, o aviso não cita um botão que não existe.
+  screen.getByText(COPY.gallery.retainedRecovery)
+})
+
+it('quando o pedido falha, a criança lê uma frase clara e pode tentar de novo', async () => {
+  const fixture = recoveryFixture({ retained: true, fail: true })
+  const help = await screen.findByRole('button', { name: COPY.gallery.recoveryHelp })
+  fireEvent.click(help)
+  await screen.findByText(COPY.gallery.recoveryHelpError)
+  expect(fixture.sends()).toBe(1)
+  await waitFor(() => expect((help as HTMLButtonElement).disabled).toBe(false))
+  expect(screen.queryByRole('link', { name: COPY.gallery.recoveryHelpSeeConversation })).toBeNull()
 })

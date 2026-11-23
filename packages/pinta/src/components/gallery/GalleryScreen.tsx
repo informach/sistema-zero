@@ -212,7 +212,7 @@ export function GalleryScreen(): JSX.Element {
   const [justCreatedId, setJustCreatedId] = useState<string | null>(null)
   const [zipping, setZipping] = useState(false)
   const [recoveryHelp, setRecoveryHelp] = useState<
-    'sending' | 'error' | { label: string; href: string } | null
+    'sending' | { label: string; href: string } | null
   >(null)
   const [restoring, setRestoring] = useState(false)
   const photoRef = useRef<HTMLInputElement>(null)
@@ -360,13 +360,16 @@ export function GalleryScreen(): JSX.Element {
   /** O pedido vai pelos recados do host e já leva o que identifica a recuperação. */
   async function handleRecoveryHelp(): Promise<void> {
     const help = hostChrome?.help
-    if (!help || recoveryHelp === 'sending') return
+    if (!help || recoveryHelp !== null) return
     setRecoveryHelp('sending')
     try {
       const names = new Map(assets.map(({ id, name }) => [id, name]))
       setRecoveryHelp(await help.send(await retainedRecoveryHelpReport(persistence, names)))
+      showToast(COPY.gallery.recoveryHelpSent)
     } catch {
-      setRecoveryHelp('error')
+      // A frase do erro vem no toast; o botão volta para a criança tentar de novo.
+      setRecoveryHelp(null)
+      showToast(COPY.gallery.recoveryHelpError)
     }
   }
 
@@ -738,7 +741,8 @@ export function GalleryScreen(): JSX.Element {
                   {hostChrome?.help ? (
                     <Button
                       variant="pillPrimary"
-                      disabled={recoveryHelp === 'sending'}
+                      // Depois do envio o pedido já está com a equipe: o botão não manda de novo.
+                      disabled={recoveryHelp !== null}
                       onClick={() => void handleRecoveryHelp()}
                     >
                       <MessageCircle aria-hidden="true" />
@@ -754,17 +758,11 @@ export function GalleryScreen(): JSX.Element {
                     {COPY.gallery.downloadRetainedRecovery}
                   </Button>
                   {recoveryHelp && recoveryHelp !== 'sending' ? (
-                    <p role="status" className="w-full text-pin-text text-sm">
-                      {recoveryHelp === 'error' ? (
-                        COPY.gallery.recoveryHelpError
-                      ) : (
-                        <>
-                          {COPY.gallery.recoveryHelpSent(recoveryHelp.label)}{' '}
-                          <a className="font-semibold underline" href={recoveryHelp.href}>
-                            {COPY.gallery.recoveryHelpSeeConversation}
-                          </a>
-                        </>
-                      )}
+                    <p className="w-full text-pin-text text-sm">
+                      {COPY.gallery.recoveryHelpAnswer(recoveryHelp.label)}{' '}
+                      <a className="font-semibold underline" href={recoveryHelp.href}>
+                        {COPY.gallery.recoveryHelpSeeConversation}
+                      </a>
                     </p>
                   ) : null}
                 </div>

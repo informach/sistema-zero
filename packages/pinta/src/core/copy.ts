@@ -436,7 +436,10 @@ export const COPY = {
     retainedRecoveryHelp:
       'Algumas edições precisam das peças da versão anterior para abrir. Elas continuam guardadas neste aparelho. Toque em Preciso de ajuda e a equipe arruma para você.',
     recoveryHelp: 'Preciso de ajuda',
-    recoveryHelpSent: (where: string) => `Pedido enviado. A resposta aparece ${where}.`,
+    /** O toast depois do envio: curto, sem jargão, e diz que alguém vai cuidar. */
+    recoveryHelpSent: 'Pronto! A equipe recebeu seu pedido e vai te ajudar.',
+    /** A linha que fica no aviso, com o caminho até a conversa. */
+    recoveryHelpAnswer: (where: string) => `A resposta aparece ${where}.`,
     recoveryHelpSeeConversation: 'Ver conversa',
     recoveryHelpError: 'Não consegui enviar o pedido. Tente de novo daqui a pouco.',
     downloadRetainedRecovery: 'Baixar arquivos para a equipe',
