@@ -28,13 +28,21 @@ var animated_art: Array = []
 var elapsed: float = 0.0
 var map_objects: Array = []
 var solid_tile_layers: Array = []
-${regional ? `var platform_motion: bool = false
+${
+  regional
+    ? `var platform_motion: bool = false
 var can_jump: bool = false
 var door_entered: bool = false
-` : ''}
+`
+    : ''
+}
 ${godotPhysicsFor(regional)}
-${regional ? `${godotRegions()}
-` : ''}
+${
+  regional
+    ? `${godotRegions(true)}
+`
+    : ''
+}
 func _effective(layers: Array, layer: Dictionary) -> Dictionary:
     var result: Dictionary = {"px":layer.get("parallaxX",1.0),"py":layer.get("parallaxY",1.0)}
     var parent_id: String = layer.get("parentId", "")
@@ -54,24 +62,32 @@ func _effective(layers: Array, layer: Dictionary) -> Dictionary:
     return result
 
 func _ready() -> void:
-${regional ? `    if not _read_package():
+${
+  regional
+    ? `    if not _read_package():
         push_error("Pinta: pacote de mapas inválido.")
         get_tree().quit(1)
         return
-` : `    maps = JSON.parse_string(FileAccess.get_file_as_string("res://maps.json"))
-`}    # JSON usa float; Array.has distingue float de int. Normalize os índices na fronteira.
+`
+    : `    maps = JSON.parse_string(FileAccess.get_file_as_string("res://maps.json"))
+`
+}    # JSON usa float; Array.has distingue float de int. Normalize os índices na fronteira.
     for data in maps.values():
         for tileset in data.tilesets:
             tileset.solid = PackedInt32Array(tileset.solid)
             tileset.platform = PackedInt32Array(tileset.platform)
-${regional ? `    var start: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://start.json"))
+${
+  regional
+    ? `    var start: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://start.json"))
     if not start is String or not maps.has(start):
         push_error("Pinta: mapa inicial ausente.")
         get_tree().quit(1)
         return
     _load_map(start)
-` : `    _load_map(JSON.parse_string(FileAccess.get_file_as_string("res://start.json")))
-`}
+`
+    : `    _load_map(JSON.parse_string(FileAccess.get_file_as_string("res://start.json")))
+`
+}
 func _texture(path: String) -> Texture2D:
     return load("res://" + path)
 
@@ -120,27 +136,43 @@ func _art_tile(animation: Dictionary, time_ms: float) -> int:
 
 func _load_map(key: String) -> void:
     if world:
-${regional ? `        world.hide()
+${
+  regional
+    ? `        world.hide()
         remove_child(world)
-` : ''}        world.queue_free()
+`
+    : ''
+}        world.queue_free()
     animated_cells.clear()
     animated_art.clear()
     elapsed = 0.0
     map_objects.clear()
     solid_tile_layers.clear()
-${regional ? `    platform_motion = false
+${
+  regional
+    ? `    platform_motion = false
     can_jump = false
-` : ''}    scene_data = maps[key]
+`
+    : ''
+}    scene_data = maps[key]
     world = Node2D.new()
     add_child(world)
-${regional ? `    var area := Rect2i(_grid_origin(scene_data),Vector2i(scene_data.cols,scene_data.rows))
+${
+  regional
+    ? `    var area := Rect2i(_grid_origin(scene_data),Vector2i(scene_data.cols,scene_data.rows))
     _layers(scene_data.layers,world,area,{})
-` : `    _layers(scene_data.layers, world, int(scene_data.cols), int(scene_data.rows), {})
-`}    player = CharacterBody2D.new()
+`
+    : `    _layers(scene_data.layers, world, int(scene_data.cols), int(scene_data.rows), {})
+`
+}    player = CharacterBody2D.new()
     player.name = "Jogador"
-${regional ? `    if scene_data.get("version",1) == 4 and not platform_motion:
+${
+  regional
+    ? `    if scene_data.get("version",1) == 4 and not platform_motion:
         player.motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
-` : ''}    var shape := CollisionShape2D.new()
+`
+    : ''
+}    var shape := CollisionShape2D.new()
     var rectangle := RectangleShape2D.new()
     rectangle.size = Vector2(scene_data.tileSize * 0.65, scene_data.tileSize * 0.65)
     shape.shape = rectangle
@@ -155,17 +187,25 @@ ${regional ? `    if scene_data.get("version",1) == 4 and not platform_motion:
     camera.position_smoothing_enabled = false
     player.add_child(camera)
     world.add_child(player)
-${regional ? `    player.position = (Vector2(area.position) + Vector2(0.5,0.5)) * scene_data.tileSize
-` : `    player.position = Vector2(scene_data.tileSize / 2,scene_data.tileSize / 2)
-`}    for object in map_objects:
+${
+  regional
+    ? `    player.position = (Vector2(area.position) + Vector2(0.5,0.5)) * scene_data.tileSize
+`
+    : `    player.position = Vector2(scene_data.tileSize / 2,scene_data.tileSize / 2)
+`
+}    for object in map_objects:
         if object.data.get("role", "") == "start":
             player.global_position = object.node.global_position
             break
     print("Pinta: ", key, " / ", scene_data.layers.size(), " camadas")
 
-${regional ? `func _layers(layers: Array, parent: Node2D, area: Rect2i, inherited: Dictionary, prefix: String = "", local_ids: Dictionary = {}) -> void:
-` : `func _layers(layers: Array, parent: Node2D, cols: int, rows: int, inherited: Dictionary, prefix: String = "", local_ids: Dictionary = {}) -> void:
-`}    var groups: Dictionary = inherited.duplicate()
+${
+  regional
+    ? `func _layers(layers: Array, parent: Node2D, area: Rect2i, inherited: Dictionary, prefix: String = "", local_ids: Dictionary = {}) -> void:
+`
+    : `func _layers(layers: Array, parent: Node2D, cols: int, rows: int, inherited: Dictionary, prefix: String = "", local_ids: Dictionary = {}) -> void:
+`
+}    var groups: Dictionary = inherited.duplicate()
     for layer in layers:
         var owner_node: Node2D = groups.get(layer.get("parentId", ""), parent)
         var distance := _effective(layers,layer)
@@ -188,11 +228,15 @@ ${regional ? `func _layers(layers: Array, parent: Node2D, area: Rect2i, inherite
                     ts = candidate
             if ts.is_empty():
                 continue
-${regional ? `            if _precise_physics():
+${
+  regional
+    ? `            if _precise_physics():
                 solid_tile_layers.append({"node":node,"layer":layer,"area":area,"tileset":ts})
-` : `            if scene_data.get("version",1) >= 3:
+`
+    : `            if scene_data.get("version",1) >= 3:
                 solid_tile_layers.append({"node":node,"layer":layer,"cols":cols,"rows":rows,"tileset":ts})
-`}            var tile_set := TileSet.new()
+`
+}            var tile_set := TileSet.new()
             var size: int = int(scene_data.tileSize)
             tile_set.tile_size = Vector2i(size,size)
             tile_set.add_physics_layer()
@@ -203,38 +247,58 @@ ${regional ? `            if _precise_physics():
             for index in range(int(ts.count)):
                 var at := Vector2i(index % int(ts.columns),index / int(ts.columns))
                 source.create_tile(at)
-${regional ? `                if not _precise_physics() and (layer.get("collision",false) or index in ts.solid or index in ts.platform):
-` : `                if scene_data.get("version",1) < 3 and (layer.get("collision",false) or index in ts.solid or index in ts.platform):
-`}                    var td: TileData = source.get_tile_data(at,0)
+${
+  regional
+    ? `                if not _precise_physics() and (layer.get("collision",false) or index in ts.solid or index in ts.platform):
+`
+    : `                if scene_data.get("version",1) < 3 and (layer.get("collision",false) or index in ts.solid or index in ts.platform):
+`
+}                    var td: TileData = source.get_tile_data(at,0)
                     td.add_collision_polygon(0)
                     var h: float = size / 2.0
                     td.set_collision_polygon_points(0,0,PackedVector2Array([Vector2(-h,-h),Vector2(h,-h),Vector2(h,h),Vector2(-h,h)]))
-${regional ? `                    if index in ts.platform and (scene_data.get("version",1) != 4 or not layer.get("collision",false) and not index in ts.solid):
-` : `                    if index in ts.platform:
-`}                        td.set_collision_polygon_one_way(0,0,true)
+${
+  regional
+    ? `                    if index in ts.platform and (scene_data.get("version",1) != 4 or not layer.get("collision",false) and not index in ts.solid):
+`
+    : `                    if index in ts.platform:
+`
+}                        td.set_collision_polygon_one_way(0,0,true)
             var tile_layer := TileMapLayer.new()
             tile_layer.tile_set = tile_set
             tile_layer.z_index = 20 if layer.get("front",false) else 0
             tile_layer.modulate.a = 0.0 if layer.get("collision",false) else 1.0
             node.add_child(tile_layer)
-${regional ? `            if scene_data.get("version",1) == 4:
+${
+  regional
+    ? `            if scene_data.get("version",1) == 4:
                 tile_layer.collision_enabled = not _precise_physics() and node.is_visible_in_tree()
             _visit_cells(layer,area,area,func(cell: int,col: int,row: int) -> bool:
-` : `            for at in range(cols * rows):
+`
+    : `            for at in range(cols * rows):
                 var cell: int = int(layer.cells[at])
                 if cell < 0:
                     continue
-`}                var tile: int = cell & 4095
-${regional ? `                var position := Vector2i(col,row)
-` : `                var position := Vector2i(at % cols,at / cols)
-`}                tile_layer.set_cell(position,0,Vector2i(tile % int(ts.columns),tile / int(ts.columns)),cell & 28672)
+`
+}                var tile: int = cell & 4095
+${
+  regional
+    ? `                var position := Vector2i(col,row)
+`
+    : `                var position := Vector2i(at % cols,at / cols)
+`
+}                tile_layer.set_cell(position,0,Vector2i(tile % int(ts.columns),tile / int(ts.columns)),cell & 28672)
                 if ts.get("animations",{}).has(str(tile)):
                     animated_cells.append({"layer":tile_layer,"position":position,"frames":ts.animations[str(tile)],"columns":int(ts.columns),"flags":cell & 28672})
-${regional ? `                if scene_data.get("version",1) == 4 and node.is_visible_in_tree() and not layer.get("collision",false) and tile in ts.platform and not tile in ts.solid:
+${
+  regional
+    ? `                if scene_data.get("version",1) == 4 and node.is_visible_in_tree() and not layer.get("collision",false) and tile in ts.platform and not tile in ts.solid:
                     platform_motion = true
                 return false
             )
-` : ''}        elif layer.kind == "objects":
+`
+    : ''
+}        elif layer.kind == "objects":
             for original in layer.objects:
                 var object: Dictionary = original.duplicate(true)
                 if not prefix.is_empty():
@@ -257,19 +321,27 @@ ${regional ? `                if scene_data.get("version",1) == 4 and node.is_vi
                         path.curve.add_point(Vector2(point.x,point.y))
                     item.add_child(path)
                 elif object.width > 0 and object.height > 0 and not object.has("setId"):
-${regional ? `                    var sensor := Area2D.new()
+${
+  regional
+    ? `                    var sensor := Area2D.new()
                     item.add_child(sensor)
-` : `                    var area := Area2D.new()
+`
+    : `                    var area := Area2D.new()
                     item.add_child(area)
-`}                    if object.get("shape", "") == "polygon":
+`
+}                    if object.get("shape", "") == "polygon":
                         var polygon := CollisionPolygon2D.new()
                         var points := PackedVector2Array()
                         for point in object.get("points",[]):
                             points.append(Vector2(point.x,point.y))
                         polygon.polygon = points
-${regional ? `                        sensor.add_child(polygon)
-` : `                        area.add_child(polygon)
-`}                    else:
+${
+  regional
+    ? `                        sensor.add_child(polygon)
+`
+    : `                        area.add_child(polygon)
+`
+}                    else:
                         var collision := CollisionShape2D.new()
                         collision.position = Vector2(object.width,object.height) / 2
                         if object.get("shape", "") == "ellipse":
@@ -281,9 +353,13 @@ ${regional ? `                        sensor.add_child(polygon)
                             var rectangle := RectangleShape2D.new()
                             rectangle.size = Vector2(object.width,object.height)
                             collision.shape = rectangle
-${regional ? `                        sensor.add_child(collision)
-` : `                        area.add_child(collision)
-`}                if object.has("setId"):
+${
+  regional
+    ? `                        sensor.add_child(collision)
+`
+    : `                        area.add_child(collision)
+`
+}                if object.has("setId"):
                     for definition in scene_data.get("sets",[]):
                         if definition.id == object.setId:
                             var instance := Node2D.new()
@@ -291,16 +367,24 @@ ${regional ? `                        sensor.add_child(collision)
                             var sy: float = object.height / (definition.rows * scene_data.tileSize)
                             instance.position = Vector2(object.width if object.get("flipX",false) else 0,object.height if object.get("flipY",false) else 0)
                             instance.scale = Vector2(-sx if object.get("flipX",false) else sx,-sy if object.get("flipY",false) else sy)
-${regional ? `                            var child_area := Rect2i(_grid_origin(definition),Vector2i(definition.cols,definition.rows))
+${
+  regional
+    ? `                            var child_area := Rect2i(_grid_origin(definition),Vector2i(definition.cols,definition.rows))
                             instance.position -= Vector2(child_area.position) * scene_data.tileSize * instance.scale
-` : ''}                            item.add_child(instance)
+`
+    : ''
+}                            item.add_child(instance)
                             var child_ids: Dictionary = {}
                             for child_layer in definition.layers:
                                 for child in child_layer.get("objects",[]):
                                     child_ids[str(child.id)] = true
-${regional ? `                            _layers(definition.layers,instance,child_area,{},str(object.id) + "/",child_ids)
-` : `                            _layers(definition.layers,instance,int(definition.cols),int(definition.rows),{},str(object.id) + "/",child_ids)
-`}                elif object.has("art"):
+${
+  regional
+    ? `                            _layers(definition.layers,instance,child_area,{},str(object.id) + "/",child_ids)
+`
+    : `                            _layers(definition.layers,instance,int(definition.cols),int(definition.rows),{},str(object.id) + "/",child_ids)
+`
+}                elif object.has("art"):
                     var picture := Sprite2D.new()
                     picture.centered = false
                     var art: Dictionary = {}
@@ -338,7 +422,9 @@ ${regional ? `                            _layers(definition.layers,instance,chi
 func _physics_process(delta: float) -> void:
     elapsed += delta * 1000
     if is_instance_valid(player):
-${regional ? `        var movement := Input.get_vector("ui_left","ui_right","ui_up","ui_down")
+${
+  regional
+    ? `        var movement := Input.get_vector("ui_left","ui_right","ui_up","ui_down")
         if platform_motion:
             player.velocity.x = Input.get_axis("ui_left","ui_right") * 120
             if Input.is_action_just_pressed("ui_up") and can_jump:
@@ -346,13 +432,21 @@ ${regional ? `        var movement := Input.get_vector("ui_left","ui_right","ui_
             player.velocity.y = minf(500,player.velocity.y + 500 * delta)
         else:
             player.velocity = movement * 120
-` : `        player.velocity = Input.get_vector("ui_left","ui_right","ui_up","ui_down") * 120
-`}        var previous := player.global_position
-${regional ? `        if _precise_physics():
-` : `        player.move_and_slide()
+`
+    : `        player.velocity = Input.get_vector("ui_left","ui_right","ui_up","ui_down") * 120
+`
+}        var previous := player.global_position
+${
+  regional
+    ? `        if _precise_physics():
+`
+    : `        player.move_and_slide()
         if scene_data.get("version",1) >= 3:
-`}            var body_size: Vector2 = Vector2.ONE * scene_data.tileSize * 0.65
-${regional ? `            var body := Rect2(previous - body_size / 2,body_size)
+`
+}            var body_size: Vector2 = Vector2.ONE * scene_data.tileSize * 0.65
+${
+  regional
+    ? `            var body := Rect2(previous - body_size / 2,body_size)
             var displacement := player.velocity * delta
             if scene_data.get("version",1) < 4:
                 player.move_and_slide()
@@ -366,9 +460,13 @@ ${regional ? `            var body := Rect2(previous - body_size / 2,body_size)
                     result = landing
                 if landing != null or absf(result.position.y - body.position.y - player.velocity.y * delta) > 1e-5:
                     player.velocity.y = 0
-` : `            var result := mover_corpo(Rect2(previous - body_size / 2,body_size),player.global_position - previous)
-`}            player.global_position = result.position + body_size / 2
-${regional ? `        else:
+`
+    : `            var result := mover_corpo(Rect2(previous - body_size / 2,body_size),player.global_position - previous)
+`
+}            player.global_position = result.position + body_size / 2
+${
+  regional
+    ? `        else:
             player.move_and_slide()
             if scene_data.get("version",1) == 4:
                 var half: Vector2 = Vector2.ONE * scene_data.tileSize * 0.325
@@ -378,7 +476,9 @@ ${regional ? `        else:
             if platform_motion:
                 can_jump = player.is_on_floor()
         var on_door := false
-` : ''}        for entry in map_objects:
+`
+    : ''
+}        for entry in map_objects:
             var object: Dictionary = entry.data
             if not entry.node.is_visible_in_tree() or object.get("role", "") != "door":
                 continue
@@ -393,24 +493,32 @@ ${regional ? `        else:
                     polygon.append(Vector2(vertex.x,vertex.y))
                 hit = Geometry2D.is_point_in_polygon(point,polygon)
             if hit:
-${regional ? `                on_door = true
+${
+  regional
+    ? `                on_door = true
                 if scene_data.get("version",1) == 4 and door_entered:
                     continue
-` : ''}                var destination: Variant = object.properties.get("destino",object.properties.get("destination", ""))
+`
+    : ''
+}                var destination: Variant = object.properties.get("destino",object.properties.get("destination", ""))
                 if destination is Dictionary:
                     destination = destination.value
-${regional ? `                var key := _door_key(destination)
+${
+  regional
+    ? `                var key := _door_key(destination)
                 if not key.is_empty():
                     door_entered = true
                     _load_map(key)
                     return
         if not on_door:
             door_entered = false
-` : `                for key in maps:
+`
+    : `                for key in maps:
                     if key == destination or maps[key].id == destination:
                         _load_map(key)
                         return
-`}    for animation in animated_cells:
+`
+}    for animation in animated_cells:
         var total: float = 0
         for frame in animation.frames:
             total += frame.duration
@@ -424,7 +532,9 @@ ${regional ? `                var key := _door_key(destination)
     for animation in animated_art:
         var tile: int = _art_tile(animation,elapsed)
         animation.sprite.region_rect = Rect2((tile % animation.columns)*animation.width,(tile / animation.columns)*animation.height,animation.width,animation.height)
-${regional ? `
+${
+  regional
+    ? `
 func _door_key(destination: Variant) -> String:
     if not destination is String or destination.is_empty():
         return ""
@@ -439,7 +549,9 @@ func _door_key(destination: Variant) -> String:
                 return ""
             named = key
     return named
-` : ''}`
+`
+    : ''
+}`
 
 export const godotScript = buildGodotScript(false)
 export const godotRegionalScript = buildGodotScript(true)

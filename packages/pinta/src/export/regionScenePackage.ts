@@ -120,9 +120,14 @@ export async function writeRegionTiledFiles(
     try {
       tiled = await tiledMap(decoded)
     } catch (error) {
-      if (!(error instanceof TiledSceneCompatibilityError) || target !== 'pygame') throw error
+      // As in the dense packages, only the game targets carry the scene without the Tiled supplement.
+      if (
+        !(error instanceof TiledSceneCompatibilityError) ||
+        (target !== 'pygame' && target !== 'godot')
+      )
+        throw error
       reports.push(
-        `Mapa ${scene.name}. ${error.message} Consulte o cenário completo em cenario.png.`,
+        `Mapa ${scene.name}. ${error.message} Consulte o cenário completo em ${target === 'pygame' ? 'cenario.png' : 'maps.json'}.`,
       )
       continue
     }
@@ -136,14 +141,30 @@ export async function writeRegionTiledFiles(
   return reports
 }
 
+async function writeRegionGodotFiles(put: Prepared['put']): Promise<string[]> {
+  const { godotProject, godotScene, godotRegionalScript } = await import('./godot/project')
+  put('project.godot', godotProject)
+  put('main.tscn', godotScene)
+  put('pinta.gd', godotRegionalScript)
+  return [
+    'Importe project.godot no Godot 4.7.2 e execute a cena principal.',
+    'O jogo cria TileMapLayer com suas células assinadas e instancia objetos e conjuntos.',
+    'As setas movem o jogador. ↑ pula nos mapas com plataformas.',
+    'Consulte propriedades com objeto_por_id, recurso_imagem, propriedade_camada e propriedade_peca.',
+  ]
+}
+
 export async function buildRegionScenePackage(
   captured: ScenePackageSource,
   target: ScenePackageTarget,
   imageOf?: ImageOf,
 ) {
-  if (target === 'godot')
-    throw new Error('Este editor ainda não exporta cenários regionais para o Godot.')
   const world = await prepareRegionScenePackage(captured, imageOf)
+  if (target === 'godot') {
+    // The Godot script materializes every set instance; charge that fan-out first.
+    const { assertGodotRegionWork } = await import('./godot/regionWork')
+    for (const { decoded } of world.maps.values()) assertGodotRegionWork(decoded)
+  }
   await writeRegionTiledFiles(world, target)
   writeRegionPackageImages(world)
   const instructions =
@@ -151,9 +172,11 @@ export async function buildRegionScenePackage(
       ? (await import('./phaser/regionPackage')).writeRegionPhaserFiles(world.put)
       : target === 'pygame'
         ? await (await import('./pygameRegionProject')).writeRegionPygameFiles(world)
-        : [
-            'Abra mapas/mapa-0/mapa.tmx ou mapa.json no Tiled. As folhas TSX e as imagens ficam no pacote.',
-          ]
+        : target === 'godot'
+          ? await writeRegionGodotFiles(world.put)
+          : [
+              'Abra mapas/mapa-0/mapa.tmx ou mapa.json no Tiled. As folhas TSX e as imagens ficam no pacote.',
+            ]
   world.put(
     'LEIA-ME.txt',
     [

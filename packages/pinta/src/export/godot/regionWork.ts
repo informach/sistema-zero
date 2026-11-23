@@ -1,10 +1,7 @@
-import {
-  PINTA_REGION_LIMITS,
-  type PintaRegionCells,
-} from '@sistemazero/core/creations'
+import { PINTA_REGION_LIMITS, type PintaRegionCells } from '@sistemazero/core/creations'
 import { PINTA_IMAGE_WORLD_LIMITS } from '@sistemazero/core/studio/pinta-image'
 import type { PintaRegionScene } from '@sistemazero/core/studio/pinta-region-scene'
-import { type PintaSceneCellsLayer, PINTA_SCENE_LIMITS } from '@sistemazero/core/studio/pinta-scene'
+import { PINTA_SCENE_LIMITS, type PintaSceneCellsLayer } from '@sistemazero/core/studio/pinta-scene'
 
 export const GODOT_REGION_SET_DEFINITIONS = 64
 export const GODOT_REGION_WORK = {
@@ -20,8 +17,7 @@ function work(layers: readonly PintaSceneCellsLayer<PintaRegionCells>[]) {
   for (const layer of layers) {
     if (layer.kind === 'objects') objects += layer.objects.length
     if (layer.kind === 'tiles')
-      for (const chunk of layer.cells.chunks)
-        for (const cell of chunk.cells) if (cell >= 0) cells++
+      for (const chunk of layer.cells.chunks) for (const cell of chunk.cells) if (cell >= 0) cells++
   }
   return { cells, objects, layers: layers.length }
 }

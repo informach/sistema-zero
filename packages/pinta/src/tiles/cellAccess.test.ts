@@ -35,6 +35,8 @@ const CONFERIDOS: Record<string, string> = {
     'o projeto GDScript extrai a peça com máscara 4095 e conserva os três bits nos flags nativos do TileMapLayer',
   'export/godot/regions.ts':
     'o leitor GDScript valida os cabeçalhos antes de decodificar, confere o índice com CELL_MAX_TILES e entrega células inteiras ao render e à física',
+  'export/godot/regionWork.ts':
+    'só conta células ocupadas (valor inteiro >= 0) dos chunks já admitidos para orçar as cópias dos conjuntos; não decodifica índice nem flags',
   'tiles/sets.ts': 'recorta e expande células inteiras, conservando os bits de giro',
   'tiles/tilemapOps.ts':
     'pinta, apaga, preenche e cresce movendo células inteiras; achatar e a peça do topo leem por cellTile',
