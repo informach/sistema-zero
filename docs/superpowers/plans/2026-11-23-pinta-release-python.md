@@ -93,6 +93,58 @@ Os três módulos novos da candidata:
   lista do editor. Numa release sem o recurso, `orderPythonAuthoringCodecs` os filtra, então os
   recibos atuais não mudam.
 
+### 2.1 B6 · a peça de plataforma na física antiga, igual ao JS (decisão da dona, 23/11)
+
+Com a física antiga, o Python ignorava as peças marcadas como "plataforma": `pouso` devolvia `None`
+e o jogo do pacote regional ficava sem gravidade e atravessava a plataforma. No JS do Estúdio, no
+Phaser e no Godot `--legacy`, elas já eram de mão única. Agora o Python faz igual, nas três extensões
+2D e nos dois tipos de cenário. **A mudança entra na versão única do motor**, junto com os cenários.
+
+| Onde | O que muda |
+|---|---|
+| `pythonScenePhysics.ts` (os três `pinta-scenes/*/pinta.py` e o pacote regional) | `pouso` resolve a peça de plataforma nas duas físicas. Os contornos de objeto continuam só na precisa |
+| `pygameRegionProject.ts` (jogo do pacote regional Pygame) | Peça de plataforma colocada num lugar escolhe gravidade e pulo nas duas físicas, como o `tilemapGame.ts` |
+| `pygameProject.ts` (pacote Pygame de tamanho fixo e trecho gerado do `pygame/pinta.py`) | O pouso virou a função comum `_pouso_de_mao_unica`. Deixou de exigir a cena 3, e `mover(..., gravidade=)` pousa também nas cenas 1 e 2 |
+| `pygame/pinta.py`, `Mapa.pouso` dos mapas de antes (formato 1, sem cena) | Usa a mesma função com as peças de plataforma das camadas visíveis. A peça sólida continua parede |
+
+Sem peça de plataforma colocada, nada muda: `pouso` continua `None` e o jogo do pacote continua
+visto de cima. Os testes que falhavam antes da correção são `pythonScenePlatforms.test.ts`, os
+casos `legacy` de `pythonSceneRuntime.test.ts`, `pygameRegionProject.test.ts` e
+`scripts/python/test-pinta-module.py`. O ensaio `verify-region-pygame.ts` agora roda as duas físicas.
+A sonda do navegador (`pintaBrowser2dFixtures.ts`) confere o pouso na física antiga no Pygame Zero e
+no Raylib 2D.
+
+**Jogos gravados e recibos que mudam: nenhum.** A mudança só altera a resposta de `pouso`, o
+`mover(..., gravidade=)` do pacote de tamanho fixo e o jogo do pacote regional. Nenhum jogo gravado
+chama `pouso` nem usa os blocos de pouso (`pinta_body_landing`, `pinta_scene_landing`):
+
+- 58 Pygame Zero;
+- 9 Raylib 2D;
+- a galeria Pygame (9 jogos × 2 formas), que lê os mapas pelo `Mapa` e tem física própria;
+- os 20 Turtle e os 8 Raylib 3D, que não usam cenários.
+
+As sondas que chamam `pouso` (`pintaPlatformFixtures.ts`, `pintaRegionalFixtures.ts`,
+`test-pinta-platforms.py` e os casos de `homologacao/platforms.ts`) usam só a física precisa. Os
+pacotes que a criança já baixou do Pinta só mudam quando ela exportar de novo. A requalificação da
+seção 5 já é completa por outros motivos e não ganha família nova.
+
+**A candidata local mudou.** O B6 altera os três módulos `pinta-scenes/*` e o `pygame/pinta.py`, então
+os SHAs da seção 1 valem para a fonte anterior. A nova montagem local (Windows), com `pintaScenes`,
+saiu da staging `e0b0887cc` mais o B6. A staging já trazia os recursos `molda-scene-*` da frente do
+Molda:
+
+| Arquivo | Bytes | SHA-256 |
+|---|---:|---|
+| Distribuição (129 arquivos) | | `447167f0307968ee8a6fc5fb7dd796fe6a6af71273f94720225e2106b46c028f` |
+| `pinta-scenes/pygame/pinta.py` | 198.017 | `b999496619529cdcba39b59f7d9bc41a36f7a7bcb07db699d4dc130da60c5afd` |
+| `pinta-scenes/pgzero/pinta.py` | 114.579 | `30bfb8703c491680fc46649b81e31d4afb7353c27c2e1dd69e660f54653f5756` |
+| `pinta-scenes/raylib-2d/pinta.py` | 114.883 | `d642652003640de1a70ebbc56fe24f34c901bab18d09b793090511f4b6270d88` |
+| `pygame/pinta.py` | 77.181 | `40f97c680b5ade751aff442e68a717efea81df8f6100095af2f65ba462f71d82` |
+
+Com ela, os 22 casos de cenários do Pinta (`playwright.pinta-python-2d-browser.config.ts` e
+`playwright.pinta-python-regional.config.ts`) passaram no Chrome e no Chromium, incluindo a prova nova
+da física antiga no Pygame Zero e no Raylib 2D.
+
 ## 3. O que a release precisa ligar: o build qualificado
 
 O CI da imagem (`.github/workflows/studio-runtime-image.yml`, passo "Preparar distribuição

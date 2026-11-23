@@ -8,56 +8,65 @@ import { regionVilaPlatform } from '../../src/testing/regionVilaPlatform'
 import { setCell } from '../../src/tiles/tilemapOps'
 import { nativeImageOf } from './generate'
 
-// The Python module resolves one-way platforms only with precise physics.
-const physics = 'precise'
-const { map, assets } = regionVilaPlatform()
-const front = map.layers.find((layer) => isTileLayer(layer) && layer.front)
-if (!front) throw new Error('Camada da frente ausente.')
-const options = { imageOf: nativeImageOf }
-const files = await buildScenePackage(setCell(map, front.id, -1, -1, 16), assets, 'pygame', options)
-const edited = await buildScenePackage(
-  setCell(map, front.id, -1, -1, 19),
-  assets,
-  'pygame',
-  options,
-)
-const png = edited['cenario.png']
-if (!(png instanceof Uint8Array)) throw new Error('Cenário atualizado ausente.')
-const prefix = join(tmpdir(), 'pinta-pygame-region-')
-const folder = await mkdtemp(prefix)
-if (!folder.startsWith(prefix) || dirname(folder) !== dirname(prefix))
-  throw new Error('Pasta temporária fora do diretório de homologação.')
-try {
-  await Promise.all(
-    Object.entries(files).map(([path, data]) => Bun.write(join(folder, path), data)),
+// Platform tiles are one-way in both physics, like the JavaScript players (decision of 23/11/2026).
+for (const physics of ['precise', 'legacy'] as const) await verify(physics)
+
+async function verify(physics: 'precise' | 'legacy') {
+  const platform = regionVilaPlatform()
+  const map = { ...platform.map, physics: physics === 'precise' ? physics : undefined }
+  const { assets } = platform
+  const front = map.layers.find((layer) => isTileLayer(layer) && layer.front)
+  if (!front) throw new Error('Camada da frente ausente.')
+  const options = { imageOf: nativeImageOf }
+  const files = await buildScenePackage(
+    setCell(map, front.id, -1, -1, 16),
+    assets,
+    'pygame',
+    options,
   )
-  await Bun.write(join(folder, 'atualizado.png'), png)
-  await Bun.write(join(folder, 'invalido.png'), png.subarray(0, 24))
-  async function python(args: string[]) {
-    const run = Bun.spawn([process.env.PINTA_PYTHON_BIN ?? 'python', ...args], {
-      cwd: folder,
-      env: {
-        ...process.env,
-        SDL_VIDEODRIVER: 'dummy',
-        SDL_AUDIODRIVER: 'dummy',
-        PYGAME_HIDE_SUPPORT_PROMPT: '1',
-      },
-      stdout: 'pipe',
-      stderr: 'pipe',
-    })
-    const [code, out, err] = await Promise.all([
-      run.exited,
-      new Response(run.stdout).text(),
-      new Response(run.stderr).text(),
-    ])
-    assert.equal(code, 0, out + err)
-    console.log(out.trim())
-  }
-  await python(['main.py', '--frames', '8', '--screenshot', 'captura.png'])
-  assert.ok(Bun.file(join(folder, 'captura.png')).size > 1_000)
-  await python([
-    '-c',
-    `import sys
+  const edited = await buildScenePackage(
+    setCell(map, front.id, -1, -1, 19),
+    assets,
+    'pygame',
+    options,
+  )
+  const png = edited['cenario.png']
+  if (!(png instanceof Uint8Array)) throw new Error('Cenário atualizado ausente.')
+  const prefix = join(tmpdir(), 'pinta-pygame-region-')
+  const folder = await mkdtemp(prefix)
+  if (!folder.startsWith(prefix) || dirname(folder) !== dirname(prefix))
+    throw new Error('Pasta temporária fora do diretório de homologação.')
+  try {
+    await Promise.all(
+      Object.entries(files).map(([path, data]) => Bun.write(join(folder, path), data)),
+    )
+    await Bun.write(join(folder, 'atualizado.png'), png)
+    await Bun.write(join(folder, 'invalido.png'), png.subarray(0, 24))
+    async function python(args: string[]) {
+      const run = Bun.spawn([process.env.PINTA_PYTHON_BIN ?? 'python', ...args], {
+        cwd: folder,
+        env: {
+          ...process.env,
+          SDL_VIDEODRIVER: 'dummy',
+          SDL_AUDIODRIVER: 'dummy',
+          PYGAME_HIDE_SUPPORT_PROMPT: '1',
+        },
+        stdout: 'pipe',
+        stderr: 'pipe',
+      })
+      const [code, out, err] = await Promise.all([
+        run.exited,
+        new Response(run.stdout).text(),
+        new Response(run.stderr).text(),
+      ])
+      assert.equal(code, 0, out + err)
+      console.log(out.trim())
+    }
+    await python(['main.py', '--frames', '8', '--screenshot', 'captura.png'])
+    assert.ok(Bun.file(join(folder, 'captura.png')).size > 1_000)
+    await python([
+      '-c',
+      `import sys
 import json
 import pygame
 from main import Jogo
@@ -110,7 +119,8 @@ try:
                           'front_pixels': [(201, 181, 122), (216, 148, 105)], 'update_retained': True}))
 finally:
     pygame.quit()`,
-  ])
-} finally {
-  await rm(folder, { recursive: true, force: true })
+    ])
+  } finally {
+    await rm(folder, { recursive: true, force: true })
+  }
 }

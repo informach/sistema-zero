@@ -113,6 +113,42 @@ def save(surface, name, data=None):
         path.write_bytes(with_pinta_data(path.read_bytes(), data))
 
 
+def plataformas_de_mao_unica(atlas):
+    """Formato 1, sem cena: a peça de plataforma segura por cima, como no Pinta e no JS (23/11)."""
+    sheet = {'name': 'terreno', 'y': 0, 'columns': 2, 'count': 3, 'solid': [1], 'platform': [2]}
+    hidden = [-1] * 20
+    hidden[3 * 4] = 2
+    save(atlas, 'plataformas', {
+        'format': 'pinta', 'version': 1, 'kind': 'map', 'name': 'plataformas', 'scale': 1,
+        'tileSize': 8, 'cols': 4, 'rows': 5,
+        'tilesets': [sheet],
+        'layers': [
+            # Plataforma em x 8–24, y 16–24; chão sólido na última linha (y 32–40).
+            {'type': 'tiles', 'name': 'Terreno', 'visible': True, 'front': False, 'tileset': 0,
+             'cells': [-1] * 8 + [-1, 2, 2, -1] + [-1] * 4 + [1, 1, 1, 1]},
+            # Uma camada escondida não joga, como no compositor das cenas (x 0–8, y 24–32).
+            {'type': 'tiles', 'name': 'Escondida', 'visible': False, 'front': False, 'tileset': 0,
+             'cells': hidden},
+        ]})
+    world = pinta.carregar_mapa('plataformas')
+    body = pygame.FRect
+    before, after = body(10, 4, 4, 4), body(10, 14, 4, 4)
+    support = world.pouso(before, after)
+    assert support == body(10, 12, 4, 4), support
+    assert before == body(10, 4, 4, 4) and after == body(10, 14, 4, 4)
+    for _ in range(20):
+        support = world.pouso(support, support.move(0, 0.5))
+        assert support == body(10, 12, 4, 4), support
+    assert world.pouso(body(10, 20, 4, 4), body(10, 6, 4, 4)) is None  # subindo, atravessa
+    assert world.pouso(body(10, 17, 4, 4), body(10, 19, 4, 4)) is None  # começou abaixo do topo
+    assert world.pouso(before, after, 0) is None  # vista de cima
+    assert world.pouso(body(26, 4, 4, 4), body(26, 14, 4, 4)) is None  # fora da plataforma
+    assert world.pouso(body(2, 18, 4, 4), body(2, 26, 4, 4)) is None  # a camada escondida não segura
+    assert not world.bloqueado(body(10, 17, 4, 4))  # a plataforma não é parede
+    inverted = world.pouso(body(10, 26, 4, 4), body(10, 20, 4, 4), -1)
+    assert inverted == body(10, 24, 4, 4), inverted
+
+
 def objetos_do_mapa_com_conjuntos(salvar):
     """O wrapper público deve expor os objetos que o compositor realmente executa."""
     import copy
@@ -285,6 +321,7 @@ def main():
     assert screen.get_at((10 + 1, 10 + 1))[:3] == (200, 0, 0)  # cell (0, 0): solid tile 1
     assert screen.get_at((10 + 9, 10 + 1))[:3] == (0, 200, 0)  # cell (1, 0): front grass
     assert screen.get_at((10 + 17, 10 + 9))[:3] == (0, 0, 0)  # cell (2, 1): empty
+    plataformas_de_mao_unica(atlas)
 
     # A plain PNG has no Pinta data; the loaders explain what is expected.
     save(pygame.Surface((4, 4)), 'fundo')

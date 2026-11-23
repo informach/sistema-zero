@@ -18,7 +18,55 @@ import math
 from pathlib import Path
 import pygame
 
-${pythonSceneGeometryFunctions}class Mundo:
+${pythonSceneGeometryFunctions}def _pouso_de_mao_unica(anterior, atual, gravidade, plataformas, bloqueado):
+    """FRect on a one-way floor, or None. Gravity zero keeps top-down motion free.
+
+    plataformas(consulta) yields the platform polygons near the query and bloqueado(corpo)
+    tests walls. Platform tiles hold in both authored physics, like the JavaScript players.
+    """
+    anterior, atual = pygame.FRect(anterior), pygame.FRect(atual)
+    values = [*anterior, *atual, gravidade]
+    if not all(isinstance(v,(int,float)) and not isinstance(v,bool) and math.isfinite(v) for v in values) or not gravidade or min(anterior.width,anterior.height,atual.width,atual.height) <= 0:
+        return None
+    direction = 1 if gravidade > 0 else -1
+    # FRect stores float32; admit its coordinate rounding, not a whole pixel.
+    epsilon = max(1e-6, max(abs(v) for v in [*anterior,*atual]) * 2**-23)
+    if (atual.y - anterior.y) * direction < -epsilon:
+        return None
+    selected, was_supported = None, False
+    for polygon in plataformas(anterior.union(atual).inflate(epsilon * 2, epsilon * 2)):
+        def surface(body):
+            left, right = max(body.left,min(p.x for p in polygon)), min(body.right,max(p.x for p in polygon))
+            if right - left <= 1e-9:
+                return None
+            heights = []
+            for a,b in zip(polygon,polygon[1:] + polygon[:1]):
+                if left <= a.x <= right:
+                    heights.append(a.y)
+                if a.x != b.x:
+                    for x in (left,right):
+                        if min(a.x,b.x) <= x <= max(a.x,b.x):
+                            heights.append(a.y + (b.y - a.y) * (x - a.x) / (b.x - a.x))
+            return (min(heights) if direction > 0 else max(heights)) if heights else None
+        floor = surface(atual)
+        if floor is None:
+            continue
+        old_floor = surface(anterior)
+        if old_floor is None:
+            old_floor = floor
+        old_feet, feet = (anterior.bottom,atual.bottom) if direction > 0 else (anterior.top,atual.top)
+        if (old_feet - old_floor) * direction > epsilon or (feet - floor) * direction < -epsilon:
+            continue
+        candidate = atual.copy()
+        candidate.y = floor - (atual.height if direction > 0 else 0)
+        if selected is None or (candidate.y - selected.y) * direction < 0:
+            selected, was_supported = candidate, abs(old_feet - old_floor) <= epsilon
+    if selected is not None and bloqueado(selected):
+        return anterior.copy() if was_supported and not bloqueado(anterior) else None
+    return selected
+
+
+class Mundo:
     def __init__(self, raiz, nome):
         self.raiz = Path(raiz)
         self.mapas = json.loads((self.raiz / 'maps.json').read_text(encoding='utf-8'))
@@ -262,46 +310,7 @@ ${pythonSceneGeometryFunctions}class Mundo:
 
     def pouso(self, anterior, atual, gravidade=1):
         """FRect on a one-way floor, or None. Gravity zero keeps top-down motion free."""
-        anterior, atual = pygame.FRect(anterior), pygame.FRect(atual)
-        values = [*anterior, *atual, gravidade]
-        if self.dados.get('version', 1) < 3 or not all(isinstance(v,(int,float)) and not isinstance(v,bool) and math.isfinite(v) for v in values) or not gravidade or min(anterior.width,anterior.height,atual.width,atual.height) <= 0:
-            return None
-        direction = 1 if gravidade > 0 else -1
-        # FRect stores float32; admit its coordinate rounding, not a whole pixel.
-        epsilon = max(1e-6, max(abs(v) for v in [*anterior,*atual]) * 2**-23)
-        if (atual.y - anterior.y) * direction < -epsilon:
-            return None
-        selected, was_supported = None, False
-        for polygon in self._pecas_plataforma(anterior.union(atual).inflate(epsilon * 2, epsilon * 2)):
-            def surface(body):
-                left, right = max(body.left,min(p.x for p in polygon)), min(body.right,max(p.x for p in polygon))
-                if right - left <= 1e-9:
-                    return None
-                heights = []
-                for a,b in zip(polygon,polygon[1:] + polygon[:1]):
-                    if left <= a.x <= right:
-                        heights.append(a.y)
-                    if a.x != b.x:
-                        for x in (left,right):
-                            if min(a.x,b.x) <= x <= max(a.x,b.x):
-                                heights.append(a.y + (b.y - a.y) * (x - a.x) / (b.x - a.x))
-                return (min(heights) if direction > 0 else max(heights)) if heights else None
-            floor = surface(atual)
-            if floor is None:
-                continue
-            old_floor = surface(anterior)
-            if old_floor is None:
-                old_floor = floor
-            old_feet, feet = (anterior.bottom,atual.bottom) if direction > 0 else (anterior.top,atual.top)
-            if (old_feet - old_floor) * direction > epsilon or (feet - floor) * direction < -epsilon:
-                continue
-            candidate = atual.copy()
-            candidate.y = floor - (atual.height if direction > 0 else 0)
-            if selected is None or (candidate.y - selected.y) * direction < 0:
-                selected, was_supported = candidate, abs(old_feet - old_floor) <= epsilon
-        if selected is not None and self.bloqueado(selected):
-            return anterior.copy() if was_supported and not self.bloqueado(anterior) else None
-        return selected
+        return _pouso_de_mao_unica(anterior, atual, gravidade, self._pecas_plataforma, self.bloqueado)
 
     def mover(self, dx, dy, *, gravidade=0):
         if not all(math.isfinite(value) for value in (dx, dy)):
@@ -344,7 +353,7 @@ ${pythonSceneGeometryFunctions}class Mundo:
                     if self.bloqueado(self.jogador):
                         self.jogador = antes
         self.jogador.clamp_ip(pygame.FRect(0, 0, self.dados['cols'] * self.tamanho, self.dados['rows'] * self.tamanho))
-        if gravidade and self.dados.get('version', 1) >= 3:
+        if gravidade:
             support = self.pouso(anterior, self.jogador, gravidade)
             if support is not None:
                 self.jogador = support
