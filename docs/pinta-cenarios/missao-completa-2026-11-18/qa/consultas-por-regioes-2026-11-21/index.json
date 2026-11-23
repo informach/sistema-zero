@@ -234,14 +234,8 @@
         "regions": {
           "first": null,
           "far": null,
-          "flat": [
-            -1,
-            -1
-          ],
-          "sources": [
-            0,
-            0
-          ],
+          "flat": [-1, -1],
+          "sources": [0, 0],
           "front": false,
           "oversizedRefused": false
         },
@@ -252,17 +246,7 @@
             "cols": 3,
             "rows": 3
           },
-          "tiles": [
-            -1,
-            -1,
-            -1,
-            -1,
-            0,
-            -1,
-            -1,
-            -1,
-            -1
-          ],
+          "tiles": [-1, -1, -1, -1, 0, -1, -1, -1, -1],
           "bytes": 27
         }
       },
@@ -336,14 +320,8 @@
         "regions": {
           "first": 1,
           "far": 1,
-          "flat": [
-            1,
-            2
-          ],
-          "sources": [
-            0,
-            1
-          ],
+          "flat": [1, 2],
+          "sources": [0, 1],
           "front": true,
           "oversizedRefused": true
         },
@@ -354,17 +332,7 @@
             "cols": 3,
             "rows": 3
           },
-          "tiles": [
-            -1,
-            -1,
-            -1,
-            -1,
-            0,
-            -1,
-            -1,
-            -1,
-            -1
-          ],
+          "tiles": [-1, -1, -1, -1, 0, -1, -1, -1, -1],
           "bytes": 27
         }
       },
@@ -443,14 +411,8 @@
         "regions": {
           "first": null,
           "far": null,
-          "flat": [
-            -1,
-            -1
-          ],
-          "sources": [
-            0,
-            0
-          ],
+          "flat": [-1, -1],
+          "sources": [0, 0],
           "front": false,
           "oversizedRefused": false
         },
@@ -461,17 +423,7 @@
             "cols": 3,
             "rows": 3
           },
-          "tiles": [
-            -1,
-            -1,
-            -1,
-            -1,
-            0,
-            -1,
-            -1,
-            -1,
-            -1
-          ],
+          "tiles": [-1, -1, -1, -1, 0, -1, -1, -1, -1],
           "bytes": 27
         }
       },
@@ -545,14 +497,8 @@
         "regions": {
           "first": 1,
           "far": 1,
-          "flat": [
-            1,
-            2
-          ],
-          "sources": [
-            0,
-            1
-          ],
+          "flat": [1, 2],
+          "sources": [0, 1],
           "front": true,
           "oversizedRefused": true
         },
@@ -563,17 +509,7 @@
             "cols": 3,
             "rows": 3
           },
-          "tiles": [
-            -1,
-            -1,
-            -1,
-            -1,
-            0,
-            -1,
-            -1,
-            -1,
-            -1
-          ],
+          "tiles": [-1, -1, -1, -1, 0, -1, -1, -1, -1],
           "bytes": 27
         }
       },
@@ -652,14 +588,8 @@
         "regions": {
           "first": null,
           "far": null,
-          "flat": [
-            -1,
-            -1
-          ],
-          "sources": [
-            0,
-            0
-          ],
+          "flat": [-1, -1],
+          "sources": [0, 0],
           "front": false,
           "oversizedRefused": false
         },
@@ -670,17 +600,7 @@
             "cols": 3,
             "rows": 3
           },
-          "tiles": [
-            -1,
-            -1,
-            -1,
-            -1,
-            0,
-            -1,
-            -1,
-            -1,
-            -1
-          ],
+          "tiles": [-1, -1, -1, -1, 0, -1, -1, -1, -1],
           "bytes": 27
         }
       },
@@ -754,14 +674,8 @@
         "regions": {
           "first": 1,
           "far": 1,
-          "flat": [
-            1,
-            2
-          ],
-          "sources": [
-            0,
-            1
-          ],
+          "flat": [1, 2],
+          "sources": [0, 1],
           "front": true,
           "oversizedRefused": true
         },
@@ -772,17 +686,7 @@
             "cols": 3,
             "rows": 3
           },
-          "tiles": [
-            -1,
-            -1,
-            -1,
-            -1,
-            0,
-            -1,
-            -1,
-            -1,
-            -1
-          ],
+          "tiles": [-1, -1, -1, -1, 0, -1, -1, -1, -1],
           "bytes": 27
         }
       },

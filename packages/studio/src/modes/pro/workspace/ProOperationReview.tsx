@@ -4,6 +4,7 @@ import type { ProjectTree } from '../../../core/proProject'
 import { useProjectStoreApi } from '../../../state/projectStore'
 import type { ProHistoryVersion } from '../../../state/proProjectHistory'
 import { changedTreePaths, sameTree } from './treeChanges'
+import { useProEngineUpdateOffer } from './useProEngineUpdate'
 import type { ProHistory } from './useProHistory'
 import type { ProOperations } from './useProOperations'
 
@@ -69,6 +70,9 @@ export function ProOperationReview({
   const [comparing, setComparing] = useState<Comparison | null>(null)
   const [historyError, setHistoryError] = useState<string | null>(null)
   const [historyNotice, setHistoryNotice] = useState<string | null>(null)
+  // "Atualizar o motor": a oferta some no "Agora não" até a criança abrir outro projeto.
+  const engineOffer = useProEngineUpdateOffer()
+  const [engineDeclined, setEngineDeclined] = useState<string | null>(null)
   // Sem versões (a aula, o Admin, sem armazenamento local) a janela mostra só as operações com
   // arquivos e não promete versões (full review final de 21/11/2026).
   const versioned = history?.enabled === true
@@ -154,6 +158,21 @@ export function ProOperationReview({
               Fechar aviso
             </Button>
           )}
+        </div>
+      )}
+      {engineOffer && engineOffer !== engineDeclined && !busy && (
+        <div role="status" className="shrink-0 border-b border-sz-border p-2 text-sm">
+          <p className="font-semibold">Tem um motor novo para este jogo. Atualizar?</p>
+          <p>
+            O seu código, os seus arquivos e as suas imagens continuam iguais. Só a peça pronta que
+            faz o jogo funcionar é trocada.
+          </p>
+          <Button size="sm" onClick={() => void operations.updateEngine()}>
+            Atualizar o motor
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => setEngineDeclined(engineOffer)}>
+            Agora não
+          </Button>
         </div>
       )}
       <ConfirmDialog

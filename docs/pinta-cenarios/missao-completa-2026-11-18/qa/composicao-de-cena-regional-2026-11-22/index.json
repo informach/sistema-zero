@@ -206,10 +206,7 @@
     "physical": 59,
     "integration": 12,
     "retries": 0,
-    "profiles": [
-      "desktop",
-      "cpu-4x"
-    ]
+    "profiles": ["desktop", "cpu-4x"]
   },
   "publicScene4": false,
   "png5": false,

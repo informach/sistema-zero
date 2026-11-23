@@ -280,10 +280,7 @@
     "realApp": 3,
     "pintaIntegration": 12
   },
-  "types": [
-    "studio",
-    "member-shell"
-  ],
+  "types": ["studio", "member-shell"],
   "pintaCoreSourcesUnchanged": true,
   "sqlTestsRun": false,
   "featureMergedIntoStaging": false,

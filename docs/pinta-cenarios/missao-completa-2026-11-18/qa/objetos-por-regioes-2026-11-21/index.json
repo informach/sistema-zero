@@ -33,11 +33,7 @@
       "passed": 21,
       "failed": 0,
       "retries": 0,
-      "projects": [
-        "desktop",
-        "touch-emulated",
-        "cpu-4x"
-      ],
+      "projects": ["desktop", "touch-emulated", "cpu-4x"],
       "scope": "Dense workshop and real browser clipboard module page; native8 is internal"
     },
     "pintaTypecheck": {

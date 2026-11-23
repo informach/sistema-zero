@@ -1,6 +1,8 @@
+import 'blockly/blocks'
 import { afterAll, beforeAll, expect, test } from 'bun:test'
 import { createRequire } from 'node:module'
 import { pngCrc32 } from '@sistemazero/core/studio/pinta-png-binary'
+import * as Blockly from 'blockly/core'
 import { IDBFactory } from 'fake-indexeddb'
 import { scene4Fixture } from '../../../core/tests/fixtures/pinta-region-scene'
 import { embedPintaRegionImage } from '../../../pinta/src/export/regionImage'
@@ -10,6 +12,12 @@ import {
   savePersonalRegionalMap,
 } from '../asset-library/personalRegional'
 import { syncDrawingsIntoProjects } from '../asset-library/personalSync'
+import { registerExtensionBlocks } from '../blockly/blocks'
+import { buildIRFromWorkspace } from '../blockly/buildIR'
+import { loadWorkspaceState } from '../blockly/loadWorkspaceState'
+import { saveWorkspaceState } from '../blockly/savedWorkspaceState'
+import { ensureBlocklyInitialized } from '../blockly/setup'
+import { buildWorkspaceStateFromIR } from '../blockly/workspaceState'
 import { decodeProjectAsset, encodeAssetBase64 } from '../core/assetBinary'
 import { isPythonProject } from '../core/editableProject'
 import {
@@ -28,10 +36,14 @@ import {
   projectAssetBudgetChars,
   sanitizeProjectAssets,
 } from '../core/projectAssets'
-import { assertProjectContentPreserved } from '../core/projectDocumentGuards'
+import { assertProjectContentPreserved, isDocumentRecord } from '../core/projectDocumentGuards'
+import { generateProjectFiles } from '../generators'
 import { createPintaRegionalProRuntime } from '../modes/pro/pintaRegionalProRuntime'
+import { gameTwoDBlocks } from '../official-extensions/game-2d/blocks'
 import { gameTwoDManifest } from '../official-extensions/game-2d/manifest'
+import { gameKitBlocks } from '../official-extensions/game-2d-advanced/blocks'
 import { gameKitManifest } from '../official-extensions/game-2d-advanced/manifest'
+import { pintaSceneExample } from '../official-extensions/map-2d/examples'
 import { renderProjectToPreviewDocAsync } from '../preview/renderProject'
 import { discardImportedProjectSnapshot, restoreProjectFromCloud } from '../projects/importSnapshot'
 import { PYGAME_EXTENSION } from '../runtime/python/pygame/contract'
@@ -438,6 +450,65 @@ test('a project that recorded an older Jogo 2D runs its regional material on the
       renderProjectToPreviewDocAsync({ ...base, installedExtensions }, capability(scope)),
     ).rejects.toThrow('Jogo 2D')
 })
+
+// Subir a versão do Jogo 2D ou do Jogo 2D Avançado num projeto Clássico não tem um passo próprio: o
+// Estúdio novo carrega o motor de agora pelo id, e a versão gravada na instalação fica como estava.
+// O caminho é reabrir o projeto, carregar os blocos no editor e rodar.
+/** O que o painel de blocos faz ao carregar: o estado que ele salva e o programa que ele gera. */
+function editorPass(state: unknown, projectName: string) {
+  if (!isDocumentRecord(state)) throw new Error('Estado de blocos inválido.')
+  const workspace = new Blockly.Workspace()
+  try {
+    loadWorkspaceState(state, workspace)
+    const ir = buildIRFromWorkspace(workspace)
+    return {
+      blocksState: saveWorkspaceState(workspace),
+      ir,
+      files: generateProjectFiles({ ir, projectName }),
+    }
+  } finally {
+    workspace.dispose()
+  }
+}
+for (const [manifest, target, blocks, recorded] of [
+  [gameTwoDManifest, 'g2d', gameTwoDBlocks, '2.0.0'],
+  [gameKitManifest, 'gk', gameKitBlocks, '0.1.0'],
+] as const)
+  test(`${manifest.id}: o motor novo abre o projeto Clássico com blocos e cenário regional sem mudar blocos, programa nem arquivos`, async () => {
+    ensureBlocklyInitialized()
+    registerExtensionBlocks(blocks)
+    // Os blocos de cenário do exemplo da Vila, como o editor os guardou, e o material regional com
+    // o nome que eles usam.
+    const name = 'Vila antiga'
+    const authored = editorPass(buildWorkspaceStateFromIR(pintaSceneExample(target).ir), name)
+    const material = { ...image, id: 'vila', name: 'vila-e-floresta', ...before }
+    const scope = privateRegionalProjectScope(`classic-engine-update-${target}`)
+    const stored = {
+      ...createEmptyProject(`classic-engine-update-${target}`, name),
+      ...authored,
+      assets: [material],
+      installedExtensions: [installedEngine(manifest, recorded)],
+    }
+    await persistProject(stored, {}, scope)
+    const reopened = await prepareEditableStudioProject(
+      await loadProjectById(stored.id, scope),
+      capability(scope),
+    )
+    if (!reopened || isPythonProject(reopened)) throw new Error('O projeto Clássico não reabriu.')
+    expect(reopened.files).toEqual(authored.files)
+    expect(reopened.blocksState).toEqual(authored.blocksState)
+    expect(reopened.assets).toEqual([material])
+    expect(reopened.installedExtensions).toEqual(stored.installedExtensions)
+    // O painel de blocos só regrava ao abrir quando os blocos ou o programa gerado mudam
+    // (`regenerateFromBlocks` com `force`): com o motor de agora, os dois saem iguais.
+    const loaded = editorPass(reopened.blocksState, name)
+    expect(JSON.stringify(loaded.blocksState)).toBe(JSON.stringify(authored.blocksState))
+    expect(loaded.files).toEqual(authored.files)
+    // E o jogo reaberto roda com o motor de agora e o cenário regional.
+    expect(await renderProjectToPreviewDocAsync(reopened, capability(scope))).toContain(
+      '_pintaRegionFactory',
+    )
+  })
 
 test('the automatic exchange converts only projects that can run the regional material and keeps the others', async () => {
   const namespace = privateRegionalProjectScope('sweep-engines').namespace

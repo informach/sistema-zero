@@ -232,7 +232,7 @@ jobs:
       - name: Pinta local authority and chunks preserve actual historical readers
         if: ${{ !cancelled() && matrix.id == 'linux-chromium-1' }}
         run: |
-          git fetch --no-tags --depth=1 origin 567b93f95258ad6584a923388f9e45fa658fc728 899d2596fc9817e5196435321af39f5eb3a868dc ec4e58066f8e371ef3600c2575a1d4e1d12ce5b6 0ebb89a63c4dc0d2e078023dbcaa3cb6a42a336d
+          git fetch --no-tags --depth=1 origin 567b93f95258ad6584a923388f9e45fa658fc728 899d2596fc9817e5196435321af39f5eb3a868dc ec4e58066f8e371ef3600c2575a1d4e1d12ce5b6 0ebb89a63c4dc0d2e078023dbcaa3cb6a42a336d 7ddb3b7d7df7a8a8aaa3b031956978e4763f2497
           cd packages/studio
           bunx playwright test --config playwright.pinta-chunks.config.ts
           bunx playwright test --config playwright.pinta-render.config.ts

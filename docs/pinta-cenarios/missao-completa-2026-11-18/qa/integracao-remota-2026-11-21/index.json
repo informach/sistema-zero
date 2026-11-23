@@ -26,9 +26,7 @@
       "passed": 12,
       "failed": 0,
       "retries": 0,
-      "profiles": [
-        "desktop"
-      ],
+      "profiles": ["desktop"],
       "apiRoutesAborted": true,
       "authenticated": false,
       "pythonGameExecuted": false

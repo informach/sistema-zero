@@ -1,27 +1,26 @@
 import { awaitWithSignal } from '@sistemazero/core/http'
-import { PINTA_IMAGE_ID_PATTERN } from '@sistemazero/core/studio/pinta-image'
 import { readPngDataUrl, readPngDimensions } from '@sistemazero/core/studio/pinta-png-binary'
 import {
   PINTA_REGION_IMAGE_PNG_LIMITS as limits,
   type PintaRegionWorldBudget,
 } from '@sistemazero/core/studio/pinta-region-image-limits'
 import type { readPintaRegionImageWorld } from '@sistemazero/core/studio/pinta-region-image-world'
-import { z } from 'zod'
+// O esquema mora no core: este módulo entra por tabela no `projectAssets` (carregador 3D, player,
+// lista inicial), e um `zod` importado daqui levava a segunda versão do zod para esses pacotes.
+import {
+  type PintaRegionalMarker,
+  PintaRegionalMarkerSchema,
+  PintaRegionalSourceIdSchema,
+} from '@sistemazero/core/studio/pinta-regional-marker'
 import { digestAssetBytes, encodeAssetBase64 } from './assetBinary'
 
-const PNG_URL_PREFIX = 'data:image/png;base64,'
-const sourceIdSchema = z.string().min(1).max(200).regex(PINTA_IMAGE_ID_PATTERN)
-const markerSchema = z.strictObject({
-  dataVersion: z.literal(5),
-  sourceId: sourceIdSchema,
-  sha256: z.string().regex(/^[0-9a-f]{64}$/),
-})
+export type { PintaRegionalMarker }
 
-export type PintaRegionalMarker = Readonly<z.infer<typeof markerSchema>>
+const PNG_URL_PREFIX = 'data:image/png;base64,'
 
 /** Shape only. Do not use the marker alone to admit pixels or a scene. */
 export function readPintaRegionalMarker(value: unknown): PintaRegionalMarker {
-  return Object.freeze(markerSchema.parse(value))
+  return Object.freeze(PintaRegionalMarkerSchema.parse(value))
 }
 
 /** An asset may carry private provenance; callers still need to admit its PNG. */
@@ -104,7 +103,7 @@ export async function admitPintaRegionalMaterial(
     pintaImage,
   } = input
   if (
-    !sourceIdSchema.safeParse(sourceId).success ||
+    !PintaRegionalSourceIdSchema.safeParse(sourceId).success ||
     scene !== undefined ||
     tilemap !== undefined ||
     tilemapFront !== undefined ||
