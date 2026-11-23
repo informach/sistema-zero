@@ -28,7 +28,7 @@ async function arquivo(conteudo: unknown): Promise<{ bytes: Uint8Array; info: Ar
 const servindo = (bytes: Uint8Array, pedidos: string[] = []) =>
   (async (url: string) => {
     pedidos.push(String(url))
-    return new Response(bytes)
+    return new Response(bytes.slice().buffer)
   }) as unknown as typeof fetch
 
 describe('o arquivo de um exemplo grande', () => {

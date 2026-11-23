@@ -51,7 +51,10 @@ for (const three of [false, true]) {
       // As dependências conferidas do package.json do projeto, como o Worker faz: a configuração
       // confiável só deixa o código importar o que o projeto declarou (o conversor declara o
       // `three`; sem elas, o import do three seria recusado).
-      const dependencies = resolveStudioProRemoteDependencies(files['package.json'] ?? '{}')
+      const manifest = files['package.json']
+      const dependencies = resolveStudioProRemoteDependencies(
+        typeof manifest === 'string' ? manifest : '{}',
+      )
       await writeFile(
         join(root, 'vite.config.mjs'),
         trustedViteConfig('vanilla-vite', dependencies),
