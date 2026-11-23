@@ -1,6 +1,6 @@
 # Duas peças para abrir
 
-Poder do Faísca · O segredo da cabana · 2D. Um projeto contínuo, uma entrega. Ajuda livre no Passo a passo do projeto; sem certificado nem publicação obrigatória.
+Poder do Faísca · O segredo da cabana · 2D. Um projeto contínuo, enviado na última construção. Ajuda livre no Passo a passo do projeto; sem certificado nem publicação obrigatória.
 
 ## Parte 1. A cabana do faroleiro
 

@@ -1,6 +1,6 @@
 # Roteiro de produção · Duas peças para abrir
 
-Master integral da professora. Montagem guiada completa no vídeo, um gesto por vez, com o destino à vista antes da peça. Sem intervenções de personagens. Voz, escuta, gravação e publicação pendentes.
+A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para gerar a voz integral. Sem intervenções de personagens. Montagem guiada completa no vídeo, um gesto por vez, com o destino à vista antes da peça. Gravação e publicação desta revisão ainda não confirmadas.
 
 **Antes de gravar:** use um perfil de ensaio sem envio nesta aula. Mostre o projeto da dimensão correta. Não preencha Recado no envio. Mostre Objetivo cumprido! e Projeto enviado! só quando esses estados aparecerem de verdade.
 
@@ -68,7 +68,7 @@ Master integral da professora. Montagem guiada completa no vídeo, um gesto por 
 [upbeat, encouraging voice] Agora você vai investigar quando a cabana abre e quando continua fechada, com nenhuma, uma ou as duas peças, em cada jeito de perguntar. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 ```
 
-**Falas dentro da experiência:** `packages/core/src/learning/scene/guidance-cabana.ts`, exportadas em `zappy-etapas.json`. A orientação sugere comparações pelo estado observado; os controles permanecem livres.
+**Falas dentro da experiência:** exportadas em `zappy-etapas.json`. A orientação sugere comparações pelo estado observado; os controles permanecem livres.
 
 **Recado na página (não gravar):** Sua vez! Investigue quando a cabana abre e quando continua fechada, com nenhuma, uma ou as duas peças, em cada jeito de perguntar. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
@@ -204,7 +204,7 @@ Master integral da professora. Montagem guiada completa no vídeo, um gesto por 
 
 ## Parte 6. Pense na cabana
 
-Sem vídeo: diálogo do Zappy e quiz. Alternativas equivalentes antes da escolha; resposta corrigida pelo servidor.
+Quiz sem vídeo: escolha, demonstração, explicação e nova tentativa. Resposta corrigida pelo servidor.
 
 **Recado na página (não gravar):** Hora de pensar na cabana! As perguntas retomam uma peça só, o "ou", o que pode estar errado e os testes. Em cada uma tem uma explicação, e você pode tentar de novo. Nas perguntas com cena, escolha e clique em Ver o que acontece; nas outras, clique em Responder.
 

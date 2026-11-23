@@ -6,7 +6,7 @@
   "blocks": [
     {
       "key": "video-abertura",
-      "plannedVideo": "Título: Os símbolos do Farol\n\nMaster integral da professora: simbolos-aula-1.roteiro.md, clipe video-abertura. Gravação pendente."
+      "plannedVideo": "Título: Os símbolos do Farol\n\nMaster integral da professora. Roteiro: simbolos-aula-1.roteiro.md, clipe video-abertura. Gravação pendente."
     },
     {
       "key": "ponte-abertura",
@@ -2810,7 +2810,7 @@
     },
     {
       "key": "video-material",
-      "plannedVideo": "Título: O seu Passo a passo do projeto\n\nMaster integral da professora: simbolos-aula-1.roteiro.md, clipe video-material. Gravação pendente."
+      "plannedVideo": "Título: O seu Passo a passo do projeto\n\nMaster integral da professora. Roteiro: simbolos-aula-1.roteiro.md, clipe video-material. Gravação pendente."
     },
     {
       "key": "ponte-material",
@@ -2822,7 +2822,7 @@
     },
     {
       "key": "video-experiencia",
-      "plannedVideo": "Título: A ordem dos símbolos\n\nMaster integral da professora: simbolos-aula-1.roteiro.md, clipe video-experiencia. Gravação pendente."
+      "plannedVideo": "Título: A ordem dos símbolos\n\nMaster integral da professora. Roteiro: simbolos-aula-1.roteiro.md, clipe video-experiencia. Gravação pendente."
     },
     {
       "key": "ponte-experiencia",
@@ -2878,7 +2878,7 @@
     },
     {
       "key": "video-sol",
-      "plannedVideo": "Título: O sol começa\n\nMaster integral da professora: simbolos-aula-1.roteiro.md, clipe video-sol. Gravação pendente."
+      "plannedVideo": "Título: O sol começa\n\nMaster integral da professora. Roteiro: simbolos-aula-1.roteiro.md, clipe video-sol. Gravação pendente."
     },
     {
       "key": "ponte-sol",
@@ -2890,7 +2890,7 @@
     },
     {
       "key": "video-lua",
-      "plannedVideo": "Título: A lua pergunta a vez\n\nMaster integral da professora: simbolos-aula-1.roteiro.md, clipe video-lua. Gravação pendente."
+      "plannedVideo": "Título: A lua pergunta a vez\n\nMaster integral da professora. Roteiro: simbolos-aula-1.roteiro.md, clipe video-lua. Gravação pendente."
     },
     {
       "key": "ponte-lua",
@@ -2902,7 +2902,7 @@
     },
     {
       "key": "video-estrela",
-      "plannedVideo": "Título: A estrela abre o baú\n\nMaster integral da professora: simbolos-aula-1.roteiro.md, clipe video-estrela. Gravação pendente."
+      "plannedVideo": "Título: A estrela abre o baú\n\nMaster integral da professora. Roteiro: simbolos-aula-1.roteiro.md, clipe video-estrela. Gravação pendente."
     },
     {
       "key": "ponte-estrela",
@@ -3013,7 +3013,7 @@
     },
     {
       "key": "video-entrega",
-      "plannedVideo": "Título: Envie o seu jogo com o baú\n\nMaster integral da professora: simbolos-aula-1.roteiro.md, clipe video-entrega. Gravação pendente."
+      "plannedVideo": "Título: Envie o seu jogo com o baú\n\nMaster integral da professora. Roteiro: simbolos-aula-1.roteiro.md, clipe video-entrega. Gravação pendente."
     },
     {
       "key": "ponte-entrega",
@@ -15268,7 +15268,25 @@
             "url": "/como-fazer/estudio-achar-e-organizar-blocos"
           },
           {
-            "id": "pedir-ajuda",
+            "id": "plataforma-baixar-materiais",
+            "kind": "link",
+            "label": "Como abrir o Passo a passo do projeto e os materiais",
+            "url": "/como-fazer/plataforma-baixar-materiais"
+          },
+          {
+            "id": "plataforma-abrir-uma-aula",
+            "kind": "link",
+            "label": "Como abrir uma aula e trocar de parte",
+            "url": "/como-fazer/plataforma-abrir-uma-aula"
+          },
+          {
+            "id": "plataforma-ampliar-a-atividade",
+            "kind": "link",
+            "label": "Como dar mais espaço ao jogo e à experiência",
+            "url": "/como-fazer/plataforma-ampliar-a-atividade"
+          },
+          {
+            "id": "plataforma-pedir-ajuda",
             "kind": "link",
             "label": "Como pedir ajuda à equipe",
             "url": "/como-fazer/plataforma-pedir-ajuda"

@@ -6,7 +6,7 @@
   "blocks": [
     {
       "key": "video-abertura",
-      "plannedVideo": "Título: Moedas no caminho do Farol\n\nMaster integral da professora: moedas-aula-1.roteiro.md, clipe video-abertura. Gravação pendente."
+      "plannedVideo": "Título: Moedas no caminho do Farol\n\nMaster integral da professora. Roteiro: moedas-aula-1.roteiro.md, clipe video-abertura. Gravação pendente."
     },
     {
       "key": "ponte-abertura",
@@ -2739,7 +2739,7 @@
     },
     {
       "key": "video-material",
-      "plannedVideo": "Título: O seu Passo a passo do projeto\n\nMaster integral da professora: moedas-aula-1.roteiro.md, clipe video-material. Gravação pendente."
+      "plannedVideo": "Título: O seu Passo a passo do projeto\n\nMaster integral da professora. Roteiro: moedas-aula-1.roteiro.md, clipe video-material. Gravação pendente."
     },
     {
       "key": "ponte-material",
@@ -2751,7 +2751,7 @@
     },
     {
       "key": "video-experiencia",
-      "plannedVideo": "Título: O contador de moedas\n\nMaster integral da professora: moedas-aula-1.roteiro.md, clipe video-experiencia. Gravação pendente."
+      "plannedVideo": "Título: O contador de moedas\n\nMaster integral da professora. Roteiro: moedas-aula-1.roteiro.md, clipe video-experiencia. Gravação pendente."
     },
     {
       "key": "ponte-experiencia",
@@ -2815,7 +2815,7 @@
     },
     {
       "key": "video-contador",
-      "plannedVideo": "Título: Crie o contador\n\nMaster integral da professora: moedas-aula-1.roteiro.md, clipe video-contador. Gravação pendente."
+      "plannedVideo": "Título: Crie o contador\n\nMaster integral da professora. Roteiro: moedas-aula-1.roteiro.md, clipe video-contador. Gravação pendente."
     },
     {
       "key": "ponte-contador",
@@ -2827,7 +2827,7 @@
     },
     {
       "key": "video-coleta",
-      "plannedVideo": "Título: Cada moeda soma um\n\nMaster integral da professora: moedas-aula-1.roteiro.md, clipe video-coleta. Gravação pendente."
+      "plannedVideo": "Título: Cada moeda soma um\n\nMaster integral da professora. Roteiro: moedas-aula-1.roteiro.md, clipe video-coleta. Gravação pendente."
     },
     {
       "key": "ponte-coleta",
@@ -2839,7 +2839,7 @@
     },
     {
       "key": "video-placar",
-      "plannedVideo": "Título: Mostre as moedas na tela\n\nMaster integral da professora: moedas-aula-1.roteiro.md, clipe video-placar. Gravação pendente."
+      "plannedVideo": "Título: Mostre as moedas na tela\n\nMaster integral da professora. Roteiro: moedas-aula-1.roteiro.md, clipe video-placar. Gravação pendente."
     },
     {
       "key": "ponte-placar",
@@ -2851,7 +2851,7 @@
     },
     {
       "key": "video-bau",
-      "plannedVideo": "Título: O baú pede pelo menos 5\n\nMaster integral da professora: moedas-aula-1.roteiro.md, clipe video-bau. Gravação pendente."
+      "plannedVideo": "Título: O baú pede pelo menos 5\n\nMaster integral da professora. Roteiro: moedas-aula-1.roteiro.md, clipe video-bau. Gravação pendente."
     },
     {
       "key": "ponte-bau",
@@ -2970,7 +2970,7 @@
     },
     {
       "key": "video-entrega",
-      "plannedVideo": "Título: Envie o seu jogo com moedas\n\nMaster integral da professora: moedas-aula-1.roteiro.md, clipe video-entrega. Gravação pendente."
+      "plannedVideo": "Título: Envie o seu jogo com moedas\n\nMaster integral da professora. Roteiro: moedas-aula-1.roteiro.md, clipe video-entrega. Gravação pendente."
     },
     {
       "key": "ponte-entrega",
@@ -18142,7 +18142,25 @@
             "url": "/como-fazer/estudio-achar-e-organizar-blocos"
           },
           {
-            "id": "pedir-ajuda",
+            "id": "plataforma-baixar-materiais",
+            "kind": "link",
+            "label": "Como abrir o Passo a passo do projeto e os materiais",
+            "url": "/como-fazer/plataforma-baixar-materiais"
+          },
+          {
+            "id": "plataforma-abrir-uma-aula",
+            "kind": "link",
+            "label": "Como abrir uma aula e trocar de parte",
+            "url": "/como-fazer/plataforma-abrir-uma-aula"
+          },
+          {
+            "id": "plataforma-ampliar-a-atividade",
+            "kind": "link",
+            "label": "Como dar mais espaço ao jogo e à experiência",
+            "url": "/como-fazer/plataforma-ampliar-a-atividade"
+          },
+          {
+            "id": "plataforma-pedir-ajuda",
             "kind": "link",
             "label": "Como pedir ajuda à equipe",
             "url": "/como-fazer/plataforma-pedir-ajuda"

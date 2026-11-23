@@ -1,6 +1,6 @@
 # Duas peças na ilha
 
-Poder do Faísca · O segredo da cabana · 3D. Um projeto contínuo, uma entrega. Ajuda livre no Passo a passo do projeto; sem certificado nem publicação obrigatória.
+Poder do Faísca · O segredo da cabana · 3D. Um projeto contínuo, enviado na última construção. Ajuda livre no Passo a passo do projeto; sem certificado nem publicação obrigatória.
 
 ## Parte 1. A cabana chegou à ilha
 

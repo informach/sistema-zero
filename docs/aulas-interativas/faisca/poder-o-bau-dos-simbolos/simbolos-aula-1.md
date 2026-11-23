@@ -1,6 +1,6 @@
 # Na ordem certa
 
-Poder do Faísca · O baú dos símbolos · 2D. Um projeto contínuo, uma entrega. Ajuda livre no Passo a passo do projeto; sem certificado nem publicação obrigatória.
+Poder do Faísca · O baú dos símbolos · 2D. Um projeto contínuo, enviado na última construção. Ajuda livre no Passo a passo do projeto; sem certificado nem publicação obrigatória.
 
 ## Parte 1. Os símbolos do Farol
 

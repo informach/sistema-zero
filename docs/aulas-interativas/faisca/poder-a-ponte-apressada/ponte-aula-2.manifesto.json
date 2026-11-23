@@ -6,7 +6,7 @@
   "blocks": [
     {
       "key": "video-abertura",
-      "plannedVideo": "Título: A ponte chegou à ilha\n\nMaster integral da professora: ponte-aula-2.roteiro.md, clipe video-abertura. Gravação pendente."
+      "plannedVideo": "Título: A ponte chegou à ilha\n\nMaster integral da professora. Roteiro: ponte-aula-2.roteiro.md, clipe video-abertura. Gravação pendente."
     },
     {
       "key": "ponte-abertura",
@@ -2609,7 +2609,7 @@
             "installedExtensions": [
               {
                 "id": "game-3d",
-                "version": "0.32.0",
+                "version": "0.33.0",
                 "installedAt": 0
               }
             ]
@@ -2625,7 +2625,7 @@
     },
     {
       "key": "video-alavanca",
-      "plannedVideo": "Título: A alavanca e a ponte que sobe sozinha\n\nMaster integral da professora: ponte-aula-2.roteiro.md, clipe video-alavanca. Gravação pendente."
+      "plannedVideo": "Título: A alavanca e a ponte que sobe sozinha\n\nMaster integral da professora. Roteiro: ponte-aula-2.roteiro.md, clipe video-alavanca. Gravação pendente."
     },
     {
       "key": "ponte-alavanca",
@@ -2637,7 +2637,7 @@
     },
     {
       "key": "video-atravessar",
-      "plannedVideo": "Título: Atravesse até o sino\n\nMaster integral da professora: ponte-aula-2.roteiro.md, clipe video-atravessar. Gravação pendente."
+      "plannedVideo": "Título: Atravesse até o sino\n\nMaster integral da professora. Roteiro: ponte-aula-2.roteiro.md, clipe video-atravessar. Gravação pendente."
     },
     {
       "key": "ponte-atravessar",
@@ -2707,7 +2707,7 @@
     },
     {
       "key": "video-entrega",
-      "plannedVideo": "Título: Envie a sua ilha com a ponte\n\nMaster integral da professora: ponte-aula-2.roteiro.md, clipe video-entrega. Gravação pendente."
+      "plannedVideo": "Título: Envie a sua ilha com a ponte\n\nMaster integral da professora. Roteiro: ponte-aula-2.roteiro.md, clipe video-entrega. Gravação pendente."
     },
     {
       "key": "ponte-entrega",
@@ -4934,7 +4934,7 @@
           "installedExtensions": [
             {
               "id": "game-3d",
-              "version": "0.32.0",
+              "version": "0.33.0",
               "installedAt": 0
             }
           ]
@@ -7119,7 +7119,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -9541,7 +9541,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -12129,7 +12129,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]

@@ -1,6 +1,6 @@
 # Roteiro de produção · Na ordem certa
 
-Master integral da professora. Montagem guiada completa no vídeo, um gesto por vez, com o destino à vista antes da peça. Sem intervenções de personagens. Voz, escuta, gravação e publicação pendentes.
+A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para gerar a voz integral. Sem intervenções de personagens. Montagem guiada completa no vídeo, um gesto por vez, com o destino à vista antes da peça. Gravação e publicação desta revisão ainda não confirmadas.
 
 **Antes de gravar:** use um perfil de ensaio sem envio nesta aula. Mostre o projeto da dimensão correta. Não preencha Recado no envio. Mostre Objetivo cumprido! e Projeto enviado! só quando esses estados aparecerem de verdade.
 
@@ -70,7 +70,7 @@ Master integral da professora. Montagem guiada completa no vídeo, um gesto por 
 [upbeat, encouraging voice] Agora você vai investigar o que acontece com passo quando os símbolos vêm na ordem da placa e quando vêm fora da vez, em cada jeito de o baú conferir. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 ```
 
-**Falas dentro da experiência:** `packages/core/src/learning/scene/guidance-simbolos.ts`, exportadas em `zappy-etapas.json`. A orientação sugere comparações pelo estado observado; os controles permanecem livres.
+**Falas dentro da experiência:** exportadas em `zappy-etapas.json`. A orientação sugere comparações pelo estado observado; os controles permanecem livres.
 
 **Recado na página (não gravar):** Sua vez! Investigue o que acontece quando os símbolos vêm na ordem da placa e quando vêm fora da vez, em cada jeito de o baú conferir. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
@@ -252,7 +252,7 @@ Master integral da professora. Montagem guiada completa no vídeo, um gesto por 
 
 ## Parte 7. Pense na ordem
 
-Sem vídeo: diálogo do Zappy e quiz. Alternativas equivalentes antes da escolha; resposta corrigida pelo servidor.
+Quiz sem vídeo: escolha, demonstração, explicação e nova tentativa. Resposta corrigida pelo servidor.
 
 **Recado na página (não gravar):** Hora de pensar na ordem! As perguntas retomam a vez da estrela, um símbolo fora da vez e o que pode estar errado nas perguntas do Se. Em cada uma tem uma explicação, e você pode tentar de novo. Nas perguntas com cena, escolha e clique em Ver o que acontece; nas outras, clique em Responder.
 

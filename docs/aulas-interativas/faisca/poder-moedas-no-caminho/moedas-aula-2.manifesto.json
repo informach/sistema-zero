@@ -6,7 +6,7 @@
   "blocks": [
     {
       "key": "video-abertura",
-      "plannedVideo": "Título: As moedas chegaram à ilha\n\nMaster integral da professora: moedas-aula-2.roteiro.md, clipe video-abertura. Gravação pendente."
+      "plannedVideo": "Título: As moedas chegaram à ilha\n\nMaster integral da professora. Roteiro: moedas-aula-2.roteiro.md, clipe video-abertura. Gravação pendente."
     },
     {
       "key": "ponte-abertura",
@@ -2417,7 +2417,7 @@
             "installedExtensions": [
               {
                 "id": "game-3d",
-                "version": "0.32.0",
+                "version": "0.33.0",
                 "installedAt": 0
               }
             ]
@@ -2433,7 +2433,7 @@
     },
     {
       "key": "video-coleta",
-      "plannedVideo": "Título: Conte as moedas da ilha\n\nMaster integral da professora: moedas-aula-2.roteiro.md, clipe video-coleta. Gravação pendente."
+      "plannedVideo": "Título: Conte as moedas da ilha\n\nMaster integral da professora. Roteiro: moedas-aula-2.roteiro.md, clipe video-coleta. Gravação pendente."
     },
     {
       "key": "ponte-coleta",
@@ -2445,7 +2445,7 @@
     },
     {
       "key": "video-placar",
-      "plannedVideo": "Título: O número na tela da ilha\n\nMaster integral da professora: moedas-aula-2.roteiro.md, clipe video-placar. Gravação pendente."
+      "plannedVideo": "Título: O número na tela da ilha\n\nMaster integral da professora. Roteiro: moedas-aula-2.roteiro.md, clipe video-placar. Gravação pendente."
     },
     {
       "key": "ponte-placar",
@@ -2457,7 +2457,7 @@
     },
     {
       "key": "video-bau",
-      "plannedVideo": "Título: O baú da ilha abre\n\nMaster integral da professora: moedas-aula-2.roteiro.md, clipe video-bau. Gravação pendente."
+      "plannedVideo": "Título: O baú da ilha abre\n\nMaster integral da professora. Roteiro: moedas-aula-2.roteiro.md, clipe video-bau. Gravação pendente."
     },
     {
       "key": "ponte-bau",
@@ -2527,7 +2527,7 @@
     },
     {
       "key": "video-entrega",
-      "plannedVideo": "Título: Envie a sua ilha com moedas\n\nMaster integral da professora: moedas-aula-2.roteiro.md, clipe video-entrega. Gravação pendente."
+      "plannedVideo": "Título: Envie a sua ilha com moedas\n\nMaster integral da professora. Roteiro: moedas-aula-2.roteiro.md, clipe video-entrega. Gravação pendente."
     },
     {
       "key": "ponte-entrega",
@@ -4719,7 +4719,7 @@
           "installedExtensions": [
             {
               "id": "game-3d",
-              "version": "0.32.0",
+              "version": "0.33.0",
               "installedAt": 0
             }
           ]
@@ -6864,7 +6864,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -9092,7 +9092,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -11346,7 +11346,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -13742,7 +13742,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]

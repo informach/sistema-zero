@@ -1,6 +1,6 @@
 # Roteiro de produção · Moedas na ilha
 
-Master integral da professora. Transferência: o vídeo relembra a regra e a montagem completa fica no Passo a passo do projeto, sem resolver os encaixes no vídeo. Sem intervenções de personagens. Voz, escuta, gravação e publicação pendentes.
+A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para gerar a voz integral. Sem intervenções de personagens. Montagem guiada completa no vídeo, um gesto por vez, com o destino à vista antes da peça. O jogo é de teclado: o robô dá o foco ao jogo (Rodar de novo no Estúdio, ou um toque no jogo pronto) antes de segurar as setas. Os tempos das setas no Na tela são estimativas para a velocidade 4 e se acertam no Verificar plano. Gravação e publicação desta revisão ainda não confirmadas.
 
 **Antes de gravar:** use um perfil de ensaio sem envio nesta aula. Mostre o projeto da dimensão correta. Não preencha Recado no envio. Mostre Objetivo cumprido! e Projeto enviado! só quando esses estados aparecerem de verdade.
 
@@ -84,7 +84,7 @@ Master integral da professora. Transferência: o vídeo relembra a regra e a mon
 
 ## Parte 5. Pense nas moedas da ilha
 
-Sem vídeo: diálogo do Zappy e quiz. Alternativas equivalentes antes da escolha; resposta corrigida pelo servidor.
+Quiz sem vídeo: escolha, demonstração, explicação e nova tentativa. Resposta corrigida pelo servidor.
 
 **Recado na página (não gravar):** Hora de pensar nas moedas da ilha! As perguntas retomam o que acontece ao voltar ao lugar de uma moeda e onde fica a animação do baú. Em cada uma tem uma explicação, e você pode tentar de novo. Na pergunta com cena, clique em Ver o que acontece; na outra, clique em Responder.
 

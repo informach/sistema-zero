@@ -6,7 +6,7 @@
   "blocks": [
     {
       "key": "video-abertura",
-      "plannedVideo": "Título: A ponte do laguinho\n\nMaster integral da professora: ponte-aula-1.roteiro.md, clipe video-abertura. Gravação pendente."
+      "plannedVideo": "Título: A ponte do laguinho\n\nMaster integral da professora. Roteiro: ponte-aula-1.roteiro.md, clipe video-abertura. Gravação pendente."
     },
     {
       "key": "ponte-abertura",
@@ -2532,7 +2532,7 @@
     },
     {
       "key": "video-material",
-      "plannedVideo": "Título: O seu Passo a passo do projeto\n\nMaster integral da professora: ponte-aula-1.roteiro.md, clipe video-material. Gravação pendente."
+      "plannedVideo": "Título: O seu Passo a passo do projeto\n\nMaster integral da professora. Roteiro: ponte-aula-1.roteiro.md, clipe video-material. Gravação pendente."
     },
     {
       "key": "ponte-material",
@@ -2544,7 +2544,7 @@
     },
     {
       "key": "video-experiencia",
-      "plannedVideo": "Título: A ponte apressada\n\nMaster integral da professora: ponte-aula-1.roteiro.md, clipe video-experiencia. Gravação pendente."
+      "plannedVideo": "Título: A ponte apressada\n\nMaster integral da professora. Roteiro: ponte-aula-1.roteiro.md, clipe video-experiencia. Gravação pendente."
     },
     {
       "key": "ponte-experiencia",
@@ -2600,7 +2600,7 @@
     },
     {
       "key": "video-alavanca",
-      "plannedVideo": "Título: A alavanca baixa a ponte\n\nMaster integral da professora: ponte-aula-1.roteiro.md, clipe video-alavanca. Gravação pendente."
+      "plannedVideo": "Título: A alavanca baixa a ponte\n\nMaster integral da professora. Roteiro: ponte-aula-1.roteiro.md, clipe video-alavanca. Gravação pendente."
     },
     {
       "key": "ponte-alavanca",
@@ -2612,7 +2612,7 @@
     },
     {
       "key": "video-sobe",
-      "plannedVideo": "Título: A ponte sobe sozinha\n\nMaster integral da professora: ponte-aula-1.roteiro.md, clipe video-sobe. Gravação pendente."
+      "plannedVideo": "Título: A ponte sobe sozinha\n\nMaster integral da professora. Roteiro: ponte-aula-1.roteiro.md, clipe video-sobe. Gravação pendente."
     },
     {
       "key": "ponte-sobe",
@@ -2624,7 +2624,7 @@
     },
     {
       "key": "video-atravessar",
-      "plannedVideo": "Título: Atravesse a ponte\n\nMaster integral da professora: ponte-aula-1.roteiro.md, clipe video-atravessar. Gravação pendente."
+      "plannedVideo": "Título: Atravesse a ponte\n\nMaster integral da professora. Roteiro: ponte-aula-1.roteiro.md, clipe video-atravessar. Gravação pendente."
     },
     {
       "key": "ponte-atravessar",
@@ -2735,7 +2735,7 @@
     },
     {
       "key": "video-entrega",
-      "plannedVideo": "Título: Envie o seu jogo com a ponte\n\nMaster integral da professora: ponte-aula-1.roteiro.md, clipe video-entrega. Gravação pendente."
+      "plannedVideo": "Título: Envie o seu jogo com a ponte\n\nMaster integral da professora. Roteiro: ponte-aula-1.roteiro.md, clipe video-entrega. Gravação pendente."
     },
     {
       "key": "ponte-entrega",
@@ -14143,7 +14143,25 @@
             "url": "/como-fazer/estudio-achar-e-organizar-blocos"
           },
           {
-            "id": "pedir-ajuda",
+            "id": "plataforma-baixar-materiais",
+            "kind": "link",
+            "label": "Como abrir o Passo a passo do projeto e os materiais",
+            "url": "/como-fazer/plataforma-baixar-materiais"
+          },
+          {
+            "id": "plataforma-abrir-uma-aula",
+            "kind": "link",
+            "label": "Como abrir uma aula e trocar de parte",
+            "url": "/como-fazer/plataforma-abrir-uma-aula"
+          },
+          {
+            "id": "plataforma-ampliar-a-atividade",
+            "kind": "link",
+            "label": "Como dar mais espaço ao jogo e à experiência",
+            "url": "/como-fazer/plataforma-ampliar-a-atividade"
+          },
+          {
+            "id": "plataforma-pedir-ajuda",
             "kind": "link",
             "label": "Como pedir ajuda à equipe",
             "url": "/como-fazer/plataforma-pedir-ajuda"
