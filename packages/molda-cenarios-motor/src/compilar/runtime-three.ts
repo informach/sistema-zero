@@ -474,11 +474,17 @@ export async function carregarCenaNoThree(
           f.proxima = tempo + NOVAS_TENTATIVAS[Math.min(f.tentativa, 2)]!
           f.tentativa++
           falhas.set(id, f)
-          aviso ??= `Não consegui carregar uma parte do cenário (${erro instanceof Error ? erro.message : 'erro'}). Vou tentar de novo.`
+          // O aviso vai ao console uma vez por episódio de falha (o Estúdio o mostra nas Mensagens):
+          // só no `estadoDasRegioes()` ninguém o via (full review final). Sai quando tudo carrega.
+          if (aviso === null) {
+            aviso = `Não consegui carregar uma parte do cenário (${erro instanceof Error ? erro.message : 'erro'}). Vou tentar de novo.`
+            console.warn(aviso)
+          }
         }
         try {
           await aplicar(vez)
           for (const id of vez) falhas.delete(id)
+          if (falhas.size === 0) aviso = null
         } catch (erro) {
           if (descartado) return
           // A falha mantém as regiões de antes; quem está na que falhou pisa no relevo. As
@@ -494,6 +500,7 @@ export async function carregarCenaNoThree(
                 await aplicar(new Set([...conjunto, id]))
                 conjunto.add(id)
                 falhas.delete(id)
+                if (falhas.size === 0) aviso = null
               } catch (erroDaRegiao) {
                 if (descartado) return
                 falhou(id, erroDaRegiao)
