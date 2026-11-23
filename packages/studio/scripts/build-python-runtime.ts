@@ -35,6 +35,13 @@ import { buildPythonProvidedModuleArtifacts } from './python/provided-modules'
 const root = resolve(import.meta.dirname, '../../..')
 const digest = (bytes: Uint8Array | string) => createHash('sha256').update(bytes).digest('hex')
 
+/**
+ * As opções da versão publicada do motor (a versão única de 23/11/2026 leva os cenários do Pinta).
+ * O CI da imagem empacota UMA distribuição: a entrada deste script e os ensaios nativos
+ * (python-mission-smoke, python-playtest-smoke) montam com estas mesmas opções, senão saem duas.
+ */
+export const PYTHON_RELEASE_BUILD_OPTIONS = { pintaScenes: true } as const
+
 /** Produces immutable worker artifacts; qualification/catalog activation is a separate gate. */
 export async function buildPythonRuntimeDistribution(
   options: {
@@ -292,8 +299,7 @@ async function buildPintaSceneFiles(contents: Map<string, Uint8Array>) {
 }
 
 if (import.meta.main) {
-  // A versão única do motor (23/11/2026) leva os cenários do Pinta: o CI da imagem monta por aqui.
-  const result = await buildPythonRuntimeDistribution({ pintaScenes: true })
+  const result = await buildPythonRuntimeDistribution(PYTHON_RELEASE_BUILD_OPTIONS)
   console.log(
     JSON.stringify({
       directory: result.directory,

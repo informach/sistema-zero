@@ -15,7 +15,10 @@ import { verifyStudioPythonPlaytestReport } from '@sistemazero/core/studio/pytho
 import { studioPythonLogicalFiles } from '@sistemazero/core/studio/python-runtime-distribution'
 import { pythonFrameContentSecurityPolicy } from '@sistemazero/core/studio/python-runtime-policy'
 import { createStudioRuntimeRelease } from '@sistemazero/core/studio/runtime-catalog'
-import { buildPythonRuntimeDistribution } from '../../studio/scripts/build-python-runtime'
+import {
+  buildPythonRuntimeDistribution,
+  PYTHON_RELEASE_BUILD_OPTIONS,
+} from '../../studio/scripts/build-python-runtime'
 import { sha256 } from '../src/artifacts'
 
 // Real Chromium/Pyodide in the production image, with no external network. No expected
@@ -68,6 +71,7 @@ assert.deepEqual(
   'Mission qualification requires the current production image',
 )
 const build = await buildPythonRuntimeDistribution({
+  ...PYTHON_RELEASE_BUILD_OPTIONS,
   vendorDirectory: path.join(cache, 'vendor'),
   outputDirectory: path.join(cache, 'distributions'),
 })
