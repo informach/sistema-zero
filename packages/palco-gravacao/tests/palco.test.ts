@@ -775,11 +775,6 @@ describe('rotas da aula no palco', () => {
       kind: 'project-check',
       sectionId: 's1',
     })
-    expect(bffAnswer('POST', ['sections', 's1', 'project-check', 'warm'])).toEqual({
-      kind: 'json',
-      status: 200,
-      body: { warming: false },
-    })
     expect(bffAnswer('POST', ['blocks', 'b1', 'studio-context'])).toEqual({
       kind: 'studio-context',
       blockId: 'b1',

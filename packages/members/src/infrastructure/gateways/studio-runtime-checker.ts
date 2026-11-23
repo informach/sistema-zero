@@ -19,7 +19,6 @@ import type {
   ProjectExecutionChecker,
   ProjectExecutionCheckInput,
   ProjectExecutionCheckOutput,
-  ProjectExecutionWarmInput,
 } from '../../domain/ports/project-execution-checker.port'
 import { stableJson } from '../../domain/shared/stable-json'
 
@@ -32,8 +31,6 @@ export interface StudioRuntimeCheckerOptions {
   /** Quanto tempo um resultado vale para o MESMO projeto com as MESMAS regras. */
   cacheTtlMs?: number
   cacheMax?: number
-  /** Um aquecimento por criança dentro desta janela (o contêiner dorme depois de 5 min parado). */
-  warmIntervalMs?: number
   fetchImpl?: (input: string | URL, init?: RequestInit) => Promise<Response>
   now?: () => number
   logger?: Logger
@@ -65,15 +62,10 @@ export function createStudioRuntimeChecker(
   const now = opts.now ?? Date.now
   const cache = new Map<string, CacheEntry>()
   const inFlight = new Map<string, Promise<ProjectExecutionCheckOutput>>()
-  const warmInterval = opts.warmIntervalMs ?? 3 * 60_000
-  const warmedAt = new Map<string, number>()
-  // O nome do contêiner no executor: o aquecimento e a verificação precisam do MESMO.
-  const executionIdOf = (requester: string) =>
-    `check-${createHash('sha256').update(requester).digest('hex').slice(0, 40)}`
 
   async function run(input: ProjectExecutionCheckInput): Promise<ProjectExecutionCheckOutput> {
     const scope = createCheckScope()
-    const executionId = executionIdOf(input.requester)
+    const executionId = `check-${createHash('sha256').update(input.requester).digest('hex').slice(0, 40)}`
     let body: Record<string, unknown>
     if (input.kind === 'pro') {
       if (!isProCheckProject(input.project) || !input.templateId)
@@ -155,50 +147,7 @@ export function createStudioRuntimeChecker(
     }
   }
 
-  function warm(input: ProjectExecutionWarmInput): void {
-    const executionId = executionIdOf(input.requester)
-    const key = `${executionId}:${input.threeD ? '3d' : '2d'}`
-    const last = warmedAt.get(key)
-    if (last !== undefined && now() - last < warmInterval) return
-    warmedAt.delete(key)
-    warmedAt.set(key, now())
-    while (warmedAt.size > max) {
-      const oldest = warmedAt.keys().next().value
-      if (oldest === undefined) break
-      warmedAt.delete(oldest)
-    }
-    const started = now()
-    void doFetch(`${base}/v1/check/warm`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${opts.runtimeToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ executionId, threeD: input.threeD }),
-      redirect: 'error',
-      signal: AbortSignal.timeout(60_000),
-    })
-      .then(async (response) => {
-        await response.body?.cancel().catch(() => undefined)
-        if (!response.ok) {
-          // Falhou: a próxima abertura tenta de novo.
-          warmedAt.delete(key)
-          opts.logger?.warn('studio-runtime check warm failed', { status: response.status })
-          return
-        }
-        opts.logger?.info('studio-runtime check warm', {
-          threeD: input.threeD,
-          ms: now() - started,
-        })
-      })
-      .catch((error) => {
-        warmedAt.delete(key)
-        opts.logger?.warn('studio-runtime check warm unreachable', { error: String(error) })
-      })
-  }
-
   return {
-    warm,
     async check(input) {
       // A captura é só da equipe e pesa até 3 MB: esse pedido vai sempre ao executor e não entra no
       // cache, que guarda só os resultados da verificação da criança.

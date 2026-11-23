@@ -32,7 +32,7 @@
       "class_name": "ThreeDCheckSandbox",
       "image": "./Dockerfile",
       "instance_type": "standard-4",
-      "max_instances": 25
+      "max_instances": 10
     }
   ],
   "durable_objects": {
@@ -124,7 +124,7 @@
           "class_name": "ThreeDCheckSandbox",
           "image": "./Dockerfile",
           "instance_type": "standard-4",
-          "max_instances": 25
+          "max_instances": 10
         }
       ],
       "durable_objects": {

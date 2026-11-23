@@ -1,0 +1,1 @@
+{"testedAt":"2026-11-23T18:39:42.935Z","environment":"staging","host":"sistemazero-studio-runtime-staging.helena-bcc.workers.dev","path":"/v1/check/warm","status":404,"durationMs":273,"warming":null,"errorCode":null,"responseKeys":["ok","code","message"]}

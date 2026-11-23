@@ -867,21 +867,6 @@ describe('gateway.config.ts (configuração real)', () => {
       rateLimit: { by: 'principal' },
       timeoutMs: 160_000,
     })
-    // O aquecimento é outra rota: corpo pequeno e sem o prazo longo da verificação.
-    const warm = registry.resolve(
-      'POST',
-      '/members/lessons/lesson/sections/section/project-check/warm',
-      'v1',
-    )?.route
-    expect(warm).toMatchObject({
-      id: 'members-section-project-check-warm',
-      service: 'members',
-      auth: { required: true, strategies: ['jwt'] },
-      authorize: { statuses: ['active'] },
-      rateLimit: { max: 20, by: 'principal' },
-    })
-    expect(warm?.maxBodyBytes).toBeLessThanOrEqual(64 * 1024)
-    expect(warm?.timeoutMs).toBeUndefined()
     expect(
       registry.resolve('POST', '/members/admin/project-checks/test', 'v1')?.route,
     ).toMatchObject({

@@ -26,18 +26,6 @@ export interface ProjectExecutionCheckOutput {
   screenshots?: Record<string, string>
 }
 
-export interface ProjectExecutionWarmInput {
-  /** O mesmo `requester` da verificação: o executor liga o contêiner que ela vai usar. */
-  requester: string
-  /** Algum objetivo anda até um objeto 3D (o contêiner maior). */
-  threeD: boolean
-}
-
 export interface ProjectExecutionChecker {
   check(input: ProjectExecutionCheckInput): Promise<ProjectExecutionCheckOutput>
-  /**
-   * Liga o contêiner de quem vai verificar (23/11/2026), sem esperar: a criança abriu uma parte
-   * com objetivos que rodam o jogo. Falha é só registrada; a verificação continua igual.
-   */
-  warm?(input: ProjectExecutionWarmInput): void
 }

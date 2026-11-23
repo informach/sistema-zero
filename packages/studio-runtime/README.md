@@ -36,15 +36,6 @@ programa. `ThreeDCheckSandbox` mantém `standard-4` e o limite de 50 instâncias
 executor geral permanece. Na validação remota de 15/10/2026, `lite` falhou ao
 descompactar a imagem no disco de 2 GB.
 
-**Contêiner da verificação dos objetivos (23/11/2026).** O `/v1/check` usa o contêiner de quem
-pediu (`objetivos-<executionId>`, `src/check-container.ts`), que dorme sozinho depois de 5 minutos
-parado (`sleepAfter`). Teste que termina com resposta apaga só a pasta dele; qualquer falha destrói
-o contêiner. O `/v1/check/warm` (`{executionId, threeD}`) liga o mesmo contêiner e abre o Chromium
-uma vez (`runtime/check-warm.mjs`), quando a criança abre uma parte com objetivos que rodam o jogo.
-Como cada criança nessa parte ocupa uma vaga, o `ThreeDCheckSandbox` passou de 10 para 25
-instâncias. O log `studio-runtime check timing` mostra o tempo de cada fase (subida, compilação,
-execução e total).
-
 A regra existente expira `previews/` após dois dias. Antes de ativar os inputs
 Python, configure também as duas regras de um dia descritas abaixo. `published/`,
 `publications/`, `runtimes/` e `runtime-configs/` não têm expiração por idade.

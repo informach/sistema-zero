@@ -32,8 +32,6 @@ export function createLearningRoutes({
       })
       .strict(),
     'action-check': z.object({ revision: z.uuid() }).strict(),
-    // A criança abriu a parte: o executor já liga o contêiner dela (23/11/2026).
-    'project-check-warm': z.object({ revision: z.uuid() }).strict(),
     navigation: z.object({ sectionId: z.uuid(), opening: z.boolean().optional() }).strict(),
     'section-help': z
       .object({
@@ -91,10 +89,7 @@ export function createLearningRoutes({
       const denied = await authorizeViewer(req, true)
       if (denied) return denied
       const params = await ctx.params
-      const needsSection =
-        endpoint === 'project-check' ||
-        endpoint === 'action-check' ||
-        endpoint === 'project-check-warm'
+      const needsSection = endpoint === 'project-check' || endpoint === 'action-check'
       const needsBlock = endpoint === 'learning-progress' || endpoint === 'learning-attempts'
       if (
         !z.uuid().safeParse(params.lessonId).success ||
@@ -121,9 +116,8 @@ export function createLearningRoutes({
         : needsSection
           ? `/sections/${encodeURIComponent(params.sectionId ?? '')}`
           : ''
-      const leaf = endpoint === 'project-check-warm' ? 'project-check/warm' : endpoint
       const { status, body } = await gateway.gatewayFetch(
-        `/members/lessons/${encodeURIComponent(params.lessonId)}${blockPath}/${leaf}`,
+        `/members/lessons/${encodeURIComponent(params.lessonId)}${blockPath}/${endpoint}`,
         {
           method,
           body: parsed.data,
@@ -143,7 +137,6 @@ export function createLearningRoutes({
   const learningHelp = { POST: learningHandler('section-help', 'POST') }
 
   const learningProjectCheck = { POST: learningHandler('project-check', 'POST') }
-  const learningProjectCheckWarm = { POST: learningHandler('project-check-warm', 'POST') }
   return {
     learningResume: {
       GET: async (req: Request, ctx: { params: Promise<{ slug: string; lessonId: string }> }) => {
@@ -176,7 +169,6 @@ export function createLearningRoutes({
     learningAttempt,
     learningHelp,
     learningProjectCheck,
-    learningProjectCheckWarm,
     learningActionCheck: { POST: learningHandler('action-check', 'POST') },
   }
 }

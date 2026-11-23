@@ -1,18 +1,5 @@
 # CLAUDE.md — @sistemazero/members
 
-## Aquecer o contêiner do "Verificar projeto" (23/11/2026)
-
-`POST /members/lessons/:lessonId/sections/:sectionId/project-check/warm` `{revision}` →
-202 `{warming}` (`LearningService.warmProjectCheck` → `SectionProgressionService.warmProjectCheck`):
-a mesma conferência da verificação (`requireLesson`, parte aberta fora da equipe, revisão de agora)
-e, se a parte tem objetivo de execução JavaScript, `ProjectExecutionChecker.warm` (opcional na
-porta). O adaptador manda `POST /v1/check/warm` com o MESMO `executionId` do `check`
-(`check-<sha256(requester)>`; o executor usa esse nome para o contêiner da criança), sem esperar,
-e no máximo uma vez por criança a cada 3 min (`warmIntervalMs`); falha só vai ao log e libera a
-próxima tentativa. O 3D sai de `executionNeeds3dNavigation` (core), a mesma conta do Worker.
-Python não aquece. Testes: o fim de `tests/integration/section-objectives-execution.test.ts` e de
-`tests/unit/studio-runtime-checker.test.ts`.
-
 ## Molda Cenários: versões de cada ilha e "Voltar para esta versão" (21/11/2026)
 
 - `GET /members/cenarios/publicacoes/perfis/:ilha/versoes` (JWT) → `VersoesPublicadas` do core:

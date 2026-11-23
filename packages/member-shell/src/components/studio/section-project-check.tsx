@@ -67,9 +67,6 @@ type CheckResponse = {
 
 type Estado = 'passed' | 'failed' | 'unchecked'
 
-/** O contêiner da verificação dorme depois de 5 min parado; reaquecer a cada 3 min o mantém. */
-const AQUECER_A_CADA_MS = 3 * 60_000
-
 function ObjectivesCard({
   handleRef,
   subscribeProjectChanges,
@@ -137,32 +134,6 @@ function ObjectivesCard({
   const runsGame = objectives.some(
     (o) => o.kind === 'game' || o.kind === 'function' || o.kind === 'script',
   )
-
-  // O executor liga o contêiner da criança assim que a parte abre e de novo, no máximo a cada
-  // 3 min, enquanto ela mexe no projeto com a aba à vista (23/11/2026): o "Verificar" encontra
-  // tudo pronto. Erro é ignorado; a verificação continua igual.
-  const aquecidoEm = useRef(Number.NEGATIVE_INFINITY)
-  const lessonId = player?.lessonId
-  const viewerId = player?.viewerId
-  const sectionId = check?.sectionId
-  const revision = check?.revision
-  useEffect(() => {
-    if (!runsGame || !lessonId || !viewerId || !sectionId || !revision) return
-    const aquecer = () => {
-      if (document.visibilityState !== 'visible') return
-      const agora = Date.now()
-      if (agora - aquecidoEm.current < AQUECER_A_CADA_MS) return
-      aquecidoEm.current = agora
-      void apiSend(
-        `/api/members/lessons/${encodeURIComponent(lessonId)}/sections/${encodeURIComponent(sectionId)}/project-check/warm`,
-        'POST',
-        { revision },
-        { 'x-sz-viewer': viewerId },
-      ).catch(() => undefined)
-    }
-    aquecer()
-    return subscribeProjectChanges?.(aquecer)
-  }, [runsGame, lessonId, viewerId, sectionId, revision, subscribeProjectChanges])
 
   async function verify() {
     const handle = handleRef.current

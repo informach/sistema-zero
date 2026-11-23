@@ -437,29 +437,6 @@ export class LearningService {
     if (!course) throw new LessonNotFoundError()
     return this.sections.checkAction(actor, lesson, sectionId, revision, course.audience)
   }
-  /** O executor liga o contêiner da criança quando ela abre a parte (23/11/2026). */
-  async warmProjectCheck(
-    actor: LearningActor,
-    lessonId: string,
-    sectionId: string,
-    revision: string,
-    signal?: AbortSignal,
-  ) {
-    const capturedActor = {
-      userId: actor.userId,
-      accountId: actor.accountId,
-      privileged: actor.privileged,
-    }
-    const lesson = await this.requireLesson(capturedActor, lessonId, signal)
-    return this.sections.warmProjectCheck(
-      capturedActor,
-      lesson,
-      sectionId,
-      revision,
-      capturedActor.privileged,
-      signal,
-    )
-  }
   async checkProject(
     actor: LearningActor,
     lessonId: string,

@@ -92,10 +92,7 @@ export function bffAnswer(
     return missing
   }
   if (method !== 'POST') return missing
-  // O aquecimento do contêiner da verificação (23/11/2026) não tem o que aquecer no palco.
-  if (first === 'sections' && id && action === 'project-check' && rest[3] === 'warm')
-    return ok({ warming: false })
-  if (first === 'sections' && id && action === 'project-check' && rest.length === 3)
+  if (first === 'sections' && id && action === 'project-check')
     return { kind: 'project-check', sectionId: id }
   if (first === 'blocks' && id && action === 'studio-context')
     return { kind: 'studio-context', blockId: id }

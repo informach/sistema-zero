@@ -20,11 +20,5 @@ test('o sandbox de execução oferece a CPU usada na qualificação dos programa
     expect(sandbox).toBeDefined()
     expect(cpu[sandbox.instance_type]).toBeGreaterThanOrEqual(1)
     expect(sandbox.max_instances).toBe(50)
-    // Cada criança numa parte com objetivos 3D ocupa um contêiner aquecido (23/11/2026).
-    const threeD = deployment.containers.find(
-      (item: { class_name: string }) => item.class_name === 'ThreeDCheckSandbox',
-    )
-    expect(threeD.instance_type).toBe('standard-4')
-    expect(threeD.max_instances).toBe(25)
   }
 })

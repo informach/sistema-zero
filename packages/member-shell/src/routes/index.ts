@@ -1421,7 +1421,6 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     learningAttempt,
     learningHelp,
     learningProjectCheck,
-    learningProjectCheckWarm,
     learningActionCheck,
   } = createLearningRoutes({ session, gateway })
 
@@ -1998,7 +1997,6 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     learningResume,
     learningNavigation,
     learningProjectCheck,
-    learningProjectCheckWarm,
     learningActionCheck,
     learningProgress,
     profilePreferences: createProfilePreferencesRoutes(session, gateway, paletteCookie),

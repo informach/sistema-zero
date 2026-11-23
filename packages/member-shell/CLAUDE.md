@@ -1,17 +1,5 @@
 # CLAUDE.md — @sistemazero/member-shell
 
-## O cartão dos objetivos aquece o executor (23/11/2026)
-
-O `ObjectivesCard` (`components/studio/section-project-check.tsx`), com objetivo que roda o jogo
-(`game`/`function`/`script`) e `viewerId`, pede `POST /api/members/lessons/:id/sections/:id/
-project-check/warm` `{revision}` ao montar e de novo, no máximo a cada 3 min
-(`AQUECER_A_CADA_MS`), a cada mudança do projeto com a aba à vista; erro é ignorado e nada aparece
-na tela. Assim o "Verificar projeto" encontra o contêiner da criança ligado (o executor o deixa
-dormir depois de 5 min parado). BFF: endpoint `project-check-warm` do `learningHandler`
-(`learningProjectCheckWarm`, mesmas guardas de sessão e `x-sz-viewer`), com atalho nos dois apps.
-O palco de gravação responde `{warming: false}` sem rodar nada. Testes: `tests/learning-routes.test.ts`
-e o fim de `tests/fixtures/section-project-check.fixture.tsx`.
-
 ## A medida dos mundos grandes no staging (23/11/2026)
 
 Plano "Mundos de 2 km", lote 8. `/estudio/medida-mundos` (nos dois apps, só a equipe: 404 para os

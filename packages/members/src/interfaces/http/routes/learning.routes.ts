@@ -132,25 +132,6 @@ export function learningRoutes(deps: LearningRoutesDeps) {
           ),
         { params: SectionProjectParams, body: SectionProjectBody },
       )
-      .post(
-        '/lessons/:lessonId/sections/:sectionId/project-check/warm',
-        async ({ headers, params, body, request, set }) => {
-          const result = await deps.learning.warmProjectCheck(
-            actor(headers),
-            params.lessonId,
-            params.sectionId,
-            body.revision,
-            request.signal,
-          )
-          set.status = 202
-          set.headers['cache-control'] = 'private, no-store'
-          return result
-        },
-        {
-          params: SectionProjectParams,
-          body: t.Object({ revision: t.String({ format: 'uuid' }) }),
-        },
-      )
       .group('/admin', (app) =>
         app
           .onBeforeHandle(({ headers }) => requireAdmin(headers, deps.requireAdminEnabled))

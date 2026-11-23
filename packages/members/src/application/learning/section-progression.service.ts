@@ -5,7 +5,6 @@ import { ValidationError } from '@sistemazero/core/errors'
 import { awaitWithSignal } from '@sistemazero/core/http'
 import {
   type ExecutionObjectiveRequest,
-  executionNeeds3dNavigation,
   executionProjectChecks,
   hasSectionProgression,
   isExecutionRule,
@@ -150,37 +149,6 @@ export class SectionProgressionService {
       objectives,
       ...(screenshots ? { screenshots } : {}),
     })
-  }
-
-  /**
-   * Aquecimento do "Verificar projeto" (23/11/2026): a criança abriu uma parte com objetivos que
-   * rodam o jogo, e o executor já liga o contêiner dela. A mesma conferência da verificação (parte
-   * aberta para quem não é da equipe, revisão de agora); nada é guardado nem premiado. Python não
-   * usa esse contêiner.
-   */
-  async warmProjectCheck(
-    owner: LearningOwner,
-    lesson: LessonWithContent,
-    sectionId: string,
-    revision: string,
-    privileged: boolean,
-    signal?: AbortSignal,
-  ): Promise<{ warming: boolean }> {
-    const executor = this.executor
-    if (!executor?.warm) return { warming: false }
-    if (!privileged) await this.assertSection(owner, lesson, sectionId, false, { signal })
-    const structure = await this.repository.getStructure(lesson.id)
-    if (!structure || structure.revision !== revision) throw new LearningConflictError()
-    const section = structure.sections.find((s) => s.id === sectionId)
-    const checks = (section?.completion?.projectChecks ?? []).filter(
-      (check) => check.programmingLanguage !== 'python',
-    )
-    const objectives = executionProjectChecks(checks).flatMap((check) =>
-      isExecutionRule(check.rule) ? [{ rule: check.rule }] : [],
-    )
-    if (!objectives.length) return { warming: false }
-    executor.warm({ requester: owner.userId, threeD: executionNeeds3dNavigation(objectives) })
-    return { warming: true }
   }
 
   /**

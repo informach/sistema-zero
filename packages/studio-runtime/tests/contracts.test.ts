@@ -31,7 +31,7 @@ test('a imagem inclui os módulos locais importados pelo executor de objetivos',
       m[1]!.trim().split(/\s+/).slice(0, -1),
     ),
   )
-  const queue = ['runtime/check-objectives.mjs', 'runtime/check-warm.mjs'],
+  const queue = ['runtime/check-objectives.mjs'],
     seen = new Set<string>()
   for (const file of queue) {
     if (seen.has(file)) continue
