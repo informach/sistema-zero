@@ -8,7 +8,7 @@ import { Matrix4, PlaneGeometry } from 'three'
 import { AlturasDaAgua } from '../src/agua/alturas'
 import { geometriaDaAgua } from '../src/agua/geometria'
 import { MaterialDaAgua } from '../src/agua/material'
-import { rasterizarAguaCompilada } from '../src/compilar/agua'
+import { rasterizarAguaCompilada, rasterizarAguaNaResolucao } from '../src/compilar/agua'
 
 test('pintura de água conserva gradiente real de profundidade e descarta margem seca', () => {
   const base: BaseDeTerreno = {
@@ -94,3 +94,44 @@ test('cachoeira usa a faixa vertical e conserva os UVs autorais da fonte', () =>
     g.geometria.dispose()
   }
 })
+
+test('lago grande demais para 8 px/m desce a resolução em vez de reprovar; em campo, até caber no teto', () => {
+  const base: BaseDeTerreno = {
+      tipo: 'terreno',
+      origem: { x: -256, z: -256 },
+      passo: 4,
+      colunas: 128,
+      linhas: 128,
+      min: -100,
+      max: 100,
+      fundo: -10,
+      pecas: [],
+    },
+    campo = criarCampoDeAlturas(base, -2),
+    alturas = new AlturasDaAgua(base, campo, 128, () => true),
+    material = new MaterialDaAgua(undefined, { fundo: alturas, profundidade: 4 }),
+    pequeno = new PlaneGeometry(4, 4).rotateX(-Math.PI / 2),
+    grande = new PlaneGeometry(260, 260).rotateX(-Math.PI / 2)
+  try {
+    const sinal = new AbortController().signal
+    const fonte = (geometria: PlaneGeometry) => ({
+      geometria,
+      matriz: new Matrix4(),
+      acabamento: material,
+    })
+    // O que cabia a 8 px/m sai igual.
+    expect(rasterizarAguaNaResolucao(fonte(pequeno), sinal, undefined, undefined).largura).toBe(32)
+    // 260 m a 8 px/m passa de 2048 px: desce para 4 px/m.
+    expect(() => rasterizarAguaCompilada(fonte(grande), { pixelsPorMetro: 8 })).toThrow(
+      'excede o limite de pixels',
+    )
+    expect(rasterizarAguaNaResolucao(fonte(grande), sinal, undefined, undefined).largura).toBe(1040)
+    // Em campo (um milhão de pixels por parte), desce até caber: 2 px/m.
+    expect(rasterizarAguaNaResolucao(fonte(grande), sinal, undefined, 1_048_576).largura).toBe(520)
+  } finally {
+    material.descartar()
+    alturas.descartar()
+    pequeno.dispose()
+    grande.dispose()
+  }
+}, 60_000)

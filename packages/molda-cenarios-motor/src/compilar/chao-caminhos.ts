@@ -1,5 +1,13 @@
 import type { CenaCompilada } from '@sistemazero/molda-cenarios-core/compilar'
-import { type BufferGeometry, type Material, Matrix4, Mesh, MeshStandardMaterial } from 'three'
+import {
+  type BufferGeometry,
+  type Material,
+  Matrix3,
+  Matrix4,
+  Mesh,
+  MeshStandardMaterial,
+  Vector3,
+} from 'three'
 import { criarPlanoDoCenario } from '../plano'
 import type { SuperficieDoObjeto } from '../superficies'
 import type { FonteDeColisao } from '../teste/colisoes'
@@ -14,12 +22,21 @@ import type { montarSuperficiesDaCompilacao } from './superficies'
 
 export type SuperficiesDaCompilacao = ReturnType<typeof montarSuperficiesDaCompilacao>
 
+/**
+ * Quanto um caminho colado no chão sobe nos mundos em campo (plano "Mundos de 2 km", lote 3): lá o
+ * chão não é recortado embaixo dele (o jogo desenha o relevo na hora), e o glTF não guarda o
+ * deslocamento de profundidade do decalque; 3 cm somem com a disputa de profundidade sem que se veja.
+ */
+export const ELEVACAO_DO_DECAL_EM_CAMPO = 0.03
+
 /** Materializa cada intervalo de material sem transportar offsets de profundidade
- * específicos do editor. A remoção de decals do chão deve acontecer antes. */
+ * específicos do editor. A remoção de decals do chão deve acontecer antes (ou, em campo, o decal
+ * sobe `elevarDecal` metros). */
 export async function gravarSuperficieComum(
   f: SuperficieDoObjeto,
   papel: 'caminho' | 'agua',
   saida: MontagemDaCompilacao,
+  elevarDecal = 0,
 ) {
   const materiais = Array.isArray(f.material) ? f.material : [f.material],
     intervalos = Array.isArray(f.material)
@@ -52,6 +69,13 @@ export async function gravarSuperficieComum(
       if (papel === 'caminho' && material.polygonOffset && !material.depthWrite) {
         material.polygonOffset = false
         material.depthWrite = true
+        if (elevarDecal > 0) {
+          // A subida é no MUNDO: leva o vetor vertical para o espaço local da superfície.
+          const local = new Vector3(0, elevarDecal, 0).applyMatrix3(
+            new Matrix3().setFromMatrix4(f.matriz.clone().invert()),
+          )
+          entrada.translate(local.x, local.y, local.z)
+        }
       }
       const partes = dividirParteEstatica(
         { geometria: entrada, matriz: new Matrix4() },
@@ -96,6 +120,11 @@ export async function compilarChaoECaminhos(
   saida: MontagemDaCompilacao,
   imagens: ReadonlyMap<string, PixelsDaTextura>,
   objetosParaRecorte: Iterable<SuperficieDoObjeto> = [],
+  /**
+   * O relevo em campo (plano "Mundos de 2 km", lote 3): o terreno não vira peças desenhadas nem
+   * colisão (o jogo desenha e colide pelo campo de alturas); os caminhos continuam iguais.
+   */
+  relevoEmCampo = false,
 ): Promise<CenaCompilada['plano']> {
   const d = s.preparada.documento,
     base = d.base,
@@ -169,6 +198,8 @@ export async function compilarChaoECaminhos(
       piso.geometry.dispose()
       piso.material.dispose()
     }
+  } else if (base.tipo === 'terreno' && s.terreno && relevoEmCampo) {
+    // Nada a gravar do chão: as alturas e os pesos saem em `gravarDadosDoTerreno`.
   } else if (base.tipo === 'terreno' && s.terreno) {
     const malhas: Mesh[] = []
     s.terreno.grupo.updateWorldMatrix(true, true)
@@ -190,7 +221,7 @@ export async function compilarChaoECaminhos(
     }
   } else throw Error('Converta o relevo antes de compilar.')
   for (const f of caminhos) {
-    await gravarSuperficieComum(f, 'caminho', saida)
+    await gravarSuperficieComum(f, 'caminho', saida, relevoEmCampo ? ELEVACAO_DO_DECAL_EM_CAMPO : 0)
     saida.ancora(f.id, new Matrix4())
   }
   await gravarFontesFisicas(s.caminhos.fontesDoTeste(), 'caminho', saida)

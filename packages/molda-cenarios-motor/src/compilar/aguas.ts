@@ -9,7 +9,14 @@ import { dividirParteEstatica } from './geometria'
 import { cederDuranteCompilacao, type MontagemDaCompilacao } from './montagem'
 import { particionarAguaHorizontalCompilada, particionarOceanoCompilado } from './oceano'
 
-export async function compilarAguasDaCena(s: SuperficiesDaCompilacao, saida: MontagemDaCompilacao) {
+/** Um milhão de pixels por parte de água nos mundos em campo (plano "Mundos de 2 km", lote 3). */
+export const PIXELS_DA_AGUA_EM_CAMPO = 1_048_576
+
+export async function compilarAguasDaCena(
+  s: SuperficiesDaCompilacao,
+  saida: MontagemDaCompilacao,
+  relevoEmCampo = false,
+) {
   const aguas = new Map(s.preparada.aguas.map((a) => [a.id, a]))
   for (const f of s.aguas.superficies()) {
     saida.sinal.throwIfAborted()
@@ -43,7 +50,12 @@ export async function compilarAguasDaCena(s: SuperficiesDaCompilacao, saida: Mon
               },
               pronta = p.uniforme
                 ? prepararAguaUniforme(fonte, saida.sinal)
-                : await prepararAguaCompilada(fonte, saida.sinal)
+                : await prepararAguaCompilada(
+                    fonte,
+                    saida.sinal,
+                    undefined,
+                    relevoEmCampo ? PIXELS_DA_AGUA_EM_CAMPO : undefined,
+                  )
             try {
               saida.adicionar(
                 await saida.gravar(new Mesh(pronta.geometria, pronta.material), 'agua'),

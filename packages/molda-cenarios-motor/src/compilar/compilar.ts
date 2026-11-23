@@ -35,6 +35,26 @@ import { gravarDadosDoTerreno } from './terreno'
 
 export interface OpcoesDaCompilacao extends OpcoesDosObjetosCompilados {
   juncaoEstatica?: Pick<OpcoesDaJuncaoEstatica, 'tamanhoDaRegiao'>
+  /**
+   * `'campo'`: o relevo vai como campo de alturas e pesos, sem lotes nem colisão de terreno (plano
+   * "Mundos de 2 km", lote 3). Só vale para o terreno que ocupa a grade inteira, sem recortes; nos
+   * outros casos o terreno sai como sempre. Quem pede é o anfitrião cujo jogo lê o formato.
+   */
+  relevo?: 'campo'
+}
+
+/** O relevo deste documento sai em campo com estas opções? */
+export function relevoEmCampoDaCompilacao(
+  documento: DocumentoDeCenario,
+  opcoes: Pick<OpcoesDaCompilacao, 'relevo'>,
+): boolean {
+  const base = documento.base
+  return (
+    opcoes.relevo === 'campo' &&
+    base.tipo === 'terreno' &&
+    base.cobertura === 'grade' &&
+    !base.recortes?.length
+  )
 }
 export interface ResultadoDaCompilacao extends PacoteCompilado {
   /** Avisos do gerador original, sem esconder decisões de implantação da estrutura. */
@@ -132,14 +152,18 @@ async function compilarBase(
       }
     }
     await compilarObjetosDaCena(p, r, saida, opcoes)
+    const emCampo = relevoEmCampoDaCompilacao(original, opcoes)
     const plano = await compilarChaoECaminhos(
       s,
       saida,
       imagens,
       superficiesDosObjetosParaSolo(p, r, opcoes, sinal),
+      emCampo,
     )
-    await compilarAguasDaCena(s, saida)
-    const terreno = s.terreno ? await gravarDadosDoTerreno(s.terreno, arquivos, sinal) : undefined,
+    await compilarAguasDaCena(s, saida, emCampo)
+    const terreno = s.terreno
+        ? await gravarDadosDoTerreno(s.terreno, arquivos, sinal, emCampo ? { imagens } : undefined)
+        : undefined,
       meta = compilarMetadadosDaCena(original, p, saida.ancoras(p))
     opcoes.progresso?.({ etapa: 'arquivos', feitos: 0, total: 1 })
     await cederDuranteCompilacao(sinal)

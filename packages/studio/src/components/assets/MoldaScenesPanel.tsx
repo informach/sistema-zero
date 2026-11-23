@@ -155,6 +155,9 @@ export function MoldaScenesPanel({
       const resultado = await fonte.preparar(cena.id, cena.revisao, {
         signal,
         juntar,
+        // O relevo em campo (plano "Mundos de 2 km"): os motores 3D em JavaScript o leem; o
+        // Python só com a distribuição que o declara (lote 6).
+        ...(capturado.programmingLanguage !== 'python' ? { relevo: 'campo' as const } : {}),
         progresso: (p) => {
           if (aberto())
             setProgresso(`${p.nome ?? t('moldaScenes.preparing')} · ${p.feitos}/${p.total}`)

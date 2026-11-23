@@ -33,6 +33,14 @@ export interface OpcoesDoRelevo {
   alcance: number
   /** Teto de pedaços desenhados. */
   maximoDeNos: number
+  /**
+   * Áreas (metros) onde o relevo desce ao detalhe máximo enquanto estão a menos de `alcance` metros
+   * do foco: os caminhos colados no chão (lote 3), para um relevo mais grosso não os cobrir.
+   */
+  detalhe?: {
+    caixas: readonly { x0: number; z0: number; x1: number; z1: number }[]
+    alcance: number
+  }
 }
 
 /** O espaçamento da grade (metros) pelo lado maior do mundo: 1 m até 1 km, 2 m até 2 km. */
@@ -86,7 +94,7 @@ export function selecionarNosDoRelevo(
     throw new Error('O teto de pedaços de relevo é inválido.')
   let fator = opcoes.fator
   for (let tentativa = 0; tentativa < 40; tentativa++) {
-    const folhas = dividir(forma, foco, celulasPorNo, fator, maximoDeNos)
+    const folhas = dividir(forma, foco, celulasPorNo, fator, maximoDeNos, opcoes.detalhe)
     if (folhas.length <= maximoDeNos || fator <= 0) {
       const perto = (n: NoDoRelevo) => distanciaAoNo(forma, n, celulasPorNo, foco)
       return folhas
@@ -124,8 +132,20 @@ function dividir(
   celulasPorNo: number,
   fator: number,
   maximoDeNos: number,
+  detalhe: OpcoesDoRelevo['detalhe'],
 ): NoDoRelevo[] {
   const nivelMaximo = nivelMaximoDoRelevo(forma, celulasPorNo)
+  /** O pedaço está perto do foco e toca uma área de detalhe? */
+  const forcado = (n: NoDoRelevo) => {
+    if (!detalhe?.caixas.length) return false
+    if (distanciaAoNo(forma, n, celulasPorNo, foco) >= detalhe.alcance) return false
+    const c = celulasDoNo(forma, n, celulasPorNo),
+      x0 = forma.origem.x + c.x0 * forma.passo,
+      x1 = forma.origem.x + c.x1 * forma.passo,
+      z0 = forma.origem.z + c.z0 * forma.passo,
+      z1 = forma.origem.z + c.z1 * forma.passo
+    return detalhe.caixas.some((k) => k.x0 <= x1 && k.x1 >= x0 && k.z0 <= z1 && k.z1 >= z0)
+  }
   const folhas = new Map<string, NoDoRelevo>()
   const dentro = (n: NoDoRelevo) => {
     const lado = celulasPorNo * 2 ** n.nivel
@@ -147,8 +167,12 @@ function dividir(
     return null
   }
 
-  /** Divide o pedaço, dividindo antes os vizinhos mais grossos (a árvore fica equilibrada). */
-  const partir = (n: NoDoRelevo): NoDoRelevo[] => {
+  const fila: NoDoRelevo[] = [raiz]
+  /**
+   * Divide o pedaço, dividindo antes os vizinhos mais grossos (a árvore fica equilibrada). Todo
+   * filho entra na fila, inclusive os da divisão de um vizinho: senão eles nunca se refinam.
+   */
+  const partir = (n: NoDoRelevo): void => {
     const lado = celulasPorNo * 2 ** n.nivel,
       cx = n.ix * lado,
       cz = n.iz * lado
@@ -161,8 +185,7 @@ function dividir(
       const vizinho = folhaEm(vx, vz, n.nivel)
       if (vizinho && vizinho.nivel > n.nivel) partir(vizinho)
     }
-    if (!folhas.delete(chave(n))) return []
-    const filhos: NoDoRelevo[] = []
+    if (!folhas.delete(chave(n))) return
     for (const [dx, dz] of [
       [0, 0],
       [1, 0],
@@ -172,12 +195,10 @@ function dividir(
       const f = { nivel: n.nivel - 1, ix: n.ix * 2 + dx, iz: n.iz * 2 + dz }
       if (!dentro(f)) continue
       folhas.set(chave(f), f)
-      filhos.push(f)
+      fila.push(f)
     }
-    return filhos
   }
 
-  const fila: NoDoRelevo[] = [raiz]
   while (fila.length > 0) {
     // O mais perto, em proporção ao tamanho, primeiro.
     let melhor = 0
@@ -185,9 +206,9 @@ function dividir(
       if (prioridade(fila[i] as NoDoRelevo) < prioridade(fila[melhor] as NoDoRelevo)) melhor = i
     const n = fila.splice(melhor, 1)[0] as NoDoRelevo
     if (!folhas.has(chave(n)) || n.nivel === 0) continue
-    if (prioridade(n) >= fator) continue
+    if (prioridade(n) >= fator && !forcado(n)) continue
     if (folhas.size + 3 > maximoDeNos) break
-    fila.push(...partir(n))
+    partir(n)
   }
   return [...folhas.values()]
 }

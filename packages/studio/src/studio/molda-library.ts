@@ -91,6 +91,8 @@ export interface StudioMoldaLibraryAdapter {
         signal: AbortSignal
         juntar: boolean
         progresso?: (p: ProgressoDaCompilacao) => void
+        /** O relevo em campo (plano "Mundos de 2 km"): o host repassa ao compilador. */
+        relevo?: 'campo'
       },
     ): Promise<{ pacote: PacoteCompilado; avisos: string[] }>
   }

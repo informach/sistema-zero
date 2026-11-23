@@ -203,3 +203,19 @@ terreno `grade` nativo sem `recortes`:
   - a saia de cada pedaço tem a profundidade da maior fresta MEDIDA nas bordas dele (contra um
     vizinho um nível mais grosso e um mais fino), não um número fixo: o teste mostrou fresta de
     9,7 m com a saia fixa de 8,5 m.
+- Lote 3: feito na staging local (23/11/2026). O compilador grava o relevo em campo quando o
+  anfitrião pede (`relevo: 'campo'`; o Estúdio pede nos projetos JavaScript; a publicação para o
+  Arquipélago e as exportações não pedem e saem iguais). Um mundo de 2 km plano em campo ocupa
+  4,2 MB (quase tudo `alturas.bin`) e compila em 2,1 s (`studio/src/testing/scene3dCampo.test.ts`).
+  Fixture congelada `molda-scene3d-campo-v1.json`. Decisões, com o motivo:
+  - **caminhos colados no chão sobem 3 cm** na compilação em campo, em vez de um decalque no jogo: o
+    gravador de GLB não leva marca no material para o jogo saber quais eram decalques; e o relevo
+    desce ao detalhe máximo a até 160 m da câmera onde há caminho (`detalhe` em
+    `selecionarNosDoRelevo`), para um relevo mais grosso não cobri-los;
+  - **a água desce a resolução** (8, 4, 2, 1 px/m) quando estoura o limite de pixels por parte, em
+    qualquer cena (antes a compilação reprovava); em campo, também até caber em 1 Mpx por parte.
+    O que já cabia sai igual;
+  - **sem pintura no chão**, o campo leva três camadas (fundo, areia, grama) com o mesmo degradê
+    pela altura que o palco desenha;
+  - conserto achado pelo teste do detalhe: os filhos de um pedaço dividido para equilibrar a árvore
+    não entravam na fila e nunca se refinavam (perto da câmera o relevo podia ficar mais grosso).

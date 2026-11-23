@@ -40,6 +40,8 @@ export interface DadosDoRelevo {
   /** Um RGBA por vértice da grade em cada arquivo (camadas 1 a 4, depois 5 a 8). */
   pesos: readonly Uint8Array[]
   camadas: readonly CamadaDoRelevo[]
+  /** Áreas (metros) onde o relevo desce ao detalhe máximo perto da câmera: os caminhos. */
+  detalhe?: readonly { x0: number; z0: number; x1: number; z1: number }[]
 }
 
 export interface OpcoesDoRelevoNoThree {
@@ -49,6 +51,8 @@ export interface OpcoesDoRelevoNoThree {
   construcoesPorQuadro?: number
   /** Pedaços construídos guardados para a volta (além dos que estão na tela). */
   guardados?: number
+  /** Metros: até onde as áreas de detalhe forçam o detalhe máximo. */
+  alcanceDoDetalhe?: number
 }
 
 export const PADRAO_DO_RELEVO = {
@@ -57,6 +61,7 @@ export const PADRAO_DO_RELEVO = {
   maximoDeNos: 96,
   construcoesPorQuadro: 4,
   guardados: 64,
+  alcanceDoDetalhe: 160,
 } as const
 
 const chave = (n: NoDoRelevo) => `${n.nivel}:${n.ix}:${n.iz}`
@@ -123,6 +128,9 @@ export class RelevoNoThree {
         fator: this.opcoes.fator,
         alcance,
         maximoDeNos: this.opcoes.maximoDeNos,
+        ...(this.dados.detalhe?.length
+          ? { detalhe: { caixas: this.dados.detalhe, alcance: this.opcoes.alcanceDoDetalhe } }
+          : {}),
       })
       this.focoDoAlvo = { x: foco.x, z: foco.z, alcance }
     }
