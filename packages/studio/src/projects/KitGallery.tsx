@@ -10,7 +10,8 @@ import {
 } from '#extensions'
 import { generateProjectFiles } from '#generators'
 import { assignStableIdsToIR, type SZIRV2 } from '#ir'
-import { OFFICIAL_CATALOG } from '#official-extensions'
+import { findExtension, OFFICIAL_CATALOG } from '#official-extensions'
+import { registerBlockContracts } from '../blockly/blockContracts'
 import type { EditableStudioProject } from '../core/editableProject'
 import { createEmptyProject, type Project, type ProjectAsset } from '../core/project'
 import { normalizeSearchText } from '../core/searchText'
@@ -407,6 +408,14 @@ export function buildProjectFromKitEntry(entry: KitEntry): Project {
   // Otherwise first hydration replaces fallback event/cooldown keys and
   // navigates the running game during input. Keep template metadata and IDs.
   const ir = { ...templateIR, ...assignStableIdsToIR(templateIR, 'example') }
+  // O construtor troca por código o bloco que não cabe no lugar dele, mas só conhece o lugar de
+  // um bloco de extensão pelas regras registradas, e a galeria monta os blocos antes de o editor
+  // registrar as extensões do projeto. Sem isto, um bloco fora do lugar (o "Dar corpo físico"
+  // dentro de um "para cada" no jogo E) ia para o estado e a carga inteira falhava.
+  for (const extension of ir.extensions) {
+    const definition = findExtension(extension.extensionId)
+    if (definition) registerBlockContracts(definition.blockly.blocks)
+  }
   const project: Project = {
     ...createEmptyProject(ulid(), name),
     ir,

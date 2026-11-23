@@ -52,6 +52,9 @@ export interface EstadoDoAmbiente {
 }
 export type ObterTexturaDoCeu = (ref: TexturaDoCenario) => { textura?: Texture; erro?: string }
 
+/** O raio da esfera do céu quando a câmera enxerga longe (a oficina). */
+const RAIO_DO_CEU = 3000
+
 /** Ambiente autoral. Hora fornece o padrão; overrides não alteram o documento nem o personagem. */
 export class AmbienteDoPalco {
   readonly grupo = new Group()
@@ -86,7 +89,7 @@ export class AmbienteDoPalco {
     this.sol.shadow.mapSize.set(2048, 2048)
     this.sol.shadow.bias = -0.0004
     this.sol.shadow.normalBias = 0.05
-    this.ceu.scale.setScalar(3000)
+    this.ceu.scale.setScalar(RAIO_DO_CEU)
     this.ceu.renderOrder = -1000
     this.ceu.frustumCulled = false
     this.grupo.add(this.sol, this.sol.target, this.ambiente, this.ceu, this.locais.grupo)
@@ -243,6 +246,15 @@ export class AmbienteDoPalco {
   quadro(camera: Camera, alvo: Vector3) {
     if (this.destruido) return
     camera.getWorldPosition(this.ceu.position)
+    // A esfera do céu precisa caber no alcance da câmera: com 3000 m e a câmera do Jogo 3D do
+    // Estúdio enxergando 1000 m, ela inteira caía fora da vista e o céu saía preto (conferência
+    // no staging, 22/11/2026). A oficina enxerga 4000 m ou mais e fica com o raio de sempre.
+    const alcanceDaCamera = (camera as Camera & { far?: number }).far
+    this.ceu.scale.setScalar(
+      typeof alcanceDaCamera === 'number' && alcanceDaCamera > 0
+        ? Math.min(RAIO_DO_CEU, alcanceDaCamera * 0.9)
+        : RAIO_DO_CEU,
+    )
     const alcance =
         this.parametros.sombras?.alcance ??
         Math.min(260, Math.max(24, this.ceu.position.distanceTo(alvo) * 1.4)),

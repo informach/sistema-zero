@@ -22,7 +22,9 @@ Lotes 5 a 7b e 9 da conclusão do plano (especificação em
   novas tentativas em 1, 4 e 15 s são o `NOVAS_TENTATIVAS` de
   `molda-cenarios-motor/src/compilar/runtime-three.ts`, que também expõe o `estadoDasRegioes()`.
   O estado do jogo (moedas, placar) nunca descarrega; onde a região não carregou, vale o relevo
-  global (ninguém cai).
+  global (ninguém cai). ⚠️ O céu do cenário (esfera de 3000 m na oficina) ajusta o raio a 90% do
+  alcance da câmera no `quadro` do ambiente: a câmera dos motores 3D do Estúdio enxerga 1000 m, e
+  com o raio fixo o céu saía preto (conferência no staging, 22/11/2026).
 - **O bloco** "Quando … entrar na região" é o valor `event: 'regiao'` da regra `onGame` (não um
   membro novo da união, pelo TS2590) e o `onEnterRegion` nos três motores 3D (`SZGame3D.onEnterRegion` no Jogo 3D; no Mundo 3D e no 3D Avançado pelo objeto do próprio motor, a partir das regras comuns de `game3dRules`), pago com o
   `fisica.apoio` do SDK (`three/scene3dPhysics.ts`) no lugar do laço de apoio de cada motor. O campo
@@ -38,8 +40,15 @@ Lotes 5 a 7b e 9 da conclusão do plano (especificação em
   (20 MB) mora no R2 do ambiente (`estudio-exemplos/jogo-e/<sha256>.json`, gerado por
   `scripts/gen-jogo-e-galeria.ts`) e chega pela rota do host (`exampleFilesBaseUrl`, no Kids e no
   adulto `/api/studio/example-files`, ligada por `STUDIO_EXAMPLES_ORIGIN`); sem o endereço o card
-  não aparece, e o arquivo só abre com o tamanho e o hash certos. ⚠️ A galeria continua só para a
-  equipe nos dois apps (decisão dela).
+  não aparece, e o arquivo só abre com o tamanho e o hash certos (e com programa: arquivo de IR
+  vazia é recusado). ⚠️ A galeria continua só para a equipe nos dois apps (decisão dela).
+- ⚠️⚠️ **A galeria monta os blocos ANTES de o editor registrar as extensões do projeto**: o
+  `buildProjectFromKitEntry` registra as regras (contratos) dos blocos das extensões do exemplo
+  antes do `buildWorkspaceStateFromIR`. Sem elas o construtor não sabe que um bloco está fora do
+  lugar (não o troca por código) e a carga inteira do editor falha com "Não deu para abrir estes
+  blocos" (o jogo E no staging, 22/11/2026; `projects/KitGallery.placement.test.ts`). Teste de
+  blocos sem navegador precisa das regras registradas, senão passa por sorte. O gerador do jogo E
+  recusa qualquer linha que vire código cru.
 - Provas: `e2e/engine-regions.spec.ts` (no `studio-engines.yml`), `moldaFullScenario.contract.test.ts`,
   os testes do bloco nos três motores, `__tests__/cenario_test.py`, `e2e-runtime/python-raylib.spec.ts`
   e `examples/bigExamples.test.ts`. O mundo do jogo E tem 384 m (1 km passa dos tetos de hoje).

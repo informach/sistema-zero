@@ -299,3 +299,28 @@ test('entrada compilada conserva posição apoiada e alvo girado das luzes nativ
     compiladas.descartar()
   }
 })
+
+// Conferência no staging (22/11/2026): no Jogo 3D do Estúdio o céu do cenário saía preto. A esfera
+// do céu tem 3000 m de raio e a câmera do motor enxerga até 1000 m: a esfera inteira caía fora do
+// alcance da câmera e sobrava o fundo preto. O céu cabe no alcance de quem desenha.
+test('o céu cabe dentro do alcance da câmera que desenha o quadro', () => {
+  const cena = new Scene()
+  const ambiente = new AmbienteDoPalco(cena)
+  const ceu = ambiente.grupo.children.find(
+    (filho): filho is Mesh => filho instanceof Mesh && filho.renderOrder === -1000,
+  )
+  if (!ceu) throw new Error('Sem a esfera do céu.')
+  const perto = new PerspectiveCamera(60, 1, 0.1, 1000)
+  perto.position.set(10, 5, -20)
+  perto.updateMatrixWorld(true)
+  ambiente.quadro(perto, new Vector3(0, 0, 0))
+  expect(ceu.visible).toBe(true)
+  expect(ceu.scale.x).toBeLessThan(perto.far)
+  expect(ceu.scale.x).toBeGreaterThan(perto.near * 100)
+  expect(ceu.position.toArray()).toEqual([10, 5, -20])
+  // A oficina enxerga longe (4000 m ou mais): o céu continua com o raio de sempre.
+  const longe = new PerspectiveCamera(60, 1, 0.1, 4000)
+  longe.updateMatrixWorld(true)
+  ambiente.quadro(longe, new Vector3(0, 0, 0))
+  expect(ceu.scale.x).toBe(3000)
+})

@@ -2,9 +2,14 @@
  * O jogo E no Estúdio (lote 7 da conclusão do plano do Estúdio, 22/11/2026), a segunda metade do
  * gerador: lê os dois pacotes que `packages/molda-cenarios/playground/jogo-e/preparar-cenario.ts`
  * gravou (com e sem regiões), importa pelo Estúdio (que confere o orçamento por janela), escreve o
- * programa só com blocos que existem (o cenário, o herói do Molda, as moedas que caem no relevo, o
- * placar e o "Quando o heroi entrar na região" no canto da tela), confere a ida e volta código e
- * blocos e grava os documentos do motor para a prova.
+ * programa só com blocos que existem (o cenário, o herói do Molda, as moedas logo acima do relevo,
+ * o placar e o "Quando o heroi entrar na região" no canto da tela), confere que cada linha vira um
+ * bloco de verdade e a ida e volta código e blocos, e grava os documentos do motor para a prova.
+ *
+ * ⚠️ As moedas não têm corpo físico (conferência no staging, 22/11/2026): nascidas a 12 m, as que
+ * ficavam abaixo do relevo caíam sem apoio e, em poucos quadros, o motor lançava "Corpo pequeno ou
+ * rápido demais" a cada quadro; e o "Dar corpo físico" dentro do "para cada" não é lugar de
+ * bloco (só vale direto no Ao iniciar). A altura de cada moeda sai do terreno compilado.
  *
  * `bun playground/cenarios-integration/preparar-jogo-e.ts` (em `packages/studio`), depois do
  * cenário.
@@ -13,10 +18,15 @@ import assert from 'node:assert/strict'
 import { readdir, readFile, writeFile } from 'node:fs/promises'
 import { relative, resolve } from 'node:path'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
-import type { CenaCompilada, PacoteCompilado } from '@sistemazero/molda-cenarios-core/compilar'
+import {
+  type CenaCompilada,
+  criarFonteDeAlturasCompilada,
+  type PacoteCompilado,
+} from '@sistemazero/molda-cenarios-core/compilar'
 import * as Blockly from 'blockly/core'
 import { registerExtensionBlocks } from '../../src/blockly/blocks'
 import { buildIRFromWorkspace } from '../../src/blockly/buildIR'
+import { HTMLConnectionChecker } from '../../src/blockly/htmlConnectionChecker'
 import { ensureBlocklyInitialized } from '../../src/blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../src/blockly/workspaceState'
 import { createEmptyProject, type Project } from '../../src/core/project'
@@ -83,7 +93,18 @@ const MOEDAS = REGIOES.flatMap(([, coluna, linha]) => {
   return [-40, -20, 0, 20, 40].map((d, i) => ({ x: c.x + d, z: c.z + (i % 2 ? 25 : -25) }))
 })
 
-function programa(cenaId: string): string {
+/** A altura do chão do cenário em (x, z), pela mesma consulta do terreno compilado. */
+function alturaDoChao(pacote: PacoteCompilado): (x: number, z: number) => number {
+  const terreno = pacote.cena.terreno
+  assert.ok(terreno, 'o cenário do jogo E não tem terreno')
+  const bruto = pacote.arquivos.get(terreno.alturas)
+  assert.ok(bruto, 'o pacote do jogo E não tem o arquivo de alturas do terreno')
+  // Cópia alinhada: o Float32Array não aceita um deslocamento que não seja múltiplo de 4.
+  const alturas = new Float32Array(bruto.slice().buffer)
+  return criarFonteDeAlturasCompilada(terreno, alturas)
+}
+
+function programa(cenaId: string, chao: (x: number, z: number) => number): string {
   const linhas = [
     'const cena = SZGame3D.createFullscreenScene("#9bd7f5");',
     `SZGame3D.loadScene(cena, ${JSON.stringify(cenaId)});`,
@@ -97,9 +118,11 @@ function programa(cenaId: string): string {
     'SZGame3D.setRotation(moldeMoeda, 90, 0, 0);',
     'SZGame3D.setVisible(moldeMoeda, "hide");',
   ]
-  // As moedas nascem no alto e caem no relevo (corpos com física).
-  for (const m of MOEDAS) linhas.push(`SZGame3D.spawnCopy(moedas, moldeMoeda, ${m.x}, 12, ${m.z});`)
-  linhas.push('SZGame3D.forEachInGroup(moedas, (moeda) => {', '  SZGame3D.body(moeda, 20);', '});')
+  // Cada moeda fica de pé logo acima do relevo (o centro a 1,2 m do chão; o raio é 0,6).
+  for (const m of MOEDAS) {
+    const y = Math.round((chao(m.x, m.z) + 1.2) * 100) / 100
+    linhas.push(`SZGame3D.spawnCopy(moedas, moldeMoeda, ${m.x}, ${y}, ${m.z});`)
+  }
   for (const [nome] of REGIOES)
     linhas.push(
       `SZGame3D.onEnterRegion(heroi, ${JSON.stringify(nome)}, () => {`,
@@ -116,9 +139,6 @@ function programa(cenaId: string): string {
     'SZGame3D.animate(cena, () => {',
     '  SZGame3D.controlWithKeys(heroi, 8);',
     '  SZGame3D.stepBody(heroi, cena);',
-    '  SZGame3D.forEachInGroup(moedas, (moeda) => {',
-    '    SZGame3D.stepBody(moeda, cena);',
-    '  });',
     '  if (SZGame3D.isMoving(heroi)) {',
     '    SZGame3D.playAnimation(heroi, "Esticar", "repetir");',
     '  } else {',
@@ -132,17 +152,26 @@ function programa(cenaId: string): string {
 for (const nome of ['regioes', 'inteiro'] as const) {
   const pacote = await lerPacote(nome)
   const plano = await prepararImportacaoDeCena3D(createEmptyProject('jogo-e', 'Jogo E'), pacote)
-  const fonte = programa(plano.assetId)
+  const fonte = programa(plano.assetId, alturaDoChao(pacote))
   const ir = parseProjectFilesFromParts({
     html: [{ type: 'canvas', id: 'tela', width: 960, height: 600 }] as never,
     cssSource: '',
     jsSource: fonte,
   }).ir
   assert.ok(!JSON.stringify(ir).includes('"rawJS"'), 'o programa do jogo E saiu como código cru')
-  const ws = new Blockly.Workspace()
+  const estado = buildWorkspaceStateFromIR(ir)
+  // Cada linha vira um bloco de verdade: um bloco fora do lugar dele vira código cru aqui (as
+  // regras do Jogo 3D estão registradas) e, na galeria, quebrava a carga do editor.
+  assert.ok(
+    !JSON.stringify(estado).includes('"sz_adv_raw_js"'),
+    'uma linha do jogo E não vira bloco (bloco fora do lugar?)',
+  )
+  const ws = new Blockly.Workspace(
+    new Blockly.Options({ plugins: { connectionChecker: HTMLConnectionChecker } }),
+  )
   let codigo: string
   try {
-    Blockly.serialization.workspaces.load({ ...buildWorkspaceStateFromIR(ir) }, ws)
+    Blockly.serialization.workspaces.load({ ...estado }, ws)
     const reconstruido = buildIRFromWorkspace(ws)
     codigo = generateJS({
       behavior: splitLegacyBehavior(behaviorStatements(reconstruido)),
