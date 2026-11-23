@@ -412,12 +412,17 @@ test('a biblioteca Pinta no editor negocia no perfil eleito e trocar a política
   globalThis.indexedDB = new IDBFactory()
   process.env.NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1 = '1'
   const reads: string[] = []
+  // Quem leu sem o protocolo novo: no CI esta conferência falhou uma vez (23/11/2026) e não
+  // reproduziu aqui. Se voltar a falhar, o recado mostra o caminho e o perfil de cada leitura.
+  const legadas: string[] = []
   const localSlots = () => namespaces.length
   globalThis.fetch = Object.assign(
-    async (input: RequestInfo | URL) => {
+    async (input: RequestInfo | URL, init?: RequestInit) => {
       const path = String(input)
       if (path.includes('sz-pinta-palettes')) {
         reads.push(path)
+        if (!path.endsWith('?paletteWrite=palette-cas-v1'))
+          legadas.push(`${path} (perfil ${new Headers(init?.headers).get('x-sz-viewer') ?? '?'})`)
         return Response.json(
           path.includes('paletteWrite=')
             ? {
@@ -459,7 +464,8 @@ test('a biblioteca Pinta no editor negocia no perfil eleito e trocar a política
     })
     expect(color?.name).toBe('Offline após a troca')
     expect(localSlots()).toBe(mountedSlots)
-    expect(reads.every((path) => path.endsWith('?paletteWrite=palette-cas-v1'))).toBe(true)
+    expect(reads.length).toBeGreaterThan(0)
+    expect(legadas).toEqual([])
   } finally {
     view.unmount()
     globalThis.indexedDB = originalIdb
