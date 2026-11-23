@@ -85,6 +85,7 @@ export function createStaffGateway(options: {
               'TYPECHECK_FAILED',
               'PLAYTEST_FAILED',
               'OUTPUT_TOO_LARGE',
+              'DEPENDENCY_NOT_DECLARED',
             ]),
             message: z.string(),
             output: z.string().optional(),
