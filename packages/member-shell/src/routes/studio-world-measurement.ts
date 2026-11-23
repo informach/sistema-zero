@@ -195,7 +195,7 @@ export function createStudioWorldMeasurementRoute(deps: {
       )
         return json({ error: { code: 'INVALID', message: 'A medida chegou incompleta.' } }, 400)
       const tela = objeto(corpo.tela) ? corpo.tela : null
-      const tempos = objeto(corpo.tempos) ? corpo.tempos : {}
+      const tempos: Record<string, unknown> = objeto(corpo.tempos) ? corpo.tempos : {}
       const ambiente = env()
       const agora = now()
       const registro: RegistroDaMedida = {
