@@ -6,14 +6,14 @@
   "blocks": [
     {
       "key": "video-abertura",
-      "plannedVideo": "Título: Uma chave desenhada por você\n\nMaster integral da professora: meu-desenho-aula-1.roteiro.md, clipe video-abertura. Gravação pendente."
+      "plannedVideo": "Título: Uma chave desenhada por você\n\nMaster integral da professora. Roteiro: meu-desenho-aula-1.roteiro.md, clipe video-abertura. Substituições kids: [{\"id\":\"video-abertura-K1\",\"clipe\":\"video-abertura\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"E eu também vou poder desenhar a minha chave?\",\"falaPersonagem\":\"E eu também vou poder desenhar a minha chave?\",\"ancoraAntes\":\"vai até o farol, e o farol acende. Olha aqui: quando eu seguro a seta da direita, o personagem anda para a direita.\",\"ancoraDepois\":\"Vai, sim! Nesta aula, você vai desenhar a sua chave no Pinta, aqui mesmo na página, e depois colocar o seu desenho no\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-abertura",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Clique no jogo e use as setas do teclado. Pegue a chave desenhada e leve o personagem até o farol. Depois clique em Próxima parte."
+        "text": "Sua vez! Jogue a versão pronta: pegue a chave desenhada e leve o personagem até o farol. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -1645,38 +1645,38 @@
     },
     {
       "key": "video-material",
-      "plannedVideo": "Título: O seu Passo a passo do projeto\n\nMaster integral da professora: meu-desenho-aula-1.roteiro.md, clipe video-material. Gravação pendente."
+      "plannedVideo": "Título: O seu Passo a passo do projeto\n\nMaster integral da professora. Roteiro: meu-desenho-aula-1.roteiro.md, clipe video-material. Gravação pendente."
     },
     {
       "key": "ponte-material",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Este é o seu Passo a passo do projeto. Se quiser, leia aqui mesmo ou clique em Baixar para guardar. Depois clique em Próxima parte."
+        "text": "Este é o seu Passo a passo do projeto! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte."
       }
     },
     {
       "key": "video-desenhar",
-      "plannedVideo": "Título: Desenhe a sua chave\n\nMaster integral da professora: meu-desenho-aula-1.roteiro.md, clipe video-desenhar. Gravação pendente."
+      "plannedVideo": "Título: Desenhe a sua chave\n\nMaster integral da professora. Roteiro: meu-desenho-aula-1.roteiro.md, clipe video-desenhar. Substituições kids: [{\"id\":\"video-desenhar-K1\",\"clipe\":\"video-desenhar\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"E se a minha chave ficar torta?\",\"falaPersonagem\":\"E se a minha chave ficar torta?\",\"ancoraAntes\":\"o Retângulo, desenhe um retângulo pequeno embaixo da ponta da haste, saindo para baixo. Do lado dele, desenhe outro.\",\"ancoraDepois\":\"Dá para arrumar. Clique na ferramenta Selecionar, depois clique na forma e arraste para o lugar certo. Para mudar o\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-desenhar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora desenhe a sua chave. Clique em Expandir para ter mais espaço e use um Círculo para a argola, um Retângulo para a haste e dois Retângulos pequenos para os dentes. Quando gostar, clique em Reduzir, em Enviar meu desenho, confirme em Enviar e depois clique em Próxima parte."
+        "text": "Agora desenhe a sua chave! Clique em Expandir e use um Círculo para a argola, um Retângulo para a haste e dois Retângulos pequenos para os dentes. Quando gostar, clique em Reduzir, em Enviar meu desenho e confirme em Enviar. Quando aparecer Desenho enviado!, clique em Próxima parte."
       }
     },
     {
       "key": "video-trocar",
-      "plannedVideo": "Título: A sua chave no jogo\n\nMaster integral da professora: meu-desenho-aula-1.roteiro.md, clipe video-trocar. Gravação pendente."
+      "plannedVideo": "Título: A sua chave no jogo\n\nMaster integral da professora. Roteiro: meu-desenho-aula-1.roteiro.md, clipe video-trocar. Substituições kids: [{\"id\":\"video-trocar-K1\",\"clipe\":\"video-trocar\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"E as regras do jogo continuam funcionando com o meu desenho?\",\"falaPersonagem\":\"E as regras do jogo continuam funcionando com o meu desenho?\",\"ancoraAntes\":\"bloco Criar sprite chave. Repare: no fim dele está escrito com imagem chave-dourada. É essa imagem que você vai trocar.\",\"ancoraDepois\":\"Continuam, sim. Trocar a imagem é como vestir uma fantasia: você continua sendo você, e só a roupa muda. Com a chave é\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-trocar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora coloque o seu desenho no jogo: clique em Expandir e, em Ao iniciar, no bloco Criar sprite chave, troque chave-dourada por minha-chave. Teste, clique em Reduzir e em Verificar projeto, depois em Enviar meu projeto, confirme em Enviar e clique em Concluir aula."
+        "text": "Agora coloque o seu desenho no jogo! Clique em Expandir e, em Ao iniciar, no bloco Criar sprite chave, troque chave-dourada por minha-chave. Teste no jogo. Depois clique em Verificar projeto, em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula."
       }
     },
     {
@@ -1698,7 +1698,25 @@
             "url": "/como-fazer/estudio-achar-e-organizar-blocos"
           },
           {
-            "id": "pedir-ajuda",
+            "id": "plataforma-baixar-materiais",
+            "kind": "link",
+            "label": "Como abrir o Passo a passo do projeto e os materiais",
+            "url": "/como-fazer/plataforma-baixar-materiais"
+          },
+          {
+            "id": "plataforma-abrir-uma-aula",
+            "kind": "link",
+            "label": "Como abrir uma aula e trocar de parte",
+            "url": "/como-fazer/plataforma-abrir-uma-aula"
+          },
+          {
+            "id": "plataforma-ampliar-a-atividade",
+            "kind": "link",
+            "label": "Como dar mais espaço ao jogo e à experiência",
+            "url": "/como-fazer/plataforma-ampliar-a-atividade"
+          },
+          {
+            "id": "plataforma-pedir-ajuda",
             "kind": "link",
             "label": "Como pedir ajuda à equipe",
             "url": "/como-fazer/plataforma-pedir-ajuda"
@@ -1725,11 +1743,19 @@
               "name": "parado",
               "fps": 8,
               "loop": true,
-              "frames": [[]]
+              "frames": [
+                []
+              ]
             }
           ]
         },
-        "allowTools": ["select", "ellipse", "rect", "brush", "fit"],
+        "allowTools": [
+          "select",
+          "ellipse",
+          "rect",
+          "brush",
+          "fit"
+        ],
         "artSlot": {
           "name": "minha-chave",
           "replaces": "chave-dourada"
@@ -1742,7 +1768,9 @@
         "kind": "studio",
         "purpose": "submission",
         "level": "iniciante-2d",
-        "allowedModes": ["blocks"],
+        "allowedModes": [
+          "blocks"
+        ],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_events",
@@ -6606,13 +6634,20 @@
       "title": "Uma chave desenhada por você",
       "intent": "explanation",
       "objective": "Uma chave desenhada por você.",
-      "blockKeys": ["video-abertura", "ponte-abertura", "jogo-pronto"],
+      "blockKeys": [
+        "video-abertura",
+        "ponte-abertura",
+        "jogo-pronto"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-abertura", "jogo-pronto"]
+        "blockIds": [
+          "video-abertura",
+          "jogo-pronto"
+        ]
       }
     },
     {
@@ -6620,13 +6655,19 @@
       "title": "O seu Passo a passo do projeto",
       "intent": "material",
       "objective": "O seu Passo a passo do projeto.",
-      "blockKeys": ["video-material", "ponte-material", "materiais"],
+      "blockKeys": [
+        "video-material",
+        "ponte-material",
+        "materiais"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-material"]
+        "blockIds": [
+          "video-material"
+        ]
       }
     },
     {
@@ -6634,13 +6675,20 @@
       "title": "Desenhe a sua chave",
       "intent": "delivery",
       "objective": "Desenhe a sua chave.",
-      "blockKeys": ["video-desenhar", "ponte-desenhar", "desenho"],
+      "blockKeys": [
+        "video-desenhar",
+        "ponte-desenhar",
+        "desenho"
+      ],
       "workspaceKey": "desenho",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-desenhar", "desenho"],
+        "blockIds": [
+          "video-desenhar",
+          "desenho"
+        ],
         "submissionUpToDate": true
       }
     },
@@ -6649,13 +6697,20 @@
       "title": "A sua chave no jogo",
       "intent": "closing",
       "objective": "A sua chave no jogo.",
-      "blockKeys": ["video-trocar", "ponte-trocar", "projeto"],
+      "blockKeys": [
+        "video-trocar",
+        "ponte-trocar",
+        "projeto"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-trocar", "projeto"],
+        "blockIds": [
+          "video-trocar",
+          "projeto"
+        ],
         "projectChecks": [
           {
             "id": "minha-chave-em-execucao",

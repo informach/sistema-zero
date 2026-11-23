@@ -8,9 +8,11 @@ import {
 } from '../../../packages/core/src/learning/authoring-manifest-projection'
 import type { StudioProjectExamples } from '../../../packages/core/src/learning/studio-project-examples'
 import { isStudioAuthoringProject } from '../../../packages/core/src/studio/authoring-project'
+import { avatarDaAula } from './avatares-video'
+import { falaDaParte, itensDosMateriais, videoPlanejado } from './faisca-comum'
+import { formatarJson } from './formatar-json'
 import { derivadosDeVoz } from './gerar-falas-elevenlabs'
 import { gravarArquivo } from './gravar-arquivo'
-import { ROTULO_DOS_LINKS } from './materiais-sem-texto'
 import { meuDesenhoAjuda, meuDesenhoAula } from './meu-desenho-conteudo'
 import { meuDesenhoChecks } from './meu-desenho-criterios'
 import {
@@ -22,7 +24,11 @@ import {
   VAGA_CHAVE,
 } from './meu-desenho-projeto'
 import { organizarManifestos } from './organizar-projetos'
-import { extrairPartesElevenLabs, sincronizarRecadosNaPagina } from './roteiro-elevenlabs'
+import {
+  extrairPartesElevenLabs,
+  renderizarClipe,
+  sincronizarRecadosNaPagina,
+} from './roteiro-elevenlabs'
 
 /**
  * As ferramentas que o bloco de Pinta libera: as que a aula ensina, e a Ajustar (o único jeito de
@@ -81,7 +87,7 @@ for (const t of aula.trechos) {
   blocks.push(
     {
       key: `video-${t.key}`,
-      plannedVideo: `Título: ${t.title}\n\nMaster integral da professora: meu-desenho-${aula.slug}.roteiro.md, clipe video-${t.key}. Gravação pendente.`,
+      plannedVideo: videoPlanejado(t.title, `meu-desenho-${aula.slug}.roteiro.md`, falaDaParte(t, 0)),
     },
     { key: `ponte-${t.key}`, content: { kind: 'dialogue', pose: 'speaking', text: t.ponte } },
   )
@@ -148,21 +154,9 @@ blocks.push(
       kind: 'materials',
       title: 'Passo a passo do projeto: Meu primeiro desenho no Pinta',
       bookPreview: true,
-      items: [
-        ROTULO_DOS_LINKS, // sem texto para ler: os passos estão nos vídeos (materiais-sem-texto.ts)
-        {
-          id: 'como-estudio',
-          kind: 'link',
-          label: 'Como usar o Estúdio',
-          url: '/como-fazer/estudio-achar-e-organizar-blocos',
-        },
-        {
-          id: 'pedir-ajuda',
-          kind: 'link',
-          label: 'Como pedir ajuda à equipe',
-          url: '/como-fazer/plataforma-pedir-ajuda',
-        },
-      ],
+      // O livro do Passo a passo (o PDF anexado) e os links de ajuda, sem texto para ler
+      // (materiais-sem-texto.ts): o que os passos dizem está nos vídeos das partes.
+      items: itensDosMateriais(),
     },
   },
   {
@@ -214,9 +208,9 @@ if (
   throw Error('Importação acima de 2 MiB')
 write(`meu-desenho-${aula.slug}.manifesto.json`, manifest)
 
-let script = `# Roteiro de produção · ${aula.title}\n\nMaster integral da professora. Montagem guiada completa no vídeo, um gesto por vez, com o destino à vista antes da ferramenta: no Pinta, o quadro e a ferramenta antes de desenhar; no Estúdio, o bloco antes de trocar a imagem. Sem intervenções de personagens. Voz, escuta, gravação e publicação pendentes.\n\n**Antes de gravar:** use um perfil de ensaio sem envio nesta aula. Envie o desenho de verdade na parte do Pinta antes de gravar a parte do Estúdio: é o envio que põe minha-chave nos materiais do jogo. Não preencha Recado nos envios. Mostre Desenho enviado!, Objetivo cumprido! e Projeto enviado! só quando esses estados aparecerem de verdade.\n\n`
+let script = `# Roteiro de produção · ${aula.title}\n\nA professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para gerar a voz integral. Na montagem kids, ${avatarDaAula(0)} substitui somente as frases das tabelas de substituição, com a voz do arquivo .debinha.elevenlabs.txt e sem voz sobreposta; o adulto usa o master integral. Montagem guiada completa no vídeo, um gesto por vez, com o destino à vista antes da ferramenta: no Pinta, o quadro e a ferramenta antes de desenhar; no Estúdio, o bloco antes de trocar a imagem. O palco não desenha no Pinta: a parte do desenho é gravada à mão, com o Na tela em prosa; as outras partes seguem os verbos do palco. Gravação e publicação desta revisão ainda não confirmadas.\n\n**Antes de gravar:** use um perfil de ensaio sem envio nesta aula. Envie o desenho de verdade na parte do Pinta antes de gravar a parte do Estúdio: é o envio que põe minha-chave nos materiais do jogo. Não preencha Recado nos envios. Mostre Desenho enviado!, Objetivo cumprido! e Projeto enviado! só quando esses estados aparecerem de verdade.\n\n`
 for (const [i, t] of aula.trechos.entries())
-  script += `## Parte ${i + 1}. ${t.title}\n\n**Clipe:** \`video-${t.key}\`\n\n**Na tela:** ${t.screen}\n\n**Fala para ElevenLabs:**\n\n\`\`\`text\n${t.text.replace(/ (?=\[)/g, '\n\n')}\n\`\`\`\n\n`
+  script += `## Parte ${i + 1}. ${t.title}\n\n${renderizarClipe(falaDaParte(t, 0), t.screen)}\n`
 script = sincronizarRecadosNaPagina(script, manifest)
 write(`meu-desenho-${aula.slug}.roteiro.md`, script)
 for (const [ext, text] of derivadosDeVoz(extrairPartesElevenLabs(script)))
