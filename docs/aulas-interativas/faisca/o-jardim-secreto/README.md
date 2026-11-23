@@ -10,7 +10,7 @@ A missão exige os conhecimentos investigados nas experiências e os blocos que 
 - [Posto Faísca](../README.md).
 - [Contrato da jornada](../../../jornada-do-criador.md).
 
-Cada aula tem cinco partes: a abertura com o jogo pronto, três etapas da missão (a última envia o projeto) e o fim, com o Passo a passo do projeto. O vídeo mostra o que o jogo precisa fazer e nunca monta os blocos (ver a seção da missão do posto, abaixo). Reiniciar a partida preserva os blocos e a posição escolhida. Se o personagem não chega ao alvo, o executor informa que o teste não terminou; isso pede conferir movimento e acesso antes de diagnosticar a regra da flor.
+Cada aula tem cinco partes: a abertura com o jogo pronto, três etapas da missão (a última envia o projeto) e o fim (o Passo a passo do projeto na Aula 1 e a comemoração na Aula 2). O vídeo mostra o que o jogo precisa fazer e nunca monta os blocos (ver a seção da missão do posto, abaixo). Reiniciar a partida preserva os blocos e a posição escolhida. Se o personagem não chega ao alvo, o executor informa que o teste não terminou; isso pede conferir movimento e acesso antes de diagnosticar a regra da flor.
 
 ## Arquivos de produção
 
@@ -40,13 +40,13 @@ A Helena pediu que o Jardim funcione como uma missão do posto, e não como uma 
 | 2. Etapa | andar e não sair do jardim (Chave do Farol, Aula 1) | andar e recolher o regador (Ilha do Farol, Aulas 1 e 2) |
 | 3. Etapa | o regador e a flor que só abre com ele (Chave do Farol, Aulas 2 e 3) | a flor que abre com o regador, uma vez só (Ilha do Farol, Aulas 2 e 3) |
 | 4. Etapa e envio | um lugar novo para o regador (Chave do Farol, Aula 3) | um lugar novo no chão (Ilha do Farol, Aula 3) |
-| 5. Fim | o Passo a passo do projeto | missão cumprida e o Passo a passo |
+| 5. Fim | o Passo a passo do projeto | missão cumprida (só a comemoração) |
 
 - **Etapas:** o vídeo roda o projeto do começo da etapa, para mostrar o que ainda não funciona. As animações da edição mostram o que o jogo precisa fazer, e a professora diz em que aula do curso base aquilo foi ensinado. Nenhum bloco é montado nem enviado no vídeo.
 - **Verificação:** o Verificar projeto confere pelo que o jogo faz, então qualquer solução certa passa. Os objetivos de cada etapa somam os das etapas anteriores.
 - **Sem dicas e sem quiz:** quem tiver dúvida volta na aula do curso base. O quiz continua em `jardim-quiz.ts`, porque a prévia do Jardim o usa, mas saiu das aulas.
-- **Passo a passo:** é o mesmo caderno, com as duas aulas, e chega na última parte de cada aula, depois do envio. A página do quiz saiu, e as partes foram renumeradas.
-- **Publicação:** anexar o PDF nas duas aulas, no bloco de materiais da última parte, **sem** a marca de caderno do Zappy. Com a marca, o Zappy lê o caderno desde o começo da aula e pode entregar a solução.
+- **Passo a passo:** é um caderno só, com as duas aulas, e chega na última parte da Aula 1, depois do envio. Na Aula 2, a última parte é só a comemoração, e a fala lembra que o caderno está no fim da Aula 1. A página do quiz saiu, e as partes foram renumeradas.
+- **Publicação:** anexar o PDF só na Aula 1, no bloco de materiais da última parte, **sem** a marca de caderno do Zappy. Com a marca, o Zappy lê o caderno desde o começo da aula e pode entregar a solução.
 - **Teste:** `qa/missao-padrao.test.ts` confere que nenhum Na tela monta ou envia, que cada etapa diz onde voltar, que o caderno só vem depois do envio e que não há quiz. O Jardim saiu do `faisca-padrao.test.ts`, que vale para os cursos que ensinam montando.
 - **Produção:** as vozes, as animações das etapas e a gravação ainda não foram feitas.
 

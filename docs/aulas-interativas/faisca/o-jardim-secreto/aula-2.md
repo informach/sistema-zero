@@ -1,6 +1,6 @@
 # Leve sua missão para o 3D
 
-Missão do Faísca · O Jardim Secreto · 3D. Um projeto contínuo, enviado na última construção. Sem dicas: quem tiver dúvida volta na aula do curso base; o Passo a passo do projeto chega no fim da aula, depois do envio; sem certificado nem publicação obrigatória.
+Missão do Faísca · O Jardim Secreto · 3D. Um projeto contínuo, enviado na última construção. Sem dicas: quem tiver dúvida volta na aula do curso base; o Passo a passo do projeto chega no fim da Aula 1, depois do envio; sem certificado nem publicação obrigatória.
 
 ## Parte 1. O mesmo desafio, com profundidade
 
@@ -63,7 +63,7 @@ Um lugar novo no chão.
 Missão cumprida!.
 
 - Intenção: closing.
-- Blocos: video-missao-cumprida, ponte-missao-cumprida, materiais.
+- Blocos: video-missao-cumprida, ponte-missao-cumprida.
 - Estúdio: não.
 - Conclusão: video-missao-cumprida.
 

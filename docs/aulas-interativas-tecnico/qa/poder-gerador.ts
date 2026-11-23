@@ -43,7 +43,8 @@ export type PoderDimensao = '2d' | '3d'
 export type PoderTrecho<E extends string = string> = {
   key: string
   title: string
-  kind: 'intro' | 'material' | 'experience' | 'build' | 'delivery' | 'quiz'
+  /** `fecho`: só o vídeo, depois do envio (a comemoração da missão, 24/11/2026). */
+  kind: 'intro' | 'material' | 'experience' | 'build' | 'delivery' | 'quiz' | 'fecho'
   etapa?: E
   /** O recado do Zappy na página, logo depois do vídeo (ou antes do quiz). Não é gravado. */
   ponte: string
@@ -245,7 +246,7 @@ export async function gerarPoder<
                 : t.kind === 'experience'
                   ? 'exploration'
                   : // Depois da entrega, o quiz é o "Quiz de fechamento" (section-templates.ts).
-                    t.kind === 'quiz' && entregue
+                    (t.kind === 'quiz' || t.kind === 'fecho') && entregue
                     ? 'closing'
                     : 'explanation',
         objective: `${t.title}.`,
