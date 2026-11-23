@@ -152,6 +152,8 @@ export function createRegionMap2D(host: Host, legacy: Api, serialized: string) {
   const warnings = new Set<string>()
   let turn = 0
   let active = ''
+  /** The scene the game last asked to draw: its own bounds limit the camera, none when dense. */
+  let drawn: string | undefined
   let watching = false
 
   function install(name: string, world: RunningWorld, scene: Scene) {
@@ -259,6 +261,7 @@ export function createRegionMap2D(host: Host, legacy: Api, serialized: string) {
       turn++
       watching = false
       active = ''
+      drawn = undefined
     },
     createMapScene(name, asset) {
       const label = String(asset)
@@ -276,6 +279,7 @@ export function createRegionMap2D(host: Host, legacy: Api, serialized: string) {
       }
     },
     drawMapScene(name, pass) {
+      drawn = name
       const map = maps.get(name)
       if (!map) return legacy.drawMapScene(name, pass)
       const ctx = host.context()
@@ -401,7 +405,8 @@ export function createRegionMap2D(host: Host, legacy: Api, serialized: string) {
   }
   return Object.assign(api, {
     signedBounds() {
-      const scene = maps.get(active)?.query.context
+      // Before anything is drawn, the last regional scene created keeps its old role.
+      const scene = maps.get(drawn ?? active)?.query.context
       if (!scene) return null
       if (scene.version === 5) return scene.worldBounds
       const size = scene.tileSize

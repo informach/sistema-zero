@@ -10,18 +10,26 @@ import {
 } from '@sistemazero/core/studio/pinta-projected-scene'
 import { mapTwoDBootstrap } from '../bootstrap'
 import type { MapTwoDApi } from '../contract'
-import { mapTwoDRegionBootstrap } from '../regionBootstrap'
-
-import { admit, image, pngWorld, regional, repeatedRegionalObjects } from './regionFixture'
+import { mapTwoDRegionalMaterialsBootstrap, mapTwoDRegionBootstrap } from '../regionBootstrap'
+import { packRegionWorld } from '../regionWire'
+import {
+  admit,
+  denseScene,
+  image,
+  pngWorld,
+  regional,
+  repeatedRegionalObjects,
+} from './regionFixture'
 
 type Target = 'g2d' | 'gk'
-function boot(target: Target, source: string, object = Object) {
+function boot(target: Target, source: string, object = Object, globals = {}) {
   const queue: Array<(ms: number) => void> = []
   const images: string[] = []
   const win: Record<string, unknown> = {
     addEventListener() {},
     performance: { now: () => 0 },
     devicePixelRatio: 1,
+    ...globals,
   }
   class Image {
     set src(url: string) {
@@ -37,6 +45,9 @@ function boot(target: Target, source: string, object = Object) {
   return {
     api: win[target === 'g2d' ? 'SZGame2D' : 'SZGameKit'] as MapTwoDApi & {
       moveByVelocity(sprite: unknown, dt: number): void
+      cameraFollow(sprite: unknown, worldWidth: number, worldHeight: number): void
+      cameraX(): number
+      cameraY(): number
     },
     images,
     frame() {
@@ -294,6 +305,36 @@ for (const target of ['g2d', 'gk'] as const) {
     const tiny = body(-464, -490, -476, 2)
     api.collideMapScene(tiny, 'mapa')
     expect(tiny.y).toBeCloseTo(-484.25, 6)
+  })
+
+  test(`${target} limits the camera by the scene being drawn, not by the last regional created`, async () => {
+    const dense = {
+      __SZGAME_ASSET_META: { denso: { scene: denseScene() } },
+      __SZGAME_ASSETS: { denso: image },
+    }
+    const actor = body(-300, -300, -300)
+    const follow = (api: ReturnType<typeof boot>['api'], name: string) => {
+      api.drawMapScene(name, 'back')
+      api.cameraFollow(actor, api.mapSize(name, 'width'), api.mapSize(name, 'height'))
+      return [api.cameraX(), api.cameraY()]
+    }
+    // References: the dense scene alone in the public engine, and the village alone.
+    const plain = boot(target, await mapTwoDBootstrap(target), Object, dense).api
+    plain.createMapScene('fase', 'denso')
+    const village = admit(regional('precise'))
+    const lone = boot(target, await mapTwoDRegionBootstrap(target, village, 'desenho')).api
+    lone.createMapScene('vila', 'desenho')
+    const wires = [
+      JSON.stringify(packRegionWorld(village, 'desenho')),
+      JSON.stringify(packRegionWorld(projectedWorld(), 'ilha')),
+    ]
+    const source = await mapTwoDRegionalMaterialsBootstrap(target, wires)
+    const { api } = boot(target, source, Object, dense)
+    api.createMapScene('vila', 'desenho')
+    api.createMapScene('ilha', 'ilha')
+    api.createMapScene('fase', 'denso')
+    expect(follow(api, 'fase')).toEqual(follow(plain, 'fase'))
+    expect(follow(api, 'vila')).toEqual(follow(lone, 'vila'))
   })
 }
 

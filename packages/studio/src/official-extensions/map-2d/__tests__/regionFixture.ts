@@ -289,3 +289,26 @@ export async function pngWorld(cabinX = -474, atlas = image) {
   })
   return readPintaRegionImageWorld(captured.png)
 }
+
+/** A dense (Scene 1) 4×4 map of 16 px, for documents that mix dense and regional scenes. */
+export function denseScene(id = 'fase') {
+  return {
+    version: 1,
+    id,
+    name: id,
+    tileSize: 16,
+    cols: 4,
+    rows: 4,
+    tilesets: [{ id: 'ts', name: 'ts', image, columns: 4, count: 4, solid: [0], platform: [1] }],
+    layers: [
+      {
+        id: 'chao',
+        kind: 'tiles',
+        name: 'Chão',
+        visible: true,
+        tilesetId: 'ts',
+        cells: [...Array(12).fill(-1), 0, 0, 0, 0],
+      },
+    ],
+  }
+}
