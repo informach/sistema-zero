@@ -1,5 +1,6 @@
 import * as Blockly from 'blockly/core'
 import type { ProjectAsset } from '#core'
+import { miniaturasDosModelos } from '../../three/modelThumbnails'
 
 /**
  * Campo Blockly de IMAGEM: mostra o NOME do asset (string) e, ao clicar, abre um
@@ -236,6 +237,17 @@ function applyThemeScope(field: Blockly.Field, content: HTMLElement): void {
   if (theme) content.setAttribute('data-sz-theme', theme)
 }
 
+/** A miniatura de 40 px da grade: pixel art nítida nas imagens, suave no modelo desenhado. */
+function miniaturaEmImagem(src: string, pixelada: boolean): HTMLImageElement {
+  const im = document.createElement('img')
+  im.src = src
+  im.alt = ''
+  im.width = 40
+  im.height = 40
+  im.style.cssText = `width:40px;height:40px;object-fit:contain;${pixelada ? 'image-rendering:pixelated;' : ''}`
+  return im
+}
+
 export class FieldAssetPicker extends Blockly.FieldTextInput {
   /**
    * Filtro opcional da grade: `'tilemap'` só lista assets com metadado de MAPA
@@ -342,17 +354,15 @@ export class FieldAssetPicker extends Blockly.FieldTextInput {
         btn.setAttribute('aria-label', a.name)
         btn.style.cssText =
           'display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px;border:1px solid var(--color-sz-border);border-radius:6px;background:var(--color-sz-bg);cursor:pointer;'
-        // Miniatura: imagem real p/ `image`; um emoji p/ 3D/áudio (um .glb/.mp3
-        // não renderiza como <img>). 📦 modelo · 🌅 céu HDR · 🔊 som.
+        // Miniatura: imagem real p/ `image`; o modelo 3D desenhado uma vez pelo three.js
+        // (`three/modelThumbnails.ts`, guardado na memória), com o 📦 enquanto desenha ou se não
+        // der; um emoji p/ céu HDR e som (um .hdr/.mp3 não vira <img>). 🌅 céu · 🔊 som.
+        const pronta = miniaturasDosModelos.pronta(a)
         let thumb: HTMLElement
         if (a.kind === 'image') {
-          const im = document.createElement('img')
-          im.src = a.dataUrl
-          im.alt = ''
-          im.width = 40
-          im.height = 40
-          im.style.cssText = 'width:40px;height:40px;object-fit:contain;image-rendering:pixelated;'
-          thumb = im
+          thumb = miniaturaEmImagem(a.dataUrl, true)
+        } else if (pronta) {
+          thumb = miniaturaEmImagem(pronta, false)
         } else {
           const icon = document.createElement('span')
           icon.setAttribute('aria-hidden', 'true')
@@ -367,6 +377,12 @@ export class FieldAssetPicker extends Blockly.FieldTextInput {
           icon.style.cssText =
             'width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:26px;'
           thumb = icon
+          if (a.kind === 'model3d' && pronta === undefined) {
+            void miniaturasDosModelos.pedir(a).then((url) => {
+              // A grade pode ter fechado (ou reaberto com outra) enquanto o modelo era desenhado.
+              if (url && icon.isConnected) icon.replaceWith(miniaturaEmImagem(url, false))
+            })
+          }
         }
         const label = document.createElement('span')
         label.textContent = a.name

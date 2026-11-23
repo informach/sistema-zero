@@ -1,8 +1,9 @@
-import type { JSX } from 'react'
+import { type JSX, useEffect, useState } from 'react'
 import type { ProjectAsset } from '#core'
 import { Button } from '#ui'
 import { readGlbSummary } from '../../../core/glbSummary'
 import { useT } from '../../../studio/i18n'
+import { miniaturasDosModelos } from '../../../three/modelThumbnails'
 import type { EditTarget } from '../creationOrigin'
 import { EditInOriginButton } from '../EditInOriginButton'
 import { Scene3DAssetRow } from '../Scene3DAssetRow'
@@ -30,6 +31,50 @@ export interface Models3DTabProps extends AssetsTabCommon {
   onOpenInOrigin: (asset: ProjectAsset, target: EditTarget) => void
   /** Projeto Python com Raylib: os textos falam do Raylib 3D e do `load_model`. */
   raylib?: boolean
+}
+
+/**
+ * A miniatura do modelo (desenhada uma vez pelo three.js e guardada na memória da página, a mesma
+ * do seletor do bloco); o 📦 enquanto desenha e quando não dá para desenhar. O céu 360° fica no 🌅.
+ */
+function ModelThumbnail({ asset }: { asset: ProjectAsset }): JSX.Element {
+  const [desenhada, setDesenhada] = useState(() => miniaturasDosModelos.pronta(asset))
+  useEffect(() => {
+    if (asset.kind !== 'model3d') return
+    const pronta = miniaturasDosModelos.pronta(asset)
+    setDesenhada(pronta)
+    if (pronta !== undefined) return
+    let vivo = true
+    void miniaturasDosModelos.pedir(asset).then((url) => {
+      // Sem desenho, o 📦 já está na tela: nada a trocar.
+      if (vivo && url) setDesenhada(url)
+    })
+    return () => {
+      vivo = false
+    }
+  }, [asset])
+  const title = asset.kind === 'model3d' ? 'Modelo .glb' : 'Céu 360° .hdr'
+  if (desenhada)
+    return (
+      <img
+        src={desenhada}
+        alt=""
+        aria-hidden
+        title={title}
+        width={40}
+        height={40}
+        className="h-10 w-10 shrink-0 rounded bg-sz-bg object-contain"
+      />
+    )
+  return (
+    <span
+      className="flex h-10 w-10 shrink-0 items-center justify-center text-lg"
+      aria-hidden
+      title={title}
+    >
+      {asset.kind === 'model3d' ? '📦' : '🌅'}
+    </span>
+  )
 }
 
 /** Quantos nomes de animação cabem no selo antes do "…". */
@@ -174,13 +219,7 @@ export function Models3DTab({
                 const editTarget = editTargetOf(asset)
                 return (
                   <AssetRow key={asset.id}>
-                    <span
-                      className="text-lg"
-                      aria-hidden
-                      title={asset.kind === 'model3d' ? 'Modelo .glb' : 'Céu 360° .hdr'}
-                    >
-                      {asset.kind === 'model3d' ? '📦' : '🌅'}
-                    </span>
+                    <ModelThumbnail asset={asset} />
                     <span className="flex min-w-0 flex-1 flex-col gap-1">
                       <AssetNameInput
                         asset={asset}
