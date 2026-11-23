@@ -1,0 +1,39 @@
+{
+  "at": "2026-11-23T08:42:11Z",
+  "source": "b089d589ea027dab5d29552ab6edf0bbefe9aa43",
+  "distributionSha256": "f3b6ef00c982d522c51be2d7dbe31a919d3bc7a5c85a5d4ae32fc674c4e0eef0",
+  "imageRun": 45072470079,
+  "imageWorkflow": "studio-runtime-image.yml",
+  "activationQualified": false,
+  "equivalence": {
+    "comparedWith": "1b9e2813e174008c0572c2233cd8f68f0f45d72f99902d25bbd769c23892291b",
+    "logicalFiles": 110,
+    "logicalDifferences": ["LICENSE-font-bungee.txt (line endings only)"],
+    "gzipRepresentations": 16,
+    "note": "the local Windows build used by the 22/11 e2e families; only gzip bytes and one license line ending differ"
+  },
+  "browserContracts": {
+    "server": "experiments/studio-python-runtime/server.ts serving this exact Linux distribution",
+    "browser": "Chrome channel of the official Python configs"
+  },
+  "tests": [
+    {
+      "name": "pygame",
+      "config": "playwright.python-pygame.config.ts",
+      "passed": 22,
+      "reportSha256": "bf6766b743b9d5d55fe4c53352c34ac46af2aee5c3d78ac4ea5326c4899589f7"
+    },
+    {
+      "name": "raylib",
+      "config": "playwright.python-raylib.config.ts",
+      "passed": 26,
+      "reportSha256": "780837784ec56b83bb6b9d53a71b82bc9e08c46392aaa0e45e8fc04754cb8441"
+    }
+  ],
+  "earlierLocalBuildRuns": {
+    "pgzero": 63,
+    "raylib": 26,
+    "pygame": 22,
+    "bridge": 50
+  }
+}
