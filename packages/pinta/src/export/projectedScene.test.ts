@@ -6,7 +6,7 @@ import {
 } from '@sistemazero/core/creations'
 import { PINTA_PROJECTED_SCENE_MAX_INDEX_BYTES } from '@sistemazero/core/studio/pinta-projected-scene'
 import { nativeImageOf } from '../../scripts/homologacao/generate'
-import { isTileLayer, type RegionTilemapAsset } from '../core/project'
+import { isTileLayer, type RegionMapSetAsset, type RegionTilemapAsset } from '../core/project'
 import { regionVila } from '../testing/regionVila'
 import { exportPintaProjectedScene } from './projectedScene'
 
@@ -84,13 +84,15 @@ test('scene 5 admits a root at its own 4 MiB with its sets, and reports the limi
   const admitted = await exportPintaProjectedScene(full, find(assets), nativeImageOf)
   expect(admitted.scene.id).toBe(map.id)
   expect(admitted.scene.sets?.length).toBeGreaterThan(0)
-  const set = assets.find((asset) => asset.kind === 'map-set' && 'origin' in asset.map)
-  if (set?.kind !== 'map-set' || !('origin' in set.map)) throw Error('Conjunto regional ausente')
+  const set = assets.find(
+    (asset): asset is RegionMapSetAsset => asset.kind === 'map-set' && 'origin' in asset.map,
+  )
+  if (!set) throw Error('Conjunto regional ausente')
   const setChunks =
     Math.floor(PINTA_PROJECTED_SCENE_MAX_INDEX_BYTES / PINTA_REGION_CHUNK_BYTES) -
     PINTA_REGION_LIMITS.maxChunks +
     1
-  const heavy = assets.map((asset) =>
+  const heavy: typeof assets = assets.map((asset) =>
     asset === set ? { ...set, map: growTo(set.map, setChunks) } : asset,
   )
   await expect(exportPintaProjectedScene(full, find(heavy), nativeImageOf)).rejects.toThrow(
