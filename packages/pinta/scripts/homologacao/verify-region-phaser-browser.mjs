@@ -37,6 +37,25 @@ try {
   assert.equal(before.friction, 0.8)
   // The exact orthogonal pixels belong to the square Vila; a projected Vila draws elsewhere.
   if (!expected.projection) assert.deepEqual(before.front, [201, 181, 122, 255])
+  // The Vila spans 10,000 × 10,000 cells in a few chunks. Phaser's Tiled parser fills a
+  // width × height matrix in its `infinite` branch; the regional package must not reach it.
+  const engine = await page.evaluate(() => {
+    const game = window.pintaGame.surface.manager.game
+    const { cols, rows } = window.pintaGame.player.scene
+    return {
+      extent: { cols, rows },
+      tilemaps: game.cache.tilemap.getKeys().length,
+      tilemapLayers: game.scene
+        .getScenes(false)
+        .flatMap((scene) => scene.children.list)
+        .filter((child) => child.type === 'TilemapLayer').length,
+      heap: performance.memory.usedJSHeapSize,
+    }
+  })
+  assert.deepEqual(engine.extent, expected.extent)
+  assert.equal(engine.tilemaps, 0)
+  assert.equal(engine.tilemapLayers, 0)
+  assert.ok(engine.heap < 64 * 1024 * 1024, `JS heap ${engine.heap}`)
   await page.keyboard.down('ArrowRight')
   try {
     await page.waitForFunction((id) => window.pintaGame.player.scene.id === id, expected.linked)
@@ -115,6 +134,7 @@ try {
       updated: newFront,
       corruptLinkedImage: ['header', 'CRC valid but invalid raster'],
       mainBytes: expected.mainBytes,
+      engine,
       errors,
     }),
   )

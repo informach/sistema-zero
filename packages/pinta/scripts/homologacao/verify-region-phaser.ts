@@ -101,6 +101,7 @@ try {
       server.url.href,
       JSON.stringify({
         origin: signedMap.origin,
+        extent: { cols: signedMap.cols, rows: signedMap.rows },
         linked: cabana.id,
         projection: projected ? 'isometric' : null,
         destinationProjection: projected ? 'hexagonal' : null,

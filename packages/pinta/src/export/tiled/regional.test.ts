@@ -262,12 +262,25 @@ warnSkippedInCi(
   'Os ensaios do Tiled de verdade com cenários regionais pularam: o CI não tem o Tiled (PINTA_TILED_BIN).',
 )
 test.skipIf(!tiledBinary)(
-  'Tiled opens JSON and external TSX, then round-trips signed GIDs',
+  'Tiled opens JSON and external TSX, then round-trips the whole Vila and Cabana scenes',
   async () => {
-    const { map, assets } = regionVila()
+    const { map, cabana, assets } = regionVila()
     const files = await buildScenePackage(map, assets, 'tiled', {
       imageOf: nativeImageOf,
     })
+    // Cells with flags, objects and doors, sets, physics, sheets and art, as the players read them.
+    const authored = await Promise.all(
+      [map, cabana].map(
+        async (source) =>
+          (
+            await exportPintaRegionScene(
+              source,
+              (id) => assets.find((asset) => asset.id === id) ?? null,
+              nativeImageOf,
+            )
+          ).scene,
+      ),
+    )
     const tempRoot = resolve(tmpdir())
     const scratch = await mkdtemp(join(tempRoot, 'pinta-tiled-regional-'))
     if (dirname(scratch) !== tempRoot || !basename(scratch).startsWith('pinta-tiled-regional-'))
@@ -325,6 +338,8 @@ test.skipIf(!tiledBinary)(
           const jsonMap = await importRegionalTiledScene(result, tmxSource.resolver)
           expect(tmxMap.scene).toEqual(jsonMap.scene)
           expect(tmxMap.scene.id).toBe(property(original.properties, 'pinta:id') as string)
+          expect([tmxMap.warnings, jsonMap.warnings]).toEqual([[], []])
+          expect(jsonMap.scene).toEqual(authored[index]!)
         }
       }
     } finally {

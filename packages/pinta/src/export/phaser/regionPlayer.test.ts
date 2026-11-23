@@ -1,6 +1,14 @@
+import { heapStats } from 'bun:jsc'
 import { expect, test } from 'bun:test'
 import { createHash } from 'node:crypto'
-import { encodePintaRegionLayers } from '@sistemazero/core/creations'
+import { createCanvas } from '@napi-rs/canvas'
+import {
+  encodePintaRegionLayers,
+  PINTA_REGION_CELL_COUNT,
+  PINTA_REGION_CHUNK_BYTES,
+  PINTA_REGION_LIMITS,
+  type PintaRegionBounds,
+} from '@sistemazero/core/creations'
 import type { PintaProjectedSceneWire } from '@sistemazero/core/studio/pinta-projected-scene'
 import type { PintaRegionSceneWire } from '@sistemazero/core/studio/pinta-region-scene'
 import { nativeImageOf } from '../../../scripts/homologacao/generate'
@@ -16,6 +24,9 @@ test('the runnable package keeps local Phaser, canonical sparse maps, resources 
   )
   expect(files['PHASER-LICENSE.txt']).toContain('MIT')
   expect(files['index.html']).toContain('<script src="main.js">')
+  // The player composes the chunks of maps.json; Phaser never parses a Tiled map here.
+  for (const call of ['tilemapTiledJSON', 'make.tilemap', 'mapa.json'])
+    expect(String(files['main.js'])).not.toContain(call)
   const source = JSON.parse(String(files['maps.json']))
   const world = readRegionPhaserWorld(source, JSON.parse(String(files['start.json'])))
   const player = createRegionPhaserPlayer(world)
@@ -168,4 +179,92 @@ test('a projected square map keeps the same explicitly selected legacy motion', 
     for (const player of players) player.advance(0, frame === 65 ? -1 : 0, frame * 16, 16)
     expect(players[0]!.position).toEqual(players[1]!.position)
   }
+})
+
+/** The same four chunks, start and art; only the authored extent changes. */
+function sparseMap(bounds: PintaRegionBounds): PintaRegionSceneWire {
+  const base = platformMap('precise')
+  const floor = base.layers[0]
+  if (floor?.kind !== 'tiles') throw new Error('A camada de teste está ausente.')
+  const [ground] = encodePintaRegionLayers(
+    [
+      {
+        kind: 'regions',
+        version: 1,
+        side: 32,
+        chunks: [-2, -1, 0, 1].map((n) => {
+          const cells = new Int16Array(PINTA_REGION_CELL_COUNT).fill(-1)
+          for (let i = 0; i < cells.length; i += 5) cells[i] = (i + n) & 1
+          return { col: n, row: n, cells }
+        }),
+      },
+    ],
+    bounds,
+  )!
+  return {
+    ...base,
+    cols: bounds.cols,
+    rows: bounds.rows,
+    origin: { col: bounds.col, row: bounds.row },
+    layers: [{ ...floor, cells: ground! }, ...base.layers.slice(1)],
+  }
+}
+
+test('a sparse 10,000 × 10,000 Phaser world allocates and draws by chunks, never by its extent', () => {
+  const canvas = createCanvas(640, 480)
+  const ctx = canvas.getContext('2d')
+  const sheet = createCanvas(32, 16)
+  const paint = sheet.getContext('2d')
+  paint.fillStyle = '#b4532a'
+  paint.fillRect(0, 0, 16, 16)
+  paint.fillStyle = '#2a6bb4'
+  paint.fillRect(16, 0, 16, 16)
+  const art = new Map([['folha', sheet as unknown as CanvasImageSource]])
+  function play(scene: PintaRegionSceneWire) {
+    Bun.gc(true)
+    const before = heapStats()
+    const world = readRegionPhaserWorld({ [scene.id]: scene }, scene.id)
+    const player = createRegionPhaserPlayer(world)
+    for (let frame = 1; frame <= 30; frame++) {
+      player.advance(1, 0, frame * 16, 16)
+      player.draw(ctx as unknown as CanvasRenderingContext2D, art, frame * 16)
+    }
+    Bun.gc(true)
+    const after = heapStats()
+    let cellBytes = 0
+    for (const { context } of world.maps.values())
+      for (const layer of context.layers)
+        if (layer.kind === 'tiles')
+          for (const chunk of layer.cells.chunks) cellBytes += chunk.cells.byteLength
+    return {
+      // Measured while `world` is still referenced below.
+      retained: after.heapSize + after.extraMemorySize - before.heapSize - before.extraMemorySize,
+      cellBytes,
+      extent: player.scene.cols * player.scene.rows,
+      position: player.position,
+      pixels: Buffer.from(ctx.getImageData(0, 0, 640, 480).data),
+    }
+  }
+  const compact = { col: -64, row: -64, cols: 128, rows: 128 }
+  const widest = {
+    col: -PINTA_REGION_LIMITS.maxAxis / 2,
+    row: -PINTA_REGION_LIMITS.maxAxis / 2,
+    cols: PINTA_REGION_LIMITS.maxAxis,
+    rows: PINTA_REGION_LIMITS.maxAxis,
+  }
+  play(sparseMap(compact)) // warms lazily created module state
+  const small = play(sparseMap(compact))
+  const large = play(sparseMap(widest))
+  expect(large.extent).toBe(100_000_000)
+  // Index storage is the stored chunks, as in the compact map.
+  expect(small.cellBytes).toBe(4 * PINTA_REGION_CHUNK_BYTES)
+  expect(large.cellBytes).toBe(small.cellBytes)
+  // One dense Int16 layer of this extent would retain 200,000,000 bytes, and Phaser's
+  // `infinite` Tiled parser would retain one Tile object per cell. Neither path is used.
+  const mebibyte = 1024 * 1024
+  expect(large.retained).toBeLessThan(8 * mebibyte)
+  expect(Math.abs(large.retained - small.retained)).toBeLessThan(2 * mebibyte)
+  expect(large.position).toEqual(small.position)
+  expect(large.pixels.equals(small.pixels)).toBe(true)
+  expect(new Set(large.pixels.subarray(0, 4 * 640 * 120)).size).toBeGreaterThan(4)
 })

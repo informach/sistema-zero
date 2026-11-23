@@ -8,6 +8,8 @@ import { regionVilaPlatform } from '../../src/testing/regionVilaPlatform'
 import { setCell } from '../../src/tiles/tilemapOps'
 import { nativeImageOf } from './generate'
 
+// The Python module resolves one-way platforms only with precise physics.
+const physics = 'precise'
 const { map, assets } = regionVilaPlatform()
 const front = map.layers.find((layer) => isTileLayer(layer) && layer.front)
 if (!front) throw new Error('Camada da frente ausente.')
@@ -67,6 +69,7 @@ try:
     with carregar_cenario('cenario.png') as cena:
         jogo = Jogo(cena)
         assert tuple(cena.limites[:2]) == (-1024, -1024), cena.limites
+        assert cena.cena.fisica == '${physics}', cena.cena.fisica
         assert jogo.plataforma and tuple(jogo.corpo.center) == (8, -45)
         assert cena.propriedade_peca('vila-pecas', 0, 'atrito') == .8
         assert cena.objeto_por_id('morador-obj')['properties']['porta']['value'] == 'door'
@@ -103,7 +106,7 @@ try:
             assert sample(cena, True, (328, 248), (320, 240)) == (216, 148, 105)
             assert sample(held_cabin, False, (0, 0), (10, 10)) == (161, 135, 82)
         print(json.dumps({'python': sys.version.split()[0], 'pygame': pygame.version.ver,
-                          'signed': True, 'door': True, 'apex': apex, 'landed': -70,
+                          'physics': '${physics}', 'signed': True, 'door': True, 'apex': apex, 'landed': -70,
                           'front_pixels': [(201, 181, 122), (216, 148, 105)], 'update_retained': True}))
 finally:
     pygame.quit()`,
