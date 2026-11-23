@@ -15,7 +15,7 @@ import type {
   RegionalBrushGesture,
 } from '../../state/localRegionAuthorSession'
 import type { PintaSessionStore } from '../../state/sessionStore'
-import { type CellPos, lineCells, normalizeCellRect, rectCells } from '../../tiles/cellGeometry'
+import type { CellPos } from '../../tiles/cellGeometry'
 import { type MapViewport, TileChunkCache } from '../../tiles/chunks'
 import { REGION_EDIT_LIMIT } from '../../tiles/regionCells'
 import { Button } from '../ui/Button'
@@ -26,6 +26,7 @@ import { FocalRegionObjectsPreview } from './MapObjectsOverlay'
 import { MapPaper } from './MapStage'
 import { MapStatusBar } from './MapStatusBar'
 import { DEFAULT_MAP_BRUSH, MapBrushPanel } from './MapTerrainPanel'
+import { collectShapeBrushCells } from './mapTools/mapBrush'
 import { mapFeaturesFor } from './mapTools/mapLevels'
 import { mapCellFromCanvas } from './mapTools/mapViewport'
 import type { PanGesture } from './mapTools/tileGestures'
@@ -60,16 +61,9 @@ export function previewCells(
   const anchor = stroke.path[0]
   const target = stroke.path.at(-1)
   if (!anchor || !target || stroke.tool === 'pencil' || stroke.tool === 'eraser') return stroke.path
-  if (stroke.tool === 'line') return lineCells(anchor, target)
-  const rect = normalizeCellRect(
-    { col: anchor.col - map.origin.col, row: anchor.row - map.origin.row },
-    { col: target.col - map.origin.col, row: target.row - map.origin.row },
-    map.cols,
-    map.rows,
-  )
-  return rect
-    ? rectCells({ ...rect, col: rect.col + map.origin.col, row: rect.row + map.origin.row })
-    : []
+  // A prévia obedece à mesma admissão da pincelada antes de alocar suas casas.
+  const shape = collectShapeBrushCells(map, stroke.tool, anchor, target)
+  return shape.ok ? shape.positions : []
 }
 const canPaintWith = (tool: MapTool): tool is Stroke['tool'] =>
   tool === 'pencil' || tool === 'eraser' || tool === 'line' || tool === 'rect'

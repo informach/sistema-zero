@@ -1,4 +1,5 @@
 import { expect, test } from 'bun:test'
+import { REGION_EDIT_LIMIT } from '../../tiles/regionCells'
 import { previewCells } from './FocalRegionMapStage'
 
 const map = { origin: { col: -4, row: -2 }, cols: 8, rows: 4 }
@@ -42,4 +43,49 @@ test('a prévia do retângulo cobre a área inteira e para na borda do cenário'
   expect(cells).toHaveLength(2 * 2)
   expect(cells).toContainEqual({ col: 3, row: 1 })
   expect(cells.every(({ col, row }) => col >= 2 && col <= 3 && row >= 0 && row <= 1)).toBe(true)
+})
+
+test('a prévia não monta um retângulo que a pincelada não pode guardar', () => {
+  expect(
+    previewCells(
+      {
+        tool: 'rect',
+        path: [
+          { col: 0, row: 0 },
+          { col: 1023, row: 767 },
+        ],
+      },
+      { origin: { col: 0, row: 0 }, cols: 1024, rows: 768 },
+    ),
+  ).toHaveLength(0)
+})
+
+test('a prévia recusa uma linha maior que o limite antes de gerar suas casas', () => {
+  expect(
+    previewCells(
+      {
+        tool: 'line',
+        path: [
+          { col: 0, row: 0 },
+          { col: REGION_EDIT_LIMIT, row: 0 },
+        ],
+      },
+      { origin: { col: 0, row: 0 }, cols: REGION_EDIT_LIMIT + 1, rows: 1 },
+    ),
+  ).toHaveLength(0)
+})
+
+test('a prévia ainda aceita o retângulo que cabe exatamente no limite', () => {
+  expect(
+    previewCells(
+      {
+        tool: 'rect',
+        path: [
+          { col: 0, row: 0 },
+          { col: 255, row: 255 },
+        ],
+      },
+      { origin: { col: 0, row: 0 }, cols: 1024, rows: 768 },
+    ),
+  ).toHaveLength(REGION_EDIT_LIMIT)
 })

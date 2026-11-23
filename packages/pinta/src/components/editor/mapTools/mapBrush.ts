@@ -130,7 +130,7 @@ export function targetBrushCells(cells: readonly CellPos[], context: MapBrushCon
 }
 
 export function collectShapeBrushCells(
-  map: AuthorMap,
+  map: Parameters<typeof mapCellBounds>[0],
   tool: 'line' | 'rect',
   anchor: CellPos,
   target: CellPos,
