@@ -1,4 +1,4 @@
-import type { PythonNode, PythonSourceRange } from '../language/types'
+import type { PythonNode, PythonSourceRange, PythonValue } from '../language/types'
 import type { PythonAreaKind } from './areas'
 import { PYTHON_PROGRAMMING_CODECS } from './catalog'
 import { pythonCodecIndex } from './codecIndex'
@@ -116,6 +116,51 @@ function guardedAttributes(codecs: readonly PythonBlockCodec[]): GuardedAttribut
   return guarded
 }
 
+// Only guard an optional provider's method names when it can be bound in this file.
+// Otherwise an ordinary field such as laser.descartar would obscure unrelated Raylib calls.
+const explicitGuards = new WeakMap<
+  readonly PythonBlockCodec[],
+  {
+    modules: Set<string>
+    ordinary: readonly PythonBlockCodec[]
+  }
+>()
+function guardsForProgram(
+  codecs: readonly PythonBlockCodec[],
+  tree: PythonNode,
+  projectModules?: PythonProjectModules,
+) {
+  let entry = explicitGuards.get(codecs)
+  if (!entry) {
+    entry = {
+      modules: new Set(
+        codecs.flatMap((codec) => (codec.explicitImport ? [codec.explicitImport] : [])),
+      ),
+      ordinary: codecs.filter((codec) => !codec.explicitImport),
+    }
+    explicitGuards.set(codecs, entry)
+  }
+  const { modules, ordinary } = entry
+  if (!modules.size) return guardedAttributes(codecs)
+  function importsProvider(value: PythonValue): boolean {
+    if (Array.isArray(value)) return value.some(importsProvider)
+    if (!isNode(value)) return false
+    if (value.kind === 'ImportFrom' && modules.has(String(value.fields.module))) return true
+    if (
+      value.kind === 'Import' &&
+      nodes(value.fields.names) &&
+      value.fields.names.some((alias) => modules.has(String(alias.fields.name).split('.')[0]!))
+    )
+      return true
+    return Object.values(value.fields).some(importsProvider)
+  }
+  // A project module can re-export the constructor or the provider via a star import.
+  for (const exports of projectModules?.values() ?? [])
+    for (const binding of exports?.values() ?? [])
+      if (binding.kind === 'module' && modules.has(binding.module)) return guardedAttributes(codecs)
+  return guardedAttributes(importsProvider(tree) ? codecs : ordinary)
+}
+
 export function pythonASTToVisual(
   tree: PythonNode,
   options: {
@@ -128,7 +173,7 @@ export function pythonASTToVisual(
   if (tree.kind !== 'Module' || !nodes(tree.fields.body) || !nodes(tree.fields.type_ignores))
     throw new Error('O programa Python precisa de um módulo completo.')
   const codecs = options.codecs ?? PYTHON_PROGRAMMING_CODECS
-  const guarded = guardedAttributes(codecs)
+  const guarded = guardsForProgram(codecs, tree, options.projectModules)
   const resolves = pythonBindingResolver(tree, options.officialModules, guarded.anywhere, {
     ...pythonResolverOptionsOf(codecs),
     projectModules: options.projectModules,

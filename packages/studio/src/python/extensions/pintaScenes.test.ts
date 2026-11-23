@@ -264,3 +264,31 @@ test('a scene result is inferred only from direct initialization and an unchange
     pythonSemanticTree(beforeAssignment),
   )
 })
+
+test('a learner field named descartar keeps the Raylib blocks when scenes are available', async () => {
+  const sceneIds = suffixes.map((suffix) => `sz_py_rl2d_pinta_scene_${suffix}`)
+  const { project, loaded } = await load(
+    RAYLIB_2D_EXTENSION.id,
+    RAYLIB_2D_EXTENSION.version,
+    [...PYTHON_RAYLIB_2D_CODECS.map(({ id }) => id), ...sceneIds],
+    true,
+  )
+  const tree = moduleNode([
+    node('Import', { names: [node('alias', { name: 'pyray', asname: 'ray' })] }),
+    node('Assign', {
+      targets: [withTargetContext(attribute(name('laser'), 'descartar'), 'Store')],
+      value: name('terminou'),
+      type_comment: null,
+    }),
+    expression(call(attribute(name('ray'), 'close_window'))),
+  ])
+  const visual = pythonASTToVisual(tree, {
+    codecs: loaded.codecs,
+    officialModules: pythonOfficialModules(project, features),
+  })
+  expect(visual.body[2]).toMatchObject({ codecId: 'sz_py_rl2d_close_window' })
+  expect(ids(visual.body).some((id) => id.startsWith('sz_py_rl2d_pinta_scene_'))).toBe(false)
+  expect(pythonSemanticTree(pythonVisualToAST(visual, loaded.codecs))).toEqual(
+    pythonSemanticTree(tree),
+  )
+})

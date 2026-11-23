@@ -137,5 +137,6 @@ export function pintaSceneCodecs(owner: PythonPintaScenesCanvas): readonly Pytho
       'statement',
       'Libera a referência do lugar quando o jogo terminar de usá-lo. Lugares que ainda estão abertos conservam os recursos de que precisam.',
     ),
-  ]
+    // Method names such as `descartar` guard learner fields only in files that import pinta.
+  ].map((codec) => ({ ...codec, explicitImport: scene.module }))
 }

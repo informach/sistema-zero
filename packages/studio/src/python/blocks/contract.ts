@@ -111,6 +111,8 @@ export interface PythonBlockCodec {
   bindingScopeNode?(node: PythonNode): PythonNode | undefined
   /** Other names the block also reads (`keys` in `keyboard[keys.SPACE]`): all must resolve. */
   alsoBound?: readonly PythonBlockBinding[]
+  /** A module with no implicit globals can only specialize a program that imports it. */
+  explicitImport?: string
   /** Method specialization needs a proven built-in receiver, not just a matching name. */
   receiverKinds?: readonly PythonReceiverKind[]
   /**
