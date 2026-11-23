@@ -30,7 +30,8 @@ const ESPACO_MARCA_PONTO = [
   "SZGameKit.onUpdate(function () { if (SZGameKit.keyPressed('Space')) pontos++; });",
 ].join('\n')
 
-const objetivo = (expect: SectionExecutionRule['expect']): SectionExecutionRule =>
+type RegraDeComportamento = Extract<SectionExecutionRule, { type: 'behavior' }>
+const objetivo = (expect: RegraDeComportamento['expect']): SectionExecutionRule =>
   ({
     type: 'behavior',
     steps: [{ action: 'press', key: 'Space' }],
