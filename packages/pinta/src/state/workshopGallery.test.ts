@@ -51,3 +51,23 @@ test('galeria normal encontra, duplica e restaura regiões e regras com IDs novo
   expect(restored.automapping.rules[0]!.input[0]!.sheet).toBe(restored.tilesetId)
   expect(await local.loadAssetById(restored.id)).toEqual(restored)
 })
+
+test('duplicar um mapa com a folha repintada preserva o livro como está, sem erro', async () => {
+  const { sheet, map, book } = await automapFixture()
+  const authored = { ...map, schema: 9 as const, automapping: book }
+  const repainted = { ...sheet, solid: [true] }
+  const local = createWorkshopPintaPersistence({ namespace: 'gallery-workshop-stale' })
+  await local.persistAssets([repainted, authored])
+  const store = createGalleryStore(local)
+  await store.getState().load()
+  const copy = await store.getState().duplicate(map.id)
+  expect(store.getState().mutateError).toBeNull()
+  if (!copy || !isPintaAuthoredMap(copy)) throw Error('cópia recusada')
+  const plane = copy.automapping.rules[0]!.input[0]!
+  expect(plane.layer).toBe(copy.layers[0]!.id)
+  expect(plane.layer).not.toBe(book.rules[0]!.input[0]!.layer)
+  expect(plane.sheet).toBe(sheet.id)
+  // The rules stay out of date: the editor warns until the example is captured again.
+  expect(plane.sha256).toBe(book.rules[0]!.input[0]!.sha256)
+  expect(await local.loadAssetById(copy.id)).toEqual(copy)
+})

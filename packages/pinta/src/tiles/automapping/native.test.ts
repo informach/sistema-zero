@@ -65,13 +65,20 @@ test('duplicar renova os IDs de camadas e religa a folha com a mesma identidade 
   expect(copy.layers[0]!.id).not.toBe(map.layers[0]!.id)
   expect(copied.rules[0]!.outputs[0]![0]!.sheet).toBe(newSheet.id)
   expect(await encodeAutomapGallery(result.gallery)).toBeTruthy()
+  // A repainted sheet leaves the rules out of date, and the document keeps them as they are.
   const changed = { ...newSheet, solid: newSheet.solid.map(() => true) }
-  expect(
-    await encodeAutomapGallery({
-      ...result.gallery,
-      assets: result.gallery.assets.map((asset) => (asset === newSheet ? changed : asset)),
-    }),
-  ).toBeNull()
+  const stale = {
+    ...result.gallery,
+    assets: result.gallery.assets.map((asset) => (asset === newSheet ? changed : asset)),
+  }
+  const kept = await encodeAutomapGallery(stale)
+  if (!kept) throw Error('o documento com a folha repintada foi recusado')
+  expect((await decodeAutomapGallery(kept))?.books.get(copy.id)).toEqual(copied)
+  const again = await importAutomapCopy(kept, stale)
+  if (!again) throw Error('a cópia da cópia foi recusada')
+  const second = again.gallery.books.get(again.idMap.get(copy.id)!)!
+  expect(second.rules[0]!.input[0]!.sha256).toBe(copied.rules[0]!.input[0]!.sha256)
+  expect(second.rules[0]!.input[0]!.sheet).toBe(again.idMap.get(newSheet.id))
 })
 test('escritores atuais recusam 9 e 99, e o carimbo conserva a versão futura', async () => {
   const { map, sheet, book } = await automapFixture()

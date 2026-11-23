@@ -23,17 +23,20 @@ export function WorkshopMapDownload({
   if (!open) return null
   const catalog = snapshot ?? gallery.getState().assets
   async function download() {
-    const { collectAssetBundle } = await import('../../export/assetJson')
-    const { pintaWorkshopBackup } = await import('../../export/workshopDocument')
-    const byId = new Map(catalog.map((item) => [item.id, item]))
-    byId.set(asset.id, asset)
-    const source = collectAssetBundle(asset, byId, new Map())
-    const json = source && (await pintaWorkshopBackup(source))
-    if (!json) {
-      showToast(COPY.exportDialog.editableMissingTileset)
+    const { workshopAssetBundleToJson } = await import('../../export/workshopDocument')
+    const result = await workshopAssetBundleToJson(asset, catalog)
+    if (!result.ok) {
+      showToast(
+        result.reason === 'missing-dependency'
+          ? COPY.exportDialog.editableMissingTileset
+          : COPY.exportDialog.editableFailed,
+      )
       return
     }
-    triggerDownload(new Blob([json], { type: 'application/json' }), `${asset.name}.pinta.json`)
+    triggerDownload(
+      new Blob([result.json], { type: 'application/json' }),
+      `${asset.name}.pinta.json`,
+    )
   }
   return (
     <Dialog open onClose={onClose} title={COPY.exportDialog.title}>

@@ -222,15 +222,19 @@ export function ExportDialog({
   }
 
   async function downloadEditable(): Promise<void> {
-    const json = await (await import('../../export/workshopDocument')).workshopAssetBundleToJson(
+    const result = await (await import('../../export/workshopDocument')).workshopAssetBundleToJson(
       asset,
       gallery.getState().assets,
     )
-    if (!json) {
-      showToast(COPY.exportDialog.editableMissingTileset)
+    if (!result.ok) {
+      showToast(
+        result.reason === 'missing-dependency'
+          ? COPY.exportDialog.editableMissingTileset
+          : COPY.exportDialog.editableFailed,
+      )
       return
     }
-    downloadText(json, `${asset.name}.pinta.json`)
+    downloadText(result.json, `${asset.name}.pinta.json`)
   }
 
   return (

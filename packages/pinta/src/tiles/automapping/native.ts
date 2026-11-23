@@ -17,7 +17,7 @@ import {
 import { decodeRegionGalleryBackup, encodeRegionGalleryBackup } from '../../export/regionBackup'
 import type { AuthorMap } from '../mapCellEdits'
 import { type AutomapBook, automapSheetIdentity, readAutomapBook, type SheetIdentity } from './book'
-import { checkAutomapBindings } from './engine'
+import { checkAutomapLayers } from './engine'
 
 /** Native 9 is private until every durable writer/reader can preserve an authored rulebook. */
 export interface AutomapGallery {
@@ -50,6 +50,8 @@ export async function automapSheetIndex(map: AuthorMap, assets: readonly PintaMe
   }
   return sheets
 }
+/** Structure and IDs, as storage checks them. A repainted sheet leaves a book out of date
+ * without making it invalid: one such map must not refuse the whole gallery backup. */
 export async function validGallery({ assets, books }: AutomapGallery) {
   const byId = new Map(assets.map((item) => [item.id, item]))
   if (!books.size || byId.size !== assets.length) return false
@@ -60,7 +62,7 @@ export async function validGallery({ assets, books }: AutomapGallery) {
       map?.kind !== 'tilemap' ||
       !collectAssetBundle(map, byId, dependencies) ||
       !readAutomapBook(JSON.stringify(book)) ||
-      checkAutomapBindings(map, book, await automapSheetIndex(map, assets))
+      checkAutomapLayers(map, book)
     )
       return false
   }
@@ -209,11 +211,8 @@ export async function rebindCopiedAutomapBook(
   before: readonly PintaMemoryAsset[],
   assets: readonly PintaMemoryAsset[],
 ): Promise<AutomapBook | null> {
-  if (
-    map.layers.length !== copy.layers.length ||
-    checkAutomapBindings(map, book, await automapSheetIndex(map, before))
-  )
-    return null
+  if (map.layers.length !== copy.layers.length || checkAutomapLayers(map, book)) return null
+  const original = await automapSheetIndex(map, before)
   const index = await automapSheetIndex(copy, assets)
   const layers = new Map(map.layers.map((layer, i) => [layer.id, copy.layers[i]!]))
   const next = structuredClone(book)
@@ -225,11 +224,13 @@ export async function rebindCopiedAutomapBook(
         const sheet = tileLayerTilesetId(copy, layer),
           identity = index.get(sheet)
         if (!identity) return null
-        // Source bindings were checked by decode. The trusted import plan cloned the ordered
-        // slots exactly, including legitimate changes to typed references inside tile metadata.
+        // The trusted import plan cloned the ordered slots exactly, including legitimate changes
+        // to typed references inside tile metadata, so an up-to-date plane follows the copied
+        // sheet. An out-of-date plane keeps its hash: the editor still warns about the copy.
+        const current = original.get(plane.sheet)?.sha256 === plane.sha256
         plane.layer = layer.id
         plane.sheet = sheet
-        plane.sha256 = identity.sha256
+        if (current) plane.sha256 = identity.sha256
       }
-  return checkAutomapBindings(copy, next, index) ? null : next
+  return checkAutomapLayers(copy, next) ? null : next
 }

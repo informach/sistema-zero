@@ -1338,6 +1338,8 @@ export const COPY = {
     editableFile: 'Desenho editável (.pinta.json)',
     editableMissingTileset:
       'Não consegui reunir os desenhos deste cenário. Confira as peças e os destinos das portas.',
+    editableFailed:
+      'Não consegui montar o arquivo editável deste cenário. Ele pode ter ficado grande demais para um arquivo só.',
     currentFrame: 'Quadro atual (PNG)',
     currentFrameSvg: 'Quadro atual (SVG)',
     image: 'Imagem (PNG)',

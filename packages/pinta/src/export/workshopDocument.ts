@@ -1,8 +1,8 @@
 /** Reader A transport. The active legacy writer and its declared cloud version remain independent. */
 import type { PintaMemoryAsset } from '../core/assetMemory'
 import { utf8ByteLength } from '../core/jsonBytes'
-import { isTileLayer, type TilemapCells, tileLayerTilesetId } from '../core/project'
 import { type AutomapBook, readAutomapBook } from '../tiles/automapping/book'
+import { checkAutomapLayers } from '../tiles/automapping/engine'
 import { isPintaAuthoredMap, type PintaAuthoredMap } from '../tiles/automapping/model'
 import {
   automapDocumentEnvelope,
@@ -26,21 +26,7 @@ export { isLegacyWorkshopAsset, isWorkshopRegion, pintaWorkshopBody } from '../c
 
 import { isLegacyWorkshopAsset, pintaWorkshopBody } from '../core/workshopAsset'
 export function attachWorkshopBook(asset: AuthorMap, book: AutomapBook): PintaAuthoredMap | null {
-  if (
-    !book.rules.every((rule) =>
-      [rule.input, ...rule.outputs].every((group) =>
-        group.every((plane) => {
-          const layer = asset.layers.find((layer) => layer.id === plane.layer)
-          return (
-            !!layer &&
-            isTileLayer<TilemapCells>(layer) &&
-            tileLayerTilesetId(asset, layer) === plane.sheet
-          )
-        }),
-      ),
-    )
-  )
-    return null
+  if (checkAutomapLayers(asset, book)) return null
   return 'origin' in asset
     ? { ...asset, schema: 9, automapping: book }
     : { ...asset, schema: 9, automapping: book }
@@ -156,13 +142,21 @@ export function readWorkshopBookEnvelope(raw: unknown): PintaAuthoredMap | null 
   return body?.kind === 'tilemap' ? attachWorkshopBook(body, book) : null
 }
 
+/** `missing-dependency`: a sheet, drawing or door target is not in the gallery. `unwritable`:
+ * everything is there, but the editable file could not be assembled (size or invalid data). */
+export type WorkshopBundleResult =
+  | { ok: true; json: string }
+  | { ok: false; reason: 'missing-dependency' | 'unwritable' }
+
 export async function workshopAssetBundleToJson(
   asset: PintaMemoryAsset,
   catalog: readonly PintaMemoryAsset[],
-) {
+): Promise<WorkshopBundleResult> {
   const { collectAssetBundle } = await import('./assetJson')
   const byId = new Map(catalog.map((item) => [item.id, item]))
   byId.set(asset.id, asset)
   const graph = collectAssetBundle(asset, byId, new Map())
-  return graph ? pintaWorkshopBackup(graph) : null
+  if (!graph) return { ok: false, reason: 'missing-dependency' }
+  const json = await pintaWorkshopBackup(graph)
+  return json ? { ok: true, json } : { ok: false, reason: 'unwritable' }
 }
