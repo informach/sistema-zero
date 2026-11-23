@@ -103,6 +103,13 @@ function error(status: number, reason: string, itemId?: string) {
   return reply({ reason, ...(itemId ? { itemId } : {}) }, status)
 }
 
+/** A Members refusal without a causal reason keeps its meaning, never its internal message. */
+function upstreamReason(status: number): string {
+  if (status === 404) return 'not-found'
+  if (status === 403) return 'forbidden'
+  return 'unavailable'
+}
+
 class UpstreamFailure extends Error {
   constructor(readonly response: NextResponse) {
     super('O serviço de criações não aceitou o pedido.')
@@ -194,7 +201,7 @@ export function createPintaCausalRoutes({
       throw new UpstreamFailure(
         body.success
           ? error(response.status, body.data.reason, body.data.itemId)
-          : error(response.status, response.status === 404 ? 'not-found' : 'unavailable'),
+          : error(response.status, upstreamReason(response.status)),
       )
     }
     return response.body

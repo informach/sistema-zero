@@ -101,6 +101,8 @@ function fixture(
     qaConfiguration?: string
     renewal?: Awaited<ReturnType<Dependencies['gateway']['refreshSession']>>
     verify?: Dependencies['session']['verifyAccessToken']
+    /** Upstream answers that are not a success, by endpoint. */
+    upstream?: Record<string, { status: number; body: unknown }>
   } = {},
 ) {
   const user = options.actor ?? sessionUser
@@ -169,6 +171,8 @@ function fixture(
     async gatewayFetchHmac<T = unknown>(path: string, opts?: { body?: unknown }) {
       calls.push({ path, body: opts?.body })
       const endpoint = path.replace('/members/internal/creations/pinta/', '')
+      const failure = options.upstream?.[endpoint]
+      if (failure) return { status: failure.status, body: failure.body as T }
       const payload = (opts?.body as { payload?: { itemId?: string } } | undefined)?.payload
       const override = payload?.itemId && responses.get(`${endpoint}:${payload.itemId}`)
       return { status: 200, body: (override ?? responses.get(endpoint)) as T }
@@ -592,6 +596,28 @@ test('a Kids session verification outage returns unavailable without signing a c
   ).toBe(503)
   expect(unavailable.refreshCalls()).toBe(0)
   expect(unavailable.calls).toEqual([])
+})
+
+test('a Members 403 reaches the browser as forbidden, without the upstream message', async () => {
+  const denied = fixture({
+    upstream: {
+      'graph/page': {
+        status: 403,
+        body: { error: { code: 'ACCESS_DENIED', message: 'Biblioteca adulta indisponível.' } },
+      },
+    },
+  })
+  const response = await denied.routes.pintaCausalGraph.GET(new Request(`${link}/graph?reader=7`))
+  expect(response.status).toBe(403)
+  expect(await response.json()).toEqual({ reason: 'forbidden' })
+  const missing = fixture({ upstream: { 'graph/page': { status: 404, body: null } } })
+  expect(
+    await (await missing.routes.pintaCausalGraph.GET(new Request(`${link}/graph?reader=7`))).json(),
+  ).toEqual({ reason: 'not-found' })
+  const outage = fixture({ upstream: { 'graph/page': { status: 500, body: 'erro interno' } } })
+  expect(
+    await (await outage.routes.pintaCausalGraph.GET(new Request(`${link}/graph?reader=7`))).json(),
+  ).toEqual({ reason: 'unavailable' })
 })
 
 test('recovery includes opaque future items only through the explicit attachment path', async () => {
