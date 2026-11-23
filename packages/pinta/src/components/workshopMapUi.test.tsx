@@ -1,4 +1,4 @@
-import { expect, test } from 'bun:test'
+import { expect, spyOn, test } from 'bun:test'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import '../testing/idbMock'
 import { COPY } from '../core/copy'
@@ -20,34 +20,37 @@ test('a oficina abre mapa regional com regras pelo cartão, salva, desfaz e reab
   const app = render(<PintaApp persistence={local} />)
   try {
     fireEvent.click(await screen.findByRole('button', { name: /Abrir mapa/i }))
-    const seed = await screen.findByRole('spinbutton', { name: COPY.automap.seed })
-    expect((seed as HTMLInputElement).value).toBe(String(book.seed))
+    const reroll = await screen.findByRole('button', { name: COPY.automap.seed })
     await waitFor(() =>
       expect(
         (screen.getByRole('button', { name: COPY.automap.input }) as HTMLButtonElement).disabled,
       ).toBe(false),
     )
-    fireEvent.change(seed, { target: { value: '127' } })
-    fireEvent.blur(seed)
+    // O sorteio dá outra semente, nunca a mesma: 0.5 da escala de 31 bits.
+    const random = spyOn(Math, 'random').mockReturnValue(0.5)
+    const rolled = Math.floor(0.5 * 0x7ffffffe)
+    const expected = rolled >= book.seed ? rolled + 1 : rolled
+    try {
+      fireEvent.click(reroll)
+    } finally {
+      random.mockRestore()
+    }
+    expect(expected).not.toBe(book.seed)
     expect(
       (screen.getByRole('button', { name: COPY.editor.undo }) as HTMLButtonElement).disabled,
     ).toBe(false)
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
-    await waitFor(() =>
-      expect(
-        (screen.getByRole('spinbutton', { name: COPY.automap.seed }) as HTMLInputElement).value,
-      ).toBe(String(book.seed)),
-    )
+    // O desfazer devolveu a semente de antes: o sorteio virou a única jogada para refazer.
+    expect(
+      (screen.getByRole('button', { name: COPY.editor.redo }) as HTMLButtonElement).disabled,
+    ).toBe(false)
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.redo }))
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.back }))
     await screen.findByRole('button', { name: /Abrir mapa/i })
     const saved = await local.loadAssetById(map.id)
-    expect(saved && isPintaAuthoredMap(saved) && saved.automapping.seed).toBe(127)
+    expect(saved && isPintaAuthoredMap(saved) && saved.automapping.seed).toBe(expected)
     fireEvent.click(screen.getByRole('button', { name: /Abrir mapa/i }))
-    expect(
-      ((await screen.findByRole('spinbutton', { name: COPY.automap.seed })) as HTMLInputElement)
-        .value,
-    ).toBe('127')
+    expect(await screen.findByRole('button', { name: COPY.automap.seed })).toBeTruthy()
   } finally {
     app.unmount()
     setPintaStorageNamespace('')
