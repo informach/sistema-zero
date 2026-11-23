@@ -105,6 +105,17 @@ const image: ProjectAsset = {
   ...box,
   dataUrl: url(png(64, 32)),
 }
+const installedEngine = (manifest: typeof gameTwoDManifest, version = manifest.version) => ({
+  id: manifest.id,
+  version,
+  installedAt: 1,
+})
+const authoredFiles = {
+  'index.html': '<canvas id="game"></canvas>',
+  'style.css': 'body{margin:0}',
+  'script.js': 'window.PROGRAMA_AUTORAL = "continua";',
+}
+
 const blocksState = {
   blocks: {
     languageVersion: 0,
@@ -113,6 +124,9 @@ const blocksState = {
     ],
   },
 }
+
+// Only a JavaScript project with one 2D engine can run (and so receive) regional material.
+const regionalEngine = { installedExtensions: [installedEngine(gameTwoDManifest)] }
 
 beforeAll(async () => {
   Object.defineProperty(globalThis, 'indexedDB', { value: new IDBFactory(), configurable: true })
@@ -172,7 +186,12 @@ test('JS v2 and v3 admit the same captured material only with the private reader
 
 test('private refresh uses the observed asset partition CAS and does not write files or blocks', async () => {
   const scope = privateRegionalProjectScope('refresh')
-  const legacy = { ...createEmptyProject('regional-project', 'Mapa'), blocksState, assets: [image] }
+  const legacy = {
+    ...createEmptyProject('regional-project', 'Mapa'),
+    ...regionalEngine,
+    blocksState,
+    assets: [image],
+  }
   await persistProject(legacy, {}, scope)
   const keys = [projectFilesKey(legacy.id), projectBlocksKey(legacy.id), projectStateKey(legacy.id)]
   const program = await readValues(scope.store, keys)
@@ -206,7 +225,11 @@ test('private refresh uses the observed asset partition CAS and does not write f
 test('an aborted refresh or another profile cannot replace the captured partition', async () => {
   const owner = privateRegionalProjectScope('owner')
   const other = createProjectStorageScope('pinta-region-other')
-  const ownerProject = { ...createEmptyProject('profile-project', 'Mapa'), assets: [image] }
+  const ownerProject = {
+    ...createEmptyProject('profile-project', 'Mapa'),
+    ...regionalEngine,
+    assets: [image],
+  }
   const otherProject = { ...ownerProject, name: 'Outro projeto' }
   await persistProject(ownerProject, {}, owner)
   await persistProject(otherProject, {}, other)
@@ -228,7 +251,11 @@ test('an aborted refresh or another profile cannot replace the captured partitio
 
 test('cloud restore and silent remote deletion preserve the private project; explicit local deletion still works', async () => {
   const scope = privateRegionalProjectScope('cloud-restore')
-  const old = { ...createEmptyProject('reserved-project', 'Mapa'), assets: [image] }
+  const old = {
+    ...createEmptyProject('reserved-project', 'Mapa'),
+    ...regionalEngine,
+    assets: [image],
+  }
   await persistProject(old, {}, scope)
   await refreshPrivateRegionalProjectAsset({
     scope,
@@ -385,6 +412,121 @@ for (const manifest of [gameTwoDManifest, gameKitManifest]) {
   })
 }
 
+test('a project that recorded an older Jogo 2D runs its regional material on the current engine, like Classic', async () => {
+  const scope = privateRegionalProjectScope('older-engine-record')
+  const base = {
+    ...createEmptyProject('older-engine-record', 'Mapa antigo'),
+    assets: [{ ...image, ...before }],
+    files: authoredFiles,
+  }
+  for (const older of [
+    installedEngine(gameTwoDManifest, '2.0.0'),
+    installedEngine(gameKitManifest, '0.1.0'),
+  ])
+    expect(
+      await renderProjectToPreviewDocAsync(
+        { ...base, installedExtensions: [older] },
+        capability(scope),
+      ),
+    ).toContain('_pintaRegionFactory')
+  // No engine, or two different 2D engines, still leave no single engine to compose.
+  for (const installedExtensions of [
+    [],
+    [installedEngine(gameTwoDManifest), installedEngine(gameKitManifest)],
+  ])
+    await expect(
+      renderProjectToPreviewDocAsync({ ...base, installedExtensions }, capability(scope)),
+    ).rejects.toThrow('Jogo 2D')
+})
+
+test('the automatic exchange converts only projects that can run the regional material and keeps the others', async () => {
+  const namespace = privateRegionalProjectScope('sweep-engines').namespace
+  const previousProject = captureProjectStorageScope().namespace
+  const previousLibrary = getPersonalAssetsNamespace()
+  setProjectStorageNamespace(namespace)
+  setPersonalAssetsNamespace(namespace)
+  const scope = captureProjectStorageScope()
+  const project = (id: string, installedExtensions: ReturnType<typeof installedEngine>[]) => ({
+    ...createEmptyProject(id, id),
+    assets: [image],
+    files: authoredFiles,
+    installedExtensions,
+  })
+  const older = project('sweep-older-engine', [installedEngine(gameTwoDManifest, '2.0.0')])
+  const bare = project('sweep-without-engine', [])
+  const both = project('sweep-two-engines', [
+    installedEngine(gameTwoDManifest),
+    installedEngine(gameKitManifest),
+  ])
+  try {
+    for (const stored of [older, bare, both]) await persistProject(stored, {}, scope)
+    expect(
+      await savePersonalRegionalMap(
+        { id: 'world', name: 'Mapa', dataUrl: before.dataUrl, ...box },
+        { namespace, capability: PINTA_REGIONAL_PERSONAL_CAPTURE, expectedRevision: null },
+      ),
+    ).toMatchObject({ ok: true })
+    expect(await syncDrawingsIntoProjects(createProjectStore())).toEqual({
+      updatedInOpenProject: 0,
+      updatedInOtherProjects: 1,
+      failures: [],
+    })
+    for (const kept of [bare, both])
+      expect((await loadProjectAssetsSnapshotById(kept.id, scope)).assets).toEqual([image])
+    expect(
+      (await loadProjectAssetsSnapshotById(older.id, scope, capability(scope))).assets,
+    ).toEqual([{ ...image, ...before }])
+    const converted = await prepareEditableStudioProject(
+      await loadProjectById(older.id, scope),
+      capability(scope),
+    )
+    if (!converted || isPythonProject(converted)) throw new Error('Projeto convertido não reabriu')
+    expect(await renderProjectToPreviewDocAsync(converted, capability(scope))).toContain(
+      '_pintaRegionFactory',
+    )
+  } finally {
+    setPersonalAssetsNamespace(previousLibrary)
+    setProjectStorageNamespace(previousProject)
+  }
+})
+
+test('the automatic exchange keeps the old drawing in a converted Pro whose engine copy cannot be replaced', async () => {
+  const scope = privateRegionalProjectScope('pro-engine-copy')
+  const classic = {
+    ...createEmptyProject('pro-engine-copy-origin', 'Pro'),
+    assets: [image],
+    files: authoredFiles,
+    installedExtensions: [installedEngine(gameTwoDManifest)],
+  }
+  const tree = await convertClassicToProTree(classic)
+  const enginePath = `public/sz-ext/${gameTwoDManifest.id}.js`
+  const engine = tree[enginePath]
+  if (engine?.kind !== 'file') throw new Error('Conversão sem motor')
+  const pro = (id: string, content: string) => ({
+    ...classic,
+    id,
+    kind: 'pro' as const,
+    mode: 'code' as const,
+    tree: { ...tree, [enginePath]: { kind: 'file' as const, content } },
+    proMeta: {
+      templateId: 'vanilla-vite',
+      devScript: 'dev',
+      origin: { projectId: classic.id, revision: 0 },
+    },
+  })
+  const intact = pro('pro-engine-copy-intact', engine.content)
+  const changed = pro('pro-engine-copy-changed', `${engine.content}\n// outra versão do motor`)
+  for (const stored of [intact, changed]) await persistProject(stored, {}, scope)
+  const refresh = (projectId: string) =>
+    refreshPrivateRegionalProjectAsset({ scope, projectId, assetId: image.id, capture: before })
+  expect(await refresh(changed.id)).toBe('kept')
+  expect((await loadProjectAssetsSnapshotById(changed.id, scope)).assets).toEqual([image])
+  expect(await refresh(intact.id)).toBe(true)
+  expect((await loadProjectAssetsSnapshotById(intact.id, scope, capability(scope))).assets).toEqual(
+    [{ ...image, ...before }],
+  )
+})
+
 for (const kind of ['classic', 'pro'] as const) {
   test(`Python ${kind} reopens after refresh with a byte-exact file and an admitted-only capability`, async () => {
     const scope = privateRegionalProjectScope(`python-${kind}`)
@@ -425,7 +567,11 @@ for (const kind of ['classic', 'pro'] as const) {
 
 test('a CRC-valid child with bad compressed pixels cannot replace the stored material', async () => {
   const scope = privateRegionalProjectScope('bad-pixels')
-  const project = { ...createEmptyProject('png-idat-proof', 'Mapa'), assets: [image] }
+  const project = {
+    ...createEmptyProject('png-idat-proof', 'Mapa'),
+    ...regionalEngine,
+    assets: [image],
+  }
   await persistProject(project, {}, scope)
   const bad = png(64, 16)
   const view = new DataView(bad.buffer)
@@ -515,6 +661,7 @@ test('a second independent material cannot start pixel decoding until the joint 
   const ordinary = { ...image, id: exact.id, proPath: exact.proPath, name: exact.name }
   const project = {
     ...createEmptyProject('budget-project-png5', 'Mapa'),
+    ...regionalEngine,
     assets: [first, ordinary],
   }
   await persistProject(project, {}, scope)
@@ -535,7 +682,11 @@ test('a second independent material cannot start pixel decoding until the joint 
 
 test('cancelled graphical admission disposes a late bitmap and preserves the durable project', async () => {
   const scope = privateRegionalProjectScope('cancel-bitmaps')
-  const project = { ...createEmptyProject('late-decoder-project', 'Mapa'), assets: [image] }
+  const project = {
+    ...createEmptyProject('late-decoder-project', 'Mapa'),
+    ...regionalEngine,
+    assets: [image],
+  }
   await persistProject(project, {}, scope)
   const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'createImageBitmap')!
   const decode = globalThis.createImageBitmap
@@ -597,6 +748,7 @@ test('existing library sync commits the live editor asset revision before publis
   const scope = captureProjectStorageScope()
   const source = {
     ...createEmptyProject('open-and-running-png5', 'Meu jogo'),
+    ...regionalEngine,
     assets: [image],
     files: { 'index.html': '', 'style.css': '', 'script.js': 'let pontos = 42;' },
   }

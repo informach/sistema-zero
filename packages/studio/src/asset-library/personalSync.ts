@@ -797,6 +797,8 @@ async function syncPrivateRegionalDrawings(
             regional: { dataVersion: 5, sourceId, sha256: row.sha256 },
           },
         })
+        // A project that cannot run the regional material keeps its drawing; nothing to retry.
+        if (updated === 'kept') continue
         if (updated) {
           if (open) result.updatedInOpenProject++
           else result.updatedInOtherProjects++

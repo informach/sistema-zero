@@ -143,6 +143,8 @@ export async function readProjectAssetsSnapshot(
 ): Promise<{
   assets: ProjectAsset[]
   environment: Pick<ProjectSummary, 'programmingLanguage' | 'kind' | 'runtime'>
+  /** Raw `installedExtensions` of the same meta read; the caller validates what it uses. */
+  installedExtensions?: unknown
   observedHead?: string | null
 }> {
   let [record, head, meta] =
@@ -173,7 +175,8 @@ export async function readProjectAssetsSnapshot(
   const environment = isRecord(meta)
     ? projectEnvironmentSummary(meta)
     : { programmingLanguage: 'unknown' as const }
-  if (!isRecord(record)) return { assets: [], environment }
+  const installedExtensions = isRecord(meta) ? meta.installedExtensions : undefined
+  if (!isRecord(record)) return { assets: [], environment, installedExtensions }
   const privateRead = options[PRIVATE_REGIONAL_PROJECT]
   if (privateRead && (privateRead !== scope || !isPrivateRegionalProjectScope(scope)))
     throw new Error('A captura regional requer um perfil de teste local.')
@@ -210,6 +213,7 @@ export async function readProjectAssetsSnapshot(
   return {
     assets,
     environment,
+    installedExtensions,
     observedHead: isLocalHead(head) ? head.token : head == null ? null : undefined,
   }
 }

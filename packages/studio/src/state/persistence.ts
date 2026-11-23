@@ -437,6 +437,7 @@ export async function loadProjectAssetsSnapshotById(
 ): Promise<{
   assets: ProjectAsset[]
   environment: Pick<ProjectSummary, 'programmingLanguage' | 'kind' | 'runtime'>
+  installedExtensions?: unknown
 }> {
   const scope = storageScope ?? captureProjectStorageScope()
   const reader = await import('./projectStorageRead')
@@ -453,17 +454,18 @@ export async function loadProjectAssetsSnapshotById(
       pinned = [v.assets, editor.retainedEditorHead(retained.manifest, v.head), v.meta]
     }
   }
-  const { assets, environment, observedHead } = await reader.readProjectAssetsSnapshot(
-    id,
-    scope,
-    async () => {
-      notifyRecoveredProjects(scope, await recoverProjectWrites(scope, id))
-    },
-    options,
-    pinned,
-  )
+  const { assets, environment, installedExtensions, observedHead } =
+    await reader.readProjectAssetsSnapshot(
+      id,
+      scope,
+      async () => {
+        notifyRecoveredProjects(scope, await recoverProjectWrites(scope, id))
+      },
+      options,
+      pinned,
+    )
   if (observedHead !== undefined) assetReadHeads.set(assets, observedHead)
-  return { assets, environment }
+  return { assets, environment, installedExtensions }
 }
 
 /**

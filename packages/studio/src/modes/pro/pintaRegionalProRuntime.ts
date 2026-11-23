@@ -4,6 +4,7 @@ import type { Project, StudioProBuildLimits } from '#core'
 import { UNSUPPORTED_PINTA_REGION } from '../../core/pintaRegionalReference'
 import { buildProAssetBundle } from '../../core/proAssets'
 import { sanitizeProjectAssets } from '../../core/projectAssets'
+import { isDocumentRecord } from '../../core/projectDocument'
 import { assertProjectContentPreserved } from '../../core/projectDocumentGuards'
 import { loadExtensionBootstrapScript } from '../../extensions/runtime'
 import { findExtension } from '../../official-extensions'
@@ -12,6 +13,33 @@ import {
   type ProjectStorageScope,
 } from '../../state/projectStorageRuntime'
 import type { StudioProRuntimeAdapter } from '../../studio/pro-runtime'
+
+const proRegionalEnginePath = (extensionId: string) => `public/sz-ext/${extensionId}.js`
+
+/**
+ * The regional build replaces the converted engine copy, so it may only do that while the copy is
+ * still byte for byte the engine the conversion wrote (full or minimal variant). A changed copy is
+ * the student's (or an older engine's) and stays untouched.
+ */
+export async function proRegionalEngineCopy(
+  tree: Readonly<Record<string, unknown>> | undefined,
+  extensionId: string,
+): Promise<'missing' | 'changed' | 'current'> {
+  const extension = findExtension(extensionId)
+  const source = tree?.[proRegionalEnginePath(extensionId)]
+  if (
+    !extension ||
+    !isDocumentRecord(source) ||
+    source.kind !== 'file' ||
+    typeof source.content !== 'string'
+  )
+    return 'missing'
+  const [full, minimal] = await Promise.all([
+    loadExtensionBootstrapScript(extension),
+    loadExtensionBootstrapScript(extension, { code: '' }),
+  ])
+  return source.content === full || source.content === minimal ? 'current' : 'changed'
+}
 
 /** Converted JS projects use the existing local Pro planner/iframe. No hosted build fallback. */
 export function createPintaRegionalProRuntime(
@@ -44,16 +72,11 @@ export function createPintaRegionalProRuntime(
         ? await (async () => {
             if (!captured.proMeta?.origin || !captured.tree)
               throw new Error('Abra um jogo 2D convertido para o modo Pro.')
-            const extension = findExtension(regional.extensionId)
-            const enginePath = `public/sz-ext/${regional.extensionId}.js`
-            const source = captured.tree[enginePath]
-            if (!extension || source?.kind !== 'file')
+            const enginePath = proRegionalEnginePath(regional.extensionId)
+            const copy = await proRegionalEngineCopy(captured.tree, regional.extensionId)
+            if (copy === 'missing')
               throw new Error('O arquivo do motor deste jogo não foi encontrado no projeto Pro.')
-            const [full, minimal] = await Promise.all([
-              loadExtensionBootstrapScript(extension),
-              loadExtensionBootstrapScript(extension, { code: '' }),
-            ])
-            if (source.content !== full && source.content !== minimal)
+            if (copy === 'changed')
               throw new Error('O arquivo do motor foi editado. A cópia do projeto foi preservada.')
             const assets = sanitizeProjectAssets(captured.assets, {
               regionalMaterials: regional.proof,

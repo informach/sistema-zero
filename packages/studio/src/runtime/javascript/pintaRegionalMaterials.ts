@@ -18,6 +18,19 @@ import {
   type ProjectStorageScope,
 } from '../../state/projectStorageRuntime'
 
+/**
+ * The single 2D engine that composes the regional material. Chosen by ID, like the Classic
+ * catalog (`resolveJavaScriptClassicExtensions`): the current engine runs whatever version the
+ * project recorded when it was installed. No engine, or both engines, leaves nothing to compose.
+ */
+export function regionalJavaScriptEngine(installed: unknown) {
+  const ids = new Set(
+    Array.isArray(installed) ? installed.filter(isDocumentRecord).map((row) => row.id) : [],
+  )
+  const engines = [gameTwoDManifest, gameKitManifest].filter((engine) => ids.has(engine.id))
+  return engines.length === 1 ? engines[0] : undefined
+}
+
 /** Capture and verify the exact material list before loading an engine or producing a document. */
 export async function prepareJavaScriptRegionalMaterials(
   assets: unknown,
@@ -30,18 +43,9 @@ export async function prepareJavaScriptRegionalMaterials(
   const lifetime =
     signal && scope.signal ? AbortSignal.any([signal, scope.signal]) : (signal ?? scope.signal)
   lifetime?.throwIfAborted()
-  const candidates = [gameTwoDManifest, gameKitManifest]
-  const engines = Array.isArray(installed)
-    ? installed
-        .filter(isDocumentRecord)
-        .filter((row) => candidates.some((engine) => engine.id === row.id))
-    : []
-  const selected = engines[0]
-  const match = candidates.find(
-    (engine) => engine.id === selected?.id && engine.version === selected?.version,
-  )
-  if (engines.length !== 1 || !match)
-    throw new Error('Este cenário precisa de uma versão compatível do Jogo 2D.')
+  const match = regionalJavaScriptEngine(installed)
+  if (!match)
+    throw new Error('Este cenário precisa de um só motor de jogo: o Jogo 2D ou o Jogo 2D Avançado.')
   const target: MapTarget = match === gameTwoDManifest ? 'g2d' : 'gk'
   const extensionId = match.id
   const sourceChars = assets.reduce(

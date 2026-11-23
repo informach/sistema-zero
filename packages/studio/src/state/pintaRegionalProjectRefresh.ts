@@ -1,10 +1,17 @@
+import { type EditableStudioProject, isPythonProject } from '../core/editableProject'
 import { type PintaRegionalMarker, pintaRegionalMarkerOf } from '../core/pintaRegionalMaterial'
 import { admitRegionalProjectAssets } from '../core/pintaRegionalProjectAdmission'
 import { checkRegionalProjectPixels } from '../core/pintaRegionalProjectPixels'
 import { PRIVATE_REGIONAL_PROJECT, UNSUPPORTED_PINTA_REGION } from '../core/pintaRegionalReference'
 import { sanitizeProjectAssets } from '../core/projectAssets'
+import { isDocumentRecord } from '../core/projectDocument'
 import { assertProjectContentPreserved } from '../core/projectDocumentGuards'
-import { loadProjectAssetsSnapshotById, persistProjectAssets } from './persistence'
+import { regionalJavaScriptEngine } from '../runtime/javascript/pintaRegionalMaterials'
+import {
+  loadProjectAssetsSnapshotById,
+  loadProjectShellById,
+  persistProjectAssets,
+} from './persistence'
 import { projectPersistence } from './projectOperations'
 import { advanceLocalRevision, readLocalRevision } from './projectStorageRevision'
 import { isPrivateRegionalProjectScope, type ProjectStorageScope } from './projectStorageRuntime'
@@ -12,7 +19,36 @@ import type { ProjectStoreApi } from './projectStore'
 
 export { privateRegionalProjectScope } from './projectStorageRuntime'
 
-/** Private local-only refresh. No program, project ID, source path or block is rewritten. */
+/**
+ * A JavaScript project receives the regional material only when it can run it: exactly one 2D
+ * engine (the same choice as the player) and, in a converted Pro, an engine copy the regional build
+ * may replace. Python keeps its own runtime admission.
+ */
+async function runsRegionalMaterial(
+  projectId: string,
+  scope: ProjectStorageScope,
+  open: EditableStudioProject | undefined,
+  environment: { programmingLanguage: string; kind?: string },
+  installedExtensions: unknown,
+): Promise<boolean> {
+  if (environment.programmingLanguage !== 'javascript' || (open && isPythonProject(open)))
+    return true
+  const engine = regionalJavaScriptEngine(open ? open.installedExtensions : installedExtensions)
+  if (!engine) return false
+  if ((open ? open.kind : environment.kind) !== 'pro') return true
+  const tree = open ? open.tree : (await loadProjectShellById(projectId, scope))?.tree
+  const { proRegionalEngineCopy } = await import('../modes/pro/pintaRegionalProRuntime')
+  return (
+    (await proRegionalEngineCopy(isDocumentRecord(tree) ? tree : undefined, engine.id)) ===
+    'current'
+  )
+}
+
+/**
+ * Private local-only refresh. No program, project ID, source path or block is rewritten.
+ * `true` wrote the capture; `false` the write was refused (the next sweep tries again); `'kept'`
+ * the project cannot run regional material, so it keeps its old drawing.
+ */
 export async function refreshPrivateRegionalProjectAsset(options: {
   scope: ProjectStorageScope
   projectId: string
@@ -22,7 +58,7 @@ export async function refreshPrivateRegionalProjectAsset(options: {
   /** The mounted local editor feeds its latest authored material list through the same disk CAS. */
   store?: ProjectStoreApi
   stillCurrent?: () => boolean
-}): Promise<boolean> {
+}): Promise<boolean | 'kept'> {
   const { scope, projectId, assetId, store, stillCurrent } = options
   const signal =
     scope.signal && options.signal
@@ -49,7 +85,11 @@ export async function refreshPrivateRegionalProjectAsset(options: {
       store?.getState().editingAccess !== 'author')
   )
     return false
-  const { assets: observed, environment } = await loadProjectAssetsSnapshotById(projectId, scope, {
+  const {
+    assets: observed,
+    environment,
+    installedExtensions,
+  } = await loadProjectAssetsSnapshotById(projectId, scope, {
     [PRIVATE_REGIONAL_PROJECT]: scope,
   })
   const assets = open?.assets ?? observed
@@ -66,6 +106,9 @@ export async function refreshPrivateRegionalProjectAsset(options: {
     (original.libId && original.libId !== `personal:${capture.regional.sourceId}`)
   )
     throw new Error(UNSUPPORTED_PINTA_REGION)
+  if (!(await runsRegionalMaterial(projectId, scope, open, environment, installedExtensions)))
+    return 'kept'
+  signal?.throwIfAborted()
 
   const {
     scene: _scene,
