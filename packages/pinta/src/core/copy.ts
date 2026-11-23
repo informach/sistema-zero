@@ -9,10 +9,10 @@ import type { PintaAssetKind } from './project'
 export const COPY = {
   automap: {
     areaError: 'Escolha uma área dentro do mapa.',
-    sheetError: 'Uma folha mudou. Capture o exemplo novamente com as peças atuais.',
+    sheetError: 'Uma folha mudou. Copie o antes de novo com as peças atuais.',
     loadingSheets: 'As peças ainda estão carregando. Tente de novo em um instante.',
     missingLayer: 'Uma camada das regras não está neste mapa.',
-    locked: 'Destranque as camadas de saída antes de aplicar.',
+    locked: 'Destranque as camadas do depois antes de aplicar.',
     tooMuchWork: 'A área é grande demais para estas regras. Escolha uma área menor.',
     mapLimit: 'O resultado ultrapassa os limites do mapa.',
     invalidRule: 'Confira as camadas, o nome e o tamanho da regra.',
