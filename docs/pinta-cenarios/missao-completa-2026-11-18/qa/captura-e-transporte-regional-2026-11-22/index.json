@@ -251,10 +251,7 @@
     "persistence": 51,
     "integration": 12,
     "regionalCaptureNew": 4,
-    "profiles": [
-      "desktop",
-      "cpu-4x"
-    ]
+    "profiles": ["desktop", "cpu-4x"]
   },
   "nativeRoundTrip": {
     "assets": 6,

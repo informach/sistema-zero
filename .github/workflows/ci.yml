@@ -666,6 +666,11 @@ jobs:
     # cortou a cena 184 sem falhas, antes das provas de aula, Pinta e Molda.
     # O orçamento inclui os builds; os limites de cada teste continuam os mesmos.
     timeout-minutes: 45
+    env:
+      # O `next build` do Kids, com a integração do Pinta, passou de 4 GiB na verificação de
+      # tipos (CI 45145521551, "heap out of memory"). Mesmo teto do Dockerfile do app (8 GiB),
+      # que é o build que vai ao Railway; o build roda sozinho, antes dos navegadores.
+      NODE_OPTIONS: --max-old-space-size=8192
     steps:
       - uses: actions/checkout@v5
 
@@ -778,7 +783,7 @@ jobs:
       - name: Autoridade local do Pinta e chunks com leitores históricos reais
         if: matrix.shard == 1
         run: |
-          git fetch --no-tags --depth=1 origin 567b93f95258ad6584a923388f9e45fa658fc728 899d2596fc9817e5196435321af39f5eb3a868dc ec4e58066f8e371ef3600c2575a1d4e1d12ce5b6 0ebb89a63c4dc0d2e078023dbcaa3cb6a42a336d
+          git fetch --no-tags --depth=1 origin 567b93f95258ad6584a923388f9e45fa658fc728 899d2596fc9817e5196435321af39f5eb3a868dc ec4e58066f8e371ef3600c2575a1d4e1d12ce5b6 0ebb89a63c4dc0d2e078023dbcaa3cb6a42a336d 7ddb3b7d7df7a8a8aaa3b031956978e4763f2497
           cd packages/studio
           bunx playwright test --config playwright.pinta-chunks.config.ts
           bunx playwright test --config playwright.pinta-render.config.ts

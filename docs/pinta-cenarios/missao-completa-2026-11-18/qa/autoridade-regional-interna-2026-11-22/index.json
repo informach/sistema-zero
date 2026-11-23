@@ -146,10 +146,7 @@
     "regionalBusiness": 4,
     "regionalIO": 8,
     "legacy": 21,
-    "profiles": [
-      "desktop",
-      "cpu-4x"
-    ],
+    "profiles": ["desktop", "cpu-4x"],
     "realIndexedDB": true
   },
   "mirror": {

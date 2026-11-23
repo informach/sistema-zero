@@ -240,10 +240,7 @@
     "physical": 61,
     "integration": 12,
     "retries": 0,
-    "profiles": [
-      "desktop",
-      "cpu-4x"
-    ],
+    "profiles": ["desktop", "cpu-4x"],
     "png5Artifacts": 2,
     "independentRealms": true
   },

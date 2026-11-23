@@ -163,9 +163,7 @@
   "browser": {
     "pass": 16,
     "retries": 0,
-    "profiles": [
-      "chromium-desktop"
-    ],
+    "profiles": ["chromium-desktop"],
     "integration": 12,
     "bridgeAndReload": 4
   },

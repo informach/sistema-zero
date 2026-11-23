@@ -114,11 +114,7 @@
       "passed": 12,
       "failed": 0,
       "retries": 0,
-      "projects": [
-        "desktop",
-        "touch-emulated",
-        "cpu-4x"
-      ]
+      "projects": ["desktop", "touch-emulated", "cpu-4x"]
     },
     "pintaTypecheck": {
       "exitCode": 0

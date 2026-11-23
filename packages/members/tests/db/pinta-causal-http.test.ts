@@ -136,6 +136,10 @@ describe.skipIf(!target)('Pinta causal through the full Members HTTP server and 
         expect(denied.status).toBe(404)
         expect(await denied.json()).toEqual({ reason: 'not-found' })
         expect((await post(base, 'graph/page', { reader: 6 }, { actor: other })).status).toBe(404)
+        // O seletor da galeria da aula passa pela mesma cerca: conta + perfil dono, na lista de QA.
+        expect((await post(base, 'graph/page', { mode: 'gallery' }, { actor: other })).status).toBe(
+          404,
+        )
       }
       expect((await post(base, 'units/reserve', { ...page, trusted: true })).status).toBe(422)
       expect(
@@ -234,6 +238,24 @@ describe.skipIf(!target)('Pinta causal through the full Members HTTP server and 
         reader: 6,
       })
       expect((await item.json()).storageRef).toEndWith('/2.sealed.gz')
+      const gallery = await post(base, 'graph/page', { mode: 'gallery' })
+      expect(await gallery.json()).toEqual({
+        gallery: {
+          epoch: '3',
+          requiredFormat: expect.any(Number),
+          nextCursor: null,
+          entries: [
+            expect.objectContaining({
+              itemId: 'map',
+              revision: 2,
+              coverage: 'certified',
+              sha256: member.sha256,
+              thumb: null,
+            }),
+          ],
+        },
+      })
+      expect((await post(base, 'graph/page', { mode: 'gallery', cursor: 'map' })).status).toBe(409)
       expect(
         (await post(base, 'units/status', { ...status, unused: 'x'.repeat(80 * 1024) })).status,
       ).toBe(413)
@@ -248,6 +270,7 @@ describe.skipIf(!target)('Pinta causal through the full Members HTTP server and 
     ]) {
       await serving(flag, token, list, async (base) => {
         expect((await post(base, 'graph/page', { reader: 6 })).status).toBe(404)
+        expect((await post(base, 'graph/page', { mode: 'gallery' })).status).toBe(404)
         const old = await fetch(`${base}/members/creations/pinta`, {
           headers: { ...gateway, 'x-auth-user-id': actor.userId },
         })

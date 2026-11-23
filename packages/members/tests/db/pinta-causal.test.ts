@@ -4,14 +4,17 @@ import {
   PintaCausalArchiveItemSchema,
   PintaCausalArchivePageSchema,
   type PintaCausalAttestation,
+  PintaCausalGalleryPageSchema,
   type PintaCausalIntent,
   type PintaCausalManifest,
   type PintaCausalMember,
   type PintaCausalRead,
   PintaCausalSnapshotPageSchema,
+  type PintaCausalViewer,
   pintaCausalBlobKey,
   pintaCausalIntentHash,
 } from '@sistemazero/core/creations/pinta-causal'
+import type { GalleryDeliveryPlan } from '@sistemazero/core/learning'
 import { Elysia } from 'elysia'
 import { CREATION_LIMITS } from '../../src/domain/creations/creation'
 import { DrizzleCreationsRepository } from '../../src/infrastructure/persistence/drizzle/creations.repository'
@@ -19,6 +22,7 @@ import type { DbConnection } from '../../src/infrastructure/persistence/drizzle/
 import { DrizzlePintaRetirementRepository } from '../../src/infrastructure/persistence/drizzle/pinta-causal-retirement'
 import { DrizzlePintaCausalRepository } from '../../src/infrastructure/persistence/drizzle/pinta-causal-units.repository'
 import { pintaCausalRoutes } from '../../src/interfaces/http/routes/pinta-causal.routes'
+import { galleryLesson } from '../fakes/gallery-lesson'
 import { openKidsJourneyTestDatabase, optInKidsJourneyDatabase } from './kids-journey-database'
 
 const url = optInKidsJourneyDatabase('PINTA_CAUSAL_TEST_DATABASE_URL')
@@ -1120,11 +1124,134 @@ describe.skipIf(!url)('Pinta causal over the real migration and existing quota l
         legacy.commit({ ...u, itemId: 'queued', revision: 1, storageRef: 'stale-upload' }),
       ),
     ).toMatchObject({ reason: 'protocol-required' })
-    // A galeria da aula copia pela leitura antiga: num perfil adotado ela é cercada, e a entrega
-    // traduz essa cerca em GALLERY_PINTA_CAUSAL_UNSUPPORTED.
+    // A leitura antiga segue cercada num perfil adotado: a galeria da aula lista e copia pela
+    // leitura causal (teste seguinte).
     expect(await rejection(legacy.get(a.userId, 'pinta', 'new', 'kids'))).toMatchObject({
       reason: 'protocol-required',
     })
     expect((await visible(a)).entries.map((e) => e.itemId)).toEqual(['new', 'old'])
+  })
+  test('galeria da aula: lista a cabeça confirmada com miniatura e hash, e copia exatamente esses bytes', async () => {
+    const qaProfiles: PintaCausalViewer[] = []
+    const ctx = galleryLesson('pinta', { galleryPintaCausal: { heads: db, qaProfiles } })
+    const a = {
+      userId: ctx.owner.userId,
+      accountId: ctx.owner.accountId,
+      audience: 'kids' as const,
+    }
+    const sibling = { ...a, userId: ctx.sibling }
+    qaProfiles.push(a)
+    const epoch = async (who: typeof a) => (await db.page(who, { reader: 6 })).epoch
+    // Um desenho do escritor antigo, ainda não adotado pelo protocolo causal (cobertura unknown).
+    await conn.sql`insert into members.creations (id,user_id,account_id,audience,tool,item_id,name,kind,item_updated_at,revision,storage_ref,bytes,created_at,synced_at)
+     values (gen_random_uuid(),${a.userId},${a.accountId},'kids','pinta','velho','velho','pixel-sprite',now(),1,'legacy/velho.gz',5,now(),now())`
+    const thumb = 'data:image/png;base64,AAAA'
+    const cacto = put('cacto', 11),
+      dino = { ...put('dino', 12), thumb }
+    await complete(a, intent(await epoch(a), [cacto, dino]), [manifest(cacto), manifest(dino)])
+    const irmao = put('irmao', 13)
+    await complete(sibling, intent(await epoch(sibling), [irmao]), [manifest(irmao)])
+
+    const listed = PintaCausalGalleryPageSchema.parse(await db.galleryPage(a, {})).gallery
+    expect(
+      listed.entries.map(({ itemId, coverage, sha256, thumb }) => ({
+        itemId,
+        coverage,
+        sha256,
+        thumb,
+      })),
+    ).toEqual([
+      { itemId: 'cacto', coverage: 'certified', sha256: sha(11), thumb: null },
+      { itemId: 'dino', coverage: 'certified', sha256: sha(12), thumb },
+      { itemId: 'velho', coverage: 'unknown', sha256: null, thumb: null },
+    ])
+    type Selection = { itemId: string; revision: number; causalSha256?: string }
+    const prepare = (items: Selection[]) =>
+      ctx.request(`${ctx.path}/gallery-prepare`, {
+        requestId: randomUUID(),
+        revision: ctx.revision,
+        items,
+      })
+    const refusal = async (items: Selection[], code: string, message: string) => {
+      const before = ctx.galleryCopies.attempts.size
+      const response = await prepare(items)
+      expect(response.status).toBe(409)
+      expect(await response.json()).toMatchObject({ error: { code, message } })
+      expect(ctx.galleryCopies.attempts.size).toBe(before)
+    }
+
+    // O seletor viu a cabeça confirmada: a cópia sai do selo imutável que tem esse hash.
+    const chosen = listed.entries.flatMap(({ itemId, revision, sha256 }) =>
+      sha256 ? [{ itemId, revision, causalSha256: sha256 }] : [],
+    )
+    const [first] = chosen
+    if (!first) throw new Error('A lista não trouxe desenhos certificados.')
+    const input = { requestId: randomUUID(), revision: ctx.revision, items: chosen }
+    const prepared = await ctx.request(`${ctx.path}/gallery-prepare`, input)
+    expect(prepared.status).toBe(200)
+    const plan = (await prepared.json()) as GalleryDeliveryPlan
+    if (plan.completed) throw new Error('Unexpected completion')
+    const sealed = await Promise.all(
+      chosen.map(async (c) => (await db.galleryItem(a, c)).storageRef),
+    )
+    expect(sealed.every((key) => key.endsWith('/1.sealed.gz'))).toBe(true)
+    expect(plan.copies.map((copy) => copy.source)).toEqual(sealed)
+    expect(plan.snapshot.items).toMatchObject([
+      { itemId: 'cacto', revision: 1, causalSha256: sha(11), parts: [] },
+      { itemId: 'dino', revision: 1, causalSha256: sha(12), parts: [] },
+    ])
+    const committed = await ctx.request(
+      `/internal${ctx.path}/gallery-commit`,
+      { actor: ctx.owner, input, projectForChecks: null, copyGeneration: plan.copyGeneration },
+      { 'x-consumer-id': 'member-shell' },
+    )
+    expect(committed.status).toBe(200)
+    expect((await ctx.studioSubmissions.getOne(a.userId, ctx.blockId))?.project).toEqual(
+      plan.snapshot,
+    )
+    const again = (await (
+      await ctx.request(`${ctx.path}/gallery-prepare`, input)
+    ).json()) as GalleryDeliveryPlan
+    expect(again.completed).toBe(true)
+
+    // O desenho mudou depois da lista: nem a revisão velha nem o hash velho levam bytes novos.
+    const edited = put('dino', 22, 'pixel-sprite', 1)
+    await complete(a, intent(await epoch(a), [edited]), [manifest(edited)])
+    const changed = 'Este desenho mudou. Escolha de novo para enviar a versão nova.'
+    await refusal(chosen, 'GALLERY_PINTA_DRAWING_CHANGED', changed)
+    await refusal(
+      [first, { itemId: 'dino', revision: 2, causalSha256: sha(12) }],
+      'GALLERY_PINTA_DRAWING_CHANGED',
+      changed,
+    )
+    // O desenho de outro perfil da mesma conta nunca é alcançado, nem com o hash certo.
+    await refusal(
+      [first, { itemId: 'irmao', revision: 1, causalSha256: sha(13) }],
+      'GALLERY_PINTA_DRAWING_CHANGED',
+      changed,
+    )
+    // Sem certificado não há cópia; abrir o Pinta adota a unidade, e então ela é enviável.
+    await refusal(
+      [first, { itemId: 'velho', revision: 1, causalSha256: sha(14) }],
+      'GALLERY_PINTA_DRAWING_UNCERTIFIED',
+      'Abra este desenho no Pinta uma vez para poder enviar.',
+    )
+    const adoption = await db.backfillTicket(a, {
+      epoch: await epoch(a),
+      itemId: 'velho',
+      revision: 1,
+      reader: 6,
+    })
+    await db.backfillAttest(a, {
+      purpose: 'pinta-backfill-content-v1',
+      binding: adoption.binding,
+      sha256: sha(15),
+      manifest: manifest(put('velho', 15)),
+    })
+    const adopted = await prepare([first, { itemId: 'velho', revision: 1, causalSha256: sha(15) }])
+    expect(adopted.status).toBe(200)
+    const after = (await adopted.json()) as GalleryDeliveryPlan
+    if (after.completed) throw new Error('Unexpected completion')
+    expect(after.copies[1]?.source).toBe(pintaCausalBlobKey(adoption.binding, 'sealed'))
   })
 })

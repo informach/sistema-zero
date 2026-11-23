@@ -159,10 +159,7 @@
   "browser": {
     "pass": 29,
     "retries": 0,
-    "profiles": [
-      "desktop",
-      "cpu-4x"
-    ],
+    "profiles": ["desktop", "cpu-4x"],
     "nativeRegionTests": 8,
     "publicLegacyRegressionTests": 21,
     "realIndexedDB": true,

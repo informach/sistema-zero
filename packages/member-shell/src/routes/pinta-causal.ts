@@ -4,6 +4,7 @@ import {
   PintaCausalArchivePageSchema,
   PintaCausalAttestationSchema,
   PintaCausalBackfillAttestationSchema,
+  PintaCausalGalleryPageSchema,
   PintaCausalReservePageSchema,
   PintaCausalSnapshotPageSchema,
   pintaCausalBlobKey,
@@ -69,6 +70,7 @@ const EntryQuery = z.strictObject({
 const ReserveBody = PintaCausalReservePageSchema.refine(
   ({ reader }) => causalReader.safeParse(reader).success,
 )
+/** A owner page without the Pinta reader floor: the archive export and the lesson gallery. */
 const ArchiveQuery = z
   .strictObject({
     epoch: causalEpoch.optional(),
@@ -316,6 +318,23 @@ export function createPintaCausalRoutes({
             await internal(actor, 'graph/page', { ...scope, mode: 'archive' }),
           )
           if (scope.epoch !== undefined && page.archive.epoch !== scope.epoch) return wrongReply()
+          return reply(page)
+        }),
+    },
+    /**
+     * Seletor da galeria da aula num perfil causal (23/11/2026): a cabeça confirmada de cada
+     * unidade (nome, miniatura, `sha256`, cobertura). A entrega leva o hash que este seletor viu.
+     */
+    pintaCausalGallery: {
+      GET: (req: Request) =>
+        authorized(req, false, async (actor) => {
+          const scope = query(req, ArchiveQuery)
+          if (!scope) return invalid()
+          const page = checked(
+            PintaCausalGalleryPageSchema,
+            await internal(actor, 'graph/page', { ...scope, mode: 'gallery' }),
+          )
+          if (scope.epoch !== undefined && page.gallery.epoch !== scope.epoch) return wrongReply()
           return reply(page)
         }),
     },

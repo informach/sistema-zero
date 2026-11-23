@@ -57,6 +57,7 @@ const tileSize = z.number().int().positive().max(4096)
 const tileCount = count(PINTA_CAUSAL_LIMITS.tiles).min(1)
 const roles = z.enum(['default-sheet', 'layer-sheet', 'art', 'set', 'property'])
 const date = z.iso.datetime({ offset: true })
+const thumb = z.string().max(12_000)
 const namespace = z.strictObject({
   userId: uuid,
   audience: z.enum(['kids', 'adult']),
@@ -185,7 +186,7 @@ const put = z.strictObject({
   itemUpdatedAt: date,
   bytes: count(PINTA_CAUSAL_LIMITS.itemBytes).min(1),
   sha256,
-  thumb: z.string().max(12_000).nullable().optional(),
+  thumb: thumb.nullable().optional(),
   operation: PintaCausalOperationSchema,
 })
 const deletion = z.strictObject({
@@ -376,20 +377,21 @@ export const PintaCausalBackfillAttestationSchema = z
   .refine((p) => p.binding.itemId === p.manifest.itemId)
 export type PintaCausalBackfillAttestation = z.infer<typeof PintaCausalBackfillAttestationSchema>
 
-export const PintaCausalEntrySchema = z
-  .strictObject({
-    itemId,
-    name,
-    kind: z.string().min(1).max(40),
-    revision: positiveRevision,
-    formatVersion,
-    layoutRevision: epoch.nullable(),
-    sha256: sha256.nullable(),
-    bytes: count(PINTA_CAUSAL_LIMITS.itemBytes).min(1),
-    itemUpdatedAt: date,
-    coverage: z.enum(['certified', 'unknown']),
-  })
-  .refine((r) => r.coverage !== 'certified' || r.sha256 !== null)
+const entryFields = {
+  itemId,
+  name,
+  kind: z.string().min(1).max(40),
+  revision: positiveRevision,
+  formatVersion,
+  layoutRevision: epoch.nullable(),
+  sha256: sha256.nullable(),
+  bytes: count(PINTA_CAUSAL_LIMITS.itemBytes).min(1),
+  itemUpdatedAt: date,
+  coverage: z.enum(['certified', 'unknown']),
+}
+const certifiedHasDigest = (r: { coverage: string; sha256: string | null }) =>
+  r.coverage !== 'certified' || r.sha256 !== null
+export const PintaCausalEntrySchema = z.strictObject(entryFields).refine(certifiedHasDigest)
 export type PintaCausalEntry = z.infer<typeof PintaCausalEntrySchema>
 const pageFields = {
   epoch,
@@ -416,7 +418,25 @@ export const PintaCausalArchiveItemSchema = z.strictObject({
     storageRef: z.string().min(1).max(512),
   }),
 })
+/**
+ * Lesson gallery selector (23/11/2026): the same owner inventory, each confirmed head with its
+ * thumbnail. A gallery copy must name the exact `sha256` it saw; `unknown` entries cannot be sent
+ * until the Pinta adopts them. These responses cannot enter the normal snapshot parser.
+ */
+export const PintaCausalGalleryPageSchema = z.strictObject({
+  gallery: z
+    .strictObject({
+      ...pageFields,
+      entries: z
+        .array(
+          z.strictObject({ ...entryFields, thumb: thumb.nullable() }).refine(certifiedHasDigest),
+        )
+        .max(PINTA_CAUSAL_LIMITS.page),
+    })
+    .refine(pageOrder),
+})
 export type PintaCausalArchivePage = z.infer<typeof PintaCausalArchivePageSchema>
+export type PintaCausalGalleryPage = z.infer<typeof PintaCausalGalleryPageSchema>
 export type PintaCausalSnapshotPage = z.infer<typeof PintaCausalSnapshotPageSchema>
 
 export type PintaCausalFailure =

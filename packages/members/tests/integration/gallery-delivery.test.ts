@@ -1,134 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
+import type { PintaCausalEntry } from '@sistemazero/core/creations/pinta-causal'
 import { ValidationError } from '@sistemazero/core/errors'
-import { defaultLessonSection, type GalleryDeliveryPlan } from '@sistemazero/core/learning'
+import type { GalleryDeliveryPlan } from '@sistemazero/core/learning'
 import { PintaCausalError } from '../../src/domain/creations/pinta-causal-graph'
-import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
-
-function setup(tool: 'studio' | 'pinta' = 'pinta') {
-  const env = buildApp(),
-    course = seedSampleCourse(env.courses, 'galeria', 'published', 'kids')
-  const owner = { userId: randomUUID(), accountId: randomUUID(), privileged: false },
-    sibling = randomUUID()
-  grantLifetime(env.entitlements, { userId: owner.accountId, courseRef: course.slug })
-  grantLifetime(env.entitlements, { userId: owner.accountId, courseRef: 'pinta' })
-  const lessonId = course.lessonIds[0],
-    blockId = randomUUID(),
-    quizId = randomUUID(),
-    sectionId = randomUUID(),
-    closingId = randomUUID(),
-    revision = 'a'.repeat(32)
-  env.courses.blocks = env.courses.blocks.filter((b) => b.lessonId !== lessonId)
-  env.courses.blocks.push(
-    {
-      id: blockId,
-      lessonId,
-      kind: tool,
-      contentRevision: revision,
-      sortOrder: 0,
-      content:
-        tool === 'pinta'
-          ? { kind: 'pinta', initialAsset: null, gallery: { minItems: 2, maxItems: 3 } }
-          : {
-              kind: 'studio',
-              initialProject: { formatVersion: 2 },
-              gallery: { minItems: 1, maxItems: 1 },
-            },
-    },
-    {
-      id: quizId,
-      lessonId,
-      kind: 'quiz',
-      contentRevision: revision,
-      sortOrder: 1,
-      content: {
-        kind: 'quiz',
-        passingScore: 70,
-        questions: [
-          {
-            id: 'q',
-            prompt: 'Fim?',
-            choices: [
-              { id: 'a', label: 'Sim' },
-              { id: 'b', label: 'Não' },
-            ],
-            correctChoiceIds: ['a'],
-          },
-        ],
-      },
-    },
-  )
-  env.learningRepository.structures.set(lessonId, {
-    revision: randomUUID(),
-    sections: [
-      {
-        ...defaultLessonSection(sectionId, 'Minha entrega', [blockId]),
-        intent: 'delivery',
-        completion: { version: 1, blockIds: [blockId] },
-      },
-      {
-        ...defaultLessonSection(closingId, 'Para fechar', [quizId]),
-        intent: 'closing',
-        completion: { version: 1, blockIds: [quizId] },
-      },
-    ],
-  })
-  const request = (
-    path: string,
-    body?: unknown,
-    extra: Record<string, string> = {},
-    userId = owner.userId,
-  ) =>
-    env.app.handle(
-      new Request(`http://localhost/members${path}`, {
-        method: body === undefined ? 'GET' : 'POST',
-        headers: {
-          'x-auth-user-id': userId,
-          'x-auth-account-id': owner.accountId,
-          'content-type': 'application/json',
-          ...extra,
-        },
-        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-      }),
-    )
-  async function seed(itemId: string, userId = owner.userId) {
-    const created = await request(
-      `/creations/pinta/${itemId}/upload`,
-      { name: itemId, kind: 'pixel-sprite', itemUpdatedAt: new Date().toISOString(), bytes: 100 },
-      {},
-      userId,
-    )
-    expect(created.status).toBe(200)
-    const reserved = (await created.json()) as { revision: number }
-    expect(
-      (
-        await request(
-          `/creations/pinta/${itemId}/commit`,
-          { revision: reserved.revision },
-          {},
-          userId,
-        )
-      ).status,
-    ).toBe(200)
-    return { itemId, revision: reserved.revision }
-  }
-  const path = `/lessons/${lessonId}/blocks/${blockId}`
-  return {
-    ...env,
-    owner,
-    sibling,
-    course,
-    lessonId,
-    blockId,
-    quizId,
-    sectionId,
-    closingId,
-    revision,
-    request,
-    seed,
-    path,
-  }
-}
+import { galleryLesson as setup } from '../fakes/gallery-lesson'
 
 describe('gallery submission as a section criterion', () => {
   test('selection does not complete; signed confirmation receives multiple immutable copies and unlocks only the quiz', async () => {
@@ -309,7 +185,7 @@ describe('gallery submission as a section criterion', () => {
     ).toBe(409)
   })
 
-  test('perfil causal: desenho protegido é recusado com mensagem clara e nenhuma cópia é reservada', async () => {
+  test('perfil causal SEM a leitura causal neste servidor: recusa clara e nenhuma cópia é reservada', async () => {
     const ctx = setup(),
       items = [await ctx.seed('dino'), await ctx.seed('cacto')]
     // O repositório real cerca a leitura antiga de um desenho protegido (`assertIndividualPinta`).
@@ -332,5 +208,126 @@ describe('gallery submission as a section criterion', () => {
     })
     expect(ctx.galleryCopies.attempts.size).toBe(0)
     expect(await ctx.studioSubmissions.getOne(ctx.owner.userId, ctx.blockId)).toBeNull()
+  })
+})
+
+describe('galeria da aula × Pinta causal (23/11/2026)', () => {
+  /** A leitura causal que o servidor monta para os perfis de QA; aqui conta quem a chamou. */
+  function causal(
+    heads: (item: { itemId: string; revision: number }) => Promise<{
+      entry: PintaCausalEntry
+      storageRef: string
+    }>,
+    qa: 'owner' | 'none' = 'owner',
+  ) {
+    const calls: { itemId: string; revision: number }[] = []
+    const owner = { userId: '', accountId: '' }
+    const gallery = {
+      heads: {
+        galleryItem: async (
+          viewer: { userId: string; accountId: string },
+          item: { itemId: string; revision: number },
+        ) => {
+          expect(viewer).toMatchObject(owner)
+          calls.push(item)
+          return heads(item)
+        },
+      },
+      get qaProfiles() {
+        return qa === 'owner' ? [{ ...owner, audience: 'kids' as const }] : []
+      },
+    }
+    return { gallery, calls, owner }
+  }
+  const sha = (n: number) => n.toString(16).padStart(64, '0')
+
+  test('perfil antigo: a mesma cópia de antes, sem hash, sem tocar a leitura causal', async () => {
+    const probe = causal(async () => {
+      throw new Error('a leitura causal não pode ser consultada num perfil antigo')
+    })
+    const ctx = setup('pinta', { galleryPintaCausal: probe.gallery })
+    Object.assign(probe.owner, { userId: ctx.owner.userId, accountId: ctx.owner.accountId })
+    const items = [await ctx.seed('dino'), await ctx.seed('cacto')]
+    const response = await ctx.request(`${ctx.path}/gallery-prepare`, {
+      requestId: randomUUID(),
+      revision: ctx.revision,
+      items,
+    })
+    expect(response.status).toBe(200)
+    const plan = (await response.json()) as GalleryDeliveryPlan
+    if (plan.completed) throw new Error('Unexpected completion')
+    expect(plan.snapshot.items.map((item) => Object.keys(item).sort())).toEqual([
+      ['itemId', 'kind', 'name', 'parts', 'revision', 'storageKey'],
+      ['itemId', 'kind', 'name', 'parts', 'revision', 'storageKey'],
+    ])
+    const stored = await Promise.all(
+      items.map((item) => ctx.creations.get(ctx.owner.userId, 'pinta', item.itemId, 'kids')),
+    )
+    expect(plan.copies.map((copy) => copy.source)).toEqual(stored.map((row) => row!.storageRef!))
+    expect(probe.calls).toEqual([])
+  })
+
+  test('lista antiga num perfil que virou causal: pede para escolher de novo, sem cópia', async () => {
+    const probe = causal(async () => {
+      throw new Error('sem hash, a entrega não consulta a leitura causal')
+    })
+    const ctx = setup('pinta', { galleryPintaCausal: probe.gallery })
+    Object.assign(probe.owner, { userId: ctx.owner.userId, accountId: ctx.owner.accountId })
+    const items = [await ctx.seed('dino'), await ctx.seed('cacto')]
+    const read = ctx.creations.get.bind(ctx.creations)
+    ctx.creations.get = async (userId, tool, itemId, audience) => {
+      if (tool === 'pinta') throw new PintaCausalError('protocol-required')
+      return read(userId, tool, itemId, audience)
+    }
+    const response = await ctx.request(`${ctx.path}/gallery-prepare`, {
+      requestId: randomUUID(),
+      revision: ctx.revision,
+      items,
+    })
+    expect(response.status).toBe(409)
+    expect(await response.json()).toMatchObject({
+      error: {
+        code: 'GALLERY_PINTA_DRAWING_CHANGED',
+        message: 'Este desenho mudou. Escolha de novo para enviar a versão nova.',
+      },
+    })
+    expect(ctx.galleryCopies.attempts.size).toBe(0)
+  })
+
+  test('perfil fora da lista de QA: o hash não abre a leitura causal e nada é copiado', async () => {
+    const probe = causal(async () => {
+      throw new Error('perfil fora da lista não lê o inventário causal')
+    }, 'none')
+    const ctx = setup('pinta', { galleryPintaCausal: probe.gallery })
+    const response = await ctx.request(`${ctx.path}/gallery-prepare`, {
+      requestId: randomUUID(),
+      revision: ctx.revision,
+      items: [
+        { itemId: 'dino', revision: 1, causalSha256: sha(1) },
+        { itemId: 'cacto', revision: 1, causalSha256: sha(2) },
+      ],
+    })
+    expect(response.status).toBe(409)
+    expect(await response.json()).toMatchObject({
+      error: { code: 'GALLERY_PINTA_CAUSAL_UNSUPPORTED' },
+    })
+    expect(probe.calls).toEqual([])
+    expect(ctx.galleryCopies.attempts.size).toBe(0)
+  })
+
+  test('um hash causal num projeto do Estúdio é recusado antes de qualquer leitura', async () => {
+    const probe = causal(async () => {
+      throw new Error('o Estúdio não tem cabeça causal')
+    })
+    const ctx = setup('studio', { galleryPintaCausal: probe.gallery })
+    Object.assign(probe.owner, { userId: ctx.owner.userId, accountId: ctx.owner.accountId })
+    const response = await ctx.request(`${ctx.path}/gallery-prepare`, {
+      requestId: randomUUID(),
+      revision: ctx.revision,
+      items: [{ itemId: 'jogo', revision: 1, causalSha256: sha(1) }],
+    })
+    expect(response.status).toBe(400)
+    expect(probe.calls).toEqual([])
+    expect(ctx.galleryCopies.attempts.size).toBe(0)
   })
 })

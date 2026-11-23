@@ -202,18 +202,11 @@
     "integration": 12,
     "retries": 0,
     "realVilaArtifacts": 2,
-    "profiles": [
-      "desktop",
-      "cpu-4x"
-    ]
+    "profiles": ["desktop", "cpu-4x"]
   },
   "legacyExport": {
     "cases": 98,
-    "versions": [
-      1,
-      2,
-      3
-    ],
+    "versions": [1, 2, 3],
     "exactJson": true
   },
   "publicScene4": false,

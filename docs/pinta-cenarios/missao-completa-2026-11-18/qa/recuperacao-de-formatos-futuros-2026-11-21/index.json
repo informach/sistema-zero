@@ -154,10 +154,7 @@
   "browser": {
     "passed": 24,
     "retries": 0,
-    "profiles": [
-      "desktop",
-      "cpu-4x (chunks only)"
-    ],
+    "profiles": ["desktop", "cpu-4x (chunks only)"],
     "realIndexedDB": true
   },
   "scope": "patched local readers with a complete transaction inventory; opaque future envelopes simulated",

@@ -284,6 +284,59 @@ test('the candidate is private even with the flag on, matching headers and staff
   }
 })
 
+test('a galeria da aula lista a cabeça confirmada pela mesma cerca das rotas causais', async () => {
+  const gallery = (query = '', headers: Record<string, string> = {}) =>
+    new Request(`${link}/gallery${query}`, { headers })
+  const disabled = fixture({ enabled: false })
+  expect((await disabled.routes.pintaCausalGallery.GET(gallery())).status).toBe(404)
+  const outsider = fixture({ qaConfiguration: '[]' })
+  const denied = await outsider.routes.pintaCausalGallery.GET(gallery())
+  expect(denied.status).toBe(404)
+  expect(await denied.json()).toEqual({ reason: 'not-found' })
+  expect(outsider.calls).toEqual([])
+
+  const { routes, calls, responses } = fixture()
+  const certified = {
+    ...entry,
+    sha256,
+    coverage: 'certified' as const,
+    thumb: 'data:image/png;base64,AAAA',
+  }
+  const page = {
+    gallery: { epoch: '4', requiredFormat: 6, entries: [certified], nextCursor: null },
+  }
+  responses.set('graph/page', page)
+  // Outro perfil da mesma conta nunca lê esta galeria.
+  expect(
+    (await routes.pintaCausalGallery.GET(gallery('', { 'x-sz-viewer': accountId }))).status,
+  ).toBe(409)
+  expect(calls).toEqual([])
+  const listed = await routes.pintaCausalGallery.GET(gallery('', { 'x-sz-viewer': userId }))
+  expect(listed.status).toBe(200)
+  expect(listed.headers.get('cache-control')).toBe('private, no-store')
+  expect(await listed.json()).toEqual(page)
+  expect(calls).toEqual([
+    {
+      path: '/members/internal/creations/pinta/graph/page',
+      body: { userId, accountId, audience: 'kids', payload: { mode: 'gallery' } },
+    },
+  ])
+  // A próxima página fica presa à época: sem ela, ou com outra época na resposta, nada passa.
+  expect((await routes.pintaCausalGallery.GET(gallery(`?cursor=${entry.itemId}`))).status).toBe(400)
+  expect(
+    (await routes.pintaCausalGallery.GET(gallery(`?epoch=3&cursor=${entry.itemId}`))).status,
+  ).toBe(502)
+  // O inventário do Pinta (sem miniatura) não vira lista da galeria.
+  responses.set('graph/page', {
+    protocol: 1,
+    epoch: '4',
+    requiredFormat: 6,
+    entries: [entry],
+    nextCursor: null,
+  })
+  expect((await routes.pintaCausalGallery.GET(gallery())).status).toBe(502)
+})
+
 test('an advertised reader beyond this BFF cannot bypass the format floor', async () => {
   const { routes, calls } = fixture()
   expect((await routes.pintaCausalGraph.GET(new Request(`${link}/graph?reader=99`))).status).toBe(

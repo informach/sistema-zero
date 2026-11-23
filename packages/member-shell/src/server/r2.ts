@@ -1,4 +1,5 @@
 import 'server-only'
+import { createHash } from 'node:crypto'
 import { Agent as HttpAgent } from 'node:http'
 import { gunzipSync } from 'node:zlib'
 import {
@@ -581,13 +582,22 @@ export async function r2CopyObjectUgc(source: string, destination: string): Prom
   )
 }
 
-export async function r2ReadCreationJson(key: string): Promise<unknown> {
+/**
+ * Lê uma criação guardada (gzip de JSON). `expectedSha256`: o hash do arquivo comprimido que a
+ * leitura TEM de encontrar (a cópia de um desenho causal); bytes diferentes nunca são abertos.
+ */
+export async function r2ReadCreationJson(key: string, expectedSha256?: string): Promise<unknown> {
   const cfg = requireUgcR2Config()
   const object = await getClient(cfg).send(
     new GetObjectCommand({ Bucket: cfg.bucket, Key: normalizeKey(key) }),
   )
   if (!object.Body) throw new Error('O trabalho não está disponível. Atualize a galeria.')
   const compressed = await bufferFromStream(object.Body.transformToWebStream(), 40 * 1024 * 1024)
+  if (
+    expectedSha256 !== undefined &&
+    createHash('sha256').update(compressed).digest('hex') !== expectedSha256
+  )
+    throw new Error('A cópia não confere com o desenho escolhido. Atualize a galeria.')
   const json = gunzipSync(compressed, { maxOutputLength: 128 * 1024 * 1024 }).toString('utf8')
   return JSON.parse(json)
 }
