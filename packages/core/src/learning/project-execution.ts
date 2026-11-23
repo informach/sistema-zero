@@ -178,6 +178,28 @@ export function isExecutionRule(rule: { type: string }): rule is SectionExecutio
   return isExecutionRuleType(rule.type)
 }
 
+/**
+ * Algum objetivo anda até um objeto 3D? Esse teste roda no contêiner maior do executor
+ * (`ThreeDCheckSandbox`). O Worker e o Members usam esta conta: o aquecimento precisa ligar o
+ * MESMO contêiner que a verificação vai usar.
+ */
+export function executionNeeds3dNavigation(
+  objectives: readonly { rule: { type: string } }[],
+): boolean {
+  return objectives.some(
+    ({ rule }) =>
+      (rule.type === 'behavior' || rule.type === 'script') &&
+      'steps' in rule &&
+      Array.isArray(rule.steps) &&
+      rule.steps.some(
+        (step: unknown) =>
+          typeof step === 'object' &&
+          step !== null &&
+          (step as { action?: unknown }).action === 'approachObject3d',
+      ),
+  )
+}
+
 const record = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v)
 

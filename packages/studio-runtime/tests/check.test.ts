@@ -69,12 +69,16 @@ function setup(
     observations?: unknown[]
     rate?: boolean
     threeDConfigured?: boolean
+    cleanupFails?: boolean
+    warmFails?: boolean
   } = {},
 ) {
   const written = new Map<string, string>()
   const commands: string[] = []
   const identities: string[] = []
   const namespaces: unknown[] = []
+  const sandboxOptions: unknown[] = []
+  const rateKeys: string[] = []
   let destroyed = 0
   const sandbox = {
     destroy: async () => {
@@ -106,12 +110,17 @@ function setup(
         }
       if (command.includes('check-objectives.mjs'))
         return { success: options.ran ?? true, stdout: '', stderr: 'falhou' }
+      if (command.includes('check-warm.mjs'))
+        return { success: !options.warmFails, stdout: '', stderr: '' }
+      if (command.startsWith('rm -rf'))
+        return { success: !options.cleanupFails, stdout: '', stderr: '' }
       return { success: true, stdout: '', stderr: '' }
     },
   }
-  const factory = ((namespace: unknown, identity: string) => {
+  const factory = ((namespace: unknown, identity: string, opts: unknown) => {
     namespaces.push(namespace)
     identities.push(identity)
+    sandboxOptions.push(opts)
     return sandbox
   }) as unknown as SandboxFactory
   const env = {
@@ -119,15 +128,20 @@ function setup(
     ...(options.threeDConfigured === false
       ? {}
       : { ThreeDCheckSandbox: {} as NonNullable<Env['ThreeDCheckSandbox']> }),
-    BUILD_RATE_LIMITER: { limit: async () => ({ success: options.rate ?? true }) },
+    BUILD_RATE_LIMITER: {
+      limit: async ({ key }: { key: string }) => {
+        rateKeys.push(key)
+        return { success: options.rate ?? true }
+      },
+    },
     INTERNAL_TOKEN: TOKEN,
     PRO_ARTIFACTS: memoryArtifactBucket().bucket,
   } satisfies Env
   const handler = createStudioRuntimeHandler(factory)
-  const call = async (body: unknown, token = TOKEN) => {
+  const call = async (body: unknown, token = TOKEN, path = '/v1/check') => {
     type WorkerRequest = Parameters<NonNullable<typeof handler.fetch>>[0]
     return handler.fetch!(
-      new Request('https://runtime.test/v1/check', {
+      new Request(`https://runtime.test${path}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -136,7 +150,19 @@ function setup(
       {} as ExecutionContext,
     )
   }
-  return { call, written, commands, identities, namespaces, env, destroyed: () => destroyed }
+  const warm = (body: unknown, token = TOKEN) => call(body, token, '/v1/check/warm')
+  return {
+    call,
+    warm,
+    written,
+    commands,
+    identities,
+    namespaces,
+    sandboxOptions,
+    rateKeys,
+    env,
+    destroyed: () => destroyed,
+  }
 }
 
 describe('POST /v1/check', () => {
@@ -160,7 +186,8 @@ describe('POST /v1/check', () => {
         })
         expect(response.status, `${id}/${variant}`).toBe(200)
         expect(context.written.get(path)).toBe(engine)
-        expect(context.destroyed()).toBe(1)
+        // Não compilar é resposta do teste: o contêiner fica para o próximo.
+        expect(context.destroyed()).toBe(0)
       }
     }
   })
@@ -316,9 +343,10 @@ describe('POST /v1/check', () => {
       screenshots: true,
     })
     expect(context.commands.some((command) => command.includes('vite'))).toBe(false)
-    // Um contêiner por teste, destruído no fim.
-    expect(context.identities[0]).toStartWith('check-')
-    expect(context.destroyed()).toBe(1)
+    // O contêiner é o de quem pediu, e fica: só a pasta do teste sai.
+    expect(context.identities).toEqual(['objetivos-check-1234567890abcdef'])
+    expect(context.commands.at(-1)).toMatch(/^rm -rf -- '\/workspace\/builds\/[a-f0-9]{32}'$/)
+    expect(context.destroyed()).toBe(0)
   })
 
   test('relatório ausente é indisponibilidade, nunca reprovação guardável', async () => {
@@ -384,7 +412,7 @@ describe('POST /v1/check', () => {
     const body = (await response.json()) as { results: { passed: boolean; detail: string }[] }
     expect(body.results.every((r) => !r.passed && r.detail.includes('não compilou'))).toBe(true)
     expect(context.commands.some((c) => c.includes('check-objectives.mjs'))).toBe(false)
-    expect(context.destroyed()).toBe(1)
+    expect(context.destroyed()).toBe(0)
   })
 
   test('a verificação da criança não pede captura', async () => {
@@ -417,12 +445,109 @@ describe('POST /v1/check', () => {
     expect(context.destroyed()).toBe(1)
   })
 
+  test('a mesma criança volta ao mesmo contêiner; outra criança tem o dela', async () => {
+    const observations = [
+      {
+        id: 'anda',
+        type: 'behavior',
+        initial: { found: true, value: 1 },
+        final: { found: true, value: 2 },
+      },
+    ]
+    const context = setup({ observations })
+    for (const executionId of [
+      classicBody.executionId,
+      classicBody.executionId,
+      'check-fedcba0987654321',
+    ])
+      expect((await context.call({ ...classicBody, executionId })).status).toBe(200)
+    expect(context.identities).toEqual([
+      'objetivos-check-1234567890abcdef',
+      'objetivos-check-1234567890abcdef',
+      'objetivos-check-fedcba0987654321',
+    ])
+    // O contêiner dorme sozinho depois de parado; nunca fica ligado para sempre.
+    expect(context.sandboxOptions[0]).toEqual({
+      enableDefaultSession: false,
+      transport: 'rpc',
+      sleepAfter: '5m',
+    })
+    // Cada teste tem a sua pasta.
+    const folders = context.commands.filter((c) => c.startsWith('rm -rf'))
+    expect(new Set(folders).size).toBe(3)
+    expect(context.destroyed()).toBe(0)
+  })
+
+  test('a limpeza da pasta que falha destrói o contêiner', async () => {
+    const context = setup({
+      cleanupFails: true,
+      observations: [
+        {
+          id: 'anda',
+          type: 'behavior',
+          initial: { found: true, value: 1 },
+          final: { found: true, value: 2 },
+        },
+      ],
+    })
+    expect((await context.call(classicBody)).status).toBe(200)
+    expect(context.destroyed()).toBe(1)
+  })
+
   test('limite de frequência, token e pedido inválido', async () => {
     expect((await setup({ rate: false }).call(classicBody)).status).toBe(429)
     expect((await setup().call(classicBody, 'errado')).status).toBe(401)
     const context = setup()
     expect((await context.call({ ...classicBody, scope: 'window' })).status).toBe(400)
     expect(context.identities).toEqual([])
+  })
+})
+
+describe('POST /v1/check/warm', () => {
+  test('liga o mesmo contêiner da verificação e abre o Chromium', async () => {
+    const context = setup()
+    const response = await context.warm({ executionId: classicBody.executionId, threeD: false })
+    expect(response.status).toBe(200)
+    expect(await response.json()).toMatchObject({ ok: true })
+    expect(context.identities).toEqual(['objetivos-check-1234567890abcdef'])
+    expect(context.namespaces).toEqual([context.env.ProBuildSandbox])
+    expect(context.sandboxOptions[0]).toMatchObject({ sleepAfter: '5m' })
+    expect(context.commands).toEqual(['node /opt/sz-runtime/check-warm.mjs'])
+    expect(context.rateKeys).toEqual(['warm-check-1234567890abcdef'])
+    expect(context.destroyed()).toBe(0)
+  })
+
+  test('o 3D aquece o contêiner maior', async () => {
+    const context = setup()
+    const body = { executionId: classicBody.executionId, threeD: true }
+    expect((await context.warm(body)).status).toBe(200)
+    expect(context.namespaces).toEqual([context.env.ThreeDCheckSandbox])
+    const missing = setup({ threeDConfigured: false })
+    expect((await missing.warm(body)).status).toBe(500)
+    expect(missing.identities).toEqual([])
+  })
+
+  test('o Chromium que não abre destrói o contêiner', async () => {
+    const context = setup({ warmFails: true })
+    const response = await context.warm({ executionId: classicBody.executionId, threeD: false })
+    expect(response.status).toBe(500)
+    expect(context.destroyed()).toBe(1)
+  })
+
+  test('token, limite e pedido inválido', async () => {
+    const body = { executionId: classicBody.executionId, threeD: false }
+    expect((await setup().warm(body, 'errado')).status).toBe(401)
+    expect((await setup({ rate: false }).warm(body)).status).toBe(429)
+    for (const invalid of [
+      { executionId: 'curto', threeD: false },
+      { executionId: classicBody.executionId },
+      { ...body, extra: 1 },
+      [],
+    ]) {
+      const context = setup()
+      expect((await context.warm(invalid)).status).toBe(400)
+      expect(context.identities).toEqual([])
+    }
   })
 })
 

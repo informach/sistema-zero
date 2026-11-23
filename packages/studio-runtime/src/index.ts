@@ -5,6 +5,7 @@ import {
   readJsonBodyWithLimit,
 } from '@sistemazero/core/http'
 import {
+  executionNeeds3dNavigation,
   executionObservationUnavailableReason,
   type ProjectCheckResponse,
 } from '@sistemazero/core/learning'
@@ -32,6 +33,7 @@ import { serveArtifact, storeArtifact, unavailableArtifact } from './artifacts'
 import {
   CHECK_ENTRY_PATH,
   CHECK_LIMITS,
+  isCheckExecutionId,
   isKitTemplate,
   judgeCheck,
   proCheckEntry,
@@ -39,6 +41,14 @@ import {
   readCheckRequest,
   withCheckEntry,
 } from './check'
+import {
+  CHECK_SANDBOX_OPTIONS,
+  CHECK_WARM_COMMAND,
+  CHECK_WARM_TIMEOUT_MS,
+  checkSandboxId,
+  finishCheckSandbox,
+  readCheckWarmRequest,
+} from './check-container'
 import { serveClassicShell } from './classic-shell'
 import {
   hasStudioProScene3DFiles,
@@ -461,6 +471,7 @@ export function createStudioRuntimeHandler(
         ![
           '/v1/build',
           '/v1/check',
+          '/v1/check/warm',
           '/v1/dependencies',
           '/v1/preflight',
           '/v1/publications',
@@ -474,6 +485,8 @@ export function createStudioRuntimeHandler(
 
       try {
         if (url.pathname === '/v1/check') return await runProjectCheck(request, env, sandboxFactory)
+        if (url.pathname === '/v1/check/warm')
+          return await warmProjectCheck(request, env, sandboxFactory)
         if (url.pathname === '/v1/publications') {
           const body = await readJsonBodyWithLimit(
             request,
@@ -920,8 +933,9 @@ export function createStudioRuntimeHandler(
 export default createStudioRuntimeHandler()
 
 /**
- * `POST /v1/check`: um contêiner próprio por teste (destruído no fim), o jogo montado como no
- * build, e o `check-objectives.mjs` da imagem abrindo uma página nova por objetivo.
+ * `POST /v1/check`: o contêiner de quem pediu (`check-container.ts`: reaproveitado, destruído só
+ * quando algo falha), o jogo montado como no build, e o `check-objectives.mjs` da imagem abrindo
+ * uma página nova por objetivo.
  */
 async function runProjectCheck(
   request: Request,
@@ -945,18 +959,25 @@ async function runProjectCheck(
       429,
     )
   const buildId = crypto.randomUUID().replace(/-/g, '')
-  const needs3dNavigation = input.objectives.some(
-    ({ rule }) => 'steps' in rule && rule.steps.some((step) => step.action === 'approachObject3d'),
-  )
-  const namespace = needs3dNavigation ? env.ThreeDCheckSandbox : env.ProBuildSandbox
+  const threeD = executionNeeds3dNavigation(input.objectives)
+  const namespace = threeD ? env.ThreeDCheckSandbox : env.ProBuildSandbox
   if (!namespace) return checkFailed()
-  const sandbox = sandboxFactory(namespace, `check-${buildId}`, {
-    enableDefaultSession: false,
-    transport: 'rpc',
-  })
+  const sandbox = sandboxFactory(
+    namespace,
+    checkSandboxId(input.executionId),
+    CHECK_SANDBOX_OPTIONS,
+  )
   const cwd = `${BUILD_ROOT}/${buildId}`
+  // Só o teste que terminou com resposta deixa o contêiner para o próximo.
+  let reusable = false
+  // Os tempos de cada fase vão ao log (`wrangler tail`), para medir a subida do contêiner.
+  const timing = { mode: input.mode, threeD, readyMs: 0, buildMs: 0, runMs: 0 }
+  const logTiming = () =>
+    console.log('studio-runtime check timing', { ...timing, totalMs: Date.now() - started })
   try {
+    const readyStarted = Date.now()
     await sandbox.mkdir(cwd, { recursive: true })
+    timing.readyMs = Date.now() - readyStarted
     let kit = false
     if (input.mode === 'classic') {
       await sandbox.writeFile(`${cwd}/game.html`, input.document)
@@ -997,10 +1018,12 @@ async function runProjectCheck(
         const canonical = await sandbox.exec(SCENE3D_CANONICAL_COMMAND, { cwd, timeout: 15_000 })
         if (!canonical.success) return checkFailed()
       }
+      const buildStarted = Date.now()
       const compiled = await sandbox.exec(
         'ln -s /opt/sz-runtime/node_modules ./node_modules && node /opt/sz-runtime/node_modules/vite/bin/vite.js build --config ./vite.config.mjs --configLoader native',
         { cwd, timeout: BUILD_TIMEOUT_MS },
       )
+      timing.buildMs = Date.now() - buildStarted
       // Jogo que não compila não cumpre nada: é resposta do teste, não falha do executor. Sem
       // mensagem de erro do Vite (tempo esgotado, contêiner caiu), é falha do executor: nunca
       // vira resposta guardada para a criança.
@@ -1009,7 +1032,9 @@ async function runProjectCheck(
         console.error('studio-runtime check build failed', capOutput(compileOutput))
         return checkFailed()
       }
-      if (!compiled.success)
+      if (!compiled.success) {
+        reusable = true
+        logTiming()
         return checkJson({
           ok: true,
           results: input.objectives.map((objective) => ({
@@ -1018,6 +1043,7 @@ async function runProjectCheck(
             detail: `O projeto não compilou: ${capOutput(compileOutput).slice(-600)}`,
           })),
         })
+      }
     }
     const runTimeout = Math.min(
       CHECK_LIMITS.runTimeoutMs,
@@ -1035,10 +1061,12 @@ async function runProjectCheck(
         deadlineMs: runTimeout - 5_000,
       }),
     )
+    const runStarted = Date.now()
     const ran = await sandbox.exec('node /opt/sz-runtime/check-objectives.mjs', {
       cwd,
       timeout: runTimeout,
     })
+    timing.runMs = Date.now() - runStarted
     if (!ran.success) {
       console.error('studio-runtime check failed', capOutput(`${ran.stdout}\n${ran.stderr}`))
       return checkFailed()
@@ -1077,13 +1105,57 @@ async function runProjectCheck(
       if (shot && shot.content.length <= CHECK_LIMITS.maxScreenshotBase64)
         screenshots[objective.id] = shot.content
     }
+    reusable = true
+    logTiming()
     return checkJson({
       ok: true,
       results: judgeCheck(input.objectives, observations),
       ...(Object.keys(screenshots).length ? { screenshots } : {}),
     })
   } finally {
+    await finishCheckSandbox(sandbox, cwd, reusable)
+  }
+}
+
+/**
+ * `POST /v1/check/warm`: liga o contêiner de quem vai verificar (o mesmo do `/v1/check`) e abre o
+ * Chromium uma vez. O Members chama quando a criança abre uma parte com objetivos que rodam o
+ * jogo; ninguém espera a resposta para mostrar nada.
+ */
+async function warmProjectCheck(
+  request: Request,
+  env: Env,
+  sandboxFactory: typeof getSandbox,
+): Promise<Response> {
+  const started = Date.now()
+  const input = readCheckWarmRequest(
+    await readJsonBodyWithLimit(request, 1_024),
+    isCheckExecutionId,
+  )
+  if (!input)
+    return checkJson({ ok: false, code: 'INVALID_REQUEST', message: 'Pedido inválido.' }, 400)
+  if (!(await env.BUILD_RATE_LIMITER.limit({ key: `warm-${input.executionId}` })).success)
+    return checkJson(
+      { ok: false, code: 'RATE_LIMITED', message: 'Muitos pedidos em pouco tempo.' },
+      429,
+    )
+  const namespace = input.threeD ? env.ThreeDCheckSandbox : env.ProBuildSandbox
+  if (!namespace) return checkFailed()
+  const sandbox = sandboxFactory(
+    namespace,
+    checkSandboxId(input.executionId),
+    CHECK_SANDBOX_OPTIONS,
+  )
+  try {
+    const warmed = await sandbox.exec(CHECK_WARM_COMMAND, { timeout: CHECK_WARM_TIMEOUT_MS })
+    if (!warmed.success) throw new Error('o Chromium não abriu')
+    const ms = Date.now() - started
+    console.log('studio-runtime check warm', { threeD: input.threeD, ms })
+    return Response.json({ ok: true, ms }, { headers: { 'Cache-Control': 'no-store' } })
+  } catch (error) {
+    console.error('studio-runtime check warm failed', String(error))
     await sandbox.destroy().catch(() => undefined)
+    return checkFailed()
   }
 }
 
