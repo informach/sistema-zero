@@ -4,6 +4,12 @@ import {
   type StudioProBuilderJob,
   studioProDigest,
 } from '@sistemazero/core/studio'
+import {
+  currentProEngineCopies,
+  PRO_ENGINE_EXTENSION_IDS,
+  PRO_ENGINE_VARIANTS,
+  proEngineCopyPath,
+} from '../../studio/src/modes/pro/proEngineCopies'
 
 mock.module('server-only', () => ({}))
 const { inspectStudioBuilder, prepareStudioBuilderContext, proposeStudioBuilder } = await import(
@@ -11,14 +17,17 @@ const { inspectStudioBuilder, prepareStudioBuilderContext, proposeStudioBuilder 
 )
 type Answer = import('../src/server/studio-builder-tools').StudioBuilderAnswer
 
-async function job(extra: Record<string, string> = {}): Promise<StudioProBuilderJob> {
+async function job(
+  extra: Record<string, string> = {},
+  directories: string[] = [],
+): Promise<StudioProBuilderJob> {
   const base = await createStudioProRevision({
     projectId: 'game',
     templateId: 'canvas-puzzle',
     devScript: 'dev',
     assets: '{}',
     assetFiles: {},
-    directories: ['src'],
+    directories: ['src', ...directories],
     files: {
       'index.html': '<main>Jogo</main>',
       'src/main.ts': 'export const goal = 10;\nexport const speed = 2;',
@@ -252,5 +261,124 @@ describe('bounded builder tools', () => {
     expect(
       (await prepareStudioBuilderContext({ ...state, notes: [JSON.stringify(note)] })).notes[0],
     ).toContain(note.inspections[0].result.hash)
+  })
+})
+
+describe('the published 2D engine copy belongs to the platform', () => {
+  const engineFolders = ['public', 'public/sz-ext']
+  const engineRefusal = (path: string) => `O motor do jogo (${path}) é da plataforma`
+
+  for (const extensionId of PRO_ENGINE_EXTENSION_IDS)
+    test(`${extensionId}: the engine is out of the model context, reads and searches`, async () => {
+      const path = proEngineCopyPath(extensionId)
+      const copies = await currentProEngineCopies(extensionId)
+      for (const variant of PRO_ENGINE_VARIANTS) {
+        const state = await job({ [path]: copies[variant] }, engineFolders)
+        const context = await prepareStudioBuilderContext({
+          ...state,
+          objective: 'Mudar a cena do jogo, o motor e a função do jogador',
+        })
+        expect(context.sources.map((source) => source.path)).not.toContain(path)
+        expect(context.index.find((entry) => entry.path === path)).toMatchObject({
+          hash: await studioProDigest(copies[variant]),
+          protected: true,
+        })
+        // The two other files still fill the excerpts: protection never drops the child's code.
+        expect(context.sources.map((source) => source.path).sort()).toEqual([
+          'index.html',
+          'src/main.ts',
+        ])
+        const note = JSON.parse(
+          await inspectStudioBuilder(
+            state,
+            inspect([
+              { tool: 'read', path, query: null, startLine: 1 },
+              { tool: 'search', path: null, query: 'function', startLine: null },
+            ]),
+          ),
+        )
+        expect(note.inspections[0].result).toEqual({ unavailable: 'Arquivo ausente ou protegido.' })
+        expect(note.inspections[1].result.hits).toEqual([])
+      }
+    })
+
+  test('deleting, renaming or editing the published engine is refused with a clear message', async () => {
+    for (const extensionId of PRO_ENGINE_EXTENSION_IDS) {
+      const path = proEngineCopyPath(extensionId)
+      const engine = (await currentProEngineCopies(extensionId)).completo
+      const state = await job({ [path]: engine }, engineFolders)
+      const before = await studioProDigest(engine)
+      const removal = {
+        operation: 'delete' as const,
+        path,
+        before,
+        find: null,
+        content: null,
+      }
+      for (const edits of [
+        [removal],
+        // A rename is a removal plus a creation elsewhere.
+        [
+          removal,
+          {
+            operation: 'create' as const,
+            path: 'public/sz-ext/meu-motor.js',
+            before: null,
+            find: null,
+            content: engine.slice(0, 1000),
+          },
+        ],
+        [
+          {
+            operation: 'replace' as const,
+            path,
+            before,
+            find: engine.slice(0, 200),
+            content: '// motor trocado\n',
+          },
+        ],
+        [{ operation: 'create' as const, path, before: null, find: null, content: '// outro' }],
+      ])
+        await expect(proposeStudioBuilder(state, propose(edits))).rejects.toThrow(
+          engineRefusal(path),
+        )
+      // The engine never blocks a proposal about the child's own code.
+      const result = await proposeStudioBuilder(
+        state,
+        propose([
+          {
+            operation: 'replace',
+            path: 'src/main.ts',
+            before: await studioProDigest(state.base.files['src/main.ts']!),
+            find: 'goal = 10',
+            content: 'goal = 12',
+          },
+        ]),
+      )
+      expect(result.change.patches.map((patch) => patch.path)).toEqual(['src/main.ts'])
+    }
+  })
+
+  test("a file of the child's own at the engine path stays hers", async () => {
+    const path = proEngineCopyPath('game-2d')
+    const own = 'export const meuMotor = 1;\n'
+    const state = await job({ [path]: own }, engineFolders)
+    const context = await prepareStudioBuilderContext(state)
+    expect(context.sources.find((source) => source.path === path)?.content).toBe(own)
+    const result = await proposeStudioBuilder(
+      state,
+      propose([
+        {
+          operation: 'delete',
+          path,
+          before: await studioProDigest(own),
+          find: null,
+          content: null,
+        },
+      ]),
+    )
+    expect(result.change.patches).toEqual([
+      { path, before: await studioProDigest(own), content: null },
+    ])
   })
 })
