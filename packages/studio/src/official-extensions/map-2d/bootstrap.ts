@@ -32,7 +32,10 @@ export const mapTwoDBootstrapVariant = (context?: ExtensionBootstrapContext): st
 // 22/11/2026 (lote 8 da conclusão): o compositor portátil sai com os nomes encurtados e o tocador
 // ganhou o cache, a pré-carga das portas e as áreas por posição. Medido 392.787 / 433.898, e os
 // tetos desceram junto.
-export const MAP_TWO_D_FULL_BOOTSTRAP_MAX_CHARS = { g2d: 393_500, gk: 434_500 } as const
+// 22/11/2026 (integração das projeções do Pinta): a geometria compartilhada de colisores e
+// conjuntos passou a atender a cena 5 projetada (+841 caracteres no texto portátil). Medido
+// 393.617 / 434.728, e os tetos subiram o mínimo para isso. Decisão a confirmar na revisão.
+export const MAP_TWO_D_FULL_BOOTSTRAP_MAX_CHARS = { g2d: 394_000, gk: 435_000 } as const
 // Medidos 26.410 / 26.406 caracteres sobre o legado. Folga inferior a 1%; motores
 // sem cenário e orçamento inicial da galeria permanecem nos mesmos tetos.
 // Reproduzir: bun packages/studio/scripts/measure-pinta-runtime.ts.
@@ -41,7 +44,9 @@ export const MAP_TWO_D_FULL_BOOTSTRAP_MAX_CHARS = { g2d: 393_500, gk: 434_500 } 
 // cenário) deixaram 26.471 / 26.467, e o teto desceu de 26.600.
 // 22/11/2026 (lote 8 da conclusão): 23.923 / 23.921 com o compositor compactado e o cache das
 // cenas; o teto desceu de 26.500.
-export const MAP_TWO_D_FRAGMENT_MAX_CHARS = 24_000
+// 22/11/2026 (integração das projeções do Pinta): 24.753 / 24.751 com a geometria projetada no
+// texto portátil compartilhado; o teto subiu de 24.000. Decisão a confirmar na revisão.
+export const MAP_TWO_D_FRAGMENT_MAX_CHARS = 25_000
 function host(target: 'g2d' | 'gk', regional?: MapTwoDPrivateSource): string {
   const basic = target === 'g2d'
   const factory = regional ? 'createPrivateMap2D' : 'createMap2D'
