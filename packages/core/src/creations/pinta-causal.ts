@@ -418,10 +418,26 @@ export const PintaCausalArchiveItemSchema = z.strictObject({
     storageRef: z.string().min(1).max(512),
   }),
 })
+/** Newest first: `itemUpdatedAt` descending, ties by `itemId` descending; the cursor is the last id. */
+function galleryOrder(p: {
+  entries: { itemId: string; itemUpdatedAt: string }[]
+  nextCursor: string | null
+}) {
+  return (
+    p.entries.every((e, i) => {
+      const previous = p.entries[i - 1]
+      if (!previous) return true
+      const newer = Date.parse(previous.itemUpdatedAt) - Date.parse(e.itemUpdatedAt)
+      return newer > 0 || (newer === 0 && previous.itemId > e.itemId)
+    }) &&
+    (p.nextCursor === null || p.nextCursor === p.entries.at(-1)?.itemId)
+  )
+}
 /**
  * Lesson gallery selector (23/11/2026): the same owner inventory, each confirmed head with its
- * thumbnail. A gallery copy must name the exact `sha256` it saw; `unknown` entries cannot be sent
- * until the Pinta adopts them. These responses cannot enter the normal snapshot parser.
+ * thumbnail, paged newest first across pages (the newest drawing is always on the first page).
+ * A gallery copy must name the exact `sha256` it saw; `unknown` entries cannot be sent until the
+ * Pinta adopts them. These responses cannot enter the normal snapshot parser.
  */
 export const PintaCausalGalleryPageSchema = z.strictObject({
   gallery: z
@@ -433,7 +449,7 @@ export const PintaCausalGalleryPageSchema = z.strictObject({
         )
         .max(PINTA_CAUSAL_LIMITS.page),
     })
-    .refine(pageOrder),
+    .refine(galleryOrder),
 })
 export type PintaCausalArchivePage = z.infer<typeof PintaCausalArchivePageSchema>
 export type PintaCausalGalleryPage = z.infer<typeof PintaCausalGalleryPageSchema>

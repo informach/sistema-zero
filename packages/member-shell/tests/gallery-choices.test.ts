@@ -122,11 +122,12 @@ describe('seletor da galeria da aula', () => {
   test('perfil causal: lista a cabeça confirmada com o hash; o sem certificado aparece bloqueado', async () => {
     const { get, calls } = server({
       '/api/members/creations/pinta?limit=100': protocolRequired,
+      // O servidor já pagina do mais novo para o mais antigo.
       '/api/pinta/causal/gallery': page([
-        causalEntry('a-antigo', 1),
         causalEntry('b-mapa', 50, { kind: 'tilemap' }),
         causalEntry('c-novo', 40),
         causalEntry('d-sem-certificado', 20, { sha256: null }),
+        causalEntry('a-antigo', 1),
       ]),
     })
     const loaded = await loadGalleryChoices({ tool: 'pinta', viewerId, get })
@@ -154,14 +155,37 @@ describe('seletor da galeria da aula', () => {
     )
   })
 
+  test('perfil causal: uma página fora da ordem do mais novo para o mais antigo é recusada', async () => {
+    for (const entries of [
+      [causalEntry('a', 1), causalEntry('b', 2)],
+      // No mesmo milissegundo, o empate vai pelo id decrescente.
+      [causalEntry('a', 3), causalEntry('b', 3)],
+    ]) {
+      const { get } = server({ '/api/pinta/causal/gallery': page(entries) })
+      let failure: unknown
+      try {
+        await loadGalleryChoices({ tool: 'pinta', viewerId, get, mode: 'causal' })
+      } catch (error) {
+        failure = error
+      }
+      expect(failure).toBeInstanceOf(Error)
+      expect(failure).toMatchObject({ message: 'A galeria respondeu num formato inesperado.' })
+    }
+    const { get } = server({
+      '/api/pinta/causal/gallery': page([causalEntry('b', 3), causalEntry('a', 3)]),
+    })
+    const tied = await loadGalleryChoices({ tool: 'pinta', viewerId, get, mode: 'causal' })
+    expect(tied.items.map((item) => item.itemId)).toEqual(['b', 'a'])
+  })
+
   test('perfil causal: a próxima página segue a época; se ela mudou, a lista recomeça', async () => {
-    const first = page([causalEntry('a', 1)], '7', 'a')
+    const first = page([causalEntry('b', 2)], '7', 'b')
     const { get, calls } = server({
       '/api/pinta/causal/gallery': first,
-      '/api/pinta/causal/gallery?epoch=7&cursor=a': page([causalEntry('b', 2)], '7'),
+      '/api/pinta/causal/gallery?epoch=7&cursor=b': page([causalEntry('a', 1)], '7'),
     })
     const opened = await loadGalleryChoices({ tool: 'pinta', viewerId, get, mode: 'causal' })
-    expect(opened.next).toEqual({ mode: 'causal', epoch: '7', cursor: 'a' })
+    expect(opened.next).toEqual({ mode: 'causal', epoch: '7', cursor: 'b' })
     const more = await loadGalleryChoices({
       tool: 'pinta',
       viewerId,
@@ -173,11 +197,11 @@ describe('seletor da galeria da aula', () => {
     expect(both.map((item) => item.itemId)).toEqual(['b', 'a'])
     expect(calls.map((call) => call.path)).toEqual([
       '/api/pinta/causal/gallery',
-      '/api/pinta/causal/gallery?epoch=7&cursor=a',
+      '/api/pinta/causal/gallery?epoch=7&cursor=b',
     ])
 
     const stale = server({
-      '/api/pinta/causal/gallery?epoch=7&cursor=a': new Failure({
+      '/api/pinta/causal/gallery?epoch=7&cursor=b': new Failure({
         status: 409,
         code: 'ERROR',
         message: 'Algo deu errado.',

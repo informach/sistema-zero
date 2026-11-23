@@ -2772,8 +2772,12 @@ o hash e o sha256 dos bytes da cópia antes de confirmar. Recusas: `GALLERY_PINT
 `GALLERY_PINTA_DRAWING_UNCERTIFIED` (cobertura `unknown`: o desenho aparece bloqueado com "Abra
 este desenho no Pinta uma vez para poder enviar."; a sincronização do Pinta adota a unidade por
 backfill e o hash passa a existir). `GALLERY_PINTA_CAUSAL_UNSUPPORTED` fica só para perfil causal
-sem a leitura causal (protocolo desligado ou fora de `PINTA_CAUSAL_QA_PROFILES`). Pendência: o
-inventário pagina por id (100); o seletor ordena o que carregou do mais novo para o mais antigo.
+sem a leitura causal (protocolo desligado ou fora de `PINTA_CAUSAL_QA_PROFILES`). A página da
+galeria (só ela; o inventário e o arquivo seguem pelo id) vem do mais novo para o mais antigo
+ATRAVÉS das páginas: `date_trunc('milliseconds', item_updated_at) desc, item_id collate "C" desc`
+(a data ao milissegundo é a do fio, e o schema confere essa ordem). O cursor continua sendo o id
+da última entrada; a linha do cursor é relida na mesma época e, se não está viva, `epoch-changed`
+(a lista recomeça, nunca encurta em silêncio). Prova com 231 desenhos em `tests/db/pinta-causal.test.ts`.
 
 **Reserva (07/09):** ticket inclui `formatVersion` validada, independente da revisão.
 BFF e cliente conferem essa confirmação antes de PUT; omissão confirma só legado 1.
