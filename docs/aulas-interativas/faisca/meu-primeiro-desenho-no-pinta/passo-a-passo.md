@@ -1,4 +1,4 @@
-# Passo a passo do projeto — Meu primeiro desenho no Pinta
+# Passo a passo do projeto: Meu primeiro desenho no Pinta
 
 Extra do Faísca. Aqui estão as duas montagens da aula: desenhar a chave no Pinta e colocar o desenho no jogo da Chave do Farol. Você pode consultar quantas vezes quiser.
 
