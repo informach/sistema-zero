@@ -483,6 +483,14 @@ class DeferredTail implements DeferredDrawing {
         this.drawnBelow(boundary),
     )
     if (heads.length === 0 && bodies.length === 0) return
+    // O corpo de um bloco longe da vista pode ter sido tirado da página (`offscreenBodies`, a partir
+    // de 1.500 blocos), e o texto de um elemento fora da página é medido sem a fonte dele (o
+    // `getComputedStyle` volta vazio): os campos saíam com a largura errada. Volta para dentro do
+    // bloco antes de desenhar, como o `drawUnit` faz (full review final).
+    for (const head of heads) {
+      const svg = head.getSvgRoot()
+      if (!svg.parentNode) block.getSvgRoot().appendChild(svg)
+    }
     this.measuringOnce(() => {
       for (const head of heads) this.renderSubtree(head, null)
       for (const boundary of bodies) {
