@@ -53,9 +53,22 @@ projeções, em cenários de 10.000 × 10.000 com um chunk ocupado.
 O Jogo 2D e o Jogo 2D Avançado executam a cena admitida pela composição
 privada. As provas moveram um corpo contra o diamante, pousaram por cima
 de uma plataforma e atravessaram uma porta da ilha isométrica à praia
-hexagonal. As fontes, sem dados de desenhos, têm 421.286 e 463.527
-caracteres frente aos tetos de 422.000 e 464.000. O validador de cabeçalhos
-fica na admissão do documento, e o runtime restaura o wire já conferido.
+hexagonal. O validador de cabeçalhos fica na admissão do documento, e o
+runtime restaura o wire já conferido.
+
+A cena 5 aumentou o motor. Os tetos subiram o mínimo em `f79c03025`, e a dona
+os aprovou em 23/11. Medidas com `bun packages/studio/scripts/measure-pinta-runtime.ts`
+(Jogo 2D / Avançado):
+
+| O que | Medido | Teto |
+|---|---|---|
+| Motor com cenário | 393.617 / 434.728 | 394.000 / 435.000 |
+| Fragmento sobre o legado | 24.753 / 24.751 | 25.000 |
+| Tocador privado, antes dos dados | 422.181 / 463.627 | 422.500 / 464.000 |
+
+Os motores sem cenário seguem nos tetos de sempre. Os valores ficam em
+`packages/studio/src/official-extensions/map-2d/bootstrap.ts` e
+`regionBootstrap.ts`. Todo aumento futuro vai registrado com a medida.
 
 O pacote Tiled inclui JSON e TMX com folhas TSX, além do `maps.json` com
 as cenas autorais. O Tiled 1.12.2 abriu e converteu a Vila isométrica e a

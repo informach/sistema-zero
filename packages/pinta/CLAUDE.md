@@ -1,5 +1,132 @@
 # CLAUDE.md — @sistemazero/pinta
 
+## Oficina de cenários: como está em 23/11/2026
+
+Estado e próximos passos: `docs/superpowers/plans/2026-11-23-pinta-estado-da-retomada.md`. Os
+números de formato moram em `@sistemazero/core/creations` (`pinta-format.ts`), nunca aqui.
+
+### Oficina, nativo 8/9 e físico 3
+
+A oficina é a persistência `createWorkshopPintaPersistence({ nativeCeiling })`
+(`state/workshopPersistence.ts`). Ela guarda os documentos que o editor clássico não guarda:
+- **nativo 8:** mapa por regiões (`RegionTilemapAsset`, chunks de 32 × 32, coordenadas
+  assinadas). Na nuvem é `formatVersion` 7;
+- **nativo 9:** mapa com livro de autorregras (`automapping`) ou mapa projetado (`projection`).
+  Na nuvem é 8;
+- **físico 3:** o registro do mapa regional no IndexedDB, com cabeçalho e chunks gravados à parte
+  (`localRegionAssetAuthority.ts`, `localRegionEditing.ts`).
+
+O Pinta solto (Kids e adulto) monta a oficina com teto **8**. O teto 9 fica só na qualificação
+local (é o padrão da função). Gravar acima do teto lança `WORKSHOP_NATIVE_CEILING_MESSAGE` e não
+grava nada. Um leitor antigo (6) vê o regional como "feito numa versão mais nova do Pinta"; nada é
+apagado nem regravado. O Pinta da aula não tem oficina: persistência própria, sem mapas na galeria.
+
+### Regiões e "Mundo gigante" (etapa 1, sem flag)
+
+- **Criar:** cartão "Mundo gigante" no passo de tamanho do `NewAssetDialog` (1024 × 768 peças;
+  só ocupa espaço onde se pinta). Aparece quando o armazenamento é a oficina e não há pedido de arte
+  de missão.
+- **Editar:** `RegionMapWorkspace.tsx` e a janela focal (`FocalEditorScreen`/`FocalRegionMapStage`).
+  Ao sair de uma janela que gravou, um mapa já levado ao Estúdio é atualizado por
+  `resyncStudioCopies`.
+- **Na conta:** cada gesto da janela focal grava junto com a fila causal, numa transação só
+  (`LocalRegionCausalBinding`; plano `2026-11-23-pinta-focal-na-conta.md`).
+- **Ainda fora:**
+  - etapas 3–5: terreno, objetos, conjuntos, caminhos, portas, animações e profundidade nas regiões;
+  - etapa 6: mensagens, níveis, teclado/Esc e p95;
+  - o menu de exportação, que só abre mapas de tamanho fixo;
+  - a biblioteca do Estúdio, que recusa a captura regional com recado.
+
+Plano: `docs/superpowers/plans/2026-11-23-pinta-etapa-1-regioes.md`.
+
+### Nuvem causal para todo aluno (sem flag)
+
+Todo aluno ativo usa a fila causal V4: o perfil kids com a conta responsável e o adulto com a
+própria conta. O host lê o escopo que o servidor entrega (`PintaAccountSession` →
+`usePintaAccount`). Saíram `NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1`, `PINTA_CAUSAL_CANDIDATE`,
+`PINTA_PALETTE_WRITE_CANDIDATE`, `PINTA_CAUSAL_QA_PROFILES`, `PINTA_WORKSHOP_SERVICE_READER` e os
+`STUDIO_SEALED_*`. `scripts/ci/pinta-sem-flags.test.ts` impede que voltem.
+
+O BFF só precisa da infraestrutura: `MEMBER_SHELL_HMAC_SECRET` e o R2 privado. Sem ela, as rotas
+`/api/pinta/causal/*` respondem 404. O corpo nativo 9 depende da constante
+`WORKSHOP_BODY_READABLE = PINTA_INVENTORY_READER_VERSION >= 8`; hoje o leitor é 7, então fica
+fechado. O suporte em modo leitura ainda não recebe o escopo. Detalhes:
+`docs/superpowers/plans/2026-11-23-pinta-sem-flags.md`.
+
+### Autorregras
+
+Ficam em `tiles/automapping/` (`book`, `engine`, `editor`, `import`, `native`), com o painel
+`components/editor/MapAutomappingPanel.tsx`. São regras próprias do Pinta, feitas por exemplos em
+várias camadas, e o livro viaja no nativo 9. Por isso só abrem com teto 9.
+
+Vocabulário aprovado em 23/11, que a etapa 6 aplica na tela:
+- **"Copiar o antes"**, **"Guardar o depois"** e **"🎲 Sortear de novo"**;
+- sem o UUID da camada;
+- sem o "Uma folha mudou" mostrado enquanto carrega.
+
+### Projeções
+
+Isométrica em diamante e hexagonal: `core/projectedDocument`, `export/workshopProjection.ts`
+(nativo 9 com `projection`) e Scene 5 (`export/projectedScene.ts`). Geometria e provas:
+`docs/pinta-cenarios/geometria-das-projecoes.md`. Tiled, Phaser e Godot levam o projetado; o
+Pygame recusa de propósito.
+
+A etapa 8 está fora do escopo atual: abrir e editar na oficina, PNG 6 e o Python projetado. Não
+anunciar nativo 9 / nuvem 8 antes destes quatro passos:
+1. teto 9 na oficina;
+2. leitor e escritor 8 no host;
+3. `PINTA_INVENTORY_READER_VERSION` 8 no core;
+4. leitura do corpo 9 no BFF.
+
+### Exportadores regionais e runners reais
+
+`export/regionScenePackage.ts` monta os quatro pacotes com Scene 4. Guia de uso e limites:
+`docs/pinta-cenarios/compatibilidade-exportadores-regionais.md`.
+
+Os ensaios com os programas de verdade rodam em `packages/pinta`:
+
+| Destino | Comando | Variável |
+|---|---|---|
+| Tiled | `bun test ./src/export/tiled/regional.test.ts ./src/export/tiled/rasterizer.test.ts` | `PINTA_TILED_BIN` |
+| Phaser | `bun scripts/homologacao/verify-region-phaser.ts` | nenhuma (Node + Chromium do Playwright) |
+| Pygame | `bun scripts/homologacao/verify-region-pygame.ts` (física precisa e antiga) | `PINTA_PYTHON_BIN` |
+| Godot | `bun scripts/homologacao/verify-region-godot.ts [--dense]` | `PINTA_GODOT_BIN` |
+| Raylib 2D | `src/export/pythonRegional2dBackends.test.ts` e o `pintaScenesModule.test.ts` do Estúdio | `PINTA_RAYLIB_PYTHON` |
+
+Sem a variável, o ensaio pula com aviso. O Raylib precisa de janela, então pula no CI. Com `PYTHON`
+apontado, faltar pygame-ce ou pgzero reprova em vez de pular (`src/testing/ciPython.ts`).
+
+`check:homologacao` (mapas de tamanho fixo) usa **outros nomes**: `PYTHON`, `TILED` e `GODOT`, com
+`--exigir-pygame`, `--exigir-tiled` e `--exigir-godot`. Nesta máquina, Tiled e Godot ficam em
+`.tmp/pinta-tools/` da árvore principal.
+
+### Conferências dos gerados
+
+Rodar a cada integração. Outras frentes já deixaram arquivos gerados velhos duas vezes.
+
+```powershell
+bun run --cwd packages/pinta check:region-phaser          # export/phaser/regionPlayer.generated.ts
+bun run --cwd packages/pinta check:phaser                 # Phaser embutido: SHA-256 e licença
+bun run --cwd packages/studio check:pinta-region-runtime  # tocador regional do Estúdio
+bun run --cwd packages/studio check:pro-engine-copies     # cópias do motor no Pro
+bun run --cwd packages/studio-runtime check:validation-profile
+cd packages/studio && bun scripts/gen-pinta-scene-python.ts --check   # trecho de cena do pinta.py
+bun packages/core/scripts/gen-pinta-scene-transform.ts --check
+```
+
+### Tetos do motor 2D com cenário (Estúdio)
+
+Os tetos de `f79c03025` foram aprovados pela dona em 23/11:
+
+| O que | Teto |
+|---|---|
+| Motor com cenário (Jogo 2D / Avançado) | 394.000 / 435.000 |
+| Fragmento sobre o legado | 25.000 |
+| Tocador privado antes dos dados (Jogo 2D / Avançado) | 422.500 / 464.000 |
+
+Os valores ficam em `official-extensions/map-2d/bootstrap.ts` e `regionBootstrap.ts`. Todo
+aumento futuro vai com a medida de `bun packages/studio/scripts/measure-pinta-runtime.ts`.
+
 ## Retomada do rollout e regiões (21/11/2026)
 
 O código integrado lê nuvem 6 e declara escrita 6 para mapas, folhas e conjuntos.
@@ -14,11 +141,10 @@ removido, frontends compartilhados preservados. Alcance e recibos em
 `qa/rollback-publicado-2026-11-21/`, no diretório da missão. Não confundir essa
 prova com ativação dos futuros contratos de regiões ou com o ciclo final do jogo.
 
-`RegionTilemapAsset`/codec 8 continuam preparação interna: a seleção pública
-ainda não os integra à união de assets, ao backup ou ao protocolo físico 3. Não subir constantes
-para anunciar suporte de oficina antes de completar seus consumidores.
+Em 21/11, `RegionTilemapAsset`/codec 8 ainda eram preparação interna. Desde 23/11 as regiões
+estão ligadas para todos (seção acima). As frases "não é suporte no host" e "constantes públicas
+inalteradas" dos parágrafos seguintes registram os lotes de 21–22/11.
 Plano aprovado: `docs/superpowers/plans/2026-11-21-pinta-missao-retomada.md`.
-Autorregras serão visuais e próprias do Pinta, por exemplos multicamadas.
 
 `export/regionScene.ts` é emissor privado de cena 4. Compartilha metadados e
 recursos/imagens com o conversor legado, admite todos os cabeçalhos e orçamento
@@ -541,6 +667,21 @@ planeja → **Pinta desenha** → Estúdio constrói. Biblioteca INTERNA do mono
 > (`src/assets/index.ts`), o desenho como DADO — `createAsset`, `sanitizePintaAsset`,
 > `assetToJson`/`assetFromJson`, `PINTA_LIMITS`, presets — sem uma linha de React, que é o que o
 > servidor importa. Ver a seção dedicada mais abaixo.
+>
+> Quarta e quinta exceções (23/11/2026), as duas sem React:
+> - **`@sistemazero/pinta/workshop-reader`** (`src/assets/workshopReader.ts`) é a oficina para o
+>   host. Exporta `createWorkshopPintaPersistence`, `captureWorkshopPintaAssetForImage`,
+>   `workshopNativeSchema` e `pintaWorkshopAssetFromJson`/`ToJson`. O `pinta-client.tsx` e o
+>   `arquipelago-pinta.ts` do member-shell a carregam por import dinâmico.
+> - **`@sistemazero/pinta/assets/causal`** (`src/assets/causal.ts`) é o verificador do BFF
+>   autenticado. Exporta `inspectPintaCausalDocument`, `verifyWorkshopRuleSheets`, as provas
+>   `provePintaCausalMutation`/`Pin`/`ConsumerRemaps`, `pintaCausalChangedSurvivingSlots`,
+>   `pintaCausalPinSourceIds` e `MAX_PINTA_CAUSAL_DOCUMENT_BYTES`. Quem usa:
+>   `member-shell/src/server/pinta-causal-{proof,content}.ts` e `lib/pinta-causal-authoring.ts`.
+>
+> O campo `exports` do `package.json` tem os sete caminhos: `.`, `./assets`, `./assets/causal`,
+> `./lesson`, `./workshop-reader`, `./studio-library` e `./styles.css`. Um subpath novo entra
+> nos dois lugares.
 
 - **`<PintaApp adapter={PintaHostAdapter} persistence?={PintaPersistence} />`** — uncontrolled,
   navegação por ESTADO (galeria ⇄ editor, sem router). `persistence` ausente = IndexedDB do perfil.
@@ -3996,7 +4137,9 @@ por px reais.
 
 ## Comandos
 
-`bun run typecheck` · `bun test src` · `bun run check[:fix]`
+`bun run typecheck` · `bun test src` · `bun run test:scripts` · `bun run check` (só lê;
+nunca `check:fix` nem `--write` no pacote) · as conferências dos gerados e os runners reais
+estão na primeira seção deste arquivo.
 
 ## Histórico / status
 

@@ -13,7 +13,7 @@ const factorySlot = '/* __SZ_PRIVATE_PINTA_FACTORY__ */'
 // Bun 1.3.11, before asset data: 414,873 / 457,114 chars, 415,432 / 458,619
 // UTF-8 bytes and 113,321 / 141,029 gzip bytes. The public budgets are independent.
 // 22/11/2026, Pinta projections integrated (Scene 5 restore, hex cells, projected queries):
-// 422,181 / 463,627 chars before asset data; the g2d ceiling rose from 422,000.
+// 422,181 / 463,627 chars before asset data; the g2d ceiling rose from 422,000 (approved 23/11).
 const runtimeMaxChars = { g2d: 422_500, gk: 464_000 } satisfies Record<MapTarget, number>
 
 /** Private fixture/host entry point; callers must admit PNG bytes or scene JSON first.

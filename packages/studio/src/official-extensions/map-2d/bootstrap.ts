@@ -34,7 +34,7 @@ export const mapTwoDBootstrapVariant = (context?: ExtensionBootstrapContext): st
 // tetos desceram junto.
 // 22/11/2026 (integração das projeções do Pinta): a geometria compartilhada de colisores e
 // conjuntos passou a atender a cena 5 projetada (+841 caracteres no texto portátil). Medido
-// 393.617 / 434.728, e os tetos subiram o mínimo para isso. Decisão a confirmar na revisão.
+// 393.617 / 434.728, e os tetos subiram o mínimo para isso. Aprovados pela dona em 23/11.
 export const MAP_TWO_D_FULL_BOOTSTRAP_MAX_CHARS = { g2d: 394_000, gk: 435_000 } as const
 // Medidos 26.410 / 26.406 caracteres sobre o legado. Folga inferior a 1%; motores
 // sem cenário e orçamento inicial da galeria permanecem nos mesmos tetos.
@@ -45,7 +45,7 @@ export const MAP_TWO_D_FULL_BOOTSTRAP_MAX_CHARS = { g2d: 394_000, gk: 435_000 } 
 // 22/11/2026 (lote 8 da conclusão): 23.923 / 23.921 com o compositor compactado e o cache das
 // cenas; o teto desceu de 26.500.
 // 22/11/2026 (integração das projeções do Pinta): 24.753 / 24.751 com a geometria projetada no
-// texto portátil compartilhado; o teto subiu de 24.000. Decisão a confirmar na revisão.
+// texto portátil compartilhado; o teto subiu de 24.000. Aprovado pela dona em 23/11.
 export const MAP_TWO_D_FRAGMENT_MAX_CHARS = 25_000
 function host(target: 'g2d' | 'gk', regional?: MapTwoDPrivateSource): string {
   const basic = target === 'g2d'

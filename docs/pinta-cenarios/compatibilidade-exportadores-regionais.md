@@ -43,10 +43,9 @@ Abra o ZIP, instale `python -m pip install -r requirements.txt` e execute
 `python main.py`. O pacote fixa pygame-ce 2.5.8 e inclui `pinta_cenario.py`, gerado pela
 mesma receita do módulo `pinta` fornecido às três extensões Python 2D
 (`pythonScenesModuleSource.ts`). As setas andam, a seta para cima pula quando o
-cenário usa plataformas e Esc fecha a janela. O módulo só resolve plataformas de mão única
-na física precisa. Com a física antiga, o jogo anda nas quatro direções e as peças de
-plataforma não seguram o personagem. Phaser, Godot e o Estúdio em JavaScript tratam
-essas peças como plataformas também na física antiga.
+cenário usa plataformas e Esc fecha a janela. A peça de plataforma segura o personagem
+por cima nas duas físicas, a precisa e a antiga, como no Phaser, no Godot e no Estúdio em
+JavaScript (`f07b32e13`, lote B6).
 
 `cenario.png` guarda os mapas, as imagens, as propriedades e as ligações em PNG 5. O
 mesmo leitor do Estúdio abre esse arquivo, e `carregar_cenario` o abre em outro projeto.
@@ -54,7 +53,8 @@ Se o Tiled não conseguir representar um mapa, o suplemento omite esse mapa e o 
 indica `cenario.png`.
 
 `bun scripts/homologacao/verify-region-pygame.ts` usa o interpretador de
-`PINTA_PYTHON_BIN` ou `python`, com pygame-ce instalado. O ensaio desenha oito quadros,
+`PINTA_PYTHON_BIN` ou `python`, com pygame-ce instalado. Ele roda uma vez na física precisa
+e outra na antiga. Em cada uma, desenha oito quadros,
 lê propriedades, pula sobre a plataforma, atravessa a porta da Cabana e substitui o
 cenário por um PNG atualizado, recusando antes um PNG incompleto.
 
