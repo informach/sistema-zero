@@ -22,8 +22,9 @@ const GUARDADAS = 64
 
 /** A chave da miniatura: o id e o conteúdo (um arquivo trocado no mesmo id desenha de novo). */
 export function chaveDaMiniatura(asset: Pick<ProjectAsset, 'id' | 'dataUrl'>): string {
-  const d = asset.dataUrl
-  return `${asset.id}:${d.length}:${d.slice(-48)}`
+  // Arquivos de mesmo tamanho podem terminar nos mesmos bytes do GLB. A identidade
+  // usa o conteúdo inteiro; as entradas continuam limitadas às últimas 64.
+  return `${asset.id}:${asset.dataUrl}`
 }
 
 export function criarMiniaturas(desenhar: DesenharMiniatura) {

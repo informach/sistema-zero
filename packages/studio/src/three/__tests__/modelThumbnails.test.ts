@@ -84,6 +84,21 @@ test('trocar o arquivo no mesmo id desenha de novo', async () => {
   expect(r.pedidos).toHaveLength(2)
 })
 
+test('conteúdos diferentes com o mesmo tamanho e final não compartilham a miniatura', async () => {
+  let desenhos = 0
+  const m = criarMiniaturas(async () => `data:image/png;base64,${btoa(String(++desenhos))}`)
+  const antes = modelo('nave', `A${'x'.repeat(128)}`)
+  const depois = modelo('nave', `B${'x'.repeat(128)}`)
+  expect(antes.dataUrl.length).toBe(depois.dataUrl.length)
+  expect(antes.dataUrl.slice(-48)).toBe(depois.dataUrl.slice(-48))
+  const primeira = await m.pedir(antes)
+  expect(m.pronta(depois)).toBeUndefined()
+  const segunda = await m.pedir(depois)
+  expect(segunda).not.toBe(primeira)
+  expect(await m.pedir({ ...antes })).toBe(primeira)
+  expect(desenhos).toBe(2)
+})
+
 test('céu, som e imagem não pedem desenho; falha vira null guardado (fica o 📦)', async () => {
   let chamadas = 0
   const m = criarMiniaturas(async () => {
