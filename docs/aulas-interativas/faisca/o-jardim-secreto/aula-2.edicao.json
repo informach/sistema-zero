@@ -7,7 +7,13 @@
     "alvoDeEdicaoSegundos": 3,
     "duracaoGarantidaPelaTag": false
   },
-  "clipes": ["video-abertura", "video-movimento", "video-coleta", "video-decisao", "video-posicao"],
+  "clipes": [
+    "video-abertura",
+    "video-andar",
+    "video-regador-e-flor",
+    "video-posicao",
+    "video-missao-cumprida"
+  ],
   "intervencoes": [
     {
       "id": "video-abertura-K1",
@@ -15,31 +21,20 @@
       "personagem": "Dedé",
       "ocorrencia": 1,
       "ancoraAntes": "o personagem anda até a flor. Repare no aviso aqui em cima: a flor continua fechada, e o aviso diz o que falta.",
-      "ancoraDepois": "Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R. Agora é a sua vez: jogue até a flor",
+      "ancoraDepois": "Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R. Como na Aula 1, quem programa é você.",
       "falaPrincipal": "Será que o regador está no mesmo lugar do jardim 2D?",
       "falaPersonagem": "Será que o regador está no mesmo lugar do jardim 2D?",
       "tags": ["[curious]"]
     },
     {
-      "id": "video-coleta-K1",
-      "clipe": "video-coleta",
+      "id": "video-regador-e-flor-K1",
+      "clipe": "video-regador-e-flor",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "personagem encostar em chave. Arraste e solte logo abaixo do evento da tecla R. Não coloque um evento dentro do outro.",
-      "ancoraDepois": "Não tem. O bloco de encontro só chega com chave no segundo nome, e você troca pelo regador. Clique em chave e escolha",
-      "falaPrincipal": "Ué, mas tem chave no jardim?",
-      "falaPersonagem": "Ué, mas tem chave no jardim?",
-      "tags": ["[curious]"]
-    },
-    {
-      "id": "video-decisao-K1",
-      "clipe": "video-decisao",
-      "personagem": "Dedé",
-      "ocorrencia": 1,
-      "ancoraAntes": "que deu certo! Agora ande um pouco para a esquerda e volte até a flor. Tá vendo? A flor fechou e abriu tudo de novo.",
-      "ancoraDepois": "Porque, cada vez que o personagem encosta na flor, o encontro acontece de novo e manda florescer outra vez. Lembra do",
-      "falaPrincipal": "Ué, por que a flor abriu de novo?",
-      "falaPersonagem": "Ué, por que a flor abriu de novo?",
+      "ancoraAntes": "a flor continua fechada, e o aviso diz o que falta. Terceira: com o regador, a flor floresce, e o aviso comemora.",
+      "ancoraDepois": "Essa é a quarta: a flor continua aberta e não floresce de novo. Ela abre uma vez só. Você aprendeu tudo isso na Ilha do",
+      "falaPrincipal": "E se o personagem voltar na flor depois que ela abriu?",
+      "falaPersonagem": "E se o personagem voltar na flor depois que ela abriu?",
       "tags": ["[curious]"]
     }
   ]

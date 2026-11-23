@@ -1,6 +1,6 @@
 # Faça o jardim florescer em 2D
 
-Missão do Faísca · O Jardim Secreto · 2D. Um projeto contínuo, enviado na última construção. Ajuda livre no Passo a passo do projeto; sem certificado nem publicação obrigatória.
+Missão do Faísca · O Jardim Secreto · 2D. Um projeto contínuo, enviado na última construção. Sem dicas: quem tiver dúvida volta na aula do curso base; o Passo a passo do projeto chega no fim da aula, depois do envio; sem certificado nem publicação obrigatória.
 
 ## Parte 1. Conheça sua missão
 
@@ -13,61 +13,26 @@ Conheça sua missão.
 
 
 
-## Parte 2. O seu Passo a passo do projeto
+## Parte 2. Ande pelo jardim
 
-O seu Passo a passo do projeto.
-
-- Intenção: material.
-- Blocos: video-material, ponte-material, materiais.
-- Estúdio: não.
-- Conclusão: video-material.
-
-
-
-## Parte 3. Faça o personagem andar
-
-Faça o personagem andar.
+Ande pelo jardim.
 
 - Intenção: application.
-- Blocos: video-movimento, ponte-movimento.
+- Blocos: video-andar, ponte-andar.
 - Estúdio: projeto.
-- Conclusão: video-movimento.
-
-- Faça o personagem andar nas quatro direções e parar ao soltar a tecla.
-
-## Parte 4. Fique dentro do jardim
-
-Fique dentro do jardim.
-
-- Intenção: application.
-- Blocos: video-limite, ponte-limite.
-- Estúdio: projeto.
-- Conclusão: video-limite.
+- Conclusão: video-andar.
 
 - Faça o personagem andar nas quatro direções e parar ao soltar a tecla.
 - Mantenha o personagem na tela e permita voltar depois de chegar à borda.
 
-## Parte 5. Pegue e guarde o regador
+## Parte 3. A flor só abre com o regador
 
-Pegue e guarde o regador.
-
-- Intenção: application.
-- Blocos: video-coleta, ponte-coleta.
-- Estúdio: projeto.
-- Conclusão: video-coleta.
-
-- Faça o personagem andar nas quatro direções e parar ao soltar a tecla.
-- Mantenha o personagem na tela e permita voltar depois de chegar à borda.
-- Recolha o regador no encontro e mostre um aviso da coleta.
-
-## Parte 6. Uma flor, duas respostas
-
-Uma flor, duas respostas.
+A flor só abre com o regador.
 
 - Intenção: application.
-- Blocos: video-decisao, ponte-decisao.
+- Blocos: video-regador-e-flor, ponte-regador-e-flor.
 - Estúdio: projeto.
-- Conclusão: video-decisao.
+- Conclusão: video-regador-e-flor.
 
 - Faça o personagem andar nas quatro direções e parar ao soltar a tecla.
 - Mantenha o personagem na tela e permita voltar depois de chegar à borda.
@@ -76,9 +41,9 @@ Uma flor, duas respostas.
 - Antes da coleta, mantenha a flor fechada e avise o que falta.
 - Depois da coleta, faça a flor abrir e mostrar o sucesso; uma nova partida recomeça sem a coleta.
 
-## Parte 7. Escolha um lugar para o regador
+## Parte 4. Um lugar novo para o regador
 
-Escolha um lugar para o regador.
+Um lugar novo para o regador.
 
 - Intenção: delivery.
 - Blocos: video-posicao, ponte-posicao, projeto.
@@ -92,6 +57,17 @@ Escolha um lugar para o regador.
 - Antes da coleta, mantenha a flor fechada e avise o que falta.
 - Depois da coleta, faça a flor abrir e mostrar o sucesso; uma nova partida recomeça sem a coleta.
 - Escolha outro lugar alcançável para o regador e confira as regras.
+
+## Parte 5. Seu jardim 2D está pronto
+
+Seu jardim 2D está pronto.
+
+- Intenção: closing.
+- Blocos: video-missao-cumprida, ponte-missao-cumprida, materiais.
+- Estúdio: não.
+- Conclusão: video-missao-cumprida.
+
+
 
 Na edição kids, Debinha diz as frases das tabelas de substituição do roteiro.
 

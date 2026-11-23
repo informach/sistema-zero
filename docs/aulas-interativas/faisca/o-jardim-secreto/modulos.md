@@ -7,12 +7,10 @@ Missão do posto Faísca. Módulo: **Faça o jardim florescer**. Renomear o mód
 Identificador: aula-1. Dimensão: 2D.
 
 1. Conheça sua missão.
-2. O seu Passo a passo do projeto.
-3. Faça o personagem andar.
-4. Fique dentro do jardim.
-5. Pegue e guarde o regador.
-6. Uma flor, duas respostas.
-7. Escolha um lugar para o regador.
+2. Ande pelo jardim.
+3. A flor só abre com o regador.
+4. Um lugar novo para o regador.
+5. Seu jardim 2D está pronto.
 
 [Manifesto](aula-1.manifesto.json) · [Roteiro](aula-1.roteiro.md).
 
@@ -21,12 +19,11 @@ Identificador: aula-1. Dimensão: 2D.
 Identificador: aula-2. Dimensão: 3D.
 
 1. O mesmo desafio, com profundidade.
-2. Caminhe pelo jardim 3D.
-3. Recolha o regador em 3D.
-4. Faça a flor responder.
-5. Encontre um novo lugar no chão.
-6. Pense nos seus testes.
+2. Ande e recolha o regador.
+3. A flor abre uma vez só.
+4. Um lugar novo no chão.
+5. Missão cumprida!.
 
 [Manifesto](aula-2.manifesto.json) · [Roteiro](aula-2.roteiro.md).
 
-Uma entrega por aula, na última montagem (a do lugar do regador); na Aula 2, o quiz fecha a aula depois do envio. A missão conta com as duas aulas concluídas. Sem certificado nem publicação na comunidade. Produzir e anexar a mídia real antes de publicar.
+Uma entrega por aula, na última montagem (a do lugar do regador); depois do envio, a última parte entrega o Passo a passo do projeto. Sem dicas nem quiz. A missão conta com as duas aulas concluídas. Na publicação, anexar o PDF nas duas aulas sem a marca de caderno do Zappy. Sem certificado nem publicação na comunidade. Produzir e anexar a mídia real antes de publicar.

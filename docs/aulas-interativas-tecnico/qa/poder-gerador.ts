@@ -104,6 +104,13 @@ export interface PoderConfig<
   experiencia?: Record<string, unknown>
   /** A cena das falas do Zappy dentro da experiência (`zappy-etapas.json`). */
   cenaDoZappy?: Parameters<typeof discoverySpeechSteps>[0]
+  /**
+   * O jeito das partes de construção no roteiro. Sem ele, a montagem guiada completa no vídeo (os
+   * Poderes). A missão do posto (o Jardim) mostra o que o jogo precisa fazer, sem montar.
+   */
+  notaDeProducao?: string
+  /** Onde fica a ajuda, no resumo de cada aula. Sem ela, a ajuda livre no Passo a passo. */
+  ajuda?: string
   /** O passo a passo em texto (`passo-a-passo.md`) e a organização do curso (`modulos.md`). */
   passoAPasso: string
   modulos: string
@@ -230,8 +237,11 @@ export async function gerarPoder<
             ? 'application'
             : t.kind === 'delivery'
               ? 'delivery'
-              : t.kind === 'material'
-                ? 'material'
+              : // Depois da entrega, o Passo a passo é um fechamento (a missão o entrega no fim).
+                t.kind === 'material'
+                ? entregue
+                  ? 'closing'
+                  : 'material'
                 : t.kind === 'experience'
                   ? 'exploration'
                   : // Depois da entrega, o quiz é o "Quiz de fechamento" (section-templates.ts).
@@ -266,7 +276,7 @@ export async function gerarPoder<
         projectExamples: { version: 1, examples, sections: mapping },
       },
     })
-    if (index === 0)
+    if (aula.trechos.some((t) => t.kind === 'material'))
       blocks.push({
         key: 'materiais',
         content: {
@@ -304,7 +314,7 @@ export async function gerarPoder<
       comKids
         ? `Na montagem kids, ${avatar} substitui somente as frases das tabelas de substituição, com a voz do arquivo .${avatar === 'Dedé' ? 'dede' : 'debinha'}.elevenlabs.txt e sem voz sobreposta; o adulto usa o master integral.`
         : 'Sem intervenções de personagens.'
-    } Montagem guiada completa no vídeo, um gesto por vez, com o destino à vista antes da peça. ${
+    } ${cfg.notaDeProducao ?? 'Montagem guiada completa no vídeo, um gesto por vez, com o destino à vista antes da peça.'} ${
       aula.dimension === '3d'
         ? 'O jogo é de teclado: o robô dá o foco ao jogo (Rodar de novo no Estúdio, ou um toque no jogo pronto) antes de segurar as setas. Os tempos das setas no Na tela são estimativas para a velocidade 4 e se acertam no Verificar plano. '
         : ''
@@ -324,7 +334,7 @@ export async function gerarPoder<
       write(`${arquivo}${ext}`, text)
     write(
       `${arquivo}.md`,
-      `# ${aula.title}\n\n${cfg.tipo ?? 'Poder do Faísca'} · ${cfg.nome} · ${aula.dimension.toUpperCase()}. Um projeto contínuo, enviado na última construção. Ajuda livre no Passo a passo do projeto; sem certificado nem publicação obrigatória.\n\n${sections.map((s, i) => `## Parte ${i + 1}. ${s.title}\n\n${s.objective}\n\n- Intenção: ${s.intent}.\n- Blocos: ${s.blockKeys.join(', ')}.\n- Estúdio: ${s.workspaceKey ?? 'não'}.\n- Conclusão: ${s.completion?.blockIds.join(', ') || 'avanço livre'}${s.completion?.submissionUpToDate ? '; envio atualizado' : ''}.\n\n${s.completion?.projectChecks?.map((c: { label: string }) => `- ${c.label}`).join('\n') ?? ''}`).join('\n\n')}\n\n${comKids ? `Na edição kids, ${avatar} diz as frases das tabelas de substituição do roteiro.\n\n` : ''}[Fala integral](${roteiro}) · [Passo a passo](passo-a-passo.md).\n`,
+      `# ${aula.title}\n\n${cfg.tipo ?? 'Poder do Faísca'} · ${cfg.nome} · ${aula.dimension.toUpperCase()}. Um projeto contínuo, enviado na última construção. ${cfg.ajuda ?? 'Ajuda livre no Passo a passo do projeto'}; sem certificado nem publicação obrigatória.\n\n${sections.map((s, i) => `## Parte ${i + 1}. ${s.title}\n\n${s.objective}\n\n- Intenção: ${s.intent}.\n- Blocos: ${s.blockKeys.join(', ')}.\n- Estúdio: ${s.workspaceKey ?? 'não'}.\n- Conclusão: ${s.completion?.blockIds.join(', ') || 'avanço livre'}${s.completion?.submissionUpToDate ? '; envio atualizado' : ''}.\n\n${s.completion?.projectChecks?.map((c: { label: string }) => `- ${c.label}`).join('\n') ?? ''}`).join('\n\n')}\n\n${comKids ? `Na edição kids, ${avatar} diz as frases das tabelas de substituição do roteiro.\n\n` : ''}[Fala integral](${roteiro}) · [Passo a passo](passo-a-passo.md).\n`,
     )
     const final = projects[cfg.etapaFinal]
     const comeco = projects[inicio]

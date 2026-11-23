@@ -9,12 +9,10 @@
   },
   "clipes": [
     "video-abertura",
-    "video-material",
-    "video-movimento",
-    "video-limite",
-    "video-coleta",
-    "video-decisao",
-    "video-posicao"
+    "video-andar",
+    "video-regador-e-flor",
+    "video-posicao",
+    "video-missao-cumprida"
   ],
   "intervencoes": [
     {
@@ -23,31 +21,20 @@
       "personagem": "Debinha",
       "ocorrencia": 1,
       "ancoraAntes": "o personagem anda até a flor. E repare no aviso aqui em cima: a flor continua fechada, e o aviso diz o que falta.",
-      "ancoraDepois": "Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R. Nesta aula, você vai montar esse jogo",
+      "ancoraDepois": "Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R. Esta missão é diferente das aulas que",
       "falaPrincipal": "E se eu pegar o regador antes, a flor abre?",
       "falaPersonagem": "E se eu pegar o regador antes, a flor abre?",
       "tags": ["[curious]"]
     },
     {
-      "id": "video-coleta-K1",
-      "clipe": "video-coleta",
+      "id": "video-regador-e-flor-K1",
+      "clipe": "video-regador-e-flor",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "e depois Lógica e Se, e pegue o bloco verdadeiro. Solte em cima do 0. Depois clique em verdadeiro e escolha falso.",
-      "ancoraDepois": "Porque, quando a partida começa, o personagem ainda não pegou o regador. Confira se ficou assim: no fim de Ao iniciar",
-      "falaPrincipal": "E por que temRegador começa em falso?",
-      "falaPersonagem": "E por que temRegador começa em falso?",
-      "tags": ["[curious]"]
-    },
-    {
-      "id": "video-decisao-K1",
-      "clipe": "video-decisao",
-      "personagem": "Debinha",
-      "ocorrencia": 1,
-      "ancoraAntes": "novo mais uma vez e vá direto à flor, sem pegar o regador. Olha só: a flor continua fechada, e o aviso pede o regador.",
-      "ancoraDepois": "Porque temRegador ainda é falso. A resposta da pergunta é não, e por isso o jogo fez o que está no senão. Agora toque",
-      "falaPrincipal": "Ué, por que a flor não abriu?",
-      "falaPersonagem": "Ué, por que a flor não abriu?",
+      "ancoraAntes": "que ele pegou. Segunda: o jogo lembra se o personagem já pegou o regador. No começo da partida, ele ainda não pegou.",
+      "ancoraDepois": "Essa é a terceira: sem o regador, a flor continua fechada, e o aviso diz o que falta. Quarta: com o regador, a flor",
+      "falaPrincipal": "E se o personagem chegar na flor sem o regador?",
+      "falaPersonagem": "E se o personagem chegar na flor sem o regador?",
       "tags": ["[curious]"]
     }
   ]

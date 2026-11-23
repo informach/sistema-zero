@@ -2,8 +2,4 @@
 
 [long pause]
 
-[curious] E por que temRegador começa em falso?
-
-[long pause]
-
-[curious] Ué, por que a flor não abriu?
+[curious] E se o personagem chegar na flor sem o regador?
