@@ -10,6 +10,7 @@ export const COPY = {
   automap: {
     areaError: 'Escolha uma área dentro do mapa.',
     sheetError: 'Uma folha mudou. Capture o exemplo novamente com as peças atuais.',
+    loadingSheets: 'As peças ainda estão carregando. Tente de novo em um instante.',
     missingLayer: 'Uma camada das regras não está neste mapa.',
     locked: 'Destranque as camadas de saída antes de aplicar.',
     tooMuchWork: 'A área é grande demais para estas regras. Escolha uma área menor.',
@@ -48,7 +49,8 @@ export const COPY = {
     apply: 'Aplicar prévia',
     cancel: 'Cancelar prévia',
     importLayers: 'Camadas que vão usar as regras do arquivo',
-    importLayer: (rule: string, id: string) => `Regra ${rule}, camada ${id}`,
+    /** `layer`: the name of the matching layer in this map, or its number in the file. */
+    importLayer: (rule: string, layer: string) => `Regra ${rule}, camada ${layer}`,
     pickLayer: 'Escolha a camada neste mapa',
     acceptImport: 'Guardar as regras do arquivo',
     cancelImport: 'Cancelar importação',

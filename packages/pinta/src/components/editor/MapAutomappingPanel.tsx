@@ -141,7 +141,7 @@ function AutomappingControls<Grid extends import('../../tiles/mapCellEdits').Aut
     registerStroke((before, painted, layer, shift) => {
       if (!active || before !== map || editor.getState().asset !== map) return
       if (!sheetIndex) {
-        setMessage(messages['changed-sheet'])
+        setMessage(COPY.automap.loadingSheets)
         return
       }
       if (sameAssetContent(before, painted)) {
@@ -451,9 +451,13 @@ function AutomappingControls<Grid extends import('../../tiles/mapCellEdits').Aut
         {incoming?.base === map && importLayers && sheetIndex ? (
           <fieldset className="grid gap-2">
             <legend>{COPY.automap.importLayers}</legend>
-            {importLayers.map((layer) => (
+            {importLayers.map((layer, index) => (
               <label key={layer.id}>
-                {COPY.automap.importLayer(layer.rule, layer.id)}
+                {COPY.automap.importLayer(
+                  layer.rule,
+                  // Layer IDs belong to the file's own map: show a name only when it is this map's.
+                  layers.find((own) => own.id === layer.id)?.name ?? String(index + 1),
+                )}
                 <select
                   className={field}
                   value={incoming.selected.get(layer.id) ?? ''}
@@ -508,7 +512,11 @@ function AutomappingControls<Grid extends import('../../tiles/mapCellEdits').Aut
                 setMessage(COPY.automap.invalidFile)
                 return
               }
-              if (editor.getState().asset !== map || !sheetIndex) return
+              if (editor.getState().asset !== map) return
+              if (!sheetIndex) {
+                setMessage(COPY.automap.loadingSheets)
+                return
+              }
               const bindings = automapImportLayers(parsed, map, sheetIndex)
               if (!bindings || bindings.some((layer) => !layer.choices.length)) {
                 setMessage(messages['changed-sheet'])
