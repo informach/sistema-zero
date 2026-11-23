@@ -222,10 +222,11 @@ class CenarioTest(unittest.TestCase):
             P.begin_drawing()
             s.desenhar()
             P.end_drawing()
-            # A entrada inicial conta uma vez, no primeiro atualizar.
+            # A entrada inicial conta no primeiro atualizar, para todas as perguntas daquele
+            # quadro (E9: perguntar de novo no mesmo quadro não "gasta" a entrada).
             s.atualizar(-100, 0, agora=0)
             self.assertTrue(s.entrou_na_regiao('Vila'))
-            self.assertFalse(s.entrou_na_regiao('Vila'))
+            self.assertTrue(s.entrou_na_regiao('Vila'))
             s.atualizar(-100, 0, agora=0.5)
             self.assertFalse(s.entrou_na_regiao('Vila'))
             # Na Floresta, a Caverna é vizinha: carrega com o modelo dela e a colisão passa a valer.
@@ -885,6 +886,23 @@ class RelevoTest(unittest.TestCase):
             atras = [k for k in s._relevo.desenho if k[0] != 'c' and k[1] <= 1]
             self.assertEqual(atras, [])
             self.assertTrue(any(k[0] != 'c' and k[1] >= 6 for k in s._relevo.desenho))
+        finally:
+            s.descartar()
+
+    def test_em_campo_a_colisao_herda_matriz_e_volume_da_entidade(self):
+        relevo_dos_casos(self.data, self.folder)
+        # Como o envelope do Estúdio grava: a colisão da entidade sem a cópia da matriz e do volume.
+        entidade = self.data['entidades'][0]
+        colisao = self.data['colisoes'][0]
+        entidade['matriz'], entidade['volume'] = colisao['matriz'], colisao['volume']
+        del colisao['matriz'], colisao['volume']
+        s = self.abrir()
+        try:
+            c = s.dados['colisoes'][0]
+            self.assertEqual(c['matriz'], entidade['matriz'])
+            self.assertEqual(c['volume'], entidade['volume'])
+            lo, hi = c['volume']['min'], c['volume']['max']
+            self.assertTrue(s.colide_caixa((lo['x'], lo['y'], lo['z']), (hi['x'], hi['y'], hi['z'])))
         finally:
             s.descartar()
 
