@@ -53,7 +53,8 @@ O seletor não altera direitos por conta, conquistas, privilégios de admin ou c
 
 ## Catálogos empacotados
 
-- **Áreas do projeto no Python + regiões do Raylib 3D (22/11/2026, preparado, não ativado):**
+- **Áreas do projeto no Python + regiões do Raylib 3D (22/11/2026; ATIVO no staging desde
+  23/11/2026, produção não):**
   `01c079c1b34563d23b93c57d4ad88eb3b932fd5de75ef699675d254ec6729eee`, 191.810 bytes. Release
   nova `2026-11-22-areas-1` (manifesto `c74c1500…`, distribuição Linux `f3b6ef00…`), ativa; a
   `2026-11-20-pinta-cenarios-6` vira `retired`. Cinco blocos novos (`sz_py_turtle_every` e os
