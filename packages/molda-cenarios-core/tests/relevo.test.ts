@@ -6,6 +6,7 @@ import {
   type NoDoRelevo,
   nivelMaximoDoRelevo,
   passoDoTerreno,
+  relevoCabeNoEstudio,
   selecionarNosDoRelevo,
 } from '../src/compilar/relevo'
 
@@ -65,13 +66,23 @@ function maiorSalto(forma: FormaDoRelevo, nos: NoDoRelevo[], celulasPorNo: numbe
 }
 
 describe('o espaçamento da grade', () => {
-  test('1 m até 1 km, 2 m até 2 km, recusa acima', () => {
+  test('1 m até 1 km, 2 m até 2 km, 4 m até 4 km, 8 m até 8 km', () => {
     expect(passoDoTerreno(384)).toBe(1)
     expect(passoDoTerreno(1024)).toBe(1)
     expect(passoDoTerreno(1024.5)).toBe(2)
     expect(passoDoTerreno(2048)).toBe(2)
-    expect(() => passoDoTerreno(2049)).toThrow('O mundo passa de 2 km de lado.')
+    expect(passoDoTerreno(2049)).toBe(4)
+    expect(passoDoTerreno(4096)).toBe(4)
+    expect(passoDoTerreno(8192)).toBe(8)
+    expect(() => passoDoTerreno(8193)).toThrow('O mundo passa de 8 km de lado.')
     expect(() => passoDoTerreno(0)).toThrow('O tamanho do mundo é inválido.')
+  })
+
+  test('o relevo cabe no Estúdio até 1088 × 1088 células (as alturas num arquivo de 5 MiB)', () => {
+    expect(relevoCabeNoEstudio(1024, 1024)).toBe(true)
+    expect(relevoCabeNoEstudio(1088, 1088)).toBe(true)
+    expect(relevoCabeNoEstudio(1152, 1152)).toBe(false)
+    expect(relevoCabeNoEstudio(2048, 256)).toBe(true)
   })
 
   test('o nível mais alto cobre a grade inteira', () => {

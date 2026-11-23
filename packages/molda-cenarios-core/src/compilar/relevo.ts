@@ -43,13 +43,27 @@ export interface OpcoesDoRelevo {
   }
 }
 
-/** O espaçamento da grade (metros) pelo lado maior do mundo: 1 m até 1 km, 2 m até 2 km. */
+/**
+ * O espaçamento da grade (metros) pelo lado maior do mundo: 1 m até 1 km, 2 m até 2 km, 4 m até
+ * 4 km e 8 m até 8 km (o limite do terreno). Assim todo mundo novo fica com no máximo 1024 × 1024
+ * células: o editor responde e o relevo cabe no Estúdio (`MAXIMO_DE_VERTICES_NO_ESTUDIO`).
+ */
 export function passoDoTerreno(ladoEmMetros: number): number {
   if (!(Number.isFinite(ladoEmMetros) && ladoEmMetros > 0))
     throw new Error('O tamanho do mundo é inválido.')
-  if (ladoEmMetros <= 1024) return 1
-  if (ladoEmMetros <= 2048) return 2
-  throw new Error('O mundo passa de 2 km de lado.')
+  for (const passo of [1, 2, 4, 8]) if (ladoEmMetros <= 1024 * passo) return passo
+  throw new Error('O mundo passa de 8 km de lado.')
+}
+
+/**
+ * Os vértices da grade que um relevo pode ter para abrir no Estúdio: as alturas vão num arquivo de
+ * dados 3D de no máximo 5 MiB (Float32 por vértice), o que dá até 1088 × 1088 células.
+ */
+export const MAXIMO_DE_VERTICES_NO_ESTUDIO = Math.floor((5 * 1024 * 1024) / 4)
+
+/** O relevo (colunas × linhas) abre no Estúdio? */
+export function relevoCabeNoEstudio(colunas: number, linhas: number): boolean {
+  return (colunas + 1) * (linhas + 1) <= MAXIMO_DE_VERTICES_NO_ESTUDIO
 }
 
 /** O nível mais alto (o pedaço que cobre a grade inteira). */

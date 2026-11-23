@@ -128,3 +128,23 @@ test('iniciar a partir do plano respeita os limites de células e não converte 
     baseInicialDeTerreno({ tipo: 'perfil', perfil: 'arquipelago', versao: '1', carimbos: [] }),
   ).toThrow('Converta')
 })
+
+test('a base nova acompanha o tamanho do mundo: até 1024 × 1024 células (mundos de 2 km, lote 4)', () => {
+  const plano = (largura: number, comprimento = largura) =>
+    baseInicialDeTerreno({ tipo: 'plano', largura, comprimento } as never)
+  for (const [lado, passo, colunas] of [
+    [384, 1, 384],
+    [1024, 1, 1024],
+    [1100, 2, 576],
+    [2048, 2, 1024],
+    [3000, 4, 768],
+  ] as const) {
+    const b = plano(lado)
+    expect(b.colunas, `${lado} m`).toBe(colunas)
+    expect(b.colunas * b.passo).toBeGreaterThanOrEqual(lado - 1e-9)
+    expect(Math.round(b.passo * 1000) / 1000, `${lado} m`).toBeLessThanOrEqual(passo)
+  }
+  // Retangular: o lado maior decide o espaçamento.
+  const r = plano(2048, 512)
+  expect([r.colunas, r.linhas, r.passo]).toEqual([1024, 256, 2])
+})

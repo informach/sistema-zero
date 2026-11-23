@@ -219,3 +219,10 @@ terreno `grade` nativo sem `recortes`:
     pela altura que o palco desenha;
   - conserto achado pelo teste do detalhe: os filhos de um pedaço dividido para equilibrar a árvore
     não entravam na fila e nunca se refinavam (perto da câmera o relevo podia ficar mais grosso).
+- Lote 4: feito na staging local (23/11/2026). `passoDoTerreno`: 1 m até 1 km, 2 m até 2 km, 4 m
+  até 4 km e 8 m até 8 km (todo mundo novo com até 1024 × 1024 células; antes acima de 2 km o
+  editor ainda aceitava, só que a 1 m). Achado: o Estúdio abre o relevo com até 1088 × 1088
+  células, porque as alturas vão num arquivo de dados 3D de até 5 MiB
+  (`relevoCabeNoEstudio`); a tela de medidas do terreno avisa e sugere o espaçamento. A medida
+  de desempenho do editor com 256 peças passa para o lote 7, quando o mundo de prova de 2 km é
+  montado na própria oficina.
