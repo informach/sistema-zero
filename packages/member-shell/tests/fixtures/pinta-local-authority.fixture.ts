@@ -844,6 +844,179 @@ test.each([
   }
 })
 
+test('outro aparelho muda OUTRO desenho: a fila offline renova na época nova, sem cópias', async () => {
+  const local = createPintaCausalPersistence({ namespace: 'cloud-epoch-renew' })
+  const sheet = addTile(createTilesetAsset({ name: 'pecas', tileSize: 16 }), 0)
+  const map = createTilemapAsset({ name: 'vila', tilesetId: sheet.id, cols: 2, rows: 2 })
+  const published = await Promise.all([cloudAsset(sheet, 1, '3'), cloudAsset(map, 1)])
+  expect(
+    await local.causal.applyPull(
+      {
+        fromEpoch: null,
+        epoch: '3',
+        transitions: [sheet, map].map((after, i) => ({
+          id: after.id,
+          before: null,
+          beforeRevision: null,
+          after,
+          remote: published[i]!.entry,
+        })),
+      },
+      () => true,
+    ),
+  ).toBe(true)
+  const { cloud, queued } = fakeCloud(map, 1)
+  // O outro aparelho só criou um desenho que esta fila nunca leu: a época sobe de 3 para 4.
+  const other = await cloudAsset(createPixelSpriteAsset({ name: 'outro', frameSize: 8 }), 1)
+  const remote = new Map([
+    [sheet.id, published[0]!.entry],
+    [map.id, published[1]!.entry],
+    [other.entry.itemId, other.entry],
+  ])
+  const stored = new Map<string, Uint8Array>([
+    [sheet.id, published[0]!.gzip],
+    [map.id, published[1]!.gzip],
+    [other.entry.itemId, other.gzip],
+  ])
+  let epoch = '4'
+  let offline = true
+  let sealedId: string | undefined
+  const uploads: { opId: string; baseEpoch: string }[] = []
+  const settled: string[] = []
+  const transport: PintaCausalCloud = {
+    snapshot: async () => ({ epoch, requiredFormat: 6, entries: [...remote.values()] }),
+    verifyEpoch: async (expected) => {
+      expect(expected).toBe(epoch)
+    },
+    backfill: async (): Promise<never> => {
+      throw Error('Operação inesperada')
+    },
+    download: async ({ itemId }) => {
+      const bytes = stored.get(itemId)
+      if (!bytes) throw Error(`Download inesperado de ${itemId}`)
+      return new Uint8Array(bytes)
+    },
+    upload: async ({ intent, intentHash, blobs }) => {
+      if (offline) throw Error('sem rede')
+      uploads.push({ opId: intent.opId, baseEpoch: intent.baseEpoch })
+      // O servidor continua estrito: a unidade selada na época 3 não reserva na época 4.
+      if (intent.baseEpoch !== epoch) throw new PintaCausalRequestError(409, 'epoch-changed')
+      epoch = String(Number(epoch) + 1)
+      const members = []
+      for (const member of intent.members) {
+        if (member.action !== 'put') throw Error('fixture')
+        const previous = remote.get(member.itemId)
+        const layoutRevision = previous?.layoutRevision ?? null
+        const revision = (previous?.revision ?? 0) + 1
+        remote.set(member.itemId, {
+          itemId: member.itemId,
+          kind: member.kind,
+          name: member.name,
+          itemUpdatedAt: member.itemUpdatedAt,
+          formatVersion: member.formatVersion,
+          revision,
+          sha256: member.sha256,
+          layoutRevision,
+          bytes: member.bytes,
+          coverage: 'certified',
+        })
+        const blob = blobs.get(member.itemId)
+        if (!blob) throw Error('Candidato ausente')
+        stored.set(member.itemId, new Uint8Array(await blob.arrayBuffer()))
+        members.push({
+          itemId: member.itemId,
+          revision,
+          sha256: member.sha256,
+          layoutRevision,
+          deleted: false,
+        })
+      }
+      return { opId: intent.opId, epoch, intentHash, members }
+    },
+    settle: async ({ intent }) => {
+      settled.push(intent.opId)
+      return { state: 'aborted' }
+    },
+  }
+  const wrapper = createCloudMirroredPintaPersistence({
+    local,
+    cloud: { ...cloud, pintaCausal: transport },
+    viewerId: 'epoch-renew',
+    causal: {
+      local: local.causal,
+      holdOpen: async () => () => {},
+      withClosed: (_, apply) => apply(),
+    },
+  })
+  try {
+    const base = await local.loadAssetById(sheet.id)
+    if (base?.kind !== 'tileset') throw Error('Folha ausente')
+    const paint = {
+      ...base,
+      tiles: base.tiles.map((tile, i) => {
+        if (i > 0) return tile
+        const data = new Uint8Array(tile.data)
+        data[0] = 5
+        return { ...tile, data }
+      }),
+    }
+    await wrapper.persistAsset(paint, { resources: [] })
+    const work = {
+      local: local.causal,
+      cloud: transport,
+      reader: 6,
+      signal: new AbortController().signal,
+    }
+    await expect(flushPintaCausalOutbox(work)).rejects.toThrow('sem rede')
+    const sealed = await local.causal.inFlight()
+    if (!sealed) throw Error('Selo ausente')
+    sealedId = sealed.sealed.intent.opId
+    // Renovar nunca volta a época.
+    const older = { ...sealed.sealed.intent, opId: crypto.randomUUID(), baseEpoch: '2' }
+    await expect(
+      local.causal.renew(sealed.sealed, older, await pintaCausalIntentHash(older), () => true),
+    ).rejects.toThrow('Não consegui conferir')
+    expect((await local.causal.inFlight())?.sealed.intent.opId).toBe(sealedId)
+    const mapCopy = await local.loadAssetById(map.id)
+    if (mapCopy?.kind !== 'tilemap') throw Error('Mapa ausente')
+    await wrapper.persistAsset(
+      { ...mapCopy, name: 'minha-vila' },
+      {
+        resources: [{ id: sheet.id, localRevision: pintaLocalRevisionOf(paint) ?? null }],
+      },
+    )
+    const [next] = (await local.causal.inspect()).pending
+    if (!next?.follows) throw Error('Sucessor encadeado ausente')
+    expect(await freezePintaCausalPending(local.causal, next.opId, work.signal)).toBe(true)
+    offline = false
+    await expect(
+      syncPintaCausalAccount({
+        ...work,
+        canContinue: () => true,
+        isOpen: () => false,
+        withClosed: (_, apply) => apply(),
+      }),
+    ).resolves.toMatchObject({ mode: 'causal', applied: true })
+    expect(settled).toEqual([sealedId])
+    expect(uploads.map(({ baseEpoch }) => baseEpoch)).toEqual(['3', '4', '5'])
+    expect(uploads[1]?.opId).not.toBe(sealedId)
+    const state = await local.causal.inspect()
+    expect(state.sealed).toBeNull()
+    expect(state.pending).toEqual([])
+    expect(state.epoch).toBe('6')
+    expect(state.confirmed.get(sheet.id)?.revision).toBe(2)
+    expect(state.confirmed.get(map.id)?.revision).toBe(2)
+    const gallery = await local.listAllAssets()
+    expect(gallery.map(({ name }) => name).sort()).toEqual(['minha-vila', 'outro', 'pecas'])
+    const savedSheet = gallery.find(({ id }) => id === sheet.id)
+    if (savedSheet?.kind !== 'tileset') throw Error('Folha ausente')
+    expect(savedSheet.tiles[0]?.data[0]).toBe(5)
+    expect(queued).toEqual([])
+  } finally {
+    wrapper.dispose?.()
+  }
+})
+
 test('o commit que vence o abort confirma o recibo exato sem criar cópia', async () => {
   const local = createPintaCausalPersistence({ namespace: 'terminal-commit-race' })
   const sprite = createPixelSpriteAsset({ name: 'lua', frameSize: 8 })

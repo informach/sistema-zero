@@ -1492,7 +1492,12 @@ export function readLocalCausalUpload(
   return { sealed, blobs }
 }
 
-/** The exact same frozen candidate can get a fresh ticket after proof its remote basis is unchanged. */
+/**
+ * The exact same frozen candidate can get a fresh ticket after proof its remote basis is unchanged.
+ * A newer epoch (another device changed something this unit never read) also moves the units
+ * chained after it, whose basis the caller proved in the same snapshot, so the receipt still
+ * promotes them.
+ */
 export function renewLocalCausalUpload(
   records: Map<string, unknown>,
   previous: Pick<PintaCausalSealed, 'intentHash' | 'intent'>,
@@ -1513,13 +1518,18 @@ export function renewLocalCausalUpload(
     !PintaCausalIntentSchema.safeParse(next).success ||
     !digest(intentHash) ||
     renewed === opId ||
-    newEpoch !== baseEpoch ||
+    BigInt(newEpoch) < BigInt(baseEpoch) ||
     !pintaValuesEqual(body, newBody)
   )
     invalid()
+  const chain = new Set([opId])
   const pending = state.pending.map((unit) => {
+    const follower = unit.follows !== undefined && chain.has(unit.follows)
+    if (follower) chain.add(unit.opId)
+    const rebased = follower && newEpoch !== baseEpoch && unit.baseEpoch === baseEpoch
     return {
       ...unit,
+      ...(rebased ? { baseEpoch: newEpoch, preparation: crypto.randomUUID() } : {}),
       ...(unit.follows === opId ? { follows: renewed } : {}),
       ...(unit.inverseOf === opId ? { inverseOf: renewed } : {}),
       members: unit.members.map((member) =>

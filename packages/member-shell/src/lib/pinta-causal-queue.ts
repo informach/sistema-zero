@@ -11,7 +11,11 @@ import {
 } from '@sistemazero/core/creations/pinta-causal'
 import type { PintaCausalLocalPort as NativeCausalPort } from '@sistemazero/pinta'
 import type { PintaMemoryAsset } from '@sistemazero/pinta/assets'
-import { type PintaCausalCloud, PintaCausalRequestError } from './pinta-causal-cloud'
+import {
+  type PintaCausalCloud,
+  PintaCausalRequestError,
+  type PintaCloudSnapshot,
+} from './pinta-causal-cloud'
 
 /** Carry the attempted seal across awaits so recovery cannot abort a different tab's upload. */
 type PintaCausalLocalPort = NativeCausalPort<PintaMemoryAsset>
@@ -47,6 +51,44 @@ export async function freezePintaCausalPending(
   return local.freeze(opId, draft.pending.preparation, frozen.puts, frozen.blobs)
 }
 
+type LocalQueue = Awaited<ReturnType<PintaCausalLocalPort['inspect']>>
+type LocalPending = LocalQueue['pending'][number]
+type VisibleEntries = ReadonlyMap<string, PintaCloudSnapshot['entries'][number]>
+
+/** Same remote basis: what the unit based its members on and every snapshot edge it read. */
+function preservesBasis(
+  members: readonly { itemId: string; baseRevision: number; baseAfter?: unknown }[],
+  readSet: LocalPending['readSet'],
+  visible: VisibleEntries,
+): boolean {
+  return (
+    members.every(
+      (member) =>
+        member.baseAfter !== undefined ||
+        (visible.get(member.itemId)?.revision ?? 0) === member.baseRevision,
+    ) &&
+    readSet.every((edge) => {
+      if (edge.source !== 'snapshot') return true
+      const entry = visible.get(edge.targetId)
+      return (
+        entry?.revision === edge.revision &&
+        entry.sha256 === edge.sha256 &&
+        (entry.layoutRevision ?? undefined) === edge.layoutRevision
+      )
+    })
+  )
+}
+
+/** Queued units chained after `opId` (directly or through another follower). */
+function followersOf(queue: LocalQueue, opId: string): LocalPending[] {
+  const chain = new Set([opId])
+  return queue.pending.filter((unit) => {
+    if (!unit.follows || !chain.has(unit.follows)) return false
+    chain.add(unit.opId)
+    return true
+  })
+}
+
 export async function flushPintaCausalOutbox(options: {
   local: Pick<
     PintaCausalLocalPort,
@@ -54,7 +96,7 @@ export async function flushPintaCausalOutbox(options: {
   > &
     Partial<Pick<PintaCausalLocalPort, 'renew' | 'prepared' | 'retained'>>
   cloud: Pick<PintaCausalCloud, 'upload'> &
-    Partial<Pick<PintaCausalCloud, 'snapshot' | 'verifyEpoch'>>
+    Partial<Pick<PintaCausalCloud, 'snapshot' | 'verifyEpoch' | 'settle'>>
   reader: number
   writer?: number
   inventoryFloor?: number
@@ -74,7 +116,8 @@ export async function flushPintaCausalOutbox(options: {
     )
       throw new PintaClientOutdatedError()
   }
-  let renewed = false
+  // One fresh ticket per sealed unit: the server's answer to that fresh ticket is final.
+  let renewedOpId: string | null = null
   for (;;) {
     signal.throwIfAborted()
     const upload = await local.inFlight()
@@ -90,38 +133,54 @@ export async function flushPintaCausalOutbox(options: {
           upload.sealed.intent.opId,
           upload.sealed.intentHash,
         )
+        // Another device editing ANOTHER drawing also moves the epoch. When the new snapshot
+        // keeps every basis this unit and its chained followers read, only the ticket is stale:
+        // renew on the new epoch (reserve stays strict). A real conflict still becomes a copy.
+        const epochMoved = error.reason === 'epoch-changed'
         if (
-          renewed ||
-          !['operation-expired', 'operation-aborted', 'not-found'].includes(error.reason) ||
+          renewedOpId === upload.sealed.intent.opId ||
+          !(
+            epochMoved ||
+            ['operation-expired', 'operation-aborted', 'not-found'].includes(error.reason)
+          ) ||
           !cloud.snapshot ||
           !cloud.verifyEpoch ||
-          !local.renew
+          !local.renew ||
+          (epochMoved && !cloud.settle)
         )
           throw failure
         const snapshot = await cloud.snapshot(signal)
         if (!snapshot) throw failure
         const prior = upload.sealed.intent
         const visible = new Map(snapshot.entries.map((entry) => [entry.itemId, entry]))
-        const preservesBasis =
-          prior.members.every(
-            (member) => (visible.get(member.itemId)?.revision ?? 0) === member.baseRevision,
-          ) &&
-          prior.readSet.every((edge) => {
-            if (edge.source === 'unit') return true
-            const entry = visible.get(edge.targetId)
-            return (
-              entry?.revision === edge.revision &&
-              entry.sha256 === edge.sha256 &&
-              (entry.layoutRevision ?? undefined) === edge.layoutRevision
-            )
-          })
-        if (!preservesBasis || snapshot.epoch !== prior.baseEpoch) throw failure
+        const followers = epochMoved ? followersOf(await local.inspect(), prior.opId) : []
+        if (
+          !preservesBasis(prior.members, prior.readSet, visible) ||
+          followers.some(
+            (unit) =>
+              unit.baseEpoch !== prior.baseEpoch ||
+              !preservesBasis(unit.members, unit.readSet, visible),
+          ) ||
+          (epochMoved
+            ? BigInt(snapshot.epoch) <= BigInt(prior.baseEpoch)
+            : snapshot.epoch !== prior.baseEpoch)
+        )
+          throw failure
+        if (epochMoved && cloud.settle) {
+          // The stale ticket may still hold its rows: end it so the fresh one can reserve them.
+          const terminal = await cloud.settle(upload.sealed, signal)
+          signal.throwIfAborted()
+          if (terminal.state === 'committed') {
+            if (!(await local.acknowledge(terminal.result, () => !signal.aborted))) return
+            continue
+          }
+        }
         await cloud.verifyEpoch(snapshot.epoch, signal)
         const next = { ...prior, opId: crypto.randomUUID(), baseEpoch: snapshot.epoch }
         const hash = await pintaCausalIntentHash(next)
         signal.throwIfAborted()
         if (!(await local.renew(upload.sealed, next, hash, () => !signal.aborted))) return
-        renewed = true
+        renewedOpId = next.opId
         continue
       }
       signal.throwIfAborted()
