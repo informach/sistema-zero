@@ -4,15 +4,18 @@ import {
   encodePintaHexRegionLayers,
   encodePintaRegionLayers,
   PINTA_HEX_REGION_CHUNK_BYTES,
+  PINTA_HEX_REGION_MAX_CHUNKS,
   PINTA_REGION_CELL_COUNT,
   PINTA_REGION_CHUNK_BYTES,
+  PINTA_REGION_LIMITS,
 } from '../creations/pinta-regions'
 import {
+  PINTA_PROJECTED_SCENE_MAX_INDEX_BYTES,
   type PintaProjectedSceneWire,
   preparePintaProjectedScene,
   readPintaProjectedScene,
 } from './pinta-projected-scene'
-import { readPintaRegionScene } from './pinta-region-scene'
+import { PINTA_REGION_SCENE_MAX_INDEX_BYTES, readPintaRegionScene } from './pinta-region-scene'
 import { readPintaScene } from './pinta-scene'
 
 function scene(): PintaProjectedSceneWire {
@@ -171,4 +174,83 @@ test('a well-formed 32-bit chunk with a nonexistent tile refuses the entire scen
   const plan = preparePintaProjectedScene(JSON.stringify(wire))
   expect(plan).not.toBeNull()
   expect(plan?.decode()).toBeNull()
+})
+
+/** Row-major chunks with one occupied cell each. A count above the encoder's own cap is
+ * encoded in two parts and joined in canonical order, so only the reader judges it. */
+function fill(wire: PintaProjectedSceneWire, square: number, hex: number) {
+  const across = 64
+  const bounds = (count: number) => ({
+    col: -32,
+    row: -32,
+    cols: across * 32,
+    rows: Math.ceil(count / across) * 32,
+  })
+  const positions = (from: number, to: number) =>
+    Array.from({ length: to - from }, (_, i) => ({
+      col: ((from + i) % across) - 1,
+      row: Math.floor((from + i) / across) - 1,
+    }))
+  function encoded<Wire extends { chunks: unknown[] }>(
+    count: number,
+    max: number,
+    encode: (from: number, to: number) => Wire | undefined,
+  ): Wire {
+    const first = encode(0, Math.min(count, max))
+    const rest = count > max ? encode(max, count) : undefined
+    if (!first || (count > max && !rest)) throw Error('Grade de teste inválida')
+    return rest ? { ...first, chunks: [...first.chunks, ...rest.chunks] } : first
+  }
+  const root = bounds(square),
+    set = bounds(hex),
+    sheet = wire.sets![0]!
+  Object.assign(wire, { cols: root.cols, rows: root.rows })
+  Object.assign(sheet, { cols: set.cols, rows: set.rows })
+  const iso = wire.layers[0]!,
+    cells = sheet.layers[0]!
+  if (iso.kind !== 'tiles' || cells.kind !== 'tiles') throw Error('Camadas esperadas ausentes')
+  iso.cells = encoded(square, PINTA_REGION_LIMITS.maxChunks, (from, to) => {
+    const chunks = positions(from, to).map((at) => ({
+      ...at,
+      cells: new Int16Array(PINTA_REGION_CELL_COUNT).fill(-1).fill(1, 0, 1),
+    }))
+    return encodePintaRegionLayers([{ kind: 'regions', version: 1, side: 32, chunks }], root)?.[0]
+  })
+  cells.cells = encoded(hex, PINTA_HEX_REGION_MAX_CHUNKS, (from, to) => {
+    const chunks = positions(from, to).map((at) => ({
+      ...at,
+      cells: new Uint32Array(PINTA_REGION_CELL_COUNT).fill(PINTA_HEX_EMPTY_CELL).fill(1, 0, 1),
+    }))
+    return encodePintaHexRegionLayers(
+      [{ kind: 'hex-regions', version: 1, side: 32, chunks }],
+      set,
+    )?.[0]
+  })
+  return wire
+}
+
+test('scene 5 shares the scene 4 index budget: each map keeps its 4 MiB, the scene is bounded by its JSON', () => {
+  expect(PINTA_PROJECTED_SCENE_MAX_INDEX_BYTES).toBe(PINTA_REGION_SCENE_MAX_INDEX_BYTES)
+  // Root and set each fit their own 4 MiB, together more than 4 MiB.
+  const square = 1100,
+    hex = 550
+  const plan = preparePintaProjectedScene(JSON.stringify(fill(scene(), square, hex)))
+  expect(plan?.indexBytes).toBe(
+    square * PINTA_REGION_CHUNK_BYTES + hex * PINTA_HEX_REGION_CHUNK_BYTES,
+  )
+  expect(plan!.indexBytes).toBeGreaterThan(4 * 1024 * 1024)
+  expect(plan?.decode()?.sets?.[0]?.layers[0]).toBeDefined()
+  // Exactly at its own 4 MiB a map is admitted; one chunk more is still refused.
+  expect(
+    preparePintaProjectedScene(JSON.stringify(fill(scene(), PINTA_REGION_LIMITS.maxChunks, 1))),
+  ).not.toBeNull()
+  expect(
+    preparePintaProjectedScene(JSON.stringify(fill(scene(), 1, PINTA_HEX_REGION_MAX_CHUNKS))),
+  ).not.toBeNull()
+  expect(
+    preparePintaProjectedScene(JSON.stringify(fill(scene(), PINTA_REGION_LIMITS.maxChunks + 1, 1))),
+  ).toBeNull()
+  expect(
+    preparePintaProjectedScene(JSON.stringify(fill(scene(), 1, PINTA_HEX_REGION_MAX_CHUNKS + 1))),
+  ).toBeNull()
 })

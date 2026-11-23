@@ -38,6 +38,12 @@ const isProjectedSet = (asset: ProjectedSceneAsset): asset is ProjectedMapSetAss
 function invalid(): never {
   throw new Error('Não foi possível reunir as regiões e as projeções deste cenário.')
 }
+/** The same limit message as the scene 4 writer. */
+function overBudget(): never {
+  throw new Error(
+    'O cenário passou do limite para jogar. Use menos desenhos ou divida em outros lugares.',
+  )
+}
 
 /** Prepare the full authored world, with shared resource/atlas preparation.
  * Projected cells are never passed through a regional or square-cell decoder.
@@ -94,7 +100,7 @@ export async function exportPintaProjectedScene(
         size.byteLength(metadata, PINTA_PROJECTED_SCENE_MAX_JSON_BYTES) >
         PINTA_PROJECTED_SCENE_MAX_JSON_BYTES
       )
-        invalid()
+        overBudget()
       for (const map of documents) {
         const authored = projected.get(map)
         if (authored) {
@@ -114,7 +120,7 @@ export async function exportPintaProjectedScene(
             .filter(isTileLayer)
             .reduce((sum, layer) => sum + layer.cells.chunks.length * PINTA_REGION_CHUNK_BYTES, 0)
         }
-        if (indexBytes > PINTA_PROJECTED_SCENE_MAX_INDEX_BYTES) invalid()
+        if (indexBytes > PINTA_PROJECTED_SCENE_MAX_INDEX_BYTES) overBudget()
       }
     },
   })
@@ -185,7 +191,7 @@ export async function exportPintaProjectedScene(
     new JsonByteSizeCache(64).byteLength(wire, PINTA_PROJECTED_SCENE_MAX_JSON_BYTES) >
     PINTA_PROJECTED_SCENE_MAX_JSON_BYTES
   )
-    invalid()
+    overBudget()
   const json = JSON.stringify(wire)
   const bytes = utf8ByteLength(json)
   const scene = readPintaProjectedScene(json)

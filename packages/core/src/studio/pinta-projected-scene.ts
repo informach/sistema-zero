@@ -15,7 +15,10 @@ import {
   parsePintaRegionLayerLocations,
   parsePintaRegionLayers,
 } from '../creations/pinta-regions'
-import { PINTA_REGION_SCENE_MAX_JSON_BYTES } from './pinta-region-scene'
+import {
+  PINTA_REGION_SCENE_MAX_INDEX_BYTES,
+  PINTA_REGION_SCENE_MAX_JSON_BYTES,
+} from './pinta-region-scene'
 import {
   PintaSceneBaseSchema,
   type PintaSceneCellsLayer,
@@ -25,8 +28,10 @@ import {
 
 export const PINTA_PROJECTED_SCENE_VERSION = 5
 export const PINTA_PROJECTED_SCENE_MAX_JSON_BYTES = PINTA_REGION_SCENE_MAX_JSON_BYTES
-export const PINTA_PROJECTED_SCENE_MAX_INDEX_BYTES =
-  PINTA_REGION_LIMITS.maxChunks * PINTA_REGION_CHUNK_BYTES
+/** The scene 4 budget, derived from the JSON budget: each map keeps its own 4 MiB (the region
+ * parsers cap chunks per map), and root + sets together are bounded by what the JSON can carry.
+ * A 32-bit hexagonal chunk spends twice the bytes and twice the base64, so the bound is the same. */
+export const PINTA_PROJECTED_SCENE_MAX_INDEX_BYTES = PINTA_REGION_SCENE_MAX_INDEX_BYTES
 
 const layer = z.discriminatedUnion('kind', [
   PintaSceneLayerSchema.options[0].extend({ cells: z.unknown() }),
