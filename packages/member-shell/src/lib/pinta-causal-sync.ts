@@ -42,9 +42,22 @@ export async function syncPintaCausalAccount(options: {
         signal,
       })
     } catch (error) {
+      if (!cloud.settle || !(error instanceof PintaCausalUploadError)) throw error
+      const candidate = await local.inFlight()
       if (
-        !cloud.settle ||
-        !(error instanceof PintaCausalUploadError) ||
+        !candidate ||
+        candidate.sealed.intent.opId !== error.opId ||
+        candidate.sealed.intentHash !== error.intentHash
+      )
+        throw error
+      // Regiões (23/11/2026): uma aba do deploy anterior pode selar uma unidade com leitor 6 antes
+      // de o piso do inventário subir para 7. Ela nunca será aceita; em vez de travar a fila do
+      // código atual, ela é encerrada e recuperada como as outras unidades vencidas.
+      const outgrown =
+        error.reason === 'client-outdated' &&
+        candidate.sealed.intent.reader < snapshot.requiredFormat
+      if (
+        !outgrown &&
         ![
           'operation-expired',
           'operation-aborted',
@@ -53,13 +66,6 @@ export async function syncPintaCausalAccount(options: {
           'stale-base',
           'layout-stale',
         ].includes(error.reason)
-      )
-        throw error
-      const candidate = await local.inFlight()
-      if (
-        !candidate ||
-        candidate.sealed.intent.opId !== error.opId ||
-        candidate.sealed.intentHash !== error.intentHash
       )
         throw error
       const settled = await cloud.settle(candidate.sealed, signal)

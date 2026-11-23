@@ -448,7 +448,8 @@ export interface PintaPersistence<Asset extends PintaWorkshopAsset = PintaAsset>
     signal?: AbortSignal,
     causal?: LocalRegionCausalBinding,
   ): Promise<LocalRegionAuthorSession | null>
-  listGalleryIndex?(): Promise<RegionGalleryIndex | null>
+  /** `causal`: read beside the account's V4 queue (only the account mirror passes it). */
+  listGalleryIndex?(options?: { causal?: true }): Promise<RegionGalleryIndex | null>
   deleteAsset(id: string, base?: Asset): Promise<void>
   loadAssetById(id: string): Promise<Asset | null>
   listAllAssets(): Promise<Asset[]>

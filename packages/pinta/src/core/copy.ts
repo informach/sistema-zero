@@ -524,6 +524,8 @@ export const COPY = {
     needTileset: 'Antes de criar um mapa, crie as suas "Peças do cenário".',
     forProjectPrefix: 'Desenho para o jogo',
     willLookLike: 'Vai ficar assim:',
+    /** O cenário grande (mapa por regiões): só ocupa espaço onde a criança pinta. */
+    world: 'Mundo gigante',
     customSize: {
       card: 'Personalizado',
       cardDetail: 'Você escolhe os números',

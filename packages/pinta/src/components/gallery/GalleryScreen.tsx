@@ -960,6 +960,26 @@ export function GalleryScreen(): JSX.Element {
               }
             })
         }}
+        // O cenário grande só existe no armazenamento da oficina, e fica fora do pedido de arte
+        // de uma missão (que entrega o desenho pelo caminho de sempre).
+        {...(persistence.workshopReader && !intent
+          ? {
+              onCreateRegionMap: (input: { name: string; tilesetId: string }) => {
+                setCreating(true)
+                void gallery
+                  .getState()
+                  .createRegionMap(input)
+                  .then((asset) => {
+                    setCreating(false)
+                    if (asset) {
+                      setCreateOpen(false)
+                      setJustCreatedId(asset.id)
+                      openAsset(asset.id)
+                    } else showToast(gallery.getState().mutateError ?? COPY.editor.saveError)
+                  })
+              },
+            }
+          : {})}
       />
 
       {importImage !== null ? (

@@ -59,6 +59,10 @@ mock.module('@sistemazero/pinta', () => ({
     return null
   },
 }))
+// Sem conta, o host monta a oficina regional (etapa 1 das regiões): o mesmo dono de armazenamento.
+mock.module('@sistemazero/pinta/workshop-reader', () => ({
+  createWorkshopPintaPersistence: ({ namespace }: { namespace: string }) => ({ namespace }),
+}))
 mock.module('../../src/lib/creations-cloud', () => ({
   createCreationsCloud: (options: { viewerId: string; pintaPaletteWriteEnabled: boolean }) => {
     const { viewerId } = options

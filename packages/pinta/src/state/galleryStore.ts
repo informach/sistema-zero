@@ -31,6 +31,7 @@ import { observePintaReferences } from '../core/sceneMapClosure'
 import { pintaWorkshopBody } from '../core/workshopAsset'
 import { findTemplate } from '../templates/catalog'
 import { isPintaAuthoredMap } from '../tiles/automapping/model'
+import { createRegionWorld } from '../tiles/regionMap'
 import { cloneWithNewIds, planImport, uniqueName } from './importPlan'
 import {
   createPintaPersistence,
@@ -87,6 +88,15 @@ export interface PintaGalleryState {
   load(): Promise<void>
   /** Cria e persiste; devolve o asset novo ou null (nome inválido/duplicado/cota). */
   create(input: NewAssetInput): Promise<PintaAsset | null>
+  /**
+   * Cria um cenário grande (mapa por regiões, nativo 8) que só ocupa espaço onde a criança pinta.
+   * Só um armazenamento da oficina (`workshopReader`) guarda esse formato; os outros recusam.
+   */
+  createRegionMap(input: {
+    name: string
+    tilesetId: string
+    projectRef?: PintaProjectRef
+  }): Promise<PintaMemoryAsset | null>
   /**
    * Cria a partir de um MODELO PRONTO: pode gerar VÁRIOS assets (um mapa vem com
    * o tileset). O principal recebe o nome escolhido; companheiros ganham sufixo
@@ -284,6 +294,31 @@ export function createGalleryStore(
           mutateError: null,
           lastStyle: assetStyle(asset.kind) ?? state.lastStyle,
         }))
+        return asset
+      } catch (error) {
+        set({ mutateError: persistenceErrorMessage(error) })
+        return null
+      }
+    },
+
+    async createRegionMap(input) {
+      const name = normalizeAssetName(input.name)
+      if (!name) {
+        set({ mutateError: COPY.newAsset.nameInvalid })
+        return null
+      }
+      if (names().has(name)) {
+        set({ mutateError: COPY.newAsset.nameTaken })
+        return null
+      }
+      const asset = persistence.workshopReader ? createRegionWorld({ ...input, name }) : null
+      if (!asset) {
+        set({ mutateError: COPY.editor.saveError })
+        return null
+      }
+      try {
+        await persistOne(asset)
+        set((state) => ({ assets: upsertSorted(state.assets, asset), mutateError: null }))
         return asset
       } catch (error) {
         set({ mutateError: persistenceErrorMessage(error) })

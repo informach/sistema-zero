@@ -1,0 +1,715 @@
+[
+  {
+    "id": "capa",
+    "capa": true,
+    "linha1": "A ponte",
+    "linha2": "apressada",
+    "frase": "Todos os passos para construir a ponte do seu jogo, em 2D e em 3D.",
+    "fraseBaixo": "Da primeira puxada na alavanca ao sino do outro lado."
+  },
+  {
+    "id": "p1",
+    "kicker": "Passo a passo do projeto",
+    "title": "A ponte apressada",
+    "subtitle": "O farol ganhou um laguinho com uma ponte levadiça. Você vai programar a alavanca, o relógio e a travessia, primeiro no jogo 2D e depois na ilha em 3D.",
+    "items": [
+      {
+        "kind": "faixa",
+        "images": [
+          {
+            "image": "jogo-2d",
+            "caption": "Aula 1 · Jogo 2D"
+          },
+          {
+            "image": "jogo-3d",
+            "caption": "Aula 2 · Jogo 3D"
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "text": "No meio do laguinho tem uma pedra com um sino. Para chegar lá existe uma ponte levadiça, ao lado de uma alavanca. Só que essa ponte é apressada. O que ela faz com o tempo, você descobre na experiência da Aula 1. O farol continua como antes: com a chave, ele acende."
+      },
+      {
+        "kind": "box",
+        "tone": "azul",
+        "icon": "livro",
+        "title": "Use quando precisar",
+        "text": "Este é o seu Passo a passo do projeto! Nele estão os passos para montar o seu jogo nas duas aulas, com os blocos que você vai usar e o lugar de cada um. Se esquecer algum passo, é só voltar aqui. Em cada encaixe, deixe primeiro à vista o lugar do bloco; depois pegue o bloco e arraste até lá. Se quiser, leia aqui mesmo. E, se preferir, clique em <b>Baixar</b> para guardar e consultar onde quiser."
+      },
+      {
+        "kind": "index",
+        "title": "O que você vai fazer",
+        "text": "No alto de cada página estão a aula e a parte, como na tela da aula.",
+        "days": [
+          {
+            "kicker": "Aula 1 · Jogo 2D",
+            "title": "Aberta por um tempo",
+            "text": "Você investiga o relógio da ponte e monta a alavanca, a ponte que sobe sozinha e a travessia até o sino.",
+            "pages": "Páginas {{pagina:experiencia}} a {{pagina:revisao-1}}"
+          },
+          {
+            "kicker": "Aula 2 · Jogo 3D",
+            "title": "A ponte da ilha",
+            "text": "A mesma regra na Ilha do Farol, com as animações dos modelos no lugar das imagens.",
+            "pages": "Páginas {{pagina:ilha-alavanca}} a {{pagina:revisao-2}}"
+          }
+        ],
+        "extras": [
+          {
+            "icon": "olho",
+            "title": "A experiência",
+            "text": "Página {{pagina:experiencia}}"
+          },
+          {
+            "icon": "lista",
+            "title": "Enviar o projeto",
+            "text": "Aula 1, página {{pagina:atravessar-envio}}; Aula 2, página {{pagina:ilha-atravessar-envio}}"
+          },
+          {
+            "icon": "medalha",
+            "title": "Pense na ponte",
+            "text": "Páginas {{pagina:revisao-1}} e {{pagina:revisao-2}}"
+          },
+          {
+            "icon": "ajuda",
+            "title": "Se precisar de ajuda",
+            "text": "Página {{pagina:revisao-2}}"
+          }
+        ]
+      },
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "icon": "setas",
+        "title": "Antes de montar",
+        "text": "No começo de cada aula, jogue a versão pronta. Na Aula 1, segure uma das setas do canto de baixo do jogo; no computador, você também pode clicar no jogo e usar as setas do teclado. Na Aula 2, clique dentro do jogo e segure uma seta do teclado; as letras W, A, S e D também funcionam. A tecla R começa outra partida. Quando terminar, clique em <b>Próxima parte</b>."
+      }
+    ]
+  },
+  {
+    "id": "experiencia",
+    "kicker": "Aula 1 · Parte 3 · Experiência antes da montagem",
+    "title": "Quando o relógio começa a contar?",
+    "subtitle": "Um jogo também sabe esperar: ele conta alguns segundos e, quando o tempo acaba, faz alguma coisa sozinho.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "icon": "filme",
+        "text": "Sabe quando você espera o semáforo de pedestre abrir? Ele conta um tempo e troca de cor sozinho, sem ninguém mexer nele. No seu jogo, a ponte tem uma alavanca e um relógio que conta 4 segundos.<br/>O jogo também precisa lembrar se a ponte está baixada, como quem anota num papelzinho. Ele guarda isso numa variável chamada <b>ponteAberta</b>: <b>verdadeiro</b> quando a ponte está baixada, <b>falso</b> quando ela está levantada. E quando é que o relógio da ponte começa a contar?"
+      },
+      {
+        "kind": "tests",
+        "title": "O que investigar",
+        "text": "Investigue o que acontece com a ponte enquanto o relógio conta, com o relógio começando na alavanca e junto com a partida. Antes e depois de cada teste, observe a ponte, o caderninho do jogo e o relógio.",
+        "list": [
+          "Ande até a ponte antes de puxar a alavanca.",
+          "Ande até a alavanca e observe a ponte e o caderninho do jogo.",
+          "Puxe a alavanca e chegue à ponte antes de o relógio chegar a 4.",
+          "Puxe a alavanca, deixe o relógio chegar a 4 e observe a ponte.",
+          "Quando a ponte subir sozinha, saia e volte à alavanca.",
+          "Troque a peça do relógio para <b>quando a partida começa</b> e compare."
+        ]
+      },
+      {
+        "kind": "box",
+        "tone": "azul",
+        "icon": "livro",
+        "title": "O Zappy te acompanha",
+        "text": "O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em <b>Próxima parte</b>."
+      }
+    ]
+  },
+  {
+    "id": "descobriu",
+    "kicker": "Aula 1 · Parte 4 · O que você descobriu",
+    "title": "A ponte espera 4 segundos",
+    "subtitle": "Cada puxada baixa a ponte e começa a contar o tempo de novo.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "Na experiência, a alavanca baixava a ponte, e ponteAberta virava verdadeiro. O relógio contava 4 segundos desde a puxada, e aí a ponte subia sozinha. A ponte só deixava passar enquanto estava baixada."
+      },
+      {
+        "kind": "momentos",
+        "cards": [
+          {
+            "title": "Começo da partida",
+            "images": ["ponte-levantada", "alavanca-cima", "pedra-do-sino"],
+            "valor": "falso",
+            "text": "A ponte está levantada."
+          },
+          {
+            "title": "Puxou a alavanca",
+            "images": ["ponte-baixada", "alavanca-baixo", "pedra-do-sino"],
+            "valor": "verdadeiro",
+            "text": "O relógio começa: 1, 2, 3, 4."
+          },
+          {
+            "title": "4 segundos depois",
+            "images": ["ponte-levantada", "alavanca-cima", "pedra-do-sino"],
+            "valor": "falso",
+            "text": "A ponte sobe sozinha."
+          }
+        ]
+      },
+      {
+        "kind": "box",
+        "tone": "azul",
+        "icon": "repetir",
+        "title": "Quando o relógio começa",
+        "text": "Com o relógio começando na alavanca, cada puxada conta 4 segundos de novo. Com o relógio começando junto com a partida, ele contava uma vez só, logo no começo. Por isso, no seu jogo, o relógio vai dentro do encontro com a alavanca."
+      },
+      {
+        "kind": "note",
+        "text": "Nas próximas partes, você monta isso no seu jogo, um pedaço de cada vez: a alavanca, o relógio e a travessia."
+      }
+    ]
+  },
+  {
+    "id": "alavanca",
+    "kicker": "Aula 1 · Parte 4 · Construção",
+    "title": "Crie ponteAberta",
+    "subtitle": "Clique em Rodar de novo e leve o personagem até a alavanca: nada acontece, porque o encontro com a alavanca ainda não tem nenhuma reação.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "Primeiro, o jogo precisa de um lugar para lembrar se a ponte está baixada: a variável <b>ponteAberta</b>, que nasce quando o jogo começa. Depois vem o encontro com a alavanca."
+      },
+      {
+        "kind": "step",
+        "title": "1. Crie ponteAberta",
+        "text": "Encontre a área <b>Ao iniciar</b>. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer. Deixe à vista o fim dela: o último bloco é o que cria o sprite alavanca.<br/><b>Programação &gt; Variáveis.</b> Pegue <b>Criar variável</b> e solte logo abaixo do bloco que cria o sprite alavanca. Ele chega com o nome <b>contador</b>: clique em contador e escreva <b>ponteAberta</b>, tudo junto e com o A maiúsculo."
+      },
+      {
+        "kind": "step",
+        "title": "2. Comece com falso",
+        "text": "O valor chega com o número 0, mas ponteAberta guarda verdadeiro ou falso.<br/><b>Programação &gt; Lógica &amp; Se.</b> Pegue <b>verdadeiro</b> e solte em cima do 0. Clique em verdadeiro e escolha <b>falso</b>, porque toda partida começa com a ponte levantada."
+      },
+      {
+        "kind": "drawing",
+        "name": "variavel-2d",
+        "title": "Até aqui, confira se ficou assim"
+      }
+    ]
+  },
+  {
+    "id": "alavanca-encontro",
+    "kicker": "Aula 1 · Parte 4 · Construção",
+    "title": "O encontro com a alavanca",
+    "subtitle": "A reação é o que você viu na experiência: a alavanca desce, a ponte baixa e ponteAberta vira verdadeiro.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "3. Crie o encontro com a alavanca",
+        "text": "Os encontros ficam na área <b>Quando acontecer</b>. Lá dentro, o último evento é o da tecla R. O encontro novo vai logo abaixo dele, fora do fazer dele.<br/><b>Jogo 2D &gt; Colisões &gt; Encostar e bloquear.</b> Pegue <b>Quando o sprite começar a encostar no sprite</b> e solte logo abaixo do evento da tecla R. Não coloque um evento dentro do outro. Ele chega com <b>jogador</b> e <b>inimigo</b>: clique em jogador e escolha <b>personagem</b>; clique em inimigo e escolha <b>alavanca</b>."
+      },
+      {
+        "kind": "step",
+        "title": "4. Troque as duas imagens",
+        "text": "A reação vai no espaço ao lado da palavra <b>fazer</b>, dentro do encontro novo.<br/><b>Jogo 2D &gt; Sprites &gt; Criar e trocar aparência.</b> Pegue <b>Trocar imagem do sprite</b> e solte ao lado de fazer. Ele chega com <b>heroi</b> em dois lugares: no primeiro, escolha <b>alavanca</b>; no segundo, a imagem <b>alavanca-baixo</b>.<br/>Logo abaixo, solte outro <b>Trocar imagem do sprite</b>. No primeiro heroi, escolha <b>ponte</b>; no segundo, a imagem <b>ponte-baixada</b>."
+      },
+      {
+        "kind": "step",
+        "title": "5. Anote no papelzinho",
+        "text": "<b>Programação &gt; Variáveis.</b> Pegue <b>Alterar variável para</b> e solte logo abaixo da troca da ponte. Clique em contador e escolha <b>ponteAberta</b>.<br/><b>Programação &gt; Lógica &amp; Se.</b> Pegue outro <b>verdadeiro</b>, solte em cima do 1 e deixe <b>verdadeiro</b>. Em Ao iniciar, a partida começa com a ponte levantada. Aqui, o personagem acabou de puxar a alavanca, e a ponte baixou."
+      },
+      {
+        "kind": "drawing",
+        "name": "reacao-2d",
+        "title": "Até aqui, confira se ficou assim"
+      }
+    ]
+  },
+  {
+    "id": "alavanca-reacao",
+    "kicker": "Aula 1 · Parte 4 · Construção",
+    "title": "O aviso da ponte baixada",
+    "subtitle": "Por último, o aviso conta o que aconteceu. Depois, teste e verifique.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "6. Mude o aviso",
+        "text": "Logo abaixo, solte outro <b>Alterar variável para</b> e escolha <b>aviso</b>. O aviso é uma mensagem, e não um número.<br/><b>Programação &gt; Valores.</b> Pegue <b>texto</b> e solte em cima do número. Clique em Olá, apague e escreva <b>A ponte baixou! Atravesse antes que ela suba.</b>"
+      },
+      {
+        "kind": "drawing",
+        "name": "alavanca-2d",
+        "title": "Confira se ficou assim"
+      },
+      {
+        "kind": "delivery",
+        "title": "Teste e verifique",
+        "text": "Clique em <b>Rodar de novo</b> e leve o personagem até a alavanca: a alavanca desce, a ponte baixa e o aviso muda. A ponte ainda não sobe sozinha, e ainda não dá para atravessar. Isso vem nas próximas partes.<br/>Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+      }
+    ]
+  },
+  {
+    "id": "sobe",
+    "kicker": "Aula 1 · Parte 5 · Construção",
+    "title": "O relógio da ponte",
+    "subtitle": "Clique em Rodar de novo, puxe a alavanca e espere: a ponte fica baixada para sempre, porque nada no seu jogo conta o tempo para ela subir.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "No Estúdio, o relógio é um bloco que sabe esperar: ele espera alguns segundos e só depois faz o que está dentro dele. Como o relógio tem que começar a cada puxada, ele vai dentro do encontro com a alavanca, logo abaixo do aviso."
+      },
+      {
+        "kind": "step",
+        "title": "1. Coloque o relógio",
+        "text": "No encontro com a alavanca, deixe à vista o lugar logo abaixo do último bloco dele, o bloco que muda o aviso.<br/><b>Programação &gt; Repetições.</b> Pegue <b>depois de 1 segundos</b> e solte logo abaixo do bloco que muda o aviso, ainda dentro do encontro. Clique no 1 e troque por <b>4</b>."
+      },
+      {
+        "kind": "step",
+        "title": "2. Desfaça as duas trocas",
+        "text": "Tudo o que ficar ao lado de <b>fazer</b>, dentro do depois de 4 segundos, só acontece quando os 4 segundos acabam.<br/><b>Jogo 2D &gt; Sprites &gt; Criar e trocar aparência.</b> Pegue <b>Trocar imagem do sprite</b> e solte ao lado de fazer. No primeiro heroi, escolha <b>alavanca</b>; no segundo, a imagem <b>alavanca-cima</b>. Logo abaixo, outro <b>Trocar imagem do sprite</b>: <b>ponte</b> e a imagem <b>ponte-levantada</b>."
+      },
+      {
+        "kind": "drawing",
+        "name": "relogio-2d",
+        "title": "Até aqui, confira se ficou assim"
+      }
+    ]
+  },
+  {
+    "id": "sobe-fim",
+    "kicker": "Aula 1 · Parte 5 · Construção",
+    "title": "A ponte sobe sozinha",
+    "subtitle": "Dentro do relógio, ponteAberta volta a falso e o aviso muda.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "3. ponteAberta volta a falso e o aviso muda",
+        "text": "<b>Programação &gt; Variáveis.</b> Pegue <b>Alterar variável para</b>, solte logo abaixo da troca da ponte e escolha <b>ponteAberta</b>. Em cima do 1, solte <b>verdadeiro</b>, de <b>Programação &gt; Lógica &amp; Se</b>. Depois clique em verdadeiro e escolha <b>falso</b>.<br/>Logo abaixo, outro <b>Alterar variável para</b> com <b>aviso</b>. Em cima do número, solte <b>texto</b>, de <b>Programação &gt; Valores</b>. Clique em Olá, apague e escreva <b>A ponte subiu. Puxe a alavanca de novo.</b>"
+      },
+      {
+        "kind": "drawing",
+        "name": "sobe-2d",
+        "title": "Confira se ficou assim"
+      },
+      {
+        "kind": "delivery",
+        "title": "Teste e verifique",
+        "text": "Clique em <b>Rodar de novo</b>, puxe a alavanca e conte até 4: a ponte sobe sozinha, a alavanca volta para cima e o aviso muda. Saia de cima da alavanca e encoste nela de novo: a ponte baixa outra vez.<br/>Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+      }
+    ]
+  },
+  {
+    "id": "atravessar",
+    "kicker": "Aula 1 · Parte 6 · Construção",
+    "title": "A ponte faz uma pergunta",
+    "subtitle": "Clique em Rodar de novo, puxe a alavanca e vá logo para a ponte: nada acontece, porque o encontro com a ponte ainda não faz nenhuma pergunta.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "A ponte só deixava passar enquanto estava baixada. Por isso, na ponte, a pergunta é: <b>ponteAberta</b> é verdadeiro? Uma pergunta de sim ou não, que ajuda o jogo a decidir, se chama <b>condição</b>. Quem faz uma condição no seu jogo é o bloco <b>Se</b>."
+      },
+      {
+        "kind": "step",
+        "title": "1. Crie o encontro com a ponte",
+        "text": "Em <b>Quando acontecer</b>, deixe à vista o lugar logo abaixo do encontro com a alavanca, fora do fazer dele.<br/><b>Jogo 2D &gt; Colisões &gt; Encostar e bloquear.</b> Pegue <b>Quando o sprite começar a encostar no sprite</b> e solte ali. Não coloque um encontro dentro do outro. Clique em jogador e escolha <b>personagem</b>; clique em inimigo e escolha <b>ponte</b>."
+      },
+      {
+        "kind": "step",
+        "title": "2. Ponha o Se",
+        "text": "<b>Programação &gt; Lógica &amp; Se.</b> Pegue <b>Se</b> e solte no espaço ao lado de <b>fazer</b>, dentro do encontro novo.<br/>O Se chega com uma pergunta pronta, <b>x maior que 0</b>. Não é isso que a ponte precisa perguntar: segure essa pergunta pelo sinal de maior e arraste até a lixeira, no canto de baixo, à direita, do espaço dos blocos."
+      },
+      {
+        "kind": "step",
+        "title": "3. Pergunte por ponteAberta",
+        "text": "<b>Programação &gt; Valores.</b> Pegue <b>valor da variável</b> e solte no lugar vazio ao lado de Se. Ele chega com <b>x</b>: clique no x e escolha <b>ponteAberta</b>. Agora o Se pergunta: a ponte está baixada?"
+      },
+      {
+        "kind": "drawing",
+        "name": "pergunta-2d",
+        "title": "Até aqui, confira se ficou assim",
+        "blank": "as respostas vêm nas próximas páginas"
+      }
+    ]
+  },
+  {
+    "id": "atravessar-sim",
+    "kicker": "Aula 1 · Parte 6 · Construção",
+    "title": "A resposta do sim",
+    "subtitle": "O sim leva o personagem para cima da pedra, do outro lado da água.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "4. Abra o senão",
+        "text": "A resposta do sim fica no espaço do <b>então</b>, e a resposta do não fica no espaço do <b>senão</b>. O Se chega sem o senão. Na linha de baixo do Se tem dois sinais de mais: o primeiro fica antes de senão se, e o segundo fica antes da palavra senão, no fim da linha. Clique no <b>segundo</b> sinal de mais."
+      },
+      {
+        "kind": "step",
+        "title": "5. Leve o personagem para a pedra",
+        "text": "No espaço do <b>então</b>: <b>Jogo 2D &gt; Movimento &gt; Posição e tamanho.</b> Pegue <b>Mudar a posição do sprite</b> e solte dentro do então. Clique em jogador e escolha <b>personagem</b>. Troque o 0 depois de x por <b>96</b> e o 0 depois de y por <b>240</b>: é o lugar em cima da pedra."
+      },
+      {
+        "kind": "drawing",
+        "name": "posicao-2d",
+        "title": "Até aqui, confira se ficou assim",
+        "blank": "a resposta do não vem na próxima página"
+      }
+    ]
+  },
+  {
+    "id": "atravessar-respostas",
+    "kicker": "Aula 1 · Parte 6 · Construção",
+    "title": "O sino e a resposta do não",
+    "subtitle": "No sim, o sino toca e o aviso comemora. No não, o aviso pede para puxar a alavanca.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "6. Toque o sino e avise",
+        "text": "Logo abaixo, ainda no então: <b>Jogo 2D &gt; Sprites &gt; Criar e trocar aparência.</b> Pegue <b>Trocar imagem do sprite</b>. No primeiro heroi, escolha <b>sino</b>; no segundo, a imagem <b>pedra-do-sino-tocando</b>.<br/>Embaixo, um <b>Alterar variável para</b> com <b>aviso</b> e um <b>texto</b> em cima do número: <b>Você atravessou e tocou o sino!</b>"
+      },
+      {
+        "kind": "step",
+        "title": "7. A resposta do não",
+        "text": "Dentro do <b>senão</b>, outro <b>Alterar variável para</b> com <b>aviso</b> e outro <b>texto</b>: <b>A ponte está levantada. Puxe a alavanca primeiro.</b>"
+      },
+      {
+        "kind": "drawing",
+        "name": "atravessar-2d",
+        "title": "Confira se ficou assim"
+      }
+    ]
+  },
+  {
+    "id": "atravessar-envio",
+    "kicker": "Aula 1 · Parte 6 · Teste e envio",
+    "title": "Teste três casos e envie",
+    "subtitle": "A ponte só deixa atravessar enquanto está baixada.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "Teste três casos",
+        "text": "Clique em <b>Rodar de novo</b> e faça os três testes, tocando na tecla R antes de cada um: vá direto à ponte, sem puxar a alavanca; puxe a alavanca e vá logo para a ponte; puxe a alavanca e conte até 4 antes de ir."
+      },
+      {
+        "kind": "casos",
+        "cards": [
+          {
+            "title": "Sem puxar a alavanca",
+            "images": ["ponte-levantada", "alavanca-cima", "pedra-do-sino"],
+            "personagem": "margem",
+            "valor": "falso",
+            "text": "Ele não atravessa, e o aviso pede para puxar a alavanca."
+          },
+          {
+            "title": "Puxou e foi logo",
+            "images": ["ponte-baixada", "alavanca-baixo", "pedra-do-sino-tocando"],
+            "personagem": "pedra",
+            "valor": "verdadeiro",
+            "text": "Ele atravessa, e o sino toca."
+          },
+          {
+            "title": "Esperou 4 segundos",
+            "images": ["ponte-levantada", "alavanca-cima", "pedra-do-sino"],
+            "personagem": "margem",
+            "valor": "falso",
+            "text": "A ponte já subiu, e ele não atravessa."
+          }
+        ]
+      },
+      {
+        "kind": "step",
+        "title": "Se algo não funcionou",
+        "text": "Volte aos blocos e confira se ficou assim: o encontro do personagem com a ponte tem o Se com ponteAberta. Dentro do então estão a mudança de posição, a troca do sino e o aviso de sucesso, e dentro do senão está o aviso da ponte levantada. Depois de corrigir, teste de novo."
+      },
+      {
+        "kind": "delivery",
+        "title": "Verificar e enviar",
+        "text": "Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Enviar meu projeto</b> e confirme em <b>Enviar</b>. Quando aparecer <b>Projeto enviado!</b>, clique em <b>Próxima parte</b>."
+      },
+      {
+        "kind": "note",
+        "text": "Pronto, você programou uma ponte com relógio: ela baixa com a alavanca, espera 4 segundos, sobe sozinha e só deixa atravessar a tempo! Depois do envio vem a revisão da aula."
+      }
+    ]
+  },
+  {
+    "id": "revisao-1",
+    "kicker": "Aula 1 · Parte 7 · Revisão",
+    "title": "Pense na ponte",
+    "subtitle": "Depois do envio, quatro perguntas sobre o relógio e a ponte fecham a aula.",
+    "items": [
+      {
+        "kind": "activity",
+        "pill": "Na aula, depois do envio",
+        "text": "Aqui não tem vídeo. Duas perguntas mostram uma cena do jogo, e duas são para pensar no seu projeto."
+      },
+      {
+        "kind": "step",
+        "title": "Escolha e veja acontecendo",
+        "text": "Em cada pergunta, escolha uma resposta e clique em <b>Ver o que acontece</b> ou, nas perguntas sem cena, em <b>Responder</b>. Observe a cena e leia a explicação."
+      },
+      {
+        "kind": "step",
+        "title": "Se errar, tente de novo",
+        "text": "Se errar, clique em <b>Tentar de novo</b> na mesma pergunta. Com a resposta certa, clique em <b>Próxima pergunta</b>; na última, em <b>Concluir revisão</b>. Depois clique em <b>Concluir aula</b>."
+      },
+      {
+        "kind": "note",
+        "text": "Se quiser rever uma ideia, volte à experiência e às páginas deste Passo a passo do projeto. Na próxima aula, a ponte apressada vai para a Ilha do Farol, em três dimensões."
+      }
+    ]
+  },
+  {
+    "id": "ilha-alavanca",
+    "kicker": "Aula 2 · Parte 2 · Construção",
+    "title": "Crie ponteAberta na ilha",
+    "subtitle": "Clique em Rodar de novo e leve o personagem até a alavanca, na areia, ao lado da ponte: nada acontece, porque o encontro com a alavanca ainda não tem nenhuma reação.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "A ideia é a mesma da Aula 1, e muitos blocos também. A diferença está no jeito de mostrar a alavanca e a ponte. E como a ponte baixa, se ela não troca de imagem? Com uma <b>animação</b>: no 3D, a alavanca e a ponte são modelos, e cada modelo já vem com as animações dele."
+      },
+      {
+        "kind": "box",
+        "tone": "azul",
+        "icon": "etiqueta",
+        "title": "As animações de cada modelo",
+        "text": "<b>alavanca</b>: puxar e soltar. <b>ponte</b>: baixar e subir. <b>sino</b>: tocar."
+      },
+      {
+        "kind": "step",
+        "title": "1. Crie ponteAberta",
+        "text": "Encontre a área <b>Ao iniciar</b> e deixe à vista o fim dela: o último bloco é <b>Escrever na tela</b>, que mostra as teclas do jogo.<br/><b>Programação &gt; Variáveis.</b> Pegue <b>Criar variável</b> e solte logo abaixo de Escrever na tela. Clique em contador e escreva <b>ponteAberta</b>. Em cima do 0, solte <b>verdadeiro</b>, de <b>Programação &gt; Lógica &amp; Se</b>. Depois clique em verdadeiro e escolha <b>falso</b>."
+      },
+      {
+        "kind": "drawing",
+        "name": "variavel-3d",
+        "title": "Até aqui, confira se ficou assim"
+      }
+    ]
+  },
+  {
+    "id": "ilha-encontro",
+    "kicker": "Aula 2 · Parte 2 · Construção",
+    "title": "Puxar e baixar",
+    "subtitle": "No 3D, a alavanca e a ponte mudam com as animações dos modelos.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "2. Crie o encontro com a alavanca",
+        "text": "Em <b>Quando acontecer</b>, o último é o encontro com o farol. O encontro novo vai logo abaixo dele, fora do fazer dele.<br/><b>Jogo 3D &gt; Encostar &gt; Encostar.</b> Pegue <b>Quando personagem encostar em chave</b> e solte logo abaixo do encontro com o farol. Clique em <b>chave</b> e escolha <b>alavanca</b>."
+      },
+      {
+        "kind": "step",
+        "title": "3. A alavanca puxa e a ponte baixa",
+        "text": "<b>Jogo 3D &gt; Objetos &gt; Animação do modelo.</b> Pegue <b>Tocar a animação</b> e solte ao lado de <b>fazer</b>. Ele chega com <b>Andar</b>, <b>heroi</b> e <b>repetindo</b>. Primeiro diga quem vai tocar a animação: clique em heroi e escolha <b>alavanca</b>. Depois clique em Andar e escolha <b>puxar</b>. Por último, clique em repetindo e escolha <b>uma vez</b>: a alavanca puxa e fica puxada no fim.<br/>Logo abaixo, outro <b>Tocar a animação</b>: <b>ponte</b>, <b>baixar</b> e <b>uma vez</b>, nessa ordem."
+      },
+      {
+        "kind": "step",
+        "title": "4. ponteAberta e o aviso",
+        "text": "Logo abaixo, <b>Alterar variável para</b>, de <b>Programação &gt; Variáveis</b>, com <b>ponteAberta</b> e <b>verdadeiro</b> em cima do 1. Embaixo, outro <b>Alterar variável para</b> com <b>aviso</b> e um <b>texto</b>, de <b>Programação &gt; Valores</b>: <b>A ponte baixou! Atravesse antes que ela suba.</b>"
+      },
+      {
+        "kind": "drawing",
+        "name": "baixou-3d",
+        "title": "Até aqui, confira se ficou assim"
+      }
+    ]
+  },
+  {
+    "id": "ilha-relogio",
+    "kicker": "Aula 2 · Parte 2 · Construção",
+    "title": "O relógio da ilha",
+    "subtitle": "Agora o relógio, igual ao da Aula 1: dentro do encontro com a alavanca, logo abaixo do aviso.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "5. Coloque o relógio",
+        "text": "<b>Programação &gt; Repetições.</b> Pegue <b>depois de 1 segundos</b> e solte logo abaixo do bloco que muda o aviso, ainda dentro do encontro. Clique no 1 e troque por <b>4</b>. Dentro dele vai tudo o que desfaz a puxada."
+      },
+      {
+        "kind": "step",
+        "title": "6. A alavanca solta e a ponte sobe",
+        "text": "Ao lado de <b>fazer</b>, dentro do depois de 4 segundos: <b>Jogo 3D &gt; Objetos &gt; Animação do modelo.</b> Pegue <b>Tocar a animação</b>: <b>alavanca</b>, <b>soltar</b> e <b>uma vez</b>. Logo abaixo, mais um <b>Tocar a animação</b>: <b>ponte</b>, <b>subir</b> e <b>uma vez</b>."
+      },
+      {
+        "kind": "drawing",
+        "name": "relogio-3d",
+        "title": "Até aqui, confira se ficou assim"
+      }
+    ]
+  },
+  {
+    "id": "ilha-sobe",
+    "kicker": "Aula 2 · Parte 2 · Construção",
+    "title": "A ponte da ilha sobe sozinha",
+    "subtitle": "Por último, ponteAberta volta a falso e o aviso muda. Depois, teste e verifique.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "7. ponteAberta volta a falso e o aviso muda",
+        "text": "Embaixo, <b>Alterar variável para</b> com <b>ponteAberta</b>: solte <b>verdadeiro</b> em cima do 1, clique nele e escolha <b>falso</b>. Por último, outro <b>Alterar variável para</b> com <b>aviso</b> e o texto <b>A ponte subiu. Puxe a alavanca de novo.</b>"
+      },
+      {
+        "kind": "drawing",
+        "name": "sobe-3d",
+        "title": "Confira se ficou assim"
+      },
+      {
+        "kind": "delivery",
+        "title": "Teste e verifique",
+        "text": "Clique em <b>Rodar de novo</b> e leve o personagem até a alavanca: ela puxa e a ponte baixa. Espere e conte até 4: a alavanca solta, a ponte sobe sozinha e o aviso muda. Saia de perto da alavanca e encoste nela de novo: a ponte baixa outra vez.<br/>Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+      }
+    ]
+  },
+  {
+    "id": "ilha-atravessar",
+    "kicker": "Aula 2 · Parte 3 · Construção",
+    "title": "A pergunta da ponte da ilha",
+    "subtitle": "Clique em Rodar de novo, puxe a alavanca e vá logo para a ponte: nada acontece, porque o encontro com a ponte ainda não faz nenhuma pergunta.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "Na Aula 1, a ponte fazia uma pergunta: <b>ponteAberta</b> é verdadeiro? Com o sim, o personagem atravessava e o sino tocava. Com o não, o aviso pedia para puxar a alavanca. Agora você monta essa pergunta na ilha."
+      },
+      {
+        "kind": "step",
+        "title": "1. Crie o encontro com a ponte",
+        "text": "Em <b>Quando acontecer</b>, deixe à vista o lugar logo abaixo do encontro com a alavanca, fora do fazer dele.<br/><b>Jogo 3D &gt; Encostar &gt; Encostar.</b> Pegue <b>Quando personagem encostar em chave</b> e solte ali. Não coloque um encontro dentro do outro. Clique em <b>chave</b> e escolha <b>ponte</b>."
+      },
+      {
+        "kind": "step",
+        "title": "2. Ponha o Se",
+        "text": "<b>Programação &gt; Lógica &amp; Se.</b> Pegue <b>Se</b> e solte ao lado de <b>fazer</b>, dentro do encontro novo. Segure a pergunta pronta, <b>x maior que 0</b>, pelo sinal de maior e arraste até a lixeira, no canto de baixo, à direita, do espaço dos blocos."
+      },
+      {
+        "kind": "step",
+        "title": "3. Pergunte por ponteAberta",
+        "text": "<b>Programação &gt; Valores.</b> Pegue <b>valor da variável</b> e solte no lugar vazio ao lado de Se. Clique no <b>x</b> e escolha <b>ponteAberta</b>. Ou seja: a ponte está baixada?"
+      },
+      {
+        "kind": "drawing",
+        "name": "pergunta-3d",
+        "title": "Até aqui, confira se ficou assim",
+        "blank": "as respostas vêm nas próximas páginas"
+      }
+    ]
+  },
+  {
+    "id": "ilha-atravessar-sim",
+    "kicker": "Aula 2 · Parte 3 · Construção",
+    "title": "Atravesse até a pedra",
+    "subtitle": "E como o personagem chega na pedra, se ele não anda na água? Com o bloco Colocar o objeto.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "4. Abra o senão",
+        "text": "A resposta do sim fica no espaço do <b>então</b>, e a resposta do não fica no espaço do <b>senão</b>. Na linha de baixo do Se, clique no <b>segundo</b> sinal de mais, o que fica antes da palavra senão, no fim da linha. Não clique no primeiro."
+      },
+      {
+        "kind": "step",
+        "title": "5. Leve o personagem para a pedra",
+        "text": "No espaço do <b>então</b>: <b>Jogo 3D &gt; Objetos &gt; Posição, giro e tamanho.</b> Pegue <b>Colocar o objeto</b> e solte dentro do então. Clique em <b>caixa</b> e escolha <b>personagem</b>.<br/>Agora os três números do lugar em cima da pedra. Use o ponto, e não a vírgula, e comece o número negativo pelo sinal de menos: x <b>−3.9</b>, y <b>1.4</b> e z <b>3.8</b>."
+      },
+      {
+        "kind": "drawing",
+        "name": "posicao-3d",
+        "title": "Até aqui, confira se ficou assim",
+        "blank": "a resposta do não vem na próxima página"
+      }
+    ]
+  },
+  {
+    "id": "ilha-atravessar-respostas",
+    "kicker": "Aula 2 · Parte 3 · Construção",
+    "title": "O sino e a resposta do não",
+    "subtitle": "No sim, o sino toca e o aviso comemora. No não, o aviso pede para puxar a alavanca.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "6. Toque o sino e avise",
+        "text": "Logo abaixo, ainda no então: <b>Jogo 3D &gt; Objetos &gt; Animação do modelo.</b> Pegue <b>Tocar a animação</b>: <b>sino</b>, <b>tocar</b> e <b>uma vez</b>. Embaixo, um <b>Alterar variável para</b> com <b>aviso</b> e um <b>texto</b>: <b>Você atravessou e tocou o sino!</b>"
+      },
+      {
+        "kind": "step",
+        "title": "7. A resposta do não",
+        "text": "Dentro do <b>senão</b>, outro <b>Alterar variável para</b> com <b>aviso</b> e outro <b>texto</b>: <b>A ponte está levantada. Puxe a alavanca primeiro.</b>"
+      },
+      {
+        "kind": "drawing",
+        "name": "atravessar-3d",
+        "title": "Confira se ficou assim"
+      }
+    ]
+  },
+  {
+    "id": "ilha-atravessar-envio",
+    "kicker": "Aula 2 · Parte 3 · Teste e envio",
+    "title": "Teste três casos e envie",
+    "subtitle": "Na ilha, a ponte também só deixa atravessar enquanto está baixada.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "Teste três casos",
+        "text": "Clique em <b>Rodar de novo</b> e faça os três testes, tocando na tecla R antes de cada um: vá direto à ponte, sem puxar a alavanca; puxe a alavanca e vá logo para a ponte; puxe a alavanca e conte até 4 antes de ir. Só o segundo teste atravessa."
+      },
+      {
+        "kind": "cena",
+        "image": "jogo-3d",
+        "caption": "Puxou e foi logo: o personagem fica em cima da pedra, e o sino toca."
+      },
+      {
+        "kind": "step",
+        "title": "Se algo não funcionou",
+        "text": "Volte aos blocos e confira se ficou assim: o encontro do personagem com a ponte tem o Se com ponteAberta. Dentro do então estão <b>Colocar o objeto personagem</b>, a animação tocar no sino e o aviso de sucesso, e dentro do senão está o aviso da ponte levantada. Depois de corrigir, teste de novo."
+      },
+      {
+        "kind": "delivery",
+        "title": "Verificar e enviar",
+        "text": "Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Enviar meu projeto</b> e confirme em <b>Enviar</b>. Quando aparecer <b>Projeto enviado!</b>, clique em <b>Próxima parte</b>."
+      },
+      {
+        "kind": "note",
+        "text": "Pronto, você programou a ponte apressada na ilha: ela baixa com a alavanca, sobe sozinha 4 segundos depois e só deixa atravessar a tempo! Depois do envio vem a revisão da aula."
+      }
+    ]
+  },
+  {
+    "id": "revisao-2",
+    "kicker": "Aula 2 · Parte 4 · Revisão",
+    "title": "Pense na ponte da ilha",
+    "subtitle": "Duas perguntas fecham a aula e o Poder.",
+    "items": [
+      {
+        "kind": "activity",
+        "pill": "Na aula, depois do envio",
+        "text": "Aqui não tem vídeo. Uma pergunta mostra uma cena da ilha, e a outra é para pensar no seu projeto."
+      },
+      {
+        "kind": "step",
+        "title": "Escolha e veja acontecendo",
+        "text": "Escolha uma resposta e clique em <b>Ver o que acontece</b> ou, na pergunta sem cena, em <b>Responder</b>. Se errar, clique em <b>Tentar de novo</b>. Na última pergunta, clique em <b>Concluir revisão</b>. Depois clique em <b>Concluir aula</b>."
+      },
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "icon": "medalha",
+        "title": "Comemore sua criação",
+        "text": "Parabéns! Você programou uma ponte com relógio, no jogo 2D e na ilha em 3D: ela baixa com a alavanca, espera 4 segundos, sobe sozinha e só deixa atravessar a tempo. Jogue de novo e mostre para a sua família."
+      },
+      {
+        "kind": "step",
+        "title": "Se travar em alguma parte",
+        "text": "Volte ao trecho do vídeo que mostra aquele encaixe e compare com o seu projeto. Você também pode consultar a página daquela parte neste Passo a passo do projeto: no alto de cada página estão a aula e a parte."
+      },
+      {
+        "kind": "box",
+        "tone": "azul",
+        "icon": "ajuda",
+        "title": "Preciso de ajuda",
+        "text": "No rodapé da aula, clique em <b>Preciso de ajuda</b>. Conte o que tentou fazer e o que aconteceu. Por exemplo: <b>Estou na Aula 2. Puxei a alavanca, mas a ponte não sobe. Conferi o depois de 4 segundos.</b> Isso ajuda a equipe a entender em que ponto você está."
+      },
+      {
+        "kind": "step",
+        "title": "Para guardar e para enviar",
+        "text": "O Estúdio guarda o projeto sozinho enquanto você monta. <b>Verificar projeto</b> confere os blocos pedidos, e <b>Enviar meu projeto</b>, confirmado em <b>Enviar</b>, manda o jogo para a equipe. Se você mudar alguma coisa depois de enviar, clique em <b>Enviar de novo</b> e confirme em <b>Reenviar</b>: a equipe recebe a versão nova."
+      }
+    ]
+  }
+]

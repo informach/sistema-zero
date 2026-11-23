@@ -6,7 +6,7 @@
 import { PensaMissionLayout } from '@sistemazero/ui/pensa-mission-panel'
 import type { JSX } from 'react'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { isPintaMemoryAsset } from '../core/assetMemory'
+import { isPintaMemoryAsset, type PintaMemoryAsset } from '../core/assetMemory'
 import { COPY } from '../core/copy'
 import {
   createGuidedBackgroundAsset,
@@ -34,6 +34,7 @@ import {
 } from './appContext'
 import { EditorScreen } from './editor/EditorScreen'
 import { FocalEditorScreen } from './editor/FocalEditorScreen'
+import { resyncStudioCopies } from './editor/useStudioResync'
 import { GalleryScreen } from './gallery/GalleryScreen'
 import { TaskBriefPanel } from './TaskBriefPanel'
 import { erroParaCrianca, withSaveBeforeTaskActions } from './taskSessionSave'
@@ -159,16 +160,15 @@ export function PintaApp({
     return {
       persistence: resolved,
       // A trava de conta (`holdOpen`) não fecha a janela focal: a sessão a segura até fechar, e o
-      // armazenamento da conta só oferece a sessão ligada à fila causal. As pontes ainda pedem o
-      // documento inteiro.
+      // armazenamento da conta só oferece a sessão ligada à fila causal. As pontes do Estúdio
+      // ficam no editor inteiro ("Avançado"); ao sair da janela, um mapa já levado ao Estúdio é
+      // atualizado pela mesma ponte (`resyncAfterFocal`). Missão e aula pedem o documento inteiro.
       gallery: createGalleryStore(resolved, {
         focalGallery: Boolean(
           resolved.openRegionSession &&
             !adapter?.taskSession &&
             !adapter?.onChange &&
             !adapter?.allowTools?.length &&
-            !adapter?.sendToStudio &&
-            !adapter?.resyncToStudio &&
             !onCompletionControlChange,
         ),
       }),
@@ -195,6 +195,11 @@ export function PintaApp({
   const [missingAssetId, setMissingAssetId] = useState<string | null>(null)
   const resolvedAdapter = adapter ?? EMPTY_ADAPTER
   const theme = resolvedAdapter.theme ?? 'light'
+  // A ponte do Estúdio vista pelos callbacks de navegação, que precisam de identidade estável.
+  const resyncToStudio = useRef(resolvedAdapter.resyncToStudio)
+  useLayoutEffect(() => {
+    resyncToStudio.current = resolvedAdapter.resyncToStudio
+  }, [resolvedAdapter.resyncToStudio])
 
   useEffect(() => {
     void gallery.getState().load()
@@ -257,6 +262,8 @@ export function PintaApp({
   const openGeneration = useRef(0)
   const releaseEditor = useRef<(() => void) | null>(null)
   const focused = useRef<LocalRegionAuthorSession | null>(null)
+  // A revisão com que a janela focal abriu: só uma janela que gravou atualiza o Estúdio.
+  const focalStart = useRef<string | null>(null)
   const opening = useRef<AbortController | null>(null)
   const restoreGalleryIndex = useRef(false)
   const releaseGalleryIndex = useRef<(() => void) | null>(null)
@@ -309,6 +316,7 @@ export function PintaApp({
               releaseEditor.current?.()
               focused.current?.close()
               focused.current = focal
+              focalStart.current = focal.store.getState().revision
               // A trava da conta acompanha a janela: a descida não grava sob o cenário aberto.
               releaseEditor.current = release ?? null
               setView({ ...nextView, focal })
@@ -354,13 +362,45 @@ export function PintaApp({
   )
   const openAsset = useCallback((id: string) => open(id), [open])
   const openFitted = useCallback((id: string) => open(id, true), [open])
+  /**
+   * A janela focal grava sem a ponte do editor inteiro. Ao sair dela, um mapa já levado ao Estúdio
+   * recebe a versão gravada pelo mesmo caminho do editor (`resyncStudioCopies`); um mapa que nunca
+   * foi levado fica em silêncio, como lá.
+   */
+  const resyncAfterFocal = useCallback(
+    async (id: string, listed?: readonly PintaMemoryAsset[]) => {
+      const send = resyncToStudio.current
+      if (!send) return
+      try {
+        const catalog =
+          listed ?? (await store.persistence.listAllAssets()).filter(isPintaMemoryAsset)
+        const asset = catalog.find((item) => item.id === id)
+        if (!asset) return
+        const result = await resyncStudioCopies({
+          asset,
+          catalog,
+          animationId: null,
+          frameIndex: 0,
+          send,
+        })
+        if (!result.updated && result.reason === 'failed')
+          setOpenFailure({ message: result.error ?? COPY.editor.studioSyncFailed })
+      } catch {
+        setOpenFailure({ message: COPY.editor.studioSyncFailed })
+      }
+    },
+    [store.persistence],
+  )
   const closeEditor = useCallback(() => {
-    const refresh = focused.current !== null || restoreGalleryIndex.current
+    const focal = focused.current
+    const wrote = focal !== null && focal.store.getState().revision !== focalStart.current
+    const refresh = focal !== null || restoreGalleryIndex.current
     restoreGalleryIndex.current = false
     retireOpen()
     setView({ screen: 'gallery' })
     if (refresh) void gallery.getState().load()
-  }, [retireOpen, gallery])
+    if (focal && wrote) void resyncAfterFocal(focal.id)
+  }, [retireOpen, gallery, resyncAfterFocal])
   const openComplete = async (focal: LocalRegionAuthorSession) => {
     const generation = openGeneration.current
     const revision = focal.store.getState().revision
@@ -373,6 +413,8 @@ export function PintaApp({
       focal.store.getState().revision !== revision
     )
       throw Error(COPY.scene.gestureChanged)
+    // O editor inteiro só reenvia o que mudar depois de abrir: o que a janela gravou vai agora.
+    if (revision !== focalStart.current) void resyncAfterFocal(focal.id, catalog)
     gallery.getState().absorbMany(catalog)
     restoreGalleryIndex.current = true
     // O mesmo cenário segue aberto no editor inteiro: a trava da conta passa para ele.

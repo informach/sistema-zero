@@ -1,6 +1,6 @@
-# Passo a passo do projeto — O Jardim Secreto
+# Passo a passo do projeto: O Jardim Secreto
 
-Missão Faísca. Ajuda opcional: comece pelo resultado, relembre a ideia e abra a montagem se precisar. Você pode programar em outra ordem, repetir testes e escolher mensagens e posições.
+Missão do Faísca. Aqui está cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.
 
 ## Faça o jardim florescer em 2D
 
@@ -69,7 +69,7 @@ Missão Faísca. Ajuda opcional: comece pelo resultado, relembre a ideia e abra 
 **Relembre:** No encontro com a flor, o Se pergunta se o regador já foi pego. Quando a resposta é verdadeiro, o jogo faz o que está no então; quando é falso, faz o que está no senão.
 
 1. Dentro de Quando acontecer, deixe à vista um espaço depois do evento da coleta e fora do fazer dele. Pegue outro evento de encontro em Jogo 2D → Colisões → Encostar e bloquear. Escolha personagem e flor.
-2. No fazer do encontro com a flor, encaixe Programação → Lógica e Se → Se. Clique em + senão para abrir o outro caminho.
+2. No fazer do encontro com a flor, encaixe Programação → Lógica e Se → Se. Na linha de baixo do Se, clique no segundo sinal de mais, antes da palavra senão, para abrir o outro caminho.
 3. Retire a comparação que veio na pergunta do Se, arrastando pelo sinal da comparação até a lixeira. Em Programação → Valores, pegue valor da variável e encaixe na pergunta vazia. Escolha temRegador, ou o nome que você usou na memória.
 4. Dentro do senão, encaixe Alterar variável de Programação → Variáveis. Escolha aviso. Encaixe Texto de Programação → Valores e escreva Busque o regador primeiro. A flor espera por você.
 5. Deixe à vista o então. Em Jogo 2D → Sprites → Criar e trocar aparência, pegue Trocar imagem do sprite e encaixe ali. Escolha flor e a imagem flor-aberta.
@@ -86,6 +86,7 @@ Missão Faísca. Ajuda opcional: comece pelo resultado, relembre a ideia e abra 
 1. Em Ao iniciar, encontre a criação do sprite regador. Ele começa em x 300 e y 190. Escolha outro x ou y. Um exemplo é x 390, mantendo y 190.
 2. Observe onde ele apareceu. Pode experimentar vários lugares e escolher outro diferente do exemplo. Deixe-o dentro do jardim, visível, separado do personagem no começo e alcançável.
 3. Preserve um caminho até a flor sem passar pelo regador. Comece uma partida com a mudança. Se a prévia já reiniciou ao editar, ela já serve para esse teste; senão clique no jogo e toque na tecla R.
+4. Teste a flor sem o regador e com ele. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
 
 **Teste:** Vá primeiro à flor sem o regador. Depois recolha no lugar novo e volte. Depois do sucesso, toque na tecla R: regador disponível, flor fechada e a posição escolhida conservada.
 
@@ -110,8 +111,8 @@ Missão Faísca. Ajuda opcional: comece pelo resultado, relembre a ideia e abra 
 **Relembre:** O evento reconhece o encontro; os comandos dentro dele são a reação.
 
 1. Deixe à vista um espaço dentro de Quando acontecer, depois do evento da tecla R e fora do fazer dele.
-2. Abra Jogo 3D → Encostar. Pegue Quando personagem encostar em chave e encaixe nesse espaço. Escolha personagem no primeiro nome e regador no segundo.
-3. No fazer desse encontro, encaixe Jogo 3D → Objetos → Aparência → Esconder o objeto. Escolha regador.
+2. Abra Jogo 3D → Encostar → Encostar. Pegue Quando personagem encostar em chave e encaixe nesse espaço. Escolha personagem no primeiro nome e regador no segundo.
+3. No fazer desse encontro, encaixe Jogo 3D → Objetos → Aparência → Mostrar o objeto. Escolha Esconder e regador.
 
 **Teste:** Comece uma partida, observe o regador no chão e caminhe até ele. Só no encontro ele deve desaparecer. Para repetir, toque na tecla R.
 
@@ -146,8 +147,8 @@ Missão Faísca. Ajuda opcional: comece pelo resultado, relembre a ideia e abra 
 
 **Relembre:** No encontro com a flor, o Se pergunta se o regador já foi pego. Quando a resposta é verdadeiro, o jogo faz o que está no então; quando é falso, faz o que está no senão.
 
-1. Dentro de Quando acontecer, deixe à vista um espaço depois do evento da coleta e fora do fazer dele. Pegue outro evento de encontro em Jogo 3D → Encostar. Escolha personagem e flor.
-2. No fazer do encontro com a flor, encaixe Programação → Lógica e Se → Se. Clique em + senão para abrir o outro caminho.
+1. Dentro de Quando acontecer, deixe à vista um espaço depois do evento da coleta e fora do fazer dele. Pegue outro evento de encontro em Jogo 3D → Encostar → Encostar. Escolha personagem e flor.
+2. No fazer do encontro com a flor, encaixe Programação → Lógica e Se → Se. Na linha de baixo do Se, clique no segundo sinal de mais, antes da palavra senão, para abrir o outro caminho.
 3. Retire a comparação que veio na pergunta do Se, arrastando pelo sinal da comparação até a lixeira. Em Programação → Valores, pegue valor da variável e encaixe na pergunta vazia. Escolha temRegador, ou o nome que você usou na memória.
 4. Dentro do senão, encaixe Alterar variável de Programação → Variáveis. Escolha aviso. Encaixe Texto de Programação → Valores e escreva Busque o regador primeiro. A flor espera por você.
 5. Deixe à vista o então. Em Jogo 3D → Objetos → Animação do modelo, pegue Tocar a animação e encaixe ali. Escolha flor, clipe florescer e uma vez.
@@ -161,11 +162,11 @@ Missão Faísca. Ajuda opcional: comece pelo resultado, relembre a ideia e abra 
 
 **Relembre:** A flor é o fim do jogo. Como no farol da Ilha, o encontro roda de novo a cada volta do personagem; a variável ganhou guarda que a partida já foi vencida, e o Se não ganhou faz a flor parar de responder.
 
-1. Em Ao iniciar, depois de temRegador, crie a variável ganhou com o valor falso, do mesmo jeito que criou temRegador.
-2. No então do Se temRegador, depois de Tocar a animação, encaixe Alterar variável. Escolha ganhou, encaixe o bloco verdadeiro no valor e deixe verdadeiro.
-3. Em Quando acontecer, deixe à vista um espaço vazio ao lado do encontro com flor, fora do fazer. Em Programação → Lógica e Se, pegue Se e solte nesse espaço.
+1. Em Ao iniciar, logo abaixo de temRegador, crie a variável ganhou com o valor falso, do mesmo jeito que criou temRegador.
+2. No então do Se temRegador, logo abaixo de Tocar a animação, encaixe Alterar variável. Escolha ganhou, encaixe o bloco verdadeiro no valor e deixe verdadeiro.
+3. Em Programação → Lógica e Se, pegue Se e solte no espaço ao lado de fazer do encontro com flor, em cima do Se que já está lá. O Se temRegador desce e fica logo abaixo do Se novo.
 4. Arraste a comparação que veio na pergunta do Se novo até a lixeira. Em Programação → Lógica e Se, pegue não e encaixe no lugar vazio. Em Programação → Valores, pegue valor da variável, encaixe dentro do não e escolha ganhou.
-5. Pegue o Se temRegador pela palavra Se e arraste até o então do Se novo; tudo o que está dentro dele vai junto. Depois encaixe o Se novo no fazer do encontro com flor, que ficou vazio.
+5. Pegue o Se temRegador pela palavra Se e arraste até o então do Se novo; tudo o que está dentro dele vai junto.
 
 **Teste:** Recolha o regador e vá à flor: ela abre. Saia de perto e volte: ela continua aberta, sem florescer de novo. Numa partida nova, vá à flor sem o regador: ela continua pedindo o regador.
 
@@ -175,9 +176,10 @@ Missão Faísca. Ajuda opcional: comece pelo resultado, relembre a ideia e abra 
 
 **Relembre:** X e Z mudam o lugar no chão. Y muda a altura, que já está preparada para o encontro.
 
-1. Em Ao iniciar, encontre Colocar o objeto regador. Escolha outro valor de x ou z; deixe y em 0.54, como está. Um exemplo é x −2, com o mesmo z.
+1. Em Ao iniciar, encontre Colocar o objeto regador. Escolha outro valor de x ou z e deixe o y como está. Um exemplo é x −2, com o mesmo z.
 2. Observe onde ele apareceu. Pode experimentar vários lugares e escolher outro diferente do exemplo. Deixe-o dentro do jardim, visível, separado do personagem no começo e alcançável.
 3. Preserve um caminho até a flor sem passar pelo regador. Comece uma partida com a mudança. Se a prévia já reiniciou ao editar, ela já serve para esse teste; senão clique no jogo e toque na tecla R.
+4. Teste a flor sem o regador e com ele. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte e responda às perguntas sobre o seu jardim. Quando terminar, clique em Concluir aula.
 
 **Teste:** Vá primeiro à flor sem o regador. Depois recolha no lugar novo e volte. Depois do sucesso, toque na tecla R: regador disponível, flor fechada e a posição escolhida conservada.
 
@@ -185,4 +187,10 @@ Missão Faísca. Ajuda opcional: comece pelo resultado, relembre a ideia e abra 
 
 ## Entrega
 
-Em cada aula, verifique os objetivos, aguarde Salvo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula. Não precisa publicar na comunidade. Concluir a missão não concede certificado nem promove sozinho: a jornada também confere os dois cursos-base e um Poder distinto.
+Em cada aula, o envio fecha a última montagem, a do lugar do regador. Antes de enviar, jogue uma partida inteira: vá à flor sem o regador e depois com ele. Toque na tecla R e confira que o regador volta e a flor volta fechada.
+
+Depois clique em Verificar projeto e corrija o que faltar. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.
+
+Na Aula 1, quando aparecer Projeto enviado!, clique em Concluir aula. Na Aula 2, quando aparecer Projeto enviado!, clique em Próxima parte e responda às perguntas sobre o seu jardim. Quando terminar, clique em Concluir aula.
+
+A missão conta quando as duas aulas estão concluídas. Ela não dá certificado nem promove sozinha: a jornada também confere os dois cursos-base e um Poder.

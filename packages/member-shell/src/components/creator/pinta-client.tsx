@@ -1,6 +1,9 @@
 'use client'
 
-import { PINTA_MAX_READ_FORMAT_VERSION } from '@sistemazero/core/creations'
+import {
+  PINTA_INVENTORY_READER_VERSION,
+  PINTA_MAX_READ_FORMAT_VERSION,
+} from '@sistemazero/core/creations'
 // O CSS do Pinta (tokens + @theme que GERA as utilitárias pin-*) é carregado pelo
 // `@import` em `app/globals.css`, DENTRO do pipeline Tailwind — mesmo gotcha do
 // Estúdio/Pensa: um JS-import aqui só traria os tokens, sem gerar as utilitárias.
@@ -10,6 +13,7 @@ import type {
   PintaInitialCanvas,
   PintaInitialIntent,
 } from '@sistemazero/pinta'
+import type { PintaWorkshopAsset } from '@sistemazero/pinta/assets'
 import { RefreshCw } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -39,13 +43,22 @@ import {
 // effect (igual ao pensa-client) e o server renderiza só o placeholder.
 type PintaModule = typeof import('@sistemazero/pinta')
 
+/**
+ * Regiões do Pinta (23/11/2026, etapa 1): o leitor e o escritor da conta que a oficina anuncia.
+ * Nuvem 7 = nativo 8 (regiões). Nuvem 8 (autorregras e projeções) ainda não está pronta e não é
+ * anunciada; por isso a oficina deste host grava no máximo o nativo 8.
+ */
+export const PINTA_REGIONS_CLOUD_FORMAT = 7 as const
+if (PINTA_REGIONS_CLOUD_FORMAT > PINTA_INVENTORY_READER_VERSION)
+  throw new Error('O leitor regional do Pinta passa do leitor negociado pelo serviço.')
+
 type PintaLoad =
   | {
       key: string
       status: 'ready'
       mod: PintaModule
       cloud: CreationsCloud | null
-      persistence: PintaPersistenceLike
+      persistence: PintaPersistenceLike<PintaWorkshopAsset>
     }
   | { key: string; status: 'error' }
 
@@ -109,7 +122,8 @@ export function PintaClient({
   }, [cloud, onCompletionControlChange, persistence])
 
   // A DESCIDA está em andamento (o wrapper avisa `sync-start`/`sync-end`): selo "buscando…".
-  const [syncingSession, setSyncingSession] = useState<PintaPersistenceLike | null>(null)
+  const [syncingSession, setSyncingSession] =
+    useState<PintaPersistenceLike<PintaWorkshopAsset> | null>(null)
   const syncing = persistence !== null && syncingSession === persistence
   const router = useRouter()
   const { setWorkspaceActive } = useFocusMode()
@@ -140,7 +154,7 @@ export function PintaClient({
   useEffect(() => {
     let retired = false
     let cloud: CreationsCloud | null = null
-    let persistence: PintaPersistenceLike | null = null
+    let persistence: PintaPersistenceLike<PintaWorkshopAsset> | null = null
     async function loadWorkshop() {
       try {
         const m = await import('@sistemazero/pinta')
@@ -148,9 +162,15 @@ export function PintaClient({
         // Namespace por PERFIL ANTES de montar (mesmo contrato do /estudio):
         // irmãos no mesmo navegador não compartilham a galeria.
         m.setPintaStorageNamespace(localNamespace)
-        const local = m.createPintaPersistence({ namespace: localNamespace })
-        persistence = local
-        if (viewerId) {
+        if (!viewerId) {
+          // Sem conta: a oficina regional só neste aparelho, com o teto nativo 8.
+          const workshop = await import('@sistemazero/pinta/workshop-reader')
+          if (retired) return
+          persistence = workshop.createWorkshopPintaPersistence({
+            namespace: localNamespace,
+            nativeCeiling: 8,
+          })
+        } else {
           cloud = createCreationsCloud({
             tool: 'pinta',
             maxFormatVersion: PINTA_MAX_READ_FORMAT_VERSION,
@@ -159,28 +179,45 @@ export function PintaClient({
             pintaPaletteWriteEnabled: !!paletteAccount,
             pintaCausalEnabled:
               pintaCausalAllowed && process.env.NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1 === '1',
+            pintaCausalReader: PINTA_REGIONS_CLOUD_FORMAT,
           })
-          const scoped = cloud.pintaCausal
-            ? m.createPintaCausalPersistence({ namespace: localNamespace })
-            : null
-          persistence = createCloudMirroredPintaPersistence({
-            local: scoped ?? local,
-            cloud,
-            viewerId,
-            localNamespace,
-            isAssetOpen: m.isPintaAssetOpen,
-            subscribeAssetOpenState: m.subscribePintaAssetOpenState,
-            ...(scoped
-              ? {
-                  causal: {
-                    local: scoped.causal,
-                    holdOpen: (id) => m.holdPintaEditorLock(localNamespace, id),
-                    withClosed: (ids, apply) =>
-                      m.withClosedPintaEditors(localNamespace, ids, apply),
-                  },
-                }
-              : {}),
-          })
+          if (cloud.pintaCausal) {
+            // A oficina regional: o mesmo IndexedDB do perfil e a mesma fila V4, com o teto
+            // nativo 8 (o nativo 9 ainda não está pronto e não é anunciado).
+            const workshop = await import('@sistemazero/pinta/workshop-reader')
+            if (retired) return
+            const regional = workshop.createWorkshopPintaPersistence({
+              namespace: localNamespace,
+              guardCausalWrites: true,
+              nativeCeiling: 8,
+            })
+            persistence = createCloudMirroredPintaPersistence({
+              local: regional,
+              cloud,
+              viewerId,
+              localNamespace,
+              isAssetOpen: m.isPintaAssetOpen,
+              subscribeAssetOpenState: m.subscribePintaAssetOpenState,
+              causal: {
+                local: regional.causal,
+                reader: PINTA_REGIONS_CLOUD_FORMAT,
+                writer: PINTA_REGIONS_CLOUD_FORMAT,
+                holdOpen: (id) => m.holdPintaEditorLock(localNamespace, id),
+                withClosed: (ids, apply) => m.withClosedPintaEditors(localNamespace, ids, apply),
+              },
+            })
+          } else {
+            // A nuvem antiga declararia nuvem 6 para um documento nativo 8: sem a fila causal, a
+            // conta fica no armazenamento de sempre, e um regional deste aparelho vira aviso.
+            persistence = createCloudMirroredPintaPersistence({
+              local: m.createPintaPersistence({ namespace: localNamespace }),
+              cloud,
+              viewerId,
+              localNamespace,
+              isAssetOpen: m.isPintaAssetOpen,
+              subscribeAssetOpenState: m.subscribePintaAssetOpenState,
+            })
+          }
         }
         setLoad({ key: loadKey, status: 'ready', mod: m, cloud, persistence })
       } catch {
@@ -398,7 +435,11 @@ export function PintaClient({
               <mod.PintaApp
                 key={`${loadKey}:${handoff?.mission.id ?? 'free'}`}
                 adapter={adapter}
-                onCompletionControlChange={registrarControle}
+                // Só a missão que conclui pela oficina (Arquipélago) pede o controle; sem ela, a
+                // galeria pode abrir o cenário grande pela janela focal.
+                {...(onCompletionControlChange
+                  ? { onCompletionControlChange: registrarControle }
+                  : {})}
                 onWorkspaceChange={setWorkspaceActive}
                 {...(persistence ? { persistence } : {})}
               />

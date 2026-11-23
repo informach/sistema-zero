@@ -63,6 +63,7 @@ import type {
   LocalRegionCausalBinding,
   PintaCausalLocalPort as NativeCausalPort,
   PintaEditorWriteContext,
+  RegionGalleryIndex,
 } from '@sistemazero/pinta'
 import type {
   PaletteAccount,
@@ -289,6 +290,12 @@ export interface PintaPersistenceLike<Asset extends PintaWorkshopAsset = PintaAs
     signal?: AbortSignal,
     causal?: LocalRegionCausalBinding,
   ): Promise<LocalRegionAuthorSession | null>
+  /**
+   * Os cartões da galeria focal (23/11/2026). No espelho da conta só existe com a fila causal: o
+   * índice do armazenamento é lido ao lado da fila V4 (`causal: true`), e cada cartão abre pela
+   * janela ligada à fila.
+   */
+  listGalleryIndex?(options?: { causal?: true }): Promise<RegionGalleryIndex | null>
   prepareTileRemap?(source: Asset): Promise<readonly Asset[]>
   accountConfirmation?: Pick<CreationsCloud, 'confirm' | 'download'>
   subscribe?(listener: (event: PintaCloudPersistenceEvent) => void): () => void
@@ -1999,6 +2006,93 @@ export function createCloudMirroredPintaPersistence(
 
   if (causalLocal && causalCloud && typeof window !== 'undefined')
     window.addEventListener('online', wakeCausal)
+  /**
+   * Uma versão da fila (selada, pendente ou sem época) que não bate com o que este aparelho lê
+   * pede os arquivos guardados antes de qualquer gravação. A galeria inteira e o índice da galeria
+   * focal passam pela mesma conta, com as revisões que cada um leu.
+   */
+  async function refreshRetainedRecovery(
+    observed: ReadonlyMap<string, string | undefined>,
+  ): Promise<void> {
+    if (!causalLocal || !causalCloud || needsRetainedRecovery) return
+    const state = await causalLocal.inspect()
+    const latest = new Map([
+      ...(state.sealed?.local.members ?? []).map(
+        (part) =>
+          [
+            part.itemId,
+            { localRevision: part.localRevision, deleted: part.action === 'delete' },
+          ] as const,
+      ),
+      ...state.pending.flatMap((group) =>
+        group.members.map(
+          (part) =>
+            [
+              part.itemId,
+              { localRevision: part.localRevision, deleted: part.action === 'delete' },
+            ] as const,
+        ),
+      ),
+      ...(state.unbased?.members ?? []).map((part) => [part.itemId, part] as const),
+    ])
+    const differs = (id: string, revision: string) => observed.get(id) !== revision
+    const inherited = [...(state.sealed ? [state.sealed.local] : []), ...state.pending].filter(
+      ({ opId }) => !state.pins?.has(opId),
+    )
+    needsRetainedRecovery =
+      [...latest].some(([id, version]) => !version.deleted && differs(id, version.localRevision)) ||
+      inherited.some(({ readSet }) =>
+        readSet.some((edge) => {
+          if (edge.source === 'unit') return false
+          if (edge.source === 'predecessor') return differs(edge.targetId, edge.base.localRevision)
+          const mark = state.confirmed.get(edge.targetId)
+          return (
+            !mark ||
+            mark.deleted ||
+            mark.revision !== edge.revision ||
+            mark.sha256 !== edge.sha256 ||
+            (mark.layoutRevision ?? undefined) !== edge.layoutRevision ||
+            differs(edge.targetId, mark.localRevision)
+          )
+        }),
+      ) ||
+      (!!state.unbased &&
+        !state.pins?.has(state.unbased.opId) &&
+        state.unbased.readSet.some(
+          ({ targetId, localRevision }) => !!localRevision && differs(targetId, localRevision),
+        ))
+  }
+
+  /**
+   * A galeria focal pela conta (23/11/2026). O índice do armazenamento é lido ao lado da fila V4
+   * e passa pela mesma conta de recuperação da galeria inteira; se ela pedir os arquivos
+   * guardados, a galeria cai no inventário completo (`null`). A reconciliação com a nuvem não
+   * espera o inventário: ele é decodificado em segundo plano, como na carga de sempre.
+   */
+  async function listCausalGalleryIndex(): Promise<RegionGalleryIndex | null> {
+    if (!causalLocal || !causalCloud || !local.listGalleryIndex || needsRetainedRecovery)
+      return null
+    const index = await local.listGalleryIndex({ causal: true })
+    if (!index) return null
+    await refreshRetainedRecovery(
+      new Map([
+        ...index.assets.map((asset) => [asset.id, pintaLocalRevisionOf(asset)] as const),
+        ...index.cards.map((card) => [card.id, card.revision] as const),
+      ]),
+    )
+    if (needsRetainedRecovery) return null
+    for (const asset of index.assets) {
+      observeUnverifiedBase(asset)
+      lostFormat(asset)
+    }
+    if (now() - lastReconcileEndedAt >= reconcileMinIntervalMs)
+      void local
+        .listAllAssets()
+        .then(startReconcile)
+        .catch(() => {})
+    return index
+  }
+
   const accountConfirmation: PintaPersistenceLike['accountConfirmation'] =
     causalLocal && causalCloud
       ? {
@@ -2064,6 +2158,9 @@ export function createCloudMirroredPintaPersistence(
                   openCausalRegionSession(id, signal),
               }
             : {}),
+          ...(local.openRegionSession && local.listGalleryIndex
+            ? { listGalleryIndex: () => listCausalGalleryIndex() }
+            : {}),
         }
       : {}),
     async persistAsset(asset, context) {
@@ -2124,60 +2221,9 @@ export function createCloudMirroredPintaPersistence(
     },
     async listAllAssets() {
       const localAssets = await local.listAllAssets()
-      if (causalLocal && causalCloud && !needsRetainedRecovery) {
-        const state = await causalLocal.inspect()
-        const observed = new Map(
-          localAssets.map((asset) => [asset.id, pintaLocalRevisionOf(asset)]),
-        )
-        const latest = new Map([
-          ...(state.sealed?.local.members ?? []).map(
-            (part) =>
-              [
-                part.itemId,
-                { localRevision: part.localRevision, deleted: part.action === 'delete' },
-              ] as const,
-          ),
-          ...state.pending.flatMap((group) =>
-            group.members.map(
-              (part) =>
-                [
-                  part.itemId,
-                  { localRevision: part.localRevision, deleted: part.action === 'delete' },
-                ] as const,
-            ),
-          ),
-          ...(state.unbased?.members ?? []).map((part) => [part.itemId, part] as const),
-        ])
-        const differs = (id: string, revision: string) => observed.get(id) !== revision
-        const inherited = [...(state.sealed ? [state.sealed.local] : []), ...state.pending].filter(
-          ({ opId }) => !state.pins?.has(opId),
-        )
-        needsRetainedRecovery =
-          [...latest].some(
-            ([id, version]) => !version.deleted && differs(id, version.localRevision),
-          ) ||
-          inherited.some(({ readSet }) =>
-            readSet.some((edge) => {
-              if (edge.source === 'unit') return false
-              if (edge.source === 'predecessor')
-                return differs(edge.targetId, edge.base.localRevision)
-              const mark = state.confirmed.get(edge.targetId)
-              return (
-                !mark ||
-                mark.deleted ||
-                mark.revision !== edge.revision ||
-                mark.sha256 !== edge.sha256 ||
-                (mark.layoutRevision ?? undefined) !== edge.layoutRevision ||
-                differs(edge.targetId, mark.localRevision)
-              )
-            }),
-          ) ||
-          (!!state.unbased &&
-            !state.pins?.has(state.unbased.opId) &&
-            state.unbased.readSet.some(
-              ({ targetId, localRevision }) => !!localRevision && differs(targetId, localRevision),
-            ))
-      }
+      await refreshRetainedRecovery(
+        new Map(localAssets.map((asset) => [asset.id, pintaLocalRevisionOf(asset)])),
+      )
       for (const asset of localAssets) {
         observeUnverifiedBase(asset)
         lostFormat(asset)

@@ -66,15 +66,28 @@ export function sanitizeWorkshopAsset(raw: unknown): PintaWorkshopAsset | null {
   if (!pintaValuesEqual(body, read)) return null
   return attachWorkshopBook(parsed, book)
 }
-function stamp(asset: PintaWorkshopAsset): PintaWorkshopAsset {
-  if (!isWorkshopNativeMap(asset)) return stampLocalRegionAsset(asset)
-  if (!sanitizeWorkshopAsset(asset))
-    throw new PintaLocalStorageError(
-      isWorkshopProjectedMap(asset)
-        ? 'Não consegui conferir este mapa inteiro. Seus dados foram mantidos.'
-        : 'As regras do mapa são incompatíveis. Seus dados foram mantidos.',
-    )
-  return asset
+/**
+ * The highest native document this workshop may write. Regions (native 8, cloud 7) and rulebooks
+ * or projections (native 9, cloud 8) are separate gates: an account writer that only announces
+ * cloud 7 must not stage a native-9 revision that its own queue would refuse forever.
+ */
+export type WorkshopNativeCeiling = 8 | 9
+
+export const WORKSHOP_NATIVE_CEILING_MESSAGE =
+  'Este mapa tem regras ou formas que esta versão do Pinta ainda não guarda. Nada foi alterado.'
+
+function stampFor(ceiling: WorkshopNativeCeiling) {
+  return (asset: PintaWorkshopAsset): PintaWorkshopAsset => {
+    if (!isWorkshopNativeMap(asset)) return stampLocalRegionAsset(asset)
+    if (ceiling < 9) throw new PintaLocalStorageError(WORKSHOP_NATIVE_CEILING_MESSAGE)
+    if (!sanitizeWorkshopAsset(asset))
+      throw new PintaLocalStorageError(
+        isWorkshopProjectedMap(asset)
+          ? 'Não consegui conferir este mapa inteiro. Seus dados foram mantidos.'
+          : 'As regras do mapa são incompatíveis. Seus dados foram mantidos.',
+      )
+    return asset
+  }
 }
 /** The gallery backup this policy writes: one envelope per native-9 map, in the same order. */
 export function workshopBackupSize(
@@ -97,7 +110,10 @@ export function workshopBackupSize(
     ? galleryBackupByteLength(assets)
     : sizing.byteLength(assets)
 }
-function workshopPolicy(): LocalPersistenceFormat<PintaWorkshopAsset> {
+function workshopPolicy(
+  ceiling: WorkshopNativeCeiling = 9,
+): LocalPersistenceFormat<PintaWorkshopAsset> {
+  const stamp = stampFor(ceiling)
   return {
     authority: createLocalRegionAssetAuthority({
       sanitize: sanitizeWorkshopAsset,
@@ -112,6 +128,7 @@ function workshopPolicy(): LocalPersistenceFormat<PintaWorkshopAsset> {
       const json = pintaWorkshopAssetToJson(asset)
       if (!json) throw new PintaLocalStorageError('O documento não pode ser guardado por inteiro.')
       const schema = workshopNativeSchema(asset)
+      if (schema > ceiling) throw new PintaLocalStorageError(WORKSHOP_NATIVE_CEILING_MESSAGE)
       return {
         json,
         formatVersion: schema === 9 ? 8 : schema === 8 ? 7 : pintaWriteFormatVersion(asset.kind),
@@ -121,10 +138,19 @@ function workshopPolicy(): LocalPersistenceFormat<PintaWorkshopAsset> {
   }
 }
 export function createWorkshopPintaPersistence(
-  options: { namespace?: string; guardCausalWrites?: boolean } = {},
+  options: {
+    namespace?: string
+    guardCausalWrites?: boolean
+    /** Default 9 (local qualification). The account host of the regions gate passes 8. */
+    nativeCeiling?: WorkshopNativeCeiling
+  } = {},
 ) {
-  const namespace = options.namespace ?? getPintaStorageNamespace()
-  const local = createLocalPintaPersistence({ ...options, namespace }, workshopPolicy())
+  const { nativeCeiling, ...storage } = options
+  const namespace = storage.namespace ?? getPintaStorageNamespace()
+  const local = createLocalPintaPersistence(
+    { ...storage, namespace },
+    workshopPolicy(nativeCeiling),
+  )
   const persistRevision: NonNullable<
     PintaPersistence<PintaWorkshopAsset>['persistRevision']
   > = async (previous, asset, resources) => {
@@ -147,7 +173,9 @@ export function createWorkshopPintaPersistence(
     persistRevision,
     openRegionSession: (id: string, signal?: AbortSignal, causal?: LocalRegionCausalBinding) =>
       openLocalRegionAuthorSession(namespace, id, signal, causal),
-    listGalleryIndex: () => readLocalRegionGalleryIndex(namespace),
+    /** `causal`: the account writer reads the index beside its V4 queue (see the account mirror). */
+    listGalleryIndex: (options?: { causal?: true }) =>
+      readLocalRegionGalleryIndex(namespace, options?.causal === true),
   }
 }
 export function captureWorkshopPintaAssetForImage(id: string, options: PintaCaptureOptions = {}) {

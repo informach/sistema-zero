@@ -15,6 +15,7 @@ import type { SZIRV2 } from '#ir'
 import type { ProjectAsset } from '../core/project'
 import { JOGO_D_COVER, JOGO_D_RESUMO } from './jogoDResumo'
 import { JOGO_E_ARQUIVO, JOGO_E_CAPA } from './jogoEArquivo.generated'
+import { MUNDO_2KM_ARQUIVO, MUNDO_2KM_CAPA } from './mundo2kmArquivo.generated'
 
 /** Um arquivo de exemplo fora do pacote: `<base>/<caminho>`, com o hash e o tamanho. */
 export interface ArquivoDoExemplo {
@@ -99,5 +100,20 @@ export const BIG_EXAMPLES: readonly BigExample[] = [
     cover: JOGO_E_CAPA,
     arquivo: JOGO_E_ARQUIVO,
     load: (base) => carregarArquivoDoExemplo(base, JOGO_E_ARQUIVO),
+  },
+  {
+    // O mundo de prova de 2 km (plano "Mundos de 2 km", lote 8): o relevo em campo, desenhado em
+    // pedaços com menos detalhe longe, e 16 regiões de 512 m.
+    extensionId: 'game-3d',
+    name: 'Mundo das Dezesseis Regiões',
+    experience: 'game',
+    description:
+      'Um mundo 3D de 2 km do Molda Cenários, com vila, floresta, lago, estrada e mais de mil objetos. O relevo perto do herói tem todo o detalhe e o de longe fica mais simples, coberto pela neblina; pegue as moedas de cada região.',
+    difficulty: 'advanced',
+    concepts: ['Molda Cenários', 'mundo grande', 'regiões', 'cenário 3D', 'moedas'],
+    genre: 'exploração',
+    cover: MUNDO_2KM_CAPA,
+    arquivo: MUNDO_2KM_ARQUIVO,
+    load: (base) => carregarArquivoDoExemplo(base, MUNDO_2KM_ARQUIVO),
   },
 ]

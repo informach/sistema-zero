@@ -16,8 +16,15 @@ Com regiões (desenhadas no Molda Cenários, na aba Jogo), o cenário carrega s�
 região do personagem, as vizinhas e as que estão perto, com as mesmas regras do
 Estúdio em JavaScript; ``altura`` usa o relevo inteiro sempre, então ninguém cai
 onde a região ainda não carregou. Sem regiões, carrega tudo, como sempre.
+
+Com o relevo de mundo grande (o "campo" do Molda Cenários, só no Estúdio), o chão
+não vem em modelos: o cenário monta o relevo em pedaços perto do personagem, com
+todo o detalhe até perto e o desenho grosso longe, e ``altura`` lê o campo.
 """
+from array import array
+from collections import OrderedDict
 import hashlib
+import importlib.util
 import json
 import math
 import os
@@ -25,6 +32,7 @@ from pathlib import Path
 import re
 import struct
 import types
+import zlib
 
 import pyray as _p
 
@@ -453,6 +461,310 @@ def _dentro(x, z, contorno):
     return dentro
 
 
+# O relevo de mundo grande (plano "Mundos de 2 km", lote 6, 23/11/2026): a mesma conta da
+# referência do núcleo TypeScript (`relevo-pedacos.ts` do molda-cenarios-core), conferida contra os
+# mesmos casos (`__tests__/relevo-casos.json`). O Raylib do Estúdio não tem neblina nem o material
+# do editor, então a cor vai no vértice: as camadas misturadas pelos pesos, vezes a cor média da
+# textura de cada uma, com uma luz simples do relevo.
+_NO_ESTUDIO = importlib.util.find_spec('_szraylib') is not None
+_RELEVO_CELULAS = 64
+_RELEVO_GROSSO = 8
+_RELEVO_ALCANCE_COMPLETO = 1.5
+# Até onde a câmera do Raylib enxerga (RL_CULL_DISTANCE_FAR): além disso, nada é desenhado.
+_RELEVO_LONGE = 1000.0
+_RELEVO_COMPLETOS_GUARDADOS = 24
+_RELEVO_GROSSOS_GUARDADOS = 160
+_RELEVO_GROSSOS_POR_QUADRO = 16
+_L = math.sqrt(0.4 * 0.4 + 1 + 0.3 * 0.3)
+_LUZ = (0.4 / _L, 1 / _L, 0.3 / _L)
+_COR = re.compile('#[0-9a-fA-F]{6}')
+
+
+def _rgb(hexa):
+    if not isinstance(hexa, str) or not _COR.fullmatch(hexa):
+        raise ValueError('Uma camada do relevo tem uma cor inválida.')
+    n = int(hexa[1:], 16)
+    return ((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255
+
+
+def _byte(v):
+    return min(255, max(0, math.floor(v * 255 + 0.5)))
+
+
+def _ler_png_de_pesos(b, largura, altura):
+    """Os pesos de quatro camadas num PNG RGBA de 8 bits, filtro 0 em toda linha (o codificador do
+    Molda); devolve as linhas descompactadas, cada uma com o byte do filtro na frente."""
+    if b[:8] != b'\x89PNG\r\n\x1a\n':
+        raise ValueError('Os pesos do relevo não são um PNG.')
+    pos, cabecalho, partes = 8, None, []
+    while True:
+        if pos + 12 > len(b):
+            raise ValueError('Os pesos do relevo estão truncados.')
+        n, tipo = struct.unpack_from('>I4s', b, pos)
+        dados = b[pos + 8:pos + 8 + n]
+        if len(dados) != n or pos + 12 + n > len(b):
+            raise ValueError('Os pesos do relevo estão truncados.')
+        (crc,) = struct.unpack_from('>I', b, pos + 8 + n)
+        if zlib.crc32(tipo + dados) & 0xffffffff != crc:
+            raise ValueError('Os pesos do relevo estão estragados.')
+        pos += 12 + n
+        if tipo == b'IHDR':
+            cabecalho = struct.unpack('>IIBBBBB', dados)
+        elif tipo == b'IDAT':
+            partes.append(dados)
+        elif tipo == b'IEND':
+            break
+    if cabecalho != (largura, altura, 8, 6, 0, 0, 0):
+        raise ValueError('Os pesos do relevo não correspondem à grade.')
+    fila = 1 + largura * 4
+    d = zlib.decompressobj()
+    try:
+        cru = d.decompress(b''.join(partes), fila * altura + 1)
+    except zlib.error as e:
+        raise ValueError('Os pesos do relevo estão estragados.') from e
+    if len(cru) != fila * altura or d.unconsumed_tail or not d.eof:
+        raise ValueError('Os pesos do relevo não correspondem à grade.')
+    if any(cru[j * fila] for j in range(altura)):
+        raise ValueError('Os pesos do relevo usam um filtro de PNG que o cenário não lê.')
+    return cru
+
+
+class _RelevoDoCampo:
+    """O relevo em pedaços: completos (um vértice por célula) até perto do foco, grossos (um a
+    cada 8 células) longe, em blocos de 2 × 2 pedaços onde nada está perto; pula o que está atrás
+    da câmera e além do alcance dela. Constrói um pedaço completo por quadro e só troca o grosso
+    pelo completo quando ele está pronto (nunca aparece buraco)."""
+
+    def __init__(self, t, alturas, buracos, pesos, camadas):
+        self.ox, self.oz, self.passo = t['origem']['x'], t['origem']['z'], t['passo']
+        self.colunas, self.linhas = t['colunas'], t['linhas']
+        self.largura = self.colunas + 1
+        self.h = memoryview(alturas).cast('f')
+        self.buracos = buracos
+        self.pesos = pesos
+        self.fila = 1 + self.largura * 4
+        self.cores = []
+        for c in camadas:
+            a, b = _rgb(c.get('cor')), _rgb(c.get('corMedia'))
+            self.cores.append((a[0] * b[0], a[1] * b[1], a[2] * b[2]))
+        self._bases = {}
+        self.modelos = OrderedDict()
+        self.desenho = []
+        self.faltam = []
+
+    def _altura(self, i, j):
+        return self.h[j * self.largura + i]
+
+    def _base(self, j, i):
+        """A mistura das camadas (0 a 1) no vértice, em cache pelos bytes dos pesos: os mesmos
+        pesos dão a mesma conta, na mesma ordem."""
+        o = j * self.fila + 1 + i * 4
+        chave = b''.join(p[o:o + 4] for p in self.pesos)
+        base = self._bases.get(chave)
+        if base is None:
+            r = g = b = 0.0
+            for k, c in enumerate(self.cores):
+                w = chave[k] / 255
+                r += w * c[0]
+                g += w * c[1]
+                b += w * c[2]
+            base = self._bases[chave] = (r, g, b)
+        return base
+
+    def saia(self, i0, j0, celulas):
+        h, g = self._altura, _RELEVO_GROSSO
+        i1, j1 = i0 + celulas, j0 + celulas
+        pior = 0.0
+
+        def borda(fixo, de, ate, vertical):
+            nonlocal pior
+            for k in range(de, ate, g):
+                fim = min(k + g, ate)
+                a = h(fixo, k) if vertical else h(k, fixo)
+                b = h(fixo, fim) if vertical else h(fim, fixo)
+                for m in range(k + 1, fim):
+                    t = (m - k) / (fim - k)
+                    real = h(fixo, m) if vertical else h(m, fixo)
+                    pior = max(pior, abs(real - (a + (b - a) * t)))
+
+        borda(j0, i0, i1, False)
+        borda(j1, i0, i1, False)
+        borda(i0, j0, j1, True)
+        borda(i1, j0, j1, True)
+        return pior + 0.5
+
+    def malha(self, i0, j0, celulas, passo):
+        """Vértices (x, y, z), cores (RGBA) e triângulos do pedaço, com as saias."""
+        if celulas % passo or celulas // passo < 1:
+            raise ValueError('O pedaço do relevo não cabe no passo.')
+        n = celulas // passo + 1
+        vertices, cores, indices = array('f'), bytearray(), array('H')
+        # A cor do vértice: a mistura das camadas vezes a luz do relevo (a normal pelas vizinhas
+        # na grade). As alturas da linha e das vizinhas vêm de uma vez, por linha.
+        h, largura, colunas, linhas, dp = self.h, self.largura, self.colunas, self.linhas, self.passo
+        lx, ly, lz = _LUZ
+        lo, hi = max(i0 - 1, 0), min(i0 + celulas + 1, colunas)
+        colunas_do_pedaco = [i0 + b * passo for b in range(n)]
+        vizinhas = [(i, max(i - 1, 0), min(i + 1, colunas)) for i in colunas_do_pedaco]
+        base_de, byte, sqrt, ox = self._base, _byte, math.sqrt, self.ox
+        poe_vertice, poe_cor = vertices.extend, cores.extend
+        for a in range(n):
+            j = j0 + a * passo
+            zb, zc = max(j - 1, 0), min(j + 1, linhas)
+            atual = h[j * largura + lo:j * largura + hi + 1].tolist()
+            baixo = h[zb * largura + lo:zb * largura + hi + 1].tolist()
+            cima = h[zc * largura + lo:zc * largura + hi + 1].tolist()
+            z, entre_z = self.oz + j * dp, (zc - zb) * dp
+            for i, xe, xd in vizinhas:
+                k = i - lo
+                poe_vertice((ox + i * dp, atual[k], z))
+                r, g, b = base_de(j, i)
+                dx = (atual[xd - lo] - atual[xe - lo]) / ((xd - xe) * dp)
+                dz = (cima[k] - baixo[k]) / entre_z
+                luz = 0.6 + 0.4 * max(0, (-dx * lx + ly - dz * lz) / sqrt(dx * dx + 1 + dz * dz))
+                poe_cor((byte(r * luz), byte(g * luz), byte(b * luz), 255))
+        for a in range(n - 1):
+            j = j0 + a * passo
+            for b in range(n - 1):
+                i = i0 + b * passo
+                if self.buracos and self.buracos[j * self.colunas + i]:
+                    continue
+                va = a * n + b
+                vb, vc = va + 1, va + n
+                indices.extend((va, vc, vb, vb, vc, vc + 1))
+        saia = self.saia(i0, j0, celulas)
+        bordas = ((list(range(n)), False), ([(n - 1) * n + b for b in range(n)], True),
+                  ([a * n for a in range(n)], True), ([a * n + n - 1 for a in range(n)], False))
+        for lista, inverter in bordas:
+            base = len(vertices) // 3
+            for v in lista:
+                vertices.extend((vertices[v * 3], vertices[v * 3 + 1] - saia, vertices[v * 3 + 2]))
+                cores.extend(cores[v * 4:v * 4 + 3])
+                cores.append(255)
+            for k in range(n - 1):
+                s0, s1, b0, b1 = lista[k], lista[k + 1], base + k, base + k + 1
+                if inverter:
+                    indices.extend((s0, b0, s1, s1, b0, b1))
+                else:
+                    indices.extend((s0, s1, b0, s1, b1, b0))
+        return vertices, cores, indices
+
+    def _especificacao(self, chave):
+        tipo, x, z = chave
+        c = _RELEVO_CELULAS
+        if tipo == 'c':
+            return x * c, z * c, c, 1
+        if tipo == 'g':
+            return x * c, z * c, c, _RELEVO_GROSSO
+        return x * c, z * c, 2 * c, _RELEVO_GROSSO
+
+    def _construir(self, chave):
+        vertices, cores, indices = self.malha(*self._especificacao(chave))
+        m = _p.Mesh()
+        m.vertexCount = len(vertices) // 3
+        m.triangleCount = len(indices) // 3
+        m.vertices, m.colors, m.indices = vertices, cores, indices
+        _p.upload_mesh(m, False)
+        self.modelos[chave] = _p.load_model_from_mesh(m)
+
+    def _caixa(self, i0, j0, celulas):
+        x0, z0 = self.ox + i0 * self.passo, self.oz + j0 * self.passo
+        lado = celulas * self.passo
+        return x0, z0, x0 + lado, z0 + lado
+
+    @staticmethod
+    def _distancia(x, z, c):
+        dx = max(c[0] - x, 0.0, x - c[2])
+        dz = max(c[1] - z, 0.0, z - c[3])
+        return math.hypot(dx, dz)
+
+    def atualizar(self, x, z, camera=None, tudo=False):
+        c = _RELEVO_CELULAS
+        nx, nz = -(-self.colunas // c), -(-self.linhas // c)
+        perto = _RELEVO_ALCANCE_COMPLETO * c * self.passo
+        olho, frente = (x, z), None
+        if camera is not None:
+            p, alvo = getattr(camera, 'position', None), getattr(camera, 'target', None)
+            if p is not None and math.isfinite(p.x) and math.isfinite(p.z):
+                olho = (p.x, p.z)
+                if alvo is not None:
+                    fx, fz = alvo.x - p.x, alvo.z - p.z
+                    comprimento = math.hypot(fx, fz)
+                    if comprimento > 1e-6:
+                        frente = (fx / comprimento, fz / comprimento)
+
+        def visivel(caixa):
+            if self._distancia(olho[0], olho[1], caixa) > _RELEVO_LONGE:
+                return False
+            if frente is None:
+                return True
+            cx, cz = (caixa[0] + caixa[2]) / 2, (caixa[1] + caixa[3]) / 2
+            raio = math.hypot(caixa[2] - caixa[0], caixa[3] - caixa[1]) / 2
+            return (cx - olho[0]) * frente[0] + (cz - olho[1]) * frente[1] >= -raio
+
+        querer = []
+        for bz in range(0, nz, 2):
+            for bx in range(0, nx, 2):
+                filhos = [(ix, iz) for iz in (bz, bz + 1) for ix in (bx, bx + 1) if ix < nx and iz < nz]
+                perto_de = {f for f in filhos
+                            if self._distancia(x, z, self._caixa(f[0] * c, f[1] * c, c)) <= perto}
+                if not perto_de and len(filhos) == 4:
+                    if visivel(self._caixa(bx * c, bz * c, 2 * c)):
+                        querer.append(('b', bx, bz))
+                    continue
+                for f in filhos:
+                    if f in perto_de:
+                        querer.append(('c', f[0], f[1]))
+                    elif visivel(self._caixa(f[0] * c, f[1] * c, c)):
+                        querer.append(('g', f[0], f[1]))
+        # Os completos que faltam, do mais perto ao mais longe: um por quadro (todos na abertura).
+        faltam = sorted((k for k in querer if k[0] == 'c' and k not in self.modelos),
+                        key=lambda k: self._distancia(x, z, self._caixa(k[1] * c, k[2] * c, c)))
+        for k in faltam if tudo else faltam[:1]:
+            self._construir(k)
+        grossos = 0
+        desenho = []
+        for k in querer:
+            if k[0] == 'c' and k not in self.modelos:
+                k = ('g', k[1], k[2])
+            if k not in self.modelos:
+                if not tudo and grossos >= _RELEVO_GROSSOS_POR_QUADRO:
+                    continue
+                self._construir(k)
+                grossos += 1
+            self.modelos.move_to_end(k)
+            desenho.append(k)
+        self.desenho = desenho
+        self.faltam = [k for k in faltam if k not in self.modelos]
+        self._guardar(set(desenho))
+
+    def _guardar(self, na_tela):
+        for tipos, teto in (('c', _RELEVO_COMPLETOS_GUARDADOS), ('gb', _RELEVO_GROSSOS_GUARDADOS)):
+            chaves = [k for k in self.modelos if k[0] in tipos]
+            excesso = len(chaves) - teto
+            for k in chaves:
+                if excesso <= 0:
+                    break
+                if k not in na_tela:
+                    _p.unload_model(self.modelos.pop(k))
+                    excesso -= 1
+
+    def desenhar(self):
+        for k in self.desenho:
+            _p.draw_model(self.modelos[k], _p.Vector3(0, 0, 0), 1, _p.WHITE)
+
+    def estado(self):
+        completos = sum(1 for k in self.desenho if k[0] == 'c')
+        return {'desenhados': len(self.desenho), 'completos': completos,
+                'grossos': len(self.desenho) - completos, 'faltam': len(self.faltam),
+                'guardados': len(self.modelos)}
+
+    def descartar(self):
+        modelos, self.modelos, self.desenho = list(self.modelos.values()), OrderedDict(), []
+        for m in modelos:
+            _p.unload_model(m)
+
+
 class Cenario:
     """Cena carregada. ``dados`` conserva fonte, entidades, marcadores e licenças.
 
@@ -473,6 +785,7 @@ class Cenario:
         self._nos = {}
         self._alturas = None
         self._buracos = None
+        self._relevo = None
         self._pecas = set()
         self._plano = None
         self._carregadas = set()
@@ -507,6 +820,8 @@ class Cenario:
                 self._plano.reiniciar()
             else:
                 self._carregar(None)
+            if self._relevo is not None:
+                self._relevo.atualizar(*self._inicio(), tudo=True)
         except BaseException:
             self.descartar()
             raise
@@ -689,11 +1004,15 @@ class Cenario:
         """
         self._ativo()
         self._entradas = set()
-        if self._plano is None:
+        if self._plano is None and self._relevo is None:
             return
         if type(x) not in (int, float) or type(z) not in (int, float):
             raise ValueError('A posição das regiões precisa de dois números (x e z).')
         if not (math.isfinite(x) and math.isfinite(z)):
+            return
+        if self._relevo is not None:
+            self._relevo.atualizar(x, z, camera if hasattr(camera, 'position') else None)
+        if self._plano is None:
             return
         agora = float(_p.get_time()) if agora is None else _numero(agora)
         estado = self._plano.atualizar(x, z, agora, self._ponto_da_camera(camera))
@@ -779,6 +1098,9 @@ class Cenario:
             self._buracos = arquivo[0].read_bytes()
             if any(v not in (0, 1) for v in self._buracos):
                 raise ValueError('A máscara de buracos contém valores inválidos.')
+        relevo = t.get('relevo')
+        if relevo is not None:
+            self._preparar_relevo(t, relevo)
         self._pecas = {(p['coluna'], p['linha']) for p in _lista(t, 'pecas', 4096)}
         for contorno in _lista(t, 'recortes', 128):
             if not isinstance(contorno, list) or not 3 <= len(contorno) <= 4096:
@@ -787,6 +1109,32 @@ class Cenario:
                 _numero(p['x'])
                 _numero(p['z'])
 
+    def _preparar_relevo(self, t, relevo):
+        if (not isinstance(relevo, dict) or relevo.get('tipo') != 'campo'
+                or t.get('cobertura') != 'grade' or t.get('recortes')):
+            raise ValueError('O relevo de mundo grande do cenário é inválido.')
+        if not _NO_ESTUDIO:
+            raise ValueError('Este cenário tem o relevo de mundo grande, que só abre no Estúdio. '
+                             'Exporte de novo pelo destino Raylib do Molda.')
+        camadas = _lista(relevo, 'camadas', 8)
+        pesos = _lista(relevo, 'pesos', 2)
+        if not camadas or len(pesos) != -(-len(camadas) // 4) or any(not isinstance(c, dict) for c in camadas):
+            raise ValueError('As camadas do relevo não correspondem aos pesos.')
+        largura, altura = t['colunas'] + 1, t['linhas'] + 1
+        crus = []
+        for nome in pesos:
+            arquivo = self._arquivos.get(nome)
+            if not arquivo:
+                raise ValueError('Os pesos do relevo não estão no pacote.')
+            crus.append(_ler_png_de_pesos(arquivo[0].read_bytes(), largura, altura))
+        self._relevo = _RelevoDoCampo(t, self._alturas, self._buracos, crus, camadas)
+
+    def estado_do_relevo(self):
+        """``None`` sem o relevo de mundo grande; com ele, quantos pedaços estão na tela
+        (completos e grossos), quantos completos ainda faltam construir e quantos estão guardados."""
+        self._ativo()
+        return None if self._relevo is None else self._relevo.estado()
+
     def _ativo(self):
         if self._fechado:
             raise RuntimeError('O cenário já foi descartado.')
@@ -794,6 +1142,8 @@ class Cenario:
     def desenhar(self):
         """Dentro de begin_mode_3d: desenha sem alterar a câmera ou iniciar um quadro."""
         self._ativo()
+        if self._relevo is not None:
+            self._relevo.desenhar()
         for no, modelo in self._nos.values():
             anterior = [getattr(modelo.transform, f'm{i}') for i in range(16)]
             try:
@@ -838,7 +1188,7 @@ class Cenario:
             return 0.0
         gx, gz = (x - t['origem']['x']) / t['passo'], (z - t['origem']['z']) / t['passo']
         col, lin = min(t['colunas'] // 64 - 1, int(gx // 64)), min(t['linhas'] // 64 - 1, int(gz // 64))
-        if (col, lin) not in self._pecas:
+        if self._relevo is None and (col, lin) not in self._pecas:
             return t['fundo']
         ix, iz = min(int(gx), t['colunas'] - 1), min(int(gz), t['linhas'] - 1)
         u, v, w = gx - ix, gz - iz, t['colunas'] + 1
@@ -905,6 +1255,8 @@ class Cenario:
             return
         self._fechado = True
         try:
+            if self._relevo is not None:
+                self._relevo.descartar()
             for clips, n in self._animacoes.values():
                 _p.unload_model_animations(clips, n)
             for modelo in self._modelos.values():
@@ -920,7 +1272,7 @@ class Cenario:
             self._nos.clear()
             self._carregadas = set()
             self._arquivos.clear()
-            self._alturas = self._buracos = None
+            self._alturas = self._buracos = self._relevo = None
 
 
 def carregar(caminho='cenario.json', *, arquivos=None):

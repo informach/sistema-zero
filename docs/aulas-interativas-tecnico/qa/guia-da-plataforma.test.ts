@@ -118,9 +118,12 @@ function textosDoCaderno(valor: unknown, chave = ''): string[] {
 }
 
 test.each([
+  'a-ponte-apressada',
   'cade-todo-mundo',
   'desafio-farol',
   'ilha-farol',
+  'moedas-no-caminho',
+  'o-segredo-da-cabana',
   'transformando-o-vilao-em-aliado',
 ])('o texto do Passo a passo de %s segue a régua das aulas', (curso) => {
   const conteudo = JSON.parse(

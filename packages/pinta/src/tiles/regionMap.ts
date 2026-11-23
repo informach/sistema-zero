@@ -8,11 +8,13 @@ import {
   regionChunkKey,
 } from '@sistemazero/core/creations'
 import { prepareMapResourceVersions } from '../core/mapResourceVersions'
+import { createAsset } from '../core/newAsset'
 import {
   effectiveLayer,
   isTileLayer,
   PINTA_MAP_FORMAT_LIMITS,
   PINTA_MAX_SCHEMA,
+  type PintaProjectRef,
   type RegionTilemapAsset,
   sanitizePintaAsset,
   type TilemapAsset,
@@ -90,6 +92,33 @@ export function prepareMapRegions(map: TilemapAsset): RegionMapResult {
       ...(map.resources !== undefined ? { resources } : {}),
     },
   }
+}
+
+/** O tamanho inicial do "Mundo gigante" da galeria. Só as regiões pintadas ocupam espaço. */
+export const REGION_WORLD_START = { cols: 1024, rows: 768 } as const
+
+/**
+ * Um cenário grande novo, vazio, com as camadas de sempre de um mapa. Nasce de um mapa de uma
+ * região só e cresce sem alocar nada: o codec guarda apenas as regiões que recebem peças.
+ */
+export function createRegionWorld(input: {
+  name: string
+  tilesetId: string
+  projectRef?: PintaProjectRef
+}): RegionTilemapAsset | null {
+  const seed = createAsset({
+    kind: 'tilemap',
+    name: input.name,
+    tilesetId: input.tilesetId,
+    cols: PINTA_REGION_SIDE,
+    rows: PINTA_REGION_SIDE,
+    ...(input.projectRef ? { projectRef: input.projectRef } : {}),
+  })
+  if (seed.kind !== 'tilemap') return null
+  const prepared = prepareMapRegions(seed)
+  if (!prepared.ok) return null
+  const world = expandRegionMap(prepared.map, { col: 0, row: 0, ...REGION_WORLD_START })
+  return world.ok ? world.map : null
 }
 
 export function regionMapBounds(map: RegionTilemapAsset): PintaRegionBounds {

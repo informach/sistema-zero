@@ -1,0 +1,664 @@
+[
+  {
+    "id": "p1",
+    "kicker": "Passo a passo do projeto",
+    "title": "Moedas no caminho",
+    "subtitle": "O caminho do Farol ganhou moedas e um baú. Você vai programar as regras das moedas no jogo 2D e na ilha em 3D.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "O personagem continua indo atrás da chave para acender o farol, mas agora tem seis moedas pelo caminho e um baú. O jogo vai contar as moedas, mostrar esse número na tela e decidir quando o baú abre: primeiro no jogo 2D, na Aula 1, e depois na Ilha do Farol, em três dimensões, na Aula 2."
+      },
+      {
+        "kind": "box",
+        "title": "Use quando precisar",
+        "text": "Este é o seu Passo a passo do projeto! Nele estão os passos para montar o seu jogo nas duas aulas, com os blocos que você vai usar e o lugar de cada um. Se esquecer algum passo, é só voltar aqui. Em cada encaixe, deixe primeiro à vista o lugar do bloco; depois pegue o bloco e arraste até lá. Leia aqui mesmo ou clique em <b>Baixar</b> para guardar.",
+        "tone": "note"
+      },
+      {
+        "kind": "index",
+        "title": "O que você vai fazer",
+        "text": "No alto de cada página estão a aula e a parte, como na tela da aula.",
+        "days": [
+          {
+            "kicker": "Aula 1 · Jogo 2D",
+            "title": "Cada moeda conta",
+            "text": "Você investiga o cofrinho do jogo, cria o número moedas, faz cada moeda somar um, mostra o número na tela e ensina o baú a decidir.",
+            "pages": "Páginas {{pagina:experiencia}} a {{pagina:revisao-2d}}"
+          },
+          {
+            "kicker": "Aula 2 · Jogo 3D",
+            "title": "Moedas na ilha",
+            "text": "As mesmas regras na Ilha do Farol: contar as moedas, mostrar o número na tela e abrir o baú com uma animação.",
+            "pages": "Páginas {{pagina:coleta-3d}} a {{pagina:revisao-3d}}"
+          }
+        ],
+        "extras": [
+          {
+            "icon": "olho",
+            "title": "O que você descobriu",
+            "text": "O cofrinho e o baú, página {{pagina:descobriu}}"
+          },
+          {
+            "icon": "certo",
+            "title": "Envio do projeto",
+            "text": "No fim do baú, páginas {{pagina:bau-envio}} e {{pagina:bau-3d-envio}}"
+          },
+          {
+            "icon": "ajuda",
+            "title": "Se precisar de ajuda",
+            "text": "Página {{pagina:revisao-3d}}"
+          }
+        ]
+      },
+      {
+        "kind": "box",
+        "title": "Antes de montar",
+        "text": "No começo de cada aula, jogue a versão pronta. Segure as setas no canto de baixo do jogo ou clique dentro do jogo e use as setas do teclado; na ilha, as letras W, A, S e D também funcionam. A tecla R começa outra partida. Pegue moedas, tente o baú com poucas e com muitas e, quando terminar, clique em <b>Próxima parte</b>.",
+        "tone": "experience"
+      }
+    ]
+  },
+  {
+    "id": "experiencia",
+    "kicker": "Aula 1 · Parte 3 · Experiência antes da montagem",
+    "title": "Quando o número de moedas muda?",
+    "subtitle": "O jogo guarda a conta das moedas num número que pode mudar durante a partida.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "Para saber quantas moedas o personagem já pegou, o jogo guarda essa conta numa <b>variável</b>: um número que o jogo guarda e que pode mudar durante a partida. Sabe quando você guarda moedas num cofrinho? Cada moeda que cai lá dentro faz o total crescer um pouco. No seu jogo, o cofrinho é a variável <b>moedas</b>, e a partida começa com ela em zero.<br/>O baú faz uma pergunta sobre esse número, e dá para perguntar de dois jeitos: moedas é pelo menos 5? Ou moedas é exatamente 5? E se o personagem voltar ao lugar de uma moeda que ele já pegou, ela conta de novo?"
+      },
+      {
+        "kind": "investigate",
+        "title": "O que investigar",
+        "text": "Investigue quando o número moedas muda, quando continua igual e o que o baú responde com cada pergunta. Estes são os testes da tela da experiência:",
+        "goals": [
+          "Pegue duas moedas diferentes e olhe o número de moedas.",
+          "Com o sumiço ligado, passe de novo numa moeda que já pegou.",
+          "Com o sumiço desligado, passe de novo numa moeda que já pegou.",
+          "Afaste o personagem das moedas e olhe o número.",
+          "Leve ao baú menos de 5 moedas.",
+          "Com mais de 5 moedas no baú, troque <b>pelo menos 5</b> por <b>exatamente 5</b>."
+        ]
+      },
+      {
+        "kind": "box",
+        "title": "Você escolhe a ordem",
+        "text": "O Zappy vai te mostrando o que testar, e você pode repetir quantas vezes quiser. Antes e depois de cada teste, observe o número de moedas, as moedas do caminho e o baú. Quando terminar, clique em <b>Próxima parte</b>.",
+        "tone": "note"
+      }
+    ]
+  },
+  {
+    "id": "descobriu",
+    "kicker": "Aula 1 · Parte 4 · O que você descobriu",
+    "title": "O cofrinho conta cada moeda",
+    "subtitle": "A variável moedas guarda quantas moedas o personagem já pegou.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "Na experiência, o número moedas começava em zero e mudava durante a partida. Cada teste mostrou uma coisa sobre o cofrinho do jogo."
+      },
+      {
+        "kind": "discoveries",
+        "cards": [
+          {
+            "icon": "brilho",
+            "title": "O que muda ao pegar uma moeda?",
+            "text": "O número ganha 1."
+          },
+          {
+            "icon": "pegadas",
+            "title": "Longe das moedas, o número continua?",
+            "text": "Continua guardado."
+          },
+          {
+            "icon": "olho",
+            "title": "E passar de novo onde já pegou?",
+            "text": "A moeda sumiu: não conta outra vez."
+          },
+          {
+            "icon": "repetir",
+            "title": "E se a moeda não sumir?",
+            "text": "A mesma moeda conta de novo."
+          }
+        ]
+      },
+      {
+        "kind": "figure",
+        "name": "bau",
+        "title": "O que o baú responde",
+        "labels": {
+          "coluna": "Moedas no cofrinho",
+          "linhas": ["Pelo menos 5", "Exatamente 5"],
+          "fechado": "não abre",
+          "aberto": "abre"
+        }
+      },
+      {
+        "kind": "note",
+        "text": "No seu jogo, o baú vai perguntar se moedas é pelo menos 5: com 5 moedas ou mais, ele abre. Você monta essa pergunta na Parte 7 (página {{pagina:bau-pergunta}})."
+      }
+    ]
+  },
+  {
+    "id": "contador",
+    "kicker": "Aula 1 · Parte 4 · Montagem",
+    "title": "Crie o contador",
+    "subtitle": "O jogo precisa do cofrinho desde o começo da partida.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "Na experiência, o número moedas começava em zero e mudava durante a partida. Agora você vai criar esse número no seu jogo. Ele nasce na área <b>Ao iniciar</b>, que tem o que o jogo prepara quando a partida começa."
+      },
+      {
+        "kind": "step",
+        "title": "1. Encontre o lugar do bloco",
+        "text": "Encontre o fim da área <b>Ao iniciar</b>, logo abaixo do bloco que cria o ícone da moeda, <b>Criar sprite iconeMoeda</b>. Se esse lugar não estiver aparecendo, arraste um espaço vazio entre os blocos até ele aparecer. Deixe esse lugar à vista."
+      },
+      {
+        "kind": "step",
+        "title": "2. Crie a variável moedas",
+        "text": "<b>Programação &gt; Variáveis.</b> Pegue <b>Criar variável com valor</b> e solte logo abaixo do bloco que cria o ícone da moeda.<br/>É este bloco que cria o cofrinho quando a partida começa.<br/>Ele chega com o nome <b>contador</b>: clique em contador e escreva <b>moedas</b>. O valor já vem <b>0</b>; deixe assim, porque no começo da partida o personagem ainda não pegou nenhuma moeda."
+      },
+      {
+        "kind": "drawing",
+        "name": "contador",
+        "title": "Confira se ficou assim",
+        "ready": ["Os blocos que já estão em Ao iniciar, até Criar sprite iconeMoeda"]
+      },
+      {
+        "kind": "box",
+        "tone": "test",
+        "title": "Verificar e continuar",
+        "text": "Jogando, você ainda não vê esse número, porque nada mostra ele na tela. Ele vai aparecer daqui a duas partes.<br/>Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+      }
+    ]
+  },
+  {
+    "id": "coleta",
+    "kicker": "Aula 1 · Parte 5 · Montagem",
+    "title": "Cada moeda soma um",
+    "subtitle": "Segure a seta da direita e leve o personagem pelas moedas: elas continuam no caminho, porque o encontro com as moedas ainda não tem reação.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "As seis moedas estão num <b>grupo</b>, chamado <b>moedasDoCaminho</b>. Um grupo junta vários objetos parecidos, para uma regra valer para todos de uma vez. Por isso, o encontro vai ser com alguma moeda do grupo."
+      },
+      {
+        "kind": "step",
+        "title": "1. Encontre o lugar do encontro",
+        "text": "Os encontros ficam na área <b>Quando acontecer</b>. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.<br/>Lá dentro, o último bloco é o evento da tecla R, que recomeça a partida. O encontro novo vai logo abaixo dele, fora do fazer dele. Deixe esse espaço à vista."
+      },
+      {
+        "kind": "step",
+        "title": "2. Programe o encontro com o grupo",
+        "text": "<b>Jogo 2D &gt; Colisões &gt; Encostar e bloquear.</b> Pegue <b>Quando o sprite começar a encostar em algum do grupo, chamando de</b> e solte logo abaixo do evento da tecla R. Não coloque um evento dentro do outro.<br/>É este bloco que percebe quando o personagem encosta numa moeda do grupo.<br/>Ele chega com três nomes. Clique em <b>jogador</b> e escolha <b>personagem</b>. Clique em <b>moedas</b>, o nome do grupo, e escolha <b>moedasDoCaminho</b>. O último nome já vem <b>moeda</b>; deixe assim: é por esse nome que os blocos de dentro falam da moeda que o personagem acabou de encostar."
+      },
+      {
+        "kind": "step",
+        "title": "3. Tire a moeda do grupo",
+        "text": "A reação vai no espaço ao lado da palavra <b>fazer</b>, dentro do encontro novo. Deixe esse espaço à vista.<br/><b>Jogo 2D &gt; Grupos &gt; Participação e limpeza.</b> Pegue <b>Tirar o sprite do grupo</b> e solte no espaço ao lado de fazer.<br/>É este bloco que tira a moeda do grupo. Fora do grupo, ela some do caminho e não conta de novo.<br/>Ele chega com asteroide e asteroides. Clique em <b>asteroide</b> e escolha <b>moeda</b>. Depois clique em <b>asteroides</b> e escolha <b>moedasDoCaminho</b>."
+      },
+      {
+        "kind": "step",
+        "title": "4. Some um em moedas",
+        "text": "Esse bloco vai logo abaixo de <b>Tirar o sprite do grupo</b>, ainda dentro do encontro. Deixe esse lugar à vista.<br/><b>Programação &gt; Variáveis.</b> Pegue <b>Somar 1 em variável</b> e solte logo abaixo de Tirar o sprite do grupo.<br/>É este bloco que soma um em moedas, como na experiência. Ele chega com <b>contador</b>: clique em contador e escolha <b>moedas</b>. O número já vem <b>1</b>; deixe assim."
+      }
+    ]
+  },
+  {
+    "id": "coleta-blocos",
+    "kicker": "Aula 1 · Parte 5 · Teste e verifique",
+    "title": "Cada moeda conta uma vez",
+    "subtitle": "A moeda pega sai do grupo e soma um em moedas. Passar de novo pelo lugar dela não conta outra vez.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "Teste no seu jogo",
+        "text": "Segure a seta da direita da tela e leve o personagem pelas moedas mais uma vez: cada moeda some no encontro. O número ainda não aparece na tela; ele vai aparecer na próxima parte.<br/>Depois segure a seta da esquerda da tela e volte pelo lugar das moedas. Nada acontece, porque elas já saíram do grupo."
+      },
+      {
+        "kind": "drawing",
+        "name": "coleta-2d",
+        "title": "Confira se ficou assim",
+        "ready": ["Os encontros com a chave e com o farol e o evento da tecla R"]
+      },
+      {
+        "kind": "box",
+        "tone": "test",
+        "title": "Verificar e continuar",
+        "text": "Se algo não funcionou, confira o desenho e teste de novo. Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+      }
+    ]
+  },
+  {
+    "id": "placar",
+    "kicker": "Aula 1 · Parte 6 · Montagem",
+    "title": "Mostre as moedas na tela",
+    "subtitle": "Pegue duas moedas: elas somem, mas não dá para saber quantas você já pegou, porque nada mostra o número moedas na tela.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "O placar precisa mostrar o número de agora o tempo todo. Por isso, ele vai no bloco <b>A cada quadro do jogo</b>, na área <b>Enquanto estiver rodando</b>."
+      },
+      {
+        "kind": "step",
+        "title": "1. Encontre o lugar do placar",
+        "text": "Encontre a área <b>Enquanto estiver rodando</b>. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.<br/>O placar vai no fim de A cada quadro do jogo, logo abaixo do último bloco, o <b>Escrever</b> que mostra a dica das setas. Deixe esse lugar à vista."
+      },
+      {
+        "kind": "step",
+        "title": "2. Pegue o placar",
+        "text": "<b>Jogo 2D &gt; Vida e placar &gt; Indicadores e texto na tela.</b> Pegue <b>Mostrar placar</b> e solte logo abaixo do último bloco.<br/>É este bloco que mostra um número na tela, com um nome antes dele. Ele chega com o nome <b>Pontos:</b>. Clique em Pontos: e escreva <b>Moedas:</b>, também com dois-pontos no fim."
+      },
+      {
+        "kind": "step",
+        "title": "3. Mostre o que moedas guarda",
+        "text": "O valor chega com o número <b>0</b>, mas o placar precisa mostrar o que moedas guarda. Por isso, troque esse 0 por um bloco que lê a variável.<br/><b>Programação &gt; Valores.</b> Pegue <b>valor da variável</b> e solte em cima do 0, logo depois da palavra valor.<br/>É este bloco que lê o número guardado no cofrinho. Ele chega com <b>x</b>: clique no x e escolha <b>moedas</b>."
+      },
+      {
+        "kind": "step",
+        "title": "4. Ponha o placar no lugar",
+        "text": "Clique no <b>12</b>, o número do x, e troque por <b>38</b>. Clique no <b>30</b>, o número do y, e troque por <b>60</b>. Assim o placar fica ao lado do ícone da moeda.<br/>A cor já vem branca; deixe assim. Clique no <b>24</b>, o tamanho, e troque por <b>20</b>."
+      }
+    ]
+  },
+  {
+    "id": "placar-blocos",
+    "kicker": "Aula 1 · Parte 6 · Teste e verifique",
+    "title": "O número aparece na tela",
+    "subtitle": "O placar começa em Moedas: 0 e sobe a cada moeda pega.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "Teste no seu jogo",
+        "text": "Repare: o placar começa em <b>Moedas: 0</b>. Segure a seta da direita da tela e pegue as moedas do caminho: o número sobe de um em um.<br/>Agora segure a seta da esquerda da tela e volte pelo lugar das moedas: o número continua igual.<br/>Depois clique no jogo e toque na tecla R. O placar volta para 0, e as moedas voltam para o caminho."
+      },
+      {
+        "kind": "drawing",
+        "name": "placar-2d",
+        "title": "Confira se ficou assim",
+        "ready": ["Os blocos que já estão aqui, até o Escrever da dica das setas"]
+      },
+      {
+        "kind": "box",
+        "tone": "test",
+        "title": "Verificar e continuar",
+        "text": "Se algo não funcionou, confira o desenho e teste de novo. Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+      }
+    ]
+  },
+  {
+    "id": "bau-pergunta",
+    "kicker": "Aula 1 · Parte 7 · Montagem",
+    "title": "O baú faz uma pergunta",
+    "subtitle": "Segure a seta de baixo e leve o personagem até o baú, no gramado de baixo: nada acontece, porque o encontro com o baú ainda não faz nenhuma pergunta.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "Na experiência, com menos de 5 moedas o baú ficava fechado e avisava o que faltava. Com mais de 5 moedas, a pergunta pelo menos 5 abria o baú, e a pergunta exatamente 5 não. Agora você vai montar essa pergunta no seu jogo."
+      },
+      {
+        "kind": "step",
+        "title": "1. Programe o encontro com o baú",
+        "text": "Chegar ao baú é um encontro, como encostar numa moeda. Em <b>Quando acontecer</b>, deixe à vista o lugar logo abaixo do encontro com as moedas, fora do fazer dele.<br/><b>Jogo 2D &gt; Colisões &gt; Encostar e bloquear.</b> Pegue <b>Quando o sprite começar a encostar no sprite</b> e solte nesse lugar. Não coloque um evento dentro do outro.<br/>Ele chega com jogador e inimigo. Clique em <b>jogador</b> e escolha <b>personagem</b>. Depois clique em <b>inimigo</b> e escolha <b>bau</b>."
+      },
+      {
+        "kind": "step",
+        "title": "2. Ponha o Se e abra o senão",
+        "text": "Uma pergunta de sim ou não, que ajuda o jogo a decidir, se chama <b>condição</b>. Quem faz uma condição no jogo é o bloco <b>Se</b>.<br/><b>Programação &gt; Lógica &amp; Se.</b> Pegue <b>Se</b> e solte no espaço ao lado de fazer, dentro do encontro com o baú.<br/>A resposta do sim fica no espaço do <b>então</b>, e a do não fica no espaço do <b>senão</b>. O Se chega sem o senão: na linha de baixo do Se, clique no segundo sinal de mais, o de antes da palavra <b>senão</b>. Não clique no primeiro."
+      },
+      {
+        "kind": "step",
+        "title": "3. Monte a pergunta",
+        "text": "O Se já vem com uma pergunta, <b>x maior que 0</b>. Desta vez ela serve, só que com outras partes. Clique no <b>x</b> e escolha <b>moedas</b>.<br/>Pelo menos 5 quer dizer 5 ou mais. O sinal que pergunta isso é o <b>maior ou igual</b>, que tem um tracinho embaixo. Clique no sinal de maior e escolha <b>≥</b>. Depois clique no <b>0</b> e troque por <b>5</b>."
+      },
+      {
+        "kind": "box",
+        "title": "E se juntar seis moedas, o baú abre?",
+        "text": "Abre, sim: seis é mais que cinco, e o maior ou igual aceita 5 ou mais. Com o sinal de igual, o baú ficaria fechado com seis moedas, como você viu na experiência.",
+        "tone": "note"
+      }
+    ]
+  },
+  {
+    "id": "bau-respostas",
+    "kicker": "Aula 1 · Parte 7 · Montagem",
+    "title": "As duas respostas do baú",
+    "subtitle": "No então, o baú abre e o aviso conta. No senão, o aviso diz o que falta.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "4. A resposta do sim: o baú abre",
+        "text": "Deixe à vista o espaço do <b>então</b>.<br/><b>Jogo 2D &gt; Sprites &gt; Criar e trocar aparência.</b> Pegue <b>Trocar imagem do sprite</b> e solte dentro do então.<br/>É este bloco que troca o desenho do baú fechado pelo do baú aberto. Ele chega com <b>heroi</b> duas vezes. Clique no primeiro heroi e escolha <b>bau</b>, o sprite do baú. Depois clique no outro heroi e escolha o desenho <b>bau-aberto</b>."
+      },
+      {
+        "kind": "step",
+        "title": "5. O aviso conta que o baú abriu",
+        "text": "Logo abaixo de Trocar imagem do sprite, ainda dentro do então: <b>Programação &gt; Variáveis.</b> Pegue <b>Alterar variável para</b> e solte ali. Ele chega com <b>contador</b>: clique e escolha <b>aviso</b>.<br/>O aviso é uma mensagem, e não um número. <b>Programação &gt; Valores.</b> Pegue <b>texto</b> e solte em cima do <b>1</b>. Clique em <b>Olá</b>, apague e escreva <b>O baú abriu! Você juntou moedas suficientes.</b>"
+      },
+      {
+        "kind": "step",
+        "title": "6. A resposta do não: o aviso diz o que falta",
+        "text": "Dentro do <b>senão</b>, solte outro <b>Alterar variável para</b>, de <b>Programação &gt; Variáveis</b>, e escolha <b>aviso</b>. Em cima do 1, solte outro <b>texto</b>, de <b>Programação &gt; Valores</b>. Clique nesse Olá, apague e escreva <b>O baú pede pelo menos 5 moedas.</b>"
+      }
+    ]
+  },
+  {
+    "id": "bau-teste",
+    "kicker": "Aula 1 · Parte 7 · Teste e confira",
+    "title": "Teste os dois casos",
+    "subtitle": "Sem moedas, o baú continua fechado. Com pelo menos 5, ele abre.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "Teste no seu jogo",
+        "text": "Segure a seta de baixo da tela e leve o personagem direto ao baú, sem pegar moedas: o baú continua fechado, e o aviso diz que ele pede pelo menos 5 moedas.<br/>Agora clique no jogo e toque na tecla R. Segure a seta da direita da tela e pegue as cinco moedas do caminho. Volte com a seta da esquerda e desça até o baú: o baú abre!<br/>Toque na tecla R mais uma vez: o baú volta fechado, e o placar volta para 0."
+      },
+      {
+        "kind": "drawing",
+        "name": "bau-2d",
+        "title": "Confira se ficou assim",
+        "ready": ["Os outros encontros e o evento da tecla R"],
+        "branches": ["quando moedas é 5 ou mais", "quando moedas é menos que 5"]
+      }
+    ]
+  },
+  {
+    "id": "bau-envio",
+    "kicker": "Aula 1 · Parte 7 · Envio",
+    "title": "Envie o seu jogo",
+    "subtitle": "O baú foi a última montagem da aula. Agora é verificar e enviar o projeto.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "Se algo não funcionou",
+        "text": "Confira se ficou como no desenho da página {{pagina:bau-teste}}. Depois de corrigir, teste de novo os dois casos: sem moedas e com pelo menos 5."
+      },
+      {
+        "kind": "delivery",
+        "title": "Verificar e enviar",
+        "text": "Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente.<br/>Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Enviar meu projeto</b> e confirme em <b>Enviar</b>. Quando aparecer <b>Projeto enviado!</b>, clique em <b>Próxima parte</b>."
+      },
+      {
+        "kind": "box",
+        "title": "Comemore",
+        "text": "Pronto, você programou as moedas do caminho: cada moeda conta uma vez só, o número aparece na tela e o baú decide pela quantidade!",
+        "tone": "test"
+      },
+      {
+        "kind": "note",
+        "text": "Depois do envio vem a revisão, a última parte da aula (página {{pagina:revisao-2d}})."
+      }
+    ]
+  },
+  {
+    "id": "revisao-2d",
+    "kicker": "Aula 1 · Parte 8 · Revisão",
+    "title": "Pense nas moedas",
+    "subtitle": "Antes de concluir a aula, lembre o que você descobriu sobre o cofrinho e o baú.",
+    "items": [
+      {
+        "kind": "activity",
+        "pill": "Na aula, depois do envio",
+        "text": "Aqui não tem vídeo. Cada pergunta mostra uma situação do jogo das moedas, e você escolhe o que acontece."
+      },
+      {
+        "kind": "step",
+        "title": "Escolha e veja acontecendo",
+        "text": "Em cada pergunta, escolha uma resposta e clique em <b>Ver o que acontece</b>. Nas perguntas sem cena, clique em <b>Responder</b>. Observe a cena e a explicação."
+      },
+      {
+        "kind": "step",
+        "title": "Se errar, tente de novo",
+        "text": "Se errar, clique em <b>Tentar de novo</b> na mesma pergunta. Com a resposta certa, clique em <b>Próxima pergunta</b>; na última, em <b>Concluir revisão</b>. Depois clique em <b>Concluir aula</b>."
+      },
+      {
+        "kind": "note",
+        "text": "Se quiser rever uma descoberta, volte à página {{pagina:descobriu}}. Na próxima aula, as moedas vão para a Ilha do Farol, em três dimensões."
+      }
+    ]
+  },
+  {
+    "id": "coleta-3d",
+    "kicker": "Aula 2 · Parte 2 · Montagem",
+    "title": "Conte as moedas da ilha",
+    "subtitle": "Clique em Rodar de novo e leve o personagem pelas moedas da trilha: elas continuam ali, porque o jogo ainda não conta as moedas.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "Na Aula 1, você fez cada moeda contar no jogo 2D. Agora você vai fazer o mesmo na ilha: primeiro o cofrinho, depois o encontro com as moedas."
+      },
+      {
+        "kind": "step",
+        "title": "1. Crie o cofrinho",
+        "text": "Como no jogo 2D, a variável moedas precisa existir desde o começo da partida. Encontre o fim da área <b>Ao iniciar</b>, logo abaixo do último bloco, o <b>Escrever na tela</b> da dica das setas. Se esse lugar não estiver aparecendo, arraste um espaço vazio entre os blocos até ele aparecer.<br/><b>Programação &gt; Variáveis.</b> Pegue <b>Criar variável com valor</b> e solte logo abaixo do último bloco de Ao iniciar. Ele chega com o nome <b>contador</b>: clique em contador e escreva <b>moedas</b>. O valor já vem <b>0</b>; deixe assim, porque a partida começa sem nenhuma moeda."
+      },
+      {
+        "kind": "step",
+        "title": "2. Programe o encontro com o grupo",
+        "text": "As moedas da ilha também estão num grupo, o <b>moedasDoCaminho</b>. Na área <b>Quando acontecer</b>, o último bloco é o encontro com o farol. O encontro novo vai logo abaixo dele, fora do fazer dele. Deixe esse espaço à vista.<br/><b>Jogo 3D &gt; Encostar &gt; Encostar.</b> Pegue <b>Quando encostar em algum do grupo, chamando de</b> e solte logo abaixo do encontro com o farol. Não coloque um evento dentro do outro.<br/>Ele chega com três nomes. Clique em <b>heroi</b> e escolha <b>personagem</b>. Depois clique em <b>estrelas</b>, o nome do grupo, e escolha <b>moedasDoCaminho</b>. Por último, clique em <b>item</b> e escreva <b>moeda</b>."
+      },
+      {
+        "kind": "step",
+        "title": "3. A moeda sai da ilha",
+        "text": "A reação vai no espaço ao lado da palavra <b>fazer</b>, dentro do encontro novo. Deixe esse espaço à vista.<br/><b>Jogo 3D &gt; Objetos &gt; Sumir.</b> Pegue <b>Remover objeto da cena</b> e solte no espaço ao lado de fazer. É este bloco que tira a moeda da ilha. Fora da ilha, ela não conta de novo.<br/>Clique em <b>objeto</b> e escolha <b>moeda</b>. A cena já vem <b>cena</b>; deixe assim."
+      },
+      {
+        "kind": "step",
+        "title": "4. Some um em moedas",
+        "text": "Esse bloco vai logo abaixo de <b>Remover moeda da cena</b>, ainda dentro do encontro. Deixe esse lugar à vista.<br/><b>Programação &gt; Variáveis.</b> Pegue <b>Somar 1 em variável</b> e solte logo abaixo de Remover moeda da cena. Ele chega com <b>contador</b>: clique em contador e escolha <b>moedas</b>. O número já vem <b>1</b>; deixe assim."
+      }
+    ]
+  },
+  {
+    "id": "coleta-3d-blocos",
+    "kicker": "Aula 2 · Parte 2 · Teste e verifique",
+    "title": "As moedas da ilha contam",
+    "subtitle": "Cada moeda pega sai da cena e soma um em moedas, como no jogo 2D.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "Teste no seu jogo",
+        "text": "Clique em <b>Rodar de novo</b> mais uma vez e caminhe pela trilha até o farol: as cinco moedas do caminho somem, uma a uma. O número ainda não aparece na tela; ele vai aparecer na próxima parte."
+      },
+      {
+        "kind": "drawing",
+        "name": "coleta-3d",
+        "title": "Confira se ficou assim",
+        "ready": [
+          "Os blocos que já estão em Ao iniciar, até o Escrever na tela da dica das setas",
+          "O evento da tecla R e os encontros com a chave e com o farol"
+        ]
+      },
+      {
+        "kind": "box",
+        "tone": "test",
+        "title": "Verificar e continuar",
+        "text": "Se algo não funcionou, confira o desenho e teste de novo. Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+      }
+    ]
+  },
+  {
+    "id": "placar-3d",
+    "kicker": "Aula 2 · Parte 3 · Montagem",
+    "title": "O número na tela da ilha",
+    "subtitle": "Clique em Rodar de novo e pegue as duas primeiras moedas: elas somem, mas nada mostra na tela quantas você já pegou.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "Na Aula 1, o placar ficava em A cada quadro do jogo. Na ilha é igual: o número vai no bloco <b>A cada quadro da cena</b>, na área <b>Enquanto estiver rodando</b>, para mostrar sempre o valor de agora."
+      },
+      {
+        "kind": "step",
+        "title": "1. Encontre o lugar do bloco",
+        "text": "Encontre a área <b>Enquanto estiver rodando</b>. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.<br/>O bloco novo vai no fim de A cada quadro da cena, logo abaixo do último bloco, o <b>Se</b> com <b>ganhou</b>. Deixe esse lugar à vista."
+      },
+      {
+        "kind": "step",
+        "title": "2. Escreva o número na tela",
+        "text": "<b>Jogo 3D &gt; Placar, vida e telas &gt; Na tela.</b> Pegue <b>Escrever na tela</b> e solte logo abaixo do Se com ganhou. É este bloco que escreve um texto num canto da tela. O canto já vem <b>em cima, à esquerda</b>; deixe assim.<br/>Ele chega com o texto <b>Pegue as estrelas!</b>, mas o número está guardado em moedas. <b>Programação &gt; Valores.</b> Pegue <b>valor da variável</b> e solte em cima desse texto. É este bloco que lê o número guardado no cofrinho. Clique no <b>x</b> e escolha <b>moedas</b>."
+      },
+      {
+        "kind": "drawing",
+        "name": "placar-3d",
+        "title": "Confira se ficou assim",
+        "ready": ["Andar, o aviso e o Se com ganhou"]
+      }
+    ]
+  },
+  {
+    "id": "placar-3d-teste",
+    "kicker": "Aula 2 · Parte 3 · Teste e verifique",
+    "title": "O número sobe a cada moeda",
+    "subtitle": "O número começa em 0, sobe até 5 na trilha e volta para 0 com a tecla R.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "Teste no seu jogo",
+        "text": "Clique em <b>Rodar de novo</b> mais uma vez. Repare: o número no canto de cima começa em 0. Caminhe pela trilha até o farol: o número sobe a cada moeda, até 5.<br/>Volte um pouco pela ponte: o número continua 5, porque as moedas do caminho já saíram da cena, e voltar não encosta em moeda nenhuma.<br/>Toque na tecla R: o número volta para 0, e as moedas voltam para a trilha."
+      },
+      {
+        "kind": "step",
+        "title": "Se algo não funcionou",
+        "text": "Confira se ficou como no desenho da página {{pagina:placar-3d}}: no fim de A cada quadro da cena está <b>Escrever na tela em cima, à esquerda</b>, com <b>valor da variável moedas</b> no lugar do texto. Depois de corrigir, teste de novo."
+      },
+      {
+        "kind": "box",
+        "tone": "test",
+        "title": "Verificar e continuar",
+        "text": "Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+      }
+    ]
+  },
+  {
+    "id": "bau-3d-pergunta",
+    "kicker": "Aula 2 · Parte 4 · Montagem",
+    "title": "O baú da ilha pergunta",
+    "subtitle": "Clique em Rodar de novo e leve o personagem até o baú, à esquerda do começo: nada acontece, porque o encontro com o baú ainda não faz nenhuma pergunta.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "Na Aula 1, o baú do jogo 2D perguntava se moedas é pelo menos 5. Na ilha, a pergunta é a mesma. Primeiro, o jogo precisa perceber quando o personagem chega ao baú."
+      },
+      {
+        "kind": "step",
+        "title": "1. Programe o encontro com o baú",
+        "text": "Em <b>Quando acontecer</b>, deixe à vista o lugar logo abaixo do encontro com as moedas, fora do fazer dele.<br/><b>Jogo 3D &gt; Encostar &gt; Encostar.</b> Pegue <b>Quando personagem encostar em chave</b> e solte nesse lugar. Não coloque um evento dentro do outro.<br/>Ele chega com personagem e chave: clique em <b>chave</b> e escolha <b>bau</b>. É este bloco que percebe quando o personagem chega ao baú."
+      },
+      {
+        "kind": "step",
+        "title": "2. Ponha o Se e abra o senão",
+        "text": "<b>Programação &gt; Lógica &amp; Se.</b> Pegue <b>Se</b> e solte no espaço ao lado de fazer, dentro do encontro com o baú.<br/>A resposta do sim fica no espaço do <b>então</b>, e a do não fica no espaço do <b>senão</b>. O Se chega sem o senão: na linha de baixo do Se, clique no segundo sinal de mais, o de antes da palavra <b>senão</b>. Não clique no primeiro."
+      },
+      {
+        "kind": "step",
+        "title": "3. Monte a pergunta",
+        "text": "O Se já vem com a pergunta <b>x maior que 0</b>. Clique no <b>x</b> e escolha <b>moedas</b>. Clique no sinal de maior e escolha <b>≥</b>, o maior ou igual, que tem um tracinho embaixo. Depois clique no <b>0</b> e troque por <b>5</b>.<br/>Pronto: o Se pergunta se o personagem tem pelo menos 5 moedas."
+      }
+    ]
+  },
+  {
+    "id": "bau-3d-respostas",
+    "kicker": "Aula 2 · Parte 4 · Montagem",
+    "title": "O baú da ilha abre",
+    "subtitle": "No então, o baú toca a animação abrir e o aviso conta. No senão, o aviso diz o que falta.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "4. A resposta do sim: o baú abre",
+        "text": "Quem faz o baú abrir de verdade é a animação <b>abrir</b>, que já vem pronta no modelo do baú. Você só escolhe quando ela toca. Deixe à vista o espaço do <b>então</b>.<br/><b>Jogo 3D &gt; Objetos &gt; Animação do modelo.</b> Pegue <b>Tocar a animação</b> e solte dentro do então.<br/>Ele chega com <b>Andar</b>, <b>heroi</b> e <b>repetindo</b>. Clique em Andar e escolha <b>abrir</b>. Clique em heroi e escolha <b>bau</b>. Clique em repetindo e escolha <b>uma vez</b>, para o baú abrir uma vez só."
+      },
+      {
+        "kind": "step",
+        "title": "5. O aviso conta que o baú abriu",
+        "text": "Logo abaixo de Tocar a animação, ainda dentro do então: <b>Programação &gt; Variáveis.</b> Pegue <b>Alterar variável para</b> e solte ali. Escolha <b>aviso</b>. Em cima do 1, solte <b>texto</b>, de <b>Programação &gt; Valores</b>. Clique em Olá, apague e escreva <b>O baú abriu! Você juntou moedas suficientes.</b>"
+      },
+      {
+        "kind": "step",
+        "title": "6. A resposta do não: o aviso diz o que falta",
+        "text": "Dentro do <b>senão</b>, solte outro <b>Alterar variável para</b> e escolha <b>aviso</b>. Em cima do 1, solte outro <b>texto</b> e escreva <b>O baú pede pelo menos 5 moedas.</b>"
+      }
+    ]
+  },
+  {
+    "id": "bau-3d-teste",
+    "kicker": "Aula 2 · Parte 4 · Teste e confira",
+    "title": "Teste os dois casos na ilha",
+    "subtitle": "Sem moedas, o baú continua fechado. Com pelo menos 5, ele toca a animação e abre.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "Teste no seu jogo",
+        "text": "Clique em <b>Rodar de novo</b> e vá direto ao baú, sem pegar moedas: o baú continua fechado, e o aviso diz que ele pede pelo menos 5 moedas.<br/>Agora toque na tecla R. Caminhe pela trilha até o farol, pegando as cinco moedas, e volte ao baú: o baú toca a animação e abre!<br/>Toque na tecla R mais uma vez: o baú volta fechado, e o número volta para 0."
+      },
+      {
+        "kind": "drawing",
+        "name": "bau-3d",
+        "title": "Confira se ficou assim",
+        "ready": ["Os outros encontros e o evento da tecla R"],
+        "branches": ["quando moedas é 5 ou mais", "quando moedas é menos que 5"]
+      }
+    ]
+  },
+  {
+    "id": "bau-3d-envio",
+    "kicker": "Aula 2 · Parte 4 · Envio",
+    "title": "Envie o seu jogo da ilha",
+    "subtitle": "O baú foi a última montagem da aula. Agora é verificar e enviar o projeto.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "Se algo não funcionou",
+        "text": "Confira se ficou como no desenho da página {{pagina:bau-3d-teste}}. Depois de corrigir, teste de novo os dois casos: sem moedas e com pelo menos 5."
+      },
+      {
+        "kind": "delivery",
+        "title": "Verificar e enviar",
+        "text": "Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente.<br/>Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Enviar meu projeto</b> e confirme em <b>Enviar</b>. Quando aparecer <b>Projeto enviado!</b>, clique em <b>Próxima parte</b>."
+      },
+      {
+        "kind": "box",
+        "title": "Comemore",
+        "text": "Pronto, você levou as moedas para a ilha: cada moeda conta uma vez só, o número aparece na tela e o baú abre com pelo menos cinco!",
+        "tone": "test"
+      },
+      {
+        "kind": "note",
+        "text": "Depois do envio vem a revisão, a última parte da aula (página {{pagina:revisao-3d}})."
+      }
+    ]
+  },
+  {
+    "id": "revisao-3d",
+    "kicker": "Aula 2 · Parte 5 · Revisão",
+    "title": "Pense nas moedas da ilha",
+    "subtitle": "Antes de concluir a aula, lembre o que muda e o que continua igual na ilha.",
+    "items": [
+      {
+        "kind": "activity",
+        "pill": "Na aula, depois do envio",
+        "text": "Aqui não tem vídeo. Cada pergunta mostra uma situação do jogo das moedas na ilha, e você escolhe o que acontece."
+      },
+      {
+        "kind": "step",
+        "title": "Escolha, responda e tente de novo",
+        "text": "Em cada pergunta, escolha uma resposta e clique em <b>Ver o que acontece</b> ou, nas perguntas sem cena, em <b>Responder</b>. Observe a explicação. Se errar, clique em <b>Tentar de novo</b>. Com a resposta certa, clique em <b>Próxima pergunta</b>; na última, em <b>Concluir revisão</b>. Depois clique em <b>Concluir aula</b>."
+      },
+      {
+        "kind": "box",
+        "title": "Preciso de ajuda",
+        "text": "Se travar em alguma parte, volte ao trecho do vídeo que mostra aquele encaixe ou à página daquela parte neste Passo a passo do projeto. Você também pode clicar em <b>Preciso de ajuda</b>, no rodapé da aula, e contar o que tentou fazer e o que aconteceu. Por exemplo: <b>Estou na Aula 2. Peguei cinco moedas, mas o baú não abre. Conferi o Se moedas ≥ 5.</b>",
+        "tone": "note"
+      },
+      {
+        "kind": "box",
+        "title": "Se mudar depois de enviar",
+        "text": "Se você mudar alguma coisa depois de enviar, clique em <b>Enviar de novo</b> e confirme em <b>Reenviar</b>. Assim, a equipe recebe a versão nova do seu jogo.",
+        "tone": "note"
+      }
+    ]
+  }
+]

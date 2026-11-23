@@ -21,6 +21,12 @@ export const PYTHON_MOLDA_SCENE_FEATURE = 'molda-scene-assets-v1' as const
  * de cenário do Raylib 3D só aparecem numa versão do runtime que traz isto.
  */
 export const PYTHON_MOLDA_REGIONS_FEATURE = 'molda-scene-regions-v1' as const
+/**
+ * O `cenario.py` com o relevo de mundo grande (plano "Mundos de 2 km", lote 6, 23/11/2026): lê o
+ * relevo "campo" do Molda Cenários (alturas e pesos, sem lotes de terreno) e o desenha em pedaços.
+ * O Estúdio só pede o campo para um projeto Python numa versão do runtime que traz isto.
+ */
+export const PYTHON_MOLDA_RELEVO_FEATURE = 'molda-scene-relevo-v1' as const
 /** Host-owned background execution never requests focus from its canvas. */
 export const PYTHON_BACKGROUND_FOCUS_FEATURE = 'python-background-focus-v1' as const
 export const STUDIO_PYTHON_RUNTIME_FEATURES = [
@@ -32,6 +38,7 @@ export const STUDIO_PYTHON_RUNTIME_FEATURES = [
   PYTHON_MOLDA_SCENE_FEATURE,
   PYTHON_BACKGROUND_FOCUS_FEATURE,
   PYTHON_MOLDA_REGIONS_FEATURE,
+  PYTHON_MOLDA_RELEVO_FEATURE,
 ] as const
 export const StudioPythonRuntimeFeatureSchema = z.enum(STUDIO_PYTHON_RUNTIME_FEATURES)
 export type StudioPythonRuntimeFeature = z.infer<typeof StudioPythonRuntimeFeatureSchema>

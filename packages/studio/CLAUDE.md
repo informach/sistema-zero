@@ -32,7 +32,14 @@ Lotes 5 a 7b e 9 da conclusão do plano (especificação em
 - **Python:** o `cenario.py` carrega por regiões com as mesmas regras (casos compartilhados com o
   TypeScript em `runtime/python/raylib/__tests__/regioes-casos.json`, gerados por
   `scripts/gen-raylib-region-cases.ts`); os blocos de cenário do Raylib 3D só ligam com o recurso
-  `molda-scene-regions-v1` da distribuição (`core/src/studio/python-runtime-features.ts`).
+  `molda-scene-regions-v1` da distribuição (`core/src/studio/python-runtime-features.ts`). O relevo de
+  mundo grande (plano "Mundos de 2 km", lote 6): o `cenario.py` lê o campo (alturas e pesos em PNG
+  com `zlib`) e monta pedaços com a cor no vértice (o Raylib do Estúdio não tem neblina nem o
+  material do editor): completos até 1,5 pedaço do foco, grossos longe, um completo por quadro, nada
+  atrás da câmera nem além de 1000 m. A conta é a de `molda-cenarios-core/src/compilar/relevo-pedacos.ts`,
+  conferida byte a byte pelos casos `__tests__/relevo-casos.json` (`scripts/gen-raylib-relevo-cases.ts`).
+  O Estúdio só pede o campo num projeto Python com o recurso `molda-scene-relevo-v1`
+  (`scene3DRuntimeReadsRelevo`); o Raylib do computador recusa o campo com recado.
 - **Ordem segura:** leitores em todo lugar antes do escritor; o interruptor `CENARIOS_REGIOES` do
   Members (desligado por padrão) mostra a ferramenta Regiões e deixa o servidor aceitar `regioes`.
 - **Exemplos grandes na galeria** (`examples/bigExamples.ts`): entram no grupo do motor com nome,
@@ -55,7 +62,10 @@ Lotes 5 a 7b e 9 da conclusão do plano (especificação em
   GEOMETRIA do relevo (um vértice por metro, nos lotes e na colisão do chão), não pelo chão pintado
   (2 px/m). Os mundos de 2 km: `docs/plans/2026-11-23-mundos-de-2km.md`. A medida numa placa de
   vídeo de verdade é local e com janela: `e2e/grande-gpu.spec.ts` (`playwright.gpu.config.ts`,
-  recusa a placa emulada; a rota e os números saem de `src/medida/mundoGrande.ts`).
+  recusa a placa emulada; a rota e os números saem de `src/medida/mundoGrande.ts`). No aparelho de
+  verdade (o notebook simples do aceite) a medida é a página `/estudio/medida-mundos` do staging, só da
+  equipe (CLAUDE.md do member-shell); o projeto dela sai de `scripts/gen-medida-mundos.ts`, e o mundo de
+  2 km entra na galeria por `scripts/gen-jogo-e-galeria.ts --mundo mundo-2km`.
 
 ## O jogo D: o 2D de grande porte (22/11/2026)
 

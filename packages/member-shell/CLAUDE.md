@@ -1,5 +1,20 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## A medida dos mundos grandes no staging (23/11/2026)
+
+Plano "Mundos de 2 km", lote 8. `/estudio/medida-mundos` (nos dois apps, só a equipe: 404 para os
+outros e sem `STUDIO_EXAMPLES_ORIGIN`) monta `components/creator/world-measurement-client.tsx`:
+baixa o projeto de medida pela rota dos exemplos grandes (`estudio-exemplos/medida-mundos/<sha256>.json`,
+conferido por tamanho e hash; o resumo é `world-measurement-file.generated.ts`, gerado por
+`studio/scripts/gen-medida-mundos.ts`), roda no `StudioProjectPlayer` em tela inteira e recebe a
+medida por `postMessage` (só da janela do próprio player). Os números de aceite moram em
+`lib/world-measurement.ts` (`aceiteDaMedida`). `routes/studio-world-measurement.ts`
+(`POST /api/studio/world-measurement`, `studioWorldMeasurement`): só a equipe, corpo até 64 KB,
+medida conferida campo a campo, grava `qa/medidas-mundos/<dia>/<hora>-<motor>-<id>.json` no R2
+PRIVADO com o commit do deploy (`RAILWAY_GIT_COMMIT_SHA`), o navegador e o id da conta (nunca o
+e-mail); com o R2 fora, o registro inteiro vai ao log com o prefixo `[medida-mundos]` (202). Testes:
+`tests/studio-world-measurement.test.ts`.
+
 ## Arquivos dos exemplos grandes do Estúdio (22/11/2026)
 
 `routes/studio-example-files.ts` (`createStudioExampleFilesRoute`, montada no `createStudioRoutes`
@@ -70,15 +85,38 @@ rótulo recorrente. Não mudar cobrança/valor para contornar o texto. Teste de 
 
 ## Pinta: janela focal pela conta (23/11/2026)
 
-`createCloudMirroredPintaPersistence` só oferece `openRegionSession` com a fila causal e um local
-que a tenha (a oficina; o host ainda usa `createPintaCausalPersistence`, leitor/escritor 6, então
-nada muda em produção). Ao abrir, congela as unidades mutáveis, abre a sessão do pacote com a
+`createCloudMirroredPintaPersistence` só oferece `openRegionSession` (e `listGalleryIndex`, a
+galeria focal) com a fila causal e um local que a tenha. Desde a etapa 1 das regiões, o host monta
+a oficina sempre que a fila causal existe (ver a seção seguinte). Ao abrir, congela as unidades mutáveis, abre a sessão do pacote com a
 `LocalRegionCausalBinding` e fixa uma vez o gzip dos recursos lidos (`encodePintaObservedResources`).
 Cada gesto monta a unidade em `pintaRegionCausalUnit` DENTRO da transação do CAS focal: mapa como
 membro único (coalesce na mesma unidade mutável), arestas `predecessor`/`snapshot` e bases dos pins
 com a marca lida ali. Sem época (`unbased`) ou com recuperação pendente, devolve `null` (editor
 inteiro). Desenho: `docs/superpowers/plans/2026-11-23-pinta-focal-na-conta.md`; provas em
 `tests/fixtures/pinta-focal-account.fixture.ts` (mock do IndexedDB no modo físico, `setIdbMockCodec`).
+
+## Pinta: regiões ligadas, sem flag (23/11/2026)
+
+O `PintaClient` escolhe o armazenamento assim:
+- **sem conta:** a oficina só no aparelho;
+- **com a fila causal** (`cloud.pintaCausal`): a oficina, com `pintaCausalReader: 7` e o espelho com
+  `reader`/`writer` 7;
+- **sem a fila causal:** o caminho antigo, que declararia nuvem 6 para um nativo 8, então a conta
+  fica no `createPintaPersistence` de sempre.
+
+O nativo 9 / nuvem 8 não é anunciado: a oficina do host tem `nativeCeiling: 8`. O BFF admite o
+documento regional para todo perfil causal (`allowRegions`); o `allowWorkshop` segue atrás de
+`PINTA_WORKSHOP_SERVICE_READER`.
+
+Cliente antigo e dado regional:
+- o piso do inventário (7) fecha a conta para o leitor 6;
+- uma unidade selada com leitor 6 antes do piso subir é encerrada e recuperada
+  (`syncPintaCausalAccount`, `outgrown`), sem travar a fila.
+
+O `PintaApp` só recebe `onCompletionControlChange` quando há uma missão por cima; sem isso, a galeria
+focal aparece. Desenho: `docs/superpowers/plans/2026-11-23-pinta-etapa-1-regioes.md`. Provas em
+`tests/fixtures/pinta-regions-{account,host}.fixture.ts*`, `tests/pinta-causal-regions-routes.test.ts`
+e `tests/pinta-regions-studio-library.test.ts`.
 
 ## Pinta: proteção de formato e proveniência (18/11/2026)
 
