@@ -2010,7 +2010,8 @@ test.each([
     causal: {
       local: {
         ...local.causal,
-        encodeCandidates: async (assets, signal) => {
+        // This profile is the legacy causal store: it only ever encodes public assets.
+        encodeCandidates: async (assets: readonly PintaAsset[], signal: AbortSignal) => {
           const candidate = await encodeCandidates(assets, signal)
           began?.()
           await waiting
