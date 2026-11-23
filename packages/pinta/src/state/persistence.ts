@@ -458,6 +458,8 @@ export interface PintaPersistence<Asset extends PintaWorkshopAsset = PintaAsset>
   observesReferences?: true
   needsRetainedRecovery?(): boolean
   loadRetainedRecoveryFiles?(): Promise<ReadonlyMap<string, Blob>>
+  /** As edições guardadas para a recuperação e os desenhos de cada uma, sem ler os bytes. */
+  describeRetainedRecovery?(): Promise<readonly { opId: string; itemIds: readonly string[] }[]>
   prepareTileRemap?(source: Asset): Promise<readonly Asset[]>
   /**
    * OPCIONAL: observar mudanças feitas por fora (ver `PintaPersistenceEvent`). O IndexedDB do

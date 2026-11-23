@@ -12,6 +12,7 @@ import {
   isTilesetKind,
   MAX_BACKUP_FILE_BYTES,
   observePintaReferences,
+  PintaLocalStorageError,
   type PintaWorkshopAsset,
   pintaAssetDependencyIds,
   pintaLocalRevisionOf,
@@ -596,8 +597,9 @@ export interface PintaRegionCausalPins {
   revisions: ReadonlyMap<string, string | null>
 }
 
+/** A janela focal mostra a frase à criança: o mesmo texto de `COPY.scene.focal.changedElsewhere`. */
 const regionConflict = () =>
-  Error('O cenário ou suas peças mudaram. Reabra o cenário antes de guardar o gesto.')
+  new PintaLocalStorageError('O cenário mudou em outro lugar. Volte e abra o cenário de novo.')
 
 /** Each resource the window reads: the frozen predecessor that wrote it, else its confirmed head. */
 export function pintaRegionCausalReads(

@@ -12,6 +12,7 @@ import { mapBrushMessage } from '../components/editor/mapTools/mapBrushMessages'
 import { readStoredRegionMapViewport } from '../components/editor/mapTools/storedRegionMapCanvas'
 import { pintaValuesEqual } from '../core/assetEquality'
 import { retainedAssetBytes, sharedAssetParts } from '../core/assetMemory'
+import { COPY } from '../core/copy'
 import { createHistory } from '../core/history'
 import type { PintaResourceObservation } from '../core/localAssetOrigin'
 import { PintaLocalStorageError } from '../core/localStorageErrors'
@@ -52,6 +53,13 @@ export type RegionalGestureResult = {
   message?: string
 }
 
+type RegionalAction = () => Promise<{
+  revision: string
+  changed: boolean
+  document: FocalRegionMap
+  message?: string
+}>
+
 function visualDocument(map: RegionTilemapAsset) {
   return {
     id: map.id,
@@ -71,9 +79,11 @@ function visualDocument(map: RegionTilemapAsset) {
 }
 
 const refusal = (message?: string | null) =>
-  new PintaLocalStorageError(
-    message ?? 'Não consegui conferir as casas deste gesto. Seus dados foram mantidos.',
-  )
+  new PintaLocalStorageError(message ?? COPY.scene.focal.refused)
+
+/** A frase que a criança lê: a do Pinta, nunca a mensagem crua do IndexedDB (em inglês). */
+const childMessage = (error: unknown) =>
+  error instanceof PintaLocalStorageError ? error.message : COPY.scene.focal.saveError
 
 function planRegionalBrush(
   map: RegionTilemapAsset,
@@ -193,19 +203,28 @@ export async function openLocalRegionAuthorSession(
   })
   const scope = new AbortController()
   const lifetime = signal ? AbortSignal.any([scope.signal, signal]) : scope.signal
+  /** O fim da fila: cada mudança espera a anterior, e `flush` espera a fila inteira. */
   let pending: Promise<RegionalGestureResult> | null = null
   let failed = false
-  let retryAction: Parameters<typeof run>[0] | null = null
+  let retryAction: RegionalAction | null = null
 
-  function run(
-    action: () => Promise<{
-      revision: string
-      changed: boolean
-      document: FocalRegionMap
-      message?: string
-    }>,
-  ): Promise<RegionalGestureResult> {
-    if (pending) return Promise.resolve({ ok: false, changed: false })
+  /**
+   * Uma pincelada (ou desfazer) que chega durante a gravação anterior entra na fila, na ordem em
+   * que a criança fez: nenhum toque some calado. Depois de uma falha, as da fila voltam com a frase
+   * da falha até a criança tentar de novo.
+   */
+  function run(action: RegionalAction): Promise<RegionalGestureResult> {
+    const previous = pending
+    const queued = (previous ? previous.then(() => execute(action)) : execute(action)).finally(
+      () => {
+        if (pending === queued) pending = null
+      },
+    )
+    pending = queued
+    return queued
+  }
+
+  function execute(action: RegionalAction): Promise<RegionalGestureResult> {
     if (failed && action !== retryAction)
       return Promise.resolve({
         ok: false,
@@ -214,33 +233,27 @@ export async function openLocalRegionAuthorSession(
       })
     retryAction = action
     store.setState({ saving: true, error: null })
-    const queued = action()
-      .then(
-        (result) => {
-          const { revision, document, changed, message } = result
-          store.setState({
-            revision,
-            document,
-            saving: false,
-            canUndo: history.canUndo(),
-            canRedo: history.canRedo(),
-          })
-          failed = false
-          retryAction = null
-          return { ok: true, changed, message }
-        },
-        (error: unknown) => {
-          const message = error instanceof Error ? error.message : String(error)
-          store.setState({ saving: false, error: message })
-          failed = true
-          return { ok: false, changed: false, message }
-        },
-      )
-      .finally(() => {
-        if (pending === queued) pending = null
-      })
-    pending = queued
-    return queued
+    return action().then(
+      (result) => {
+        const { revision, document, changed, message } = result
+        store.setState({
+          revision,
+          document,
+          saving: false,
+          canUndo: history.canUndo(),
+          canRedo: history.canRedo(),
+        })
+        failed = false
+        retryAction = null
+        return { ok: true, changed, message }
+      },
+      (error: unknown) => {
+        const message = childMessage(error)
+        store.setState({ saving: false, error: message })
+        failed = true
+        return { ok: false, changed: false, message }
+      },
+    )
   }
 
   const base = () => ({ ...opened.base, revision: store.getState().revision })

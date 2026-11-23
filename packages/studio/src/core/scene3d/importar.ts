@@ -4,6 +4,7 @@ import { encodeProjectJsonGraph } from '@sistemazero/core/studio/project-json-gr
 import {
   type ArquivoCompilado,
   avaliarOrcamentoDaCena,
+  compactarColisoesDaCena,
   lerCenaCompilada,
   malhasDaMaiorJanela,
   type OrcamentoDaCena,
@@ -243,7 +244,8 @@ export async function prepararImportacaoDeCena3D(
       cena: pacote.cena,
       recursos,
     }),
-    json = canonicalJson(envelope),
+    // Em campo, a colisão é gravada sem a matriz e o volume da entidade (a leitura os devolve).
+    json = canonicalJson({ ...envelope, cena: compactarColisoesDaCena(envelope.cena) }),
     assetId = await sha256Hex(`scene3d:${json}`),
     existente = next.find((a) => a.id === assetId),
     url = `data:${MIME_DA_CENA_PARA_STUDIO};base64,${encodeAssetBase64(new TextEncoder().encode(json))}`

@@ -18,14 +18,19 @@ const TOOL_SHORTCUTS = toolShortcutMap(MAP_TOOLS)
 /** O zoom com que o mapa abre (`sessionDefaultsFor`); o "Ctrl+0" volta para ele. */
 export const DEFAULT_TILEMAP_ZOOM = 2
 
-/** A ferramenta que a letra liga agora, ou `null` quando ela não está na caixa. */
+/**
+ * A ferramenta que a letra liga agora, ou `null` quando ela não está na caixa. `availableTools`: a
+ * caixa menor de um editor (o cenário grande, a janela focal), como na `TilemapToolbar`.
+ */
 export function shortcutTool(
   id: MapTool,
   mode: MapToolMode,
   level: MapLevel,
   allowTools: readonly string[] | undefined,
+  availableTools?: readonly MapTool[],
 ): MapTool | null {
   if (!mapToolsFor(mode).some((entry) => entry.id === id)) return null
+  if (availableTools && !availableTools.includes(id)) return null
   return isMapToolAvailable(level, allowTools, id) ? id : null
 }
 
@@ -34,6 +39,8 @@ export function useMapKeyboard(options: {
   mode: MapToolMode
   level: MapLevel
   allowTools: readonly string[] | undefined
+  /** A caixa menor deste editor; sem ela, todas as ferramentas do tipo da camada. */
+  availableTools?: readonly MapTool[]
   /** Há um pedaço de peças selecionado? */
   hasSelection: () => boolean
   deleteSelectionRef: RefObject<() => void>
@@ -47,6 +54,7 @@ export function useMapKeyboard(options: {
     mode,
     level,
     allowTools,
+    availableTools,
     hasSelection,
     deleteSelectionRef,
     deleteObjectRef,
@@ -59,7 +67,7 @@ export function useMapKeyboard(options: {
     { combo: shortcut('zoomReset'), run: () => session.getState().setZoom(DEFAULT_TILEMAP_ZOOM) },
   ])
   useToolShortcuts(TOOL_SHORTCUTS, (id) => {
-    const tool = shortcutTool(id, mode, level, allowTools)
+    const tool = shortcutTool(id, mode, level, allowTools, availableTools)
     if (tool) session.getState().setTool(tool)
   })
   // Delete apaga o pedaço selecionado ou, sem pedaço, os objetos escolhidos.

@@ -1,5 +1,6 @@
 import { beforeEach, expect, test } from 'bun:test'
 import { DEFAULT_MAP_BRUSH } from '../components/editor/MapTerrainPanel'
+import { COPY } from '../core/copy'
 import { pintaLocalRevisionOf, pintaResourceObservation } from '../core/localAssetOrigin'
 import {
   createTilemapAsset,
@@ -325,7 +326,8 @@ test('pela conta, o gesto focal grava os chunks e a unidade V4 juntos; uma falha
     if (key === PINTA_CAUSAL_OUTBOX_KEY) throw quota
   })
   resetIdbMockStats()
-  expect(await gesture(5, 5)).toMatchObject({ ok: false, message: quota.message })
+  // A criança lê a frase do Pinta, não a mensagem crua do IndexedDB.
+  expect(await gesture(5, 5)).toMatchObject({ ok: false, message: COPY.scene.focal.saveError })
   expect(idbMockStats().atomic).toBe(1)
   expect([...db.keys()].map(String).sort()).toEqual([...before.keys()].map(String).sort())
   for (const [key, value] of before) expect(db.get(key)).toBe(value)
@@ -364,4 +366,56 @@ test('pela conta, o gesto focal grava os chunks e a unidade V4 juntos; uma falha
   expect([cellAt(reopened, layer.id, 5, 5), cellAt(reopened, layer.id, 41, 11)]).toEqual([1, 1])
   expect(pintaLocalRevisionOf(reopened)).toBe(second)
   session.close()
+})
+
+test('uma pincelada que chega durante a gravação anterior entra na fila, na ordem, em vez de sumir', async () => {
+  const namespace = 'regiao-fila-de-pinceladas'
+  setPintaStorageNamespace(namespace)
+  setIdbMockCodec(true)
+  try {
+    const persistence = createWorkshopPintaPersistence({ namespace })
+    const sheet = addTile(createTilesetAsset({ name: 'folha', tileSize: 16 }), 0)
+    const converted = prepareMapRegions(
+      createTilemapAsset({ name: 'vila', tilesetId: sheet.id, cols: 2, rows: 2 }),
+    )
+    if (!converted.ok) throw Error(converted.reason)
+    const expanded = expandRegionMap(converted.map, { col: -64, row: -64, cols: 160, rows: 96 })
+    if (!expanded.ok) throw Error(expanded.reason)
+    const layer = expanded.map.layers.find(isTileLayer)
+    if (!layer) throw Error('Camada de peças ausente')
+    await persistence.persistAssets([sheet, expanded.map])
+    const session = await openLocalRegionAuthorSession(namespace, expanded.map.id)
+    if (!session) throw Error('A janela focal não abriu')
+    const paint = (col: number, row: number) =>
+      session.apply({
+        tool: 'pencil',
+        path: [{ col, row }],
+        layerId: layer.id,
+        stamp: null,
+        selectedTile: 1,
+        brush: DEFAULT_MAP_BRUSH,
+      })
+    const first = paint(1, 1)
+    const second = paint(40, 10)
+    expect(session.store.getState().saving).toBe(true)
+    // Sair espera a fila inteira, não só a gravação em andamento.
+    const flushed = session.flush()
+    expect(await first).toMatchObject({ ok: true, changed: true })
+    expect(await second).toMatchObject({ ok: true, changed: true })
+    expect(await flushed).toMatchObject({ ok: true, changed: true })
+    const saved = await persistence.loadAssetById(expanded.map.id)
+    if (saved?.kind !== 'tilemap' || !isLocalRegionAsset(saved)) throw Error('Mapa ausente')
+    expect([cellAt(saved, layer.id, 1, 1), cellAt(saved, layer.id, 40, 10)]).toEqual([1, 1])
+    // O desfazer da fila também segue a ordem: o último volta primeiro.
+    expect(await session.undo()).toMatchObject({ ok: true, changed: true })
+    const undone = await persistence.loadAssetById(expanded.map.id)
+    if (undone?.kind !== 'tilemap' || !isLocalRegionAsset(undone)) throw Error('Mapa ausente')
+    expect([cellAt(undone, layer.id, 1, 1), cellAt(undone, layer.id, 40, 10)]).toEqual([
+      1,
+      cellAt(expanded.map, layer.id, 40, 10),
+    ])
+    session.close()
+  } finally {
+    setIdbMockCodec(false)
+  }
 })

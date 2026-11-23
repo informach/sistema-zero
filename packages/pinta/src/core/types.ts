@@ -273,9 +273,37 @@ export interface PintaHostChromeAccount {
   label: string
 }
 
+/**
+ * O pedido de ajuda da recuperação (23/11/2026): o que a equipe precisa para restaurar as edições
+ * guardadas neste aparelho sem pedir arquivo à criança. Só identifica a recuperação; os bytes
+ * ficam no aparelho.
+ */
+export interface PintaRecoveryHelpReport {
+  kind: 'retained-recovery'
+  /** O perfil do Pinta neste aparelho (o nome do armazenamento local). */
+  profile: string
+  /** Quando a criança pediu ajuda (ISO 8601). */
+  requestedAt: string
+  /** Cada edição guardada e os desenhos que ela leva (o nome, quando a galeria o conhece). */
+  operations: readonly {
+    opId: string
+    drawings: readonly { id: string; name: string | null }[]
+  }[]
+}
+
+/**
+ * O canal de recados do host: o MESMO do "Preciso de ajuda" da aula. Sem ele (aula, playground,
+ * host que ainda não liga o canal) o botão não aparece.
+ */
+export interface PintaHostChromeHelp {
+  /** Manda o pedido à equipe; devolve onde a resposta aparece ("nos seus recados"). */
+  send(report: PintaRecoveryHelpReport): Promise<{ label: string; href: string }>
+}
+
 export interface PintaHostChrome {
   menu: PintaHostChromeMenu | null
   status: PintaHostChromeStatus | null
   back: PintaHostChromeBack | null
   account: PintaHostChromeAccount | null
+  help?: PintaHostChromeHelp | null
 }

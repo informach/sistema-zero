@@ -41,6 +41,11 @@ const messages: Record<AutomapFailure, string> = {
   'map-limit': COPY.automap.mapLimit,
 }
 const field = 'min-h-11 w-full rounded-xl border-2 border-pin-border bg-pin-surface px-2 text-sm'
+/** Outra semente, sempre diferente da atual (inteiro de 31 bits, como o livro de regras aceita). */
+function anotherSeed(current: number): number {
+  const next = Math.floor(Math.random() * 0x7ffffffe)
+  return next >= current ? next + 1 : next
+}
 const initialRect = { col: 0, row: 0, cols: 1, rows: 1 }
 type RuleMap<Grid extends import('../../tiles/mapCellEdits').AuthorMap> = Grid & {
   schema: 9
@@ -375,20 +380,13 @@ function AutomappingControls<Grid extends import('../../tiles/mapCellEdits').Aut
             <Button variant="barOutline" disabled={!selected} onClick={() => capture(true, true)}>
               {COPY.automap.variant}
             </Button>
-            <label>
+            <Button
+              variant="barOutline"
+              disabled={!sheetIndex}
+              onClick={() => save({ ...book, seed: anotherSeed(book.seed) })}
+            >
               {COPY.automap.seed}
-              <input
-                className={field}
-                type="number"
-                key={book.seed}
-                defaultValue={book.seed}
-                onBlur={(e) => {
-                  const seed = Number(e.target.value)
-                  if (seed !== book.seed && !save({ ...book, seed }))
-                    e.target.value = String(book.seed)
-                }}
-              />
-            </label>
+            </Button>
             <label className="flex min-h-11 items-center gap-2">
               <input
                 type="checkbox"

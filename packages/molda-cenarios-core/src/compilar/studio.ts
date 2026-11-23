@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { compactarColisoesDaCena } from './colisoes-herdadas'
 import { LIMITES_DA_EXPORTACAO } from './limites'
 import { CenaCompiladaSchema } from './schema'
 import { type ArquivoCompilado, CaminhoCompiladoSchema } from './schema-arquivos'
@@ -63,7 +64,11 @@ export const CenaParaStudioSchema = z
     }
     if (caminhos.size !== inventario.size || [...inventario.keys()].some((p) => !caminhos.has(p)))
       falhar('Os recursos precisam cobrir todos os arquivos do inventário.')
-    if (new TextEncoder().encode(JSON.stringify(d)).byteLength > MAX_BYTES_DA_CENA_PARA_STUDIO)
+    // O teto vale para o que é gravado: em campo, as colisões sem a matriz e o volume da entidade.
+    const gravado = { ...d, cena: compactarColisoesDaCena(d.cena) }
+    if (
+      new TextEncoder().encode(JSON.stringify(gravado)).byteLength > MAX_BYTES_DA_CENA_PARA_STUDIO
+    )
       falhar('O JSON do cenário excede o limite de 1 MiB.')
   })
 

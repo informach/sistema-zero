@@ -14,10 +14,12 @@ import {
   createTilemapAsset,
   createTilesetAsset,
 } from '../../core/projectConfig'
+import type { PintaHostChrome, PintaRecoveryHelpReport } from '../../core/types'
 import type { PintaPersistence, PintaPersistenceEvent } from '../../state/persistence'
 import { clearIdbMock } from '../../testing/idbMock'
 
 const { PintaApp } = await import('../PintaApp')
+const { PintaHostChromeProvider } = await import('../hostChrome')
 const { setPintaStorageNamespace } = await import('../../state/persistence')
 const { createGalleryStore } = await import('../../state/galleryStore')
 const { readPintaBackupFile } = await import('../../export/backupFile')
@@ -384,4 +386,70 @@ it('baixa os gzip originais e seus vínculos quando a recuperação depende de u
     expect(zip['LEIA-ME.txt']).toBeDefined()
     expect(screen.getByRole('button', { name: COPY.gallery.downloadRetainedRecovery })).toBeTruthy()
   })
+})
+
+it('o Preciso de ajuda da recuperação manda à equipe o perfil, as edições e os desenhos, sem bytes', async () => {
+  setPintaStorageNamespace('perfil-recuperacao')
+  const vila = createPixelSpriteAsset({ name: 'vila', frameSize: 8 })
+  const sent: PintaRecoveryHelpReport[] = []
+  let filesRead = 0
+  const persistence: PintaPersistence = {
+    persistAsset: async () => {},
+    persistAssets: async () => {},
+    deleteAsset: async () => {},
+    loadAssetById: async () => null,
+    listAllAssets: async () => [vila],
+    needsRetainedRecovery: () => true,
+    loadRetainedRecoveryFiles: async () => {
+      filesRead += 1
+      return new Map()
+    },
+    describeRetainedRecovery: async () => [{ opId: 'op-1', itemIds: [vila.id, 'apagado'] }],
+  }
+  const chrome: PintaHostChrome = {
+    menu: null,
+    status: null,
+    back: null,
+    account: null,
+    help: {
+      async send(report) {
+        sent.push(report)
+        return { label: 'nos seus recados', href: '/recados/conversa-1' }
+      },
+    },
+  }
+  render(
+    <PintaHostChromeProvider value={chrome}>
+      <PintaApp persistence={persistence} />
+    </PintaHostChromeProvider>,
+  )
+  await screen.findByRole('button', { name: /Abrir vila/ })
+  const help = await screen.findByRole('button', { name: COPY.gallery.recoveryHelp })
+  // O botão vive SÓ no aviso da recuperação, e o aviso diz o que ele faz.
+  expect(screen.getAllByRole('button', { name: COPY.gallery.recoveryHelp })).toHaveLength(1)
+  expect(help.closest('[role=alert]')?.textContent).toContain(COPY.gallery.retainedRecoveryHelp)
+  fireEvent.click(help)
+  await screen.findByText(COPY.gallery.recoveryHelpSent('nos seus recados'), { exact: false })
+  expect(sent).toHaveLength(1)
+  expect(sent[0]).toMatchObject({
+    kind: 'retained-recovery',
+    profile: 'perfil-recuperacao',
+    operations: [
+      {
+        opId: 'op-1',
+        drawings: [
+          { id: vila.id, name: 'vila' },
+          { id: 'apagado', name: null },
+        ],
+      },
+    ],
+  })
+  expect(Number.isNaN(Date.parse(sent[0]!.requestedAt))).toBe(false)
+  // Só identifica a recuperação: nenhum arquivo é lido nem enviado.
+  expect(filesRead).toBe(0)
+  expect(
+    screen
+      .getByRole('link', { name: COPY.gallery.recoveryHelpSeeConversation })
+      .getAttribute('href'),
+  ).toBe('/recados/conversa-1')
 })

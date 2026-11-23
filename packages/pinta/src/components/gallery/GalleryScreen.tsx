@@ -41,6 +41,7 @@ import { importPintaJson } from '../../export/projectJson'
 import { zipGallery, zipRetainedRecoveryFiles } from '../../export/zip'
 import { decodeImageFile, IMPORT_ACCEPT, MAX_IMAGE_FILE_BYTES } from '../../import/decodeImage'
 import type { RGBAImage } from '../../import/quantize'
+import { retainedRecoveryHelpReport } from '../../state/recoveryHelpReport'
 import { isRegionalGalleryCard, type PintaGalleryEntry } from '../../state/regionGalleryIndex'
 import { usePintaApp, usePintaGallery } from '../appContext'
 import { HostBackLink, HostCloudStatus, HostMenuButton, usePintaHostChrome } from '../hostChrome'
@@ -52,6 +53,7 @@ import {
   Image as ImageIcon,
   type LucideIcon,
   Map as MapIcon,
+  MessageCircle,
   Palette,
   PersonStanding,
   Plus,
@@ -209,6 +211,9 @@ export function GalleryScreen(): JSX.Element {
   const [removeId, setRemoveId] = useState<string | null>(null)
   const [justCreatedId, setJustCreatedId] = useState<string | null>(null)
   const [zipping, setZipping] = useState(false)
+  const [recoveryHelp, setRecoveryHelp] = useState<
+    'sending' | 'error' | { label: string; href: string } | null
+  >(null)
   const [restoring, setRestoring] = useState(false)
   const photoRef = useRef<HTMLInputElement>(null)
   const [importImage, setImportImage] = useState<RGBAImage | null>(null)
@@ -349,6 +354,19 @@ export function GalleryScreen(): JSX.Element {
       showToast(COPY.gallery.zipError)
     } finally {
       setZipping(false)
+    }
+  }
+
+  /** O pedido vai pelos recados do host e já leva o que identifica a recuperação. */
+  async function handleRecoveryHelp(): Promise<void> {
+    const help = hostChrome?.help
+    if (!help || recoveryHelp === 'sending') return
+    setRecoveryHelp('sending')
+    try {
+      const names = new Map(assets.map(({ id, name }) => [id, name]))
+      setRecoveryHelp(await help.send(await retainedRecoveryHelpReport(persistence, names)))
+    } catch {
+      setRecoveryHelp('error')
     }
   }
 
@@ -713,8 +731,20 @@ export function GalleryScreen(): JSX.Element {
                   className="mb-5 flex flex-wrap items-center gap-3 rounded-xl border-2 border-pin-accent bg-pin-surface px-4 py-3"
                 >
                   <p className="min-w-0 flex-1 font-semibold text-pin-text text-sm">
-                    {COPY.gallery.retainedRecovery}
+                    {hostChrome?.help
+                      ? COPY.gallery.retainedRecoveryHelp
+                      : COPY.gallery.retainedRecovery}
                   </p>
+                  {hostChrome?.help ? (
+                    <Button
+                      variant="pillPrimary"
+                      disabled={recoveryHelp === 'sending'}
+                      onClick={() => void handleRecoveryHelp()}
+                    >
+                      <MessageCircle aria-hidden="true" />
+                      {COPY.gallery.recoveryHelp}
+                    </Button>
+                  ) : null}
                   <Button
                     variant="pillSoft"
                     disabled={zipping}
@@ -723,6 +753,20 @@ export function GalleryScreen(): JSX.Element {
                     <Download aria-hidden="true" />
                     {COPY.gallery.downloadRetainedRecovery}
                   </Button>
+                  {recoveryHelp && recoveryHelp !== 'sending' ? (
+                    <p role="status" className="w-full text-pin-text text-sm">
+                      {recoveryHelp === 'error' ? (
+                        COPY.gallery.recoveryHelpError
+                      ) : (
+                        <>
+                          {COPY.gallery.recoveryHelpSent(recoveryHelp.label)}{' '}
+                          <a className="font-semibold underline" href={recoveryHelp.href}>
+                            {COPY.gallery.recoveryHelpSeeConversation}
+                          </a>
+                        </>
+                      )}
+                    </p>
+                  ) : null}
                 </div>
               ) : null}
               {loading && !loaded ? (

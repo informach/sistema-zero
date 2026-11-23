@@ -19,8 +19,8 @@ export const COPY = {
     saved: 'Regras guardadas no mapa.',
     stale: 'O mapa mudou. Confira antes de guardar.',
     captureArea: 'Escolha até oito camadas e um exemplo de até 16 por 16 casas.',
-    captured: 'Entrada guardada. Escolha a área e as camadas do resultado.',
-    equalSize: 'A entrada e a saída precisam ter o mesmo tamanho.',
+    captured: 'O antes foi copiado. Agora escolha a área e as camadas do depois.',
+    equalSize: 'O antes e o depois precisam ter o mesmo tamanho.',
     noChanges: 'As regras não mudaram nenhuma casa nessa área.',
     applied: 'Regras aplicadas.',
     cancelled: 'Prévia cancelada.',
@@ -35,15 +35,16 @@ export const COPY = {
     layers: 'Camadas do exemplo',
     ignoreEmpty: 'Ignorar casas vazias no exemplo',
     name: 'Nome da regra',
-    input: 'Capturar entrada',
-    output: 'Guardar saída',
+    input: 'Copiar o antes',
+    output: 'Guardar o depois',
     order: 'Ordem das regras',
     pick: 'Escolha uma regra',
     up: 'Subir',
     down: 'Descer',
     remove: 'Remover regra',
-    variant: 'Adicionar variação de saída',
-    seed: 'Semente',
+    variant: 'Guardar outro depois',
+    /** Sorteia outra semente: as regras com mais de um depois escolhem de novo. */
+    seed: '🎲 Sortear de novo',
     onPaint: 'Prévia ao pintar',
     show: 'Ver prévia na área',
     apply: 'Aplicar prévia',
@@ -112,6 +113,16 @@ export const COPY = {
     brushChanged: 'O cenário mudou. Comece a pincelada de novo.',
     gestureChanged: 'O cenário mudou. Comece de novo.',
     gestureRefused: 'Não consegui aplicar esta mudança. Tente de novo.',
+    /** Janela focal (cenário grande): a frase de cada tropeço, sem termo técnico. */
+    focal: {
+      exitWithoutChange: 'Sair sem esta mudança',
+      changeNotSaved: 'A última mudança não foi guardada. O cenário ficou como antes.',
+      saveError: 'Não consegui guardar esta mudança. O cenário ficou como antes.',
+      refused: 'Não consegui fazer esta mudança. O cenário ficou como antes.',
+      needsAdvanced: 'Esta mudança só dá para fazer no Avançado. Toque em Avançado.',
+      changedElsewhere: 'O cenário mudou em outro lugar. Volte e abra o cenário de novo.',
+      windowError: 'Não consegui mostrar esta parte do cenário.',
+    },
     nestedSet: 'Solte os conjuntos deste pedaço antes de guardar outro conjunto.',
     mapPanels: 'Peças, camadas e detalhes',
     dimensions: (cols: number, rows: number, layers: number) =>
@@ -417,10 +428,17 @@ export const COPY = {
         : `${count} desenhos da sua conta foram feitos numa versão mais nova do Pinta. Atualize a página para ver.`,
     newerFormatReload: 'Atualizar a página',
     /** Só com a nuvem causal. O ZIP guarda os arquivos originais para a equipe; ele não restaura
-     *  nada sozinho. Não citar o botão "Preciso de ajuda": ele só existe dentro das aulas, e a
-     *  galeria fica fora delas. */
+     *  nada sozinho. Sem o canal de recados do host não há "Preciso de ajuda" na galeria, então
+     *  esta frase não cita o botão. */
     retainedRecovery:
       'Algumas edições precisam das peças da versão anterior para abrir. Elas continuam guardadas neste aparelho. Avise a equipe e, se ela pedir, baixe os arquivos para enviar.',
+    /** A mesma situação quando o host liga os recados: o pedido já leva o que a equipe precisa. */
+    retainedRecoveryHelp:
+      'Algumas edições precisam das peças da versão anterior para abrir. Elas continuam guardadas neste aparelho. Toque em Preciso de ajuda e a equipe arruma para você.',
+    recoveryHelp: 'Preciso de ajuda',
+    recoveryHelpSent: (where: string) => `Pedido enviado. A resposta aparece ${where}.`,
+    recoveryHelpSeeConversation: 'Ver conversa',
+    recoveryHelpError: 'Não consegui enviar o pedido. Tente de novo daqui a pouco.',
     downloadRetainedRecovery: 'Baixar arquivos para a equipe',
     retainedRecoveryUnavailable:
       'Não encontrei arquivos de recuperação disponíveis neste aparelho.',

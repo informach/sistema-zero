@@ -46,13 +46,19 @@ export function FocalEditorScreen({
     markPintaAssetOpen(focal.id)
     return () => markPintaAssetClosed(focal.id)
   }, [focal.id])
-  async function finish(action: () => Promise<void> | void) {
+  /**
+   * Espera a gravação em andamento e segue. `leave`: a seta e o Avançado saem da janela mesmo
+   * quando a última mudança falhou. Ela nunca chegou ao armazenamento (a gravação é atômica),
+   * então o cenário guardado é o de antes e a criança fica sabendo pelo aviso.
+   */
+  async function finish(action: () => Promise<void> | void, leave = false) {
     if (busy) return
     setBusy(true)
     try {
       const result = await focal.flush()
-      if (!result.ok) throw Error(result.message ?? COPY.editor.saveError)
+      if (!result.ok && !leave) throw Error(result.message ?? COPY.editor.saveError)
       await action()
+      if (!result.ok) showToast(COPY.scene.focal.changeNotSaved)
     } catch (error) {
       showToast(error instanceof Error ? error.message : COPY.editor.saveError)
     } finally {
@@ -66,7 +72,7 @@ export function FocalEditorScreen({
         <IconButton
           aria-label={COPY.editor.back}
           disabled={busy}
-          onClick={() => void finish(closeEditor)}
+          onClick={() => void finish(closeEditor, true)}
         >
           <ArrowLeft aria-hidden="true" className="size-5" />
         </IconButton>
@@ -77,14 +83,14 @@ export function FocalEditorScreen({
         </span>
         {error ? (
           <Button variant="barOutline" disabled={busy || saving} onClick={closeEditor}>
-            Sair sem guardar o gesto
+            {COPY.scene.focal.exitWithoutChange}
           </Button>
         ) : null}
         {chrome?.status ? <HostCloudStatus status={chrome.status} variant="bar" /> : null}
         <Button
           variant="barOutline"
           disabled={busy || saving}
-          onClick={() => void finish(openComplete)}
+          onClick={() => void finish(openComplete, true)}
         >
           {COPY.scene.avancado}
         </Button>

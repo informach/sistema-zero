@@ -5,6 +5,7 @@ import type { PintaCausalEntry, PintaCausalResult } from '@sistemazero/core/crea
 import type { LocalRegionAuthorSession } from '@sistemazero/pinta'
 import { DEFAULT_MAP_BRUSH } from '../../../pinta/src/components/editor/MapTerrainPanel'
 import type { PintaWorkshopAsset } from '../../../pinta/src/core/assetMemory'
+import { COPY } from '../../../pinta/src/core/copy'
 import { pintaLocalRevisionOf } from '../../../pinta/src/core/localAssetOrigin'
 import {
   createTilemapAsset,
@@ -322,7 +323,12 @@ test('falha do último PUT local: chunks e fila voltam juntos, e a repetição g
     setIdbWriteGuard((key) => {
       if (key === PINTA_CAUSAL_OUTBOX_KEY) throw Error(quota)
     })
-    expect(await paint(session, layerId, 5, 5)).toMatchObject({ ok: false, message: quota })
+    // A falha real chega à criança com a frase do Pinta, nunca com o texto cru do IndexedDB.
+    expect(await paint(session, layerId, 5, 5)).toMatchObject({
+      ok: false,
+      changed: false,
+      message: COPY.scene.focal.saveError,
+    })
     expect([...db.keys()].map(String).sort()).toEqual([...before.keys()].map(String).sort())
     for (const [key, value] of before) expect(db.get(key)).toBe(value)
     expect((await local.causal.inspect()).pending).toEqual([])

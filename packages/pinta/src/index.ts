@@ -24,10 +24,12 @@ export type {
   PintaHostChrome,
   PintaHostChromeAccount,
   PintaHostChromeBack,
+  PintaHostChromeHelp,
   PintaHostChromeMenu,
   PintaHostChromeStatus,
   PintaInitialCanvas,
   PintaInitialIntent,
+  PintaRecoveryHelpReport,
   PintaSendResult,
   PintaTaskSession,
 } from './core/types'

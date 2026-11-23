@@ -280,6 +280,7 @@ export interface PintaPersistenceLike<Asset extends PintaWorkshopAsset = PintaAs
   observesReferences?: true
   needsRetainedRecovery?(): boolean
   loadRetainedRecoveryFiles?(): Promise<ReadonlyMap<string, Blob>>
+  describeRetainedRecovery?(): Promise<readonly { opId: string; itemIds: readonly string[] }[]>
   holdOpen?(id: string): Promise<() => void>
   /**
    * A janela focal de um cenário grande. No espelho da conta ela só existe com a fila causal: cada
@@ -453,6 +454,14 @@ export function createCloudMirroredPintaPersistence(
     }
     signal.throwIfAborted()
     return files
+  }
+  /** O pedido de ajuda da galeria: as edições guardadas e os desenhos de cada uma, sem bytes. */
+  async function describeRetainedRecovery() {
+    if (!causalLocal) return []
+    return [...(await causalLocal.retainedArchive())].map(([opId, { puts }]) => ({
+      opId,
+      itemIds: puts.map(({ itemId }) => itemId),
+    }))
   }
   let causalTimer: ReturnType<typeof setTimeout> | null = null
   async function reportCausalQueue(error?: unknown): Promise<void> {
@@ -2149,6 +2158,7 @@ export function createCloudMirroredPintaPersistence(
           observesReferences: true as const,
           needsRetainedRecovery: () => needsRetainedRecovery,
           loadRetainedRecoveryFiles,
+          describeRetainedRecovery,
           prepareTileRemap,
           holdOpen: options.causal.holdOpen,
           accountConfirmation,

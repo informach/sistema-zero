@@ -11,6 +11,7 @@ import { IluminacaoSchema } from '../v2/iluminacao'
 import { errosDaTopologiaDaAgua } from '../v2/topologia-de-agua'
 import { curvaDoCaminho } from '../v2/topologia-de-caminho'
 import { CenarioInvalido } from '../validacao'
+import { expandirColisoesDaCena } from './colisoes-herdadas'
 import { FonteDaCompilacaoSchema } from './fonte'
 import { LicencaDaBibliotecaSchema } from './licencas'
 import { LIMITES_DA_EXPORTACAO } from './limites'
@@ -49,7 +50,9 @@ export const FontesDaCenaCompiladaSchema = z
   })
   .strict()
 const id = IdentificadorDeCenarioSchema
-export const CenaCompiladaSchema = z
+// Em campo, a colisão gravada sem matriz e volume recebe os da entidade antes de tudo
+// (`colisoes-herdadas.ts`): na memória, toda colisão tem os dois, como sempre.
+const CenaCompiladaObjetoSchema = z
   .object({
     formato: z.literal('molda-cena-compilada'),
     versao: z.literal(1),
@@ -361,6 +364,7 @@ export const CenaCompiladaSchema = z
       for (const e of conferirPertencaDasRegioes({ ...d, limite })) falhar(e)
     }
   })
+export const CenaCompiladaSchema = z.preprocess(expandirColisoesDaCena, CenaCompiladaObjetoSchema)
 export type CenaCompilada = z.infer<typeof CenaCompiladaSchema>
 
 /** Leitura completa antes de oferecer qualquer nó aos consumidores. Arquivos são conferidos à parte. */
