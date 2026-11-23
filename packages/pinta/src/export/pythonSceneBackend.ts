@@ -1,5 +1,6 @@
 /** Private lifetime shared by graphical backends consuming the regional PNG world. */
-export const pythonSceneBackend = `from time import monotonic_ns as _pinta_monotonic_ns
+export const pythonSceneBackend = `import sys as _pinta_sys
+from time import monotonic_ns as _pinta_monotonic_ns
 from weakref import WeakSet as _PintaWeakSet
 
 
@@ -9,6 +10,7 @@ class _PintaSceneOwner:
         self.renderizador = renderizador
         self.referencias = _PintaWeakSet((primeiro,))
         self.inicio = _pinta_monotonic_ns()
+        self.destinos_avisados = set()
 
     def liberar(self, fachada):
         if len(self.referencias) == 1:
@@ -95,8 +97,10 @@ class _PintaSceneBackend:
         return outra
 
     def abrir_destino(self, porta):
-        """Devolve o lugar de uma porta. O programa decide quando seguir para lá."""
-        mapas = self._mundo['maps']
+        """Devolve o lugar de uma porta, ou None se ela não leva a um lugar deste mundo.
+        O programa decide quando seguir para lá."""
+        owner = self._recursos()
+        mapas = owner.mundo['maps']
         if not isinstance(porta, dict):
             raise TypeError('Escolha um objeto porta deste cenário.')
         chave = 'destino' if self.propriedade(porta, 'destino') else 'destination'
@@ -107,11 +111,20 @@ class _PintaSceneBackend:
             raise ValueError('Esta porta não tem um destino válido.')
         destino = porta.get('properties', {}).get(chave)
         if isinstance(destino, dict) and destino.get('type') == 'asset':
-            return self._abrir(referencia)
-        ids = [mapa_id for mapa_id, mapa in mapas.items() if mapa['data']['name'] == referencia]
-        if len(ids) > 1:
-            raise ValueError('Há mais de um lugar com esse nome. Use o ID do lugar.')
-        return self._abrir(ids[0] if ids else referencia)
+            mapa_id = referencia
+        else:
+            ids = [mapa_id for mapa_id, mapa in mapas.items() if mapa['data']['name'] == referencia]
+            if len(ids) > 1:
+                raise ValueError('Há mais de um lugar com esse nome. Use o ID do lugar.')
+            mapa_id = ids[0] if ids else referencia
+        if mapa_id not in mapas:
+            # Como o mapa do JavaScript: avisa uma vez e a porta não leva a lugar nenhum.
+            if referencia not in owner.destinos_avisados:
+                owner.destinos_avisados.add(referencia)
+                print(f'Aviso: o destino desta porta não faz parte do mundo carregado: {referencia}',
+                      file=_pinta_sys.stderr)
+            return None
+        return self._abrir(mapa_id)
 
     def substituir(self, source, mapa_id=None):
         """Admite um PNG e seus recursos gráficos antes de trocar o mundo aberto."""

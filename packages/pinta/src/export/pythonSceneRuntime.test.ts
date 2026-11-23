@@ -11,6 +11,7 @@ import { regionVila } from '../testing/regionVila'
 import { purePython, runPurePython } from '../testing/runPurePython'
 import { pygameSceneModule } from './pygameProject'
 import { pythonRegionWorld } from './pythonRegionWorld'
+import { pythonSceneBackend } from './pythonSceneBackend'
 import { pythonSceneRuntime } from './pythonSceneRuntime'
 import { embedPintaRegionImage } from './regionImage'
 import { exportPintaRegionScene } from './regionScene'
@@ -722,5 +723,62 @@ print('ok')
     )
     expect(check.status, check.stderr || check.error?.message).toBe(0)
     expect(check.stdout.trim()).toBe('ok')
+  },
+)
+
+it.skipIf(!purePython)(
+  'a door to a place missing from the world warns once and opens nothing, like the JS map',
+  async () => {
+    const { map, cabana, assets } = regionVila()
+    const find = (id: string) => assets.find((a) => a.id === id) ?? null
+    const [root, child] = await Promise.all(
+      [map, cabana].map((m) => exportPintaRegionScene(m, find, nativeImageOf)),
+    )
+    const inside = await embedPintaRegionImage(cover, child!.json)
+    const world = await embedPintaRegionImage(cover, root!.json, {
+      world: {
+        version: 1,
+        rootId: map.id,
+        maps: [
+          {
+            id: cabana.id,
+            name: cabana.name,
+            png: `data:image/png;base64,${Buffer.from(inside.png).toString('base64')}`,
+          },
+        ],
+      },
+    })
+    const actual = await runPurePython(
+      `${runtime}
+${pythonSceneBackend}`,
+      `import base64, contextlib, io
+request=json.load(sys.stdin)
+class Renderer:
+    def descartar(self):
+        pass
+class Lugar(_PintaSceneBackend):
+    _criar_renderizador = staticmethod(lambda images: Renderer())
+game = Lugar(base64.b64decode(request['png']))
+door = game.objeto_por_id('door')
+avisos = io.StringIO()
+opened = []
+with contextlib.redirect_stderr(avisos):
+    for destino in ({'type': 'string', 'value': 'Floresta'}, {'type': 'asset', 'value': 'floresta'},
+                    {'type': 'string', 'value': 'Floresta'}):
+        porta = dict(door, properties=dict(door['properties'], destino=destino))
+        opened.append(game.abrir_destino(porta))
+with game.abrir_destino(door) as outro:
+    found = outro.cena.mapa_id
+print(json.dumps(dict(opened=opened, avisos=avisos.getvalue().splitlines(), found=found)))`,
+      { png: Buffer.from(world.png).toString('base64') },
+    )
+    expect(actual).toEqual({
+      opened: [null, null, null],
+      avisos: [
+        'Aviso: o destino desta porta não faz parte do mundo carregado: Floresta',
+        'Aviso: o destino desta porta não faz parte do mundo carregado: floresta',
+      ],
+      found: cabana.id,
+    })
   },
 )
