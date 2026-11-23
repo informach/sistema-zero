@@ -11,9 +11,16 @@ Um mundo 3D dividido em seis regiões, montado pelo caminho de verdade, sem nada
   na vila), o início e duas luzes. A compilação é a da oficina, com "Juntar peças" (os 433 objetos
   viram 23 lotes, cada um numa região).
 - **Estúdio**: importa os dois pacotes (com e sem regiões), confere o orçamento por janela e monta o
-  programa só com blocos que existem: o cenário, o herói do Molda, as moedas que caem no relevo
-  (corpos com física), o placar e o "Quando o heroi entrar na região" escrevendo o nome da região no
-  canto da tela. A ida e volta código ⇄ blocos é conferida no gerador.
+  programa só com blocos que existem: o cenário, o herói do Molda (corpo com física), as moedas
+  de pé logo acima do relevo (a altura de cada uma sai do terreno compilado), o placar e o
+  "Quando o heroi entrar na região" escrevendo o nome da região no canto da tela. O gerador
+  confere que cada linha vira um bloco de verdade (nenhum código cru) e a ida e volta código ⇄
+  blocos com o verificador de encaixe do editor.
+- ⚠️ Conferência no staging (22/11/2026): a primeira versão dava corpo físico às moedas, nascidas a
+  12 m e dentro de um "para cada". As que ficavam abaixo do relevo caíam sem apoio e o motor
+  lançava "Corpo pequeno ou rápido demais" a cada quadro; e o "Dar corpo físico" só vale direto
+  no Ao iniciar, então o editor não abria os blocos do jogo na galeria. A prova das regiões não
+  olhava as moedas nem os blocos, e não pegou.
 - Geradores: `packages/molda-cenarios/playground/jogo-e/preparar-cenario.mjs` (com
   `bun run dev:oficina`) e `packages/studio/playground/cenarios-integration/preparar-jogo-e.ts`.
   A saída fica em `output/cenarios-reforma/jogo-e/` (fora do Git).

@@ -6,6 +6,21 @@ Tudo está na `staging`, em commits pequenos; nada foi para a `main` nem para pr
 dona). Este documento responde aos 17 entregáveis da seção 20, lista o que ficou concluído e o que
 ficou pendente, e diz como retomar. Trabalho parcial não aparece aqui como concluído.
 
+## Conclusão do plano de 22/11/2026 (lotes 1 a 9 e 7b)
+
+O fecho de 21/11 deixou cinco itens abertos, e ela respondeu: "Resolva tudo aqui, sem ficar
+esperando ou dependendo de outras frentes". O plano de conclusão (lotes 1 a 9 e 7b) foi feito na
+`staging`, com um review entre cada lote e um full review final de oito revisores. Detalhe por
+frente:
+
+| Item aberto em 21/11 | O que virou | Onde está a prova |
+|---|---|---|
+| A busca no Reino Zero Ultra travando o Chrome conectado | o corpo escondido de bloco recolhido fica adiado, abrir desenha só perto da vista e do alvo, e "Mostrar o bloco" não muda o projeto salvo nem o desfazer (no full review final: o afastamento da pilha solta é reconhecido pelo grupo de eventos do gesto, sem relógio; provado com a CPU 4× mais lenta) | [`classico-em-escala.md`](classico-em-escala.md), `e2e/collapsed-reveal.spec.ts`, `e2e/classic-reveal-scale.spec.ts` |
+| Regiões 3D e os jogos D e E | formato e pertença conferida na leitura, carga por regiões no motor dos cenários e no SDK, o bloco "Quando … entrar na região" nos três motores 3D, a ferramenta Regiões no Molda Cenários (interruptor `CENARIOS_REGIOES`), regiões no Raylib 3D do Python; o jogo D (2D grande, 96 × 72 peças, 603 entidades) e o jogo E (3D de exploração, 384 m em vez de 1 km, porque 1 km passa dos tetos de hoje), os dois na galeria só da equipe | [`regioes-3d-especificacao.md`](regioes-3d-especificacao.md), `evidencias/jogo-d-2026-11-22/` (sessão de 10 minutos verde no CI 45087601282), `evidencias/jogo-e-regioes-2026-11-22/` |
+| Custo da medida dos painéis e os casos dos testes do aluno | medido por runtime (abaixo de 5% em todos), e os casos chave, porta, vida, placar, fim, compilação e tempo no JavaScript, no Python e no Pro | `evidencias/custo-da-medida-2026-11-22/`, `e2e/student-tests.spec.ts` |
+| Build hospedado com dependências reais | prova automática na imagem (`templates-smoke.ts`, agora também no `ci.yml` e no `studio-runtime-image.yml`) e conferência no Worker de staging; no full review final, o import de biblioteca não declarada passou a ser recusado com o recado da criança | `../qa/2026-11-22-studio-lote9-staging.md`, `evidencias/build-hospedado-staging-2026-11-22/` |
+| As oito lacunas de persistência | as oito fechadas; no full review final, a cópia de saída passou a seguir a ordem das edições (o `AbortError` não dizia que a edição foi copiada) | [`persistencia-matriz.md`](persistencia-matriz.md) |
+
 ## Os 17 entregáveis
 
 | # | Entregável | Onde está | Estado |
@@ -130,22 +145,24 @@ no mesmo Chrome 157 noutra máquina, e o mesmo gesto no playground tem tarefa m�
 
 ## Pendências
 
+Atualizada no fecho do plano de 22/11. Saíram daqui, feitos: regiões 3D e o bloco de região, os
+jogos D e E, o recorte de sprites no Jogo 2D, o custo da medida dos painéis e os casos dos testes
+do aluno, as oito lacunas de persistência e o build hospedado com dependências reais (conferido
+no Worker de staging).
+
 | Pendência | Por que ficou | O que destrava |
 |---|---|---|
-| Regiões 3D (pré-carga, ativação e descarte) e o bloco "Quando ⟨personagem⟩ entrar na região" | o formato de cena do Molda não tem regiões | a frente do Molda escrever o formato da [especificação](regioes-3d-especificacao.md) |
-| Jogos de homologação D e E inteiros | dependem das regiões e do streaming | as regiões 3D |
-| Recorte de sprites no Jogo 2D | separar o estado do quadro do desenho; o custo medido é baixo (até 0,45 ms por grupo cheio fora da tela) | um lote do motor 2D |
+| A versão nova do motor Python (`2026-11-22-areas-1`: o "repetir a cada" do Turtle e os blocos de região do Raylib 3D) no staging | o envio ao R2 trava nesta máquina (o `workerd` local não sobe) e o serviço temporário de promoção pede a aprovação operacional e um segredo de operador | decisão dela: aprovar o serviço temporário, ou rodar o `upload` numa máquina onde o `workerd` sobe; depois, o seletor `1dd32fdc…` e o catálogo `01c079c1…` no Members |
+| Meus testes do Pro: o erro do jogo ou um valor que não aparece num teste vira "Tente de novo" para o lote inteiro (C2 do full review final) | o executor trata essa observação como falha dele, regra que as aulas também usam (lá, um erro do jogo não reprova a criança); mudar exige um modo próprio dos testes da criança no executor e uma imagem nova | um lote do executor |
+| O jogo D: quando o "Quando entrar em área" troca de cena, a mesma passada confere os objetos da cena velha (G2); a grade do 2D Avançado guardada por referência (G5) | gravidade baixa; o conserto mexe no fragmento do cenário, que os cursos usam | um lote do motor 2D |
+| Python: `entrou_na_regiao` consome a entrada na primeira leitura (E9) | exige uma versão nova do motor Python | a próxima versão do motor |
 | O teclado preso nos jogos 3D sem placa de vídeo | diagnosticado (`756ce2cfa`), sem conserto | um lote de entrada do 3D |
 | A prévia isolada no WebKit (Safari, iPad) | decisão B4: nenhum arranjo de iframe isola no WebKit | nada: decisão dela |
 | Abrir nos blocos a sequência única de 10 mil | hoje abre pelo código, sem perda | carga de cadeia por partes no Blockly |
 | IR, avisos e código refeitos só no evento mexido | o gesto com 10 mil blocos leva 220 a 354 ms; a meta de 50 ms vale até cerca de 2 mil | processamento semântico incremental |
-| Custo da medida dos painéis (< 5%) no navegador; os casos de chave, porta, vida, placar, fim, compilação e tempo nos testes do aluno | não feitos; a tela da aba Desempenho já diz "Medir quase não pesa no jogo" (texto aprovado), sem a prova | um lote dos painéis |
-| As oito lacunas da matriz de persistência | escritas em [`persistencia-matriz.md`](persistencia-matriz.md) | um lote de persistência |
-| O build hospedado com dependências reais | só o WebContainer foi provado | conferir no staging |
-| A textura de biblioteca e a carga no Three do cenário completo do Molda; a memória da prova 2D em ciclos | não feitos no navegador | um lote de integração |
-| Relatório consolidado de p50 e p95 por máquina e fixture; custos medidos dos dez runtimes | os números estão espalhados pelos documentos | um lote de medição |
-| G: Raylib e os custos do Python medidos à parte; H: três falhas sem prova no navegador | não feitos | um lote de homologação |
-| A lentidão do Chrome conectado com projetos de milhares de blocos (o gesto da busca no Reino Zero Ultra leva minutos ali) | o texto em SVG é cerca de 90 vezes mais lento naquele navegador; a causa dentro dele não foi achada, e o Estúdio no playground leva 522 ms | conferir o mesmo gesto num computador de família, ou num Chrome sem extensões |
+| O jogo E com 1 km e 30 quadros por segundo com placa de vídeo de verdade | 1 km passa dos tetos de hoje; a medida dos quadros é com GPU emulada | decisão dela sobre os tetos; uma medida num aparelho real |
+| Relatório consolidado de p50 e p95 por máquina e fixture | os números estão espalhados pelos documentos | um lote de medição |
+| A lentidão do Chrome conectado com projetos de milhares de blocos | o texto em SVG é cerca de 90 vezes mais lento naquele navegador; o trabalho do gesto caiu (5.752 para 393 blocos redesenhados), mas o tempo lá não foi medido de novo (a extensão do Chrome estava desconectada no fecho) | conferir o gesto num computador de família |
 | Aparelhos físicos | decisão da dona: só emulação no CI | nada: decisão dela |
 | Produção | decisão da dona: só staging | a dona pedir a release |
 
