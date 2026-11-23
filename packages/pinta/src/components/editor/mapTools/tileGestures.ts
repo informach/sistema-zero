@@ -53,6 +53,11 @@ export interface TileGesture<Asset extends PintaMemoryAsset = PintaAsset> {
   budget: BrushStrokeBudget
   brush: Omit<MapBrushContext, 'anchor'>
   failed: boolean
+  /**
+   * O mapa não pôde crescer neste traço (teto ou recusa do host). O aviso sai uma vez e o
+   * traço segue pintando dentro do mapa, sem insistir no anel.
+   */
+  growRefused: boolean
 }
 export interface PanGesture {
   pointerId: number
@@ -159,43 +164,55 @@ export function createMapTileGestures<Asset extends PintaMemoryAsset, Map extend
     repaintCurrent()
   }
 
-  function writeGesture(g: TileGesture<Asset>, next: Map): boolean {
+  /**
+   * Grava um passo do gesto. `refused` = o host recusou a admissão e o documento continua
+   * o do gesto (quem chama decide se desfaz o traço); `superseded` = outra revisão tomou o
+   * lugar e o gesto já foi cancelado.
+   */
+  function tryWriteGesture(g: TileGesture<Asset>, next: Map): 'written' | 'refused' | 'superseded' {
     const state = editor.getState()
     if (g.stage) {
       if (state.asset !== g.base) {
         cancel()
         deps.showToast(COPY.scene.brushChanged)
-        return false
+        return 'superseded'
       }
       g.produced = edits.asset(g.produced, next)
-      return true
+      return 'written'
     }
     if (state.asset !== g.produced) {
       cancel()
       deps.showToast(COPY.scene.brushChanged)
-      return false
+      return 'superseded'
     }
-    if (next === edits.map(state.asset)) return true
+    if (next === edits.map(state.asset)) return 'written'
     const written = state.replaceIfCurrent(g.produced, edits.asset(state.asset, next))
     if (!written) {
-      if (editor.getState().asset !== g.produced) {
-        cancel()
-        deps.showToast(COPY.scene.brushChanged)
-      } else rejectGesture(g, null) // The host owns feedback for its admission refusal.
-      return false
+      if (editor.getState().asset === g.produced) return 'refused'
+      cancel()
+      deps.showToast(COPY.scene.brushChanged)
+      return 'superseded'
     }
     g.produced = written
-    return true
+    return 'written'
+  }
+
+  function writeGesture(g: TileGesture<Asset>, next: Map): boolean {
+    const outcome = tryWriteGesture(g, next)
+    // The host owns feedback for its admission refusal.
+    if (outcome === 'refused') rejectGesture(g, null)
+    return outcome === 'written'
   }
 
   /**
    * Cresce o mapa quando o ponteiro entra no anel. Devolve a casa-alvo JÁ no mapa novo
-   * (ou `null` se bateu no teto).
+   * (ou `null` se bateu no teto). Crescer recusado não desfaz o que o traço já pintou:
+   * avisa uma vez e o traço segue dentro do mapa.
    */
   function growForRing(cell: CellPos): CellPos | null {
     const g = gestureRef.current
     const current = edits.map(g?.stage ? g.produced : editor.getState().asset)
-    if (!g || !current) return null
+    if (!g || !current || g.growRefused) return null
     const bounds = mapCellBounds(current)
     const side: 'left' | 'right' | 'top' | 'bottom' =
       cell.col < bounds.col
@@ -208,10 +225,14 @@ export function createMapTileGestures<Asset extends PintaMemoryAsset, Map extend
     // Crescer à esquerda ou em cima empurra os objetos uma peça junto.
     const grown = edits.grow(current, side, deps.tileSize)
     if (grown === current) {
-      rejectGesture(g, COPY.tiles.autoExpandLimit)
+      g.growRefused = true
+      deps.showToast(COPY.tiles.autoExpandLimit)
       return null
     }
-    if (!writeGesture(g, grown)) return null
+    const outcome = tryWriteGesture(g, grown)
+    // A recusa da admissão (o limite da aula) já avisou pelo host; o traço continua.
+    if (outcome === 'refused') g.growRefused = true
+    if (outcome !== 'written') return null
     // O conteúdo anda uma casa: âncora, última casa e rolagem acompanham para o mapa não pular.
     const stage = stageRef.current
     if (side === 'left') {
@@ -405,6 +426,7 @@ export function createMapTileGestures<Asset extends PintaMemoryAsset, Map extend
       budget: new BrushStrokeBudget(),
       brush: context,
       failed: false,
+      growRefused: false,
     }
     previewCellsRef.current = []
     if (tool === 'line' || tool === 'rect') paintShape(raw)

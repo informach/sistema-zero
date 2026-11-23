@@ -1,6 +1,8 @@
 import { expect, it } from 'bun:test'
 import type { PointerEvent } from 'react'
+import { COPY } from '../../../core/copy'
 import { createTilemapAsset, createTilesetAsset, type TilemapAsset } from '../../../core/project'
+import { PINTA_LIMITS } from '../../../core/projectConfig'
 import { createEditorStore, type PintaEditorStoreOptions } from '../../../state/editorStore'
 import { createSessionStore } from '../../../state/sessionStore'
 import { tileLayerAt } from '../../../testing/fixtures'
@@ -215,5 +217,54 @@ it('a recusa do host no meio do traço restaura a base inteira sem uma entrada d
   const restored = editor.getState().asset
   expect(restored.kind === 'tilemap' && restored.layers === initial.layers).toBe(true)
   expect(editor.getState().canUndo).toBe(false)
+  await editor.getState().flush()
+})
+
+it('no teto de "Crescer o mapa" avisa uma vez e segue pintando dentro, sem apagar o traço', async () => {
+  const cols = PINTA_LIMITS.maxTilemapCols,
+    initial = createTilemapAsset({ name: 'No teto', tilesetId: 'peças', cols, rows: 3 }),
+    { editor, gesture, event, deps } = prepare(initial),
+    messages: string[] = []
+  deps.clampCell = (p) => ({
+    col: Math.max(0, Math.min(cols - 1, p.col)),
+    row: Math.max(0, Math.min(2, p.row)),
+  })
+  deps.showToast = (text) => messages.push(text)
+  gesture.down(event(cols - 3, 1))
+  gesture.move(event(cols - 1, 1))
+  gesture.move(event(cols, 1))
+  gesture.move(event(cols, 2))
+  gesture.move(event(cols - 4, 1))
+  gesture.up()
+  const painted = editor.getState().asset as TilemapAsset
+  expect(painted.cols).toBe(cols)
+  const row = tileLayerAt(painted).cells.subarray(cols, cols * 2)
+  for (let col = cols - 4; col < cols; col++) expect(row[col]).toBe(0)
+  expect(messages).toEqual([COPY.tiles.blankTile, COPY.tiles.autoExpandLimit])
+  expect(editor.getState().canUndo).toBe(true)
+  editor.getState().undo()
+  expect((editor.getState().asset as TilemapAsset).layers).toBe(initial.layers)
+  await editor.getState().flush()
+})
+
+it('crescer recusado pela aula não apaga o que já foi pintado nem insiste no anel', async () => {
+  let refusals = 0
+  const initial = base(),
+    { editor, gesture, event } = prepare(initial, undefined, (candidate) => {
+      if (candidate.kind === 'tilemap' && candidate.cols <= 4) return true
+      refusals++
+      return false
+    })
+  gesture.down(event(2, 1))
+  gesture.move(event(3, 1))
+  gesture.move(event(4, 1))
+  gesture.move(event(4, 2))
+  gesture.move(event(1, 1))
+  gesture.up()
+  const painted = editor.getState().asset as TilemapAsset
+  expect(painted.cols).toBe(4)
+  expect([...tileLayerAt(painted).cells.subarray(4, 8)]).toEqual([-1, 0, 0, 0])
+  expect(refusals).toBe(1)
+  expect(editor.getState().canUndo).toBe(true)
   await editor.getState().flush()
 })
