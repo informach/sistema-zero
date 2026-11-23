@@ -68,10 +68,18 @@ Para quando a staging for à produção:
 
 ## Fora do escopo reduzido (para quando houver créditos)
 
-1. **"Preciso de ajuda" de verdade:**
-   - o Pinta já tem o botão e o recado (`e3642650f`);
-   - falta uma rota no members para o aluno abrir conversa fora da aula, e a ligação no host;
-   - o recado leva só os identificadores, sem os bytes da recuperação.
+1. ~~"Preciso de ajuda" de verdade~~ — **feito em 23/11** (`e106f5cff` `90b90a070` `051fa3bf3`, staging
+   `e847ac1cd`):
+   - conversa de recados com assunto `pinta_recovery`, uma por perfil, aberta fora da aula;
+   - rota interna no members e rota `/api/pinta/recovery-help` nas duas comunidades, com a autorização
+     das rotas do Pinta;
+   - na caixa da equipe, o filtro "Ajuda do Pinta";
+   - para a criança, o toast "Pronto! A equipe recebeu seu pedido e vai te ajudar." e o link "Ver
+     conversa".
+
+   Pendente:
+   - a migração **0176** (`ALTER TYPE … ADD VALUE`) entra com o deploy do members;
+   - falta conferir no navegador, logado, o caminho criança → equipe.
 2. **Etapas 3–5:**
    - primeiro, levantar o que o Codex já deixou pronto nas regiões (conjuntos, seleção, espalhamento e
      imagens de peças têm lotes registrados no plano mestre);
