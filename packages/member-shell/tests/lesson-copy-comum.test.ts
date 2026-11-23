@@ -30,3 +30,22 @@ test('a recusa de conclusão usa a mesma instrução e preserva o erro de suport
     'Ative o modo de edição',
   )
 })
+
+test('a galeria explica a recusa dos desenhos de um perfil causal, sem o código cru', () => {
+  const esperado =
+    'Os desenhos deste perfil não podem ser enviados pela galeria. Fale com a equipe.'
+  // A listagem antiga do Pinta é cercada num perfil causal (o seletor da galeria a usa).
+  expect(
+    COMMON_LESSON_COPY.erroDoServidor(
+      { code: 'PINTA_CAUSAL_CONFLICT', message: 'protocol-required' },
+      'Falhou',
+    ),
+  ).toBe(esperado)
+  // A entrega recusa os desenhos protegidos com um código próprio.
+  expect(
+    COMMON_LESSON_COPY.erroDoServidor(
+      { code: 'GALLERY_PINTA_CAUSAL_UNSUPPORTED', message: 'qualquer' },
+      'Falhou',
+    ),
+  ).toBe(esperado)
+})

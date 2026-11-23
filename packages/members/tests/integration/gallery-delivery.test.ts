@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { ValidationError } from '@sistemazero/core/errors'
 import { defaultLessonSection, type GalleryDeliveryPlan } from '@sistemazero/core/learning'
+import { PintaCausalError } from '../../src/domain/creations/pinta-causal-graph'
 import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
 
 function setup(tool: 'studio' | 'pinta' = 'pinta') {
@@ -306,5 +307,30 @@ describe('gallery submission as a section criterion', () => {
       (await ctx.request(`${ctx.path}/gallery-prepare`, { ...input, items: [second, mine] }))
         .status,
     ).toBe(409)
+  })
+
+  test('perfil causal: desenho protegido é recusado com mensagem clara e nenhuma cópia é reservada', async () => {
+    const ctx = setup(),
+      items = [await ctx.seed('dino'), await ctx.seed('cacto')]
+    // O repositório real cerca a leitura antiga de um desenho protegido (`assertIndividualPinta`).
+    const read = ctx.creations.get.bind(ctx.creations)
+    ctx.creations.get = async (userId, tool, itemId, audience) => {
+      if (tool === 'pinta') throw new PintaCausalError('protocol-required')
+      return read(userId, tool, itemId, audience)
+    }
+    const response = await ctx.request(`${ctx.path}/gallery-prepare`, {
+      requestId: randomUUID(),
+      revision: ctx.revision,
+      items,
+    })
+    expect(response.status).toBe(409)
+    expect(await response.json()).toMatchObject({
+      error: {
+        code: 'GALLERY_PINTA_CAUSAL_UNSUPPORTED',
+        message: 'Os desenhos deste perfil não podem ser enviados pela galeria. Fale com a equipe.',
+      },
+    })
+    expect(ctx.galleryCopies.attempts.size).toBe(0)
+    expect(await ctx.studioSubmissions.getOne(ctx.owner.userId, ctx.blockId)).toBeNull()
   })
 })

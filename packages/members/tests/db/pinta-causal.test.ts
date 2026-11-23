@@ -1121,6 +1121,11 @@ describe.skipIf(!url)('Pinta causal over the real migration and existing quota l
         legacy.commit({ ...u, itemId: 'queued', revision: 1, storageRef: 'stale-upload' }),
       ),
     ).toMatchObject({ reason: 'protocol-required' })
+    // A galeria da aula copia pela leitura antiga: num perfil adotado ela é cercada, e a entrega
+    // traduz essa cerca em GALLERY_PINTA_CAUSAL_UNSUPPORTED.
+    expect(await rejection(legacy.get(a.userId, 'pinta', 'new', 'kids'))).toMatchObject({
+      reason: 'protocol-required',
+    })
     expect((await visible(a)).entries.map((e) => e.itemId)).toEqual(['new', 'old'])
   })
 })

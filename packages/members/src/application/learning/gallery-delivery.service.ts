@@ -12,11 +12,16 @@ import {
   isGallerySubmission,
 } from '@sistemazero/core/learning'
 import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
+import type { CourseAudience } from '../../domain/course/course'
 import { LessonNotFoundError } from '../../domain/course/course.errors'
 import { hasComingSoonBlock } from '../../domain/course/lesson-block'
 import { StudioStorageProtocolError } from '../../domain/creations/creation.errors'
+import { PintaCausalError } from '../../domain/creations/pinta-causal-graph'
 import { gallerySubmissionReceipt } from '../../domain/learning/gallery-receipt'
-import { GallerySourceUnavailableError } from '../../domain/learning/gallery-source.errors'
+import {
+  GalleryCausalDrawingsUnsupportedError,
+  GallerySourceUnavailableError,
+} from '../../domain/learning/gallery-source.errors'
 import { LearningConflictError } from '../../domain/learning/learning.errors'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { CreationsRepository } from '../../domain/ports/creations-repository.port'
@@ -133,7 +138,7 @@ export class GalleryDeliveryService {
     const copies: { source: string; destination: string }[] = []
     for (const selection of input.items) {
       const creation = await owned(() =>
-        this.creations.get(actor.userId, tool, selection.itemId, course.audience),
+        this.readSelection(actor.userId, tool, selection.itemId, course.audience),
       )
       if (
         !creation ||
@@ -183,6 +188,29 @@ export class GalleryDeliveryService {
         : this.copies.reserve(attempt, new Date()),
     )
     return { completed: false, copyGeneration: generation, snapshot, copies }
+  }
+
+  /**
+   * A galeria copia pela leitura antiga. Num perfil causal o repositório cerca essa leitura dos
+   * desenhos pessoais (`protocol-required`); a entrega recusa com uma frase clara em vez do código.
+   */
+  private async readSelection(
+    userId: string,
+    tool: 'studio' | 'pinta',
+    itemId: string,
+    audience: CourseAudience,
+  ) {
+    try {
+      return await this.creations.get(userId, tool, itemId, audience)
+    } catch (error) {
+      if (
+        tool === 'pinta' &&
+        error instanceof PintaCausalError &&
+        error.reason === 'protocol-required'
+      )
+        throw new GalleryCausalDrawingsUnsupportedError()
+      throw error
+    }
   }
 
   /** Only exposed to the BFF with a signed body, after all storage copies succeed. */

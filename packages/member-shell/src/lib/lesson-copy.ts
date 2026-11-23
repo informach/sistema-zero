@@ -255,6 +255,9 @@ function itemPendente(item: SectionPendingItem): string {
 export const PALAVRAS_DA_ESCOLA =
   /Concluir fase|(?:^|clique (?:em|na) )Próxima (?:fase|seção|etapa)|Mapa da Aventura|Enviar para o professor/i
 
+const GALERIA_SEM_DESENHOS_CAUSAIS =
+  'Os desenhos deste perfil não podem ser enviados pela galeria. Fale com a equipe.'
+
 const ERRO_DO_SERVIDOR: Record<string, string> = {
   // O rascunho de uma parte com "envio em dia" não chegou à conta (`LessonDraftSaveError`).
   LESSON_DRAFT_NOT_SAVED:
@@ -276,6 +279,10 @@ const ERRO_DO_SERVIDOR: Record<string, string> = {
   LEARNING_CONFLICT: 'Esta aula foi atualizada. Abra a aula de novo para continuar.',
   GALLERY_DELIVERY_FAILED:
     'Não foi possível enviar. Suas criações continuam na galeria. Tente de novo.',
+  // Perfil com o Pinta causal: a listagem antiga (seletor da galeria) é cercada e a entrega recusa
+  // os desenhos protegidos. Na aula, o PINTA_CAUSAL_CONFLICT só chega por essa cerca.
+  PINTA_CAUSAL_CONFLICT: GALERIA_SEM_DESENHOS_CAUSAIS,
+  GALLERY_PINTA_CAUSAL_UNSUPPORTED: GALERIA_SEM_DESENHOS_CAUSAIS,
   // Serve para guardar E para conferir: o 400 da validação chega dos dois caminhos.
   VALIDATION_ERROR: 'Não deu certo agora. Confira e tente de novo.',
   PAYLOAD_TOO_LARGE: 'Ficou grande demais para guardar.',

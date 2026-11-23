@@ -2759,6 +2759,13 @@ A escrita/leitura pública do Pinta continua em 6. Ordem de rollout, ensaios e l
 `docs/pinta-cenarios/missao-completa-2026-11-18/qa/piso-de-leitura-do-inventario-2026-11-22/`
 na raiz. A causalidade de alterações em várias criações por um escritor compatível segue aberta.
 
+**Galeria da aula × Pinta causal (23/11/2026): recusa explícita.** A galeria lista e copia os
+desenhos pela leitura antiga (`listCreations`/`get`), que num perfil adotado pelo protocolo causal
+é cercada (`protocol-required`). O preparo traduz a cerca em `GALLERY_PINTA_CAUSAL_UNSUPPORTED`
+(409, frase clara; o member-shell mostra a mesma frase também para o `PINTA_CAUSAL_CONFLICT` da
+listagem). Liberar exige decisão de produto: listagem própria da galeria, cópia que exija o
+`causal_sha256` de cada desenho e o destino dos desenhos sem certificado (cobertura `unknown`).
+
 **Reserva (07/09):** ticket inclui `formatVersion` validada, independente da revisão.
 BFF e cliente conferem essa confirmação antes de PUT; omissão confirma só legado 1.
 Essa confirmação não substitui o rollout de todos os guards.
