@@ -5,6 +5,7 @@ import { MAX_PROJECT_THUMB_CHARS, writeProjectThumb } from '../state/persistence
 import {
   captureProjectStorageScope,
   type ProjectStorageScope,
+  regionalProjectReadOptions,
 } from '../state/projectStorageRuntime'
 import { resolveCoverAsset } from './coverAsset'
 import { consumeProjectSnapshot, type ProjectSnapshot, peekProjectSnapshot } from './latestSnapshot'
@@ -80,6 +81,7 @@ interface ResolvedThumb {
 
 async function resolveThumb(
   project: Project,
+  storageScope: ProjectStorageScope,
   runtimeCapture?: StudioRuntimeCapture | null,
 ): Promise<ResolvedThumb | null> {
   // ⭐ A capa ESCOLHIDA vence tudo: derivada da própria imagem, nunca da foto do preview nem
@@ -98,8 +100,10 @@ async function resolveThumb(
   if (doPreview) return { dataUrl: doPreview.dataUrl, snapshot: doPreview }
   // The renderer is only needed for this fallback, not to open the editor or
   // reuse a chosen cover / an existing preview snapshot.
+  // O perfil aberto decide o cenário regional do Pinta: no privado deste aparelho a captura roda
+  // o jogo com ele, como o preview; fora dele, recusa como sempre.
   const { captureCoverFromProject } = await import('./coverCapture')
-  const cover = await captureCoverFromProject(project)
+  const cover = await captureCoverFromProject(project, regionalProjectReadOptions(storageScope))
   if (!cover) return null
   const dataUrl = await downscaleToThumb(cover)
   return dataUrl ? { dataUrl } : null
@@ -129,7 +133,7 @@ async function captureAndStoreUnmeasured(
 ): Promise<boolean> {
   const storageScope = captureProjectStorageScope()
   try {
-    const thumb = await resolveThumb(project, runtimeCapture)
+    const thumb = await resolveThumb(project, storageScope, runtimeCapture)
     if (!thumb) return false
     // O `writeProjectThumb` avisa a lista (`PROJECT_THUMB_UPDATED_EVENT`) e o espelho da nuvem.
     const stored = await writeProjectThumb(project.id, thumb.dataUrl, {}, storageScope)

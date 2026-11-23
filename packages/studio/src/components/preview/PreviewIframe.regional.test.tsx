@@ -1,15 +1,8 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'bun:test'
 import 'fake-indexeddb/auto'
-import { createRequire } from 'node:module'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { createEmptyProject, type Project, type ProjectAsset } from '#core'
-import { scene4Fixture } from '../../../../core/tests/fixtures/pinta-region-scene'
-import { embedPintaRegionImage } from '../../../../pinta/src/export/regionImage'
-import { encodeAssetBase64 } from '../../core/assetBinary'
-import {
-  admitPintaRegionalMaterial,
-  type PintaRegionalMarker,
-} from '../../core/pintaRegionalMaterial'
+import type { PintaRegionalMarker } from '../../core/pintaRegionalMaterial'
 import {
   PRIVATE_REGIONAL_PROJECT,
   UNSUPPORTED_PINTA_REGION,
@@ -20,68 +13,25 @@ import { privateRegionalProjectScope } from '../../state/pintaRegionalProjectRef
 import { useProjectStore } from '../../state/projectStore'
 import { useUIStore } from '../../state/uiStore'
 import { StudioExecutionProvider } from '../../studio/observation'
+import {
+  installPngImageBitmap,
+  regionalSceneMaterial,
+} from '../../testing/pintaRegionalMaterialFixture'
 import { PreviewIframe } from './PreviewIframe'
 
 // A prévia do editor Clássico é o jogador que a criança vê enquanto programa. Os ensaios do material
 // regional passavam pela receita pública (`renderProjectToPreviewDocAsync`) e pelo Pro; este arquivo
 // cobre o caminho do próprio editor: com o perfil privado o motor regional entra no documento, sem
 // ele nada roda, e uma captura que não confere deixa na tela o jogo que já estava.
-const { createCanvas, loadImage } = createRequire(
-  new URL('../../../../pinta/package.json', import.meta.url),
-)('@napi-rs/canvas') as typeof import('../../../../pinta/node_modules/@napi-rs/canvas')
-const png = (width: number, height: number, color = '#3355dd') => {
-  const canvas = createCanvas(width, height)
-  const ctx = canvas.getContext('2d')
-  ctx.fillStyle = color
-  ctx.fillRect(0, 0, width, height)
-  return new Uint8Array(canvas.toBuffer('image/png'))
-}
-const url = (bytes: Uint8Array) => `data:image/png;base64,${encodeAssetBase64(bytes)}`
-const bitmapDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'createImageBitmap')
 let material: ProjectAsset & { regional: PintaRegionalMarker }
+let uninstallImageBitmap = () => {}
 
 beforeAll(async () => {
-  Object.defineProperty(globalThis, 'createImageBitmap', {
-    configurable: true,
-    value: async (bytes: Blob) => {
-      const { width, height } = await loadImage(Buffer.from(await bytes.arrayBuffer()))
-      return { width, height, close: () => {} }
-    },
-  })
-  const fixture = scene4Fixture()
-  const scene = JSON.stringify({
-    ...fixture,
-    physics: 'precise',
-    tilesets: fixture.tilesets.map((sheet) => ({ ...sheet, image: url(png(64, 16)) })),
-    art: fixture.art.map((art) => ({ ...art, image: url(png(art.width, art.height)) })),
-  })
-  const { png: bytes } = await embedPintaRegionImage(png(64, 32, '#002244'), scene)
-  const dataUrl = url(bytes)
-  const { regional } = await admitPintaRegionalMaterial({
-    dataUrl,
-    sourceId: 'world',
-    width: 64,
-    height: 32,
-  })
-  material = {
-    id: 'vila',
-    name: 'vila',
-    kind: 'image',
-    source: 'library',
-    libOrigin: 'pinta',
-    libId: 'personal:world',
-    proPath: 'public/assets/vila.png',
-    width: 64,
-    height: 32,
-    dataUrl,
-    regional,
-  }
+  uninstallImageBitmap = installPngImageBitmap()
+  material = await regionalSceneMaterial()
 })
 
-afterAll(() => {
-  if (bitmapDescriptor) Object.defineProperty(globalThis, 'createImageBitmap', bitmapDescriptor)
-  else Reflect.deleteProperty(globalThis, 'createImageBitmap')
-})
+afterAll(() => uninstallImageBitmap())
 
 afterEach(() => {
   cleanup()
