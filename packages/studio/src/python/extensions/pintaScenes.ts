@@ -68,7 +68,11 @@ export function pintaSceneCodecs(owner: PythonPintaScenesCanvas): readonly Pytho
       'desenhar',
       'desenhar cenário do Pinta',
       'statement',
-      'Desenhe o fundo antes dos personagens. Ative a opção “só a frente” numa segunda chamada para desenhar as peças da frente por cima deles.',
+      `Desenhe o fundo antes dos personagens. Ative a opção “só a frente” numa segunda chamada para desenhar as peças da frente por cima deles.${
+        owner === 'python-raylib-2d'
+          ? ' Dentro de begin_mode_2d, use a sua Camera2D como câmera.'
+          : ''
+      }`,
       [
         ...screen,
         optional(ce ? 'deslocamento' : 'camera', ce ? 'deslocamento' : 'câmera', origin),

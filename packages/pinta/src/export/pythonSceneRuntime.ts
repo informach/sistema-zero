@@ -38,6 +38,30 @@ def _tile_matrix(matrix, cell, col, row, size):
 ${pythonScenePhysics}
 
 
+def _camera_2d_matrix(camera):
+    """GetCameraMatrix2D (rcore.c): screen = rotate(zoom * (world - target)) + offset."""
+    angle = math.radians(camera.rotation)
+    a, b = camera.zoom * math.cos(angle), camera.zoom * math.sin(angle)
+    tx, ty = camera.target.x, camera.target.y
+    return (a, b, -b, a, camera.offset.x - a * tx + b * ty, camera.offset.y - b * tx - a * ty)
+
+
+def _visible_world(camera, box):
+    """The world box a Camera2D shows on a screen box, and the world point at its top-left."""
+    a, b, c, d, e, f = _camera_2d_matrix(camera)
+    det = a * d - b * c
+    if det == 0 or not math.isfinite(det):
+        return None
+
+    def world(x, y):
+        x, y = x - e, y - f
+        return ((d * x - c * y) / det, (a * y - b * x) / det)
+
+    corners = [world(x, y) for x, y in box.corners()]
+    xs, ys = zip(*corners)
+    return _SceneBox(min(xs), min(ys), max(xs) - min(xs), max(ys) - min(ys)), corners[0]
+
+
 class CenaRegional(_ScenePhysics):
     """Read-only view of an admitted map. All public positions are signed pixels at export scale."""
 
@@ -72,8 +96,20 @@ class CenaRegional(_ScenePhysics):
         )
 
     def desenhar(self, draw_affine, viewport, camera=(0, 0), frente=False, tempo=0):
-        """Draw one pass. Camera is the top-left in game pixels; time is elapsed milliseconds."""
+        """Draw one pass. Camera is the top-left in game pixels; time is elapsed milliseconds.
+
+        A Raylib Camera2D in place of the pair means its begin_mode_2d is active: raylib applies
+        the camera, so the pass emits world pixels, culls to the world the camera shows and
+        anchors parallax at the world point under the screen's top-left corner.
+        """
         box = _SceneBox(0, 0, *viewport)
+        root = self._world_matrix
+        if hasattr(camera, 'target'):
+            visible = _visible_world(camera, box) if box.valid() else None
+            if visible is None:
+                return
+            box, camera = visible
+            root = (*root[:4], root[4] + camera[0], root[5] + camera[1])
         if not box.valid() or not all(math.isfinite(n) for n in (*camera, tempo)):
             return
         size = self._size
@@ -124,7 +160,7 @@ class CenaRegional(_ScenePhysics):
                             url = art['image']
                         emit(url, crop, _placed(m, obj, *crop[2:]), alpha)
 
-        paint(self._root, self._world_matrix, 1, camera)
+        paint(self._root, root, 1, camera)
 
     def _scaled_object(self, obj):
         result = dict(obj)

@@ -350,6 +350,78 @@ print(json.dumps(results))`,
 )
 
 it.skipIf(!purePython)(
+  'a Raylib Camera2D draws in world pixels, culls to what it shows and moves like the pair camera',
+  async () => {
+    // Same fields as pyray's Camera2D. Inside begin_mode_2d raylib applies GetCameraMatrix2D
+    // (rcore.c): screen = rotate(zoom * (world - target)) + offset.
+    const actual = await runPurePython(
+      runtime,
+      `${setup}
+class V:
+    def __init__(self, x, y):
+        self.x, self.y = x, y
+class Camera2D:
+    def __init__(self, offset, target, rotation, zoom):
+        self.offset, self.target = V(*offset), V(*target)
+        self.rotation, self.zoom = rotation, zoom
+def raylib_matrix(cam):
+    a = cam.zoom * math.cos(math.radians(cam.rotation))
+    b = cam.zoom * math.sin(math.radians(cam.rotation))
+    t, o = cam.target, cam.offset
+    return (a, b, -b, a, o.x - a * t.x + b * t.y, o.y - b * t.x - a * t.y)
+def passes(camera, viewport, time):
+    result = []
+    for front in (False, True):
+        draws = []
+        cena.desenhar(lambda *draw: draws.append(draw), viewport, camera, front, time)
+        result.append(draws)
+    return result
+viewport = (138, 112)
+screen = _SceneBox(0, 0, *viewport)
+moved = 0
+for target in ((-27, -3), (2, 5), (-536, -512), (-290, 37 * 8)):
+    for time in (0, 350):
+        pair = passes(target, viewport, time)
+        camera = Camera2D((0, 0), target, 0, 1)
+        view = raylib_matrix(camera)
+        for by_pair, by_camera in zip(pair, passes(camera, viewport, time)):
+            assert len(by_pair) == len(by_camera), (target, len(by_pair), len(by_camera))
+            for (url, crop, m, alpha), (url2, crop2, m2, alpha2) in zip(by_pair, by_camera):
+                assert (url, crop, alpha) == (url2, crop2, alpha2)
+                assert all(abs(p - q) < 1e-9 for p, q in zip(m, _compose(view, m2))), (m, m2)
+            moved += len(by_camera)
+def touches_screen(draw):
+    # Separating axes: a turned quad can share the screen's bounding box without touching it.
+    quad = _quad(_compose(view, draw[2]), 0, 0, *draw[1][2:])
+    for polygon in (quad, screen.corners()):
+        for (x0, y0), (x1, y1) in zip(polygon, polygon[1:] + polygon[:1]):
+            nx, ny = y0 - y1, x1 - x0
+            a = [nx * x + ny * y for x, y in quad]
+            b = [nx * x + ny * y for x, y in screen.corners()]
+            if max(a) <= min(b) or max(b) <= min(a):
+                return False
+    return True
+turned = 0
+for camera in (Camera2D((69, 56), (16, 8), 30, 2), Camera2D((10, 100), (0, 0), -45, 0.5)):
+    view = raylib_matrix(camera)
+    # A huge screen sees everything the real one sees, from the same view.
+    everything = passes(camera, (10**6, 10**6), 150)
+    for wide, drawn in zip(everything, passes(camera, viewport, 150)):
+        assert set(drawn) <= set(wide)
+        visible = [d for d in wide if touches_screen(d)]
+        assert set(visible) <= set(drawn), (len(visible), len(drawn))
+        turned += len(visible)
+print(json.dumps(dict(moved=moved, turned=turned)))`,
+      { png: await envelope(fixture(), 2) },
+    )
+    expect(actual).toEqual({ moved: expect.any(Number), turned: expect.any(Number) })
+    const { moved, turned } = actual as { moved: number; turned: number }
+    expect(moved).toBeGreaterThan(8)
+    expect(turned).toBeGreaterThan(0)
+  },
+)
+
+it.skipIf(!purePython)(
   'world-space objects, bounds, solids and one-way landings agree with Core on rotated signed sets',
   async () => {
     const scene = fixture(),
