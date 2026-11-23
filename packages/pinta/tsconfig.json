@@ -37,7 +37,8 @@
     "scripts/remap-regions-probe.ts",
     "scripts/tileset-remap-entry.tsx",
     "scripts/serve-tileset-remap-e2e.ts",
-    "scripts/serve-memory-regions-e2e.ts"
+    "scripts/serve-memory-regions-e2e.ts",
+    "scripts/generate-format-fixtures.ts"
   ],
   "exclude": ["node_modules"]
 }
