@@ -292,7 +292,8 @@ async function buildPintaSceneFiles(contents: Map<string, Uint8Array>) {
 }
 
 if (import.meta.main) {
-  const result = await buildPythonRuntimeDistribution()
+  // A versão única do motor (23/11/2026) leva os cenários do Pinta: o CI da imagem monta por aqui.
+  const result = await buildPythonRuntimeDistribution({ pintaScenes: true })
   console.log(
     JSON.stringify({
       directory: result.directory,
