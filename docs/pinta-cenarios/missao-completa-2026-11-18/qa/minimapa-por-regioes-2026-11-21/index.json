@@ -29,28 +29,19 @@
         {
           "name": "desktop",
           "cpuSlowdown": 1,
-          "canvas": [
-            256,
-            256
-          ],
+          "canvas": [256, 256],
           "occupiedPixels": 2
         },
         {
           "name": "touch",
           "cpuSlowdown": 1,
-          "canvas": [
-            256,
-            256
-          ],
+          "canvas": [256, 256],
           "occupiedPixels": 2
         },
         {
           "name": "cpu-4x",
           "cpuSlowdown": 4,
-          "canvas": [
-            256,
-            256
-          ],
+          "canvas": [256, 256],
           "occupiedPixels": 2
         }
       ]

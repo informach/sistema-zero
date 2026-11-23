@@ -224,10 +224,7 @@
     "persistence": 55,
     "integration": 12,
     "newScene4": 4,
-    "profiles": [
-      "desktop",
-      "cpu-4x"
-    ]
+    "profiles": ["desktop", "cpu-4x"]
   },
   "legacy": {
     "baseline": "327c9769a",

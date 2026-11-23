@@ -33,6 +33,8 @@
       "!packages/core/src/morada/catalog.generated.ts",
       "!packages/community/src/app/globals.generated.css",
       "!art/edisvg",
+      "!docs/pinta-cenarios/missao-completa-2026-11-18/qa/automapping-2026-11-22/mundo.pinta.json",
+      "!docs/pinta-cenarios/missao-completa-2026-11-18/qa/automapping-2026-11-22/mapa.pinta-regras.json",
       "!**/.astro",
       "!**/.next",
       "!**/next-env.d.ts",

@@ -7,336 +7,230 @@
     {
       "alvo": "host",
       "nome": "real-editor-redo-review.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/real-editor-redo-review.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/real-editor-redo-review.inc"],
       "sha256": "51e0e9de23a93157e694d9934b3b1093a6d17d748ae5c131ad6878badd325ea7",
       "lfAdicional": 3
     },
     {
       "alvo": "host",
       "nome": "real-editor-undo-review.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/real-editor-undo-review.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/real-editor-undo-review.inc"],
       "sha256": "93459d4918f4469faec4bf716a9dfe0f1b95b7f28e2a140596498df3c1719e98",
       "lfAdicional": 2
     },
     {
       "alvo": "host",
       "nome": "reincarnation-review.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/reincarnation-review.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/reincarnation-review.inc"],
       "sha256": "ad7c0276c8ab72282d3a3bb4624471d010b979e8ed6ab413bf15b84741694dbc",
       "lfAdicional": 1
     },
     {
       "alvo": "host",
       "nome": "repair-then-adopt-review.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/repair-then-adopt-review.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/repair-then-adopt-review.inc"],
       "sha256": "cdbe74dee9d0fdb38fb1e784589a668ab48f3535f8f9df6a2663e56220c55dc4"
     },
     {
       "alvo": "host",
       "nome": "stable-slot-review.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/stable-slot-review.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/stable-slot-review.inc"],
       "sha256": "bce176fe4344d89115f90d6e0f26a1d806d8313373cf458dd8234c39a89c976e"
     },
     {
       "alvo": "host",
       "nome": "undo-expiry-review.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/undo-expiry-review.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/undo-expiry-review.inc"],
       "sha256": "54404f1d12ef52f05b539fb77b71372a77dbf3e98b74916710f1da34b32b2eb3",
       "lfAdicional": 1
     },
     {
       "alvo": "pinta",
       "nome": "recovery-review.test.ts",
-      "fontes": [
-        "ensaios/adocao.inc"
-      ],
+      "fontes": ["ensaios/adocao.inc"],
       "sha256": "22b860f37465aaaedc9766561ad46084cbdafdcbf0f4cd37053230fe0ad6e792"
     },
     {
       "alvo": "members",
       "nome": "stable-slot.test.ts",
-      "fontes": [
-        "ensaios/indice-estavel-pg.inc"
-      ],
+      "fontes": ["ensaios/indice-estavel-pg.inc"],
       "sha256": "c5d690fd831f39fee7d59446708ad9215895c3c56be5d3dba4d545dd94fcbaa3",
       "lfAdicional": 1
     },
     {
       "alvo": "terminal",
       "nome": "terminal-http-review.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/terminal-http-review.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/terminal-http-review.inc"],
       "sha256": "4d425fecf29130298a54e9189ab53af6c4dcebee838abead0e8301597dd1f634",
       "originalSha256": "adcd2c18258ee5efb0f343350c1395cbe6bc5c76302ac914348820b63a540500"
     },
     {
       "alvo": "terminal",
       "nome": "terminal-legacy-review.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/terminal-legacy-review.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/terminal-legacy-review.inc"],
       "sha256": "0fe7baa0bc656dfe9cc6ccbbe10d918d2a3f45bb0571ac2a7af3bb054ab1e967",
       "originalSha256": "7c50939254cad92366da63411827022cba4c61b926a985947d75f468ef5bf298"
     },
     {
       "alvo": "terminal",
       "nome": "terminal-pending-review.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/terminal-pending-review.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/terminal-pending-review.inc"],
       "sha256": "3f895f4a52f1499b6e873106d7f7b3d1459fa92842efe06b369929a60b57f672",
       "originalSha256": "340e19ecc24c133d483121da5c76a8633acea4335770be32060c967912296c9c"
     },
     {
       "alvo": "duravel",
       "nome": "ponta-duravel.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/ponta-duravel.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/ponta-duravel.inc"],
       "sha256": "562bbc72f7976df0a33e9c706d79395e34662b2f32fe05402b3e8a7aea25dfcb"
     },
     {
       "alvo": "duravel",
       "nome": "versoes-do-mundo.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/versoes-do-mundo.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/versoes-do-mundo.inc"],
       "sha256": "b75c1655d4e75bac409b4cb46687052e4fb68d3a0b128d89d7062401ccb3cde2"
     },
     {
       "alvo": "duravel",
       "nome": "transacao-da-ponta.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/transacao-da-ponta.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/transacao-da-ponta.inc"],
       "sha256": "32db8e0f5a6ae80d8a35832a8016b541b1f20858885428e8ec33c9c98bd9c2b9"
     },
     {
       "alvo": "duravel",
       "nome": "leitores-do-registro.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/leitores-do-registro.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/leitores-do-registro.inc"],
       "sha256": "cc87a1a5e22caadd6581d90a5a0d94881c5053902c247eb2be681152fbb09e39"
     },
     {
       "alvo": "retencao",
       "nome": "real-shadow-quota-review.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/real-shadow-quota-review.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/real-shadow-quota-review.inc"],
       "sha256": "380e1b4fcdc70bc4d53eb3c8afdbe2742756b1fb019dfa7ac0d02063faaeef7d"
     },
     {
       "alvo": "retencao",
       "nome": "shadow-rollback-review.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/shadow-rollback-review.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/shadow-rollback-review.inc"],
       "sha256": "9a4b0ff97a4fe25fc40807debfcc1c348ccdf4999abf98274d0380a0dfe9ca92",
       "lfAdicional": 1
     },
     {
       "alvo": "retencao",
       "nome": "terminal-doors-review.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/terminal-doors-review.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/terminal-doors-review.inc"],
       "sha256": "38f3c5772e4c26afcd6dd9cf7a642014fdfdbc65387bfdbbd485e365c22d66be",
       "lfAdicional": 1
     },
     {
       "alvo": "retencao",
       "nome": "terminal-fixed-review.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/terminal-fixed-review.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/terminal-fixed-review.inc"],
       "sha256": "bb70617ae0351dbd0d6df81fe99d3194981ef6ec82227b4c922d8bb780c8088d",
       "lfAdicional": 3
     },
     {
       "alvo": "retencao",
       "nome": "terminal-graph-review.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/terminal-graph-review.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/terminal-graph-review.inc"],
       "sha256": "b95343ea6961cc8c43f3e686f21a088a606ece18da3112bbe0d74ebf9ba51250"
     },
     {
       "alvo": "retencao",
       "nome": "terminal-http-review.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/terminal-http-review.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/terminal-http-review.inc"],
       "sha256": "adcd2c18258ee5efb0f343350c1395cbe6bc5c76302ac914348820b63a540500",
       "lfAdicional": 1
     },
     {
       "alvo": "retencao",
       "nome": "terminal-mutable-encode-review.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/terminal-mutable-encode-review.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/terminal-mutable-encode-review.inc"],
       "sha256": "0d4d3e89a1230d5383a8c011e4137b36c780eaab05b7941b54075ef939d45687"
     },
     {
       "alvo": "retencao",
       "nome": "terminal-pending-fixed-review.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/terminal-pending-fixed-review.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/terminal-pending-fixed-review.inc"],
       "sha256": "6a5e772869d9c1ed62d20fc31c6f0d7802f855032659c171b6be8e2fcc19b9c1",
       "lfAdicional": 5
     },
     {
       "alvo": "retencao",
       "nome": "terminal-unbased-region-review.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/terminal-unbased-region-review.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/terminal-unbased-region-review.inc"],
       "sha256": "24113af36eb311bb11dcae1f3e1b2eadcfb248f77a1d249186cf251e4b17578a"
     },
     {
       "alvo": "retencao",
       "nome": "archive-flow-review.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/archive-flow-review.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/archive-flow-review.inc"],
       "sha256": "0d2c4aaef1c65f064bde6b679bf2c05828976a29541673bcca23897ca4a03c45"
     },
     {
       "alvo": "leitorV3",
       "nome": "offline-cross-review.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/offline-cross-review.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/offline-cross-review.inc"],
       "sha256": "a1f8fc123360f27e6fc684d60ec662fe4aecad2ddd34cc8d95275af815428175"
     },
     {
       "alvo": "recursosV4",
       "nome": "physical-pins-review.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/physical-pins-review.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/physical-pins-review.inc"],
       "sha256": "b8ee4f1676d936a7481f3aeee3ff3870513fe77d986dca674deee007a0a01702"
     },
     {
       "alvo": "recursosV4",
       "nome": "pins-cas-review.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/pins-cas-review.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/pins-cas-review.inc"],
       "sha256": "52f04125e9cccd4b5b2a9fe89da789d5a89ce007dc829a18cf79d40af4153b73"
     },
     {
       "alvo": "recursosV4",
       "nome": "pins-quota-review.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/pins-quota-review.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/pins-quota-review.inc"],
       "sha256": "e4e6392dc8938662dd7e746042523ad31be83eba3edf2ed131469976ed94db3c"
     },
     {
       "alvo": "recursosV4",
       "nome": "transitive-pins-review.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/transitive-pins-review.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/transitive-pins-review.inc"],
       "sha256": "4763c17fc497afc463fe71988058d8f329ea3d5bb77007551dcb8cfc274d3a16"
     },
     {
       "alvo": "recursosV4",
       "nome": "fence-v4-review.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/fence-v4-review.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/fence-v4-review.inc"],
       "sha256": "6c4713f5fd18727683577e38aa6f2d1049a250ed53a9438cbe8f1ac975bafcc4"
     },
     {
       "alvo": "duravelV4",
       "nome": "ponta-duravel-v4.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/ponta-duravel.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/ponta-duravel.inc"],
       "sha256": "562bbc72f7976df0a33e9c706d79395e34662b2f32fe05402b3e8a7aea25dfcb"
     },
     {
       "alvo": "duravelV4",
       "nome": "versoes-do-mundo-v4.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/versoes-do-mundo-v4.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/versoes-do-mundo-v4.inc"],
       "sha256": "10f74139e54436748bead361770f2f8908e61e76e9a6df2445e0de9fe5f4a57f"
     },
     {
       "alvo": "duravelV4",
       "nome": "transacao-da-ponta-v4.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/transacao-da-ponta.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/transacao-da-ponta.inc"],
       "sha256": "32db8e0f5a6ae80d8a35832a8016b541b1f20858885428e8ec33c9c98bd9c2b9"
     },
     {
       "alvo": "duravelV4",
       "nome": "leitores-do-registro-v4.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/leitores-do-registro-v4.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/leitores-do-registro-v4.inc"],
       "sha256": "bdb81dda8614b18e5006fd548d247b51fa13bf5f8d182d58e5b85e976705f8ad"
     },
     {
       "alvo": "leitorV3Manifest",
       "nome": "offline-cross-manifest-review.test.ts",
-      "fontes": [
-        "ensaios/contexto-host.inc",
-        "ensaios/offline-cross-manifest-review.inc"
-      ],
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/offline-cross-manifest-review.inc"],
       "sha256": "196dffd524ee31670298fc3b91dd02971bc4919908190db3c4da837e05daf99c"
     }
   ],

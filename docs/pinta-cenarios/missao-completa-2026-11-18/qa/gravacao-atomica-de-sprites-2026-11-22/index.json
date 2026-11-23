@@ -181,10 +181,7 @@
   "browser": {
     "pass": 43,
     "retries": 0,
-    "profiles": [
-      "desktop",
-      "cpu-4x"
-    ],
+    "profiles": ["desktop", "cpu-4x"],
     "realIndexedDB": true,
     "futureRecovery": 6,
     "spriteRaceAndBudget": 4,

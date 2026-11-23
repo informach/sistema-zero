@@ -33,11 +33,7 @@
       "passed": 27,
       "failed": 0,
       "retries": 0,
-      "projects": [
-        "desktop",
-        "touch-emulated",
-        "cpu-4x"
-      ],
+      "projects": ["desktop", "touch-emulated", "cpu-4x"],
       "scope": "Dense workshop and real clipboard module page; sparse scatter is internal"
     },
     "cpu": [
