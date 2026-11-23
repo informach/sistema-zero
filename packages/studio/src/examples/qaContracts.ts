@@ -243,6 +243,16 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['start', 'arrows'],
   },
   {
+    key: 'game-2d:Mundo das Portas',
+    name: 'Mundo das Portas',
+    experience: 'game',
+    promise:
+      'Explorar um mundo grande do Pinta em seis regiões, entrando nas cavernas e nas casas pelas portas, pegando moedas e guardando o jogo na cama.',
+    scenario:
+      'Andar pelas setas ou WASD entre as regiões (as entidades da região e das vizinhas aparecem), passar por uma porta e voltar à boca da caverna com as moedas ainda pegas, e deitar na cama de uma casa.',
+    interactions: ['arrows', 'wasd'],
+  },
+  {
     key: 'game-2d-advanced:Mundo Pirata Profissional',
     name: 'Mundo Pirata Profissional',
     experience: 'game',
