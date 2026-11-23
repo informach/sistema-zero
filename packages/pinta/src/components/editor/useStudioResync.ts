@@ -22,7 +22,22 @@ async function sendResync(job: ResyncJob): Promise<PintaStudioResyncResult> {
   // Capture one immutable gallery view before yielding; the current editor may not yet
   // have reached its autosave. A dependency edit must also refresh maps already linked
   // by the host, including consumers through set definitions and typed properties.
-  const assets = new Map(job.gallery.getState().assets.map((a) => [a.id, a]))
+  return resyncStudioCopies({ ...job, catalog: job.gallery.getState().assets })
+}
+
+/**
+ * Atualiza no Estúdio o desenho e os mapas que dependem dele, a partir de um catálogo já
+ * capturado. A janela focal de um cenário grande usa a mesma ponte ao fechar: o catálogo dela é o
+ * inventário completo lido do armazenamento, porque a galeria focal não carrega os mapas grandes.
+ */
+export async function resyncStudioCopies(job: {
+  asset: PintaMemoryAsset
+  catalog: readonly PintaMemoryAsset[]
+  animationId: string | null
+  frameIndex: number
+  send: ResyncToStudio
+}): Promise<PintaStudioResyncResult> {
+  const assets = new Map(job.catalog.map((a) => [a.id, a]))
   assets.set(job.asset.id, job.asset)
   const targets = [job.asset, ...dependentTilemaps(job.asset.id, [...assets.values()])]
   let result: PintaStudioResyncResult = { updated: false }
