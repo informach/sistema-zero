@@ -1,7 +1,11 @@
 import { expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { malhaDoPedacoDoRelevo, saiaDoPedaco } from '@sistemazero/molda-cenarios-core/compilar'
-import { casosDoRelevo, entradasDoRelevo } from '../../../../scripts/gen-raylib-relevo-cases'
+import {
+  casosDoRelevo,
+  entradasDoRelevo,
+  mesmosCasos,
+} from '../../../../scripts/gen-raylib-relevo-cases'
 
 /**
  * O relevo em campo do `cenario.py` segue a referência do núcleo (plano "Mundos de 2 km", lote 6):
@@ -15,7 +19,7 @@ test('os casos do relevo do Raylib são os que o núcleo calcula', async () => {
   const gravado = JSON.parse(
     readFileSync(new URL('./__tests__/relevo-casos.json', import.meta.url), 'utf8'),
   )
-  expect(gravado).toEqual(JSON.parse(JSON.stringify(await casosDoRelevo())))
+  expect(await mesmosCasos(gravado, await casosDoRelevo())).toBe(true)
 })
 
 test('a referência: a diagonal da colisão, as alturas do campo, os buracos e as saias', () => {

@@ -15,7 +15,11 @@ import {
   type PedacoDoRelevoPython,
   saiaDoPedaco,
 } from '@sistemazero/molda-cenarios-core/compilar'
-import { alturaDoCampo, codificarPngDePesos } from '@sistemazero/molda-cenarios-core/v2'
+import {
+  alturaDoCampo,
+  codificarPngDePesos,
+  lerPngDePesos,
+} from '@sistemazero/molda-cenarios-core/v2'
 
 const DESTINO = fileURLToPath(
   new URL('../src/runtime/python/raylib/__tests__/relevo-casos.json', import.meta.url),
@@ -121,11 +125,31 @@ export async function casosDoRelevo() {
   }
 }
 
+/**
+ * Os casos são os mesmos? Tudo igual, menos os bytes do PNG dos pesos: o deflate de cada
+ * plataforma compacta diferente (Windows e Linux), então ali valem os pixels decodificados.
+ */
+export async function mesmosCasos(
+  gravado: { pesosPng: string[] } & Record<string, unknown>,
+  novo: { pesosPng: string[] } & Record<string, unknown>,
+): Promise<boolean> {
+  const { pesosPng: a, ...restoGravado } = gravado
+  const { pesosPng: b, ...restoNovo } = JSON.parse(JSON.stringify(novo)) as typeof novo
+  if (JSON.stringify(restoGravado) !== JSON.stringify(restoNovo) || a.length !== b.length)
+    return false
+  for (let k = 0; k < a.length; k++) {
+    const pa = await lerPngDePesos(Buffer.from(a[k]!, 'base64')),
+      pb = await lerPngDePesos(Buffer.from(b[k]!, 'base64'))
+    if (pa.largura !== pb.largura || pa.altura !== pb.altura) return false
+    if (Buffer.compare(Buffer.from(pa.rgba), Buffer.from(pb.rgba)) !== 0) return false
+  }
+  return true
+}
+
 if (import.meta.main) {
   const casos = await casosDoRelevo()
   if (process.argv.includes('--check')) {
-    const gravado = JSON.stringify(JSON.parse(readFileSync(DESTINO, 'utf8')))
-    if (gravado !== JSON.stringify(casos)) {
+    if (!(await mesmosCasos(JSON.parse(readFileSync(DESTINO, 'utf8')), casos))) {
       console.error(
         'Os casos do relevo do Raylib mudaram. Rode bun scripts/gen-raylib-relevo-cases.ts.',
       )
