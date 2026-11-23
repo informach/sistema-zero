@@ -55,3 +55,5 @@ export {
   setPintaStorageNamespace,
   subscribePintaAssetOpenState,
 } from './state/persistence'
+/** Os cartões da galeria focal: o espelho da conta repassa o índice do armazenamento. */
+export type { RegionalGalleryCard, RegionGalleryIndex } from './state/regionGalleryIndex'

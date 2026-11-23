@@ -160,9 +160,14 @@ function assertRegionalLocalState(
     throw new PintaLocalStorageError('Abra o cenário pela sua conta para guardar as mudanças.')
 }
 
-/** Cold gallery cards read complete directories and reuse the authority for inline assets. */
+/**
+ * Cold gallery cards read complete directories and reuse the authority for inline assets.
+ * `causal`: the account writer owns the V4 queue and opens each card through its binding, so the
+ * queue's records do not close the read-only index there. A purely local caller still gets `null`.
+ */
 export async function readLocalRegionGalleryIndex(
   namespace: string,
+  causal = false,
 ): Promise<RegionGalleryIndex | null> {
   let headers: readonly string[] = []
   let physicalKeys: ReadonlySet<IDBValidKey> = new Set()
@@ -170,7 +175,10 @@ export async function readLocalRegionGalleryIndex(
     namespace,
     () => [...new Set([...headers, PINTA_CAUSAL_OUTBOX_KEY])],
     (records) => {
-      if (namespace !== getPintaStorageNamespace() || hasCausalInventory(records, physicalKeys))
+      if (
+        namespace !== getPintaStorageNamespace() ||
+        (!causal && hasCausalInventory(records, physicalKeys))
+      )
         return null
       const { directories, assets, documents } = inspectInventory(records, headers, physicalKeys)
       const cards: RegionalGalleryCard[] = []

@@ -26,6 +26,7 @@ import {
 } from '../../core/project'
 import { paintBitmap } from '../../pixel/render'
 import type { NewAssetInput } from '../../state/galleryStore'
+import { REGION_WORLD_START } from '../../tiles/regionMap'
 import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
 import { Button } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
@@ -58,6 +59,9 @@ const TILEMAP_SIZES = [
   { cols: 128, rows: 96 },
   { cols: 256, rows: 192 },
 ] as const
+
+/** O cartão do cenário grande no passo de tamanho do mapa (só com o armazenamento da oficina). */
+const REGION_WORLD_KEY = 'mundo-gigante'
 
 const STYLE_ORDER: PintaAssetStyle[] = ['pixel', 'vector']
 
@@ -284,6 +288,7 @@ export function NewAssetDialog({
   onClose,
   onCreate,
   onCreateFromTemplate,
+  onCreateRegionMap,
 }: {
   open: boolean
   /** Tilesets existentes de QUALQUER estilo (habilitam o Mapa + seletor). */
@@ -302,6 +307,11 @@ export function NewAssetDialog({
   onCreate: (input: NewAssetInput) => void
   /** Cria a partir de um modelo pronto (novo ramo do wizard). */
   onCreateFromTemplate: (input: { templateId: string; name: string }) => void
+  /**
+   * Cria o "Mundo gigante" (mapa por regiões). Ausente = o armazenamento não guarda esse formato
+   * (aula, persistência antiga) e o cartão não aparece.
+   */
+  onCreateRegionMap?: (input: { name: string; tilesetId: string }) => void
 }): JSX.Element | null {
   const [step, setStep] = useState<Step>('style')
   const [style, setStyle] = useState<PintaAssetStyle>(initialStyle)
@@ -593,6 +603,26 @@ export function NewAssetDialog({
                 <span className="text-sm text-pin-muted">{choice.detail}</span>
               </button>
             ))}
+            {kind === 'tilemap' && onCreateRegionMap ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setSizeKey(REGION_WORLD_KEY)
+                  setStep('name')
+                }}
+                aria-pressed={sizeKey === REGION_WORLD_KEY}
+                className={`pin-pop flex min-h-16 flex-col items-center justify-center rounded-2xl border-2 p-3 transition ${
+                  sizeKey === REGION_WORLD_KEY
+                    ? 'border-pin-accent bg-pin-accent/10'
+                    : 'border-pin-border bg-pin-bg hover:border-pin-accent'
+                }`}
+              >
+                <span className="text-base font-bold">{COPY.newAsset.world}</span>
+                <span className="text-sm text-pin-muted">
+                  {COPY.scene.dynamicPecas(REGION_WORLD_START.cols, REGION_WORLD_START.rows)}
+                </span>
+              </button>
+            ) : null}
             {customSpec ? (
               <button
                 type="button"
@@ -650,6 +680,8 @@ export function NewAssetDialog({
             event.preventDefault()
             if (!normalized || nameError) return
             if (templateId) onCreateFromTemplate({ templateId, name: normalized })
+            else if (kind === 'tilemap' && sizeKey === REGION_WORLD_KEY && onCreateRegionMap)
+              onCreateRegionMap({ name: normalized, tilesetId })
             else if (kind && effectiveSizeKey)
               onCreate(buildInput(kind, effectiveSizeKey, normalized, tilesetId))
           }}
