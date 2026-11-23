@@ -41,15 +41,17 @@ describe('O Jardim Secreto', () => {
       expect(isLearningManifest(m)).toBe(true)
       expect(m.courseSlug).toBe('jornada-faisca-missao')
       expect(m.lessonSlug).toBe(`aula-${i + 1}`)
-      // Desde 23/11/2026 o envio fecha a última construção (a posição do regador), sem parte só
-      // de envio; na Aula 2, o quiz fecha a aula depois do envio.
-      expect(m.sections.map((s: any) => s.key)).toEqual(
-        i === 0
-          ? ['abertura', 'material', 'movimento', 'limite', 'coleta', 'decisao', 'posicao']
-          : ['abertura', 'movimento', 'coleta', 'decisao', 'posicao', 'revisao'],
-      )
+      // Missão do posto desde 24/11/2026: abertura, três etapas (a última envia) e o fim, com o
+      // Passo a passo. Sem quiz (padrão das missões em missao-padrao.test.ts).
+      expect(m.sections.map((s: any) => s.key)).toEqual([
+        'abertura',
+        'andar',
+        'regador-e-flor',
+        'posicao',
+        'missao-cumprida',
+      ])
       expect(m.sections.find((s: any) => s.key === 'posicao').intent).toBe('delivery')
-      if (i === 1) expect(m.sections.at(-1).intent).toBe('closing')
+      expect(m.sections.at(-1).intent).toBe('closing')
       expect(
         learningImportBodyBytes(
           m,
@@ -67,8 +69,11 @@ describe('O Jardim Secreto', () => {
         'valid',
       )
       expect(m.sections.every((s: any) => isSectionCompletion(s.completion))).toBe(true)
-      const collect = m.sections.find((s: any) => s.key === 'coleta')
-      expect(collect.completion.projectChecks.map((c: any) => c.id)).not.toContain('sem-regador')
+      // A primeira etapa junta andar e o limite (2D) ou andar e recolher o regador (3D).
+      const etapa1 = m.sections.find((s: any) => s.key === 'andar')
+      expect(etapa1.completion.projectChecks.map((c: any) => c.id)).toEqual(
+        i === 0 ? ['andar', 'limite'] : ['andar', 'coletar'],
+      )
     })
     test(`${d}: todas as etapas e o roundtrip usam somente blocos básicos`, () => {
       for (const stage of JARDIM_ETAPAS) {
@@ -139,6 +144,7 @@ describe('O Jardim Secreto', () => {
       }
     })
   }
+  // O quiz saiu das aulas em 24/11/2026; o arquivo continua, porque a prévia do Jardim o usa.
   test('quiz misto mantém resposta única, demonstrações 1/3/4 e pergunta 2 sem cena', () => {
     expect(isManifestQuiz(jardimQuiz)).toBe(true)
     expect(validatePredictionQuiz(jardimQuiz.questions)).toBeNull()

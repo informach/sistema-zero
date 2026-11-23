@@ -1,6 +1,6 @@
 # Leve sua missão para o 3D
 
-Missão do Faísca · O Jardim Secreto · 3D. Um projeto contínuo, enviado na última construção. Ajuda livre no Passo a passo do projeto; sem certificado nem publicação obrigatória.
+Missão do Faísca · O Jardim Secreto · 3D. Um projeto contínuo, enviado na última construção. Sem dicas: quem tiver dúvida volta na aula do curso base; o Passo a passo do projeto chega no fim da aula, depois do envio; sem certificado nem publicação obrigatória.
 
 ## Parte 1. O mesmo desafio, com profundidade
 
@@ -13,37 +13,26 @@ O mesmo desafio, com profundidade.
 
 
 
-## Parte 2. Caminhe pelo jardim 3D
+## Parte 2. Ande e recolha o regador
 
-Caminhe pelo jardim 3D.
-
-- Intenção: application.
-- Blocos: video-movimento, ponte-movimento.
-- Estúdio: projeto.
-- Conclusão: video-movimento.
-
-- Faça o personagem andar nas quatro direções e parar ao soltar a tecla.
-
-## Parte 3. Recolha o regador em 3D
-
-Recolha o regador em 3D.
+Ande e recolha o regador.
 
 - Intenção: application.
-- Blocos: video-coleta, ponte-coleta.
+- Blocos: video-andar, ponte-andar.
 - Estúdio: projeto.
-- Conclusão: video-coleta.
+- Conclusão: video-andar.
 
 - Faça o personagem andar nas quatro direções e parar ao soltar a tecla.
 - Recolha o regador no encontro e mostre um aviso da coleta.
 
-## Parte 4. Faça a flor responder
+## Parte 3. A flor abre uma vez só
 
-Faça a flor responder.
+A flor abre uma vez só.
 
 - Intenção: application.
-- Blocos: video-decisao, ponte-decisao.
+- Blocos: video-regador-e-flor, ponte-regador-e-flor.
 - Estúdio: projeto.
-- Conclusão: video-decisao.
+- Conclusão: video-regador-e-flor.
 
 - Faça o personagem andar nas quatro direções e parar ao soltar a tecla.
 - Recolha o regador no encontro e mostre um aviso da coleta.
@@ -52,9 +41,9 @@ Faça a flor responder.
 - Depois da coleta, faça a flor abrir e mostrar o sucesso; uma nova partida recomeça sem a coleta.
 - Com o regador, faça a flor abrir, saia dela e volte: ela continua aberta, sem florescer de novo.
 
-## Parte 5. Encontre um novo lugar no chão
+## Parte 4. Um lugar novo no chão
 
-Encontre um novo lugar no chão.
+Um lugar novo no chão.
 
 - Intenção: delivery.
 - Blocos: video-posicao, ponte-posicao, projeto.
@@ -69,14 +58,14 @@ Encontre um novo lugar no chão.
 - Com o regador, faça a flor abrir, saia dela e volte: ela continua aberta, sem florescer de novo.
 - Escolha outro lugar alcançável para o regador e confira as regras.
 
-## Parte 6. Pense nos seus testes
+## Parte 5. Missão cumprida!
 
-Pense nos seus testes.
+Missão cumprida!.
 
 - Intenção: closing.
-- Blocos: ponte-revisao, quiz.
+- Blocos: video-missao-cumprida, ponte-missao-cumprida, materiais.
 - Estúdio: não.
-- Conclusão: quiz.
+- Conclusão: video-missao-cumprida.
 
 
 

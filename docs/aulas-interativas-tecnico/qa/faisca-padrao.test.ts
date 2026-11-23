@@ -14,7 +14,6 @@ import { resolve } from 'node:path'
 import { avatarDaAula } from './avatares-video'
 import { cabanaAulas } from './cabana-conteudo'
 import { ilhaAulas } from './ilha-do-farol-conteudo'
-import { jardimAulas } from './jardim-conteudo'
 import { meuDesenhoAula } from './meu-desenho-conteudo'
 import { moedasAulas } from './moedas-conteudo'
 import { ponteAulas } from './ponte-conteudo'
@@ -64,12 +63,6 @@ const CURSOS: Curso[] = [
     pasta: 'poder-o-bau-dos-simbolos',
     arquivo: (s) => `simbolos-${s}`,
     aulas: simbolosAulas,
-  },
-  {
-    nome: 'O Jardim Secreto',
-    pasta: 'o-jardim-secreto',
-    arquivo: (s) => s,
-    aulas: jardimAulas,
   },
   {
     nome: 'Meu primeiro desenho no Pinta',

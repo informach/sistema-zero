@@ -10,45 +10,33 @@
 
 [curious] Será que o regador está no mesmo lugar do jardim 2D?
 
-[engaging, energetic, conversational voice] Isso eu deixo para você descobrir.
+[engaging, energetic, conversational voice] Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R.
 
-[engaging, energetic, conversational voice] Para começar outra partida, toque na tecla R.
+[confident, clear, unhurried voice] Como na Aula 1, quem programa é você. Em cada parte, eu mostro o que o jogo precisa fazer, e você programa no Estúdio.
+
+[reassuring, encouraging voice] Tudo o que você precisa, aprendeu na Ilha do Farol. Se esquecer como se faz alguma coisa, eu digo em qual aula está, e é só voltar lá.
 
 [upbeat, encouraging voice] Agora é a sua vez: jogue até a flor abrir. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
-[upbeat, welcoming voice] Na Aula 1, o personagem do jardim 2D aprendeu a andar. Agora é a vez do jardim 3D!
+[engaging, energetic, conversational voice] Primeira etapa da missão no 3D: andar pelo jardim e recolher o regador.
 
 [engaging, energetic, conversational voice] Aqui no seu jogo, clique em Rodar de novo, no alto do Estúdio, e segure uma seta do teclado.
 
-[interested, animated voice] Tá vendo? O personagem fica parado, porque o jogo ainda não sabe que a seta faz ele andar.
+[interested, animated voice] Tá vendo? O personagem não sai do lugar.
 
-[engaging, energetic, conversational voice] É a mesma ideia do jogo 2D: em cada quadro, o jogo olha as setas e leva o personagem para o lado da seta apertada. No 3D também é assim.
+[confident, clear, unhurried voice] Nesta etapa, o seu jogo precisa fazer duas coisas.
 
-[confident, clear, unhurried voice] Por isso, o bloco novo vai dentro do bloco A cada quadro da cena, na área Enquanto estiver rodando. Encontre essa área. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+[engaging, energetic, conversational voice] Primeira: quando você segura uma seta, o personagem anda pelo chão para aquele lado, e quando solta, ele para.
 
-[confident, clear, unhurried voice] Repare: dentro de A cada quadro da cena já tem o bloco Escrever na tela. O bloco novo vai no começo, no espaço ao lado da palavra fazer.
+[engaging, energetic, conversational voice] Segunda: quando o personagem encosta no regador, o regador some, e um aviso conta que ele pegou.
 
-[confident, clear, unhurried voice] Abra Jogo 3D, depois Movimento e depois Andar com o teclado, e pegue o bloco Fazer personagem andar com as setas.
+[reassuring, encouraging voice] Você já sabe fazer as duas coisas: aprendeu na Ilha do Farol, Aula 1, na parte Faça o personagem andar, e na Aula 2, na parte Recolha a chave. Se esquecer como faz, volte lá.
 
-[confident, clear, unhurried voice] Arraste e solte no espaço ao lado de fazer. Repare: o Escrever na tela desce e fica logo abaixo do bloco novo.
+[engaging, energetic, conversational voice] Para saber se deu certo, clique em Verificar projeto. Olha: ele mostra o que ainda falta no seu jogo.
 
-[engaging, energetic, conversational voice] É este bloco que faz o personagem andar: em todo quadro, ele olha qual seta você está segurando e leva o personagem para aquele lado.
-
-[engaging, energetic, conversational voice] O nome no bloco já é personagem, o objeto que vai andar. E o número é a velocidade: quanto maior, mais rápido o personagem anda.
-
-[confident, clear, unhurried voice] Clique no 3 e troque por 4.
-
-[upbeat, encouraging voice] Agora vamos testar! Clique em Rodar de novo mais uma vez. Depois segure a seta da direita por um tempo e solte.
-
-[interested, animated voice] Olha só: ele anda enquanto você segura a seta e para quando você solta. Andando, ele mexe as pernas e os braços.
-
-[upbeat, encouraging voice] Agora faça o mesmo com as outras três setas.
-
-[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de A cada quadro da cena, primeiro vem Fazer personagem andar com as setas, com a velocidade 4, e logo abaixo dele está Escrever na tela.
-
-[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+[upbeat, encouraging voice] Agora é com você! Programe no Estúdio e teste com as setas.
 
 [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
 
@@ -56,97 +44,27 @@
 
 [long pause]
 
-[upbeat, welcoming voice] Na Aula 1, o seu jogo 2D aprendeu a guardar o regador. Agora o jardim 3D vai aprender a mesma coisa!
+[engaging, energetic, conversational voice] Segunda etapa: a flor.
 
-[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Rodar de novo, no alto do Estúdio, e leve o personagem até o regador.
+[engaging, energetic, conversational voice] Clique em Rodar de novo, pegue o regador e leve o personagem até a flor.
 
-[interested, animated voice] Tá vendo? O personagem passa pelo regador, e o regador continua ali, porque o seu jogo ainda não tem nenhuma reação para esse encontro.
+[interested, animated voice] Tá vendo? O regador some, o personagem chega na flor, e nada acontece.
 
-[engaging, energetic, conversational voice] Primeiro, a variável temRegador. Como no jogo 2D, ela precisa existir desde o começo da partida. Por isso, ela vai na área Ao iniciar.
+[confident, clear, unhurried voice] Nesta etapa, o seu jogo precisa fazer quatro coisas.
 
-[confident, clear, unhurried voice] Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+[engaging, energetic, conversational voice] Primeira: o jogo lembra se o personagem já pegou o regador. No começo da partida, ele ainda não pegou.
 
-[confident, clear, unhurried voice] Lá dentro, deixe à vista o bloco que cria a variável aviso. O bloco novo vai logo abaixo dele.
+[engaging, energetic, conversational voice] Segunda: sem o regador, a flor continua fechada, e o aviso diz o que falta.
 
-[confident, clear, unhurried voice] Abra Programação e depois Variáveis, e pegue o bloco Criar variável com valor.
+[engaging, energetic, conversational voice] Terceira: com o regador, a flor floresce, e o aviso comemora.
 
-[confident, clear, unhurried voice] Arraste e solte logo abaixo do bloco que cria a variável aviso.
+[curious] E se o personagem voltar na flor depois que ela abriu?
 
-[confident, clear, unhurried voice] Repare: ele chega com o nome contador. Clique em contador e escreva temRegador, tudo junto e com o R maiúsculo.
+[engaging, energetic, conversational voice] Essa é a quarta: a flor continua aberta e não floresce de novo. Ela abre uma vez só.
 
-[engaging, energetic, conversational voice] É este bloco que cria a variável temRegador.
+[reassuring, encouraging voice] Você aprendeu tudo isso na Ilha do Farol: a guardar que pegou a chave, na Aula 2, e o farol que confere a chave e acende uma vez só, na Aula 3. Se esquecer como faz, volte lá.
 
-[confident, clear, unhurried voice] Abra Programação e depois Lógica e Se, e pegue o bloco verdadeiro.
-
-[confident, clear, unhurried voice] Solte em cima do 0. Depois clique em verdadeiro e escolha falso, porque a partida começa sem o regador.
-
-[reassuring, encouraging voice] Confira se ficou assim: logo abaixo do bloco que cria aviso está Criar variável temRegador com valor falso.
-
-[engaging, energetic, conversational voice] Agora o encontro com o regador. Os encontros ficam na área Quando acontecer.
-
-[confident, clear, unhurried voice] Encontre essa área. Lá dentro já tem o evento da tecla R, que começa outra partida. O encontro novo vai logo abaixo dele, fora do fazer dele. Deixe esse espaço à vista.
-
-[confident, clear, unhurried voice] Abra Jogo 3D, depois Encostar e depois Encostar de novo, e pegue o bloco Quando personagem encostar em chave.
-
-[confident, clear, unhurried voice] Arraste e solte logo abaixo do evento da tecla R. Não coloque um evento dentro do outro.
-
-[curious] Ué, mas tem chave no jardim?
-
-[engaging, energetic, conversational voice] Não tem. O bloco de encontro só chega com chave no segundo nome, e você troca pelo regador.
-
-[confident, clear, unhurried voice] Clique em chave e escolha regador.
-
-[engaging, energetic, conversational voice] É este bloco que percebe quando o personagem encosta no regador. Ele confere o lugar no chão e também a altura.
-
-[engaging, energetic, conversational voice] Agora a reação: o regador sumir. Ela vai no espaço ao lado da palavra fazer. Deixe esse espaço à vista.
-
-[confident, clear, unhurried voice] Abra Jogo 3D, depois Objetos e depois Aparência, e pegue o bloco Mostrar o objeto.
-
-[confident, clear, unhurried voice] Arraste e solte no espaço ao lado de fazer.
-
-[confident, clear, unhurried voice] Repare: ele chega com Mostrar. Clique em Mostrar e escolha Esconder.
-
-[confident, clear, unhurried voice] Depois clique em objeto e escolha regador.
-
-[engaging, energetic, conversational voice] É este bloco que tira o regador do jardim.
-
-[engaging, energetic, conversational voice] Agora o jogo precisa guardar que o regador foi pego. O próximo bloco vai logo abaixo de Esconder o objeto regador. Deixe esse lugar à vista.
-
-[confident, clear, unhurried voice] Abra Programação e depois Variáveis, e pegue o bloco Alterar variável para.
-
-[confident, clear, unhurried voice] Arraste e solte logo abaixo de Esconder o objeto regador.
-
-[confident, clear, unhurried voice] Repare: ele chega com contador. Clique em contador e escolha temRegador.
-
-[confident, clear, unhurried voice] Abra Programação e depois Lógica e Se, e pegue outro bloco verdadeiro.
-
-[confident, clear, unhurried voice] Solte em cima do 1 e deixe verdadeiro, porque o personagem acabou de pegar o regador.
-
-[engaging, energetic, conversational voice] É este bloco que muda temRegador para verdadeiro quando o personagem pega o regador.
-
-[engaging, energetic, conversational voice] Falta o aviso. O bloco do aviso vai logo abaixo do bloco de temRegador. Deixe esse lugar à vista.
-
-[confident, clear, unhurried voice] Abra Programação e depois Variáveis, e pegue outro bloco Alterar variável para.
-
-[confident, clear, unhurried voice] Arraste e solte logo abaixo do bloco de temRegador.
-
-[confident, clear, unhurried voice] Repare: ele também chega com contador. Clique em contador e escolha aviso.
-
-[engaging, energetic, conversational voice] O valor vem com um número, mas o aviso é uma mensagem. Por isso, troque o número por um texto.
-
-[confident, clear, unhurried voice] Abra Programação e depois Valores, e pegue o bloco texto.
-
-[confident, clear, unhurried voice] Solte em cima do número.
-
-[confident, clear, unhurried voice] Repare: o texto chega com Olá. Clique em Olá, apague e escreva: Você pegou o regador! Agora vá até a flor.
-
-[upbeat, encouraging voice] Agora vamos testar! Clique em Rodar de novo mais uma vez e leve o personagem até o regador.
-
-[interested, animated voice] Olha só: o regador some, e o aviso lá em cima muda para a sua mensagem!
-
-[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: em Ao iniciar está Criar variável temRegador com valor falso, e dentro de Quando acontecer, logo abaixo do evento da tecla R, está o encontro do personagem com o regador, com Esconder o objeto regador, o bloco que muda temRegador para verdadeiro e o aviso com o texto novo.
-
-[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+[upbeat, encouraging voice] Agora é com você! Programe no Estúdio e teste sem o regador, com ele e voltando à flor. Para começar outra partida, toque na tecla R.
 
 [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
 
@@ -154,208 +72,34 @@
 
 [long pause]
 
-[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Rodar de novo, no alto do Estúdio. Pegue o regador e leve o personagem até a flor.
+[engaging, energetic, conversational voice] Última etapa da missão: um lugar novo para o regador no jardim 3D.
 
-[interested, animated voice] Tá vendo? Nada acontece, porque o seu jogo ainda não sabe o que fazer quando o personagem chega à flor.
+[engaging, energetic, conversational voice] Clique em Rodar de novo e repare: o regador está sempre no mesmo lugar.
 
-[engaging, energetic, conversational voice] Na Aula 1, você montou a pergunta da flor no jogo 2D: o personagem pegou o regador? Agora a gente vai montar essa mesma pergunta no jardim 3D!
+[confident, clear, unhurried voice] Nesta etapa, escolha outro lugar no chão para o regador, um lugar aonde o personagem consiga chegar.
 
-[engaging, energetic, conversational voice] Primeiro, o encontro com a flor. Chegar à flor é um encontro, como pegar o regador, e os encontros ficam na área Quando acontecer.
+[engaging, energetic, conversational voice] Depois teste de novo os dois casos: sem o regador, a flor fica fechada; com ele, a flor floresce.
 
-[confident, clear, unhurried voice] Encontre essa área. Lá dentro, o último é o encontro com o regador. O encontro novo vai logo abaixo dele, fora do fazer dele. Deixe esse espaço à vista.
+[reassuring, encouraging voice] Você aprendeu a mudar o lugar de um objeto no 3D na Ilha do Farol, Aula 3, na parte Escolha seu esconderijo e teste de verdade. Se esquecer como faz, volte lá.
 
-[confident, clear, unhurried voice] Abra Jogo 3D, depois Encostar e depois Encostar de novo, e pegue o bloco Quando personagem encostar em chave.
-
-[confident, clear, unhurried voice] Arraste e solte logo abaixo do encontro com o regador. Não coloque um encontro dentro do outro.
-
-[confident, clear, unhurried voice] Repare: o bloco chega com chave no segundo nome. Clique em chave e escolha flor.
-
-[engaging, energetic, conversational voice] É este bloco que percebe quando o personagem chega à flor.
-
-[engaging, energetic, conversational voice] Agora, dentro desse encontro, a flor vai fazer a pergunta. Ela vai no espaço ao lado da palavra fazer. Deixe esse espaço à vista.
-
-[confident, clear, unhurried voice] Abra Programação e depois Lógica e Se, e pegue o bloco Se.
-
-[confident, clear, unhurried voice] Arraste e solte no espaço ao lado de fazer.
-
-[engaging, energetic, conversational voice] É este bloco que faz a pergunta da flor.
-
-[confident, clear, unhurried voice] Repare: o Se chega com uma pergunta pronta, x maior que 0. Não é isso que a flor precisa perguntar.
-
-[confident, clear, unhurried voice] Por isso, segure essa pergunta pelo sinal de maior e arraste até a lixeira, no canto de baixo, à direita, do espaço dos blocos.
-
-[confident, clear, unhurried voice] Agora o lugar ao lado de Se ficou vazio. É ali que vai a pergunta da flor.
-
-[confident, clear, unhurried voice] Abra Programação e depois Valores, e pegue o bloco valor da variável.
-
-[confident, clear, unhurried voice] Arraste e solte no lugar vazio ao lado de Se.
-
-[confident, clear, unhurried voice] Repare: esse bloco chega com x. Clique no x e escolha temRegador.
-
-[engaging, energetic, conversational voice] Pronto: agora o Se pergunta se temRegador é verdadeiro, igual à pergunta do jogo 2D.
-
-[engaging, energetic, conversational voice] A resposta do sim fica no espaço do então, e a resposta do não fica no espaço do senão. Só que o Se chega sem o senão, e você vai abrir esse espaço agora.
-
-[interested, animated voice] Olha aqui, na linha de baixo do bloco Se: tem dois sinais de mais. O primeiro fica antes de senão se, e o segundo fica antes da palavra senão, no fim da linha.
-
-[confident, clear, unhurried voice] Clique no segundo sinal de mais. Não clique no primeiro.
-
-[confident, clear, unhurried voice] Repare: apareceu o espaço do senão.
-
-[engaging, energetic, conversational voice] Agora a resposta do sim: a flor abre. No 3D, ela abre com uma animação que já vem no modelo da flor, chamada florescer.
-
-[confident, clear, unhurried voice] A animação vai dentro do então. Deixe esse espaço à vista.
-
-[confident, clear, unhurried voice] Abra Jogo 3D, depois Objetos e depois Animação do modelo, e pegue o bloco Tocar a animação.
-
-[confident, clear, unhurried voice] Arraste e solte dentro do então.
-
-[confident, clear, unhurried voice] Repare: ele chega com Andar, heroi e repetindo. Primeiro diga quem vai tocar a animação: clique em heroi e escolha flor.
-
-[confident, clear, unhurried voice] Depois clique em Andar e escolha florescer.
-
-[confident, clear, unhurried voice] Por último, clique em repetindo e escolha uma vez.
-
-[engaging, energetic, conversational voice] É este bloco que abre a flor: ele toca a animação florescer uma vez, e as pétalas ficam abertas no fim.
-
-[engaging, energetic, conversational voice] Logo abaixo dele, ainda dentro do então, vai o aviso de que a flor abriu. Deixe esse lugar à vista.
-
-[confident, clear, unhurried voice] Abra Programação e depois Variáveis, e pegue o bloco Alterar variável para.
-
-[confident, clear, unhurried voice] Arraste e solte logo abaixo de Tocar a animação. Clique em contador e escolha aviso.
-
-[confident, clear, unhurried voice] Abra Programação e depois Valores, pegue o bloco texto e solte em cima do número.
-
-[confident, clear, unhurried voice] Clique em Olá, apague e escreva: A flor abriu! Você fez o jardim florescer.
-
-[engaging, energetic, conversational voice] Agora a resposta do não: o aviso de que falta o regador. Ele vai dentro do senão. Deixe esse espaço à vista.
-
-[confident, clear, unhurried voice] Abra Programação e depois Variáveis, e pegue outro bloco Alterar variável para.
-
-[confident, clear, unhurried voice] Arraste e solte dentro do senão. Clique em contador e escolha aviso.
-
-[confident, clear, unhurried voice] Abra Programação e depois Valores, pegue outro bloco texto e solte em cima do número.
-
-[confident, clear, unhurried voice] Clique em Olá, apague e escreva: Busque o regador primeiro. A flor espera por você.
-
-[upbeat, encouraging voice] Agora vamos testar! Clique em Rodar de novo mais uma vez e vá direto à flor, sem pegar o regador.
-
-[interested, animated voice] Olha só: a flor continua fechada, e o aviso pede o regador.
-
-[upbeat, encouraging voice] Agora toque na tecla R, pegue o regador e vá até a flor.
-
-[interested, animated voice] Olha só: a flor abre as pétalas, e o aviso conta que deu certo!
-
-[engaging, energetic, conversational voice] Agora ande um pouco para a esquerda e volte até a flor.
-
-[interested, animated voice] Tá vendo? A flor fechou e abriu tudo de novo.
-
-[curious] Ué, por que a flor abriu de novo?
-
-[engaging, energetic, conversational voice] Porque, cada vez que o personagem encosta na flor, o encontro acontece de novo e manda florescer outra vez.
-
-[engaging, energetic, conversational voice] Lembra do farol da Ilha? Ele também acendia de novo a cada volta, até você ensinar o farol a acender uma vez só. A flor é o fim deste jogo, como o farol era o fim daquele: depois que ela abre, a partida já foi ganha.
-
-[engaging, energetic, conversational voice] Para o jogo lembrar disso, a gente usa a variável ganhou. Ela começa em falso e vira verdadeiro quando a flor abre.
-
-[confident, clear, unhurried voice] Encontre a área Ao iniciar e deixe à vista o bloco que cria temRegador. O bloco novo vai logo abaixo dele.
-
-[confident, clear, unhurried voice] Abra Programação e depois Variáveis, e pegue o bloco Criar variável com valor.
-
-[confident, clear, unhurried voice] Arraste e solte logo abaixo do bloco que cria temRegador.
-
-[confident, clear, unhurried voice] Clique em contador e escreva ganhou.
-
-[confident, clear, unhurried voice] Abra Programação e depois Lógica e Se, e pegue o bloco verdadeiro.
-
-[confident, clear, unhurried voice] Solte em cima do 0. Depois clique em verdadeiro e escolha falso, porque a partida começa sem ser ganha.
-
-[confident, clear, unhurried voice] Agora volte ao encontro com a flor e deixe à vista o lugar logo abaixo de Tocar a animação.
-
-[confident, clear, unhurried voice] Abra Programação e depois Variáveis, e pegue outro bloco Alterar variável para.
-
-[confident, clear, unhurried voice] Arraste e solte logo abaixo de Tocar a animação. Clique em contador e escolha ganhou.
-
-[confident, clear, unhurried voice] Abra Programação e depois Lógica e Se, pegue outro bloco verdadeiro e solte em cima do número. Deixe verdadeiro, porque a flor acabou de abrir.
-
-[engaging, energetic, conversational voice] Agora o encontro vai fazer uma pergunta antes de tudo: a partida ainda não foi ganha? Como no farol, essa pergunta usa a palavra não.
-
-[confident, clear, unhurried voice] Nos blocos, deixe à vista o encontro com a flor.
-
-[confident, clear, unhurried voice] Abra Programação e depois Lógica e Se, e pegue o bloco Se.
-
-[confident, clear, unhurried voice] Arraste e solte no espaço ao lado de fazer, no encontro com a flor, em cima do Se que já está lá.
-
-[interested, animated voice] Repare: o Se novo entrou no lugar, e o Se do regador desceu. Ele ficou logo abaixo do Se novo.
-
-[confident, clear, unhurried voice] O Se novo chega com a pergunta x maior que 0. Segure essa pergunta pelo sinal de maior e arraste até a lixeira.
-
-[confident, clear, unhurried voice] Abra Programação e depois Lógica e Se, e pegue o bloco não.
-
-[confident, clear, unhurried voice] Solte no lugar vazio ao lado do Se novo.
-
-[confident, clear, unhurried voice] Repare: o não também chega com uma pergunta pronta, x maior que 0. Segure essa pergunta pelo sinal de maior e arraste até a lixeira.
-
-[confident, clear, unhurried voice] Abra Programação e depois Valores, e pegue o bloco valor da variável.
-
-[confident, clear, unhurried voice] Solte no espaço do não. Depois clique no x e escolha ganhou.
-
-[interested, animated voice] Pronto: o Se novo pergunta não ganhou. Ou seja: a partida ainda não foi ganha?
-
-[confident, clear, unhurried voice] Agora segure o Se do regador pela palavra Se e arraste até o espaço do então do Se novo. Tudo o que está dentro dele vai junto.
-
-[interested, animated voice] Olha aqui: o encontro primeiro pergunta se a partida ainda não foi ganha, e só depois confere o regador.
-
-[upbeat, encouraging voice] Agora vamos testar de novo! Clique em Rodar de novo mais uma vez, pegue o regador e vá até a flor. Depois ande um pouco para a esquerda e volte.
-
-[interested, animated voice] Olha só: a flor continua aberta, sem florescer de novo.
-
-[upbeat, encouraging voice] Toque na tecla R e vá até a flor sem o regador: ela continua pedindo o regador.
-
-[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro do encontro com a flor está o Se com não ganhou, e dentro do então dele está o Se do regador. No então do Se do regador estão a animação florescer, ganhou verdadeiro e o aviso de que a flor abriu, e no senão está o aviso que pede o regador.
-
-[reassuring, encouraging voice] Depois de corrigir, teste de novo.
-
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
-
-[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
-
-[long pause]
-
-[engaging, energetic, conversational voice] Na Aula 1, você escolheu um lugar novo para o regador no jardim 2D. Agora é a vez do jardim 3D!
-
-[engaging, energetic, conversational voice] Lembra da Ilha do Farol? No 3D, o x e o z levam um objeto pelo chão, e o y muda a altura dele.
-
-[confident, clear, unhurried voice] O lugar do regador fica na área Ao iniciar. Encontre o bloco Colocar o objeto regador. Se ele não estiver aparecendo, arraste um espaço vazio entre os blocos até ele aparecer.
-
-[engaging, energetic, conversational voice] É este bloco que coloca o regador no jardim. Repare nos três números dele: o x é menos 4, o y é a altura, e o z é menos 2.
-
-[engaging, energetic, conversational voice] A altura já vem certa para o personagem alcançar o regador. Por isso, deixe o y como está. Eu vou levar o regador um pouco para a direita, mudando só o x.
-
-[confident, clear, unhurried voice] Clique no menos 4 e troque por menos 2.
-
-[upbeat, encouraging voice] Clique em Rodar de novo, no alto do Estúdio, e observe o regador.
-
-[interested, animated voice] Olha só: o regador foi um pouco para a direita e continuou na mesma altura, porque você não mexeu no y.
-
-[engaging, energetic, conversational voice] No seu jogo, você pode escolher outro lugar no chão. Deixe o regador longe do personagem no começo e fora do caminho reto até a flor, para conseguir testar a flor sem ele.
-
-[upbeat, encouraging voice] Agora vamos testar tudo! Vá direto à flor, sem pegar o regador.
-
-[interested, animated voice] Olha só: a flor continua fechada e pede o regador.
-
-[upbeat, encouraging voice] Agora toque na tecla R, pegue o regador no lugar novo e vá até a flor.
-
-[interested, animated voice] Olha só: a flor abre, e o aviso conta que deu certo!
-
-[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: em Ao iniciar, o bloco Colocar o objeto regador está com x menos 2, ou com o lugar que você escolheu, e o y continua o mesmo.
-
-[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+[upbeat, encouraging voice] Agora é com você!
 
 [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
 
 [engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.
 
-[pleased, lively voice] Pronto, você levou O Jardim Secreto para as três dimensões: a flor só abre com o regador, e uma vez só!
-
 [engaging, energetic, conversational voice] Quando aparecer Projeto enviado!, clique em Próxima parte.
+
+[long pause]
+
+[pleased, lively voice] Missão cumprida! Você programou O Jardim Secreto em duas e em três dimensões, sozinho.
+
+[engaging, energetic, conversational voice] Com as duas aulas concluídas, a sua missão do Faísca está completa.
+
+[engaging, energetic, conversational voice] Aqui está o Passo a passo do projeto. Nele está um jeito de montar cada etapa da missão, bloco por bloco.
+
+[engaging, energetic, conversational voice] Use para conferir o seu jogo e entender cada escolha. O seu jeito pode ser diferente e estar certo também, porque o Verificar projeto confere o que o jogo faz.
+
+[upbeat, encouraging voice] Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o material.
+
+[confident, clear, unhurried voice] Agora clique em Concluir aula.
