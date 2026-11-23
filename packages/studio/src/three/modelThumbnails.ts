@@ -1,3 +1,4 @@
+import type { WebGLRenderer } from 'three'
 import type { ProjectAsset } from '#core'
 import { decodeProjectAsset } from '../core/assetBinary'
 import { isCourseModelStub, resolveCourseModels } from '../core/courseModels'
@@ -116,11 +117,7 @@ export function recorteDoDesenho(
 }
 
 /** O desenho de verdade: o three.js e o leitor de GLB chegam só quando a primeira miniatura é pedida. */
-let renderizador: {
-  render(cena: unknown, camera: unknown): void
-  getContext(): WebGL2RenderingContext
-  domElement: HTMLCanvasElement
-} | null = null
+let renderizador: WebGLRenderer | null = null
 
 export const desenharComThree: DesenharMiniatura = async (dataUrl) => {
   if (typeof document === 'undefined') return null
@@ -219,10 +216,9 @@ export const desenharComThree: DesenharMiniatura = async (dataUrl) => {
       for (const m of materiais) {
         if (!m || typeof m !== 'object') continue
         for (const valor of Object.values(m))
-          if (valor && typeof valor === 'object' && 'isTexture' in valor) {
-            const textura = valor as { dispose(): void; image?: { close?: () => void } }
-            textura.image?.close?.()
-            textura.dispose()
+          if (valor instanceof THREE.Texture) {
+            valor.image?.close?.()
+            valor.dispose()
           }
         ;(m as { dispose?: () => void }).dispose?.()
       }
