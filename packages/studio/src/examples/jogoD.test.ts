@@ -506,3 +506,46 @@ test('rodada: a porta cuja chegada falta no destino ainda troca de lugar (o her�
   const inicio = objetos(cena('jogo-d-casa-1')).find((o) => o.role === 'start')!
   expect([jogo.sonda.jogador.x, jogo.sonda.jogador.y]).toEqual([inicio.x, inicio.y])
 })
+
+// Full review final (22/11/2026): num remix os nomes das portas se repetem ("Saída", "Objeto 3"),
+// então o programa sabe que trocou de lugar pela PORTA (ela não está mais entre as portas da cena),
+// não pelo nome. Com o nome, a porta de casa com o mesmo nome da do mundo fazia a passagem parecer
+// não ter acontecido: o lugar, a música e as entidades ficavam os do mundo.
+test('rodada: a porta com o mesmo nome de outra porta (remix) ainda troca de lugar', async () => {
+  const remix = structuredClone(JOGO_D_ASSETS)
+  const mundo = remix.find((a) => a.name === 'jogo-d-mundo')!.scene!
+  const casa = remix.find((a) => a.name === 'jogo-d-casa-1')!.scene!
+  const porta = objetos(mundo).find((o) => o.id === 'porta-casa-1')!
+  const saida = objetos(casa).find((o) => o.role === 'door')!
+  saida.name = porta.name
+  const jogo = await jogar(remix)
+  jogo.quadros(2)
+  jogo.ir(...meio(porta))
+  jogo.quadros(2)
+  expect(jogo.sonda.lugar()).toBe('jogo-d-casa-1')
+  expect(jogo.vivas()).toBe(6)
+})
+
+// Full review final: o "salvo" sem a lista (outra aba apagou uma chave, a criança mexeu no
+// armazenamento) não pode quebrar o "Ao iniciar".
+test('rodada: o jogo guardado sem a lista dos pegos começa sem erro e sem nada pego', async () => {
+  const dados = new Map<string, string>([
+    ['jogo-d-salvo', 'sim'],
+    ['jogo-d-pontos', '7'],
+  ])
+  const armazenamento = {
+    getItem: (k: string) => dados.get(k) ?? null,
+    setItem: (k: string, v: unknown) => void dados.set(k, String(v)),
+    removeItem: (k: string) => void dados.delete(k),
+    clear: () => dados.clear(),
+    key: (i: number) => [...dados.keys()][i] ?? null,
+    get length() {
+      return dados.size
+    },
+  } as Storage
+  const jogo = await jogar(JOGO_D_ASSETS, armazenamento)
+  jogo.quadros(2)
+  expect(jogo.sonda.pegos()).toEqual([])
+  expect(jogo.sonda.pontos()).toBe(7)
+  expect(jogo.avisos).toEqual([])
+})

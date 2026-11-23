@@ -59,9 +59,9 @@ regiões, três cavernas, quatro casas, 14 portas, 603 entidades, só com blocos
   `RAIO_SEM_INIMIGO` (6 peças) de uma chegada, do início ou do centro de uma região: ele persegue a
   140 px. ⚠️ Camada de tiles com `collision` é só de colisão: o tocador NÃO a desenha (a peça
   visível segura pelo `solid` do tileset).
-- **A porta**: o programa sabe que trocou de lugar quando a porta usada não está mais na cena
-  (`mapObjectNamed` do nome dela dá `null`; os nomes das portas não se repetem entre os lugares).
-  Destino quebrado: o `useMapDoor` avisa uma vez e nada muda. Chegada que falta: o herói fica no
+- **A porta**: o programa sabe que trocou de lugar quando a porta usada não está mais entre as
+  portas da cena (`!SZGame2D.mapObjects("mapa", "door").includes(porta)`): pela PORTA, não pelo
+  nome, que num remix se repete ("Saída", "Objeto 3"; full review final). Destino quebrado: o `useMapDoor` avisa uma vez e nada muda. Chegada que falta: o herói fica no
   início do outro lugar e o resto muda.
 - **Guardar**: uma chave só para o que foi pego (`jogo-d-pegos`, a lista unida por vírgula) e o
   `jogo-d-salvo` por último. ⚠️ O armazenamento da prévia aceita no máximo 500 chaves
