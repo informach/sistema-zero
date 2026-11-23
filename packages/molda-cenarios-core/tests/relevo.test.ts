@@ -1,10 +1,12 @@
 import { describe, expect, test } from 'bun:test'
 import {
   celulasDoNo,
+  distanciaAoNo,
   type FormaDoRelevo,
   type NoDoRelevo,
   nivelMaximoDoRelevo,
   passoDoTerreno,
+  relevoCabeNoEstudio,
   selecionarNosDoRelevo,
 } from '../src/compilar/relevo'
 
@@ -64,13 +66,23 @@ function maiorSalto(forma: FormaDoRelevo, nos: NoDoRelevo[], celulasPorNo: numbe
 }
 
 describe('o espaçamento da grade', () => {
-  test('1 m até 1 km, 2 m até 2 km, recusa acima', () => {
+  test('1 m até 1 km, 2 m até 2 km, 4 m até 4 km, 8 m até 8 km', () => {
     expect(passoDoTerreno(384)).toBe(1)
     expect(passoDoTerreno(1024)).toBe(1)
     expect(passoDoTerreno(1024.5)).toBe(2)
     expect(passoDoTerreno(2048)).toBe(2)
-    expect(() => passoDoTerreno(2049)).toThrow('O mundo passa de 2 km de lado.')
+    expect(passoDoTerreno(2049)).toBe(4)
+    expect(passoDoTerreno(4096)).toBe(4)
+    expect(passoDoTerreno(8192)).toBe(8)
+    expect(() => passoDoTerreno(8193)).toThrow('O mundo passa de 8 km de lado.')
     expect(() => passoDoTerreno(0)).toThrow('O tamanho do mundo é inválido.')
+  })
+
+  test('o relevo cabe no Estúdio até 1088 × 1088 células (as alturas num arquivo de 5 MiB)', () => {
+    expect(relevoCabeNoEstudio(1024, 1024)).toBe(true)
+    expect(relevoCabeNoEstudio(1088, 1088)).toBe(true)
+    expect(relevoCabeNoEstudio(1152, 1152)).toBe(false)
+    expect(relevoCabeNoEstudio(2048, 256)).toBe(true)
   })
 
   test('o nível mais alto cobre a grade inteira', () => {
@@ -125,8 +137,10 @@ describe('a escolha dos pedaços', () => {
     expect(MUNDO_2KM.origem.x + c.x0 * 2).toBeLessThanOrEqual(foco.x)
     expect(MUNDO_2KM.origem.x + c.x1 * 2).toBeGreaterThanOrEqual(foco.x)
     expect(Math.max(...nos.map((n) => n.nivel))).toBeGreaterThanOrEqual(3)
-    // Os pedaços estão em ordem de distância: o último é dos mais grossos.
-    expect(nos.at(-1)!.nivel).toBeGreaterThanOrEqual(3)
+    // Longe, o detalhe cai: além de 600 m, todo pedaço tem pelo menos o nível 2.
+    const longe = nos.filter((n) => distanciaAoNo(MUNDO_2KM, n, 32, foco) > 600)
+    expect(longe.length).toBeGreaterThan(0)
+    expect(longe.every((n) => n.nivel >= 2)).toBe(true)
   })
 
   test('o teto vale, e com ele o detalhe cai em todo o mundo (a árvore segue equilibrada)', () => {
@@ -180,5 +194,41 @@ describe('a escolha dos pedaços', () => {
     expect(() =>
       selecionarNosDoRelevo(MUNDO_384, { x: 0, z: 0 }, { ...base, maximoDeNos: 0 }),
     ).toThrow()
+  })
+})
+
+describe('o detalhe forçado perto dos caminhos', () => {
+  test('a área de detalhe perto do foco desce ao nível 0; longe do foco, não', () => {
+    const caixa = { x0: 400, z0: -20, x1: 900, z1: 20 }
+    const opcoes = {
+      celulasPorNo: 32,
+      fator: 1,
+      alcance: Number.POSITIVE_INFINITY,
+      maximoDeNos: 400,
+      detalhe: { caixas: [caixa], alcance: 300 },
+    }
+    const nos = selecionarNosDoRelevo(MUNDO_2KM, { x: 350, z: 0 }, opcoes)
+    const tocam = (n: NoDoRelevo) => {
+      const c = celulasDoNo(MUNDO_2KM, n, 32)
+      const x0 = -1024 + c.x0 * 2,
+        x1 = -1024 + c.x1 * 2,
+        z0 = -1024 + c.z0 * 2,
+        z1 = -1024 + c.z1 * 2
+      return caixa.x0 <= x1 && caixa.x1 >= x0 && caixa.z0 <= z1 && caixa.z1 >= z0
+    }
+    const perto = nos.filter(
+      (n) => tocam(n) && distanciaAoNo(MUNDO_2KM, n, 32, { x: 350, z: 0 }) < 300,
+    )
+    expect(perto.length).toBeGreaterThan(0)
+    expect(perto.every((n) => n.nivel === 0)).toBe(true)
+    // Sem a área, o mesmo trecho fica mais grosso.
+    const sem = selecionarNosDoRelevo(
+      MUNDO_2KM,
+      { x: 350, z: 0 },
+      { ...opcoes, detalhe: undefined },
+    )
+    expect(sem.filter(tocam).some((n) => n.nivel > 0)).toBe(true)
+    expect(conferirCobertura(MUNDO_2KM, nos, 32)).toBe(0)
+    expect(maiorSalto(MUNDO_2KM, nos, 32)).toBeLessThanOrEqual(1)
   })
 })

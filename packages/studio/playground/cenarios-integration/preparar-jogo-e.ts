@@ -13,6 +13,10 @@
  *
  * `bun playground/cenarios-integration/preparar-jogo-e.ts` (em `packages/studio`), depois do
  * cenário.
+ *
+ * O mundo de prova de 2 km (plano "Mundos de 2 km", lote 7) usa o mesmo gerador:
+ * `JOGO_E_PASTA=output/cenarios-reforma/mundo-2km JOGO_E_VERSOES=regioes`; aí as regiões (nomes e
+ * centros, para as moedas e o placar) vêm do próprio pacote. Sem as variáveis, o jogo E sai igual.
  */
 import assert from 'node:assert/strict'
 import { readdir, readFile, writeFile } from 'node:fs/promises'
@@ -44,7 +48,10 @@ ensureBlocklyInitialized()
 registerExtensionBlocks(gameThreeDBlocks)
 
 const raiz = resolve(import.meta.dirname, '../../../..'),
-  pasta = resolve(raiz, 'output/cenarios-reforma/jogo-e')
+  pasta = resolve(raiz, process.env.JOGO_E_PASTA ?? 'output/cenarios-reforma/jogo-e'),
+  versoes = (process.env.JOGO_E_VERSOES ?? 'regioes,inteiro').split(',') as Array<
+    'regioes' | 'inteiro'
+  >
 
 // A mesma grade de regiões do cenário (as moedas e o placar usam os nomes e os centros).
 const X = [-192, -64, 64, 192],
@@ -88,10 +95,23 @@ const HEROI = {
   libId: 'example-heroi-do-molda',
 }
 
-const MOEDAS = REGIOES.flatMap(([, coluna, linha]) => {
-  const c = centro(coluna, linha)
-  return [-40, -20, 0, 20, 40].map((d, i) => ({ x: c.x + d, z: c.z + (i % 2 ? 25 : -25) }))
-})
+/** As regiões do jogo (nome e centro): as seis da grade do jogo E, ou as do pacote. */
+type RegiaoDoJogo = { nome: string; x: number; z: number }
+const REGIOES_DO_JOGO_E: RegiaoDoJogo[] = REGIOES.map(([nome, coluna, linha]) => ({
+  nome,
+  ...centro(coluna, linha),
+}))
+function regioesDoPacote(pacote: PacoteCompilado): RegiaoDoJogo[] {
+  return (pacote.cena.regioes ?? []).map((r) => ({
+    nome: r.nome,
+    x: (r.caixa.x0 + r.caixa.x1) / 2,
+    z: (r.caixa.z0 + r.caixa.z1) / 2,
+  }))
+}
+const moedasDe = (regioes: RegiaoDoJogo[]) =>
+  regioes.flatMap((c) =>
+    [-40, -20, 0, 20, 40].map((d, i) => ({ x: c.x + d, z: c.z + (i % 2 ? 25 : -25) })),
+  )
 
 /** A altura do chão do cenário em (x, z), pela mesma consulta do terreno compilado. */
 function alturaDoChao(pacote: PacoteCompilado): (x: number, z: number) => number {
@@ -104,7 +124,11 @@ function alturaDoChao(pacote: PacoteCompilado): (x: number, z: number) => number
   return criarFonteDeAlturasCompilada(terreno, alturas)
 }
 
-function programa(cenaId: string, chao: (x: number, z: number) => number): string {
+function programa(
+  cenaId: string,
+  chao: (x: number, z: number) => number,
+  regioes: RegiaoDoJogo[],
+): string {
   const linhas = [
     'const cena = SZGame3D.createFullscreenScene("#9bd7f5");',
     `SZGame3D.loadScene(cena, ${JSON.stringify(cenaId)});`,
@@ -119,11 +143,11 @@ function programa(cenaId: string, chao: (x: number, z: number) => number): strin
     'SZGame3D.setVisible(moldeMoeda, "hide");',
   ]
   // Cada moeda fica de pé logo acima do relevo (o centro a 1,2 m do chão; o raio é 0,6).
-  for (const m of MOEDAS) {
+  for (const m of moedasDe(regioes)) {
     const y = Math.round((chao(m.x, m.z) + 1.2) * 100) / 100
     linhas.push(`SZGame3D.spawnCopy(moedas, moldeMoeda, ${m.x}, ${y}, ${m.z});`)
   }
-  for (const [nome] of REGIOES)
+  for (const { nome } of regioes)
     linhas.push(
       `SZGame3D.onEnterRegion(heroi, ${JSON.stringify(nome)}, () => {`,
       `  SZGame3D.hudText("top-right", ${JSON.stringify(nome)});`,
@@ -149,10 +173,14 @@ function programa(cenaId: string, chao: (x: number, z: number) => number): strin
   return linhas.join('\n')
 }
 
-for (const nome of ['regioes', 'inteiro'] as const) {
+for (const nome of versoes) {
   const pacote = await lerPacote(nome)
   const plano = await prepararImportacaoDeCena3D(createEmptyProject('jogo-e', 'Jogo E'), pacote)
-  const fonte = programa(plano.assetId, alturaDoChao(pacote))
+  const fonte = programa(
+    plano.assetId,
+    alturaDoChao(pacote),
+    process.env.JOGO_E_PASTA ? regioesDoPacote(pacote) : REGIOES_DO_JOGO_E,
+  )
   const ir = parseProjectFilesFromParts({
     html: [{ type: 'canvas', id: 'tela', width: 960, height: 600 }] as never,
     cssSource: '',

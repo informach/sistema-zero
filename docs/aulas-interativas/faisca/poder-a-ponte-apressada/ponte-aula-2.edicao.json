@@ -7,6 +7,40 @@
     "alvoDeEdicaoSegundos": 3,
     "duracaoGarantidaPelaTag": false
   },
-  "clipes": ["video-abertura", "video-alavanca", "video-atravessar", "video-entrega"],
-  "intervencoes": []
+  "clipes": ["video-abertura", "video-alavanca", "video-atravessar"],
+  "intervencoes": [
+    {
+      "id": "video-abertura-K1",
+      "clipe": "video-abertura",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "letras W, A, S e D também funcionam. Olha aqui: com a seta de baixo, o personagem vem para a frente, perto do laguinho.",
+      "ancoraDepois": "Isso eu deixo para você descobrir. Repare também no aviso aqui em cima: ele diz o que fazer na partida. Para começar",
+      "falaPrincipal": "A ponte da ilha também é apressada?",
+      "falaPersonagem": "A ponte da ilha também é apressada?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-alavanca-K1",
+      "clipe": "video-alavanca",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "o mesmo na ilha! A ideia é a mesma, e muitos blocos também. A diferença está no jeito de mostrar a alavanca e a ponte.",
+      "ancoraDepois": "Com uma animação. No 3D, a alavanca e a ponte são modelos, e cada modelo já vem com as animações dele: a alavanca tem",
+      "falaPrincipal": "E como a ponte baixa, se ela não troca de imagem?",
+      "falaPersonagem": "E como a ponte baixa, se ela não troca de imagem?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-atravessar-K1",
+      "clipe": "video-atravessar",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "do senão. Agora a resposta do sim: o personagem vai para cima da pedra, e o sino toca. Deixe o espaço do então à vista.",
+      "ancoraDepois": "Com o bloco Colocar o objeto. Ele leva o personagem direto para cima da pedra, no lugar que os três números dizem. Abra",
+      "falaPrincipal": "E como o personagem chega na pedra, se ele não anda na água?",
+      "falaPersonagem": "E como o personagem chega na pedra, se ele não anda na água?",
+      "tags": ["[curious]"]
+    }
+  ]
 }

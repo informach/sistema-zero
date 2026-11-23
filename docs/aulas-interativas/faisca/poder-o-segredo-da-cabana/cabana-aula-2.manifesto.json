@@ -6,14 +6,14 @@
   "blocks": [
     {
       "key": "video-abertura",
-      "plannedVideo": "Título: A cabana chegou à ilha\n\nMaster integral da professora: cabana-aula-2.roteiro.md, clipe video-abertura. Gravação pendente."
+      "plannedVideo": "Título: A cabana chegou à ilha\n\nMaster integral da professora. Roteiro: cabana-aula-2.roteiro.md, clipe video-abertura. Substituições kids: [{\"id\":\"video-abertura-K1\",\"clipe\":\"video-abertura\",\"personagem\":\"Dedé\",\"falaPrincipal\":\"Será que a chave está atrás da pedra de novo?\",\"falaPersonagem\":\"Será que a chave está atrás da pedra de novo?\",\"ancoraAntes\":\"seguro a seta da esquerda, o personagem anda até a cabana. Repare no aviso aqui em cima: ele diz o que a cabana pede.\",\"ancoraDepois\":\"Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R. Agora é a sua vez: jogue até a cabana\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-abertura",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Clique no jogo e use as setas ou W, A, S e D. Tente a cabana sem nada, com uma peça e com as duas. R começa outra partida. Depois clique em Próxima parte."
+        "text": "Sua vez! Jogue a versão pronta: segure as setas para andar, procure as duas peças e abra a cabana. A tecla R recomeça. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -2091,7 +2091,7 @@
             "installedExtensions": [
               {
                 "id": "game-3d",
-                "version": "0.32.0",
+                "version": "0.33.0",
                 "installedAt": 0
               }
             ]
@@ -2107,26 +2107,26 @@
     },
     {
       "key": "video-emblema",
-      "plannedVideo": "Título: Guarde o emblema da ilha\n\nMaster integral da professora: cabana-aula-2.roteiro.md, clipe video-emblema. Gravação pendente."
+      "plannedVideo": "Título: Guarde o emblema da ilha\n\nMaster integral da professora. Roteiro: cabana-aula-2.roteiro.md, clipe video-emblema. Substituições kids: [{\"id\":\"video-emblema-K1\",\"clipe\":\"video-emblema\",\"personagem\":\"Dedé\",\"falaPrincipal\":\"Mas esse bloco não é o da chave?\",\"falaPersonagem\":\"Mas esse bloco não é o da chave?\",\"ancoraAntes\":\"encostar em chave. Arraste e solte logo abaixo do encontro com o farol. Não coloque um encontro dentro do outro.\",\"ancoraDepois\":\"É o mesmo bloco de encontro. Ele só chega com chave no segundo nome, e você troca pelo emblema. Clique em chave e\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-emblema",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora guarde o emblema na ilha: crie temEmblema começando em falso e, no encontro, esconda o emblema, guarde verdadeiro e mude o aviso. A montagem completa está no Passo a passo do projeto. Teste no jogo. Depois clique em Verificar projeto e em Próxima parte."
+        "text": "Agora ensine a ilha a guardar o emblema! Crie temEmblema começando em falso e, no encontro com o emblema, esconda o emblema, guarde verdadeiro e mude o aviso. Teste no jogo. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
       "key": "video-porta",
-      "plannedVideo": "Título: A cabana da ilha abre\n\nMaster integral da professora: cabana-aula-2.roteiro.md, clipe video-porta. Gravação pendente."
+      "plannedVideo": "Título: A cabana da ilha abre\n\nMaster integral da professora. Roteiro: cabana-aula-2.roteiro.md, clipe video-porta. Substituições kids: [{\"id\":\"video-porta-K1\",\"clipe\":\"video-porta\",\"personagem\":\"Dedé\",\"falaPrincipal\":\"Como a cabana sabe a hora de tocar a animação?\",\"falaPersonagem\":\"Como a cabana sabe a hora de tocar a animação?\",\"ancoraAntes\":\"Por último, clique em repetindo e escolha uma vez. É este bloco que abre a cabana: ele toca a animação abrir uma vez.\",\"ancoraDepois\":\"Ela toca quando a resposta da pergunta é sim, porque o bloco está dentro do então. Logo abaixo dele, ainda dentro do\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-porta",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora da cabana da ilha! Se temChave e temEmblema, ela toca a animação abrir; senão, ela avisa. Teste sem peças, com uma de cada vez e com as duas. Depois clique em Verificar projeto e em Próxima parte."
+        "text": "Hora da cabana da ilha! Monte o encontro com a cabana e o Se com temChave e temEmblema: no então, a cabana toca a animação abrir e avisa; no senão, ela avisa o que pede. Teste sem peças, com uma de cada vez e com as duas. Depois clique em Verificar projeto, em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte."
       }
     },
     {
@@ -2134,7 +2134,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de pensar na cabana da ilha! As perguntas retomam a ordem das peças e onde fica a animação da cabana. Em cada uma tem uma explicação, e você pode tentar de novo. Na pergunta com cena, clique em Ver o que acontece; na outra, clique em Responder."
+        "text": "Escolha uma resposta e clique em Ver o que acontece ou, na pergunta sem cena, em Responder. Observe a cena e a explicação. Você pode tentar de novo. Quando terminar, clique em Concluir aula."
       }
     },
     {
@@ -2185,18 +2185,6 @@
             "explanation": "O \"então\" só roda quando a pergunta é verdadeira, ou seja, com as duas peças. No senão ou antes do Se, a cabana abriria sem elas."
           }
         ]
-      }
-    },
-    {
-      "key": "video-entrega",
-      "plannedVideo": "Título: Envie a sua ilha com a cabana\n\nMaster integral da professora: cabana-aula-2.roteiro.md, clipe video-entrega. Gravação pendente."
-    },
-    {
-      "key": "ponte-entrega",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Confira os objetivos e clique em Enviar meu projeto. Confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula."
       }
     },
     {
@@ -4052,7 +4040,7 @@
           "installedExtensions": [
             {
               "id": "game-3d",
-              "version": "0.32.0",
+              "version": "0.33.0",
               "installedAt": 0
             }
           ]
@@ -5873,7 +5861,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -7801,7 +7789,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -9871,7 +9859,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -9884,10 +9872,6 @@
             },
             "porta": {
               "entryExampleId": "fa15ca02-0000-4000-8001-000000000002",
-              "solutionExampleId": "fa15ca02-0000-4000-8001-000000000003"
-            },
-            "entrega": {
-              "entryExampleId": "fa15ca02-0000-4000-8001-000000000003",
               "solutionExampleId": "fa15ca02-0000-4000-8001-000000000003"
             }
           }
@@ -10113,1253 +10097,15 @@
     {
       "key": "porta",
       "title": "A cabana da ilha abre",
-      "intent": "application",
-      "objective": "A cabana da ilha abre.",
-      "blockKeys": ["video-porta", "ponte-porta"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-porta"],
-        "projectChecks": [
-          {
-            "id": "recolher",
-            "label": "Esconda o emblema dentro do encontro entre personagem e emblema.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g3d_on_touch",
-              "area": "events",
-              "fields": {
-                "OBJ": "personagem",
-                "OTHER": "emblema"
-              },
-              "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_g3d_set_visible",
-                  "fields": {
-                    "OBJ": "emblema",
-                    "MODE": "hide"
-                  }
-                }
-              }
-            }
-          },
-          {
-            "id": "sem-pecas",
-            "label": "Sem nenhuma peça, a cabana fica fechada e o aviso diz o que ela pede.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachObject3d",
-                  "actorPath": "personagem",
-                  "targetPath": "cabana",
-                  "timeoutMs": 5500,
-                  "walkable": [
-                    {
-                      "minX": -11,
-                      "maxX": -7.4,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -6.1,
-                      "maxX": -4.5,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -6.5,
-                      "maxX": -6.1,
-                      "minZ": -5,
-                      "maxZ": 4.04
-                    },
-                    {
-                      "minX": -6.5,
-                      "maxX": -6.1,
-                      "minZ": 4.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -6.5,
-                      "minZ": -5,
-                      "maxZ": -4.76
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -7,
-                      "minZ": -3.74,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.5,
-                      "minZ": -3.74,
-                      "maxZ": 4.04
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.5,
-                      "minZ": 4.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": -5,
-                      "maxZ": -1.46
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": 0.36,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": -5,
-                      "maxZ": -1.56
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": 0.36,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0.2,
-                      "maxX": 1,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": -5,
-                      "maxZ": -0.76
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": 1.26,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": 0,
-                      "minZ": -5,
-                      "maxZ": -2.46
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": -1.7,
-                      "minZ": 0.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -1.7,
-                      "maxX": 0,
-                      "minZ": 1.26,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0.6,
-                      "maxX": 4.1,
-                      "minZ": 0.4,
-                      "maxZ": 1.1
-                    },
-                    {
-                      "minX": 4,
-                      "maxX": 6.1,
-                      "minZ": -0.5,
-                      "maxZ": 1.7
-                    }
-                  ],
-                  "avoidPaths": ["chave", "emblema"]
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "cabana.userData.sz.animWant"
-                },
-                "compare": "notContains",
-                "value": "abrir"
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 2,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "aviso"
-                    },
-                    "compare": "changed"
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "id": "so-chave",
-            "label": "Só com a chave, a cabana continua fechada.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachObject3d",
-                  "actorPath": "personagem",
-                  "targetPath": "chave",
-                  "timeoutMs": 3800,
-                  "walkable": [
-                    {
-                      "minX": -11,
-                      "maxX": -7.4,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -6.1,
-                      "maxX": -4.5,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -6.5,
-                      "maxX": -6.1,
-                      "minZ": -5,
-                      "maxZ": 4.04
-                    },
-                    {
-                      "minX": -6.5,
-                      "maxX": -6.1,
-                      "minZ": 4.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -6.5,
-                      "minZ": -5,
-                      "maxZ": -4.76
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -7,
-                      "minZ": -3.74,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.5,
-                      "minZ": -3.74,
-                      "maxZ": 4.04
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.5,
-                      "minZ": 4.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": -5,
-                      "maxZ": -1.46
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": 0.36,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": -5,
-                      "maxZ": -1.56
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": 0.36,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0.2,
-                      "maxX": 1,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": -5,
-                      "maxZ": -0.76
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": 1.26,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": 0,
-                      "minZ": -5,
-                      "maxZ": -2.46
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": -1.7,
-                      "minZ": 0.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -1.7,
-                      "maxX": 0,
-                      "minZ": 1.26,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0.6,
-                      "maxX": 4.1,
-                      "minZ": 0.4,
-                      "maxZ": 1.1
-                    },
-                    {
-                      "minX": 4,
-                      "maxX": 6.1,
-                      "minZ": -0.5,
-                      "maxZ": 1.7
-                    }
-                  ],
-                  "avoidPaths": ["cabana", "emblema"]
-                },
-                {
-                  "action": "approachObject3d",
-                  "actorPath": "personagem",
-                  "targetPath": "cabana",
-                  "timeoutMs": 5500,
-                  "walkable": [
-                    {
-                      "minX": -11,
-                      "maxX": -7.4,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -6.1,
-                      "maxX": -4.5,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -6.5,
-                      "maxX": -6.1,
-                      "minZ": -5,
-                      "maxZ": 4.04
-                    },
-                    {
-                      "minX": -6.5,
-                      "maxX": -6.1,
-                      "minZ": 4.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -6.5,
-                      "minZ": -5,
-                      "maxZ": -4.76
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -7,
-                      "minZ": -3.74,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.5,
-                      "minZ": -3.74,
-                      "maxZ": 4.04
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.5,
-                      "minZ": 4.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": -5,
-                      "maxZ": -1.46
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": 0.36,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": -5,
-                      "maxZ": -1.56
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": 0.36,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0.2,
-                      "maxX": 1,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": -5,
-                      "maxZ": -0.76
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": 1.26,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": 0,
-                      "minZ": -5,
-                      "maxZ": -2.46
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": -1.7,
-                      "minZ": 0.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -1.7,
-                      "maxX": 0,
-                      "minZ": 1.26,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0.6,
-                      "maxX": 4.1,
-                      "minZ": 0.4,
-                      "maxZ": 1.1
-                    },
-                    {
-                      "minX": 4,
-                      "maxX": 6.1,
-                      "minZ": -0.5,
-                      "maxZ": 1.7
-                    }
-                  ],
-                  "avoidPaths": ["emblema"]
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "cabana.userData.sz.animWant"
-                },
-                "compare": "notContains",
-                "value": "abrir"
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 1,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "temChave"
-                    },
-                    "compare": "equals",
-                    "value": true
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "id": "so-emblema",
-            "label": "Só com o emblema, a cabana continua fechada.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachObject3d",
-                  "actorPath": "personagem",
-                  "targetPath": "emblema",
-                  "timeoutMs": 3800,
-                  "walkable": [
-                    {
-                      "minX": -11,
-                      "maxX": -7.4,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -6.1,
-                      "maxX": -4.5,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -6.5,
-                      "maxX": -6.1,
-                      "minZ": -5,
-                      "maxZ": 4.04
-                    },
-                    {
-                      "minX": -6.5,
-                      "maxX": -6.1,
-                      "minZ": 4.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -6.5,
-                      "minZ": -5,
-                      "maxZ": -4.76
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -7,
-                      "minZ": -3.74,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.5,
-                      "minZ": -3.74,
-                      "maxZ": 4.04
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.5,
-                      "minZ": 4.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": -5,
-                      "maxZ": -1.46
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": 0.36,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": -5,
-                      "maxZ": -1.56
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": 0.36,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0.2,
-                      "maxX": 1,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": -5,
-                      "maxZ": -0.76
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": 1.26,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": 0,
-                      "minZ": -5,
-                      "maxZ": -2.46
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": -1.7,
-                      "minZ": 0.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -1.7,
-                      "maxX": 0,
-                      "minZ": 1.26,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0.6,
-                      "maxX": 4.1,
-                      "minZ": 0.4,
-                      "maxZ": 1.1
-                    },
-                    {
-                      "minX": 4,
-                      "maxX": 6.1,
-                      "minZ": -0.5,
-                      "maxZ": 1.7
-                    }
-                  ],
-                  "avoidPaths": ["cabana", "chave"]
-                },
-                {
-                  "action": "approachObject3d",
-                  "actorPath": "personagem",
-                  "targetPath": "cabana",
-                  "timeoutMs": 5500,
-                  "walkable": [
-                    {
-                      "minX": -11,
-                      "maxX": -7.4,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -6.1,
-                      "maxX": -4.5,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -6.5,
-                      "maxX": -6.1,
-                      "minZ": -5,
-                      "maxZ": 4.04
-                    },
-                    {
-                      "minX": -6.5,
-                      "maxX": -6.1,
-                      "minZ": 4.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -6.5,
-                      "minZ": -5,
-                      "maxZ": -4.76
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -7,
-                      "minZ": -3.74,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.5,
-                      "minZ": -3.74,
-                      "maxZ": 4.04
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.5,
-                      "minZ": 4.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": -5,
-                      "maxZ": -1.46
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": 0.36,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": -5,
-                      "maxZ": -1.56
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": 0.36,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0.2,
-                      "maxX": 1,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": -5,
-                      "maxZ": -0.76
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": 1.26,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": 0,
-                      "minZ": -5,
-                      "maxZ": -2.46
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": -1.7,
-                      "minZ": 0.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -1.7,
-                      "maxX": 0,
-                      "minZ": 1.26,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0.6,
-                      "maxX": 4.1,
-                      "minZ": 0.4,
-                      "maxZ": 1.1
-                    },
-                    {
-                      "minX": 4,
-                      "maxX": 6.1,
-                      "minZ": -0.5,
-                      "maxZ": 1.7
-                    }
-                  ],
-                  "avoidPaths": ["chave"]
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "cabana.userData.sz.animWant"
-                },
-                "compare": "notContains",
-                "value": "abrir"
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 2,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "temChave"
-                    },
-                    "compare": "equals",
-                    "value": false
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "id": "reinicio",
-            "label": "Pegando o emblema antes da chave a cabana também abre, e uma nova partida (tecla R) a fecha.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachObject3d",
-                  "actorPath": "personagem",
-                  "targetPath": "emblema",
-                  "timeoutMs": 3800,
-                  "walkable": [
-                    {
-                      "minX": -11,
-                      "maxX": -7.4,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -6.1,
-                      "maxX": -4.5,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -6.5,
-                      "maxX": -6.1,
-                      "minZ": -5,
-                      "maxZ": 4.04
-                    },
-                    {
-                      "minX": -6.5,
-                      "maxX": -6.1,
-                      "minZ": 4.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -6.5,
-                      "minZ": -5,
-                      "maxZ": -4.76
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -7,
-                      "minZ": -3.74,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.5,
-                      "minZ": -3.74,
-                      "maxZ": 4.04
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.5,
-                      "minZ": 4.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": -5,
-                      "maxZ": -1.46
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": 0.36,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": -5,
-                      "maxZ": -1.56
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": 0.36,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0.2,
-                      "maxX": 1,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": -5,
-                      "maxZ": -0.76
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": 1.26,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": 0,
-                      "minZ": -5,
-                      "maxZ": -2.46
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": -1.7,
-                      "minZ": 0.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -1.7,
-                      "maxX": 0,
-                      "minZ": 1.26,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0.6,
-                      "maxX": 4.1,
-                      "minZ": 0.4,
-                      "maxZ": 1.1
-                    },
-                    {
-                      "minX": 4,
-                      "maxX": 6.1,
-                      "minZ": -0.5,
-                      "maxZ": 1.7
-                    }
-                  ],
-                  "avoidPaths": ["cabana", "chave"]
-                },
-                {
-                  "action": "approachObject3d",
-                  "actorPath": "personagem",
-                  "targetPath": "chave",
-                  "timeoutMs": 4300,
-                  "walkable": [
-                    {
-                      "minX": -11,
-                      "maxX": -7.4,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -6.1,
-                      "maxX": -4.5,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -6.5,
-                      "maxX": -6.1,
-                      "minZ": -5,
-                      "maxZ": 4.04
-                    },
-                    {
-                      "minX": -6.5,
-                      "maxX": -6.1,
-                      "minZ": 4.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -6.5,
-                      "minZ": -5,
-                      "maxZ": -4.76
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -7,
-                      "minZ": -3.74,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.5,
-                      "minZ": -3.74,
-                      "maxZ": 4.04
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.5,
-                      "minZ": 4.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": -5,
-                      "maxZ": -1.46
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": 0.36,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": -5,
-                      "maxZ": -1.56
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": 0.36,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0.2,
-                      "maxX": 1,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": -5,
-                      "maxZ": -0.76
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": 1.26,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": 0,
-                      "minZ": -5,
-                      "maxZ": -2.46
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": -1.7,
-                      "minZ": 0.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -1.7,
-                      "maxX": 0,
-                      "minZ": 1.26,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0.6,
-                      "maxX": 4.1,
-                      "minZ": 0.4,
-                      "maxZ": 1.1
-                    },
-                    {
-                      "minX": 4,
-                      "maxX": 6.1,
-                      "minZ": -0.5,
-                      "maxZ": 1.7
-                    }
-                  ],
-                  "avoidPaths": ["cabana"]
-                },
-                {
-                  "action": "approachObject3d",
-                  "actorPath": "personagem",
-                  "targetPath": "cabana",
-                  "timeoutMs": 5500,
-                  "walkable": [
-                    {
-                      "minX": -11,
-                      "maxX": -7.4,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -6.1,
-                      "maxX": -4.5,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -6.5,
-                      "maxX": -6.1,
-                      "minZ": -5,
-                      "maxZ": 4.04
-                    },
-                    {
-                      "minX": -6.5,
-                      "maxX": -6.1,
-                      "minZ": 4.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -6.5,
-                      "minZ": -5,
-                      "maxZ": -4.76
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -7,
-                      "minZ": -3.74,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.5,
-                      "minZ": -3.74,
-                      "maxZ": 4.04
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.5,
-                      "minZ": 4.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": -5,
-                      "maxZ": -1.46
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": 0.36,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": -5,
-                      "maxZ": -1.56
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": 0.36,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0.2,
-                      "maxX": 1,
-                      "minZ": -5,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": -5,
-                      "maxZ": -0.76
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": 1.26,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": 0,
-                      "minZ": -5,
-                      "maxZ": -2.46
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": -1.7,
-                      "minZ": 0.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -1.7,
-                      "maxX": 0,
-                      "minZ": 1.26,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": 0.6,
-                      "maxX": 4.1,
-                      "minZ": 0.4,
-                      "maxZ": 1.1
-                    },
-                    {
-                      "minX": 4,
-                      "maxX": 6.1,
-                      "minZ": -0.5,
-                      "maxZ": 1.7
-                    }
-                  ]
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                },
-                {
-                  "action": "press",
-                  "key": "r",
-                  "holdMs": 80
-                },
-                {
-                  "action": "wait",
-                  "ms": 600
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "cabana.userData.sz.animWant"
-                },
-                "compare": "notContains",
-                "value": "abrir"
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 4,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "cabana.userData.sz.animWant"
-                    },
-                    "compare": "contains",
-                    "value": "abrir"
-                  }
-                },
-                {
-                  "afterStep": 6,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "temChave"
-                    },
-                    "compare": "equals",
-                    "value": false
-                  }
-                }
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "revisao",
-      "title": "Pense na cabana da ilha",
-      "intent": "explanation",
-      "objective": "Pense na cabana da ilha.",
-      "blockKeys": ["ponte-revisao", "quiz"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["quiz"]
-      }
-    },
-    {
-      "key": "entrega",
-      "title": "Envie a sua ilha com a cabana",
       "intent": "delivery",
-      "objective": "Envie a sua ilha com a cabana.",
-      "blockKeys": ["video-entrega", "ponte-entrega", "projeto"],
+      "objective": "A cabana da ilha abre.",
+      "blockKeys": ["video-porta", "ponte-porta", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-entrega", "projeto"],
+        "blockIds": ["video-porta", "projeto"],
         "projectChecks": [
           {
             "id": "recolher",
@@ -12571,6 +11317,20 @@
           }
         ],
         "submissionUpToDate": true
+      }
+    },
+    {
+      "key": "revisao",
+      "title": "Pense na cabana da ilha",
+      "intent": "closing",
+      "objective": "Pense na cabana da ilha.",
+      "blockKeys": ["ponte-revisao", "quiz"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz"]
       }
     }
   ]

@@ -8,5 +8,39 @@
     "duracaoGarantidaPelaTag": false
   },
   "clipes": ["video-abertura", "video-material", "video-desenhar", "video-trocar"],
-  "intervencoes": []
+  "intervencoes": [
+    {
+      "id": "video-abertura-K1",
+      "clipe": "video-abertura",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "vai até o farol, e o farol acende. Olha aqui: quando eu seguro a seta da direita, o personagem anda para a direita.",
+      "ancoraDepois": "Vai, sim! Nesta aula, você vai desenhar a sua chave no Pinta, aqui mesmo na página, e depois colocar o seu desenho no",
+      "falaPrincipal": "E eu também vou poder desenhar a minha chave?",
+      "falaPersonagem": "E eu também vou poder desenhar a minha chave?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-desenhar-K1",
+      "clipe": "video-desenhar",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "o Retângulo, desenhe um retângulo pequeno embaixo da ponta da haste, saindo para baixo. Do lado dele, desenhe outro.",
+      "ancoraDepois": "Dá para arrumar. Clique na ferramenta Selecionar, depois clique na forma e arraste para o lugar certo. Para mudar o",
+      "falaPrincipal": "E se a minha chave ficar torta?",
+      "falaPersonagem": "E se a minha chave ficar torta?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-trocar-K1",
+      "clipe": "video-trocar",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "bloco Criar sprite chave. Repare: no fim dele está escrito com imagem chave-dourada. É essa imagem que você vai trocar.",
+      "ancoraDepois": "Continuam, sim. Trocar a imagem é como vestir uma fantasia: você continua sendo você, e só a roupa muda. Com a chave é",
+      "falaPrincipal": "E as regras do jogo continuam funcionando com o meu desenho?",
+      "falaPersonagem": "E as regras do jogo continuam funcionando com o meu desenho?",
+      "tags": ["[curious]"]
+    }
+  ]
 }

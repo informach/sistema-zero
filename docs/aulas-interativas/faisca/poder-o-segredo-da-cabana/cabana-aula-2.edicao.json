@@ -7,6 +7,40 @@
     "alvoDeEdicaoSegundos": 3,
     "duracaoGarantidaPelaTag": false
   },
-  "clipes": ["video-abertura", "video-emblema", "video-porta", "video-entrega"],
-  "intervencoes": []
+  "clipes": ["video-abertura", "video-emblema", "video-porta"],
+  "intervencoes": [
+    {
+      "id": "video-abertura-K1",
+      "clipe": "video-abertura",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "seguro a seta da esquerda, o personagem anda até a cabana. Repare no aviso aqui em cima: ele diz o que a cabana pede.",
+      "ancoraDepois": "Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R. Agora é a sua vez: jogue até a cabana",
+      "falaPrincipal": "Será que a chave está atrás da pedra de novo?",
+      "falaPersonagem": "Será que a chave está atrás da pedra de novo?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-emblema-K1",
+      "clipe": "video-emblema",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "encostar em chave. Arraste e solte logo abaixo do encontro com o farol. Não coloque um encontro dentro do outro.",
+      "ancoraDepois": "É o mesmo bloco de encontro. Ele só chega com chave no segundo nome, e você troca pelo emblema. Clique em chave e",
+      "falaPrincipal": "Mas esse bloco não é o da chave?",
+      "falaPersonagem": "Mas esse bloco não é o da chave?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-porta-K1",
+      "clipe": "video-porta",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "Por último, clique em repetindo e escolha uma vez. É este bloco que abre a cabana: ele toca a animação abrir uma vez.",
+      "ancoraDepois": "Ela toca quando a resposta da pergunta é sim, porque o bloco está dentro do então. Logo abaixo dele, ainda dentro do",
+      "falaPrincipal": "Como a cabana sabe a hora de tocar a animação?",
+      "falaPersonagem": "Como a cabana sabe a hora de tocar a animação?",
+      "tags": ["[curious]"]
+    }
+  ]
 }

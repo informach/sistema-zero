@@ -9,10 +9,11 @@ import { discoverySpeechSteps } from '../../../packages/core/src/learning/scene/
 import { ISLAND_SPEECH } from '../../../packages/core/src/learning/scene/island-3d'
 import { resolveCourseModels } from '../../../packages/studio/src/core/courseModels'
 import { avatarDaAula } from './avatares-video'
+import { falaDaParte } from './faisca-comum'
 import { formatarJson } from './formatar-json'
 import { derivadosDeVoz } from './gerar-falas-elevenlabs'
 import { gravarArquivo } from './gravar-arquivo'
-import { type IlhaTrecho, ilhaAulas } from './ilha-do-farol-conteudo'
+import { ilhaAulas } from './ilha-do-farol-conteudo'
 import { ilhaChecks } from './ilha-do-farol-criterios'
 import {
   ILHA_CURSO,
@@ -25,45 +26,10 @@ import { ilhaQuiz } from './ilha-do-farol-quiz'
 import { ROTULO_DOS_LINKS } from './materiais-sem-texto'
 import { organizarManifestos } from './organizar-projetos'
 import {
-  contextoDeEdicao,
   extrairPartesElevenLabs,
-  type IntervencaoKids,
-  type ParteFalado,
   renderizarClipe,
-  semTags,
   sincronizarRecadosNaPagina,
 } from './roteiro-elevenlabs'
-
-/**
- * A fala de uma parte, com as trocas da edição kids (campo `kids`): a Debinha nas aulas 1 e 3 e o
- * Dedé na aula 2, como no Cadê e na Chave do Farol. Cada troca é um parágrafo inteiro, com a
- * professora antes e depois, para a edição cortar na frase e não no meio dela.
- */
-const falaDaParte = (t: IlhaTrecho, aula: number): ParteFalado => {
-  const clipe = `video-${t.key}`
-  const paragrafos = t.text.split(/ (?=\[)/)
-  const intervencoes = (t.kids ?? []).map((frase, n): IntervencaoKids => {
-    const p = paragrafos.findIndex((x) => semTags(x) === frase)
-    if (p < 0)
-      throw new Error(`${clipe}: a fala do personagem não é um parágrafo da professora: ${frase}`)
-    const antes = semTags(paragrafos.slice(0, p).join(' '))
-    const depois = semTags(paragrafos.slice(p + 1).join(' '))
-    if (!antes || !depois)
-      throw new Error(`${clipe}: falta a professora antes ou depois de ${frase}`)
-    return {
-      id: `${clipe}-K${n + 1}`,
-      clipe,
-      personagem: avatarDaAula(aula),
-      falaPrincipal: frase,
-      falaPersonagem: frase,
-      ancoraAntes: contextoDeEdicao(antes, 'antes'),
-      ancoraDepois: contextoDeEdicao(depois, 'depois'),
-      ocorrencia: antes.split(frase).length,
-      tags: [paragrafos[p]?.match(/^\[[^\]]+\]/)?.[0] ?? '[curious]'],
-    }
-  })
-  return { clipe, texto: paragrafos.join('\n\n'), intervencoes }
-}
 
 const dir = resolve(import.meta.dirname, '../../aulas-interativas/faisca/a-ilha-do-farol')
 mkdirSync(dir, { recursive: true })

@@ -12,8 +12,52 @@
     "video-material",
     "video-experiencia",
     "video-emblema",
-    "video-porta",
-    "video-entrega"
+    "video-porta"
   ],
-  "intervencoes": []
+  "intervencoes": [
+    {
+      "id": "video-abertura-K1",
+      "clipe": "video-abertura",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "seguro a seta de baixo, o personagem desce até a cabana. E repare no aviso aqui em cima: ele diz o que a cabana pede.",
+      "ancoraDepois": "Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R. Agora é a sua vez: jogue até a cabana",
+      "falaPrincipal": "E onde fica esse emblema novo?",
+      "falaPersonagem": "E onde fica esse emblema novo?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-experiencia-K1",
+      "clipe": "video-experiencia",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "uma vale verdadeiro ou falso. E a cabana pode perguntar de dois jeitos: pedindo as duas peças ou pedindo uma das peças.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar quando a cabana abre e quando continua",
+      "falaPrincipal": "E a ordem em que o personagem pega as peças importa?",
+      "falaPersonagem": "E a ordem em que o personagem pega as peças importa?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-emblema-K1",
+      "clipe": "video-emblema",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "e depois Lógica e Se, e pegue o bloco verdadeiro. Solte em cima do 0. Depois clique em verdadeiro e escolha falso.",
+      "ancoraDepois": "Porque, quando a partida começa, o personagem ainda não pegou o emblema. Confira se ficou assim: no fim de Ao iniciar",
+      "falaPrincipal": "E por que temEmblema começa em falso?",
+      "falaPersonagem": "E por que temEmblema começa em falso?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-porta-K1",
+      "clipe": "video-porta",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "diz que ela pede a chave e o emblema. Agora toque na tecla R, pegue só a chave e vá até a cabana. Ela continua fechada.",
+      "ancoraDepois": "Porque, com a palavra e, a cabana pede as duas peças: temChave é verdadeiro, mas temEmblema ainda é falso, e por isso a",
+      "falaPrincipal": "Ué, por que a cabana não abriu só com a chave?",
+      "falaPersonagem": "Ué, por que a cabana não abriu só com a chave?",
+      "tags": ["[curious]"]
+    }
+  ]
 }

@@ -272,6 +272,7 @@ export function useStudioCreationLibraries(
               sinal: signal,
               juntar,
               progresso,
+              ...(options.relevo ? { relevo: options.relevo } : {}),
             })
             signal.throwIfAborted()
             return resultado

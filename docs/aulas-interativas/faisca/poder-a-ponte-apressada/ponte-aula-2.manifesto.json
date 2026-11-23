@@ -6,14 +6,14 @@
   "blocks": [
     {
       "key": "video-abertura",
-      "plannedVideo": "Título: A ponte chegou à ilha\n\nMaster integral da professora: ponte-aula-2.roteiro.md, clipe video-abertura. Gravação pendente."
+      "plannedVideo": "Título: A ponte chegou à ilha\n\nMaster integral da professora. Roteiro: ponte-aula-2.roteiro.md, clipe video-abertura. Substituições kids: [{\"id\":\"video-abertura-K1\",\"clipe\":\"video-abertura\",\"personagem\":\"Dedé\",\"falaPrincipal\":\"A ponte da ilha também é apressada?\",\"falaPersonagem\":\"A ponte da ilha também é apressada?\",\"ancoraAntes\":\"letras W, A, S e D também funcionam. Olha aqui: com a seta de baixo, o personagem vem para a frente, perto do laguinho.\",\"ancoraDepois\":\"Isso eu deixo para você descobrir. Repare também no aviso aqui em cima: ele diz o que fazer na partida. Para começar\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-abertura",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Clique no jogo e use as setas ou W, A, S e D. Puxe a alavanca e atravesse; depois tente chegar atrasado. R começa outra partida. Depois clique em Próxima parte."
+        "text": "Sua vez! Jogue a versão pronta: segure as setas, descubra o que a alavanca faz e tente atravessar a ponte. A tecla R recomeça. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -22,7 +22,7 @@
         "kind": "interactive",
         "title": "Jogue A ponte apressada",
         "required": true,
-        "instructions": "Clique no jogo e use as setas ou W, A, S e D. Puxe a alavanca e atravesse a ponte; depois tente chegar atrasado. R começa outra partida. Você pode seguir sem terminar.",
+        "instructions": "Clique no jogo e use as setas ou W, A, S e D. Descubra o que a alavanca faz e tente atravessar a ponte. A tecla R começa outra partida.",
         "hints": [],
         "activity": {
           "type": "project-play",
@@ -2609,7 +2609,7 @@
             "installedExtensions": [
               {
                 "id": "game-3d",
-                "version": "0.32.0",
+                "version": "0.33.0",
                 "installedAt": 0
               }
             ]
@@ -2625,26 +2625,26 @@
     },
     {
       "key": "video-alavanca",
-      "plannedVideo": "Título: A alavanca e a ponte que sobe sozinha\n\nMaster integral da professora: ponte-aula-2.roteiro.md, clipe video-alavanca. Gravação pendente."
+      "plannedVideo": "Título: A alavanca e a ponte que sobe sozinha\n\nMaster integral da professora. Roteiro: ponte-aula-2.roteiro.md, clipe video-alavanca. Substituições kids: [{\"id\":\"video-alavanca-K1\",\"clipe\":\"video-alavanca\",\"personagem\":\"Dedé\",\"falaPrincipal\":\"E como a ponte baixa, se ela não troca de imagem?\",\"falaPersonagem\":\"E como a ponte baixa, se ela não troca de imagem?\",\"ancoraAntes\":\"o mesmo na ilha! A ideia é a mesma, e muitos blocos também. A diferença está no jeito de mostrar a alavanca e a ponte.\",\"ancoraDepois\":\"Com uma animação. No 3D, a alavanca e a ponte são modelos, e cada modelo já vem com as animações dele: a alavanca tem\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-alavanca",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora a alavanca da ilha: a mesma ideia do 2D, com animações no lugar das imagens. Se precisar, a montagem completa está no Passo a passo do projeto. Teste, clique em Verificar projeto e depois em Próxima parte."
+        "text": "Agora faça a alavanca da ilha baixar a ponte e a ponte subir sozinha! Crie ponteAberta com falso em Ao iniciar e monte o encontro com a alavanca: puxar e baixar, ponteAberta verdadeiro, o aviso e o depois de 4 segundos, com soltar, subir, ponteAberta falso e o outro aviso. Teste contando até 4. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
       "key": "video-atravessar",
-      "plannedVideo": "Título: Atravesse até o sino\n\nMaster integral da professora: ponte-aula-2.roteiro.md, clipe video-atravessar. Gravação pendente."
+      "plannedVideo": "Título: Atravesse até o sino\n\nMaster integral da professora. Roteiro: ponte-aula-2.roteiro.md, clipe video-atravessar. Substituições kids: [{\"id\":\"video-atravessar-K1\",\"clipe\":\"video-atravessar\",\"personagem\":\"Dedé\",\"falaPrincipal\":\"E como o personagem chega na pedra, se ele não anda na água?\",\"falaPersonagem\":\"E como o personagem chega na pedra, se ele não anda na água?\",\"ancoraAntes\":\"do senão. Agora a resposta do sim: o personagem vai para cima da pedra, e o sino toca. Deixe o espaço do então à vista.\",\"ancoraDepois\":\"Com o bloco Colocar o objeto. Ele leva o personagem direto para cima da pedra, no lugar que os três números dizem. Abra\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-atravessar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de atravessar na ilha! A ponte faz a mesma pergunta do 2D: ponteAberta. Teste sem puxar, a tempo e atrasado, clique em Verificar projeto e depois em Próxima parte."
+        "text": "Hora de atravessar na ilha! Monte o encontro com a ponte e o Se com ponteAberta: no então, Colocar o objeto personagem em cima da pedra, a animação tocar no sino e o aviso de sucesso; no senão, o aviso da ponte levantada. Teste os três casos. Depois clique em Verificar projeto, em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte."
       }
     },
     {
@@ -2652,7 +2652,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de pensar na ponte da ilha! As perguntas retomam puxar a alavanca de novo e onde fica a animação subir. Em cada uma tem uma explicação, e você pode tentar de novo. Na pergunta com cena, clique em Ver o que acontece; na outra, clique em Responder."
+        "text": "Escolha uma resposta e clique em Ver o que acontece ou, nas perguntas sem cena, em Responder. Observe a cena e a explicação. Você pode tentar de novo. Quando terminar, clique em Concluir aula."
       }
     },
     {
@@ -2703,18 +2703,6 @@
             "explanation": "Dentro do \"depois de\", a subida espera os 4 segundos. Logo depois do baixar, a ponte subiria na mesma hora; no senão, só subiria quando alguém encostasse nela."
           }
         ]
-      }
-    },
-    {
-      "key": "video-entrega",
-      "plannedVideo": "Título: Envie a sua ilha com a ponte\n\nMaster integral da professora: ponte-aula-2.roteiro.md, clipe video-entrega. Gravação pendente."
-    },
-    {
-      "key": "ponte-entrega",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Confira os objetivos e clique em Enviar meu projeto. Confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula."
       }
     },
     {
@@ -4934,7 +4922,7 @@
           "installedExtensions": [
             {
               "id": "game-3d",
-              "version": "0.32.0",
+              "version": "0.33.0",
               "installedAt": 0
             }
           ]
@@ -7119,7 +7107,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -9541,7 +9529,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -12129,7 +12117,7 @@
               "installedExtensions": [
                 {
                   "id": "game-3d",
-                  "version": "0.32.0",
+                  "version": "0.33.0",
                   "installedAt": 0
                 }
               ]
@@ -12142,10 +12130,6 @@
             },
             "atravessar": {
               "entryExampleId": "fa15ca03-0000-4000-8001-000000000003",
-              "solutionExampleId": "fa15ca03-0000-4000-8001-000000000004"
-            },
-            "entrega": {
-              "entryExampleId": "fa15ca03-0000-4000-8001-000000000004",
               "solutionExampleId": "fa15ca03-0000-4000-8001-000000000004"
             }
           }
@@ -12754,787 +12738,15 @@
     {
       "key": "atravessar",
       "title": "Atravesse até o sino",
-      "intent": "application",
-      "objective": "Atravesse até o sino.",
-      "blockKeys": ["video-atravessar", "ponte-atravessar"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-atravessar"],
-        "projectChecks": [
-          {
-            "id": "depois-dentro",
-            "label": "O \"depois de segundos\" fica dentro do encontro com a alavanca.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g3d_on_touch",
-              "area": "events",
-              "fields": {
-                "OBJ": "personagem",
-                "OTHER": "alavanca"
-              },
-              "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_js_set_timeout_seconds"
-                }
-              }
-            }
-          },
-          {
-            "id": "a-tempo",
-            "label": "Puxando a alavanca e indo direto à ponte, o personagem atravessa e o sino toca.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachObject3d",
-                  "actorPath": "personagem",
-                  "targetPath": "ponte",
-                  "timeoutMs": 6200,
-                  "walkable": [
-                    {
-                      "minX": -11,
-                      "maxX": -7.4,
-                      "minZ": -5,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": -6.5,
-                      "maxX": -4.5,
-                      "minZ": -5,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -6.5,
-                      "minZ": -5,
-                      "maxZ": -4.76
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -6.5,
-                      "minZ": -3.74,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": -5,
-                      "maxZ": -1.46
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": 0.36,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": -5,
-                      "maxZ": -1.56
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": 0.36,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": 0.2,
-                      "maxX": 1,
-                      "minZ": -5,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": -5,
-                      "maxZ": -0.76
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": 1.26,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": 0,
-                      "minZ": -5,
-                      "maxZ": -2.46
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": -1.7,
-                      "minZ": 0.96,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": -1.7,
-                      "maxX": 0,
-                      "minZ": 1.26,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": -11,
-                      "maxX": -7,
-                      "minZ": 1.8,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -6.1,
-                      "maxX": -5.3,
-                      "minZ": 1.8,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.1,
-                      "minZ": 1.8,
-                      "maxZ": 4.04
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.1,
-                      "minZ": 4.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -0.9,
-                      "maxX": 1,
-                      "minZ": 1.8,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -4.35,
-                      "maxX": -3.45,
-                      "minZ": 3.3,
-                      "maxZ": 4.05
-                    },
-                    {
-                      "minX": 0.6,
-                      "maxX": 4.1,
-                      "minZ": 0.4,
-                      "maxZ": 1.1
-                    },
-                    {
-                      "minX": 4,
-                      "maxX": 6.1,
-                      "minZ": -0.5,
-                      "maxZ": 1.7
-                    }
-                  ],
-                  "avoidPaths": ["alavanca"]
-                },
-                {
-                  "action": "press",
-                  "key": "ArrowRight",
-                  "holdMs": 1000
-                },
-                {
-                  "action": "press",
-                  "key": "ArrowLeft",
-                  "holdMs": 1800
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "sino.userData.sz.animWant"
-                },
-                "compare": "contains",
-                "value": "tocar"
-              }
-            }
-          },
-          {
-            "id": "atrasado",
-            "label": "Chegando depois que a ponte subiu, o personagem não atravessa.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachObject3d",
-                  "actorPath": "personagem",
-                  "targetPath": "ponte",
-                  "timeoutMs": 6200,
-                  "walkable": [
-                    {
-                      "minX": -11,
-                      "maxX": -7.4,
-                      "minZ": -5,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": -6.5,
-                      "maxX": -4.5,
-                      "minZ": -5,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -6.5,
-                      "minZ": -5,
-                      "maxZ": -4.76
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -6.5,
-                      "minZ": -3.74,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": -5,
-                      "maxZ": -1.46
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": 0.36,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": -5,
-                      "maxZ": -1.56
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": 0.36,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": 0.2,
-                      "maxX": 1,
-                      "minZ": -5,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": -5,
-                      "maxZ": -0.76
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": 1.26,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": 0,
-                      "minZ": -5,
-                      "maxZ": -2.46
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": -1.7,
-                      "minZ": 0.96,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": -1.7,
-                      "maxX": 0,
-                      "minZ": 1.26,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": -11,
-                      "maxX": -7,
-                      "minZ": 1.8,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -6.1,
-                      "maxX": -5.3,
-                      "minZ": 1.8,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.1,
-                      "minZ": 1.8,
-                      "maxZ": 4.04
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.1,
-                      "minZ": 4.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -0.9,
-                      "maxX": 1,
-                      "minZ": 1.8,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -4.35,
-                      "maxX": -3.45,
-                      "minZ": 3.3,
-                      "maxZ": 4.05
-                    },
-                    {
-                      "minX": 0.6,
-                      "maxX": 4.1,
-                      "minZ": 0.4,
-                      "maxZ": 1.1
-                    },
-                    {
-                      "minX": 4,
-                      "maxX": 6.1,
-                      "minZ": -0.5,
-                      "maxZ": 1.7
-                    }
-                  ],
-                  "avoidPaths": ["alavanca"]
-                },
-                {
-                  "action": "press",
-                  "key": "ArrowRight",
-                  "holdMs": 1000
-                },
-                {
-                  "action": "wait",
-                  "ms": 4800
-                },
-                {
-                  "action": "press",
-                  "key": "ArrowLeft",
-                  "holdMs": 1800
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "sino.userData.sz.animWant"
-                },
-                "compare": "notContains",
-                "value": "tocar"
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 3,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "ponte.userData.sz.animWant"
-                    },
-                    "compare": "notContains",
-                    "value": "baixar"
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "id": "fechada",
-            "label": "Sem puxar a alavanca, a ponte não deixa atravessar e o aviso diz o que fazer.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachObject3d",
-                  "actorPath": "personagem",
-                  "targetPath": "ponte",
-                  "timeoutMs": 6200,
-                  "walkable": [
-                    {
-                      "minX": -11,
-                      "maxX": -7.4,
-                      "minZ": -5,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": -6.5,
-                      "maxX": -4.5,
-                      "minZ": -5,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -6.5,
-                      "minZ": -5,
-                      "maxZ": -4.76
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -6.5,
-                      "minZ": -3.74,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": -5,
-                      "maxZ": -1.46
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": 0.36,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": -5,
-                      "maxZ": -1.56
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": 0.36,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": 0.2,
-                      "maxX": 1,
-                      "minZ": -5,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": -5,
-                      "maxZ": -0.76
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": 1.26,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": 0,
-                      "minZ": -5,
-                      "maxZ": -2.46
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": -1.7,
-                      "minZ": 0.96,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": -1.7,
-                      "maxX": 0,
-                      "minZ": 1.26,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": -11,
-                      "maxX": -7,
-                      "minZ": 1.8,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -6.1,
-                      "maxX": -5.3,
-                      "minZ": 1.8,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.1,
-                      "minZ": 1.8,
-                      "maxZ": 4.04
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.1,
-                      "minZ": 4.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -0.9,
-                      "maxX": 1,
-                      "minZ": 1.8,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -4.35,
-                      "maxX": -3.45,
-                      "minZ": 3.3,
-                      "maxZ": 4.05
-                    },
-                    {
-                      "minX": 0.6,
-                      "maxX": 4.1,
-                      "minZ": 0.4,
-                      "maxZ": 1.1
-                    },
-                    {
-                      "minX": 4,
-                      "maxX": 6.1,
-                      "minZ": -0.5,
-                      "maxZ": 1.7
-                    }
-                  ],
-                  "avoidPaths": ["alavanca"]
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "sino.userData.sz.animWant"
-                },
-                "compare": "notContains",
-                "value": "tocar"
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 2,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "aviso"
-                    },
-                    "compare": "changed"
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "id": "reinicio",
-            "label": "Uma nova partida (tecla R) começa com a ponte levantada.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachObject3d",
-                  "actorPath": "personagem",
-                  "targetPath": "ponte",
-                  "timeoutMs": 6200,
-                  "walkable": [
-                    {
-                      "minX": -11,
-                      "maxX": -7.4,
-                      "minZ": -5,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": -6.5,
-                      "maxX": -4.5,
-                      "minZ": -5,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -6.5,
-                      "minZ": -5,
-                      "maxZ": -4.76
-                    },
-                    {
-                      "minX": -7.4,
-                      "maxX": -6.5,
-                      "minZ": -3.74,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": -5,
-                      "maxZ": -1.46
-                    },
-                    {
-                      "minX": -4.5,
-                      "maxX": -4,
-                      "minZ": 0.36,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": -5,
-                      "maxZ": -1.56
-                    },
-                    {
-                      "minX": -4,
-                      "maxX": -3.3,
-                      "minZ": 0.36,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": 0.2,
-                      "maxX": 1,
-                      "minZ": -5,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": -5,
-                      "maxZ": -0.76
-                    },
-                    {
-                      "minX": 0,
-                      "maxX": 0.2,
-                      "minZ": 1.26,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": 0,
-                      "minZ": -5,
-                      "maxZ": -2.46
-                    },
-                    {
-                      "minX": -3.3,
-                      "maxX": -1.7,
-                      "minZ": 0.96,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": -1.7,
-                      "maxX": 0,
-                      "minZ": 1.26,
-                      "maxZ": 2
-                    },
-                    {
-                      "minX": -11,
-                      "maxX": -7,
-                      "minZ": 1.8,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -6.1,
-                      "maxX": -5.3,
-                      "minZ": 1.8,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.1,
-                      "minZ": 1.8,
-                      "maxZ": 4.04
-                    },
-                    {
-                      "minX": -7,
-                      "maxX": -6.1,
-                      "minZ": 4.96,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -0.9,
-                      "maxX": 1,
-                      "minZ": 1.8,
-                      "maxZ": 5
-                    },
-                    {
-                      "minX": -4.35,
-                      "maxX": -3.45,
-                      "minZ": 3.3,
-                      "maxZ": 4.05
-                    },
-                    {
-                      "minX": 0.6,
-                      "maxX": 4.1,
-                      "minZ": 0.4,
-                      "maxZ": 1.1
-                    },
-                    {
-                      "minX": 4,
-                      "maxX": 6.1,
-                      "minZ": -0.5,
-                      "maxZ": 1.7
-                    }
-                  ],
-                  "avoidPaths": ["alavanca"]
-                },
-                {
-                  "action": "press",
-                  "key": "ArrowRight",
-                  "holdMs": 1000
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                },
-                {
-                  "action": "press",
-                  "key": "r",
-                  "holdMs": 80
-                },
-                {
-                  "action": "wait",
-                  "ms": 600
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "ponte.userData.sz.animWant"
-                },
-                "compare": "notContains",
-                "value": "baixar"
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 3,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "ponte.userData.sz.animWant"
-                    },
-                    "compare": "contains",
-                    "value": "baixar"
-                  }
-                }
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "revisao",
-      "title": "Pense na ponte da ilha",
-      "intent": "explanation",
-      "objective": "Pense na ponte da ilha.",
-      "blockKeys": ["ponte-revisao", "quiz"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["quiz"]
-      }
-    },
-    {
-      "key": "entrega",
-      "title": "Envie a sua ilha com a ponte",
       "intent": "delivery",
-      "objective": "Envie a sua ilha com a ponte.",
-      "blockKeys": ["video-entrega", "ponte-entrega", "projeto"],
+      "objective": "Atravesse até o sino.",
+      "blockKeys": ["video-atravessar", "ponte-atravessar", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-entrega", "projeto"],
+        "blockIds": ["video-atravessar", "projeto"],
         "projectChecks": [
           {
             "id": "depois-dentro",
@@ -14280,6 +13492,20 @@
           }
         ],
         "submissionUpToDate": true
+      }
+    },
+    {
+      "key": "revisao",
+      "title": "Pense na ponte da ilha",
+      "intent": "closing",
+      "objective": "Pense na ponte da ilha.",
+      "blockKeys": ["ponte-revisao", "quiz"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz"]
       }
     }
   ]

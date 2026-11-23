@@ -8,9 +8,11 @@ import {
 } from '../../../packages/core/src/learning/authoring-manifest-projection'
 import type { StudioProjectExamples } from '../../../packages/core/src/learning/studio-project-examples'
 import { isStudioAuthoringProject } from '../../../packages/core/src/studio/authoring-project'
+import { avatarDaAula } from './avatares-video'
+import { falaDaParte, itensDosMateriais, videoPlanejado } from './faisca-comum'
+import { formatarJson } from './formatar-json'
 import { derivadosDeVoz } from './gerar-falas-elevenlabs'
 import { gravarArquivo } from './gravar-arquivo'
-import { ROTULO_DOS_LINKS } from './materiais-sem-texto'
 import { meuDesenhoAjuda, meuDesenhoAula } from './meu-desenho-conteudo'
 import { meuDesenhoChecks } from './meu-desenho-criterios'
 import {
@@ -22,7 +24,11 @@ import {
   VAGA_CHAVE,
 } from './meu-desenho-projeto'
 import { organizarManifestos } from './organizar-projetos'
-import { extrairPartesElevenLabs, sincronizarRecadosNaPagina } from './roteiro-elevenlabs'
+import {
+  extrairPartesElevenLabs,
+  renderizarClipe,
+  sincronizarRecadosNaPagina,
+} from './roteiro-elevenlabs'
 
 /**
  * As ferramentas que o bloco de Pinta libera: as que a aula ensina, e a Ajustar (o único jeito de
@@ -36,8 +42,12 @@ const dir = resolve(
   '../../aulas-interativas/faisca/meu-primeiro-desenho-no-pinta',
 )
 mkdirSync(dir, { recursive: true })
-const write = (name: string, v: unknown) =>
-  gravarArquivo(resolve(dir, name), typeof v === 'string' ? v : `${JSON.stringify(v, null, 2)}\n`)
+// No formato da CI (biome ci); o JSON acima do files.maxSize do Biome (2 MiB) sai do JSON.stringify.
+const write = (name: string, v: string | object) => {
+  if (typeof v === 'string') return gravarArquivo(resolve(dir, name), v)
+  const puro = `${JSON.stringify(v, null, 2)}\n`
+  gravarArquivo(resolve(dir, name), Buffer.byteLength(puro) > 2_097_152 ? puro : formatarJson(v))
+}
 
 const aula = meuDesenhoAula
 const help = `# Passo a passo do projeto — Meu primeiro desenho no Pinta\n\nExtra do Faísca. Aqui estão as duas montagens da aula: desenhar a chave no Pinta e colocar o desenho no jogo da Chave do Farol. Você pode consultar quantas vezes quiser.\n\n${meuDesenhoAjuda
@@ -81,7 +91,11 @@ for (const t of aula.trechos) {
   blocks.push(
     {
       key: `video-${t.key}`,
-      plannedVideo: `Título: ${t.title}\n\nMaster integral da professora: meu-desenho-${aula.slug}.roteiro.md, clipe video-${t.key}. Gravação pendente.`,
+      plannedVideo: videoPlanejado(
+        t.title,
+        `meu-desenho-${aula.slug}.roteiro.md`,
+        falaDaParte(t, 0),
+      ),
     },
     { key: `ponte-${t.key}`, content: { kind: 'dialogue', pose: 'speaking', text: t.ponte } },
   )
@@ -148,21 +162,9 @@ blocks.push(
       kind: 'materials',
       title: 'Passo a passo do projeto: Meu primeiro desenho no Pinta',
       bookPreview: true,
-      items: [
-        ROTULO_DOS_LINKS, // sem texto para ler: os passos estão nos vídeos (materiais-sem-texto.ts)
-        {
-          id: 'como-estudio',
-          kind: 'link',
-          label: 'Como usar o Estúdio',
-          url: '/como-fazer/estudio-achar-e-organizar-blocos',
-        },
-        {
-          id: 'pedir-ajuda',
-          kind: 'link',
-          label: 'Como pedir ajuda à equipe',
-          url: '/como-fazer/plataforma-pedir-ajuda',
-        },
-      ],
+      // O livro do Passo a passo (o PDF anexado) e os links de ajuda, sem texto para ler
+      // (materiais-sem-texto.ts): o que os passos dizem está nos vídeos das partes.
+      items: itensDosMateriais(),
     },
   },
   {
@@ -214,16 +216,16 @@ if (
   throw Error('Importação acima de 2 MiB')
 write(`meu-desenho-${aula.slug}.manifesto.json`, manifest)
 
-let script = `# Roteiro de produção · ${aula.title}\n\nMaster integral da professora. Montagem guiada completa no vídeo, um gesto por vez, com o destino à vista antes da ferramenta: no Pinta, o quadro e a ferramenta antes de desenhar; no Estúdio, o bloco antes de trocar a imagem. Sem intervenções de personagens. Voz, escuta, gravação e publicação pendentes.\n\n**Antes de gravar:** use um perfil de ensaio sem envio nesta aula. Envie o desenho de verdade na parte do Pinta antes de gravar a parte do Estúdio: é o envio que põe minha-chave nos materiais do jogo. Não preencha Recado nos envios. Mostre Desenho enviado!, Objetivo cumprido! e Projeto enviado! só quando esses estados aparecerem de verdade.\n\n`
+let script = `# Roteiro de produção · ${aula.title}\n\nA professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para gerar a voz integral. Na montagem kids, ${avatarDaAula(0)} substitui somente as frases das tabelas de substituição, com a voz do arquivo .debinha.elevenlabs.txt e sem voz sobreposta; o adulto usa o master integral. Montagem guiada completa no vídeo, um gesto por vez, com o destino à vista antes da ferramenta: no Pinta, o quadro e a ferramenta antes de desenhar; no Estúdio, o bloco antes de trocar a imagem. O palco não desenha no Pinta: a parte do desenho é gravada à mão, com o Na tela em prosa; as outras partes seguem os verbos do palco. Gravação e publicação desta revisão ainda não confirmadas.\n\n**Antes de gravar:** use um perfil de ensaio sem envio nesta aula. Envie o desenho de verdade na parte do Pinta antes de gravar a parte do Estúdio: é o envio que põe minha-chave nos materiais do jogo. Não preencha Recado nos envios. Mostre Desenho enviado!, Objetivo cumprido! e Projeto enviado! só quando esses estados aparecerem de verdade.\n\n`
 for (const [i, t] of aula.trechos.entries())
-  script += `## Parte ${i + 1}. ${t.title}\n\n**Clipe:** \`video-${t.key}\`\n\n**Na tela:** ${t.screen}\n\n**Fala para ElevenLabs:**\n\n\`\`\`text\n${t.text.replace(/ (?=\[)/g, '\n\n')}\n\`\`\`\n\n`
+  script += `## Parte ${i + 1}. ${t.title}\n\n${renderizarClipe(falaDaParte(t, 0), t.screen)}\n`
 script = sincronizarRecadosNaPagina(script, manifest)
 write(`meu-desenho-${aula.slug}.roteiro.md`, script)
 for (const [ext, text] of derivadosDeVoz(extrairPartesElevenLabs(script)))
   write(`meu-desenho-${aula.slug}${ext}`, text)
 write(
   `meu-desenho-${aula.slug}.md`,
-  `# ${aula.title}\n\nExtra do Faísca · Meu primeiro desenho no Pinta · 2D. Duas entregas na mesma aula: o desenho (Pinta) e o jogo com o desenho (Estúdio). Ajuda livre no Passo a passo do projeto; sem certificado, sem quiz e sem publicação obrigatória.\n\n${sections.map((s, i) => `## Parte ${i + 1}. ${s.title}\n\n${s.objective}\n\n- Intenção: ${s.intent}.\n- Blocos: ${s.blockKeys.join(', ')}.\n- Espaço de trabalho: ${s.workspaceKey ?? 'não'}.\n- Conclusão: ${s.completion?.blockIds.join(', ') || 'avanço livre'}${s.completion?.submissionUpToDate ? '; envio atualizado' : ''}.\n\n${s.completion?.projectChecks?.map((c: { label: string }) => `- ${c.label}`).join('\n') ?? ''}`).join('\n\n')}\n\n[Fala integral](meu-desenho-${aula.slug}.roteiro.md) · [Passo a passo](passo-a-passo.md).\n`,
+  `# ${aula.title}\n\nExtra do Faísca · Meu primeiro desenho no Pinta · 2D. Duas entregas na mesma aula: o desenho (Pinta) e o jogo com o desenho (Estúdio). Ajuda livre no Passo a passo do projeto; sem certificado, sem quiz e sem publicação obrigatória. Na edição kids, ${avatarDaAula(0)} diz as frases das tabelas de substituição do roteiro.\n\n${sections.map((s, i) => `## Parte ${i + 1}. ${s.title}\n\n${s.objective}\n\n- Intenção: ${s.intent}.\n- Blocos: ${s.blockKeys.join(', ')}.\n- Espaço de trabalho: ${s.workspaceKey ?? 'não'}.\n- Conclusão: ${s.completion?.blockIds.join(', ') || 'avanço livre'}${s.completion?.submissionUpToDate ? '; envio atualizado' : ''}.\n\n${s.completion?.projectChecks?.map((c: { label: string }) => `- ${c.label}`).join('\n') ?? ''}`).join('\n\n')}\n\n[Fala integral](meu-desenho-${aula.slug}.roteiro.md) · [Passo a passo](passo-a-passo.md).\n`,
 )
 write('meu-desenho-inicio.szproject.json', inicial)
 write('meu-desenho.szproject.json', gabarito)

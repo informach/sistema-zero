@@ -4,8 +4,12 @@ export type JardimTrecho = {
   title: string
   kind: 'intro' | 'material' | 'build' | 'quiz' | 'delivery'
   etapa?: JardimEtapa
+  /** O recado do Zappy na página, logo depois do vídeo (ou antes do quiz). Não é gravado. */
+  ponte: string
   text: string
   screen: string
+  /** As frases da Debinha (Aula 1) ou do Dedé (Aula 2) na edição kids: parágrafos inteiros do `text`. */
+  kids?: string[]
 }
 const conferir =
   '[reassuring, encouraging voice] Experimente quantas vezes quiser. Se precisar, abra o Passo a passo do projeto: a ajuda está disponível desde o começo. [confident, clear, unhurried voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. [confident, clear, unhurried voice] Quando os objetivos desta parte estiverem cumpridos e aparecer Salvo, clique em Próxima parte.'
@@ -24,6 +28,8 @@ export const jardimAulas: {
         key: 'abertura',
         title: 'Conheça sua missão',
         kind: 'intro',
+        ponte:
+          'Clique no jogo e experimente. Use as setas do teclado; R começa outra partida. Você pode seguir sem terminar. Depois clique em Próxima parte.',
         screen:
           'Referência jogável. Mostrar o jardim e deslocamento curto, sem mostrar os blocos nem resolver as duas respostas.',
         text: '[upbeat, welcoming voice] Sua missão do Faísca é criar O Jardim Secreto! A flor está fechada. Seu personagem precisa pegar o regador e chegar até ela para fazê-la abrir. Se chegar antes de pegar o regador, o jogo deve avisar o que falta. [interested, animated voice] Você já investigou essas ideias na Chave do Farol e na Ilha do Farol. Agora vai escolher e montar as regras de outro jogo, primeiro numa tela plana, em duas dimensões, e depois com profundidade, em três. [upbeat, encouraging voice] Conheça o jogo pronto aqui na página. Clique nele e use as setas do teclado. A tecla R começa uma nova partida. Você pode seguir sem terminar: clique em Próxima parte.',
@@ -32,6 +38,8 @@ export const jardimAulas: {
         key: 'material',
         title: 'Ajuda quando você precisar',
         kind: 'material',
+        ponte:
+          'Abra a ajuda quando precisar. Há lembretes, montagem completa e testes dos dois jardins. Consultar é opcional. Depois clique em Próxima parte.',
         screen:
           'Mostrar material textual, seus títulos por dificuldade e dimensão. Não fingir anexo antes da produção do PDF.',
         text: '[engaging, energetic, conversational voice] O cenário, os desenhos e o reinício da partida já vêm preparados. As regras da missão são suas, e você pode começar pela que preferir. [engaging, energetic, conversational voice] As próximas partes ajudam a conferir os resultados aos poucos, uma regra de cada vez. [reassuring, encouraging voice] Esqueceu um encaixe? O Passo a passo do projeto tem lembretes, montagem completa e testes para os dois jardins. Consultar essa ajuda faz parte de aprender. Ela fica aqui na aula e você pode voltar quando precisar. Depois clique em Próxima parte.',
@@ -40,6 +48,8 @@ export const jardimAulas: {
         key: 'movimento',
         title: 'Faça o personagem andar',
         kind: 'build',
+        ponte:
+          'Monte e teste a regra no seu jardim. Você pode experimentar e consultar a ajuda quantas vezes quiser. Clique em Verificar projeto, confira os objetivos desta parte e aguarde Salvo. Depois clique em Próxima parte.',
         etapa: 'movimento',
         screen:
           'Projeto inicial. Mostrar personagem parado e objetivos; não encaixar solução no vídeo principal.',
@@ -49,6 +59,8 @@ export const jardimAulas: {
         key: 'limite',
         title: 'Fique dentro do jardim',
         kind: 'build',
+        ponte:
+          'Monte e teste a regra no seu jardim. Você pode experimentar e consultar a ajuda quantas vezes quiser. Clique em Verificar projeto, confira os objetivos desta parte e aguarde Salvo. Depois clique em Próxima parte.',
         etapa: 'limite',
         screen:
           'No começo, levar o personagem até a beirada direita e continuar segurando a seta até parte dele sumir. Depois mostrar as quatro beiradas, sem retirar bloco de aluno e sem montar o limite no vídeo. Objetivos de movimento e limite.',
@@ -58,6 +70,8 @@ export const jardimAulas: {
         key: 'coleta',
         title: 'Recolha e guarde a informação',
         kind: 'build',
+        ponte:
+          'Monte e teste a regra no seu jardim. Você pode experimentar e consultar a ajuda quantas vezes quiser. Clique em Verificar projeto, confira os objetivos desta parte e aguarde Salvo. Depois clique em Próxima parte.',
         etapa: 'coleta',
         screen:
           'Regador disponível. Indicar objetivo de coleta sem prometer ver memória antes da decisão.',
@@ -67,6 +81,8 @@ export const jardimAulas: {
         key: 'decisao',
         title: 'Uma flor, duas respostas',
         kind: 'build',
+        ponte:
+          'Monte e teste a regra no seu jardim. Você pode experimentar e consultar a ajuda quantas vezes quiser. Clique em Verificar projeto, confira os objetivos desta parte e aguarde Salvo. Depois clique em Próxima parte.',
         etapa: 'decisao',
         screen:
           'Indicar flor e dois percursos possíveis; não revelar encaixes. Mostrar que referência e projeto próprio são distintos.',
@@ -76,6 +92,8 @@ export const jardimAulas: {
         key: 'posicao',
         title: 'Escolha outro lugar',
         kind: 'build',
+        ponte:
+          'Monte e teste a regra no seu jardim. Você pode experimentar e consultar a ajuda quantas vezes quiser. Clique em Verificar projeto, confira os objetivos desta parte e aguarde Salvo. Depois clique em Próxima parte.',
         etapa: 'posicao',
         screen: 'Criação do regador em Ao iniciar. Não prescrever coordenada única.',
         text: `[engaging, energetic, conversational voice] Lembra? Na tela do 2D, o x leva um objeto de um lado para o outro, e o y, para cima e para baixo. [upbeat, encouraging voice] Agora escolha outro lugar para o regador. Mude um valor, observe onde o regador apareceu e experimente de novo. Você pode mudar o x, o y ou os dois. [engaging, energetic, conversational voice] Escolha um lugar em que o regador fique visível, longe do personagem no começo e fácil de alcançar. Também precisa existir um caminho até a flor sem pegar o regador, para você testar a flor sem ele. [confident, clear, unhurried voice] Depois da mudança, teste uma partida desde o começo. Se a prévia já recomeçou sozinha, pode usar essa nova partida. Confira a coleta no novo lugar e as duas respostas da flor. [reassuring, encouraging voice] Começar outra partida com a tecla R mantém o lugar que você escolheu. ${conferir}`,
@@ -92,6 +110,8 @@ export const jardimAulas: {
         key: 'abertura',
         title: 'O mesmo desafio, com profundidade',
         kind: 'intro',
+        ponte:
+          'Clique no jogo e experimente. Use as setas do teclado; R começa outra partida. Você pode seguir sem terminar. Depois clique em Próxima parte.',
         screen: 'Referência 3D e início do segundo projeto, sem copiar solução 2D.',
         text: '[upbeat, welcoming voice] Seu jardim agora tem profundidade! A missão continua: recolher o regador, guardar essa informação e fazer a flor responder. [engaging, energetic, conversational voice] Na Ilha do Farol, você descobriu que x e z indicam o lugar no chão, e y indica a altura. [engaging, energetic, conversational voice] Também viu que, no 3D, dois objetos podem parecer juntos na tela e estar separados, um mais alto que o outro. Por isso, o encontro só acontece quando eles se tocam de verdade. [reassuring, encouraging voice] Se precisar, a ajuda completa das duas versões continua na primeira aula, na parte Ajuda quando você precisar. [upbeat, encouraging voice] Conheça o jardim pronto: clique nele e use as setas ou as teclas W, A, S e D. A tecla R começa outra partida. Depois clique em Próxima parte.',
       },
@@ -99,6 +119,8 @@ export const jardimAulas: {
         key: 'movimento',
         title: 'Caminhe pelo jardim 3D',
         kind: 'build',
+        ponte:
+          'Monte e teste a regra no seu jardim. Você pode experimentar e consultar a ajuda quantas vezes quiser. Clique em Verificar projeto, confira os objetivos desta parte e aguarde Salvo. Depois clique em Próxima parte.',
         etapa: 'movimento',
         screen:
           'Projeto inicial3D, Enquanto estiver rodando. Nenhuma tarefa de programar câmera ou walkArea.',
@@ -108,6 +130,8 @@ export const jardimAulas: {
         key: 'coleta',
         title: 'Recolha o regador em 3D',
         kind: 'build',
+        ponte:
+          'Monte e teste a regra no seu jardim. Você pode experimentar e consultar a ajuda quantas vezes quiser. Clique em Verificar projeto, confira os objetivos desta parte e aguarde Salvo. Depois clique em Próxima parte.',
         etapa: 'coleta',
         screen:
           'Indicar encontro real, sem novo exercício de eixos. Objetivos desta etapa não cobram flor.',
@@ -117,6 +141,8 @@ export const jardimAulas: {
         key: 'decisao',
         title: 'Faça a flor responder',
         kind: 'build',
+        ponte:
+          'Monte e teste a regra no seu jardim. Você pode experimentar e consultar a ajuda quantas vezes quiser. Clique em Verificar projeto, confira os objetivos desta parte e aguarde Salvo. Depois clique em Próxima parte.',
         etapa: 'decisao',
         screen:
           'Flor inicialmente fechada; indicar nome do clipe na ajuda, sem montar no vídeo. Ao falar do farol, 2 a 3 segundos da Ilha: o farol aceso apagando e acendendo de novo na volta pelo cais.',
@@ -126,6 +152,8 @@ export const jardimAulas: {
         key: 'posicao',
         title: 'Encontre um novo lugar no chão',
         kind: 'build',
+        ponte:
+          'Monte e teste a regra no seu jardim. Você pode experimentar e consultar a ajuda quantas vezes quiser. Clique em Verificar projeto, confira os objetivos desta parte e aguarde Salvo. Depois clique em Próxima parte.',
         etapa: 'posicao',
         screen: 'Posição do regador, x/z livres; y conservado. Mostrar câmera fixa e alcance.',
         text: `[engaging, energetic, conversational voice] Lembra? No 3D, x e z indicam o lugar no chão, e y indica a altura. [upbeat, encouraging voice] Agora escolha um novo lugar para o regador no jardim 3D. Mude x, z ou os dois, e mantenha a altura y que já veio preparada. Experimente mais de um lugar. [engaging, energetic, conversational voice] Deixe o regador visível e alcançável, longe do personagem no começo, e preserve um caminho direto até a flor sem passar por ele. [confident, clear, unhurried voice] Depois da mudança, teste uma partida desde o começo. Confira a coleta no lugar novo e as duas respostas da flor. ${conferir}`,
@@ -134,6 +162,8 @@ export const jardimAulas: {
         key: 'revisao',
         title: 'Pense nos seus testes',
         kind: 'quiz',
+        ponte:
+          'Escolha uma resposta. Nas perguntas com cena, clique em Ver o que acontece; na outra, clique em Responder. Leia a explicação e tente de novo se precisar.',
         screen:
           'Quiz com alternativas neutras e demonstrações depois da escolha; pergunta 2 sem cena.',
         text: '',
@@ -147,6 +177,8 @@ function entrega(d: JardimDimensao): JardimTrecho {
     key: 'entrega',
     title: d === '2d' ? 'Envie seu jardim 2D' : 'Entregue sua missão',
     kind: 'delivery',
+    ponte:
+      'Confira os objetivos, aguarde Salvo e clique em Enviar meu projeto. Confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.',
     etapa: 'posicao',
     screen:
       'Projeto atual, objetivos, Salvo, Enviar meu projeto, confirmação Enviar e Projeto enviado!. Não preencher Recado nem simular envio.',

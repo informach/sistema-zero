@@ -1,4 +1,4 @@
-# Passo a passo do projeto — O segredo da cabana
+# Passo a passo do projeto: O segredo da cabana
 
 Poder do Faísca. Aqui está o que investigar na experiência e cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.
 
@@ -46,6 +46,7 @@ Antes e depois de cada teste, observe o caderninho do jogo, a porta e o aviso. O
 6. Dentro do então, encaixe Trocar imagem do sprite, de Jogo 2D → Sprites → Criar e trocar aparência. Clique no primeiro heroi e escolha cabana; no segundo, escolha cabana-aberta.
 7. Embaixo dele, ainda no então, encaixe Alterar variável, de Programação → Variáveis. Escolha aviso. Solte um texto, de Programação → Valores, em cima do 1 e escreva A cabana abriu! Você tinha as duas peças.
 8. Dentro do senão, encaixe outro Alterar variável, escolha aviso, solte um texto em cima do 1 e escreva A cabana pede a chave e o emblema.
+9. Teste todos os casos. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.
 
 **Teste:** Toque na tecla R e vá direto à cabana: ela fica fechada e avisa. Tente só com a chave e, numa partida nova, só com o emblema: continua fechada. Pegue as duas, em qualquer ordem, e encoste: ela abre. Toque na tecla R de novo: a cabana volta fechada e as peças voltam.
 
@@ -81,6 +82,7 @@ Antes e depois de cada teste, observe o caderninho do jogo, a porta e o aviso. O
 6. Dentro do então, encaixe Tocar a animação, de Jogo 3D → Objetos → Animação do modelo. Clique em Andar e escolha abrir. Clique em heroi e escolha cabana. No modo, escolha uma vez.
 7. Embaixo dele, ainda no então, encaixe Alterar variável, de Programação → Variáveis. Escolha aviso. Solte um texto, de Programação → Valores, em cima do 1 e escreva A cabana abriu! Você tinha as duas peças.
 8. Dentro do senão, encaixe outro Alterar variável, escolha aviso, solte um texto em cima do 1 e escreva A cabana pede a chave e o emblema.
+9. Teste todos os casos. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.
 
 **Teste:** Toque na tecla R e vá direto à cabana: ela fica fechada e avisa. Tente só com a chave e, numa partida nova, só com o emblema: continua fechada. Pegue as duas, em qualquer ordem, e encoste: ela abre. Toque na tecla R de novo: a cabana volta fechada e as peças voltam.
 
@@ -88,8 +90,8 @@ Antes e depois de cada teste, observe o caderninho do jogo, a porta e o aviso. O
 
 ## Entrega
 
-Em cada aula, jogue uma partida inteira, tente a cabana com uma peça só e com as duas. Toque na tecla R e confira que as peças voltam e a cabana volta fechada.
+Em cada aula, o envio fecha a última montagem, a da cabana. Antes de enviar, jogue uma partida inteira e tente a cabana sem nenhuma peça, com uma peça só e com as duas. Toque na tecla R e confira que as peças voltam e a cabana volta fechada.
 
-Depois clique em Verificar projeto e corrija o que faltar.
+Depois clique em Verificar projeto e corrija o que faltar. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.
 
-Por fim, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.
+Na última parte de cada aula, responda às perguntas sobre a cabana. Quando terminar, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.

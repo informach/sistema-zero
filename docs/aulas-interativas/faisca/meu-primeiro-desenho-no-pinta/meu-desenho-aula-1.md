@@ -1,6 +1,6 @@
 # A minha chave no Farol
 
-Extra do Faísca · Meu primeiro desenho no Pinta · 2D. Duas entregas na mesma aula: o desenho (Pinta) e o jogo com o desenho (Estúdio). Ajuda livre no Passo a passo do projeto; sem certificado, sem quiz e sem publicação obrigatória.
+Extra do Faísca · Meu primeiro desenho no Pinta · 2D. Duas entregas na mesma aula: o desenho (Pinta) e o jogo com o desenho (Estúdio). Ajuda livre no Passo a passo do projeto; sem certificado, sem quiz e sem publicação obrigatória. Na edição kids, Debinha diz as frases das tabelas de substituição do roteiro.
 
 ## Parte 1. Uma chave desenhada por você
 

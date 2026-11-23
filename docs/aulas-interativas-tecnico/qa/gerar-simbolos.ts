@@ -1,36 +1,13 @@
 /** Autoria local do Poder "O baú dos símbolos". Importação, gravação e publicação são etapas à parte. */
-import { mkdirSync } from 'node:fs'
-import { resolve } from 'node:path'
-import { isLearningManifest, type LearningManifest } from '../../../packages/core/src/learning'
-import {
-  LEARNING_IMPORT_BODY_MAX_BYTES,
-  learningImportBodyBytes,
-} from '../../../packages/core/src/learning/authoring-manifest-projection'
-import { discoverySpeechSteps } from '../../../packages/core/src/learning/scene/discovery-guidance'
-import type { StudioProjectExamples } from '../../../packages/core/src/learning/studio-project-examples'
-import { isStudioAuthoringProject } from '../../../packages/core/src/studio/authoring-project'
-import { resolveCourseModels } from '../../../packages/studio/src/core/courseModels'
-import { derivadosDeVoz } from './gerar-falas-elevenlabs'
-import { gravarArquivo } from './gravar-arquivo'
-import { ROTULO_DOS_LINKS } from './materiais-sem-texto'
-import { organizarManifestos } from './organizar-projetos'
-import { extrairPartesElevenLabs, sincronizarRecadosNaPagina } from './roteiro-elevenlabs'
+// A estrutura das aulas, o roteiro e os derivados saem do gerador comum dos Poderes (poder-gerador.ts).
+
+import { gerarPoder } from './poder-gerador'
 import { simbolosAjuda, simbolosAulas, simbolosExperiencia } from './simbolos-conteudo'
 import { simbolosChecks } from './simbolos-criterios'
-import {
-  montarProjetoSimbolos,
-  SIMBOLOS_CURSO,
-  SIMBOLOS_ETAPAS,
-  type SimbolosEtapa,
-} from './simbolos-projeto'
+import { montarProjetoSimbolos, SIMBOLOS_CURSO, SIMBOLOS_ETAPAS } from './simbolos-projeto'
 import { simbolosQuiz2d, simbolosQuiz3d } from './simbolos-quiz'
 
-const dir = resolve(import.meta.dirname, '../../aulas-interativas/faisca/poder-o-bau-dos-simbolos')
-mkdirSync(dir, { recursive: true })
-const write = (name: string, v: unknown) =>
-  gravarArquivo(resolve(dir, name), typeof v === 'string' ? v : `${JSON.stringify(v, null, 2)}\n`)
-
-const help = `# Passo a passo do projeto — O baú dos símbolos\n\nPoder do Faísca. Aqui está o que investigar na experiência e cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.\n\n## ${simbolosExperiencia.title}\n\n**A ideia:** ${simbolosExperiencia.idea}\n\n**O que investigar:**\n\n${simbolosExperiencia.goals.map((g) => `- ${g}`).join('\n')}\n\n${simbolosExperiencia.observe}\n\n${simbolosAulas
+const help = `# Passo a passo do projeto: O baú dos símbolos\n\nPoder do Faísca. Aqui está o que investigar na experiência e cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.\n\n## ${simbolosExperiencia.title}\n\n**A ideia:** ${simbolosExperiencia.idea}\n\n**O que investigar:**\n\n${simbolosExperiencia.goals.map((g) => `- ${g}`).join('\n')}\n\n${simbolosExperiencia.observe}\n\n${simbolosAulas
   .map(
     (a) =>
       `## ${a.dimension === '2d' ? 'Aula 1 · Jogo 2D' : 'Aula 2 · Ilha 3D'}: ${a.title}\n\n${simbolosAjuda(
@@ -44,266 +21,78 @@ const help = `# Passo a passo do projeto — O baú dos símbolos\n\nPoder do Fa
   )
   .join(
     '\n\n',
-  )}\n\n## Entrega\n\nEm cada aula, jogue uma partida inteira: abra o baú na ordem certa, erre a ordem e recomece pelo sol. Toque na tecla R e confira que o baú volta fechado.\n\nDepois clique em Verificar projeto e corrija o que faltar.\n\nPor fim, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.\n`
-write('passo-a-passo.md', help)
+  )}\n\n## Entrega\n\nEm cada aula, o envio fica na montagem da estrela, a última. Depois de montar, jogue uma partida inteira: abra o baú na ordem certa, erre a ordem e recomece pelo sol. Toque na tecla R e confira que o baú volta fechado.\n\nDepois clique em Verificar projeto e corrija o que faltar. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.\n\nQuando aparecer Projeto enviado!, clique em Próxima parte. Na última parte da aula, responda às perguntas: escolha uma resposta e clique em Ver o que acontece ou, nas perguntas sem cena, em Responder. Você pode tentar de novo. Quando terminar, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.\n`
 
-const inventory: Record<string, string[]> = {}
-for (const [index, aula] of simbolosAulas.entries()) {
-  const projects = Object.fromEntries(
-    SIMBOLOS_ETAPAS.map((p) => [p, montarProjetoSimbolos(aula.dimension, p)]),
-  ) as Record<SimbolosEtapa, ReturnType<typeof montarProjetoSimbolos>>
-  const palette = new Set<string>()
-  const visit = (v: unknown) => {
-    if (!v || typeof v !== 'object') return
-    if ('type' in v && typeof v.type === 'string' && v.type.startsWith('sz_')) palette.add(v.type)
-    for (const c of Object.values(v)) visit(c)
-  }
-  visit(projects.estrela.blocksState)
-  inventory[aula.dimension] = [...palette].sort()
-  const id = (p: SimbolosEtapa) =>
-    `fa15ca04-0000-4000-800${index}-${String(SIMBOLOS_ETAPAS.indexOf(p) + 1).padStart(12, '0')}`
-  const authoredProject = (part: SimbolosEtapa) => {
-    const project = projects[part]
-    if (!isStudioAuthoringProject(project)) throw Error(`Projeto inválido: ${part}`)
-    return project
-  }
-  const examples: StudioProjectExamples['examples'] = { [id('inicio')]: authoredProject('inicio') },
-    mapping: StudioProjectExamples['sections'] = {}
-  let previous: SimbolosEtapa = 'inicio'
-  const sections: LearningManifest['sections'] = [],
-    blocks: LearningManifest['blocks'] = []
-  for (const t of aula.trechos) {
-    const keys: string[] = [],
-      required: string[] = []
-    if (t.kind !== 'quiz') {
-      keys.push(`video-${t.key}`)
-      required.push(`video-${t.key}`)
-      blocks.push({
-        key: `video-${t.key}`,
-        plannedVideo: `Título: ${t.title}\n\nMaster integral da professora: simbolos-${aula.slug}.roteiro.md, clipe video-${t.key}. Gravação pendente.`,
-      })
-    }
-    keys.push(`ponte-${t.key}`)
-    blocks.push({
-      key: `ponte-${t.key}`,
-      content: { kind: 'dialogue', pose: 'speaking', text: t.ponte },
-    })
-    if (t.kind === 'intro') {
-      keys.push('jogo-pronto')
-      required.push('jogo-pronto')
-      blocks.push({
-        key: 'jogo-pronto',
-        content: {
-          kind: 'interactive',
-          title: 'Jogue O baú dos símbolos',
-          required: true,
-          instructions:
-            aula.dimension === '2d'
-              ? 'Clique no jogo e use as setas do teclado. Toque os símbolos na ordem da placa e abra o baú; depois erre a ordem. R começa outra partida. Você pode seguir sem terminar.'
-              : 'Clique no jogo e use as setas ou W, A, S e D. Toque os símbolos na ordem da placa e abra o baú; depois erre a ordem. R começa outra partida. Você pode seguir sem terminar.',
-          hints: [],
-          activity: {
-            type: 'project-play',
-            project: projects.estrela,
-            stage:
-              aula.dimension === '2d' ? { width: 480, height: 360 } : { width: 960, height: 600 },
-            completion: 'participation',
-            targets: [],
-          },
-        },
-      })
-    }
-    if (t.kind === 'material') keys.push('materiais')
-    if (t.kind === 'experience') {
-      keys.push('experiencia')
-      required.push('experiencia')
-      blocks.push({
-        key: 'experiencia',
-        content: {
-          kind: 'interactive',
-          required: true,
-          title: 'A ordem dos símbolos',
-          semPerguntaFinal: true,
-          // ⭐ 08/11/2026 (proposta "Experiências do Faísca", aprovada): o personagem ANDA até as
-          // pedras, chegar numa pedra é tocar o símbolo, e como o baú decide é uma peça que se troca.
-          instructions:
-            'Ande até as pedras e toque os símbolos, na ordem da placa e fora dela, e troque como o baú decide. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
-          hints: [
-            'Olhe o caderninho depois de cada símbolo: em que passo da placa você está?',
-            'Compare a ordem da placa com um símbolo fora da vez: o que acontece com o passo e com os símbolos acesos?',
-            'Toque o sol, a lua e a estrela, nessa ordem. Jogue de novo, toque o sol e vá à estrela por cima da lua. Comece pela lua. Erre e siga a placa de novo. Troque a peça para "só quantos foram tocados" e toque fora da ordem.',
-          ],
-          activity: {
-            type: 'experimentation',
-            scene: 'symbol-sequence',
-            cenario: 'farol',
-            setup: {
-              freeExploration: true,
-              goalCopy: {
-                'step-moves': {
-                  pedido: 'Ande até o sol e depois até a lua, olhando o caderninho.',
-                },
-                'right-order': { pedido: 'Toque o sol, a lua e a estrela, na ordem da placa.' },
-                'out-of-turn': { pedido: 'Com o sol aceso, vá à estrela pulando a lua.' },
-                'middle-start': { pedido: 'Jogue de novo e comece pela lua.' },
-                'restart-works': {
-                  pedido: 'Erre a ordem e, sem jogar de novo, siga a placa até o fim.',
-                },
-                'count-vs-order': {
-                  label: 'No baú que só conta, a ordem errada também abriu',
-                  // O motor só conta a comparação depois de o baú da ordem responder.
-                  pedido:
-                    'Com o baú da ordem já testado, troque a peça para "só quantos foram tocados" e toque os símbolos fora da ordem.',
-                },
-              },
-            },
-          },
-        },
-      })
-    }
-    if (t.kind === 'quiz') {
-      keys.push('quiz')
-      required.push('quiz')
-      blocks.push({
-        key: 'quiz',
-        content: aula.dimension === '2d' ? simbolosQuiz2d : simbolosQuiz3d,
-      })
-    }
-    const studio = t.kind === 'build' || t.kind === 'delivery'
-    if (t.kind === 'delivery') {
-      keys.push('projeto')
-      required.push('projeto')
-    }
-    if (studio && t.etapa) {
-      examples[id(t.etapa)] = authoredProject(t.etapa)
-      mapping[t.key] = { entryExampleId: id(previous), solutionExampleId: id(t.etapa) }
-      previous = t.etapa
-    }
-    sections.push({
-      key: t.key,
-      title: t.title,
-      intent:
-        t.kind === 'build'
-          ? 'application'
-          : t.kind === 'delivery'
-            ? 'delivery'
-            : t.kind === 'material'
-              ? 'material'
-              : t.kind === 'experience'
-                ? 'exploration'
-                : 'explanation',
-      objective: `${t.title}.`,
-      blockKeys: keys,
-      workspaceKey: studio ? 'projeto' : null,
-      externalTool: null,
-      pendingMedia: [],
-      completion: {
-        version: 1,
-        blockIds: required,
-        ...(studio && t.etapa ? { projectChecks: simbolosChecks(aula.dimension, t.etapa) } : {}),
-        ...(t.kind === 'delivery' ? { submissionUpToDate: true } : {}),
-      },
-    })
-  }
-  blocks.push({
-    key: 'projeto',
-    content: {
-      kind: 'studio',
-      purpose: 'submission',
-      chain: `${SIMBOLOS_CURSO}-${aula.dimension}`,
-      level: `iniciante-${aula.dimension}`,
-      allowedModes: ['blocks'],
-      allowLevelReveal: false,
-      allowBlocks: inventory[aula.dimension],
-      initialProject: projects.inicio,
-      projectExamples: { version: 1, examples, sections: mapping },
+await gerarPoder({
+  nome: 'O baú dos símbolos',
+  pasta: 'poder-o-bau-dos-simbolos',
+  prefixo: 'simbolos',
+  curso: SIMBOLOS_CURSO,
+  etapas: SIMBOLOS_ETAPAS,
+  etapaFinal: 'estrela',
+  montarProjeto: montarProjetoSimbolos,
+  checks: simbolosChecks,
+  quiz: { '2d': simbolosQuiz2d, '3d': simbolosQuiz3d },
+  aulas: simbolosAulas,
+  idBase: 'fa15ca04',
+  jogoPronto: {
+    title: 'Jogue O baú dos símbolos',
+    instrucoes: {
+      '2d': 'Clique no jogo e use as setas do teclado. Toque os símbolos na ordem da placa e abra o baú; depois erre a ordem. R começa outra partida. Você pode seguir sem terminar.',
+      '3d': 'Clique no jogo e use as setas ou W, A, S e D. Toque os símbolos na ordem da placa e abra o baú; depois erre a ordem. R começa outra partida. Você pode seguir sem terminar.',
     },
-  })
-  if (index === 0)
-    blocks.push({
-      key: 'materiais',
-      content: {
-        kind: 'materials',
-        title: 'Passo a passo do projeto: O baú dos símbolos',
-        bookPreview: true,
-        items: [
-          ROTULO_DOS_LINKS, // sem texto para ler: os passos estão nos vídeos (materiais-sem-texto.ts)
-          {
-            id: 'como-estudio',
-            kind: 'link',
-            label: 'Como usar o Estúdio',
-            url: '/como-fazer/estudio-achar-e-organizar-blocos',
+  },
+  experiencia: {
+    kind: 'interactive',
+    required: true,
+    title: 'A ordem dos símbolos',
+    semPerguntaFinal: true,
+    // ⭐ 08/11/2026 (proposta "Experiências do Faísca", aprovada): o personagem ANDA até as
+    // pedras, chegar numa pedra é tocar o símbolo, e como o baú decide é uma peça que se troca.
+    instructions:
+      'Ande até as pedras e toque os símbolos, na ordem da placa e fora dela, e troque como o baú decide. O Zappy te mostra o que testar, e você pode repetir quando quiser.',
+    hints: [
+      'Olhe o caderninho depois de cada símbolo: em que passo da placa você está?',
+      'Compare a ordem da placa com um símbolo fora da vez: o que acontece com o passo e com os símbolos acesos?',
+      'Toque o sol, a lua e a estrela, nessa ordem. Jogue de novo, toque o sol e vá à estrela por cima da lua. Comece pela lua. Erre e siga a placa de novo. Troque a peça para "só quantos foram tocados" e toque fora da ordem.',
+    ],
+    activity: {
+      type: 'experimentation',
+      scene: 'symbol-sequence',
+      cenario: 'farol',
+      setup: {
+        freeExploration: true,
+        goalCopy: {
+          'step-moves': {
+            pedido: 'Ande até o sol e depois até a lua, olhando o caderninho.',
           },
-          {
-            id: 'pedir-ajuda',
-            kind: 'link',
-            label: 'Como pedir ajuda à equipe',
-            url: '/como-fazer/plataforma-pedir-ajuda',
+          'right-order': { pedido: 'Toque o sol, a lua e a estrela, na ordem da placa.' },
+          'out-of-turn': { pedido: 'Com o sol aceso, vá à estrela pulando a lua.' },
+          'middle-start': { pedido: 'Jogue de novo e comece pela lua.' },
+          'restart-works': {
+            pedido: 'Erre a ordem e, sem jogar de novo, siga a placa até o fim.',
           },
-        ],
+          'count-vs-order': {
+            label: 'No baú que só conta, a ordem errada também abriu',
+            // O motor só conta a comparação depois de o baú da ordem responder.
+            pedido:
+              'Com o baú da ordem já testado, troque a peça para "só quantos foram tocados" e toque os símbolos fora da ordem.',
+          },
+        },
       },
-    })
-  const manifest = {
-    version: 5,
-    courseSlug: SIMBOLOS_CURSO,
-    lessonSlug: aula.slug,
-    title: aula.title,
-    blocks,
-    sections,
-  }
-  if (!isLearningManifest(manifest)) throw Error(`Manifesto inválido: ${aula.slug}`)
-  if (
-    learningImportBodyBytes(
-      manifest,
-      'preserve',
-      'a'.repeat(64),
-      '00000000-0000-4000-8000-000000000000',
-    ) > LEARNING_IMPORT_BODY_MAX_BYTES
-  )
-    throw Error('Importação acima de 2 MiB')
-  write(`simbolos-${aula.slug}.manifesto.json`, manifest)
-  let script = `# Roteiro de produção · ${aula.title}\n\nMaster integral da professora. ${aula.dimension === '2d' ? 'Montagem guiada completa no vídeo, um gesto por vez, com o destino à vista antes da peça.' : 'Transferência: o vídeo relembra a regra e a montagem completa fica no Passo a passo do projeto, sem resolver os encaixes no vídeo.'} Sem intervenções de personagens. Voz, escuta, gravação e publicação pendentes.\n\n**Antes de gravar:** use um perfil de ensaio sem envio nesta aula. Mostre o projeto da dimensão correta. Não preencha Recado no envio. Mostre Objetivo cumprido! e Projeto enviado! só quando esses estados aparecerem de verdade.\n\n`
-  for (const [i, t] of aula.trechos.entries())
-    script +=
-      t.kind === 'quiz'
-        ? `## Parte ${i + 1}. ${t.title}\n\nSem vídeo: diálogo do Zappy e quiz. Alternativas equivalentes antes da escolha; resposta corrigida pelo servidor.\n\n`
-        : `## Parte ${i + 1}. ${t.title}\n\n**Clipe:** \`video-${t.key}\`\n\n**Na tela:** ${t.screen}\n\n**Fala para ElevenLabs:**\n\n\`\`\`text\n${t.text.replace(/ (?=\[)/g, '\n\n')}\n\`\`\`\n\n${t.kind === 'experience' ? '**Falas dentro da experiência:** `packages/core/src/learning/scene/guidance-simbolos.ts`, exportadas em `zappy-etapas.json`. A orientação sugere comparações pelo estado observado; os controles permanecem livres.\n\n' : ''}`
-  script = sincronizarRecadosNaPagina(script, manifest)
-  write(`simbolos-${aula.slug}.roteiro.md`, script)
-  for (const [ext, text] of derivadosDeVoz(extrairPartesElevenLabs(script)))
-    write(`simbolos-${aula.slug}${ext}`, text)
-  write(
-    `simbolos-${aula.slug}.md`,
-    `# ${aula.title}\n\nPoder do Faísca · O baú dos símbolos · ${aula.dimension.toUpperCase()}. Um projeto contínuo, uma entrega. Ajuda livre no Passo a passo do projeto; sem certificado nem publicação obrigatória.\n\n${sections.map((s, i) => `## Parte ${i + 1}. ${s.title}\n\n${s.objective}\n\n- Intenção: ${s.intent}.\n- Blocos: ${s.blockKeys.join(', ')}.\n- Estúdio: ${s.workspaceKey ?? 'não'}.\n- Conclusão: ${s.completion?.blockIds.join(', ') || 'avanço livre'}${s.completion?.submissionUpToDate ? '; envio atualizado' : ''}.\n\n${s.completion?.projectChecks?.map((c: { label: string }) => `- ${c.label}`).join('\n') ?? ''}`).join('\n\n')}\n\n[Fala integral](simbolos-${aula.slug}.roteiro.md) · [Passo a passo](passo-a-passo.md).\n`,
-  )
-  write(`simbolos-${aula.dimension}.szproject.json`, {
-    ...projects.estrela,
-    assets: await resolveCourseModels(projects.estrela.assets ?? []),
-  })
-  write(`simbolos-${aula.dimension}-inicio.szproject.json`, {
-    ...projects.inicio,
-    assets: await resolveCourseModels(projects.inicio.assets ?? []),
-  })
-}
-write('blocos.json', inventory)
-// As falas do Zappy dentro da experiência (02/11/2026), para gravar e auditar com o resto da aula.
-write('zappy-etapas.json', {
-  version: 1,
-  experiences: { experiencia: discoverySpeechSteps('symbol-sequence') },
-})
-write(
-  'modulos.md',
-  '# O baú dos símbolos — organização do curso\n\nPoder 4 do posto Faísca (`jornada-faisca-poder-4`). Módulo: **O baú dos símbolos**. Preservar o ID do curso, do módulo reservado e da `aula-1`; a `aula-2` é criada no Admin, no mesmo curso, antes da importação.\n\n' +
+    },
+  },
+  cenaDoZappy: 'symbol-sequence',
+  passoAPasso: help,
+  modulos:
+    '# O baú dos símbolos: organização do curso\n\nPoder 4 do posto Faísca (`jornada-faisca-poder-4`). Módulo: **O baú dos símbolos**. Preservar o ID do curso, do módulo reservado e da `aula-1`; a `aula-2` é criada no Admin, no mesmo curso, antes da importação.\n\n' +
     simbolosAulas
       .map(
         (a, i) =>
           `## Aula ${i + 1}. ${a.title}\n\nIdentificador: ${a.slug}. Dimensão: ${a.dimension.toUpperCase()}.\n\n${a.trechos.map((t, n) => `${n + 1}. ${t.title}.`).join('\n')}\n\n[Manifesto](simbolos-${a.slug}.manifesto.json) · [Roteiro](simbolos-${a.slug}.roteiro.md).`,
       )
       .join('\n\n') +
-    '\n\nUma entrega por aula. O Poder conta com as duas aulas concluídas. Sem certificado nem publicação na comunidade. Produzir e anexar a mídia real antes de publicar; publicar o curso só depois da `aula-2`.\n',
-)
-console.log(
-  'Baú dos símbolos: duas aulas, roteiros, voz, ajuda, inventário e quatro projetos portáteis gerados.',
-)
-// Os projetos dos manifestos já organizados, como o "Organizar blocos" do Estúdio (organizar-projetos.ts).
-organizarManifestos([dir])
+    '\n\nUma entrega por aula, na montagem da estrela; depois dela, só o quiz, que fecha a aula. O Poder conta com as duas aulas concluídas. Sem certificado nem publicação na comunidade. Produzir e anexar a mídia real antes de publicar; publicar o curso só depois da `aula-2`.\n',
+  resumo:
+    'Baú dos símbolos: duas aulas, roteiros, voz, ajuda, inventário e quatro projetos portáteis gerados.',
+})

@@ -69,6 +69,7 @@ export async function criarFonteDeCenarioDeEnsaio(instancias = 0) {
         sinal: options.signal,
         juntar: options.juntar,
         progresso: options.progresso,
+        ...(options.relevo ? { relevo: options.relevo } : {}),
       }),
   }
   return { host, resumo, fonte }

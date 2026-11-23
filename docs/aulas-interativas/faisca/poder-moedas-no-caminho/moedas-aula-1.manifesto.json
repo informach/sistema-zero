@@ -6,14 +6,14 @@
   "blocks": [
     {
       "key": "video-abertura",
-      "plannedVideo": "Título: Moedas no caminho do Farol\n\nMaster integral da professora: moedas-aula-1.roteiro.md, clipe video-abertura. Gravação pendente."
+      "plannedVideo": "Título: Moedas no caminho do Farol\n\nMaster integral da professora. Roteiro: moedas-aula-1.roteiro.md, clipe video-abertura. Substituições kids: [{\"id\":\"video-abertura-K1\",\"clipe\":\"video-abertura\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"Quantas moedas será que o baú pede?\",\"falaPersonagem\":\"Quantas moedas será que o baú pede?\",\"ancoraAntes\":\"moeda. Ela some, e o número ao lado do ícone da moeda sobe para 1. E o baú? Ele só abre com moedas suficientes.\",\"ancoraDepois\":\"Isso eu deixo para você descobrir. Repare também no aviso aqui em cima: ele diz o que fazer na partida. Para começar\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-abertura",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Clique no jogo e use as setas do teclado. Pegue moedas e tente o baú com poucas e com cinco ou mais. A tecla R começa outra partida. Depois clique em Próxima parte."
+        "text": "Sua vez! Jogue a versão pronta: segure as setas, pegue moedas e tente o baú com poucas e com muitas. A tecla R recomeça. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -22,7 +22,7 @@
         "kind": "interactive",
         "title": "Jogue Moedas no caminho",
         "required": true,
-        "instructions": "Clique no jogo e use as setas do teclado. Pegue moedas e tente o baú com poucas e com cinco ou mais. R começa outra partida. Você pode seguir sem terminar.",
+        "instructions": "Segure as setas no canto do jogo, ou clique no jogo e use as setas do teclado. Pegue moedas e tente o baú com poucas e com muitas. A tecla R começa outra partida. Você pode seguir sem terminar.",
         "hints": [],
         "activity": {
           "type": "project-play",
@@ -2739,19 +2739,19 @@
     },
     {
       "key": "video-material",
-      "plannedVideo": "Título: O seu Passo a passo do projeto\n\nMaster integral da professora: moedas-aula-1.roteiro.md, clipe video-material. Gravação pendente."
+      "plannedVideo": "Título: O seu Passo a passo do projeto\n\nMaster integral da professora. Roteiro: moedas-aula-1.roteiro.md, clipe video-material. Gravação pendente."
     },
     {
       "key": "ponte-material",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Este é o seu Passo a passo do projeto. Se quiser, leia aqui mesmo ou clique em Baixar para guardar. Depois clique em Próxima parte."
+        "text": "Este é o seu Passo a passo do projeto! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte."
       }
     },
     {
       "key": "video-experiencia",
-      "plannedVideo": "Título: O contador de moedas\n\nMaster integral da professora: moedas-aula-1.roteiro.md, clipe video-experiencia. Gravação pendente."
+      "plannedVideo": "Título: O contador de moedas\n\nMaster integral da professora. Roteiro: moedas-aula-1.roteiro.md, clipe video-experiencia. Substituições kids: [{\"id\":\"video-experiencia-K1\",\"clipe\":\"video-experiencia\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"E se o personagem voltar ao lugar de uma moeda que ele já pegou, ela conta de novo?\",\"falaPersonagem\":\"E se o personagem voltar ao lugar de uma moeda que ele já pegou, ela conta de novo?\",\"ancoraAntes\":\"comprar alguma coisa. Só que dá para perguntar de dois jeitos: moedas é pelo menos cinco? Ou moedas é exatamente cinco?\",\"ancoraDepois\":\"O que você acha? Isso você vai testar na experiência. Agora você vai investigar quando o número moedas muda e quando\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-experiencia",
@@ -2815,50 +2815,50 @@
     },
     {
       "key": "video-contador",
-      "plannedVideo": "Título: Crie o contador\n\nMaster integral da professora: moedas-aula-1.roteiro.md, clipe video-contador. Gravação pendente."
+      "plannedVideo": "Título: Crie o contador\n\nMaster integral da professora. Roteiro: moedas-aula-1.roteiro.md, clipe video-contador. Substituições kids: [{\"id\":\"video-contador-K1\",\"clipe\":\"video-contador\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"Por que o cofrinho começa em zero?\",\"falaPersonagem\":\"Por que o cofrinho começa em zero?\",\"ancoraAntes\":\"começa. Repare: ele chega com o nome contador. Clique em contador e escreva moedas. O valor já vem 0. Deixe assim.\",\"ancoraDepois\":\"Porque, no começo da partida, o personagem ainda não pegou nenhuma moeda. Jogando, você ainda não vê esse número,\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-contador",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora crie a variável moedas no fim de Ao iniciar, começando em 0. Clique em Verificar projeto e depois em Próxima parte."
+        "text": "Agora crie o cofrinho do seu jogo! No fim de Ao iniciar, coloque Criar variável moedas com valor 0. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
       "key": "video-coleta",
-      "plannedVideo": "Título: Cada moeda soma um\n\nMaster integral da professora: moedas-aula-1.roteiro.md, clipe video-coleta. Gravação pendente."
+      "plannedVideo": "Título: Cada moeda soma um\n\nMaster integral da professora. Roteiro: moedas-aula-1.roteiro.md, clipe video-coleta. Gravação pendente."
     },
     {
       "key": "ponte-coleta",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de montar a coleta! No encontro com as moedas, a moeda sai do grupo e soma 1 em moedas. Teste, clique em Verificar projeto e depois em Próxima parte."
+        "text": "Agora faça cada moeda contar! Logo abaixo do evento da tecla R, coloque o encontro com o grupo moedasDoCaminho e, dentro dele, Tirar o sprite moeda do grupo e Somar 1 em variável moedas. Teste no jogo. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
       "key": "video-placar",
-      "plannedVideo": "Título: Mostre as moedas na tela\n\nMaster integral da professora: moedas-aula-1.roteiro.md, clipe video-placar. Gravação pendente."
+      "plannedVideo": "Título: Mostre as moedas na tela\n\nMaster integral da professora. Roteiro: moedas-aula-1.roteiro.md, clipe video-placar. Gravação pendente."
     },
     {
       "key": "ponte-placar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora mostre as moedas na tela, com Mostrar placar no fim de A cada quadro do jogo. Teste, clique em Verificar projeto e depois em Próxima parte."
+        "text": "Agora mostre as moedas na tela! No fim de A cada quadro do jogo, coloque Mostrar placar Moedas: com valor da variável moedas, em x 38, y 60 e tamanho 20. Teste no jogo. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
       "key": "video-bau",
-      "plannedVideo": "Título: O baú pede pelo menos 5\n\nMaster integral da professora: moedas-aula-1.roteiro.md, clipe video-bau. Gravação pendente."
+      "plannedVideo": "Título: O baú pede pelo menos 5\n\nMaster integral da professora. Roteiro: moedas-aula-1.roteiro.md, clipe video-bau. Substituições kids: [{\"id\":\"video-bau-K1\",\"clipe\":\"video-bau\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"E se eu juntar seis moedas, o baú abre?\",\"falaPersonagem\":\"E se eu juntar seis moedas, o baú abre?\",\"ancoraAntes\":\"Pronto: agora o Se pergunta se moedas é maior ou igual a cinco, ou seja, se o personagem tem pelo menos cinco moedas.\",\"ancoraDepois\":\"Abre, sim: seis é mais que cinco, e o maior ou igual aceita cinco ou mais. Com o sinal de igual, o baú ficaria fechado\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-bau",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de ensinar o baú a decidir! Com pelo menos 5 moedas ele abre; com menos, ele avisa. Teste os dois casos, clique em Verificar projeto e depois em Próxima parte."
+        "text": "Agora ensine o baú a decidir! No encontro com o baú, o Se pergunta se moedas é maior ou igual a 5: no então, o baú abre e o aviso conta; no senão, o aviso pede pelo menos 5 moedas. Teste os dois casos. Depois clique em Verificar projeto, em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte."
       }
     },
     {
@@ -2866,7 +2866,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de pensar nas regras das moedas! As perguntas retomam o baú, a comparação, a coleta e os testes. Em cada uma tem uma explicação, e você pode tentar de novo. Nas perguntas com cena, escolha e clique em Ver o que acontece; na outra, clique em Responder."
+        "text": "Escolha uma resposta e clique em Ver o que acontece ou, nas perguntas sem cena, em Responder. Observe a cena e a explicação. Você pode tentar de novo. Quando terminar, clique em Concluir aula."
       }
     },
     {
@@ -2966,18 +2966,6 @@
             "explanation": "A regra tem duas respostas: abrir e avisar. Uma partida com menos de 5 confere o aviso, e outra com 5 ou mais confere se o baú abre. Uma partida só testa um lado."
           }
         ]
-      }
-    },
-    {
-      "key": "video-entrega",
-      "plannedVideo": "Título: Envie o seu jogo com moedas\n\nMaster integral da professora: moedas-aula-1.roteiro.md, clipe video-entrega. Gravação pendente."
-    },
-    {
-      "key": "ponte-entrega",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Confira os objetivos e clique em Enviar meu projeto. Confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula."
       }
     },
     {
@@ -18114,10 +18102,6 @@
             "bau": {
               "entryExampleId": "fa15ca01-0000-4000-8000-000000000004",
               "solutionExampleId": "fa15ca01-0000-4000-8000-000000000005"
-            },
-            "entrega": {
-              "entryExampleId": "fa15ca01-0000-4000-8000-000000000005",
-              "solutionExampleId": "fa15ca01-0000-4000-8000-000000000005"
             }
           }
         }
@@ -18142,7 +18126,25 @@
             "url": "/como-fazer/estudio-achar-e-organizar-blocos"
           },
           {
-            "id": "pedir-ajuda",
+            "id": "plataforma-baixar-materiais",
+            "kind": "link",
+            "label": "Como abrir o Passo a passo do projeto e os materiais",
+            "url": "/como-fazer/plataforma-baixar-materiais"
+          },
+          {
+            "id": "plataforma-abrir-uma-aula",
+            "kind": "link",
+            "label": "Como abrir uma aula e trocar de parte",
+            "url": "/como-fazer/plataforma-abrir-uma-aula"
+          },
+          {
+            "id": "plataforma-ampliar-a-atividade",
+            "kind": "link",
+            "label": "Como dar mais espaço ao jogo e à experiência",
+            "url": "/como-fazer/plataforma-ampliar-a-atividade"
+          },
+          {
+            "id": "plataforma-pedir-ajuda",
             "kind": "link",
             "label": "Como pedir ajuda à equipe",
             "url": "/como-fazer/plataforma-pedir-ajuda"
@@ -18542,423 +18544,11 @@
     {
       "key": "bau",
       "title": "O baú pede pelo menos 5",
-      "intent": "application",
+      "intent": "delivery",
       "objective": "O baú pede pelo menos 5.",
       "blockKeys": [
         "video-bau",
-        "ponte-bau"
-      ],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": [
-          "video-bau"
-        ],
-        "projectChecks": [
-          {
-            "id": "zero",
-            "label": "Crie a variável moedas começando em 0: sem encostar em nada, ela continua 0.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "wait",
-                  "ms": 1200
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "moedas"
-                },
-                "compare": "equals",
-                "value": 0
-              }
-            }
-          },
-          {
-            "id": "contar",
-            "label": "Conte cada moeda: depois de três moedas, o número é 3 e as três sumiram.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "moeda3",
-                  "timeoutMs": 2000
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "moedas"
-                },
-                "compare": "equals",
-                "value": 3
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 1,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "moedasDoCaminho.items.length"
-                    },
-                    "compare": "equals",
-                    "value": 3
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "id": "uma-vez",
-            "label": "A mesma moeda não conta duas vezes: voltar ao lugar dela não soma de novo.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "moeda1",
-                  "timeoutMs": 1500
-                },
-                {
-                  "action": "press",
-                  "key": "ArrowLeft",
-                  "holdMs": 250
-                },
-                {
-                  "action": "wait",
-                  "ms": 100
-                },
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "moeda1",
-                  "timeoutMs": 1500
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "moedas"
-                },
-                "compare": "equals",
-                "value": 1
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 1,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "moedas"
-                    },
-                    "compare": "equals",
-                    "value": 1
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "id": "placar",
-            "label": "Mostre o número de moedas na tela.",
-            "rule": {
-              "type": "usesBlock",
-              "area": "loops",
-              "blockType": "sz_g2d_draw_score",
-              "inputBlocks": {
-                "VALUE": {
-                  "blockType": "sz_val_variable",
-                  "fields": {
-                    "NAME": "moedas"
-                  }
-                }
-              }
-            }
-          },
-          {
-            "id": "meta",
-            "label": "Com menos de 5 moedas, o baú fica fechado e o aviso diz o que falta.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "moeda2",
-                  "timeoutMs": 2000
-                },
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "bau",
-                  "timeoutMs": 2500
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "bau.image.url"
-                },
-                "compare": "notContains",
-                "value": "IHk9IjM2IiB3aWR0aD0iMTEiIGhlaWdodD0iNyIgcng9IjIuNSIgZmlsbD0iI2YzYjEyMyIvPgogIDxyZWN0IHg9IjI2LjUiIHk9IjQwIiB3aWR0aD0iMTEiIGhlaWdodD0iMyIgcng9IjEuNSIgZmlsbD0iI2Q5OGMxYSIvPgo8L3N2Zz4="
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 2,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "moedas"
-                    },
-                    "compare": "equals",
-                    "value": 2
-                  }
-                },
-                {
-                  "afterStep": 2,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "aviso"
-                    },
-                    "compare": "changed"
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "id": "cinco",
-            "label": "Com exatamente 5 moedas o baú já abre (\"pelo menos 5\"), e voltar pelo caminho não conta de novo.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "moeda5",
-                  "timeoutMs": 3000
-                },
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "bau",
-                  "timeoutMs": 3500
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "bau.image.url"
-                },
-                "compare": "contains",
-                "value": "IHk9IjM2IiB3aWR0aD0iMTEiIGhlaWdodD0iNyIgcng9IjIuNSIgZmlsbD0iI2YzYjEyMyIvPgogIDxyZWN0IHg9IjI2LjUiIHk9IjQwIiB3aWR0aD0iMTEiIGhlaWdodD0iMyIgcng9IjEuNSIgZmlsbD0iI2Q5OGMxYSIvPgo8L3N2Zz4="
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 1,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "moedas"
-                    },
-                    "compare": "equals",
-                    "value": 5
-                  }
-                },
-                {
-                  "afterStep": 2,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "moedas"
-                    },
-                    "compare": "equals",
-                    "value": 5
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "id": "seis",
-            "label": "Com as 6 moedas o baú também abre.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "moeda5",
-                  "timeoutMs": 3000
-                },
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "moeda6",
-                  "timeoutMs": 3500
-                },
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "bau",
-                  "timeoutMs": 3500
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "bau.image.url"
-                },
-                "compare": "contains",
-                "value": "IHk9IjM2IiB3aWR0aD0iMTEiIGhlaWdodD0iNyIgcng9IjIuNSIgZmlsbD0iI2YzYjEyMyIvPgogIDxyZWN0IHg9IjI2LjUiIHk9IjQwIiB3aWR0aD0iMTEiIGhlaWdodD0iMyIgcng9IjEuNSIgZmlsbD0iI2Q5OGMxYSIvPgo8L3N2Zz4="
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 2,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "moedas"
-                    },
-                    "compare": "equals",
-                    "value": 6
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "id": "reinicio",
-            "label": "Uma nova partida (tecla R) recomeça o contador em 0, com as seis moedas de volta.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "moeda3",
-                  "timeoutMs": 2000
-                },
-                {
-                  "action": "press",
-                  "key": "r",
-                  "holdMs": 80
-                },
-                {
-                  "action": "wait",
-                  "ms": 400
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "moedas"
-                },
-                "compare": "equals",
-                "value": 0
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 3,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "moedasDoCaminho.items.length"
-                    },
-                    "compare": "equals",
-                    "value": 6
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "id": "farol",
-            "label": "O farol continua: com a chave, ele acende.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "chave",
-                  "timeoutMs": 2500
-                },
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "farol",
-                  "timeoutMs": 3500
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "farol.image.url"
-                },
-                "compare": "contains",
-                "value": "IiB0cmFuc2Zvcm09InJvdGF0ZSgwLjggNzguNjM2MyAxMzguMjEzKSIvPgogICAgCiAgPGVsbGlwc2UgY3g9Ijc1LjA5NzUiIGN5PSIyLjUxNzUiIHJ4PSIyLjQxMDYyIiByeT0iMi40NDYyNSIgZmlsbD0iI2NmM2YzNiIvPgo8L3N2Zz4="
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "revisao",
-      "title": "Pense nas moedas",
-      "intent": "explanation",
-      "objective": "Pense nas moedas.",
-      "blockKeys": [
-        "ponte-revisao",
-        "quiz"
-      ],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": [
-          "quiz"
-        ]
-      }
-    },
-    {
-      "key": "entrega",
-      "title": "Envie o seu jogo com moedas",
-      "intent": "delivery",
-      "objective": "Envie o seu jogo com moedas.",
-      "blockKeys": [
-        "video-entrega",
-        "ponte-entrega",
+        "ponte-bau",
         "projeto"
       ],
       "workspaceKey": "projeto",
@@ -18967,7 +18557,7 @@
       "completion": {
         "version": 1,
         "blockIds": [
-          "video-entrega",
+          "video-bau",
           "projeto"
         ],
         "projectChecks": [
@@ -19345,6 +18935,25 @@
           }
         ],
         "submissionUpToDate": true
+      }
+    },
+    {
+      "key": "revisao",
+      "title": "Pense nas moedas",
+      "intent": "closing",
+      "objective": "Pense nas moedas.",
+      "blockKeys": [
+        "ponte-revisao",
+        "quiz"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [
+          "quiz"
+        ]
       }
     }
   ]

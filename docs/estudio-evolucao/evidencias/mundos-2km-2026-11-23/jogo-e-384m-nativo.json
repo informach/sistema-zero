@@ -68,14 +68,7 @@
       "piorMs": 3.7999999999883585
     }
   ],
-  "regioesVisitadas": [
-    "Vila",
-    "Floresta",
-    "Caverna",
-    "Montanha",
-    "Praia",
-    "Lago"
-  ],
+  "regioesVisitadas": ["Vila", "Floresta", "Caverna", "Montanha", "Praia", "Lago"],
   "memoria": {
     "heapJs": 269138165,
     "geometrias": 12,

@@ -13,8 +13,52 @@
     "video-experiencia",
     "video-alavanca",
     "video-sobe",
-    "video-atravessar",
-    "video-entrega"
+    "video-atravessar"
   ],
-  "intervencoes": []
+  "intervencoes": [
+    {
+      "id": "video-abertura-K1",
+      "clipe": "video-abertura",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "pode clicar no jogo e usar as setas do teclado. Olha aqui: com a seta da direita, o personagem anda para a direita.",
+      "ancoraDepois": "Isso eu deixo para você descobrir. Repare também no aviso aqui em cima: ele diz o que fazer na partida. O farol",
+      "falaPrincipal": "E o que acontece quando ele encosta na alavanca?",
+      "falaPersonagem": "E o que acontece quando ele encosta na alavanca?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-experiencia-K1",
+      "clipe": "video-experiencia",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "guarda isso numa variável chamada ponteAberta: verdadeiro quando a ponte está baixada, falso quando ela está levantada.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que acontece com a ponte enquanto o",
+      "falaPrincipal": "E quando é que o relógio da ponte começa a contar?",
+      "falaPersonagem": "E quando é que o relógio da ponte começa a contar?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-alavanca-K1",
+      "clipe": "video-alavanca",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "baixada. Abra Programação e depois Lógica e Se, e pegue outro bloco verdadeiro. Solte em cima do 1 e deixe verdadeiro.",
+      "ancoraDepois": "Porque cada um vale num momento. Em Ao iniciar, a partida começa com a ponte levantada. Aqui, o personagem acabou de",
+      "falaPrincipal": "Por que aqui fica verdadeiro, se lá em Ao iniciar ficou falso?",
+      "falaPersonagem": "Por que aqui fica verdadeiro, se lá em Ao iniciar ficou falso?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-sobe-K1",
+      "clipe": "video-sobe",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "nada, e conte comigo: um, dois, três, quatro. Olha só: a ponte sobe sozinha, a alavanca volta para cima e o aviso muda!",
+      "ancoraDepois": "A ponte baixa outra vez, e o relógio começa a contar de novo, como na experiência. Saia de cima da alavanca e encoste",
+      "falaPrincipal": "E se eu encostar na alavanca de novo?",
+      "falaPersonagem": "E se eu encostar na alavanca de novo?",
+      "tags": ["[curious]"]
+    }
+  ]
 }

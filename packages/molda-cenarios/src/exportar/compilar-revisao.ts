@@ -15,7 +15,8 @@ export type FonteDaCompilacao = Pick<
 export async function compilarRevisaoDaOficina(
   host: FonteDaCompilacao,
   preparo: PreparoDeExportacao,
-  opcoes: { juntar: boolean; tamanhoDaRegiao: number },
+  /** `relevo: 'campo'`: o relevo em campo (plano "Mundos de 2 km"); sem ele, como sempre. */
+  opcoes: { juntar: boolean; tamanhoDaRegiao: number; relevo?: 'campo' },
   sinal: AbortSignal,
   progresso: (p: ProgressoDaCompilacao) => void,
 ) {
@@ -34,6 +35,7 @@ export async function compilarRevisaoDaOficina(
       progresso,
       preservarHierarquia: (o) => Object.keys(o.propriedades ?? {}).length > 0,
       ...(opcoes.juntar ? { juncaoEstatica: { tamanhoDaRegiao: opcoes.tamanhoDaRegiao } } : {}),
+      ...(opcoes.relevo ? { relevo: opcoes.relevo } : {}),
     },
   )
   if (pacote.cena.fonte.digest !== preparo.digest)

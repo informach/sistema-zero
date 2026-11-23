@@ -1,8 +1,8 @@
 # Roteiro de produção · Leve sua missão para o 3D
 
-Master integral da professora. Montagem completa na ajuda opcional, sem resolver os encaixes no vídeo principal. Sem intervenções de personagens. Voz, escuta, gravação e publicação pendentes.
+A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para gerar a voz integral. Sem intervenções de personagens. Montagem guiada completa no vídeo, um gesto por vez, com o destino à vista antes da peça. O jogo é de teclado: o robô dá o foco ao jogo (Rodar de novo no Estúdio, ou um toque no jogo pronto) antes de segurar as setas. Os tempos das setas no Na tela são estimativas para a velocidade 4 e se acertam no Verificar plano. Gravação e publicação desta revisão ainda não confirmadas.
 
-**Antes de gravar:** use um perfil de ensaio sem envio nesta aula. Mostre o projeto da dimensão correta. Não preencha Recado no envio. Mostre Salvo e Projeto enviado! só quando esses estados aparecerem de verdade.
+**Antes de gravar:** use um perfil de ensaio sem envio nesta aula. Mostre o projeto da dimensão correta. Não preencha Recado no envio. Mostre Objetivo cumprido! e Projeto enviado! só quando esses estados aparecerem de verdade.
 
 ## Parte 1. O mesmo desafio, com profundidade
 
@@ -136,7 +136,7 @@ Master integral da professora. Montagem completa na ajuda opcional, sem resolver
 
 ## Parte 6. Pense nos seus testes
 
-Sem vídeo: diálogo do Zappy e quiz. Alternativas equivalentes antes da escolha; resposta corrigida pelo servidor.
+Quiz sem vídeo: escolha, demonstração, explicação e nova tentativa. Resposta corrigida pelo servidor.
 
 **Recado na página (não gravar):** Escolha uma resposta. Nas perguntas com cena, clique em Ver o que acontece; na outra, clique em Responder. Leia a explicação e tente de novo se precisar.
 

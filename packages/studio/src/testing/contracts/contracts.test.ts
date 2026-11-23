@@ -173,3 +173,60 @@ describe('cenário do Molda Cenários com regiões (cena compilada com as listas
       expect(() => open(withChange)).toThrow(ProjectDocumentError)
     })
 })
+
+describe('cenário do Molda Cenários com o relevo em campo (mundos de 2 km, lote 3)', () => {
+  const relevoDe = (envelope: Record<string, unknown>) =>
+    (envelope.cena as { terreno: { relevo: Record<string, unknown> } }).terreno.relevo
+
+  test('a versão congelada abre inteira, com o relevo e os pesos, sem lote nem colisão de terreno', () => {
+    const assets = fixture('molda-scene3d-campo-v1') as ProjectAsset[]
+    const scene = sceneEnvelope(assets)
+    expect(isValidScene3DDataUrl(scene.dataUrl, 'scene3d', scene.originalFileName)).toBe(true)
+    expect(open(assets)).toEqual(assets)
+    let cena: {
+      arquivos: Array<{ papel: string }>
+      colisoes: Array<{ tipo: string }>
+      terreno: { relevo: { tipo: string; pesos: string[] } }
+    } | null = null
+    rewriteEnvelope(scene.dataUrl, (envelope) => {
+      cena = envelope.cena as never
+    })
+    expect(cena!.terreno.relevo.tipo).toBe('campo')
+    expect(cena!.arquivos.filter((a) => a.papel === 'pesos').length).toBe(
+      cena!.terreno.relevo.pesos.length,
+    )
+    expect(cena!.arquivos.some((a) => a.papel === 'terreno')).toBe(false)
+    expect(cena!.colisoes.some((c) => c.tipo === 'terreno')).toBe(false)
+  })
+
+  for (const [caso, mudar] of [
+    [
+      'campo desconhecido no relevo',
+      (relevo: Record<string, unknown>) => {
+        relevo.nivelDeDetalhe = 3
+      },
+    ],
+    [
+      'camada sem a cor média',
+      (relevo: Record<string, unknown>) => {
+        delete (relevo.camadas as Record<string, unknown>[])[0]!.corMedia
+      },
+    ],
+    [
+      'pesos que não estão no pacote',
+      (relevo: Record<string, unknown>) => {
+        relevo.pesos = ['terreno/pesos-z.png']
+      },
+    ],
+  ] as const)
+    test(`${caso} é recusado sem perda`, () => {
+      const assets = fixture('molda-scene3d-campo-v1') as ProjectAsset[]
+      const scene = sceneEnvelope(assets)
+      const changed = rewriteEnvelope(scene.dataUrl, (envelope) => mudar(relevoDe(envelope)))
+      expect(isValidScene3DDataUrl(changed, 'scene3d', scene.originalFileName)).toBe(false)
+      const withChange = assets.map((asset) =>
+        asset === scene ? { ...asset, dataUrl: changed } : asset,
+      )
+      expect(() => open(withChange)).toThrow(ProjectDocumentError)
+    })
+})

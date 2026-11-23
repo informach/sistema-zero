@@ -9,6 +9,8 @@
  *   compilador real do Molda Cenários (`testing/scene3dTransportFixture.ts`);
  * - `molda-scene3d-regioes-v1.json`: o mesmo, com duas regiões vizinhas no documento (a cena
  *   compilada leva as listas de cada região; lote 5 da conclusão, 22/11/2026).
+ * - `molda-scene3d-campo-v1.json`: o mesmo, com o relevo em campo (alturas e pesos, sem lotes nem
+ *   colisão de terreno; plano "Mundos de 2 km", lote 3, 23/11/2026).
  *
  *   bun scripts/freeze-contract-fixtures.ts            # recusa sobrescrever o que já existe
  *   bun scripts/freeze-contract-fixtures.ts --nova pinta-scene-v4   # só grava a que falta
@@ -79,12 +81,20 @@ async function moldaScene3dRegioesV1(): Promise<unknown> {
   return assets
 }
 
+async function moldaScene3dCampoV1(): Promise<unknown> {
+  const { GlobalRegistrator } = await import('@happy-dom/global-registrator')
+  if (typeof globalThis.FileReader === 'undefined') GlobalRegistrator.register()
+  const { assets } = await criarTransporteDeEnsaio({ relevoEmCampo: true })
+  return assets
+}
+
 const produtores: Record<string, () => Promise<unknown>> = {
   'pinta-scene-v1': async () => sceneOfVersion(1),
   'pinta-scene-v2': async () => sceneOfVersion(2),
   'pinta-scene-v3': sceneV3,
   'molda-scene3d-v1': moldaScene3dV1,
   'molda-scene3d-regioes-v1': moldaScene3dRegioesV1,
+  'molda-scene3d-campo-v1': moldaScene3dCampoV1,
 }
 
 const pedida = process.argv.indexOf('--nova')
