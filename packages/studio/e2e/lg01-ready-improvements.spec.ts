@@ -19,6 +19,44 @@ test('o botão do palco entra e sai da tela cheia sem perder o editor', async ({
   await expect(page.getByRole('button', { name: 'Blocos', exact: true })).toBeVisible()
 })
 
+test('o menu do editor incorporado cabe na janela e abre os modelos 3D', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 })
+  await newProject(page)
+  await page.getByRole('button', { name: 'Mais opções' }).click()
+  await page.getByRole('menuitem', { name: 'Mais blocos', exact: true }).click()
+  const kit = page.getByRole('listitem').filter({
+    has: page.getByText('Jogo 3D Avançado', { exact: true }),
+  })
+  await kit.getByRole('button', { name: 'Pôr no meu jogo', exact: true }).click()
+  await expect(kit.getByText('No meu jogo', { exact: true })).toBeVisible()
+  await page.keyboard.press('Escape')
+  // O host da aula tem conteúdo antes do Estúdio. O gatilho fica visível perto
+  // do fim da janela: clicar nele não deve exigir rolar a página para achar o menu.
+  await page.evaluate(() => {
+    const root = document.getElementById('root')!
+    const host = document.createElement('div')
+    host.style.cssText = 'height:170vh;padding-top:70vh;box-sizing:border-box'
+    root.before(host)
+    host.append(root)
+    document.documentElement.style.overflow = 'auto'
+    document.body.style.overflow = 'auto'
+    window.scrollTo(0, 0)
+  })
+  const trigger = page.getByRole('button', { name: 'Mais opções' })
+  expect((await trigger.boundingBox())!.y).toBeGreaterThan(520)
+  await trigger.click()
+  const menu = page.getByRole('menu', { name: 'Mais opções' })
+  await expect(menu).toBeVisible()
+  await expect
+    .poll(async () => {
+      const bounds = await menu.boundingBox()
+      return Boolean(bounds && bounds.y >= 8 && bounds.y + bounds.height <= 792)
+    })
+    .toBe(true)
+  await menu.getByRole('menuitem', { name: 'Modelos 3D', exact: true }).click()
+  await expect(page.getByRole('dialog', { name: 'Materiais do jogo' })).toBeVisible()
+})
+
 test('o modelo do Molda ganha uma miniatura WebGL e continua reconhecível ao reabrir', async ({
   page,
 }, testInfo) => {
