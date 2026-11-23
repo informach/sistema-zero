@@ -96,19 +96,7 @@ O farol acende uma vez só.
 
 **Zappy na página (não gravar):** Agora faça o farol acender uma vez só! Ponha um Se novo com não ganhou no encontro com o farol e leve o Se temChave para dentro do então dele. Teste: acenda o farol, ande para trás e volte. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
-### Parte 5. O que você descobriu no 3D
-
-Conferir ponto de vista, posição, altura e escolha de teste.
-
-- Intenção: explanation.
-- Blocos: ponte-quiz, quiz.
-- Conclusão: quiz.
-
-
-
-**Zappy na página (não gravar):** Escolha uma resposta e clique em Ver o que acontece. Observe a cena e a explicação. Você pode tentar de novo.
-
-### Parte 6. Deixe o jogo com a sua cara
+### Parte 5. Deixe o jogo com a sua cara
 
 Deixe o jogo com a sua cara.
 
@@ -135,7 +123,7 @@ Deixe o jogo com a sua cara.
 
 **Zappy na página (não gravar):** A surpresa chegou! Que combinação você vai criar? Troque o que quiser: personagem, barco, chave, farol ou cenário. Troque só o modelo e deixe o nome e o tamanho como estão. Teste e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
-### Parte 7. Escolha seu esconderijo e teste de verdade
+### Parte 6. Escolha seu esconderijo e teste de verdade
 
 Escolha seu esconderijo e teste de verdade.
 
@@ -161,6 +149,18 @@ Escolha seu esconderijo e teste de verdade.
 - No encontro com farol, coloque o Se temChave dentro de Se não ganhou.
 
 **Zappy na página (não gravar):** Agora escolha o esconderijo da chave! Mude o x e o z no bloco Colocar o objeto chave e teste se o personagem alcança. Se quiser, escreva os seus avisos. Depois clique em Verificar projeto, em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.
+
+### Parte 7. O que você descobriu no 3D
+
+Conferir ponto de vista, posição, altura e escolha de teste.
+
+- Intenção: closing.
+- Blocos: ponte-quiz, quiz.
+- Conclusão: quiz.
+
+
+
+**Zappy na página (não gravar):** Escolha uma resposta e clique em Ver o que acontece. Observe a cena e a explicação. Você pode tentar de novo.
 
 ### Parte 8. Sua ilha está pronta
 
