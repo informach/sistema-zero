@@ -35,7 +35,10 @@ const centro = (letra: string) => {
 }
 
 /** `extrasEmE`: cópias do chão de E na mesma região (para pesar nas malhas do orçamento). */
-async function pacote(extrasEmE = 0): Promise<PacoteCompilado> {
+// O pacote do teste é mutável: as provas de falha tiram e repõem um arquivo de propósito.
+async function pacote(
+  extrasEmE = 0,
+): Promise<PacoteCompilado & { arquivos: Map<string, Uint8Array> }> {
   const a = new ArquivosDaCompilacao(new AbortController().signal)
   const nos = [],
     colisoes = []
