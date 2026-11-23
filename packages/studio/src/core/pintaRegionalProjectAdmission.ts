@@ -7,6 +7,7 @@ import {
 } from './pintaRegionalMaterial'
 import { hasRegionalPintaReference, UNSUPPORTED_PINTA_REGION } from './pintaRegionalReference'
 import { MAX_ASSETS_COUNT, MAX_ASSETS_TOTAL_CHARS } from './projectAssetBudget'
+import { ProjectDocumentError } from './projectDocumentGuards'
 
 type Asset = Record<string, unknown>
 const ASSET_BINDING = [
@@ -71,7 +72,7 @@ function bindMaterial(raw: unknown): MaterialBinding | null {
   }
   if (!hasRegionalPintaReference(asset)) return binding
   if (!asset.regional || LEGACY_FIELDS.some((field) => asset[field] !== undefined))
-    throw new Error(UNSUPPORTED_PINTA_REGION)
+    throw new ProjectDocumentError('invalid-document', UNSUPPORTED_PINTA_REGION)
   return { ...binding, regional: readPintaRegionalMarker(asset.regional) }
 }
 
@@ -80,13 +81,15 @@ export function assertRegionalProjectAssetProof(
   proof: PintaRegionalProjectAdmissions,
 ): void {
   const admission = verified.get(proof)
-  if (!admission) throw new Error(UNSUPPORTED_PINTA_REGION)
+  if (!admission) throw new ProjectDocumentError('invalid-document', UNSUPPORTED_PINTA_REGION)
   const { materials } = admission
   if (!Array.isArray(raw)) {
-    if (materials !== null) throw new Error(UNSUPPORTED_PINTA_REGION)
+    if (materials !== null)
+      throw new ProjectDocumentError('invalid-document', UNSUPPORTED_PINTA_REGION)
     return
   }
-  if (!materials || materials.length !== raw.length) throw new Error(UNSUPPORTED_PINTA_REGION)
+  if (!materials || materials.length !== raw.length)
+    throw new ProjectDocumentError('invalid-document', UNSUPPORTED_PINTA_REGION)
   for (const [index, captured] of materials.entries()) {
     const current = bindMaterial(raw[index])
     if (captured === null && current === null) continue
@@ -98,7 +101,7 @@ export function assertRegionalProjectAssetProof(
       captured.regional?.sourceId !== current.regional?.sourceId ||
       captured.regional?.sha256 !== current.regional?.sha256
     )
-      throw new Error(UNSUPPORTED_PINTA_REGION)
+      throw new ProjectDocumentError('invalid-document', UNSUPPORTED_PINTA_REGION)
   }
 }
 
@@ -184,7 +187,7 @@ export async function admitRegionalProjectAssets(
           paths.get(proPath.toLowerCase()) !== 1)) ||
       (libId !== undefined && (libOrigin !== 'pinta' || libId !== `personal:${regional.sourceId}`))
     )
-      throw new Error(UNSUPPORTED_PINTA_REGION)
+      throw new ProjectDocumentError('invalid-document', UNSUPPORTED_PINTA_REGION)
     const admitted = await admitPintaRegionalMaterial(
       { sourceId: regional.sourceId, regional, dataUrl, width, height },
       signal,

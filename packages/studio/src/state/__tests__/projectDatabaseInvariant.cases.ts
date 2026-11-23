@@ -216,7 +216,11 @@ describe('ninguém lê nem grava o banco dos projetos pelo idb-keyval direto', (
       'testing/fakeIdbStore.ts': ['type UseStore'],
       // Bancos PRÓPRIOS, fora do banco dos projetos: a biblioteca pessoal do perfil e as
       // preferências do editor (que moravam no banco dos projetos até 11/09/2026).
-      'asset-library/personal.ts': ['createStore', 'del', 'get', 'getMany', 'keys', 'set'],
+      // Desde a proteção do PNG regional (14af1d777) o banco da biblioteca abre em
+      // `personalStorage.ts`; `personalRegional.ts` só lê a captura regional nesse mesmo banco.
+      'asset-library/personal.ts': ['getMany', 'keys'],
+      'asset-library/personalRegional.ts': ['get'],
+      'asset-library/personalStorage.ts': ['createStore'],
       'state/settingsStore.ts': ['createStore', 'get', 'update'],
       // Organização Pro usa sz-studio-workspace:<perfil>, separado de documento e histórico.
       'state/workspacePreferences.ts': ['createStore', 'get', 'set'],

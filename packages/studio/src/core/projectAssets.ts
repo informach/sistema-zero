@@ -18,6 +18,7 @@ import {
 import { hasRegionalPintaReference, UNSUPPORTED_PINTA_REGION } from './pintaRegionalReference'
 import { validProMaterialPath } from './proAssetPaths'
 import { MAX_ASSETS_COUNT, MAX_ASSETS_TOTAL_CHARS } from './projectAssetBudget'
+import { ProjectDocumentError } from './projectDocumentGuards'
 import {
   isScene3DAssetKind,
   isValidScene3DDataUrl,
@@ -602,7 +603,8 @@ export function sanitizeProjectAssets(
     const regional = hasRegionalPintaReference(a)
       ? admittedRegionalMarker(a, options.regionalMaterials)
       : undefined
-    if (!regional && hasRegionalPintaReference(a)) throw new Error(UNSUPPORTED_PINTA_REGION)
+    if (!regional && hasRegionalPintaReference(a))
+      throw new ProjectDocumentError('invalid-document', UNSUPPORTED_PINTA_REGION)
     const pintaImage = readPintaImageAssetMetadata(a)
     if (
       a.kind !== 'image' &&
@@ -735,7 +737,7 @@ export function assetManifest(
   if (regionalMaterials) assertRegionalProjectAssetProof(assets, regionalMaterials)
   for (const a of assets) {
     if (hasRegionalPintaReference(a) && !regionalMaterials)
-      throw new Error(UNSUPPORTED_PINTA_REGION)
+      throw new ProjectDocumentError('invalid-document', UNSUPPORTED_PINTA_REGION)
     if (a && a.kind === 'image' && typeof a.name === 'string' && typeof a.dataUrl === 'string') {
       out[a.name] = a.dataUrl
     }
@@ -821,7 +823,8 @@ export function assetMetaManifest(
   const sendScene = !context || codeUsesPintaScenePlayer(context.code)
   for (const a of assets) {
     if (hasRegionalPintaReference(a)) {
-      if (!regionalMaterials) throw new Error(UNSUPPORTED_PINTA_REGION)
+      if (!regionalMaterials)
+        throw new ProjectDocumentError('invalid-document', UNSUPPORTED_PINTA_REGION)
       out[a.name] = { hasScene: true }
       continue
     }
