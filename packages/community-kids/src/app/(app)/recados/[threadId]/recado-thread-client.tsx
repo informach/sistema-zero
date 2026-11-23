@@ -18,6 +18,7 @@ const CONTEXT_LABEL: Record<TeacherThreadContext, string> = {
   studio_submission: 'Seu projeto',
   mural_publication: 'Seu jogo no Mural',
   general: 'Recado',
+  pinta_recovery: 'Ajuda do Pinta',
 }
 
 /**

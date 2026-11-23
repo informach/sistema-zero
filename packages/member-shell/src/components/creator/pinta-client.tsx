@@ -26,6 +26,7 @@ import {
   createCloudMirroredPintaPersistence,
   type PintaPersistenceLike,
 } from '../../lib/pinta-cloud-persistence'
+import { pintaRecoveryHelpFor } from '../../lib/pinta-recovery-help'
 import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { useFocusMode } from './focus-mode'
 import { PensaMissionBlocked } from './pensa-mission-blocked'
@@ -380,6 +381,10 @@ export function PintaClient({
   // O selo "Guardado na sua conta" fica na barra do Pinta. O menu lateral pertence
   // à alça do shell Kids; `hostChrome.menu` é null para não duplicar o botão.
   const { chrome: hostChrome, announcement } = useHostChrome({ cloud, syncing })
+  // O "Preciso de ajuda" do aviso de recuperação da galeria: o canal de recados do aluno, ligado
+  // só com a conta do Pinta dele (o aviso só existe com a nuvem da conta).
+  const help = useMemo(() => pintaRecoveryHelpFor(account), [account])
+  const pintaChrome = useMemo(() => ({ ...hostChrome, help }), [hostChrome, help])
 
   return (
     // ⚠️ A moldura é COMPARTILHADA com o `loading.tsx` da rota (ver
@@ -431,7 +436,7 @@ export function PintaClient({
           <HostChromeAnnouncer text={announcement} />
           {/* O wrapper dá ao `h-full` do Pinta uma altura definida. */}
           <div className="flex min-h-0 flex-1 flex-col">
-            <mod.PintaHostChromeProvider value={hostChrome}>
+            <mod.PintaHostChromeProvider value={pintaChrome}>
               <mod.PintaApp
                 key={`${loadKey}:${handoff?.mission.id ?? 'free'}`}
                 adapter={adapter}

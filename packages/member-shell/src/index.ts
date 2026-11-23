@@ -16,6 +16,7 @@ import { createLiveRoutes } from './routes/live'
 import { createPensaRoutes } from './routes/pensa'
 import { createPintaCausalRoutes } from './routes/pinta-causal'
 import { createPintaPaletteWrites } from './routes/pinta-palette-writes'
+import { createPintaRecoveryHelpRoutes } from './routes/pinta-recovery-help'
 import { createPrivateNarrationRoutes } from './routes/private-narration'
 import { createStudioRoutes } from './routes/studio'
 import { createStudioAiReconcileRoutes } from './routes/studio-ai-reconcile'
@@ -115,6 +116,7 @@ export function createShell(cfg: ShellConfig) {
       palette: createPintaPaletteWrites({ gateway, session }),
     }),
     ...createPintaCausalRoutes({ gateway, session }),
+    ...createPintaRecoveryHelpRoutes({ gateway, session }),
     ...createCenariosRoutes({ gateway, session }),
     ...createCreationCleanupWorkerRoutes({ gateway }),
     ...createVoiceRoutes({ session, auth, members, audience: cfg.audience }),

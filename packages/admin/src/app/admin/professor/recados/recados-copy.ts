@@ -23,6 +23,7 @@ export const CONTEXT_LABELS: Record<TeacherThreadContext, string> = {
   studio_submission: 'Projeto',
   mural_publication: 'Mural',
   general: 'Recado geral',
+  pinta_recovery: 'Ajuda do Pinta',
 }
 
 export const CONTEXTS: readonly TeacherThreadContext[] = [
@@ -30,6 +31,7 @@ export const CONTEXTS: readonly TeacherThreadContext[] = [
   'studio_submission',
   'mural_publication',
   'general',
+  'pinta_recovery',
 ]
 
 /** A frase do contexto no alto do recado aberto. */
@@ -38,4 +40,7 @@ export const CONTEXT_DETAIL: Record<TeacherThreadContext, string> = {
   lesson_section: 'Dúvida numa parte da aula',
   mural_publication: 'Sobre uma publicação no Mural',
   general: 'Recado geral da equipe',
+  // Sem aula: a criança pediu ajuda no aviso de recuperação da galeria do Pinta. O recado traz o
+  // perfil no aparelho, as edições guardadas e os desenhos de cada uma.
+  pinta_recovery: 'Ajuda do Pinta: recuperação de desenhos',
 }
