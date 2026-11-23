@@ -19,6 +19,7 @@
     "test": "bun test src",
     "test:scripts": "bun test scripts",
     "check:phaser": "bun scripts/generate-phaser.ts --check",
+    "check:region-phaser": "bun scripts/generate-region-phaser.ts --check",
     "check:pygame-gallery": "bun scripts/pygame-gallery/generate.ts --check",
     "check:homologacao": "bun scripts/homologacao/check.ts",
     "check": "biome check .",

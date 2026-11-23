@@ -286,7 +286,10 @@ jobs:
           bun scripts/gen-pinta-scene-python.ts --check
           # Homologação dos cenários sem navegador: gera em pasta temporária e confere Tiled
           # (ida e volta pelo importador), o hash do Phaser e o py_compile do projeto Pygame.
-          (cd ../pinta && bun run check:phaser && bun run check:homologacao)
+          # Os dois códigos gerados dos cenários regionais também são conferidos: o adaptador
+          # regional do Phaser e o runtime regional composto nos jogos 2D do Estúdio.
+          (cd ../pinta && bun run check:phaser && bun run check:region-phaser && bun run check:homologacao)
+          bun run check:pinta-region-runtime
           bun --no-env-file test ./scripts/python/reference-game-audio.test.ts ./scripts/python/generate-visual-example-block-metadata.test.ts ./scripts/python/pgzero-art-png.test.ts
           bun run test:canvas-survival
           bun run test:grid-games

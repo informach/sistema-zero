@@ -67,8 +67,10 @@ modos preciso e `--legacy`. A opção `--dense` confere o pacote de grade densa.
 
 A linha coordenada (`728f387ee`, `a747b83d8`, `b4e31a8c8`) registrou Tiled 1.12.2,
 Phaser 3.90.0 no Chromium 159, CPython 3.14.2 com pygame-ce 2.5.7 e Godot 4.7.2. Na raiz,
-Tiled e Phaser vêm de `71746fdc7` e `6d00d0c8c`. O `pinta.gd` regional é byte a byte igual
-ao script ensaiado no Godot 4.7.2. Pygame usa o módulo fornecido da raiz, não o módulo
+Tiled e Phaser vêm de `71746fdc7` e `6d00d0c8c`. O `pinta.gd` regional e o projetado são byte a
+byte os de `347b2527e`, a linha ensaiada no Godot 4.7.2, exceto o orçamento de índices da
+cena 5, que `a730f1dc1` elevou ao da cena 4. `src/export/godot/regional.test.ts` prende os dois por sha256
+e confere essa única diferença. Pygame usa o módulo fornecido da raiz, não o módulo
 daquela linha. Os quatro ensaios precisam ser repetidos no pacote integrado. Os testes de
 unidade cobrem o conteúdo dos pacotes Godot e Pygame, a leitura do PNG 5 e o orçamento
 dos conjuntos.

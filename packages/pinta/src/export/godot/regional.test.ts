@@ -1,5 +1,10 @@
 import { expect, test } from 'bun:test'
-import type { PintaRegionSceneWire } from '@sistemazero/core/studio/pinta-region-scene'
+import { createHash } from 'node:crypto'
+import { PINTA_PROJECTED_SCENE_MAX_INDEX_BYTES } from '@sistemazero/core/studio/pinta-projected-scene'
+import {
+  PINTA_REGION_SCENE_MAX_INDEX_BYTES,
+  type PintaRegionSceneWire,
+} from '@sistemazero/core/studio/pinta-region-scene'
 import { nativeImageOf } from '../../../scripts/homologacao/generate'
 import { projectedVila } from '../../testing/projectedVila'
 import { regionVilaPlatform } from '../../testing/regionVilaPlatform'
@@ -98,4 +103,33 @@ test('a projected world goes to Godot with the projected reader, its layouts and
   await expect(
     buildScenePackage(map, assets, 'pygame', { imageOf: nativeImageOf }),
   ).rejects.toThrow('adaptador de projeção')
+})
+
+const sha256 = (text: string) => createHash('sha256').update(text).digest('hex')
+
+test('the regional and projected pinta.gd stay the scripts rehearsed in Godot 4.7.2, apart from the scene 5 budget', () => {
+  // The bytes the exporter writes today. Changing them needs a new Godot rehearsal
+  // (scripts/homologacao/verify-region-godot.ts, with and without --projected) first.
+  expect(sha256(godotRegionalScript)).toBe(
+    '44df4acba54dcecac3e42db661472ecf7a033fed915507190d1e08331d50cce0',
+  )
+  expect(sha256(godotProjectedScript)).toBe(
+    '8a6ee5d6d01c4228e0038319e0f6fa710ad83ed7b85c7b6f8fa1e0f569eb716d',
+  )
+  // 23/11/2026: f7123100c kept these scripts byte for byte as in 347b2527e, the line rehearsed
+  // in Godot 4.7.2. Since then only a730f1dc1 changed them, raising the scene 5 index budget
+  // from 4 MiB (2048 chunks of 2048 bytes) to the scene 4 budget. With the old budget they are
+  // the rehearsed bytes again; the rehearsal of the new budget is still pending.
+  const budget = (scene5: number) =>
+    `map_bytes > (${scene5} if version == 5 else ${PINTA_REGION_SCENE_MAX_INDEX_BYTES})`
+  const rehearsed = (script: string) => {
+    expect(script.split(budget(PINTA_PROJECTED_SCENE_MAX_INDEX_BYTES))).toHaveLength(2)
+    return sha256(script.replace(budget(PINTA_PROJECTED_SCENE_MAX_INDEX_BYTES), budget(4_194_304)))
+  }
+  expect(rehearsed(godotRegionalScript)).toBe(
+    'd9db63670f1788e63dfb1b39027e1c2d5886863c7c358051ca35938fb143f74f',
+  )
+  expect(rehearsed(godotProjectedScript)).toBe(
+    '0ad4cfc8d48b7c38f687e7ee76e9f86d40bb48b35df9963ff6ddb2a3359c0bbe',
+  )
 })
