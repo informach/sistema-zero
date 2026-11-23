@@ -9,7 +9,7 @@ relativos a `packages/`.
 
 | Sigla | Arquivo |
 |---|---|
-| PC | studio/src/state/__tests__/persistence.cases.ts (rodado por `persistence.test.ts`) |
+| PC | studio/src/state/__tests__/persistence.cases.ts (rodado por studio/src/state/persistence.test.ts, fora da pasta `__tests__`) |
 | SVC / EXC / PROM | studio/src/persistence/service.test.ts / exitConfirmation.test.ts / promotion.test.ts |
 | IDB / INV | studio/src/state/__tests__/idbTransaction.cases.ts / projectDatabaseInvariant.cases.ts |
 | COORD / SYNC / SEJ / CODEC / SCHED | studio/src/state/projectStorageCoordinator / projectSynchronousRecovery / synchronousExitJournal / exitJournalCodec / idbExitScheduling (.test.ts) |
@@ -143,11 +143,13 @@ na sua conta" 4 s depois de voltar à vista
 ## Outros itens da seção 13 conferidos neste lote
 
 - **"Abrir um projeto Python já o marca como mudado"** (visto no staging em 20/11): é de propósito na
-  PRIMEIRA abertura de um arquivo sem a área Programa (o `PythonBlocklyEditor` grava a área inicial,
-  e o e2e `e2e-python-editor/program-areas.spec.ts` exige: "Opening an example alone persists
-  Programa"). Pelo código, as aberturas seguintes restauram a área salva e não gravam. O que se viu
-  no staging foi a primeira abertura de exemplos da galeria. Não foi conferido de novo no app do
-  Kids.
+  PRIMEIRA abertura de um arquivo sem as áreas gravadas (o `PythonBlocklyEditor` grava as áreas
+  iniciais; desde 22/11/2026 são as seis áreas `sz_py_area_<kind>`, no lugar da área única
+  Programa). O e2e `e2e-python-editor/program-areas.spec.ts` exige isso no caso "Pac-Man program
+  areas reveal editable functions and persist non-executable scratch": a abertura sozinha grava as
+  áreas, sem mexer no layout nem no código. Pelo código, as aberturas seguintes restauram as áreas
+  salvas e não gravam (o mesmo caso confere os ids dos blocos na reabertura). O que se viu no
+  staging foi a primeira abertura de exemplos da galeria. Não foi conferido de novo no app do Kids.
 - **Vínculo Clássico → Pro**: existe nos dados. As duas conversões (JavaScript e Python) gravam
   `proMeta.origin = { projectId, revision }` apontando para a cópia em Blocos guardada; o esquema
   canônico do documento valida o campo (`core/src/studio/project-document.ts`). As provas: no

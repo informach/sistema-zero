@@ -717,9 +717,12 @@ autosave (1 s depois da última edição, no máximo 5 s), não a cada gesto, e 
 ## "Mostrar o bloco" numa função recolhida da cauda (lote 2 da conclusão, 22/11/2026)
 
 No Chrome conectado, o gesto da busca no Reino Zero Ultra ("se tecla", tecla R) travava a aba por
-uma tarefa de 243 s, contra 522 ms no playground: lá cada medida de texto em SVG custa cerca de 90
-vezes mais. Por isso o conserto mira o TRABALHO do gesto, que não depende da máquina, contado no
-e2e `classic-reveal-scale.spec.ts` (o gesto de verdade, no playground de produção):
+uma tarefa de 243 s, contra 522 ms no playground (as duas medidas da conferência de 21/11,
+[`../qa/2026-11-21-studio-lote8-staging.md`](../qa/2026-11-21-studio-lote8-staging.md)): lá cada
+medida de texto em SVG custa cerca de 90 vezes mais. Por isso o conserto mira o TRABALHO do gesto,
+que não depende da máquina, contado no e2e `classic-reveal-scale.spec.ts` (o gesto de verdade, no
+playground de produção). Os números da tabela são desse e2e; por isso o "Antes" da maior tarefa é
+542 ms, e não os 522 ms de 21/11 (outra rodada, outra medida):
 
 | Medida | Antes | Depois |
 |---|---|---|

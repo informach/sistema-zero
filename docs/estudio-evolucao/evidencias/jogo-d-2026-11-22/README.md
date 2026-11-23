@@ -15,7 +15,7 @@ e o resto dentro das cavernas e das casas. O programa usa só blocos que já exi
 | Gerador (`bun run gen:jogo-d`, `check:jogo-d`) | `packages/studio/scripts/gen-jogo-d.ts` |
 | Programa (JavaScript → IR estruturada) | `packages/studio/src/examples/jogoDSource.ts` → `__gen_jogoD.ts` |
 | Materiais gerados (22: 8 cenas, 7 imagens, 7 sons; 1,75 milhão de caracteres) | `packages/studio/src/examples/jogoD.generated.ts` |
-| O exemplo (a galeria entra no lote 9) | `packages/studio/src/examples/jogoDExample.ts` |
+| O exemplo (já na galeria "Ver os jogos prontos", só para a equipe: um pedaço do pacote carregado no clique, por `examples/bigExamples.ts`) | `packages/studio/src/examples/jogoDExample.ts` |
 | Testes sem navegador | `packages/studio/src/examples/jogoD.test.ts` |
 | Provas no navegador | `packages/studio/e2e/jogo-d.flow.ts`, `playwright.jogo-d.config.ts`, `scripts/serve-jogo-d-proof.ts` |
 
@@ -54,7 +54,9 @@ e o resto dentro das cavernas e das casas. O programa usa só blocos que já exi
 | Começos do jogo na sessão | 1 (o herói nunca morreu) | 1 |
 
 Os arquivos: `desempenho-windows.json`, `sessao-60s-windows.json`, `recibo-previa-windows.json` e
-`recibo-exportado-windows.json`. Medidos depois dos consertos da revisão do lote 8.
+`recibo-exportado-windows.json`. Medidos depois dos consertos da revisão do lote 8. São medidas
+locais sem SHA: os quatro arquivos não registram o commit nem a hora da rodada (entraram no Git
+junto com os consertos, em `b089d589e`, mas não dizem se a árvore medida era aquela).
 
 ## A sessão de 10 minutos no CI Linux (`studio-engines.yml`, run 45087601282, SHA `14cb1938b`)
 
