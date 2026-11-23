@@ -404,12 +404,12 @@ test('uma pincelada que chega durante a gravação anterior entra na fila, na or
     expect(await second).toMatchObject({ ok: true, changed: true })
     expect(await flushed).toMatchObject({ ok: true, changed: true })
     const saved = await persistence.loadAssetById(expanded.map.id)
-    if (saved?.kind !== 'tilemap') throw Error('Mapa ausente')
+    if (saved?.kind !== 'tilemap' || !isLocalRegionAsset(saved)) throw Error('Mapa ausente')
     expect([cellAt(saved, layer.id, 1, 1), cellAt(saved, layer.id, 40, 10)]).toEqual([1, 1])
     // O desfazer da fila também segue a ordem: o último volta primeiro.
     expect(await session.undo()).toMatchObject({ ok: true, changed: true })
     const undone = await persistence.loadAssetById(expanded.map.id)
-    if (undone?.kind !== 'tilemap') throw Error('Mapa ausente')
+    if (undone?.kind !== 'tilemap' || !isLocalRegionAsset(undone)) throw Error('Mapa ausente')
     expect([cellAt(undone, layer.id, 1, 1), cellAt(undone, layer.id, 40, 10)]).toEqual([
       1,
       cellAt(expanded.map, layer.id, 40, 10),
