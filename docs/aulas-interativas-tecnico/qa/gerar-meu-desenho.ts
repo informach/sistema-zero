@@ -42,8 +42,12 @@ const dir = resolve(
   '../../aulas-interativas/faisca/meu-primeiro-desenho-no-pinta',
 )
 mkdirSync(dir, { recursive: true })
-const write = (name: string, v: unknown) =>
-  gravarArquivo(resolve(dir, name), typeof v === 'string' ? v : `${JSON.stringify(v, null, 2)}\n`)
+// No formato da CI (biome ci); o JSON acima do files.maxSize do Biome (2 MiB) sai do JSON.stringify.
+const write = (name: string, v: string | object) => {
+  if (typeof v === 'string') return gravarArquivo(resolve(dir, name), v)
+  const puro = `${JSON.stringify(v, null, 2)}\n`
+  gravarArquivo(resolve(dir, name), Buffer.byteLength(puro) > 2_097_152 ? puro : formatarJson(v))
+}
 
 const aula = meuDesenhoAula
 const help = `# Passo a passo do projeto — Meu primeiro desenho no Pinta\n\nExtra do Faísca. Aqui estão as duas montagens da aula: desenhar a chave no Pinta e colocar o desenho no jogo da Chave do Farol. Você pode consultar quantas vezes quiser.\n\n${meuDesenhoAjuda
