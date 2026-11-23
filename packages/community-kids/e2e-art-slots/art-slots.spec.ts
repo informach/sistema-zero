@@ -90,7 +90,9 @@ test('o desenho do Pinta da aula entra no jogo do Estúdio', async ({ page }) =>
   await expect(page.getByText('2 de 2 cumpridos')).toBeVisible({ timeout: 180_000 })
   await page.getByRole('button', { name: 'Enviar meu projeto' }).click()
   await page.getByRole('dialog').getByRole('button', { name: 'Enviar', exact: true }).click()
-  await expect(page.getByText('Projeto enviado!')).toBeVisible({ timeout: 30_000 })
+  // O aviso do envio COMEÇA com a frase; o texto da aula também a cita (sem âncora o
+  // localizador acha os dois e reprova no modo estrito).
+  await expect(page.getByText(/^Projeto enviado!/)).toBeVisible({ timeout: 30_000 })
   await page.screenshot({ path: '.cache/art-slots-05.png' })
 
   // 6. Redesenhar: um dente a mais, Enviar de novo, e o jogo traz a chave nova ao abrir a aula.
