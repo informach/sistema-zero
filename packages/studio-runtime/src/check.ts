@@ -6,6 +6,8 @@ import {
   type ProjectCheckResponse,
 } from '@sistemazero/core/learning'
 import { studioProTemplate } from '@sistemazero/core/studio'
+import { verifyStudioBuildPlatformFiles } from '@sistemazero/core/studio/build-contract'
+import type { StudioProVerifiedPlatformFiles } from '@sistemazero/core/studio/pro-build'
 import { InvalidBuildRequestError, type ProBuildRequest, parseBuildRequest } from './contracts'
 
 /**
@@ -53,7 +55,17 @@ export type CheckRequest =
 const record = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
-export function parseCheckRequest(value: unknown): CheckRequest {
+/** As cópias publicadas do motor seguem a mesma conferência por hash do build. */
+export async function readCheckRequest(value: unknown): Promise<CheckRequest> {
+  const platform =
+    record(value) && value.mode === 'pro' ? await verifyStudioBuildPlatformFiles(value) : undefined
+  return parseCheckRequest(value, platform)
+}
+
+export function parseCheckRequest(
+  value: unknown,
+  platform?: StudioProVerifiedPlatformFiles,
+): CheckRequest {
   if (!record(value)) throw new InvalidBuildRequestError('Pedido de teste inválido.')
   const { mode, executionId, scope, objectives } = value
   if (typeof executionId !== 'string' || !EXECUTION_ID.test(executionId))
@@ -91,13 +103,16 @@ export function parseCheckRequest(value: unknown): CheckRequest {
     return { mode, executionId, scope, document: value.document, objectives, screenshots }
   }
   if (mode === 'pro') {
-    const build = parseBuildRequest({
-      executionId,
-      templateId: value.templateId,
-      files: value.files,
-      ...(value.binaries === undefined ? {} : { binaries: value.binaries }),
-      parentOrigin: 'https://studio-check.invalid',
-    })
+    const build = parseBuildRequest(
+      {
+        executionId,
+        templateId: value.templateId,
+        files: value.files,
+        ...(value.binaries === undefined ? {} : { binaries: value.binaries }),
+        parentOrigin: 'https://studio-check.invalid',
+      },
+      platform,
+    )
     if (Object.hasOwn(build.files, CHECK_ENTRY_PATH))
       throw new InvalidBuildRequestError('O projeto usa um caminho reservado ao teste.')
     for (const objective of objectives) {

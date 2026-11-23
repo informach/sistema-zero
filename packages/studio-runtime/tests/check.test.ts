@@ -140,6 +140,52 @@ function setup(
 }
 
 describe('POST /v1/check', () => {
+  test('o Pro convertido verifica uma cópia publicada do motor 2D antes de aplicar o teto do autor', async () => {
+    const {
+      currentProEngineCopies,
+      PRO_ENGINE_EXTENSION_IDS,
+      PRO_ENGINE_VARIANTS,
+      proEngineCopyPath,
+    } = await import('../../studio/src/modes/pro/proEngineCopies')
+    for (const id of PRO_ENGINE_EXTENSION_IDS) {
+      const copies = await currentProEngineCopies(id)
+      for (const variant of PRO_ENGINE_VARIANTS) {
+        const path = proEngineCopyPath(id)
+        const engine = copies[variant]
+        const context = setup({ compiled: false })
+        const response = await context.call({
+          ...proBody,
+          templateId: 'vanilla-vite',
+          files: { ...proBody.files, [path]: engine },
+        })
+        expect(response.status, `${id}/${variant}`).toBe(200)
+        expect(context.written.get(path)).toBe(engine)
+        expect(context.destroyed()).toBe(1)
+      }
+    }
+  })
+
+  test('a conferência do Pro não isenta motor editado, motor em outro caminho nem arquivo grande do autor', async () => {
+    const { currentProEngineCopies, proEngineCopyPath } = await import(
+      '../../studio/src/modes/pro/proEngineCopies'
+    )
+    const engine = (await currentProEngineCopies('game-2d')).completo
+    for (const [path, content] of [
+      [proEngineCopyPath('game-2d'), `${engine} `],
+      [proEngineCopyPath('game-2d-advanced'), engine],
+      ['src/grande.js', 'x'.repeat(256_001)],
+    ] as const) {
+      const context = setup()
+      const response = await context.call({
+        ...proBody,
+        files: { ...proBody.files, [path]: content },
+      })
+      expect(response.status).toBe(400)
+      expect(context.commands).toHaveLength(0)
+      expect(context.destroyed()).toBe(0)
+    }
+  })
+
   test('somente navegação 3D usa capacidade dedicada; ausência da capacidade falha fechada', async () => {
     const objective = {
       id: 'alvo-3d',

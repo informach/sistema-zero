@@ -34,9 +34,9 @@ import {
   CHECK_LIMITS,
   isKitTemplate,
   judgeCheck,
-  parseCheckRequest,
   proCheckEntry,
   proCheckModules,
+  readCheckRequest,
   withCheckEntry,
 } from './check'
 import { serveClassicShell } from './classic-shell'
@@ -931,7 +931,7 @@ async function runProjectCheck(
   // O prazo é contado do começo do PEDIDO: quem chama (o Members) desiste em 150 s, e o tempo do
   // contêiner subir e do Vite compilar sai do mesmo orçamento (review da etapa 3).
   const started = Date.now()
-  const input = parseCheckRequest(
+  const input = await readCheckRequest(
     await readJsonBodyWithLimit(request, CHECK_LIMITS.maxRequestBytes),
   )
   if (input.mode === 'pro') await verifyBuildBinaries(input.build.binaries)
