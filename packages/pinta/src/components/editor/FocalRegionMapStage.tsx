@@ -15,7 +15,7 @@ import type {
   RegionalBrushGesture,
 } from '../../state/localRegionAuthorSession'
 import type { PintaSessionStore } from '../../state/sessionStore'
-import type { CellPos } from '../../tiles/cellGeometry'
+import { type CellPos, lineCells, normalizeCellRect, rectCells } from '../../tiles/cellGeometry'
 import { type MapViewport, TileChunkCache } from '../../tiles/chunks'
 import { REGION_EDIT_LIMIT } from '../../tiles/regionCells'
 import { Button } from '../ui/Button'
@@ -40,7 +40,37 @@ import { useMediaQuery } from './useMediaQuery'
 import { SessionZoomControls } from './ZoomControls'
 
 const TOOLS = ['pencil', 'eraser', 'line', 'rect', 'pan'] as const
-type Stroke = RegionalBrushGesture & { pointerId: number; path: CellPos[]; revision: string }
+/**
+ * `revision`: a do começo da pincelada; `null` quando ela começou durante a gravação anterior e
+ * entra na fila da sessão depois dela (a revisão nova é a da própria criança).
+ */
+export type FocalStroke = RegionalBrushGesture & {
+  pointerId: number
+  path: CellPos[]
+  revision: string | null
+}
+type Stroke = FocalStroke
+/** A prévia da pincelada no palco: as casas que ela vai pintar, no azul do Pinta. */
+const PREVIEW_FILL = 'rgba(37, 99, 235, 0.38)'
+/** O que a prévia mostra: o caminho do lápis e da borracha, a linha ou o retângulo inteiros. */
+export function previewCells(
+  stroke: Pick<Stroke, 'tool' | 'path'>,
+  map: { origin: CellPos; cols: number; rows: number },
+): readonly CellPos[] {
+  const anchor = stroke.path[0]
+  const target = stroke.path.at(-1)
+  if (!anchor || !target || stroke.tool === 'pencil' || stroke.tool === 'eraser') return stroke.path
+  if (stroke.tool === 'line') return lineCells(anchor, target)
+  const rect = normalizeCellRect(
+    { col: anchor.col - map.origin.col, row: anchor.row - map.origin.row },
+    { col: target.col - map.origin.col, row: target.row - map.origin.row },
+    map.cols,
+    map.rows,
+  )
+  return rect
+    ? rectCells({ ...rect, col: rect.col + map.origin.col, row: rect.row + map.origin.row })
+    : []
+}
 const canPaintWith = (tool: MapTool): tool is Stroke['tool'] =>
   tool === 'pencil' || tool === 'eraser' || tool === 'line' || tool === 'rect'
 
@@ -72,14 +102,20 @@ export function FocalRegionMapStage({
   const paper = useRef<HTMLDivElement>(null)
   const canvas = useRef<HTMLCanvasElement>(null)
   const stroke = useRef<Stroke | null>(null)
+  /** As pinceladas já soltas que esperam a vez na fila da sessão: a prévia delas continua. */
+  const queued = useRef<Stroke[]>([])
   const pan = useRef<PanGesture | null>(null)
   const hover = useRef<(at: CellPos | null) => void>(() => {})
   const noSelection = useRef(() => {})
   const noObjects = useRef(() => false)
   const cancelGesture = useRef<() => boolean>(() => false)
   const fetchView = useRef<AbortController | null>(null)
-  const viewport = useRef<{ bounds: MapViewport; revision: string } | null>(null)
+  // A geometria da janela pintada por último. Fica enquanto a próxima carrega: o palco segue
+  // desenhado e os toques continuam valendo (a casa depende só da geometria, não do conteúdo).
+  const viewport = useRef<{ bounds: MapViewport; cellPx: number } | null>(null)
   const windowView = useRef<NonNullable<Awaited<ReturnType<typeof focal.viewport>>> | null>(null)
+  /** O tamanho de casa com que a janela atual foi lida. */
+  const windowCellPx = useRef(0)
   const time = useRef(0)
   const cache = useMemo(() => new TileChunkCache(), [])
   const layers = document.layers.filter(
@@ -91,6 +127,28 @@ export function FocalRegionMapStage({
   const cellPx = Math.max(4, Math.round(zoom * tileSize))
   const tilesets = useMemo(() => [...focal.tilesets.values()], [focal.tilesets])
   const sheets = useMapSheets(tilesets, showToast)
+  const offsetX = layer?.placement.offsetX ?? 0
+  const offsetY = layer?.placement.offsetY ?? 0
+  /** Pinta a prévia das pinceladas (a em andamento e as da fila) por cima da janela. */
+  const paintPreview = useCallback(() => {
+    const shown = stroke.current ? [...queued.current, stroke.current] : queued.current
+    const current = viewport.current
+    const context = shown.length ? canvas.current?.getContext('2d') : null
+    if (!current || !context) return
+    const { bounds, cellPx: px } = current
+    context.save()
+    context.setTransform(1, 0, 0, 1, 0, 0)
+    context.fillStyle = PREVIEW_FILL
+    for (const item of shown)
+      for (const at of previewCells(item, document))
+        context.fillRect(
+          (at.col - document.origin.col + offsetX / tileSize) * px - bounds.x,
+          (at.row - document.origin.row + offsetY / tileSize) * px - bounds.y,
+          px,
+          px,
+        )
+    context.restore()
+  }, [document, offsetX, offsetY, tileSize])
   const drawWindow = useCallback(() => {
     const view = windowView.current
     if (
@@ -107,11 +165,12 @@ export function FocalRegionMapStage({
       sheetOf: (sheet) => sheets.sheetOf(sheet.id),
     })
     if (!bounds) return false
-    viewport.current = { bounds, revision: view.revision }
+    viewport.current = { bounds, cellPx: windowCellPx.current }
+    paintPreview()
     setLoading(false)
     setViewError(null)
     return true
-  }, [focal, cache, sheets.sheetOf, document.tilesetId])
+  }, [focal, cache, sheets.sheetOf, document.tilesetId, paintPreview])
   const animate = useCallback(
     (now: number) => {
       time.current = now
@@ -125,8 +184,6 @@ export function FocalRegionMapStage({
     fetchView.current?.abort()
     const request = new AbortController()
     fetchView.current = request
-    viewport.current = null
-    windowView.current = null
     setLoading(true)
     void focal
       .viewport({
@@ -145,6 +202,7 @@ export function FocalRegionMapStage({
             return
           }
           windowView.current = view
+          windowCellPx.current = cellPx
           drawWindow()
         },
         () => {
@@ -182,7 +240,7 @@ export function FocalRegionMapStage({
 
   function cellAtPointer(event: PointerEvent<HTMLCanvasElement>): CellPos | null {
     const current = viewport.current
-    if (!current || current.revision !== focal.store.getState().revision) return null
+    if (!current) return null
     return mapCellFromCanvas(
       { x: event.clientX, y: event.clientY },
       {
@@ -190,11 +248,15 @@ export function FocalRegionMapStage({
         viewport: current.bounds,
         origin: document.origin,
         tileSize,
-        cellPx,
+        cellPx: current.cellPx,
         pad: 0,
-        layerOffset: { x: layer?.placement.offsetX ?? 0, y: layer?.placement.offsetY ?? 0 },
+        layerOffset: { x: offsetX, y: offsetY },
       },
     )
+  }
+  /** Tira a prévia do palco: repinta a janela, ou busca outra quando a pintada já é antiga. */
+  function clearPreview() {
+    if (!drawWindow()) loadWindow()
   }
   const selectTool = useCallback(
     (tool: MapTool) => {
@@ -216,7 +278,7 @@ export function FocalRegionMapStage({
       setMoving(true)
       return
     }
-    if (!layer || !tileset || !canPaintWith(tool) || focal.store.getState().saving) return
+    if (!layer || !tileset || !canPaintWith(tool)) return
     if (layer.placement.locked) {
       showToast(COPY.layers.lockedWarning)
       return
@@ -231,9 +293,10 @@ export function FocalRegionMapStage({
       selectedTile: tile,
       brush,
       path: [at],
-      revision: focal.store.getState().revision,
+      revision: focal.store.getState().saving ? null : focal.store.getState().revision,
       pointerId: event.pointerId,
     }
+    paintPreview()
   }
   function move(event: PointerEvent<HTMLCanvasElement>) {
     const hand = pan.current
@@ -250,10 +313,14 @@ export function FocalRegionMapStage({
     if (last?.col === at.col && last.row === at.row) return
     if (active.path.length >= REGION_EDIT_LIMIT) {
       stroke.current = null
+      clearPreview()
       showToast(COPY.scene.gestureRefused)
       return
     }
     active.path.push(at)
+    // A janela repinta com a prévia por cima (a linha e o retângulo mudam de forma). Enquanto a
+    // janela nova não chega, a prévia vai por cima da antiga.
+    if (!drawWindow()) paintPreview()
   }
   function stopHand(pointerId: number) {
     if (pan.current?.pointerId === pointerId) {
@@ -267,17 +334,24 @@ export function FocalRegionMapStage({
     if (gesture?.pointerId !== event.pointerId) return
     move(event)
     stroke.current = null
-    if (gesture.revision !== focal.store.getState().revision) {
+    if (gesture.revision !== null && gesture.revision !== focal.store.getState().revision) {
+      clearPreview()
       showToast(COPY.scene.gestureChanged)
       return
     }
-    void focal.apply(gesture).then(({ message }) => {
+    // A prévia fica no palco até a janela nova (com a pincelada gravada) chegar.
+    queued.current = [...queued.current, gesture]
+    void focal.apply(gesture).then(({ changed, message }) => {
+      queued.current = queued.current.filter((item) => item !== gesture)
+      if (!changed) clearPreview()
       if (message) showToast(message)
     })
   }
   function cancel(event: PointerEvent<HTMLCanvasElement>) {
     stopHand(event.pointerId)
-    if (stroke.current?.pointerId === event.pointerId) stroke.current = null
+    if (stroke.current?.pointerId !== event.pointerId) return
+    stroke.current = null
+    clearPreview()
   }
   // Esc solta a pincelada ou o arrasto da mão sem gravar nada.
   cancelGesture.current = () => {
@@ -285,6 +359,7 @@ export function FocalRegionMapStage({
     if (hand) stopHand(hand.pointerId)
     if (!stroke.current) return hand !== null
     stroke.current = null
+    clearPreview()
     return true
   }
   useMapKeyboard({
