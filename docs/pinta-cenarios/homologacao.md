@@ -1,5 +1,8 @@
 # Homologação: A Vila e a Floresta
 
+A rodada mais nova dos dez passos, de 23/11/2026, está em
+[vila-e-floresta-2026-11-23](vila-e-floresta-2026-11-23/README.md).
+
 A rodada posterior com correções, comandos atuais e motores reais está em
 [QA de 18/11/2026](revisao-2026-11-18/qa.md). Este documento conserva os limites da rodada
 anterior; não substitui a matriz da missão nem comprova ensaios que ela não executou.
