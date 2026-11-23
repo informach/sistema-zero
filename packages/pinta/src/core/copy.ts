@@ -407,9 +407,11 @@ export const COPY = {
         ? 'Um desenho da sua conta foi feito numa versão mais nova do Pinta. Atualize a página para ver.'
         : `${count} desenhos da sua conta foram feitos numa versão mais nova do Pinta. Atualize a página para ver.`,
     newerFormatReload: 'Atualizar a página',
+    /** Só com a nuvem causal. O ZIP guarda os arquivos originais para a equipe; ele não restaura
+     *  nada sozinho, então o caminho da criança é o "Preciso de ajuda". */
     retainedRecovery:
-      'Algumas edições precisam das peças da versão anterior para abrir. Você pode baixar os arquivos guardados neste aparelho.',
-    downloadRetainedRecovery: 'Baixar edições guardadas',
+      'Algumas edições precisam das peças da versão anterior para abrir. Use o botão Preciso de ajuda para avisar a equipe. Se a equipe pedir, baixe os arquivos guardados neste aparelho.',
+    downloadRetainedRecovery: 'Baixar arquivos para a equipe',
     retainedRecoveryUnavailable:
       'Não encontrei arquivos de recuperação disponíveis neste aparelho.',
     searchEmpty: 'Nenhum desenho combina com essa busca.',

@@ -712,7 +712,7 @@ test('gallery downloads the original gzip when a pre-v4 historical resource is m
     (state) => window.pintaCausalRecovery.mountRetainedRecoveryGallery(state),
     work,
   )
-  const action = page.getByRole('button', { name: 'Baixar edições guardadas' })
+  const action = page.getByRole('button', { name: 'Baixar arquivos para a equipe' })
   await expect(action).toBeVisible()
   const downloading = page.waitForEvent('download')
   await action.click()
@@ -770,7 +770,7 @@ test('gallery restores both complete worlds from V4 observed bytes after an old 
       }, work),
     )
     .toEqual([0, 5])
-  await expect(page.getByRole('button', { name: 'Baixar edições guardadas' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Baixar arquivos para a equipe' })).toHaveCount(0)
 })
 
 test('an editor in another tab defers the complete delta before the final local CAS', async ({
@@ -931,7 +931,7 @@ test('gallery offers the exact original download after reopening a v3 queue offl
       (namespace) => window.mountPintaRecoveryGallery(namespace),
       recorded.namespace,
     )
-    const button = reopened.getByRole('button', { name: 'Baixar edições guardadas' })
+    const button = reopened.getByRole('button', { name: 'Baixar arquivos para a equipe' })
     await expect(button).toBeVisible()
     const download = reopened.waitForEvent('download')
     await button.click()

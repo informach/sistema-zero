@@ -365,9 +365,16 @@ it('baixa os gzip originais e seus vínculos quando a recuperação depende de u
       needsFiles = true
       for (const listener of listeners) listener({ type: 'sync-end' })
     })
-    fireEvent.click(
-      await screen.findByRole('button', { name: COPY.gallery.downloadRetainedRecovery }),
-    )
+    const download = await screen.findByRole('button', {
+      name: COPY.gallery.downloadRetainedRecovery,
+    })
+    // The ZIP does not restore anything: the child is sent to "Preciso de ajuda", and the files
+    // are only for the team.
+    const alert = download.closest('[role=alert]')?.textContent ?? ''
+    expect(alert).toContain('Preciso de ajuda')
+    expect(alert).toContain('equipe')
+    expect(COPY.gallery.downloadRetainedRecovery).toContain('equipe')
+    fireEvent.click(download)
     await waitFor(() => expect(downloads).toHaveLength(1))
     expect(names).toEqual(['edicoes-guardadas-pinta.zip'])
     const zip = unzipSync(new Uint8Array(await downloads[0]!.arrayBuffer()))
