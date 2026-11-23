@@ -32,10 +32,15 @@ Provas executadas no checkout da candidata, com dependências do lockfile e sem 
 - 47 testes da UI do Pinta: galeria, confirmação de ajuda, falha e persistência injetada.
 - PostgreSQL real: 2 testes HTTP da ajuda do Pinta e 2 da identidade/atualização do post no Hub, sem banco de produção.
 - Build de produção do playground e 3 percursos em Chrome: botão de tela cheia nos dois sentidos, miniatura WebGL do GLB com ossos e espelhos após upload/reabertura, importação dos três formatos do Molda e preservação do vínculo.
+- Tipos de 11 pacotes sem erros: Studio (incluindo o novo E2E), core, studio-runtime, Gateway, Members, Hub, member-shell, palco, Kids, Community e Admin.
+- Imagem Linux `sistemazero-studio-runtime:lg01` construída; smoke de imagem, objetivos dos kits e templates reais passaram com UID 1000 e sem rede. O perfil da imagem foi conferido antes do build.
+- `bun run ci --max-diagnostics=0`: 18.045 arquivos, zero erros; 309 avisos e 297 informações preexistentes. 62 testes das regras de promoção e do workflow de produção passaram.
 
 O teste visual mede o enquadramento pela extensão dos pixels opacos. Uma primeira expectativa de área pintada foi descartada: o GLB de contrato tem peças finas e espelhadas, e a área da silhueta não mede sua escala. O teste final exige imagem carregada, desenho não vazio, extensão superior a 65 dos 96 px e preservação após reabrir. [Captura do navegador](lg01-20261123/miniatura-modelo.png).
 
 Os testes locais não representam uma navegação autenticada no deployment atualizado de produção. A aceitação nesse ambiente, a implantação e os gates remotos continuam pendentes até registro explícito abaixo.
+
+O primeiro CI do PR apontou a formatação do recibo JSON, corrigida, e falhou antes dos testes históricos do Pinta por `shallow.lock`. O log registrou um fetch automático do Playwright para a base do PR que excedeu o prazo do coletor de metadados. O checkout do Chromium passa a incluir profundidade 2: os pais do merge já contêm a base, evitando aquele fetch durante a suíte e preservando os metadados e todas as provas históricas. Não foram removidos locks, testes ou gates.
 
 ## Ordem da implantação e aceite
 
@@ -50,4 +55,4 @@ O retorno deve usar a versão compatível anterior por onda, preservando dados j
 
 ## Estado
 
-Preparação e verificações locais em andamento. Implantação em produção ainda não realizada por esta execução. LG02 pendente de implantação e qualificação do executor real.
+Candidata e verificações locais concluídas; [PR #283](https://github.com/informach/sistema-zero/pull/283) em rascunho durante a qualificação remota. O plano Railway da primeira tentativa passou. A nova tentativa precisa validar o SHA com as correções de CI. Implantação e aceite no deployment atualizado de produção ainda não realizados por esta execução. LG02 pendente de implantação e qualificação do executor real.

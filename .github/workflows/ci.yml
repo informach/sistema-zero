@@ -755,6 +755,12 @@ jobs:
         shard: [1, 2, 3]
     steps:
       - uses: actions/checkout@v5
+        with:
+          # O Playwright lê a base do PR para os metadados. Com só o merge raso, ele
+          # inicia um fetch que pode expirar e deixar shallow.lock para o fetch dos
+          # leitores históricos. Os dois pais do merge já incluem a base, sem fetch
+          # automático durante a suíte nem remoção de locks de outro processo.
+          fetch-depth: 2
 
       - uses: oven-sh/setup-bun@v2
         with:
