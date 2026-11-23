@@ -22,6 +22,7 @@
     "./creations/pinta-causal": "./src/creations/pinta-causal.ts",
     "./creations/pinta-map-projection": "./src/creations/pinta-map-projection.ts",
     "./creations/pinta-palette-writer": "./src/creations/pinta-palette-writer.ts",
+    "./creations/pinta-recovery-help": "./src/creations/pinta-recovery-help.ts",
     "./creations/studio-sealed-storage": "./src/creations/studio-sealed-storage.ts",
     "./creations/studio-sealed-writer": "./src/creations/studio-sealed-writer.ts",
     "./security": "./src/security/index.ts",

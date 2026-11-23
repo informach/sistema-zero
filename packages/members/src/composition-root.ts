@@ -1610,6 +1610,7 @@ export async function createApplication(env: Env): Promise<Application> {
       validateCertificate,
       internalToken: env.INTERNAL_API_TOKEN,
     },
+    pintaRecoveryHelp: { teacherThreads, internalToken: env.INTERNAL_API_TOKEN },
     adultHelp: {
       help: adultHelp,
       internalToken: env.INTERNAL_API_TOKEN,

@@ -1233,6 +1233,13 @@
       "when": 1795388165761,
       "tag": "0175_studio_sealed_writer_fence",
       "breakpoints": true
+    },
+    {
+      "idx": 176,
+      "version": "7",
+      "when": 1795400000000,
+      "tag": "0176_pinta_recovery_help",
+      "breakpoints": true
     }
   ]
 }

@@ -9,6 +9,7 @@ import { cenariosRoutes } from './src/infrastructure/config/cenarios-routes'
 import type { GatewayConfigInput } from './src/infrastructure/config/gateway-config.schema'
 import {
   pintaCausalRoutes,
+  pintaRecoveryHelpRoute,
   studioSealedRoutes,
 } from './src/infrastructure/config/pinta-causal-routes'
 import { subscriptionRecoveryRoutes } from './src/infrastructure/config/subscription-recovery-routes'
@@ -2852,6 +2853,7 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
     ...pintaCausalRoutes(membersInternalTransforms),
+    pintaRecoveryHelpRoute(membersInternalTransforms),
     ...studioSealedRoutes(membersInternalTransforms),
     // ── Molda Cenários: bibliotecas, mundos e cenários 3D (16/11/2026) ──
     ...cenariosRoutes(membersInternalTransforms),

@@ -6,6 +6,8 @@ export type TeacherThreadContext =
   | 'mural_publication'
   | 'general'
   | 'lesson_section'
+  /** Ajuda do Pinta: o pedido do aviso de recuperação da galeria. Sem aula; uma por perfil. */
+  | 'pinta_recovery'
 /** Quem escreveu o turno. */
 export type TeacherMessageRole = 'teacher' | 'student'
 export type TeacherWorkflowStatus = 'waiting_teacher' | 'waiting_student' | 'resolved'

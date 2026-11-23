@@ -61,6 +61,10 @@ import { type MembersRoutesDeps, membersRoutes } from './routes/members.routes'
 import { type PensaRoutesDeps, pensaRoutes } from './routes/pensa.routes'
 import { pintaCausalRoutes } from './routes/pinta-causal.routes'
 import { pintaPaletteWriteRoutes } from './routes/pinta-palette-writes.routes'
+import {
+  type PintaRecoveryHelpRoutesDeps,
+  pintaRecoveryHelpRoutes,
+} from './routes/pinta-recovery-help.routes'
 import { studioAiAccountRoutes } from './routes/studio-ai-account.routes'
 import { studioAiUsageRoutes } from './routes/studio-ai-usage.routes'
 import { studioBuilderRoutes } from './routes/studio-builder.routes'
@@ -109,6 +113,8 @@ export interface HttpDeps {
   coursePromotion?: Parameters<typeof coursePromotionPeerRoutes>[0]
   coursePromotionSource?: Parameters<typeof coursePromotionSourceRoutes>[0]
   internal: InternalRoutesDeps
+  /** Ajuda do Pinta: o aluno abre a conversa de recuperação de desenhos (S2S do member-shell). */
+  pintaRecoveryHelp?: PintaRecoveryHelpRoutesDeps
   /** "Como fazer": a biblioteca de ajuda do Kids (leitura da criança + autoria do admin). */
   help: HelpRoutesDeps
   adultHelp?: HelpRoutesDeps
@@ -361,6 +367,7 @@ export function createServer(deps: HttpDeps) {
     .use(contentRoutes(deps.content))
     .use(deps.coursePublication ? coursePublicationRoutes(deps.coursePublication) : new Elysia())
     .use(internalRoutes(deps.internal))
+    .use(deps.pintaRecoveryHelp ? pintaRecoveryHelpRoutes(deps.pintaRecoveryHelp) : new Elysia())
     .use(deps.arquipelagoCoins ? arquipelagoCoinsRoutes(deps.arquipelagoCoins) : new Elysia())
     .use(
       deps.arquipelagoInternal ? arquipelagoInternalRoutes(deps.arquipelagoInternal) : new Elysia(),

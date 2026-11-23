@@ -27,6 +27,24 @@ export function pintaCausalRoutes(transforms: Route['transforms']): Route[] {
   return verifiedStorageRoutes('pinta', 'pinta-causal', paths, transforms)
 }
 
+/**
+ * O "Preciso de ajuda" do aviso de recuperação do Pinta (23/11/2026): o member-shell, depois de
+ * autorizar o aluno ativo, abre a conversa de recados dele. Só HMAC do member-shell; o pedido é
+ * pequeno (sem bytes de desenho) e o teto por perfil segura cliques repetidos.
+ */
+export function pintaRecoveryHelpRoute(transforms: Route['transforms']): Route {
+  return {
+    id: 'members-pinta-recovery-help',
+    pathPattern: '/members/internal/teacher-threads/pinta-recovery-help',
+    methods: ['POST'],
+    service: 'members',
+    auth: { required: true, mode: 'any', strategies: ['hmac'], allowedConsumers: ['member-shell'] },
+    transforms,
+    maxBodyBytes: SMALL_BODY_BYTES,
+    rateLimit: { max: 10, windowMs: 10 * 60_000, by: 'json-field', field: 'userId' },
+  }
+}
+
 export function studioSealedRoutes(transforms: Route['transforms']): Route[] {
   return verifiedStorageRoutes(
     'studio',

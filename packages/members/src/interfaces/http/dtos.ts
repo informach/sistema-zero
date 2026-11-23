@@ -1421,6 +1421,7 @@ const TEACHER_CONTEXT = t.Union([
   t.Literal('mural_publication'),
   t.Literal('general'),
   t.Literal('lesson_section'),
+  t.Literal('pinta_recovery'),
 ])
 /**
  * Corpo de uma mensagem (aluno responde / professor responde a uma conversa por id).

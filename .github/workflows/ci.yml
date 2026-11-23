@@ -402,6 +402,7 @@ jobs:
           PINTA_CAUSAL_HTTP_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_pinta_causal_http_ci
           PINTA_CAUSAL_ADOPTION_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_pinta_causal_adoption_ci
           PINTA_PALETTE_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_pinta_palette_ci
+          PINTA_RECOVERY_HELP_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_pinta_recovery_help_ci
           STUDIO_SEALED_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_studio_sealed_ci
           # Molda Cenários: o teste cria o banco `cenarios_*` se ele ainda não existe.
           CENARIOS_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/cenarios_ci

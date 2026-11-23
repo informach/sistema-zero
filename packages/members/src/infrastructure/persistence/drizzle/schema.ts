@@ -1640,6 +1640,8 @@ export const teacherThreadContextEnum = members.enum('teacher_thread_context', [
   'mural_publication',
   'general',
   'lesson_section',
+  // Ajuda do Pinta (23/11/2026): o pedido do aviso de recuperação da galeria, sem aula (0176).
+  'pinta_recovery',
 ])
 export const teacherMessageRoleEnum = members.enum('teacher_message_role', ['teacher', 'student'])
 export const lessonEvidence = members.table(

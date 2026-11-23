@@ -37,7 +37,23 @@ test('private Pinta graph and palette paths forward only an authenticated member
       auth: { required: true, strategies: ['hmac'], allowedConsumers: ['member-shell'] },
       rateLimit: { by: 'json-field', field: 'accountId' },
     })
+  await forwardsOnlyMemberShell(routes, paths)
+})
 
+test('the Pinta recovery help forwards only an authenticated member-shell body', async () => {
+  const routes = config.routes.filter((route) => route.id === 'members-pinta-recovery-help')
+  expect(routes).toHaveLength(1)
+  expect(routes[0]).toMatchObject({
+    pathPattern: '/members/internal/teacher-threads/pinta-recovery-help',
+    methods: ['POST'],
+    service: 'members',
+    auth: { required: true, strategies: ['hmac'], allowedConsumers: ['member-shell'] },
+    rateLimit: { by: 'json-field', field: 'userId' },
+  })
+  await forwardsOnlyMemberShell(routes, ['/members/internal/teacher-threads/pinta-recovery-help'])
+})
+
+async function forwardsOnlyMemberShell(routes: typeof config.routes, paths: string[]) {
   const forwarded: { path: string; body: string; consumer: string | null }[] = []
   const app = await createApplication(
     loadEnv({ JWT_HS256_SECRET: jwtSecret, TRUST_PROXY: 'true', TRUSTED_PROXY_HOPS: '1' }),
@@ -106,4 +122,4 @@ test('private Pinta graph and palette paths forward only an authenticated member
   } finally {
     await app.stop()
   }
-})
+}

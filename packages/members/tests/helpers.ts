@@ -985,6 +985,7 @@ export function buildApp(
       validateCertificate: new ValidateCertificateService(certificates),
       internalToken: opts.internalToken,
     },
+    pintaRecoveryHelp: { teacherThreads, internalToken: opts.internalToken },
     adultHelp: {
       help: adultHelp,
       internalToken: opts.internalToken,
