@@ -1,4 +1,7 @@
-import { readPintaRegionSceneWire } from '@sistemazero/core/studio/pinta-region-scene'
+import {
+  type PintaRegionSceneWire,
+  readPintaRegionScene,
+} from '@sistemazero/core/studio/pinta-region-scene'
 import type { PintaMemoryAsset } from '../core/assetMemory'
 import type { PintaExportedAsset } from '../core/types'
 import { pintaWorkshopBody } from '../core/workshopAsset'
@@ -19,8 +22,9 @@ export async function regionStudioPayload(
   const map = converted.map,
     find = (id: string) => catalog.get(id) ?? null
   const exported = await exportPintaRegionScene(map, find)
-  const scene = readPintaRegionSceneWire(JSON.parse(exported.json))
-  if (!scene) return null
+  // A mesma admissão de cabeçalhos, orçamento e células da raiz; só então o wire sai.
+  if (!readPintaRegionScene(exported.json)) return null
+  const scene = JSON.parse(exported.json) as PintaRegionSceneWire
   const preview = tilemapOverview(map, collectMapTilesets(map, find))
   if (!preview || typeof document === 'undefined') return null
   const canvas = document.createElement('canvas')

@@ -68,9 +68,15 @@ export interface PintaTilemapMeta {
   tileset: { dataUrl: string; width: number; height: number }
 }
 
+/** Cena enviada ao Estúdio: a legada (1–3) ou a regional 4 no wire canônico. O Estúdio
+ * da raiz continua recusando a 4 sem a admissão PNG 5 privada. */
+export type PintaSceneWire =
+  | import('@sistemazero/core/studio/pinta-scene').PintaScene
+  | import('@sistemazero/core/studio/pinta-region-scene').PintaRegionSceneWire
+
 export interface PintaExportedAsset {
   maps?: Array<Omit<PintaExportedAsset, 'maps'>>
-  scene?: import('@sistemazero/core/studio/pinta-region-scene').PintaSceneWire
+  scene?: PintaSceneWire
   /** Id do desenho no Pinta — reenvio do mesmo desenho = upsert no destino. */
   id: string
   /** Nome kebab-case (vira o nome que os blocos do Estúdio referenciam). */
