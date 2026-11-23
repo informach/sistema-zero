@@ -3528,8 +3528,10 @@ mostra na revisão.
   `postgres`** (full review 26/09/2026): o servidor devolve o 23505 e fica em `ClientRead`
   esperando um `Sync` que o driver não manda; o teste morre no timeout com `CONNECTION_DESTROYED`.
   A MESMA chamada num try/catch (`lanca()` em `help.repository.test.ts`) ou num `bun -e` lança o
-  erro de domínio em 12 ms. Medido com `pg_stat_activity`. `rejects.toThrow`, que os outros
-  arquivos usam, não trava.
+  erro de domínio em 12 ms. Medido com `pg_stat_activity`. `rejects.toThrow` TAMBÉM trava
+  (23/11/2026, `pinta-palette-writes.test.ts`: conexão `idle in transaction` logo após o `begin`,
+  Bun 1.3.11 + postgres 3.4.9); capture o erro com try/catch (`failure()` ali, `rejection()` em
+  `pinta-causal.test.ts`).
 - **Regras que o full review fechou (26/09/2026):** o `PATCH` recusa slug reservado/inválido
   (400) e **slug de tutorial PUBLICADO (409 `HELP_SLUG_LOCKED`)**: `/como-fazer/<slug>` é contrato
   de URL das aulas e do `helpReferences` do Zappy; despublique para trocar. O `export` NÃO leva

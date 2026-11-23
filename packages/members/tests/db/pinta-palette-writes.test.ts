@@ -22,6 +22,21 @@ const limits = { maxItemBytes: 10_000, maxTotalBytes: 50_000, maxItemsPerTool: 1
 const sha256 = 'a'.repeat(64)
 const tool = 'pinta' as const
 
+/**
+ * `await expect(promise).rejects` pendura o driver `postgres` dentro do `bun test` (inclusive
+ * `rejects.toThrow`): a conexão fica `idle in transaction` logo depois do `begin` e o teste morre
+ * com `CONNECTION_DESTROYED`, enquanto a mesma chamada com `await` comum recusa em milissegundos.
+ */
+async function failure(work: Promise<unknown>): Promise<string> {
+  try {
+    await work
+  } catch (error) {
+    if (error instanceof Error) return error.message
+    throw error
+  }
+  throw new Error('expected rejection')
+}
+
 describe.skipIf(!target)('reserved palette writer authority', () => {
   let conn: DbConnection
   let repo: DrizzleCreationsRepository
@@ -82,18 +97,20 @@ describe.skipIf(!target)('reserved palette writer authority', () => {
     if (!modern.ok || !modern.paletteTicket) throw new Error('verified reserve failed')
     const ticket = modern.paletteTicket
 
-    await expect(reserve(actor, before.revision)).rejects.toThrow('protocol-required')
-    await expect(commit(actor, pending.revision)).rejects.toThrow('protocol-required')
-    await expect(
-      repo.softDelete(actor.userId, tool, itemId, before.revision, new Date()),
-    ).rejects.toThrow('protocol-required')
-    await expect(
-      (async () =>
-        conn.sql`update members.creations set name = 'old worker' where user_id = ${actor.userId}`)(),
-    ).rejects.toThrow('verified writer')
-    await expect(
-      commit(actor, ticket.revision, { ...ticket, nonce: randomUUID() }),
-    ).rejects.toThrow('ticket-invalid')
+    expect(await failure(reserve(actor, before.revision))).toContain('protocol-required')
+    expect(await failure(commit(actor, pending.revision))).toContain('protocol-required')
+    expect(
+      await failure(repo.softDelete(actor.userId, tool, itemId, before.revision, new Date())),
+    ).toContain('protocol-required')
+    expect(
+      await failure(
+        (async () =>
+          conn.sql`update members.creations set name = 'old worker' where user_id = ${actor.userId}`)(),
+      ),
+    ).toContain('verified writer')
+    expect(
+      await failure(commit(actor, ticket.revision, { ...ticket, nonce: randomUUID() })),
+    ).toContain('ticket-invalid')
     expect(await repo.getPaletteTicket(actor, ticket.nonce, ticket.revision, new Date())).toEqual({
       committed: false,
       ticket,
@@ -116,11 +133,13 @@ describe.skipIf(!target)('reserved palette writer authority', () => {
       ok: true,
       alreadyCommitted: true,
     })
-    await expect(commit(actor, ticket.revision)).rejects.toThrow('protocol-required')
-    await expect(
-      (async () =>
-        conn.sql`update members.creation_inventory_floors set palette_generation = null where user_id = ${actor.userId}`)(),
-    ).rejects.toThrow('generation is permanent')
+    expect(await failure(commit(actor, ticket.revision))).toContain('protocol-required')
+    expect(
+      await failure(
+        (async () =>
+          conn.sql`update members.creation_inventory_floors set palette_generation = null where user_id = ${actor.userId}`)(),
+      ),
+    ).toContain('generation is permanent')
   })
 
   test('a lost and expired initial ticket cannot become a legacy commit; fresh legacy work can resume', async () => {
@@ -135,14 +154,16 @@ describe.skipIf(!target)('reserved palette writer authority', () => {
       adopted: false,
       revision: 0,
     })
-    await expect(commit(actor, pending.revision, pending.paletteTicket)).rejects.toThrow(
+    expect(await failure(commit(actor, pending.revision, pending.paletteTicket))).toContain(
       'ticket-invalid',
     )
-    await expect(commit(actor, pending.revision)).rejects.toThrow('protocol-required')
-    await expect(
-      (async () =>
-        conn.sql`update members.creations set revision = ${pending.revision}, storage_ref = 'expired' where user_id = ${actor.userId}`)(),
-    ).rejects.toThrow('reservation expired')
+    expect(await failure(commit(actor, pending.revision))).toContain('protocol-required')
+    expect(
+      await failure(
+        (async () =>
+          conn.sql`update members.creations set revision = ${pending.revision}, storage_ref = 'expired' where user_id = ${actor.userId}`)(),
+      ),
+    ).toContain('reservation expired')
     const accepted = await reserve(actor, 0)
     if (!accepted.ok) throw new Error('legacy reopen failed')
     expect(accepted.revision).toBeGreaterThan(pending.revision)
@@ -200,22 +221,28 @@ describe.skipIf(!target)('reserved palette writer authority', () => {
       storageRef: 'studio/current',
       revision: updated.revision,
     })
-    await expect(
-      (async () => conn.sql`update members.creations set tool = 'pinta', kind = 'palette-library'
+    expect(
+      await failure(
+        (async () => conn.sql`update members.creations set tool = 'pinta', kind = 'palette-library'
       where user_id = ${actor.userId} and tool = 'studio' and item_id = ${itemId}`)(),
-    ).rejects.toThrow('identity is immutable')
+      ),
+    ).toContain('identity is immutable')
     expect(
       await repo.softDelete(actor.userId, 'studio', itemId, updated.revision, now, 2),
     ).toMatchObject({ ok: true, deleted: true })
 
-    await expect(
-      (async () => conn.sql`update members.creations set tool = 'molda'
+    expect(
+      await failure(
+        (async () => conn.sql`update members.creations set tool = 'molda'
       where user_id = ${actor.userId} and tool = 'pinta' and item_id = ${itemId}`)(),
-    ).rejects.toThrow('identity is immutable')
-    await expect(
-      (async () => conn.sql`update members.creations set item_id = 'palette-moved'
+      ),
+    ).toContain('identity is immutable')
+    expect(
+      await failure(
+        (async () => conn.sql`update members.creations set item_id = 'palette-moved'
       where user_id = ${actor.userId} and tool = 'pinta' and item_id = ${itemId}`)(),
-    ).rejects.toThrow('identity are immutable')
+      ),
+    ).toContain('identity are immutable')
     const reservedKind = await repo.reserveUpload({
       ...studio,
       itemId: 'outro-jogo',
@@ -243,7 +270,7 @@ describe.skipIf(!target)('reserved palette writer authority', () => {
     const abandoned = await reserve(actor, 0, null, new Date(now.getTime() - 12 * 60_000))
     if (!abandoned.ok || !abandoned.paletteTicket) throw new Error('expired fixture not reserved')
     expect(abandoned.revision).toBe(1)
-    await expect(commit(actor, 1)).rejects.toThrow('protocol-required')
+    expect(await failure(commit(actor, 1))).toContain('protocol-required')
 
     expect(await repo.softDelete(actor.userId, tool, itemId, 0, now, 1)).toMatchObject({ ok: true })
     expect(await repo.compactTombstones(new Date(now.getTime() + 1), 100)).toBeGreaterThan(0)
@@ -255,7 +282,7 @@ describe.skipIf(!target)('reserved palette writer authority', () => {
     const [pending] = await conn.sql`select pending_palette_write from members.creations
       where user_id = ${actor.userId} and tool = 'pinta' and item_id = ${itemId}`
     expect(pending?.pending_palette_write).toBeNull()
-    await expect(commit(actor, legacy.revision, abandoned.paletteTicket)).rejects.toThrow(
+    expect(await failure(commit(actor, legacy.revision, abandoned.paletteTicket))).toContain(
       'ticket-invalid',
     )
     expect(await commit(actor, legacy.revision)).toMatchObject({
@@ -291,18 +318,20 @@ describe.skipIf(!target)('reserved palette writer authority', () => {
     expect(absent.generation).not.toBe(before.generation)
     expect(await repo.compactTombstones(new Date(), 100)).toBeGreaterThan(0)
     expect(await repo.getPaletteHead(actor)).toMatchObject({ paletteHead: absent, download: null })
-    await expect(reserve(actor, 0, before.generation)).rejects.toThrow('head-changed')
-    await expect(reserve(actor, 0)).rejects.toThrow('protocol-required')
-    await expect(
-      (async () => conn.sql`
+    expect(await failure(reserve(actor, 0, before.generation))).toContain('head-changed')
+    expect(await failure(reserve(actor, 0))).toContain('protocol-required')
+    expect(
+      await failure(
+        (async () => conn.sql`
       insert into members.creations(id,user_id,account_id,tool,item_id,kind,name,item_updated_at,created_at,synced_at)
       values(gen_random_uuid(),${actor.userId},${actor.accountId},'pinta','sz-pinta-palettes','palette-library','old writer',now(),now(),now())
     `)(),
-    ).rejects.toThrow('verified writer')
+      ),
+    ).toContain('verified writer')
     const newTicket = await reserve(actor, 0, absent.generation)
     if (!newTicket.ok || !newTicket.paletteTicket) throw new Error('replacement reserve failed')
     expect(newTicket.revision).toBe(first.revision)
-    await expect(commit(actor, first.revision, first.paletteTicket)).rejects.toThrow(
+    expect(await failure(commit(actor, first.revision, first.paletteTicket))).toContain(
       'ticket-invalid',
     )
     const next = await commit(actor, newTicket.revision, newTicket.paletteTicket)
@@ -328,7 +357,7 @@ describe.skipIf(!target)('reserved palette writer authority', () => {
     expect(
       await conn.sql`select user_id from members.creation_inventory_floors where user_id = ${actor.userId}`,
     ).toHaveLength(0)
-    await expect(repo.getPaletteHead(actor)).rejects.toThrow('account-deleting')
+    expect(await failure(repo.getPaletteHead(actor))).toContain('account-deleting')
   }, 20_000)
 
   test('reservation advances an older palette with a lagging allocation counter', async () => {
@@ -344,7 +373,7 @@ describe.skipIf(!target)('reserved palette writer authority', () => {
     const modern = await reserve(actor, head.revision, head.generation)
     if (!modern.ok || !modern.paletteTicket) throw new Error('palette writer not reserved')
     expect(modern.paletteTicket).toMatchObject({ revision: 21, baseRevision: 10 })
-    await expect(commit(actor, 20)).rejects.toThrow('protocol-required')
+    expect(await failure(commit(actor, 20))).toContain('protocol-required')
     expect(await commit(actor, modern.revision, modern.paletteTicket)).toMatchObject({
       ok: true,
       paletteHead: { revision: 21, adopted: true, exists: true },
