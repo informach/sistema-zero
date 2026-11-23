@@ -428,10 +428,17 @@ export const COPY = {
         : `${count} desenhos da sua conta foram feitos numa versão mais nova do Pinta. Atualize a página para ver.`,
     newerFormatReload: 'Atualizar a página',
     /** Só com a nuvem causal. O ZIP guarda os arquivos originais para a equipe; ele não restaura
-     *  nada sozinho. Não citar o botão "Preciso de ajuda": ele só existe dentro das aulas, e a
-     *  galeria fica fora delas. */
+     *  nada sozinho. Sem o canal de recados do host não há "Preciso de ajuda" na galeria, então
+     *  esta frase não cita o botão. */
     retainedRecovery:
       'Algumas edições precisam das peças da versão anterior para abrir. Elas continuam guardadas neste aparelho. Avise a equipe e, se ela pedir, baixe os arquivos para enviar.',
+    /** A mesma situação quando o host liga os recados: o pedido já leva o que a equipe precisa. */
+    retainedRecoveryHelp:
+      'Algumas edições precisam das peças da versão anterior para abrir. Elas continuam guardadas neste aparelho. Toque em Preciso de ajuda e a equipe arruma para você.',
+    recoveryHelp: 'Preciso de ajuda',
+    recoveryHelpSent: (where: string) => `Pedido enviado. A resposta aparece ${where}.`,
+    recoveryHelpSeeConversation: 'Ver conversa',
+    recoveryHelpError: 'Não consegui enviar o pedido. Tente de novo daqui a pouco.',
     downloadRetainedRecovery: 'Baixar arquivos para a equipe',
     retainedRecoveryUnavailable:
       'Não encontrei arquivos de recuperação disponíveis neste aparelho.',

@@ -69,6 +69,7 @@ export {
   Map,
   MapPin,
   Maximize,
+  MessageCircle,
   Minus,
   MousePointer2,
   MoveHorizontal,
