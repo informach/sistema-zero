@@ -1463,3 +1463,36 @@ test('a large PNG publishes at the 6 MiB project cap and fails clearly one encod
   })
   expect(f.state.calls.slice(calls)).toEqual([])
 })
+
+test('a capa acima do teto recusa a publicação com a frase, em vez de sumir do post', async () => {
+  for (const context of ['free', 'lesson'] as const) {
+    const f = await fixture('classic', context, 'kids', 'javascript')
+    const response = await f.publish(f.project, new Uint8Array(4 * 1024 * 1024 + 1))
+    expect(response.status).toBe(413)
+    const body = (await response.json()) as { error: { code: string; message: string } }
+    expect(body.error.code).toBe('COVER_TOO_LARGE')
+    expect(body.error.message).toBe(
+      'A imagem da capa é grande demais. Escolha uma imagem menor e tente de novo.',
+    )
+    expect(f.state.postBodies).toHaveLength(0)
+  }
+})
+
+test('o pedido acima do teto do envio diz que o projeto ficou grande, nunca "tente de novo"', async () => {
+  const f = await fixture('classic', 'free', 'kids', 'javascript')
+  const form = new FormData()
+  form.set('title', 'Meu jogo')
+  form.set('description', 'Grande demais')
+  form.set('clientIdempotencyKey', crypto.randomUUID())
+  form.set('project', new File([JSON.stringify(f.project)], 'project.json'))
+  const request = new Request('https://kids.test/api/studio/publish', {
+    method: 'POST',
+    body: form,
+  })
+  request.headers.set('Content-Length', String(10 * 1024 * 1024))
+  const response = await f.routes.studioPublishStandalone.POST(request)
+  expect(response.status).toBe(413)
+  const body = (await response.json()) as { error: { code: string; message: string } }
+  expect(body.error.code).toBe('PROJECT_TOO_LARGE')
+  expect(body.error.message).toContain('grande demais para publicar')
+})

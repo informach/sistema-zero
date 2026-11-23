@@ -154,6 +154,24 @@ const projectTooLarge = () =>
     },
     { status: 413 },
   )
+/**
+ * A capa acima do teto sumia do post sem aviso. Agora a publicação é recusada com a frase, e a
+ * criança escolhe uma imagem menor.
+ */
+const coverTooLarge = () =>
+  NextResponse.json(
+    {
+      error: {
+        code: 'COVER_TOO_LARGE',
+        message: 'A imagem da capa é grande demais. Escolha uma imagem menor e tente de novo.',
+      },
+    },
+    { status: 413 },
+  )
+const coverTooBig = (form: FormData) => {
+  const cover = form.get('cover')
+  return cover instanceof File && cover.size > COVER_MAX_BYTES
+}
 
 /** Slug do servidor do Mural (kids). Só a vitrine kids chama estas rotas. */
 const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
@@ -697,8 +715,10 @@ export function createStudioRoutes(deps: {
       const sess = await media.requireUploadSession(req)
       if (sess instanceof NextResponse) return sess
 
+      // Acima do teto do multipart a recusa é permanente: o recado do projeto grande, nunca o
+      // "tente de novo" que a tela mostra para VALIDATION_ERROR.
       const oversized = rejectOversizedRequest(req, PUBLISH_MAX_BYTES)
-      if (oversized) return oversized
+      if (oversized) return oversized.status === 413 ? projectTooLarge() : oversized
 
       let form: FormData
       try {
@@ -706,6 +726,7 @@ export function createStudioRoutes(deps: {
       } catch {
         return invalid()
       }
+      if (coverTooBig(form)) return coverTooLarge()
 
       const lessonId = String(form.get('lessonId') ?? '')
       const blockId = String(form.get('blockId') ?? '')
@@ -1044,8 +1065,10 @@ export function createStudioRoutes(deps: {
           )
       }
 
+      // Acima do teto do multipart a recusa é permanente: o recado do projeto grande, nunca o
+      // "tente de novo" que a tela mostra para VALIDATION_ERROR.
       const oversized = rejectOversizedRequest(req, PUBLISH_MAX_BYTES)
-      if (oversized) return oversized
+      if (oversized) return oversized.status === 413 ? projectTooLarge() : oversized
 
       let form: FormData
       try {
@@ -1053,6 +1076,7 @@ export function createStudioRoutes(deps: {
       } catch {
         return invalid()
       }
+      if (coverTooBig(form)) return coverTooLarge()
 
       const title = String(form.get('title') ?? '').trim()
       const description = String(form.get('description') ?? '').trim()
