@@ -68,6 +68,18 @@ rótulo recorrente. Não mudar cobrança/valor para contornar o texto. Teste de 
 `tests/commerce-purchase-form.test.tsx` (1, 3, 6 e 12 meses, mais avulsa).
 
 
+## Pinta: janela focal pela conta (23/11/2026)
+
+`createCloudMirroredPintaPersistence` só oferece `openRegionSession` com a fila causal e um local
+que a tenha (a oficina; o host ainda usa `createPintaCausalPersistence`, leitor/escritor 6, então
+nada muda em produção). Ao abrir, congela as unidades mutáveis, abre a sessão do pacote com a
+`LocalRegionCausalBinding` e fixa uma vez o gzip dos recursos lidos (`encodePintaObservedResources`).
+Cada gesto monta a unidade em `pintaRegionCausalUnit` DENTRO da transação do CAS focal: mapa como
+membro único (coalesce na mesma unidade mutável), arestas `predecessor`/`snapshot` e bases dos pins
+com a marca lida ali. Sem época (`unbased`) ou com recuperação pendente, devolve `null` (editor
+inteiro). Desenho: `docs/superpowers/plans/2026-11-23-pinta-focal-na-conta.md`; provas em
+`tests/fixtures/pinta-focal-account.fixture.ts` (mock do IndexedDB no modo físico, `setIdbMockCodec`).
+
 ## Pinta: proteção de formato e proveniência (18/11/2026)
 
 A versão de nuvem é 4 para mapas/peças/conjuntos; o documento nativo preciso é 5.

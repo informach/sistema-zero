@@ -59,6 +59,8 @@ import {
 } from '@sistemazero/core/creations'
 import type { PintaPaletteUploadCapability } from '@sistemazero/core/creations/pinta-palette-writer'
 import type {
+  LocalRegionAuthorSession,
+  LocalRegionCausalBinding,
   PintaCausalLocalPort as NativeCausalPort,
   PintaEditorWriteContext,
 } from '@sistemazero/pinta'
@@ -90,7 +92,10 @@ import { perfSpanAsync } from './perf'
 import {
   type PintaCausalRemapBase,
   type PintaQueuedSlots,
+  type PintaRegionCausalPins,
   pintaPinBoundary,
+  pintaRegionCausalReads,
+  pintaRegionCausalUnit,
   preparePintaCausalRemap,
   preparePintaOfflineRemap,
   stagePintaCausalWrite,
@@ -275,6 +280,15 @@ export interface PintaPersistenceLike<Asset extends PintaWorkshopAsset = PintaAs
   needsRetainedRecovery?(): boolean
   loadRetainedRecoveryFiles?(): Promise<ReadonlyMap<string, Blob>>
   holdOpen?(id: string): Promise<() => void>
+  /**
+   * A janela focal de um cenário grande. No espelho da conta ela só existe com a fila causal: cada
+   * gesto grava os chunks e a unidade V4 juntos (`LocalRegionCausalBinding`).
+   */
+  openRegionSession?(
+    id: string,
+    signal?: AbortSignal,
+    causal?: LocalRegionCausalBinding,
+  ): Promise<LocalRegionAuthorSession | null>
   prepareTileRemap?(source: Asset): Promise<readonly Asset[]>
   accountConfirmation?: Pick<CreationsCloud, 'confirm' | 'download'>
   subscribe?(listener: (event: PintaCloudPersistenceEvent) => void): () => void
@@ -573,6 +587,77 @@ export function createCloudMirroredPintaPersistence(
     })
     lastRemapChain = queueChain(state)
     return lastRemap.assets
+  }
+  /**
+   * A janela focal pela conta (23/11/2026). Só abre com a fila causal já presa a uma época (o
+   * primeiro gravar sem época vai pelo editor inteiro, que guarda a sombra). Antes de abrir, congela
+   * as unidades mutáveis: a janela passa a ser a única dona da ponta. A sessão do pacote recebe a
+   * ligação que monta a unidade DENTRO da transação de cada gesto; os bytes dos recursos lidos são
+   * fixados uma vez aqui, e cada gesto só relê a cabeça confirmada deles.
+   */
+  async function openCausalRegionSession(
+    id: string,
+    signal?: AbortSignal,
+  ): Promise<LocalRegionAuthorSession | null> {
+    if (!causalLocal || !causalCloud || !local.openRegionSession || needsRetainedRecovery)
+      return null
+    const opening = signal ? AbortSignal.any([causalSession.signal, signal]) : causalSession.signal
+    let state = await causalLocal.inspect()
+    if ((state.writeEpoch ?? state.epoch) === null) return null
+    const focalOwner = (unit: (typeof state.pending)[number]) =>
+      unit.members.length === 1 && unit.members[0]?.itemId === id && !state.shadows?.has(unit.opId)
+    for (let attempts = state.pending.length; ; attempts--) {
+      const mutable = state.pending.filter((unit) => !state.prepared?.has(unit.opId))
+      const head = mutable[0]
+      if (!head || mutable.every(focalOwner)) break
+      if (attempts <= 0 || !(await freezePintaCausalPending(causalLocal, head.opId, opening)))
+        throw Error('Uma das mudanças guardadas foi atualizada em outra janela.')
+      state = await causalLocal.inspect()
+    }
+    let reads: readonly { id: string; localRevision: string | null }[] = []
+    let pins: PintaRegionCausalPins | null = null
+    const session = await local.openRegionSession(id, opening, {
+      unit(current, change) {
+        if (!pins) throw Error('Ainda estou conferindo as peças deste cenário.')
+        return pintaRegionCausalUnit(current, change, reads, pins)
+      },
+    })
+    if (!session) return null
+    try {
+      reads = session.resources
+      const catalog = await local.listAllAssets()
+      const map = catalog.find((asset) => asset.id === id)
+      if (!map || pintaLocalRevisionOf(map) !== session.store.getState().revision)
+        throw Error('O cenário mudou enquanto abria. Abra de novo.')
+      state = await causalLocal.inspect()
+      const fixed = await encodePintaObservedResources({
+        local: causalLocal,
+        state,
+        candidates: [map],
+        catalog,
+        readSet: pintaRegionCausalReads(state, id, reads),
+        signal: opening,
+      })
+      pins = {
+        candidate: fixed.candidate,
+        revisions: new Map(fixed.bases.map((basis) => [basis.itemId, basis.localRevision])),
+      }
+    } catch (error) {
+      session.close()
+      throw error
+    }
+    // O selo "salvando" acompanha a fila; a subida inteira acorda quando a janela fecha.
+    const reported = <T extends { changed: boolean }>(result: T): T => {
+      if (result.changed) void reportCausalQueue().catch(() => {})
+      return result
+    }
+    return {
+      ...session,
+      apply: (draft) => session.apply(draft).then(reported),
+      undo: () => session.undo().then(reported),
+      redo: () => session.redo().then(reported),
+      retry: () => session.retry().then(reported),
+    }
   }
   function wakeCausal(): void {
     if (!causalLocal || !causalCloud || causalSession.signal.aborted || causalTimer) return
@@ -1973,6 +2058,12 @@ export function createCloudMirroredPintaPersistence(
           prepareTileRemap,
           holdOpen: options.causal.holdOpen,
           accountConfirmation,
+          ...(local.openRegionSession
+            ? {
+                openRegionSession: (id: string, signal?: AbortSignal) =>
+                  openCausalRegionSession(id, signal),
+              }
+            : {}),
         }
       : {}),
     async persistAsset(asset, context) {
