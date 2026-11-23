@@ -59,7 +59,7 @@ export const PADRAO_DO_RELEVO = {
   celulasPorNo: 32,
   fator: 1.5,
   maximoDeNos: 96,
-  construcoesPorQuadro: 4,
+  construcoesPorQuadro: 2,
   guardados: 64,
   alcanceDoDetalhe: 160,
 } as const

@@ -26,3 +26,37 @@ O que ela diz para o plano:
   2 km, sem menos detalhe longe, seriam milhões;
 - o heap JS passa de 200 MB num mundo pequeno: a régua de 350 MB do aceite precisa ser vigiada a
   cada lote.
+
+## O mundo de prova de 2 km em campo (lote 7, 23/11/2026)
+
+Gerado pela oficina com as intenções do agente (`packages/molda-cenarios/playground/oficina/qa-mundo-2km.ts`
+e `playground/mundo-2km/preparar-cenario.mjs`), compilado em campo com "Juntar peças" e importado
+pelo Estúdio (`preparar-jogo-e.ts` com `JOGO_E_PASTA=output/cenarios-reforma/mundo-2km`):
+
+- base de 2048 m, 1024 × 1024 células de 2 m, relevo de colinas;
+- 16 regiões de 512 m, um lago, uma estrada da vila à floresta, 1.194 objetos;
+- pacote de 68 arquivos e 8,8 MiB (no formato de antes, só o relevo passaria de 80 MB); `cena.json`
+  de 902 KB, com os números arredondados (o teto do Estúdio é 1 MiB: cabem cerca de 1.300 objetos;
+  as colisões de cada objeto, com a matriz repetida, são a próxima coisa a juntar).
+
+Medido a 20 m/s (atravessa várias regiões em 90 s), RTX 3050:
+
+| Perfil | Quadros/s (mediana) | Quadro p50 / p95 / máx. | Desenhos p95 | Triângulos p95 | Pior quadro numa entrada | Heap JS |
+|---|---|---|---|---|---|---|
+| `nativo` | 500 | 2,0 / 3,6 / 10 ms | 78 | 126 mil | 10 ms | ~150 MB |
+| `notebook` (CPU 4×) | 79 | 12,6 / 17,7 / 71 ms | 78 | 126 mil | 71 ms | ~200 MB |
+
+Arquivos: [`mundo-2km-nativo.json`](mundo-2km-nativo.json), [`mundo-2km-notebook.json`](mundo-2km-notebook.json).
+
+O ajuste que a medida pediu: com pedaços de 32 células e até 4 construídos por quadro, o perfil
+`notebook` dava p95 de 33 ms; com no máximo 2 por quadro, 17,7 ms. Pedaços de 64 células davam
+16,2 ms, mas 337 mil triângulos (acima da meta de 300 mil para placa integrada). Ficou 32 células e
+2 por quadro (`PADRAO_DO_RELEVO`).
+
+Comparação na vila, câmera "em volta" (o jogo E de 384 m foi gerado em 22/11, antes do conserto do
+céu do Estúdio, por isso o céu preto): [`jogo-e-384m-em-volta.png`](jogo-e-384m-em-volta.png) e
+[`mundo-2km-em-volta.png`](mundo-2km-em-volta.png). A estrada aparece sobre o relevo em campo, sem
+tremido.
+
+⚠️ Pendência que não é deste plano: nas duas páginas (inclusive a de 384 m, de antes destas mudanças)
+o herói do Molda aparece quase todo afundado no chão, com só os braços à vista.

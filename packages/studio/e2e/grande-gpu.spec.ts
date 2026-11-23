@@ -35,7 +35,9 @@ const PERFIS = [
   { nome: 'notebook', largura: 1366, altura: 768, cpu: 4 },
 ] as const
 
-for (const perfil of PERFIS)
+// `MUNDO_GPU_PERFIS=notebook` mede um perfil só.
+const PEDIDOS = process.env.MUNDO_GPU_PERFIS?.split(',')
+for (const perfil of PERFIS.filter((p) => !PEDIDOS || PEDIDOS.includes(p.nome)))
   test(`${NOME}, perfil ${perfil.nome}`, async ({ browser, browserName }) => {
     test.skip(browserName !== 'chromium', 'A medida usa a emulação de CPU do Chromium.')
     test.skip(

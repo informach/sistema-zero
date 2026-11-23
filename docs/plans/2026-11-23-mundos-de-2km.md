@@ -233,3 +233,12 @@ terreno `grade` nativo sem `recortes`:
   volumes são quase todo o JSON (entidades 186 KB, colisões 198 KB, nós 64 KB de 476 KB).
 - Ordem: o lote 7 (mundo de prova de 2 km, JavaScript) vem antes do lote 6 (Python), para medir o
   relevo em campo numa placa de vídeo antes de levar o formato ao Python.
+- Lote 7 (parte JavaScript): feito (23/11/2026). Mundo de prova de 2 km gerado pela oficina, em
+  campo, 1.194 objetos, 8,8 MiB, `cena.json` de 902 KB; na RTX 3050 com a CPU 4× mais lenta, 79
+  quadros/s na mediana e p95 de 17,7 ms (evidência em
+  `docs/estudio-evolucao/evidencias/mundos-2km-2026-11-23/`). A medida pediu um ajuste: no máximo
+  2 pedaços construídos por quadro (com 4, o p95 ia a 33 ms). Achado e consertado no caminho: o
+  "Juntar peças" perdia os pesos do relevo (`45ab37e0a`). Falta: a versão Python (lote 6) e a
+  troca do jogo E da galeria (lote 8, junto com a página de medida).
+- Próximas melhorias (não bloqueiam o aceite): juntar as colisões por lote, como os nós (as
+  colisões de cada objeto, com a matriz repetida, são 351 KB dos 924 KB do `cena.json`).
