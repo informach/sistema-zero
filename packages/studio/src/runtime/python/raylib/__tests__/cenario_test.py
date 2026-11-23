@@ -888,16 +888,6 @@ class RelevoTest(unittest.TestCase):
         finally:
             s.descartar()
 
-    def test_fora_do_estudio_recusa_com_recado(self):
-        relevo_dos_casos(self.data, self.folder)
-        anterior = cenario._NO_ESTUDIO
-        cenario._NO_ESTUDIO = False
-        try:
-            with self.assertRaisesRegex(ValueError, 'só abre no Estúdio'):
-                self.abrir()
-        finally:
-            cenario._NO_ESTUDIO = anterior
-
     def test_recusa_pesos_com_outro_filtro_ou_tamanho(self):
         f = RELEVO['forma']
         largura = f['colunas'] + 1

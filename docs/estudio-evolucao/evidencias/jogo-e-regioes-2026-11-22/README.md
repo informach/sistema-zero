@@ -11,7 +11,7 @@ Um mundo 3D dividido em seis regiões, montado pelo caminho de verdade, sem nada
   na vila), o início e duas luzes. A compilação é a da oficina, com "Juntar peças" (os 433 objetos
   viram 23 lotes, cada um numa região).
 - **Estúdio**: importa os dois pacotes (com e sem regiões), confere o orçamento por janela e monta o
-  programa só com blocos que existem: o cenário, o herói do Molda (corpo com física), as moedas
+  programa só com blocos que existem: o cenário, o herói (o aventureiro da Ilha do Farol desde 23/11/2026; antes, a peça técnica de ossos do Molda), as moedas
   de pé logo acima do relevo (a altura de cada uma sai do terreno compilado), o placar e o
   "Quando o heroi entrar na região" escrevendo o nome da região no canto da tela. O gerador
   confere que cada linha vira um bloco de verdade (nenhum código cru) e a ida e volta código ⇄

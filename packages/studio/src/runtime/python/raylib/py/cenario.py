@@ -17,8 +17,8 @@ região do personagem, as vizinhas e as que estão perto, com as mesmas regras d
 Estúdio em JavaScript; ``altura`` usa o relevo inteiro sempre, então ninguém cai
 onde a região ainda não carregou. Sem regiões, carrega tudo, como sempre.
 
-Com o relevo de mundo grande (o "campo" do Molda Cenários, só no Estúdio), o chão
-não vem em modelos: o cenário monta o relevo em pedaços perto do personagem, com
+Com o relevo de mundo grande (o "campo" do Molda Cenários), o chão não vem em
+modelos: o cenário monta o relevo em pedaços perto do personagem, com
 todo o detalhe até perto e o desenho grosso longe, e ``altura`` lê o campo.
 """
 from array import array
@@ -480,6 +480,14 @@ _LUZ = (0.4 / _L, 1 / _L, 0.3 / _L)
 _COR = re.compile('#[0-9a-fA-F]{6}')
 
 
+def _memoria(tipo, dados):
+    """No Raylib do computador, a malha é memória do C (MemAlloc): o unload_model a solta."""
+    b = bytes(dados)
+    ponteiro = _p.mem_alloc(len(b))
+    _p.ffi.memmove(ponteiro, b, len(b))
+    return _p.ffi.cast(tipo, ponteiro)
+
+
 def _rgb(hexa):
     if not isinstance(hexa, str) or not _COR.fullmatch(hexa):
         raise ValueError('Uma camada do relevo tem uma cor inválida.')
@@ -659,13 +667,21 @@ class _RelevoDoCampo:
         return x * c, z * c, 2 * c, _RELEVO_GROSSO
 
     def _construir(self, chave):
-        vertices, cores, indices = self.malha(*self._especificacao(chave))
+        self.modelos[chave] = self._modelo(*self.malha(*self._especificacao(chave)))
+
+    @staticmethod
+    def _modelo(vertices, cores, indices):
         m = _p.Mesh()
         m.vertexCount = len(vertices) // 3
         m.triangleCount = len(indices) // 3
-        m.vertices, m.colors, m.indices = vertices, cores, indices
+        if _NO_ESTUDIO:
+            m.vertices, m.colors, m.indices = vertices, cores, indices
+        else:
+            m.vertices = _memoria('float *', vertices)
+            m.colors = _memoria('unsigned char *', cores)
+            m.indices = _memoria('unsigned short *', indices)
         _p.upload_mesh(m, False)
-        self.modelos[chave] = _p.load_model_from_mesh(m)
+        return _p.load_model_from_mesh(m)
 
     def _caixa(self, i0, j0, celulas):
         x0, z0 = self.ox + i0 * self.passo, self.oz + j0 * self.passo
@@ -1113,9 +1129,6 @@ class Cenario:
         if (not isinstance(relevo, dict) or relevo.get('tipo') != 'campo'
                 or t.get('cobertura') != 'grade' or t.get('recortes')):
             raise ValueError('O relevo de mundo grande do cenário é inválido.')
-        if not _NO_ESTUDIO:
-            raise ValueError('Este cenário tem o relevo de mundo grande, que só abre no Estúdio. '
-                             'Exporte de novo pelo destino Raylib do Molda.')
         camadas = _lista(relevo, 'camadas', 8)
         pesos = _lista(relevo, 'pesos', 2)
         if not camadas or len(pesos) != -(-len(camadas) // 4) or any(not isinstance(c, dict) for c in camadas):
