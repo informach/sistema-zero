@@ -110,6 +110,7 @@ Escolher um ID do quadro e registrar seu escopo antes de executar. Ao concluir, 
 | Data | ID | Resultado e evidências |
 | --- | --- | --- |
 | 23/11/2026 | Registro | Proposta preservada para execução gradual; etapas pendentes |
+| 23/11/2026 | LG01 | Miniaturas dos 24 modelos conferidas na prévia Admin autenticada. Defeito R13 no menu incorporado corrigido em `a5d684728`, com testes de regressão e navegador. Nova rodada final de CI, plano e staging em andamento; produção ainda pendente |
 | 23/11/2026 | LG01 | Candidata em `release/lg01-melhorias-prontas-20261123`, baseada em `f8910ee05`, com aquecimento removido. [Escopo, dependências, provas e sequência de implantação](../qa/2026-11-23-lg01-melhorias-prontas.md) |
 | 23/11/2026 | LG02 | Consulta autenticada ao executor real de staging: `/v1/check/warm` respondeu 404. Aquecimento e reutilização excluídos da candidata; faltam implantação e provas reais de falhas, concorrência e isolamento |
 | 23/11/2026 | LG02 | Worker implantado em staging para a prova. Falha em uma aba derrubou outra verificação válida da mesma identidade; identidades diferentes passaram. [Reprodução R12 e contraprovas](../qa/2026-11-23-lg02-executor-real.md). A candidata LG01 passou no mesmo caso com contêineres exclusivos e substituiu o Worker de staging |

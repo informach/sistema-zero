@@ -2,6 +2,8 @@
 
 Atualização de 23/11/2026, incluindo o que entrou depois do início da auditoria.
 
+**Execução da primeira etapa:** a LG01 está sendo qualificada no PR #283, candidata `a5d684728`, incluindo a main concorrente e a correção R13 do menu incorporado. As miniaturas dos 24 modelos foram conferidas na prévia Admin; criação e reabertura passaram no perfil infantil. Aquecimento e reutilização por perfil ficam **fora da entrega**: a prova real reproduziu interferência entre duas abas quando uma execução falha (R12). Exigem correção de propriedade/limpeza do contêiner e nova qualificação, não apenas liberação de acesso. Os estados de produção das tabelas abaixo são históricos da coleta; [registro operacional atual](../../docs/qa/2026-11-23-lg01-melhorias-prontas.md) e [provas do executor](../../docs/qa/2026-11-23-lg02-executor-real.md).
+
 ## Escopo ampliado
 
 - Início preservado da janela original: 16/11/2026, 13:28:01 de São Paulo.
@@ -76,7 +78,7 @@ Fontes: [download da janela focal](../../packages/pinta/src/components/editor/Fo
 | Pedido de ajuda do Pinta | Uma conversa por perfil; até 20 edições e 40 desenhos por pedido. Não envia bytes dos desenhos. Acima do teto ou quando necessário, a alternativa é baixar os arquivos para a equipe | Não exige lista especial; precisa do deploy. A resposta da equipe e a recuperação são etapas posteriores |
 | Miniaturas 3D | WebGL 2, leitura válida do modelo, desenho estático pequeno e cache de 64 entradas. Falha usa o ícone | Não exige flag/lista. Precisa chegar no build publicado |
 | Tela cheia do palco | O botão agora entra e sai; o navegador precisa oferecer a API de tela cheia e permitir a ação | Sem nova liberação de público; precisa do build publicado |
-| Aquecimento da verificação | Não atende o executor Python. Precisa de sessão/acesso/revisão válidos; o navegador do teste continua sendo aberto e o jogo continua sendo montado quando necessário. Há suspensão após cinco minutos e limites de capacidade | Não exige liberar cada criança. Precisa de deploy coordenado do runtime/imagem, Members, gateway e apps |
+| Aquecimento da verificação | Não atende o executor Python. A reutilização atual falhou na prova real com duas abas da mesma identidade: a limpeza de uma falha derruba a outra execução. Também há suspensão após cinco minutos e limites de capacidade | Excluído da LG01. Exige correção e qualificação de concorrência, limpeza, suspensão e capacidade antes do deploy coordenado; não é liberação individual de crianças |
 | Gravação causal do Pinta | No código atual vale para todos os perfis elegíveis, sem a antiga flag/lista. Exige conta válida, versões compatíveis e migrações. Conflito não significa mesclar automaticamente toda edição | A antiga lista de homologação não é mais uma pendência. O rollout técnico permanece necessário |
 | Última gravação que falha na janela focal | Sair pode preservar a versão anteriormente confirmada e descartar a última mudança não gravada, com aviso. O armazenamento não inventa um sucesso | É uma condição de falha operacional, não uma restrição de acesso |
 | Atualização no Mural | Atualiza o post associado ao mesmo projeto, preservando a publicação; não transforma todo envio histórico ou outro projeto em atualização daquele post | Sem flag especial nova; depende de Hub, Members e apps compatíveis |

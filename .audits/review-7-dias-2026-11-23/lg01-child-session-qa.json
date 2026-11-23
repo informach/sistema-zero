@@ -1,8 +1,9 @@
 {
-  "recordedAt": "2026-11-23T21:16:23.664Z",
+  "recordedAt": "2026-11-23T22:23:36Z",
   "environment": "staging",
   "testedFrontendSha": "3664ae3347a6e8c55ce0b20a11b7d3f2873f0654",
   "candidateAfterMainIntegration": "40dd49db7265c33d36b6f82ce9130382f46bef28",
+  "candidateAfterMenuFix": "a5d684728a511f6e8c45f877f572166b1e1453f1",
   "accountMatchVerifiedReadOnly": true,
   "privateProject": {
     "itemId": "01M853GQKW3CVQARHT02G4Y88B",
@@ -26,9 +27,45 @@
     "automatedChromeFlowPassed": true
   },
   "models3d": {
-    "activeProfileKits": ["Jogo 2D"],
-    "eligibleProfileRequested": true,
+    "activeProfileKits": [
+      "Jogo 2D"
+    ],
+    "eligibleAccountProvided": true,
+    "manualPreview": {
+      "surface": "existing authenticated Admin session, local lesson preview",
+      "mode": "Conferir livremente",
+      "courseId": "081a0a6b-ea00-59ea-afc9-8842e0c9446f",
+      "lessonId": "f63fe236-5862-42c9-81c8-cb26a113eac2",
+      "modelCount": 24,
+      "allImagesComplete": true,
+      "imageSizePx": 96,
+      "allImagesNonempty": true,
+      "paintedLongestExtentMinPx": 80,
+      "paintedLongestExtentMaxPx": 82,
+      "visuallyRecognizable": true,
+      "fetchXhrRequestsInspected": 138,
+      "apiMutationRequestsObserved": 0,
+      "realChild3dProgressTested": false,
+      "accessOrProgressChanged": false,
+      "emailCodesSent": 0,
+      "previewClosed": true,
+      "originalAdultAudienceRestored": true
+    },
     "automatedRealWebGLUploadAndReloadPassed": true
+  },
+  "embeddedMenuR13": {
+    "before": {
+      "viewportHeight": 936,
+      "triggerTop": 800.5,
+      "panelTop": 844.5,
+      "panelBottom": 1252.44,
+      "modelsMenuItemOutsideViewport": true
+    },
+    "unitRegressionFailedBeforeFix": true,
+    "unitTestsPassedAfterFix": 6,
+    "productionChromeFlowsPassed": 3,
+    "studioTypecheckExitCode": 0,
+    "stagingAcceptanceOfFixedMenuPending": true
   },
   "recoveryHelp": {
     "withoutDocumentSession": {
