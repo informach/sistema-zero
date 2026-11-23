@@ -87,7 +87,11 @@ for (const t of aula.trechos) {
   blocks.push(
     {
       key: `video-${t.key}`,
-      plannedVideo: videoPlanejado(t.title, `meu-desenho-${aula.slug}.roteiro.md`, falaDaParte(t, 0)),
+      plannedVideo: videoPlanejado(
+        t.title,
+        `meu-desenho-${aula.slug}.roteiro.md`,
+        falaDaParte(t, 0),
+      ),
     },
     { key: `ponte-${t.key}`, content: { kind: 'dialogue', pose: 'speaking', text: t.ponte } },
   )
