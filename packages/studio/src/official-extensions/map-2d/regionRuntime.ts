@@ -164,8 +164,11 @@ export function createRegionMap2D(host: Host, legacy: Api, serialized: string) {
       art.set(resource.id, resource.image)
       if (!pictures.has(resource.image)) pictures.set(resource.image, host.image(resource.image))
     }
-    const areas = maps.get(name)?.areas ?? []
-    for (const area of areas) area.inside.clear()
+    const previous = maps.get(name)
+    const areas = previous?.areas ?? []
+    // Creating the same scene again (every frame, say) keeps who is inside an area, like the
+    // dense player; another scene under this name, as through a door, starts fresh.
+    if (previous?.scene !== scene) for (const area of areas) area.inside.clear()
     const collide =
       scene.physics === 'legacy'
         ? host.legacyCollider(scene, createRegionLegacyCollision(query.context))

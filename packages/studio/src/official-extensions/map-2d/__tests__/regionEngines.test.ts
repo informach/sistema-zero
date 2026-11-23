@@ -336,6 +336,32 @@ for (const target of ['g2d', 'gk'] as const) {
     expect(follow(api, 'fase')).toEqual(follow(plain, 'fase'))
     expect(follow(api, 'vila')).toEqual(follow(lone, 'vila'))
   })
+
+  test(`${target} keeps an entered area when the same regional scene is created again`, async () => {
+    const { api, frame } = boot(
+      target,
+      await mapTwoDRegionBootstrap(target, await pngWorld(), 'desenho'),
+    )
+    api.createMapScene('mapa', 'desenho')
+    const actor = body(-506, -506, -506)
+    const visits: string[] = []
+    api.mapArea('mapa', actor, 'trigger', (area) => visits.push(area.name))
+    for (let turn = 0; turn < 4; turn++) {
+      api.createMapScene('mapa', 'desenho')
+      frame()
+    }
+    expect(visits).toEqual(['Área'])
+    actor.x = -450
+    frame()
+    actor.x = -506
+    api.createMapScene('mapa', 'desenho')
+    frame()
+    expect(visits).toEqual(['Área', 'Área'])
+    // Another scene under the same name starts fresh, as a door does.
+    api.createMapScene('mapa', 'cabana')
+    frame()
+    expect(visits).toEqual(['Área', 'Área', 'Área'])
+  })
 }
 
 test('only the private composition carries the regional factory and requires explicit physics throughout', async () => {
