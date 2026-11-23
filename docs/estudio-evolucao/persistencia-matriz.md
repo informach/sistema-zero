@@ -52,7 +52,8 @@ consertado primeiro.
    descarregava o projeto antes de o serviço gravar, então a desmontagem por navegação dentro do app
    ("Trocar de perfil", menu, voltar) achava o projeto já vazio e descartava a edição suja. O ligar
    do serviço veio para antes do descarregar, e um salvamento recusado na saída vira cópia de saída
-   (`pageAlive`), que aparece como "(edição recuperada)". STU com o adaptador de verdade.
+   (`pageAlive`), que aparece como "(edição recuperada)". STU com o Estúdio e o serviço de verdade
+   e um adaptador de teste; a cópia nativa do adaptador local é a do BROW (item 1).
 1. **Duas abas no mesmo projeto** (`299f28772`): BROW agora lê, depois da recarga, a cópia
    "(edição recuperada)" da aba que perdeu, também fechando a aba (`runBeforeUnload`).
 2. **A janela de 120 ms dos blocos** (`16bf6725f`): perda real. O flush do `BlocklyPanel`, sem
@@ -95,6 +96,16 @@ testes vermelhos no SVC: o salvamento recusado virava cópia de saída sempre qu
 projeto mudava, inclusive com uma edição nova do MESMO projeto na tela, e uma cópia antiga podia
 cobrir a mais nova na mesma chave quando a gravação de saída da aba escondida abortava o salvamento
 em voo. Agora só vale com o projeto fora do editor (pelo id) e nunca para o aborto da transferência.
+
+**Full review final (22/11/2026).** O "aborto da transferência" não se reconhece pelo `AbortError`:
+a cópia de saída de uma edição MAIS ANTIGA (a recusa do salvamento de A, já fora do editor)
+interrompe todas as gravações em voo do escopo, inclusive a de B, mais nova, e a cópia de B era
+pulada (B se perdia). O serviço agora numera as edições na ordem em que as vê e anota, por projeto,
+a edição mais nova que já foi para uma cópia de saída pedida por ele (`stageExitCopy`,
+`exitCopyCovers`): a recusa só vira cópia quando nenhuma cópia cobre aquela edição. SVC, três
+testes vermelhos antes ("A recusada e B abortada: a cópia de B por cima", "a cópia de B já feita:
+a recusa de A não a cobre", "AbortError sem cópia deste serviço faz a cópia"); sem a anotação, o
+segundo volta a ficar vermelho.
 Achou também que a régua do aviso de projeto inicial ficava muda em blocos com parâmetros (o id do
 parâmetro é sorteado ao abrir): o `extraState` passou a ser comparado sem ids. O alerta de que o
 `flush` dos blocos regeneraria por cima do código da Ponte depende de eventos de variável do
