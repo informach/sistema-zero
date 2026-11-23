@@ -66,6 +66,14 @@ export async function carregarArquivoDoExemplo(
   }
   if (!dados.ir || !Array.isArray(dados.assets))
     throw new Error('O arquivo deste jogo pronto não é um projeto.')
+  // Sem programa o Estúdio abriria um projeto em branco com o nome do jogo (o primeiro arquivo do
+  // jogo E saiu assim: o projeto do modo Ponte guarda o programa no código, e a galeria lê a IR).
+  if (
+    !Object.values(dados.ir.behavior ?? {}).some(
+      (lista) => Array.isArray(lista) && lista.length > 0,
+    )
+  )
+    throw new Error('O arquivo deste jogo pronto não tem o programa.')
   return { ir: dados.ir, assets: dados.assets }
 }
 

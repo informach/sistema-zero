@@ -1,0 +1,74 @@
+{
+  "worker": "sistemazero-studio-runtime-staging (versão 464c90e2, imagem do commit 2c5cf41c4)",
+  "quando": "2026-11-22",
+  "casos": [
+    {
+      "caso": "three-ts",
+      "status": 200,
+      "ms": 11052,
+      "ok": true,
+      "code": null,
+      "message": null,
+      "pagina": 200,
+      "connectSrc": "data: blob: https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev/v1/artifacts/<id do artefato>/",
+      "scriptsDoProprioCaminho": true,
+      "bibliotecaEmpacotada": true,
+      "redeDeForaBloqueada": true
+    },
+    {
+      "caso": "react-ts",
+      "status": 200,
+      "ms": 9991,
+      "ok": true,
+      "code": null,
+      "message": null,
+      "pagina": 200,
+      "connectSrc": "data: blob: https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev/v1/artifacts/<id do artefato>/",
+      "scriptsDoProprioCaminho": true,
+      "bibliotecaEmpacotada": true,
+      "redeDeForaBloqueada": true
+    },
+    {
+      "caso": "phaser",
+      "status": 200,
+      "ms": 13248,
+      "ok": true,
+      "code": null,
+      "message": null,
+      "pagina": 200,
+      "connectSrc": "data: blob: https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev/v1/artifacts/<id do artefato>/",
+      "scriptsDoProprioCaminho": true,
+      "bibliotecaEmpacotada": true,
+      "redeDeForaBloqueada": true
+    },
+    {
+      "caso": "three-ts com ^ e trava",
+      "status": 200,
+      "ms": 7938,
+      "ok": true,
+      "code": null,
+      "message": null,
+      "pagina": 200,
+      "connectSrc": "data: blob: https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev/v1/artifacts/<id do artefato>/",
+      "scriptsDoProprioCaminho": true,
+      "bibliotecaEmpacotada": true,
+      "redeDeForaBloqueada": true
+    },
+    {
+      "caso": "import sem declarar (nanoid)",
+      "status": 422,
+      "ms": 5275,
+      "ok": false,
+      "code": "DEPENDENCY_NOT_DECLARED",
+      "message": "A biblioteca nanoid não está no package.json deste jogo. Se ela é uma das bibliotecas do modelo, escreva ela no package.json; se não, tire o import."
+    },
+    {
+      "caso": "erro de sintaxe",
+      "status": 422,
+      "ms": 29434,
+      "ok": false,
+      "code": "BUILD_FAILED",
+      "message": "O projeto tem um erro de compilação."
+    }
+  ]
+}

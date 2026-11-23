@@ -1,6 +1,11 @@
 import { expect, test } from '@playwright/test'
 import type {} from './fixtures/blocklyEditorHost'
 
+// Desde as áreas do projeto (22/11/2026), o primeiro commit visual escreve o comentário da
+// área de cada linha (a fase 2 da transação); o código que só foi aberto fica como estava.
+const START = '# \u2699\uFE0F Ao iniciar\n'
+const MOLDS = '# \u{1F9E9} Meus moldes\n'
+
 test.beforeEach(async ({ page }) => {
   await page.goto('/analysis')
   await page.waitForFunction(() => !!globalThis.pythonBlocklyEditorProbe)
@@ -21,15 +26,15 @@ test('production Blockly surface commits edits and uses the shared undo/redo his
   expect(immediate).toEqual({ source: '# placar\nx = 3\nprint(x)\n', pending: true })
   await expect
     .poll(() => page.evaluate(() => pythonBlocklyEditorProbe.state().source))
-    .toBe('# placar\nx = (40)\nprint(x)\n')
+    .toBe(`${START}# placar\nx = (40)\nprint(x)\n`)
   await page.evaluate(() => pythonBlocklyEditorProbe.undo())
   await expect
     .poll(() => page.evaluate(() => pythonBlocklyEditorProbe.state().source))
-    .toBe('# placar\nx = (3)\nprint(x)\n')
+    .toBe(`${START}# placar\nx = (3)\nprint(x)\n`)
   await page.evaluate(() => pythonBlocklyEditorProbe.redo())
   await expect
     .poll(() => page.evaluate(() => pythonBlocklyEditorProbe.state().source))
-    .toBe('# placar\nx = (40)\nprint(x)\n')
+    .toBe(`${START}# placar\nx = (40)\nprint(x)\n`)
 })
 
 test('incomplete edits survive unmount and require an explicit restore or discard', async ({
@@ -119,7 +124,7 @@ test('a gesture queued during source publication is subsequently committed', asy
   })
   await expect
     .poll(() => page.evaluate(() => pythonBlocklyEditorProbe.state().source))
-    .toBe('# placar\nx = (41)\nprint(x)\n')
+    .toBe(`${START}# placar\nx = (41)\nprint(x)\n`)
   await expect.poll(() => page.evaluate(() => pythonBlocklyEditorProbe.state().pending)).toBe(false)
   await expect(page.locator('.blocklyTextInputField').filter({ hasText: /^41$/ })).toBeVisible()
 })
@@ -133,7 +138,7 @@ test('a gesture still waiting for its commit is applied when the child clicks ou
   expect(staged).toEqual({ before: false, after: true })
   await expect
     .poll(() => page.evaluate(() => pythonBlocklyEditorProbe.state().source))
-    .toBe('# placar\nx = (40)\nprint(x)\n')
+    .toBe(`${START}# placar\nx = (40)\nprint(x)\n`)
 })
 
 test('restore cannot replace a newer draft offered by another owner', async ({ page }) => {
@@ -161,13 +166,9 @@ test('search can return no blocks and keeps the curated toolbox', async ({ page 
   await page.locator('.blocklyToolboxCategory').filter({ hasText: 'Procurar um bloco' }).click()
   const search = page.getByRole('searchbox', { name: 'Pesquisar blocos' })
   await search.fill('zzzz-não-existe')
-  await expect(
-    page.locator('.blocklyFlyout .blocklyText').filter({ hasText: 'Nada encontrado' }),
-  ).toBeVisible()
+  await expect(page.locator('.blocklyFlyout').getByText('Nada encontrado')).toBeVisible()
   await search.fill('')
-  await expect(
-    page.locator('.blocklyFlyout .blocklyText').filter({ hasText: 'Escreva para achar' }),
-  ).toBeVisible()
+  await expect(page.locator('.blocklyFlyout').getByText('Escreva para achar')).toBeVisible()
   await expect(page.getByRole('treeitem').first()).toBeVisible()
   expect(errors).toEqual([])
   expect(await page.evaluate(() => pythonBlocklyEditorProbe.state().source)).toBe(
@@ -187,7 +188,7 @@ test('shadowing a built-in changes its label without breaking visual history', a
   await expect(page.getByRole('region').getByText('mostrar', { exact: true })).toBeVisible()
   await expect
     .poll(() => page.evaluate(() => pythonBlocklyEditorProbe.state().source))
-    .toBe('# placar\nx = 3\nprint(x)\n')
+    .toBe(`${START}# placar\nx = 3\nprint(x)\n`)
   await page.evaluate(() => pythonBlocklyEditorProbe.redo())
   await expect(
     page.getByRole('region').getByText('chamada Python (ver código)', { exact: true }),
@@ -227,12 +228,12 @@ test('a combined Blockly move and insertion preserves comments through Undo, Red
   await page.evaluate(() => pythonBlocklyEditorProbe.source('x = 1 # x\ny = 2 # y\n'))
   await expect(page.locator('.blocklyTextInputField').filter({ hasText: /^2$/ })).toBeVisible()
   await page.evaluate(() => pythonBlocklyEditorProbe.rearrangeAndInsert())
-  const edited = "y = 2 # y\nprint('novo')\nx = (10) # x\n"
+  const edited = `${START}y = 2 # y\nprint('novo')\nx = (10) # x\n`
   await expect.poll(() => page.evaluate(() => pythonBlocklyEditorProbe.state().source)).toBe(edited)
   await page.evaluate(() => pythonBlocklyEditorProbe.undo())
   await expect
     .poll(() => page.evaluate(() => pythonBlocklyEditorProbe.state().source))
-    .toBe('x = (1) # x\ny = 2 # y\n')
+    .toBe(`${START}x = (1) # x\ny = 2 # y\n`)
   await page.evaluate(() => pythonBlocklyEditorProbe.redo())
   await expect.poll(() => page.evaluate(() => pythonBlocklyEditorProbe.state().source)).toBe(edited)
   await page.evaluate(() => pythonBlocklyEditorProbe.remount())
@@ -272,15 +273,15 @@ test('an emptied function body emits official pass and its cache survives Undo, 
   await page.evaluate(() =>
     pythonBlocklyEditorProbe.source('def f():\n    x = 1 # anotação\nf()\n'),
   )
-  await expect(page.locator('.blocklyTextInputField').filter({ hasText: /^1$/ })).toBeVisible()
+  await expect.poll(() => page.evaluate(() => pythonBlocklyEditorProbe.numbers())).toEqual(['1'])
   await page.evaluate(() => pythonBlocklyEditorProbe.emptyFunctionBody())
-  const empty = 'def f():\n    # anotação\n    pass\nf()\n'
+  const empty = `${MOLDS}def f():\n    # anotação\n    pass\n\n${START}f()\n`
   await expect.poll(() => page.evaluate(() => pythonBlocklyEditorProbe.state().source)).toBe(empty)
   await expect.poll(() => page.evaluate(() => pythonBlocklyEditorProbe.state().pending)).toBe(false)
   await page.evaluate(() => pythonBlocklyEditorProbe.undo())
   await expect
     .poll(() => page.evaluate(() => pythonBlocklyEditorProbe.state().source))
-    .toBe('def f():\n    # anotação\n    x = 1\nf()\n')
+    .toBe(`${MOLDS}def f():\n    # anotação\n    x = 1\n\n${START}f()\n`)
   await page.evaluate(() => pythonBlocklyEditorProbe.redo())
   await expect.poll(() => page.evaluate(() => pythonBlocklyEditorProbe.state().source)).toBe(empty)
   await page.evaluate(() => pythonBlocklyEditorProbe.remount())
@@ -307,13 +308,13 @@ test('an optional branch and its header can be removed, undone and restored from
   await page.evaluate(() =>
     pythonBlocklyEditorProbe.setOption('sz_py_if', 'orelse:present', false, 'orelse'),
   )
-  const empty = 'if True:\n    print(1)\n# alternativa\n# opção\n'
+  const empty = `${START}if True:\n    print(1)\n# alternativa\n# opção\n`
   await expect.poll(() => page.evaluate(() => pythonBlocklyEditorProbe.state().source)).toBe(empty)
   await expect.poll(() => page.evaluate(() => pythonBlocklyEditorProbe.state().pending)).toBe(false)
   await page.evaluate(() => pythonBlocklyEditorProbe.undo())
   await expect
     .poll(() => page.evaluate(() => pythonBlocklyEditorProbe.state().source))
-    .toBe('if True:\n    print(1)\nelse:\n    print(2)\n# alternativa\n# opção\n')
+    .toBe(`${START}if True:\n    print(1)\nelse:\n    print(2)\n# alternativa\n# opção\n`)
   await page.evaluate(() => pythonBlocklyEditorProbe.redo())
   try {
     await expect
@@ -347,15 +348,17 @@ test('moving a command between functions preserves its annotation through Undo, 
 }) => {
   const original = 'def a():\n    x=1 # mover\ndef b():\n    y = 2 # ficar\n'
   await page.evaluate((source) => pythonBlocklyEditorProbe.source(source), original)
-  await expect(page.locator('.blocklyTextInputField').filter({ hasText: /^2$/ })).toBeVisible()
+  await expect
+    .poll(() => page.evaluate(() => pythonBlocklyEditorProbe.numbers()))
+    .toEqual(['1', '2'])
   await page.evaluate(() => pythonBlocklyEditorProbe.transferFunctionCommand())
-  const moved = 'def a():\n    pass\ndef b():\n    y = 2 # ficar\n    x=1 # mover\n'
+  const moved = `${MOLDS}def a():\n    pass\ndef b():\n    y = 2 # ficar\n    x=1 # mover\n`
   await expect.poll(() => page.evaluate(() => pythonBlocklyEditorProbe.state().source)).toBe(moved)
   await expect.poll(() => page.evaluate(() => pythonBlocklyEditorProbe.state().pending)).toBe(false)
   await page.evaluate(() => pythonBlocklyEditorProbe.undo())
   await expect
     .poll(() => page.evaluate(() => pythonBlocklyEditorProbe.state().source))
-    .toBe(original)
+    .toBe(`${MOLDS}${original}`)
   await page.evaluate(() => pythonBlocklyEditorProbe.redo())
   await expect.poll(() => page.evaluate(() => pythonBlocklyEditorProbe.state().source)).toBe(moved)
   await page.evaluate(() => pythonBlocklyEditorProbe.remount())

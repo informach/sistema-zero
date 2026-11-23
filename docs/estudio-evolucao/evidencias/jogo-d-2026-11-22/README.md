@@ -15,7 +15,7 @@ e o resto dentro das cavernas e das casas. O programa usa só blocos que já exi
 | Gerador (`bun run gen:jogo-d`, `check:jogo-d`) | `packages/studio/scripts/gen-jogo-d.ts` |
 | Programa (JavaScript → IR estruturada) | `packages/studio/src/examples/jogoDSource.ts` → `__gen_jogoD.ts` |
 | Materiais gerados (22: 8 cenas, 7 imagens, 7 sons; 1,75 milhão de caracteres) | `packages/studio/src/examples/jogoD.generated.ts` |
-| O exemplo (a galeria entra no lote 9) | `packages/studio/src/examples/jogoDExample.ts` |
+| O exemplo (já na galeria "Ver os jogos prontos", só para a equipe: um pedaço do pacote carregado no clique, por `examples/bigExamples.ts`) | `packages/studio/src/examples/jogoDExample.ts` |
 | Testes sem navegador | `packages/studio/src/examples/jogoD.test.ts` |
 | Provas no navegador | `packages/studio/e2e/jogo-d.flow.ts`, `playwright.jogo-d.config.ts`, `scripts/serve-jogo-d-proof.ts` |
 
@@ -54,10 +54,26 @@ e o resto dentro das cavernas e das casas. O programa usa só blocos que já exi
 | Começos do jogo na sessão | 1 (o herói nunca morreu) | 1 |
 
 Os arquivos: `desempenho-windows.json`, `sessao-60s-windows.json`, `recibo-previa-windows.json` e
-`recibo-exportado-windows.json`. Medidos depois dos consertos da revisão do lote 8.
+`recibo-exportado-windows.json`. Medidos depois dos consertos da revisão do lote 8. São medidas
+locais sem SHA: os quatro arquivos não registram o commit nem a hora da rodada (entraram no Git
+junto com os consertos, em `b089d589e`, mas não dizem se a árvore medida era aquela).
 
-A sessão de 10 minutos roda no CI (`studio-engines.yml`, passo "Jogo D"); o número do CI entra
-aqui quando a rodada terminar.
+## A sessão de 10 minutos no CI Linux (`studio-engines.yml`, run 45087601282, SHA `14cb1938b`)
+
+| Medida | Valor | Limite |
+|---|---|---|
+| Duração, voltas e passagens | 601 s, 55 voltas, 770 passagens | 10 minutos, pelo menos 3 voltas |
+| Pior passagem por porta | 14,3 ms | ≤ 50 ms |
+| Memória depois do coletor | 3,74 MB na 1ª volta, 3,84 na 2ª, 3,98 na última (máximo 4,15) | a última até 10% acima da segunda: ficou 3,7% |
+| Imagens criadas | 11 em todas as voltas | param depois da primeira |
+| Começos do jogo | 1 | 1 |
+
+O arquivo: `sessao-10min-ci-linux.json`. ⚠️ As três rodadas anteriores reprovaram na memória
+(run 45075113828: a última volta 12,6% acima da segunda). Não era o jogo: a SONDA da prova
+guardava o trabalho e o intervalo de cada quadro em duas listas que cresciam 1,5× de cada vez
+(36 mil quadros em 10 minutos, quase 1 MB, em degraus: o de +270 KB na volta 52 é o que as duas
+listas de ~34 mil números ganham ao crescer). A prova agora esvazia as listas no fim de cada
+volta, antes de medir (`1400ca496`); os registros por sprite do motor já eram `WeakMap`.
 
 ## Provas
 

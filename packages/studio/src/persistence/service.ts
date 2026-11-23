@@ -449,6 +449,49 @@ export function createPersistenceService(
       })
   }
 
+  /**
+   * A ordem das edições: cada referência de projeto ganha um número na primeira vez que o serviço a
+   * vê (o agendamento acompanha cada edição, então a mais nova tem o número maior).
+   */
+  const editSequence = new WeakMap<Project, number>()
+  let lastEditSequence = 0
+  function sequenceOf(project: Project): number {
+    let sequence = editSequence.get(project)
+    if (sequence === undefined) {
+      lastEditSequence += 1
+      sequence = lastEditSequence
+      editSequence.set(project, sequence)
+    }
+    return sequence
+  }
+  /** A edição mais nova que já foi para uma cópia de saída pedida por ESTE serviço, por projeto. */
+  const stagedExitCopies = new Map<string, number>()
+
+  /**
+   * Pede a cópia de saída de `project` e anota a edição dela. ⚠️ A cópia interrompe as gravações em
+   * voo do escopo inteiro (`stageProjectExit`), e elas voltam com `AbortError`: é a anotação que
+   * diz se a edição de cada uma já está numa cópia (full review final, 22/11/2026).
+   */
+  function stageExitCopy(
+    project: Project,
+    options: { incompleteBlocks: boolean; pageAlive?: true },
+  ): Promise<void> {
+    const flushOnExit = adapter?.flushOnExit
+    if (!flushOnExit) return Promise.resolve()
+    const sequence = sequenceOf(project)
+    if ((stagedExitCopies.get(project.id) ?? 0) < sequence)
+      stagedExitCopies.set(project.id, sequence)
+    return flushOnExit(snapshotForSave(project), options).catch((error: unknown) => {
+      if (stagedExitCopies.get(project.id) === sequence) stagedExitCopies.delete(project.id)
+      throw error
+    })
+  }
+
+  /** Esta edição (ou uma mais nova do mesmo projeto) já está numa cópia de saída deste serviço? */
+  function exitCopyCovers(project: Project): boolean {
+    return (stagedExitCopies.get(project.id) ?? 0) >= sequenceOf(project)
+  }
+
   function persistAndMark(project: Project): Promise<void> {
     if (suspended) return Promise.resolve()
     // Já excluído antes de começar: não persiste de volta o que foi apagado.
@@ -484,23 +527,21 @@ export function createPersistenceService(
           // A página segue viva, então a cópia de saída nativa basta; na próxima leitura ela vira
           // "(edição recuperada)" quando não puder entrar no projeto.
           // ⚠️ Pelo id, não pela referência (revisão de 22/11/2026): a referência também muda a cada
-          // edição nova do MESMO projeto, que o salvamento seguinte grava. E nunca quando a recusa
-          // é a transferência para a gravação de saída (`AbortError` de `stageProjectExit`): a
-          // cópia mais nova já foi feita, e esta antiga, gravada depois na mesma chave, a cobriria.
+          // edição nova do MESMO projeto, que o salvamento seguinte grava. E nunca quando esta
+          // edição (ou uma mais nova) já está numa cópia de saída deste serviço: a antiga, gravada
+          // depois na mesma chave, a cobriria. ⚠️ O `AbortError` sozinho não diz isso (full review
+          // final): a cópia de saída de uma edição MAIS ANTIGA também interrompe esta gravação.
           const leftEditor = store.getState().project?.id !== project.id
-          const transferredToExit = (err as { name?: unknown } | null)?.name === 'AbortError'
           if (
             leftEditor &&
-            !transferredToExit &&
+            !exitCopyCovers(project) &&
             adapter?.flushOnExit &&
             !isFenced(serviceScopeIdentity, project.id)
           )
-            void adapter
-              .flushOnExit(snapshotForSave(project), {
-                incompleteBlocks: shouldStripBlocks(project.id),
-                pageAlive: true,
-              })
-              .catch((error) => emitError(formatPersistenceError(error)))
+            void stageExitCopy(project, {
+              incompleteBlocks: shouldStripBlocks(project.id),
+              pageAlive: true,
+            }).catch((error) => emitError(formatPersistenceError(error)))
         }
         emitError(message)
       }
@@ -519,6 +560,7 @@ export function createPersistenceService(
 
   function schedule(project: Project): void {
     if (suspended) return
+    sequenceOf(project)
     stageLocally(project)
     // NÃO se limpa a cerca aqui: create/import/duplicate sempre usam um ULID
     // NOVO, então o agendamento de uma edição NUNCA precisa reabrir a cerca de um
@@ -575,16 +617,14 @@ export function createPersistenceService(
       // trocar para navigator.sendBeacon / fetch keepalive ao ver este reason.
       emitChange(snapshotForSave(project), 'flush')
       if (exiting && adapter?.flushOnExit && !isFenced(serviceScopeIdentity, project.id)) {
-        void adapter
-          .flushOnExit(snapshotForSave(project), {
-            incompleteBlocks: shouldStripBlocks(project.id),
-            ...(pageAlive ? { pageAlive: true } : {}),
-          })
-          .catch((error) => {
-            const message = formatPersistenceError(error)
-            if (store.getState().project === project) store.getState().markSaveFailed(message)
-            emitError(message)
-          })
+        void stageExitCopy(project, {
+          incompleteBlocks: shouldStripBlocks(project.id),
+          ...(pageAlive ? { pageAlive: true as const } : {}),
+        }).catch((error) => {
+          const message = formatPersistenceError(error)
+          if (store.getState().project === project) store.getState().markSaveFailed(message)
+          emitError(message)
+        })
       } else void persistAndMark(project)
     }
   }

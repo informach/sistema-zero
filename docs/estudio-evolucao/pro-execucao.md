@@ -86,5 +86,10 @@ módulos vão como JSON com `<` escapado).
   que só sai certo com ES modules de verdade (o placar vivo lido de dentro e de fora do módulo, o
   ciclo, o `await`, o JSON, o `.js` que aponta para o `.ts` e o CSS na ordem do Vite) sem chamar
   o compilador do servidor; o projeto com biblioteca chama.
+- O build hospedado (o compilador do servidor): `studio-runtime/tests/trusted-build.test.ts` monta
+  com o Vite de verdade (biblioteca não declarada recusada com o recado; declarada com subcaminho
+  monta), `tests/runtime-handler.test.ts` confere o corpo do 422 e `tests/templates-smoke.ts`
+  monta three-ts, react-ts e phaser na imagem sem rede, a faixa `^` com a trava e as duas recusas
+  (no `ci.yml`, no `studio-runtime-image.yml` e no `studio-mission.yml`).
 - O que NÃO foi conferido: o jogo do mesmo projeto rodando lado a lado pelo servidor de staging
   (o compilador hospedado só existe com a sessão logada), e projetos reais de alunos.

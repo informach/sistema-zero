@@ -42,6 +42,7 @@ function setup(
     duplicateProof?: boolean
     captureBytes?: number
     staleValidation?: boolean
+    buildStderr?: string
   } = {},
 ) {
   const calls: SandboxCall[] = []
@@ -101,7 +102,7 @@ function setup(
         return {
           success: options.buildSuccess ?? true,
           stdout: options.buildSuccess === false ? '' : 'build ok',
-          stderr: options.buildSuccess === false ? 'erro TS' : '',
+          stderr: options.buildSuccess === false ? (options.buildStderr ?? 'erro TS') : '',
         }
       }
       return { success: true, stdout: '', stderr: '' }
@@ -694,6 +695,39 @@ describe('handler do Studio Runtime', () => {
     const response = await execute(context, request(validBody))
 
     expect(response.status).toBe(422)
+    // O corpo diz o que houve: o código, o recado e a saída do Vite (revisão do lote 4: o teste só
+    // olhava o status).
+    expect(await response.json()).toEqual({
+      ok: false,
+      code: 'BUILD_FAILED',
+      message: 'O projeto tem um erro de compilação.',
+      output: 'erro TS',
+    })
+    expect(context.calls.some((call) => call.command.startsWith('rm -rf'))).toBe(true)
+  })
+
+  test('import de biblioteca que o projeto não declarou: 422 com o recado do plugin do catálogo', async () => {
+    const stderr = [
+      'vite v7.1.12 building for production...',
+      '[sz-catalog-imports] STUDIO_UNDECLARED_DEPENDENCY A biblioteca nanoid não está no package.json deste jogo. Se ela é uma das bibliotecas do modelo, escreva ela no package.json; se não, tire o import.',
+      'file: /workspace/src/main.ts',
+    ].join('\n')
+    const context = setup({ buildSuccess: false, buildStderr: stderr })
+    const response = await execute(context, request(validBody))
+
+    expect(response.status).toBe(422)
+    const body = (await response.json()) as {
+      ok: boolean
+      code: string
+      message: string
+      output: string
+    }
+    expect(body.ok).toBe(false)
+    expect(body.code).toBe('DEPENDENCY_NOT_DECLARED')
+    expect(body.message).toBe(
+      'A biblioteca nanoid não está no package.json deste jogo. Se ela é uma das bibliotecas do modelo, escreva ela no package.json; se não, tire o import.',
+    )
+    expect(body.output).toContain('STUDIO_UNDECLARED_DEPENDENCY')
     expect(context.calls.some((call) => call.command.startsWith('rm -rf'))).toBe(true)
   })
 

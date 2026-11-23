@@ -104,6 +104,21 @@ describe('Jogo 2D Avançado — acessibilidade do palco e das telas', () => {
     expect(document.activeElement?.textContent).toBe('Jogar')
   })
 
+  it('o "Jogar" de fábrica do menu leva a marca que os robôs dos testes apertam', async () => {
+    // Full review do lote 3: o robô dos testes do aluno e o executor do servidor achavam o botão
+    // pelo TEXTO; um botão "Jogar" que a criança fez passava por ele, e o de fábrica com outro
+    // texto ficava sem apertar. Só o botão que começa a partida leva a marca.
+    const h = loadRuntime()
+    await startGame(h)
+
+    const marcados = document.querySelectorAll('[data-szgk-start]')
+    expect(marcados.length).toBe(1)
+    expect(marcados[0]?.closest('[data-szgk-screen]')?.getAttribute('data-szgk-screen')).toBe(
+      'menu',
+    )
+    expect(marcados[0]?.textContent).toBe('Jogar')
+  })
+
   it('devolve o foco e a árvore acessível ao canvas quando a tela fecha', async () => {
     const h = loadRuntime()
     await startGame(h)

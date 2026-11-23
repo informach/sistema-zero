@@ -17,7 +17,9 @@ test('a real Blockly gesture stages before CPython generation and commits a comm
     pending: true,
     source: '# título 🐢\r\nx = 3  # placar\r\nprint(x)\r\n',
   })
-  expect(result.source).toBe('# título 🐢\r\nx = (4)  # placar\r\nprint(x)\r\n')
+  // O commit visual escreve o comentário da área (com a quebra de linha do arquivo), acima do
+  // bloco de comentários colado à primeira linha.
+  expect(result.source).toBe('# ⚙️ Ao iniciar\r\n# título 🐢\r\nx = (4)  # placar\r\nprint(x)\r\n')
   expect(result.source).toBe(result.parsed)
   expect(result.draft).toBeNull()
   expect(result.retainedWorkspace).toMatchObject({

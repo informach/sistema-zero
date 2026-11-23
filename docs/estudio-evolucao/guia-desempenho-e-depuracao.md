@@ -23,12 +23,14 @@ Os números citados são exemplos com a fonte; o lugar de cada número é o docu
    quando são abertas, e o documento padrão da prévia não ganha nenhum byte. O custo da coleta (meta:
    menos de 5% do quadro) é medido no navegador desde 22/11/2026, no processo do jogo
    (`e2e/devtools-cost.spec.ts` no `studio-engines.yml`; o Python em
-   `e2e-runtime/python-devtools-cost.spec.ts` na homologação). Medido com placa de vídeo, nos cinco
-   motores do clássico e na ponte do Pro (num jogo de canvas sintético), ficou entre 0% e 1,7% do
-   quadro. O que cada lugar cobra: o Jogo 2D, o 2D Avançado e o Pro reprovam acima de 5% em
-   qualquer máquina; os três 3D só são cobrados com placa de vídeo (no CI, com a GPU emulada, o
-   ruído entre janelas passa de 40% e os números ficam só registrados); o Python é cobrado na
-   rodada da homologação, que ainda não trouxe o número. Números em
+   `e2e-runtime/python-devtools-cost.spec.ts` na homologação). Medido no Windows local (sem o
+   renderizador registrado), nos cinco motores do clássico e na ponte do Pro (num jogo de canvas
+   sintético), ficou em no máximo 1,44% do quadro (Mundo 3D, Desempenho); os negativos são ruído.
+   O que cada lugar cobra: o Jogo 2D, o 2D Avançado e o Pro reprovam acima de 5% em qualquer
+   máquina; os três 3D só são cobrados com placa de vídeo (no CI, com a GPU emulada, o ruído entre
+   janelas passa de 40% e os números ficam só registrados); o Python é cobrado na rodada da
+   homologação, e a 45026124308 trouxe até 2,00% (Investigar no Pygame Zero, no Chrome; registrado
+   em `13e1e1d43`). Números em
    [`evidencias/custo-da-medida-2026-11-22/`](evidencias/custo-da-medida-2026-11-22/README.md).
 7. **Medida com profiler não se compara com medida sem profiler.** Iniciar o perfil de CPU dentro da
    janela medida já criou picos falsos de 100 a 250 ms
@@ -213,8 +215,8 @@ pergunta ([`zappy-e-as-abas.md`](zappy-e-as-abas.md)).
 | Jogo 2D sem cenário | 369.500 bytes, 96.000 gzip | `official-extensions/game-2d/__tests__/bundle.test.ts` |
 | Jogo 2D e Jogo 2D Avançado com cenário do Pinta | 393.500 e 434.500 caracteres (fragmento 24.000) | `MAP_TWO_D_FULL_BOOTSTRAP_MAX_CHARS` em `official-extensions/map-2d/bootstrap.ts` |
 | Jogo 2D Avançado | 415.000 caracteres, 124.000 gzip | `official-extensions/game-2d-advanced/__tests__/runtimePayload.test.ts` |
-| Jogo 3D (completo / sem cenário / sem Kit e sem cenário / sem Kit, com cenário) | 248.900 / 241.800 / 207.700 / 214.800 caracteres | `official-extensions/runtimePayloadBudget.test.ts` |
-| Mundo 3D (completo / sem cenário) | 357.450 / 350.000 caracteres | o mesmo arquivo |
+| Jogo 3D (completo / sem cenário / sem Kit e sem cenário / sem Kit, com cenário) | 248.100 / 241.000 / 207.400 / 214.500 caracteres (desde o lote 6 da conclusão, 22/11/2026) | `official-extensions/runtimePayloadBudget.test.ts` |
+| Mundo 3D (completo / sem cenário) | 350.650 / 342.900 caracteres (idem) | o mesmo arquivo |
 | Jogo 3D Avançado (completo / sem cenário) | 217.950 / 210.300 caracteres | o mesmo arquivo |
 
 O gzip dos 3D tem teto próprio no Linux e no Windows (o Bun comprime diferente nas duas), escrito

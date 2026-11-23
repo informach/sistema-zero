@@ -112,6 +112,15 @@ test('mostrar o bloco da tecla R no Reino Zero Ultra', async ({ page }) => {
   }
   const salvoAntes = await blocosSalvos()
   const recolhidasAntes = await page.locator('.blocklyCollapsed').count()
+  // O "Desfazer" da barra: o afastamento da pilha solta que a abertura causa (x 32 → 60 neste
+  // projeto) entrava no desfazer e apagava o refazer (full review final, 22/11/2026).
+  const desfazer = page.getByRole('button', { name: 'Desfazer', exact: true })
+  const desfazerAntes = await desfazer.isEnabled()
+  // Máquina lenta (CPU 4× mais lenta): o afastamento era reconhecido por uma janela de 2 s que
+  // começava antes do desenho caro, e numa máquina lenta o evento chegava depois dela e o projeto
+  // salvo mudava (full review final). Os números abaixo são contagens, não tempo.
+  const cdp = await page.context().newCDPSession(page)
+  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
   await page.evaluate(() => {
     ;(window as unknown as { __medindo: boolean }).__medindo = true
   })
@@ -121,7 +130,9 @@ test('mostrar o bloco da tecla R no Reino Zero Ultra', async ({ page }) => {
   await expect(selecionado).toHaveCount(1, { timeout: 120_000 })
   const ateSelecionar = Date.now() - inicio
   // Deixa a página assentar (o resto do desenho e a gravação, se houver).
-  await page.waitForTimeout(3000)
+  await page.waitForTimeout(4000)
+  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 })
+  const desfazerDepois = await desfazer.isEnabled()
   const medida = await page.evaluate(() => {
     const w = window as unknown as {
       __medindo: boolean
@@ -181,6 +192,8 @@ test('mostrar o bloco da tecla R no Reino Zero Ultra', async ({ page }) => {
   expect(salvoAntes).not.toBeNull()
   expect(diferencas).toEqual([])
   expect(resultado_.projetoMarcadoComoMudado).toBe(false)
+  // Mostrar não entra no desfazer: o botão fica como estava.
+  expect(desfazerDepois).toBe(desfazerAntes)
   // O trabalho do gesto, com folga sobre a medida depois do conserto (antes: 1.008 leituras de
   // estilo e 5.752 blocos redesenhados; depois: 444 e 393). A maior tarefa depende da máquina e só
   // fica registrada.

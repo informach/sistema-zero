@@ -39,7 +39,13 @@ Raylib 3D (`sz_py_rl3d_scene_load`, `_update`, `_draw`, `_entered`; recurso
    docs/plans/evidencias/2026-11-22-python-areas-motor/plano-staging.json --expect-plan-sha256
    41e4a42a0235ed2d208be109e2aeee9f37c7d0460d733f65e0a7612cb8b0665d` (lê a distribuição em
    `.cache/lote8-linux`).
-2. Worker de staging com o seletor `1dd32fdc…` (o commit do `wrangler.jsonc`).
+2. Worker de staging com o seletor `1dd32fdc…` (o commit do `wrangler.jsonc`). ⚠️ Desde o
+   lote 9 do Estúdio (22/11/2026, noite) o `wrangler.jsonc` volta a apontar o `fa8847d2…`, o
+   catálogo que já está no R2: o envio direto (`upload`) trava nesta máquina (o `workerd` local
+   não sobe; a conexão remota do `wrangler` fica em "Establishing remote connection…") e o
+   caminho do serviço temporário (`promotion-worker/README.md`) pede a aprovação operacional
+   revisada pela dona e um segredo de operador. Assim o HEAD segue implantável sem quebrar o
+   Python do staging. Quem fizer o upload troca o seletor para `1dd32fdc…` no mesmo passo.
 3. Os apps.
 4. Members por último: `STUDIO_AUTHORING_POLICY_SHA256=01c079c1…` e `STUDIO_RUNTIME_HOSTS_JSON` =
    `configuration.hosts` do plano (quatro releases, todas no Worker de staging), pela ordem de

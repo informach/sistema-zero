@@ -317,10 +317,19 @@ async function startGame(page, probe) {
     await page.waitForTimeout(100)
   }
   if (screen === 'menu') {
-    const play = page
-      .locator('[data-szgk-screen="menu"].szgk-active button')
-      .filter({ hasText: /^\s*Jogar\s*$/ })
-      .first()
+    // O "Jogar" de fábrica tem a marca `data-szgk-start` (o mesmo do "Meus testes",
+    // `studentTests/driver.ts`): um "Jogar" que a criança fez não é ele. O documento de um motor
+    // de antes da marca (o Members de outra versão) ainda acha o botão pelo texto.
+    const marked = await page
+      .locator('[data-szgk-start]')
+      .count()
+      .catch(() => 0)
+    const play = marked
+      ? page.locator('[data-szgk-screen="menu"].szgk-active button[data-szgk-start]').first()
+      : page
+          .locator('[data-szgk-screen="menu"].szgk-active button')
+          .filter({ hasText: /^\s*Jogar\s*$/ })
+          .first()
     if (await play.isVisible().catch(() => false)) await play.click({ timeout: 3_000 })
   }
   await probe

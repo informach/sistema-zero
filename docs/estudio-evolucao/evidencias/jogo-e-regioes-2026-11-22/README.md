@@ -34,8 +34,14 @@ Reprova se:
 - a Caverna continuar carregada depois da volta à Vila.
 
 Registra sem reprovar (GPU emulada, SwiftShader). Cada rodada grava as medidas em
-`output/cenarios-reforma/jogo-e/medidas.json` (fora do Git; no CI, o artefato `studio-engines`), e
-a cópia `medidas.json` desta pasta é a da rodada registrada aqui:
+`output/cenarios-reforma/jogo-e/medidas.json` (fora do Git; no CI, o artefato `studio-engines`).
+
+A cópia `medidas.json` desta pasta é de uma rodada LOCAL: `medidoEm` é 22/11/2026, 18:11:40 UTC,
+antes da rodada 45064624513 do CI (criada às 20:07 UTC), e o arquivo não registra o SHA nem a
+máquina. O campo `gpu` ("emulada no CI (SwiftShader)") é uma frase fixa do teste, gravada em
+qualquer máquina, e não diz qual placa mediu. A prova de que as regras acima passam no CI é a
+rodada 45064624513 (`studio-engines.yml`, verde, em `c4c7d15e9`); os números dela ficaram no
+artefato `studio-engines` daquela rodada, não nesta pasta. A tabela é a da medida local:
 
 | | Com regiões | Sem regiões |
 |---|---|---|
@@ -44,10 +50,12 @@ a cópia `medidas.json` desta pasta é a da rodada registrada aqui:
 | Desenhos (Vila / Floresta / Caverna) | 27 / 36 / 29 | 31 / 35 / 27 |
 | Memória JS | 167 MB | 103 MB |
 
-Os tempos absolutos são da GPU emulada (a meta de 30 quadros por segundo vale para GPU de verdade e
-não é medida aqui). A comparação relativa mostra a carga por regiões desenhando menos e com quadros
-mais curtos que o mundo inteiro; a memória JS maior com regiões é a dos arquivos contados que ficam
-guardados para a volta.
+Os tempos absolutos não valem como desempenho de jogo (a meta de 30 quadros por segundo vale para
+GPU de verdade e não é medida aqui). Na comparação, a carga por regiões tem quadros mais curtos que
+o mundo inteiro (p50 217 contra 283 ms, p95 317 contra 383 ms), mas os desenhos ficam parecidos:
+menos só na Vila (27 contra 31); na Floresta (36 contra 35) e na Caverna (29 contra 27) são um ou
+dois a mais. A memória JS maior com regiões é a dos arquivos contados que ficam guardados para a
+volta.
 
 ## O tamanho do mundo: 384 m, e por quê
 

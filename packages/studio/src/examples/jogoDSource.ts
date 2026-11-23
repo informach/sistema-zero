@@ -8,8 +8,8 @@
  *   cavernas e casas ligam tudo o que têm.
  * - A porta leva ao objeto de chegada que ela aponta (`chegada`), na boca da caverna ou na porta
  *   da casa, e não ao início do outro lugar. O programa sabe que trocou de lugar quando a porta
- *   usada não está mais na cena (os nomes das portas não se repetem entre os lugares): se o outro
- *   lugar sumiu, o tocador avisa uma vez e nada muda; sem a chegada, o herói fica no início do
+ *   usada não está mais entre as portas da cena (pela porta, não pelo nome, que num remix se
+ *   repete): se o outro lugar sumiu, o tocador avisa uma vez e nada muda; sem a chegada, o herói fica no início do
  *   outro lugar, e o resto (lugar, mundo, música, entidades) muda do mesmo jeito.
  * - O que foi pego (moedas, baús abertos, inimigos derrotados) fica numa lista com o lugar e o id
  *   do objeto: voltar a um lugar não traz nada de volta. Deitar na cama de uma casa guarda o jogo
@@ -48,7 +48,10 @@ let tempoDoRecado = 0;
 let esmaecer = 0;
 let salvo = localStorage.getItem("jogo-d-salvo") === "sim";
 if (salvo) {
-  pegos = localStorage.getItem("jogo-d-pegos").split(",");
+  const listaGuardada = localStorage.getItem("jogo-d-pegos");
+  if (listaGuardada) {
+    pegos = listaGuardada.split(",");
+  }
   pontos = Math.round(localStorage.getItem("jogo-d-pontos"));
   recado = "Jogo guardado de volta!";
   tempoDoRecado = 120;
@@ -125,9 +128,8 @@ SZGame2D.mapArea("mapa", jogador, "region", function (area) {
 SZGame2D.mapArea("mapa", jogador, "door", function (porta) {
   const destino = SZGame2D.mapObjectProperty(porta, "destino");
   const chegada = SZGame2D.mapObjectProperty(porta, "chegada");
-  const nomeDaPorta = SZGame2D.mapObjectField(porta, "name");
   SZGame2D.useMapDoor("mapa", jogador, porta);
-  if (SZGame2D.mapObjectNamed("mapa", nomeDaPorta) === null) {
+  if (!SZGame2D.mapObjects("mapa", "door").includes(porta)) {
     lugar = destino;
     const ponto = SZGame2D.mapObjectById("mapa", chegada);
     if (ponto !== null) {

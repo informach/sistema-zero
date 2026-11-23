@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'bun:test'
+import { normalizeSZIR } from '#ir'
+import { parseJS } from '../parsers/js'
 import { buildKitGroupsResult, buildProjectFromKitEntry } from '../projects/KitGallery'
 import { type ArquivoDoExemplo, BIG_EXAMPLES, carregarArquivoDoExemplo } from './bigExamples'
 import { JOGO_E_ARQUIVO } from './jogoEArquivo.generated'
@@ -10,13 +12,12 @@ import { JOGO_E_ARQUIVO } from './jogoEArquivo.generated'
  */
 
 const ARQUIVO_DE_TESTE = {
-  ir: {
-    version: 2,
+  ir: normalizeSZIR({
     html: [],
     css: [],
+    js: parseJS('let pontos = 0; pontos = pontos + 1;'),
     extensions: [{ extensionId: 'game-3d' }],
-    behavior: { start: [], events: [], loops: [] },
-  },
+  }),
   assets: [],
 }
 async function arquivo(conteudo: unknown): Promise<{ bytes: Uint8Array; info: ArquivoDoExemplo }> {
@@ -28,7 +29,7 @@ async function arquivo(conteudo: unknown): Promise<{ bytes: Uint8Array; info: Ar
 const servindo = (bytes: Uint8Array, pedidos: string[] = []) =>
   (async (url: string) => {
     pedidos.push(String(url))
-    return new Response(Uint8Array.from(bytes))
+    return new Response(bytes.slice().buffer)
   }) as unknown as typeof fetch
 
 describe('o arquivo de um exemplo grande', () => {
@@ -62,6 +63,19 @@ describe('o arquivo de um exemplo grande', () => {
     const outro = await arquivo({ nada: true })
     await expect(carregarArquivoDoExemplo('/b', outro.info, servindo(outro.bytes))).rejects.toThrow(
       'não é um projeto',
+    )
+  })
+
+  // Lote 9 (conferência no staging): o primeiro arquivo do jogo E saiu com o programa vazio (o
+  // projeto do modo Ponte guarda o programa no código, e o gerador da galeria levava só a IR). O
+  // Estúdio abria um projeto em branco com o nome do jogo. Arquivo sem programa é recusado.
+  it('recusa o arquivo cuja IR não tem programa', async () => {
+    const vazio = await arquivo({
+      ir: { ...ARQUIVO_DE_TESTE.ir, behavior: { start: [], events: [], loops: [] } },
+      assets: [],
+    })
+    await expect(carregarArquivoDoExemplo('/b', vazio.info, servindo(vazio.bytes))).rejects.toThrow(
+      'não tem o programa',
     )
   })
 })

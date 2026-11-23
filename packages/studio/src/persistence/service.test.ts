@@ -1010,3 +1010,102 @@ describe('PersistenceService — recusa de um salvamento antigo com o projeto ai
     }
   })
 })
+
+// Full review final (22/11/2026): o `AbortError` de um salvamento só quer dizer "minha edição foi
+// para a cópia de saída" quando a cópia feita por ESTE serviço é desta edição ou de uma mais nova.
+// A cópia de saída de A (a recusa de um salvamento antigo, já fora do editor) interrompe as
+// gravações em voo do escopo inteiro, inclusive a de B, mais nova: pular a cópia de B perdia B.
+describe('PersistenceService — cópias de saída na ordem das edições', () => {
+  afterEach(() => {
+    delete (document as { visibilityState?: unknown }).visibilityState
+    setAutosaveDelayForTests(null)
+  })
+
+  function service(exits: string[]) {
+    const store = createProjectStore()
+    const saves: Array<{ name: string; reject: (error: unknown) => void }> = []
+    const persistence = createPersistenceService(store, {
+      load: async () => null,
+      appliesSavesInCallOrder: true,
+      save: (project) =>
+        new Promise<void>((_, reject) => {
+          saves.push({ name: project.name, reject })
+        }),
+      flushOnExit: async (project, options) => {
+        exits.push(`${project.name}:${options?.pageAlive === true}`)
+      },
+    })
+    return { store, persistence, saves }
+  }
+
+  it('A recusada fora do editor e B abortada pela cópia de A: a cópia de B é feita por cima', async () => {
+    setAutosaveDelayForTests(10)
+    const exits: string[] = []
+    const { store, persistence, saves } = service(exits)
+    const detach = persistence.attach()
+    try {
+      store.getState().setProject(createEmptyProject('p-ordem', 'A'))
+      await Bun.sleep(40)
+      store.getState().rename('B')
+      await Bun.sleep(40)
+      expect(saves.map((save) => save.name)).toEqual(['A', 'B'])
+      // A criança sai do editor (navegação dentro do app) com as duas gravações em voo.
+      store.getState().unloadProject()
+      saves[0]!.reject(new DOMException('A cota acabou.', 'QuotaExceededError'))
+      await Bun.sleep(10)
+      // A cópia de saída de A interrompe as gravações do escopo: a de B volta com AbortError.
+      saves[1]!.reject(
+        new DOMException('Gravação transferida para a recuperação de saída.', 'AbortError'),
+      )
+      await Bun.sleep(20)
+      expect(exits).toEqual(['A:true', 'B:true'])
+    } finally {
+      detach()
+    }
+  })
+
+  it('a cópia de B já feita: a recusa de A, mais antiga, não a cobre', async () => {
+    setAutosaveDelayForTests(10)
+    const exits: string[] = []
+    const { store, persistence, saves } = service(exits)
+    const detach = persistence.attach()
+    try {
+      store.getState().setProject(createEmptyProject('p-ordem-2', 'A'))
+      await Bun.sleep(40)
+      store.getState().rename('B')
+      // A aba fica escondida com B ainda no prazo do salvamento: a cópia de saída é a de B.
+      Object.defineProperty(document, 'visibilityState', {
+        configurable: true,
+        get: () => 'hidden',
+      })
+      document.dispatchEvent(new Event('visibilitychange'))
+      await Bun.sleep(10)
+      expect(exits).toEqual(['B:true'])
+      store.getState().unloadProject()
+      saves[0]!.reject(new DOMException('A cota acabou.', 'QuotaExceededError'))
+      await Bun.sleep(20)
+      expect(exits).toEqual(['B:true'])
+    } finally {
+      detach()
+    }
+  })
+
+  it('um AbortError sem cópia de saída deste serviço (outra aba, outra janela) faz a cópia', async () => {
+    setAutosaveDelayForTests(10)
+    const exits: string[] = []
+    const { store, persistence, saves } = service(exits)
+    const detach = persistence.attach()
+    try {
+      store.getState().setProject(createEmptyProject('p-ordem-3', 'A'))
+      await Bun.sleep(40)
+      store.getState().unloadProject()
+      saves[0]!.reject(
+        new DOMException('Gravação transferida para a recuperação de saída.', 'AbortError'),
+      )
+      await Bun.sleep(20)
+      expect(exits).toEqual(['A:true'])
+    } finally {
+      detach()
+    }
+  })
+})

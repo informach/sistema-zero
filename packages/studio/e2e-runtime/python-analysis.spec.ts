@@ -95,7 +95,9 @@ test('Python source roundtrips through real Blockly, saved connections and CPyth
       .filter((item) => item.opaque > 0)
       .map((item) => item.id)
       .sort(),
-  ).toEqual(['opaque', 'shadow_match', 'shadow_walrus', 'starred'])
+    // match, compreensões e `*resto` ganharam blocos (sintaxe avançada, 25/10/2026): só o walrus
+    // que troca um nome oficial continua em código.
+  ).toEqual(['shadow_walrus'])
   await testInfo.attach('blockly-python-roundtrip', {
     body: JSON.stringify(cases),
     contentType: 'application/json',

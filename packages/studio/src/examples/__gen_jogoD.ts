@@ -288,26 +288,44 @@ export const JOGO_D_IR = {
         },
         then: [
           {
-            type: 'assign',
-            name: 'pegos',
+            type: 'var',
+            name: 'listaGuardada',
             value: {
-              type: 'memberCallExpr',
-              object: {
-                type: 'storageGet',
-                store: 'local',
-                key: {
-                  type: 'str',
-                  value: 'jogo-d-pegos',
+              type: 'storageGet',
+              store: 'local',
+              key: {
+                type: 'str',
+                value: 'jogo-d-pegos',
+              },
+            },
+            kind: 'const',
+          },
+          {
+            type: 'if',
+            cond: {
+              type: 'var',
+              name: 'listaGuardada',
+            },
+            then: [
+              {
+                type: 'assign',
+                name: 'pegos',
+                value: {
+                  type: 'memberCallExpr',
+                  object: {
+                    type: 'var',
+                    name: 'listaGuardada',
+                  },
+                  method: 'split',
+                  args: [
+                    {
+                      type: 'str',
+                      value: ',',
+                    },
+                  ],
                 },
               },
-              method: 'split',
-              args: [
-                {
-                  type: 'str',
-                  value: ',',
-                },
-              ],
-            },
+            ],
           },
           {
             type: 'assign',
@@ -1217,25 +1235,6 @@ export const JOGO_D_IR = {
             kind: 'const',
           },
           {
-            type: 'var',
-            name: 'nomeDaPorta',
-            value: {
-              type: 'g2d:sceneValue',
-              method: 'mapObjectField',
-              args: [
-                {
-                  type: 'var',
-                  name: 'porta',
-                },
-                {
-                  type: 'str',
-                  value: 'name',
-                },
-              ],
-            },
-            kind: 'const',
-          },
-          {
             type: 'g2d:sceneCommand',
             method: 'useMapDoor',
             args: [
@@ -1256,24 +1255,30 @@ export const JOGO_D_IR = {
           {
             type: 'if',
             cond: {
-              type: 'binop',
-              op: '===',
-              left: {
-                type: 'g2d:sceneValue',
-                method: 'mapObjectNamed',
+              type: 'logicalNot',
+              value: {
+                type: 'memberCallExpr',
+                object: {
+                  type: 'g2d:sceneValue',
+                  method: 'mapObjects',
+                  args: [
+                    {
+                      type: 'str',
+                      value: 'mapa',
+                    },
+                    {
+                      type: 'str',
+                      value: 'door',
+                    },
+                  ],
+                },
+                method: 'includes',
                 args: [
                   {
-                    type: 'str',
-                    value: 'mapa',
-                  },
-                  {
                     type: 'var',
-                    name: 'nomeDaPorta',
+                    name: 'porta',
                   },
                 ],
-              },
-              right: {
-                type: 'null',
               },
             },
             then: [

@@ -6,8 +6,10 @@ frente do Molda Cenários: o Estúdio **não grava nem aceita formato novo sozin
 do Estúdio é recusar sem perder um campo ou uma versão desconhecidos, então ele precisa aprender a
 ler o formato novo **antes** de o Molda começar a gravá-lo.
 
-Estado: aguardando a frente do Molda. A sessão consultada em 21/11 era de outra frente. Ela
-confirmou que `packages/molda*` não tinha mudanças sem commit.
+Estado: implementado nos lotes 5 a 7b da conclusão do plano do Estúdio (22/11/2026). O que foi
+feito está na seção "O que foi feito", no fim. (Em 21/11 o estado era "aguardando a frente do
+Molda"; a sessão consultada naquele dia era de outra frente e confirmou que `packages/molda*` não
+tinha mudanças sem commit.)
 
 ## O que a criança vê (aprovado)
 
@@ -58,3 +60,29 @@ regioes: z
    regiões vinda da cena.
 4. Medir GPU, memória e tempo por quadro indo e voltando entre regiões (homologação E), no molde do
    `engine-gpu-cycles.spec.ts`.
+
+## O que foi feito (lotes 5 a 7b da conclusão, 22/11/2026)
+
+- **A carga mora no motor dos cenários e no SDK do Estúdio, nunca nos motores.** O
+  `carregarCenaNoThree` (`molda-cenarios-motor/src/compilar/runtime-three.ts`) ganhou a opção
+  `carga: 'tudo' | 'regioes'`, com padrão `'tudo'` (o Arquipélago, o GLB único e a exportação
+  portátil não mudam); o SDK do Estúdio (`studio/src/three/scene3d.ts`) pede `'regioes'`. As regras
+  (0,5 m de tolerância, pré-carga até `max(40 m, câmera)`, descarte só 20 m além do raio da
+  pré-carga e depois de 2 s lá) estão
+  em `REGRAS_DA_CARGA` (`molda-cenarios-core/src/compilar/carga-das-regioes.ts`); o teto de 48
+  malhas e 128 MiB por janela, em `LIMITES_DA_EXPORTACAO.janela`
+  (`molda-cenarios-core/src/compilar/limites.ts`, contado por `janelas.ts`); as novas tentativas em
+  1, 4 e 15 s, em `NOVAS_TENTATIVAS` (`runtime-three.ts`). O estado do jogo nunca descarrega.
+- **A cena compilada traz a pertença de cada região** (`nos`, `colisoes`, `aguas`), e o leitor a
+  confere com a mesma função do compilador (`molda-cenarios-core/src/compilar/schema-regioes.ts`).
+- **O interruptor `CENARIOS_REGIOES` do Members** (desligado por padrão) mostra a ferramenta Regiões
+  na oficina e deixa o servidor aceitar `regioes`: a ordem segura de cima, com os leitores antes do
+  escritor.
+- **O bloco "Quando … entrar na região"** nos TRÊS motores 3D do JavaScript (Jogo 3D, Mundo 3D e 3D
+  Avançado), pelas regras comuns (`onEnterRegion`); a lista de regiões vem da cena trazida
+  (`FieldSceneRegionPicker`, que guarda o nome).
+- **Python:** o `cenario.py` do Raylib carrega por regiões com as mesmas regras, e os blocos de
+  cenário do Raylib 3D só ligam com o recurso `molda-scene-regions-v1` da distribuição.
+- **A medida da homologação E** é o jogo E (`e2e/engine-regions.spec.ts`, no `studio-engines.yml`).
+  O mundo dele tem 384 m: 1 km passa dos tetos de hoje
+  ([`evidencias/jogo-e-regioes-2026-11-22/`](evidencias/jogo-e-regioes-2026-11-22/README.md)).

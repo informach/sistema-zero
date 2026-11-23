@@ -2,7 +2,8 @@ import * as Blockly from 'blockly/core'
 
 /**
  * Blocos abertos SÓ para mostrar outro bloco (lote 2 da conclusão, 22/11/2026). "Mostrar o bloco"
- * (a busca, o cursor do código, o erro do jogo) abre a função recolhida que envolve o alvo. Antes
+ * (a busca, o cartão do palco, os Problemas e o Investigar, pelo `revealBlock` do painel; o cursor
+ * do código só seleciona e centraliza) abre a função recolhida que envolve o alvo. Antes
  * isso era uma edição como outra qualquer: entrava no desfazer, regerava o código do projeto
  * inteiro (7 mil blocos no Reino Zero Ultra), salvava e subia para a conta.
  *
@@ -14,14 +15,51 @@ import * as Blockly from 'blockly/core'
  */
 const shown = new WeakMap<Blockly.Workspace, Set<string>>()
 const listening = new WeakSet<Blockly.Workspace>()
-/** Quando o último bloco foi aberto só para mostrar (o afastamento do Blockly vem logo depois). */
-const shownAt = new WeakMap<Blockly.Workspace, number>()
+/** Os grupos de eventos dos últimos gestos de mostrar, por workspace (os mais novos no fim). */
+const showingGroups = new WeakMap<Blockly.Workspace, string[]>()
+/** Quantos grupos guardar: os eventos de um gesto chegam ao ouvinte no máximo alguns quadros depois. */
+const SHOWING_GROUPS_KEPT = 16
+let showingSequence = 0
+
 /**
- * Quanto tempo depois de abrir um afastamento ainda é da abertura. O Blockly afasta 250 ms depois do
- * desenho (`BUMP_DELAY`); passado isso, o afastamento é de outro gesto e é gravado como sempre
- * (revisão do lote 2: sem prazo, todo afastamento deixava de ser gravado enquanto houvesse marca).
+ * Roda o gesto de mostrar (abrir, centralizar, selecionar) num grupo de eventos PRÓPRIO, sem
+ * desfazer, e desenha o que ficou na fila antes de sair (full review final, 22/11/2026). O Blockly
+ * guarda o grupo e o "vai para o desfazer" de cada evento quando o evento NASCE, e o afastamento
+ * que o desenho faz (`bumpNeighbours` no `doRenders`, logo depois de desenhar) nasce aqui dentro:
+ * - ele é reconhecido pelo grupo (`isBumpWhileShowing`), e não por um relógio. A janela de 2 s
+ *   começava antes do desenho caro, e numa máquina lenta o evento chegava depois dela: o projeto
+ *   salvo mudava;
+ * - ele não entra no desfazer, que apagava o refazer da criança, e o Ctrl+Z seguinte devolvia a
+ *   pilha solta para cima da função aberta.
  */
-const BUMP_WINDOW_MS = 2000
+export function withShowingScope<T>(workspace: Blockly.Workspace, run: () => T): T {
+  showingSequence += 1
+  const group = `sz-mostrar-${showingSequence}`
+  const groups = showingGroups.get(workspace) ?? []
+  groups.push(group)
+  if (groups.length > SHOWING_GROUPS_KEPT) groups.splice(0, groups.length - SHOWING_GROUPS_KEPT)
+  showingGroups.set(workspace, groups)
+  const previousGroup = Blockly.Events.getGroup()
+  const previousRecordUndo = Blockly.Events.getRecordUndo()
+  Blockly.Events.setGroup(group)
+  Blockly.Events.setRecordUndo(false)
+  try {
+    const result = run()
+    // O que o gesto pôs na fila de desenho é desenhado ainda dentro dele: um afastamento feito no
+    // quadro seguinte nasceria fora do grupo e com o desfazer ligado.
+    if (workspace.rendered)
+      Blockly.renderManagement.triggerQueuedRenders(workspace as Blockly.WorkspaceSvg)
+    return result
+  } finally {
+    Blockly.Events.setRecordUndo(previousRecordUndo)
+    Blockly.Events.setGroup(previousGroup || false)
+  }
+}
+
+/** O evento nasceu dentro de um gesto de mostrar (`withShowingScope`)? */
+function isShowingEvent(workspace: Blockly.Workspace, event: Blockly.Events.Abstract): boolean {
+  return Boolean(event.group) && (showingGroups.get(workspace) ?? []).includes(event.group)
+}
 
 type Node = Record<string, unknown>
 
@@ -46,7 +84,6 @@ export function expandForShowing(block: Blockly.BlockSvg): void {
     shown.set(workspace, ids)
   }
   ids.add(block.id)
-  shownAt.set(workspace, performance.now())
   if (!listening.has(workspace)) {
     listening.add(workspace)
     workspace.addChangeListener((event) => forgetShownWhenTouched(workspace, event))
@@ -63,14 +100,28 @@ export function forgetShownWhenTouched(
   event: Blockly.Events.Abstract,
 ): void {
   const ids = shown.get(workspace)
-  if (!ids || ids.size === 0 || event.isUiEvent) return
+  if (!ids || ids.size === 0 || event.isUiEvent || isShowingEvent(workspace, event)) return
   if (event instanceof Blockly.Events.BlockDelete) {
     for (const id of event.ids ?? []) ids.delete(id)
     return
   }
   const touched: Array<string | undefined> = []
   if (event instanceof Blockly.Events.BlockBase) touched.push(event.blockId)
-  if (event instanceof Blockly.Events.BlockMove) touched.push(event.oldParentId, event.newParentId)
+  if (event instanceof Blockly.Events.BlockMove)
+    for (const [parentId, inputName] of [
+      [event.oldParentId, event.oldInputName],
+      [event.newParentId, event.newInputName],
+    ] as const) {
+      if (!parentId) continue
+      // Encaixe numa ENTRADA do pai muda o corpo dele; no conector de baixo (sem entrada), o bloco
+      // fica ao lado do pai, e quem muda é o bloco que envolve os dois (full review final: encaixar
+      // embaixo da função mostrada tirava a marca dela).
+      touched.push(
+        inputName
+          ? parentId
+          : (workspace.getBlockById(parentId)?.getSurroundParent()?.id ?? undefined),
+      )
+    }
   for (const id of touched) {
     for (
       let block = id ? workspace.getBlockById(id) : null;
@@ -83,18 +134,20 @@ export function forgetShownWhenTouched(
 
 /**
  * Um afastamento automático do Blockly (`moveBy(…, ['bump'])`: o corpo da função aberta passou
- * por cima de uma pilha solta, que é afastada) enquanto há bloco aberto só para mostrar. O
- * afastamento aparece na tela, mas não é gravado como mudança de layout: o projeto salvo continua o
- * de antes, com a função recolhida. Na próxima gravação de verdade as posições da tela entram.
+ * por cima de uma pilha solta, que é afastada) feito durante um gesto de mostrar
+ * (`withShowingScope`). O afastamento aparece na tela, mas não é gravado como mudança de layout: o
+ * projeto salvo continua o de antes, com a função recolhida. Na próxima gravação de verdade as
+ * posições da tela entram. Afastamento de outro gesto é gravado como sempre.
  */
 export function isBumpWhileShowing(
   workspace: Blockly.Workspace,
   event: Blockly.Events.Abstract,
 ): boolean {
-  if (!(shown.get(workspace)?.size ?? 0)) return false
-  if (performance.now() - (shownAt.get(workspace) ?? Number.NEGATIVE_INFINITY) > BUMP_WINDOW_MS)
-    return false
-  return event instanceof Blockly.Events.BlockMove && (event.reason ?? []).includes('bump')
+  return (
+    event instanceof Blockly.Events.BlockMove &&
+    (event.reason ?? []).includes('bump') &&
+    isShowingEvent(workspace, event)
+  )
 }
 
 /**
@@ -121,11 +174,6 @@ export function differsOnlyInStackPositions(a: string, b: string): boolean {
   }
   const left = withoutPositions(a)
   return left !== null && left === withoutPositions(b)
-}
-
-/** O bloco foi aberto só para mostrar (e a criança ainda não mexeu nele)? */
-export function isShownOnly(block: Blockly.Block): boolean {
-  return shown.get(block.workspace)?.has(block.id) ?? false
 }
 
 /** `collapsed: true` no lugar em que o Blockly o grava: depois de `type`/`id` e das coordenadas. */

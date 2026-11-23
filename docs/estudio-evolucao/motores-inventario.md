@@ -16,10 +16,19 @@ das cenas do Pinta, `pinta-scene-player.ts`).
 | Índice espacial | parcial (grade do terreno, sort-and-sweep acima de 2048 pares) | sim (células de 64 a partir de 1600 pares) | não | colisores em grade | sim (grade 16×16) |
 | Recorte fora da tela | tiles e, desde o lote 8 da conclusão, sprites (margem de 64 px mais o maior lado; quem está fora só atualiza o estado do quadro) | tiles e entidades (margem 128) | frustum padrão do three | pedaços de 80 m com esfera própria | frustum padrão; recicla longe da origem |
 | Instancing | (Canvas 2D) | (Canvas 2D) | não; geometria e material compartilhados | sim, em muitos lugares | não; clones compartilham geometria e material |
-| Regiões / streaming | cenas do Pinta ligadas por portas: destinos prontos antes de passar e cache de 8 cenas (lote 8); no jogo D, as regiões ligam as entidades pelo programa | não (o RPG troca o mapa inteiro) | só o Kit Plataforma (17 colunas à frente, 11 atrás) | grama toroidal (só visual) | não |
+| Regiões / streaming | cenas do Pinta ligadas por portas: destinos prontos antes de passar e cache de 8 cenas (lote 8); no jogo D, as regiões ligam as entidades pelo programa | não (o RPG troca o mapa inteiro) | o Kit Plataforma (17 colunas à frente, 11 atrás) e, com o cenário do Molda, a carga por regiões e o bloco "Quando … entrar na região" (lotes 5 a 7b da conclusão) | grama toroidal (só visual) e, com o cenário do Molda, a carga por regiões e o bloco "Quando … entrar na região" | com o cenário do Molda, a carga por regiões e o bloco "Quando … entrar na região" |
 | Qualidade adaptativa | (Canvas 2D) | (Canvas 2D) | sombra por nível | modo turbo | modo leve e composer |
 | Descarte de GPU | (Canvas 2D) | (Canvas 2D) | recomeçar descarta mundos; fechar solta caches e o renderer | recomeçar leve no lugar; fechar descarta tudo | nova partida descarta pools e moldes; fechar descarta tudo |
 | Persistência do jogo | pelos blocos de armazenamento do navegador (o jogo D guarda na cama) | sim (slots validados) | não | não | sim (`localStorage` com prefixo) |
+
+As regiões dos cenários 3D (proposta aprovada em 21/11/2026, feita nos lotes 5 a 7b da conclusão,
+22/11/2026; [`regioes-3d-especificacao.md`](regioes-3d-especificacao.md)): a carga por regiões não
+mora em nenhum dos três motores. Ela fica no motor dos cenários (`carregarCenaNoThree`, em
+`packages/molda-cenarios-motor/src/compilar/runtime-three.ts`, opção `carga: 'tudo' | 'regioes'`,
+padrão `'tudo'`) e no SDK do Estúdio (`packages/studio/src/three/scene3d.ts`, que pede
+`'regioes'`); os motores só ganharam o bloco "Quando … entrar na região" (`onEnterRegion`, das
+regras comuns em `OE/game3dRules/runtime.ts`; no catálogo, o valor `event: 'regiao'` da regra
+`onGame`), pago com os bytes da seção "O bloco … pagou os próprios bytes", abaixo.
 
 As cenas do Pinta ("Criar cenário do meu desenho", Jogo 2D e Avançado): os tiles são recortados
 pela câmera (`CORE/pinta-scene-player.ts`), e desde `719fade30` os objetos de arte também: só os
@@ -203,12 +212,16 @@ da tela; a régua de tempo sozinha passaria sem o recorte, e por isso a prova co
 
 ## O que falta na seção 8, sem enfeite
 
-- **Regiões e streaming genéricos** (8.3): nenhum motor 2D tem, e só o Kit Plataforma do 3D. Para
-  a criança, isso é bloco novo (definir regiões, o que fica salvo ao sair delas): precisa de
-  proposta aprovada por ela antes de existir.
+- **Regiões e streaming genéricos** (8.3): nos três motores 3D, feito nos lotes 5 a 7b da conclusão
+  (22/11/2026), pela proposta que ela aprovou em 21/11: a carga por regiões do cenário do Molda
+  (no motor dos cenários e no SDK, nunca nos motores) e o bloco "Quando … entrar na região". No 2D
+  não há carga genérica por regiões: há as cenas do Pinta ligadas por portas, com os destinos
+  prontos antes de passar e o cache de 8 cenas (lote 8), e o jogo D liga as entidades de cada
+  região pelo programa.
 - **Recorte das instâncias de conjunto das cenas do Pinta**: pede a caixa real do conteúdo de cada
   conjunto, calculada ao preparar a cena (os objetos de arte já são recortados, `719fade30`).
-- **Jogos de homologação D e E**: o jogo D está feito no lote 8 da conclusão
-  (`evidencias/jogo-d-2026-11-22/`); o jogo E, com as regiões 3D, no lote 7 (a seção E da
-  homologação é atualizada no lote 9).
+- **Jogos de homologação D e E**: feitos. O jogo D no lote 8 da conclusão
+  (`evidencias/jogo-d-2026-11-22/`); o jogo E, com as regiões 3D, nos lotes 5 a 7, com um mundo de
+  384 m em vez de 1 km (`evidencias/jogo-e-regioes-2026-11-22/`). Os dois estão nas seções D e E de
+  [`homologacao-a-h.md`](homologacao-a-h.md).
 - **Instancing no Jogo 3D e no 3D Avançado**: só se um perfil apontar.

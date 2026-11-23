@@ -13,13 +13,18 @@ Lotes 5 a 7b e 9 da conclusão do plano (especificação em
   `testing/contracts/molda-scene3d-regioes-v1.json`; a v1 sem regiões continua abrindo.
 - **A carga por regiões mora no motor dos cenários e no SDK, nunca nos motores.** `carga: 'tudo' |
   'regioes'` (padrão `'tudo'`: o Arquipélago, o GLB único e a exportação portátil não mudam); o
-  SDK do Estúdio (`three/scene3d.ts`) pede `'regioes'`. As regras são as de `REGRAS_DA_CARGA`
-  (`compilar/carga-das-regioes.ts`): 0,5 m de tolerância, região segura, vizinhas sempre, pré-carga
-  até `max(40 m, câmera)`, descarte além de +20 m depois de 2 s, 48 malhas e 128 MiB por janela,
-  novas tentativas em 1, 4 e 15 s, `estadoDasRegioes()`. O estado do jogo (moedas, placar) nunca
-  descarrega; onde a região não carregou, vale o relevo global (ninguém cai).
+  SDK do Estúdio (`three/scene3d.ts`) pede `'regioes'`. Cada regra mora num lugar:
+  `REGRAS_DA_CARGA` (`molda-cenarios-core/src/compilar/carga-das-regioes.ts`) guarda só os números
+  (0,5 m de tolerância, pré-carga até `max(40 m, câmera)`, descarte além de +20 m depois de 2 s), e
+  as funções do mesmo arquivo decidem a região segura e as vizinhas sempre carregadas; o teto de 48
+  malhas e 128 MiB por janela é o `LIMITES_DA_EXPORTACAO.janela`
+  (`molda-cenarios-core/src/compilar/limites.ts`), contado por janela em `compilar/janelas.ts`; as
+  novas tentativas em 1, 4 e 15 s são o `NOVAS_TENTATIVAS` de
+  `molda-cenarios-motor/src/compilar/runtime-three.ts`, que também expõe o `estadoDasRegioes()`.
+  O estado do jogo (moedas, placar) nunca descarrega; onde a região não carregou, vale o relevo
+  global (ninguém cai).
 - **O bloco** "Quando … entrar na região" é o valor `event: 'regiao'` da regra `onGame` (não um
-  membro novo da união, pelo TS2590) e o `SZGame3D.onEnterRegion` nos três motores 3D, pago com o
+  membro novo da união, pelo TS2590) e o `onEnterRegion` nos três motores 3D (`SZGame3D.onEnterRegion` no Jogo 3D; no Mundo 3D e no 3D Avançado pelo objeto do próprio motor, a partir das regras comuns de `game3dRules`), pago com o
   `fisica.apoio` do SDK (`three/scene3dPhysics.ts`) no lugar do laço de apoio de cada motor. O campo
   `FieldSceneRegionPicker` lê as regiões da cena trazida e guarda o NOME.
 - **Python:** o `cenario.py` carrega por regiões com as mesmas regras (casos compartilhados com o
@@ -49,7 +54,8 @@ regiões, três cavernas, quatro casas, 14 portas, 603 entidades, só com blocos
   mudou a arte, uma cena ou `src/examples/jogoDSource.ts`? `bun run gen:jogo-d`. O
   `check:jogo-d` roda no `studio-engines.yml`, e o `jogoD.test.ts` compara os bytes também.
   ⚠️ `jogoD.generated.ts` (1,75 milhão de caracteres) fica fora do biome; não o importe de código
-  do app sem pensar no pacote (a galeria entra no lote 9).
+  do app sem pensar no pacote. O jogo D já está na galeria, só para a equipe, num pedaço do pacote
+  carregado no clique (`examples/bigExamples.ts`, com `import('./jogoDExample')`).
 - **Contratos das cenas que o programa usa**: porta com `destino` (nome do desenho) e `chegada` (id
   do objeto no destino, no MEIO de uma peça e nunca dentro de uma porta, senão o herói volta na
   hora: no mundo, a peça abaixo da porta; nas cavernas e casas, duas peças acima da saída); região
@@ -59,9 +65,9 @@ regiões, três cavernas, quatro casas, 14 portas, 603 entidades, só com blocos
   `RAIO_SEM_INIMIGO` (6 peças) de uma chegada, do início ou do centro de uma região: ele persegue a
   140 px. ⚠️ Camada de tiles com `collision` é só de colisão: o tocador NÃO a desenha (a peça
   visível segura pelo `solid` do tileset).
-- **A porta**: o programa sabe que trocou de lugar quando a porta usada não está mais na cena
-  (`mapObjectNamed` do nome dela dá `null`; os nomes das portas não se repetem entre os lugares).
-  Destino quebrado: o `useMapDoor` avisa uma vez e nada muda. Chegada que falta: o herói fica no
+- **A porta**: o programa sabe que trocou de lugar quando a porta usada não está mais entre as
+  portas da cena (`!SZGame2D.mapObjects("mapa", "door").includes(porta)`): pela PORTA, não pelo
+  nome, que num remix se repete ("Saída", "Objeto 3"; full review final). Destino quebrado: o `useMapDoor` avisa uma vez e nada muda. Chegada que falta: o herói fica no
   início do outro lugar e o resto muda.
 - **Guardar**: uma chave só para o que foi pego (`jogo-d-pegos`, a lista unida por vírgula) e o
   `jogo-d-salvo` por último. ⚠️ O armazenamento da prévia aceita no máximo 500 chaves
@@ -133,7 +139,10 @@ são TRECHOS do arquivo na ordem em que ele roda. Proposta aprovada e desenho t�
   `python-browser-isolation`): clicar nos blocos procura um ponto LIVRE do
   `blocklyMainBackground` (num ponto fixo a paleta intercepta) e esperar a gravação pede 6 s sem
   mudança; as fixtures contam rascunho sem os `sz_py_area_*`. No Windows o servidor de provas
-  exige Bun 1.4.3.
+  exige Bun 1.4.3. As fixtures do `e2e-runtime` montam o programa NAS ÁREAS
+  (`pythonVisualToWorkspace(…, { areas })`): no modo antigo de pilhas soltas o programa é gravado
+  como rascunho. As configs `python-pgzero`/`-raylib`/`-pygame` não sobem o servidor de provas
+  (suba `experiments/studio-python-runtime/server.ts` antes, porta 5297).
 
 ## "Mostrar o bloco" em projeto grande: corpos escondidos e abertura só para mostrar (22/11/2026)
 
@@ -142,24 +151,34 @@ O que não pode regredir:
 
 - **Cauda adiada (`blockly/deferredTail.ts`)**: o corpo escondido de um bloco recolhido continua
   adiado até ele abrir (`revealBody`, gancho em `setCollapsed`); `RenderedConnection.startTrackingAll`
-  não liga conexão de bloco adiado; o lote de desenho roda com `Blockly.Events.disable()` (desenhar
-  um bloco recolhido refaz o rótulo dele, e isso saía como mudança de campo, no desfazer e na
-  regeneração); o corpo comprido em volta do alvo é cortado depois do alvo + 1,5 tela
+  não liga conexão de bloco adiado; a medição do lote de desenho (`measuringOnce`) roda com
+  `Blockly.Events.disable()` (desenhar um bloco recolhido refaz o rótulo dele, e isso saía como
+  mudança de campo, no desfazer e na regeneração), mas o `triggerQueuedRenders` do `settle` roda
+  com os eventos ligados (é ele que afasta pilhas soltas, e afastar sem evento escondia a mudança);
+  o corpo comprido em volta do alvo é cortado depois do alvo + 1,5 tela
   (`renderAround`) e completado antes da unidade seguinte (`completeBodyAbove`); centralizar num
   bloco escondido para na unidade que o contém. ⚠️ A fronteira deixada dentro da função fica
   escondida quando a função (ou a área) é recolhida: `hiddenByCollapsed` olha TODOS os blocos
   acima, e o `revealBody` completa o corpo se algo embaixo já foi desenhado (revisão do lote 2).
 - **Abrir só para mostrar (`blockly/transientExpansion.ts`)**: `revealBlockInWorkspace(…, {transient:
-  true})`, só do `BlocklyPanel` (o Python abre como antes). Sem evento nem desfazer; o
+  true})`, só do `BlocklyPanel` (a busca, o cartão do palco, os Problemas e o Investigar; o cursor
+  do código só seleciona, e o Python abre como antes). A abertura não emite evento; o
   `saveWorkspaceState` grava o bloco recolhido (`keepShownBlocksCollapsed`, na ordem de chaves do
-  Blockly) até a criança mexer nele; o `bump` causado pela abertura (nos 2 s depois dela) não
-  grava layout (`isBumpWhileShowing`), e a gravação de saída e o Rodar ignoram essa diferença só de
-  posição (`differsOnlyInStackPositions` no `flushScheduledRegeneration`). ⚠️ Todo estado que
+  Blockly) até a criança mexer nele. ⭐ O gesto inteiro (abrir, centralizar, selecionar) roda no
+  `withShowingScope`: um grupo de eventos PRÓPRIO, com o desfazer desligado, e a fila de desenho
+  esvaziada antes de sair. O Blockly lê o grupo e o "vai para o desfazer" quando o evento NASCE, e o
+  `bump` que o desenho faz nasce ali dentro: ele é reconhecido pelo grupo (`isBumpWhileShowing`,
+  não grava layout), não entra no desfazer (apagava o refazer) e não tira a marca. ⚠️ Nada de
+  relógio: a janela de 2 s de antes começava antes do desenho caro, e numa máquina lenta o evento
+  chegava depois dela e o projeto salvo mudava (full review final). A gravação de saída e o Rodar
+  ignoram a diferença só de posição (`differsOnlyInStackPositions` no
+  `flushScheduledRegeneration`). ⚠️ Todo estado que
   sai do Blockly do Clássico JS precisa passar pelo
   `saveWorkspaceState`, senão a abertura vira mudança do projeto.
 - Provas: `e2e/collapsed-reveal.spec.ts` (na config `offscreen-lifecycle`, três motores),
-  `e2e/classic-reveal-scale.spec.ts` (o gesto no Reino Zero Ultra, projeto salvo igual e trabalho
-  limitado) e as guardas do Blockly 12.5.1 no `deferredTail.test.ts`.
+  `e2e/classic-reveal-scale.spec.ts` (o gesto no Reino Zero Ultra com a CPU 4× mais lenta: projeto
+  salvo igual, "Desfazer" como estava e trabalho limitado), `transientExpansion.test.ts` (o grupo
+  do gesto, o desfazer e o refazer) e as guardas do Blockly 12.5.1 no `deferredTail.test.ts`.
 
 ## Compartilhar de novo atualiza o jogo no Mural (20/11/2026)
 

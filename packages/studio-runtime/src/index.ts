@@ -50,6 +50,7 @@ import {
   SCENE3D_CANONICAL_COMMAND,
   trustedPackageJson,
   trustedViteConfig,
+  undeclaredDependencyMessage,
   verifyBuildBinaries,
 } from './contracts'
 import { prepareRuntimeDependencyLock } from './dependency-lock'
@@ -729,15 +730,20 @@ export function createStudioRuntimeHandler(
           )
           const output = capOutput(`${build.stdout}\n${build.stderr}`.trim())
           if (!build.success) {
+            // O import de uma biblioteca que o projeto não declarou (o plugin do catálogo na
+            // configuração confiável do Vite): o recado é o da criança, não o erro genérico.
+            const undeclared = undeclaredDependencyMessage(output)
             return json(
               {
                 ok: false,
                 code: output.includes('STUDIO_OUTPUT_TOO_LARGE')
                   ? 'OUTPUT_TOO_LARGE'
-                  : 'BUILD_FAILED',
+                  : undeclared
+                    ? 'DEPENDENCY_NOT_DECLARED'
+                    : 'BUILD_FAILED',
                 message: output.includes('STUDIO_OUTPUT_TOO_LARGE')
                   ? 'O resultado compilado ultrapassa o limite de tamanho.'
-                  : 'O projeto tem um erro de compilação.',
+                  : (undeclared ?? 'O projeto tem um erro de compilação.'),
                 output,
               },
               output.includes('STUDIO_OUTPUT_TOO_LARGE') ? 413 : 422,

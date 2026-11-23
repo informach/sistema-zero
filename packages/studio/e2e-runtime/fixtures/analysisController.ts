@@ -4,6 +4,7 @@ import {
 } from '@sistemazero/core/studio/runtime-catalog'
 import * as Blockly from 'blockly/core'
 import { isPythonProject } from '../../src/core/editableProject'
+import { analyzePythonModuleAreas, pythonDisplayAreas } from '../../src/python/blocks/areas'
 import {
   type PythonBlocklyBlock,
   pythonVisualToWorkspace,
@@ -147,7 +148,15 @@ export async function createAnalysisControllerProbe() {
         })
         if (!document.tree) throw new Error('Invalid fixture')
         const projection = pythonASTToVisual(document.tree)
-        const rootIds = pythonVisualToWorkspace(projection, workspace)
+        // Como o editor: cada linha na área dela (as áreas com linhas são o programa; o resto
+        // é rascunho). As raízes são as áreas.
+        const areas = pythonDisplayAreas(
+          analyzePythonModuleAreas(
+            document.tree,
+            projection.body.map((value) => (value.kind === 'block' ? value.codecId : undefined)),
+          ).statements,
+        )
+        const rootIds = pythonVisualToWorkspace(projection, workspace, undefined, { areas })
         workspace.getBlockById(rootIds[0]!)!.moveBy(48, 72)
         Blockly.serialization.workspaceComments.append(
           { id: 'my-note', text: 'Ideia do meu jogo 🐢', x: 12, y: 24, width: 200, height: 100 },

@@ -74,7 +74,7 @@ beforeAll(() => {
   }
 })
 
-describe('contrato transversal dos 185 exemplos da KitGallery', () => {
+describe('contrato transversal dos 186 exemplos da KitGallery', () => {
   it('Duelo starts with the same block identities used after its first hydration', () => {
     const entry = catalogEntries().find((entry) => entry.key === 'game-2d:Duelo de Heróis')!
     const original = structuredClone(entry.ir)
@@ -100,21 +100,22 @@ describe('contrato transversal dos 185 exemplos da KitGallery', () => {
     const contractKeys = EXAMPLE_QA_CONTRACTS.map((contract) => contract.key).sort()
 
     expect(catalogKeys).toEqual(contractKeys)
-    expect(catalogKeys).toHaveLength(185)
-    expect(new Set(catalogKeys).size).toBe(185)
+    expect(catalogKeys).toHaveLength(186)
+    expect(new Set(catalogKeys).size).toBe(186)
   })
 
-  it('mantém a classificação acordada: 144 jogos, 29 demos e 12 explorações', () => {
+  it('mantém a classificação acordada: 145 jogos, 29 demos e 12 explorações', () => {
     // 131 até 13/09/2026: "Chuva de números" e "Quiz de números" entraram como JOGOS.
     // 136 até 24/10/2026: "Pega-Estrelas" e "Meu herói do Molda" (Jogo 3D, review 3D lote 7).
     // 138 até 24/10/2026: "Caça às Estrelas" (Mundo 3D, review 3D lote 10).
     // 139 até 24/10/2026: "Arena dos Cristais" e "Herói do Molda" (Jogo 3D Avançado, lote 12).
     // 141 até 24/10/2026: "Noite das Fogueiras" (Jogo 3D Avançado, cobertura total dos blocos).
+    // 144 até 22/11/2026: "Mundo das Portas" (o jogo D, exemplo grande do Jogo 2D, lote 9).
 
     const counts = { game: 0, demo: 0, exploration: 0 }
     for (const contract of EXAMPLE_QA_CONTRACTS) counts[contract.experience] += 1
     // Review 2D: nove receitas básicas e dez avançadas são demonstrações.
-    expect(counts).toEqual({ game: 144, demo: 29, exploration: 12 })
+    expect(counts).toEqual({ game: 145, demo: 29, exploration: 12 })
   })
 
   const contractsByKey = new Map<string, ExampleQAContract>(
@@ -127,7 +128,12 @@ describe('contrato transversal dos 185 exemplos da KitGallery', () => {
     // ⚠️ 12/08: 10 s não bastavam quando a suíte inteira roda em paralelo (medido de 12 s
     // a 23 s em CI Linux, com a suíte verde) — é espera de agendamento, não regressão.
     // O Reino Zero clássico entrou na exceção pelo mesmo motivo: 32 grades de 15×72.
-    const slowExamples = new Set(['core:Reino Zero Ultra (na mão)', 'game-2d:Reino Zero'])
+    // O "Mundo das Portas" (o jogo D) leva 1,75 milhão de caracteres de materiais do Pinta.
+    const slowExamples = new Set([
+      'core:Reino Zero Ultra (na mão)',
+      'game-2d:Reino Zero',
+      'game-2d:Mundo das Portas',
+    ])
     const timeout = slowExamples.has(entry.key) ? 30_000 : 5_000
     it(
       `${entry.key}: schema, blocos, projeto real, assets e round-trip sem warning`,

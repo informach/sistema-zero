@@ -9,7 +9,7 @@ relativos a `packages/`.
 
 | Sigla | Arquivo |
 |---|---|
-| PC | studio/src/state/__tests__/persistence.cases.ts (rodado por `persistence.test.ts`) |
+| PC | studio/src/state/__tests__/persistence.cases.ts (rodado por studio/src/state/persistence.test.ts, fora da pasta `__tests__`) |
 | SVC / EXC / PROM | studio/src/persistence/service.test.ts / exitConfirmation.test.ts / promotion.test.ts |
 | IDB / INV | studio/src/state/__tests__/idbTransaction.cases.ts / projectDatabaseInvariant.cases.ts |
 | COORD / SYNC / SEJ / CODEC / SCHED | studio/src/state/projectStorageCoordinator / projectSynchronousRecovery / synchronousExitJournal / exitJournalCodec / idbExitScheduling (.test.ts) |
@@ -52,7 +52,8 @@ consertado primeiro.
    descarregava o projeto antes de o serviço gravar, então a desmontagem por navegação dentro do app
    ("Trocar de perfil", menu, voltar) achava o projeto já vazio e descartava a edição suja. O ligar
    do serviço veio para antes do descarregar, e um salvamento recusado na saída vira cópia de saída
-   (`pageAlive`), que aparece como "(edição recuperada)". STU com o adaptador de verdade.
+   (`pageAlive`), que aparece como "(edição recuperada)". STU com o Estúdio e o serviço de verdade
+   e um adaptador de teste; a cópia nativa do adaptador local é a do BROW (item 1).
 1. **Duas abas no mesmo projeto** (`299f28772`): BROW agora lê, depois da recarga, a cópia
    "(edição recuperada)" da aba que perdeu, também fechando a aba (`runBeforeUnload`).
 2. **A janela de 120 ms dos blocos** (`16bf6725f`): perda real. O flush do `BlocklyPanel`, sem
@@ -95,6 +96,16 @@ testes vermelhos no SVC: o salvamento recusado virava cópia de saída sempre qu
 projeto mudava, inclusive com uma edição nova do MESMO projeto na tela, e uma cópia antiga podia
 cobrir a mais nova na mesma chave quando a gravação de saída da aba escondida abortava o salvamento
 em voo. Agora só vale com o projeto fora do editor (pelo id) e nunca para o aborto da transferência.
+
+**Full review final (22/11/2026).** O "aborto da transferência" não se reconhece pelo `AbortError`:
+a cópia de saída de uma edição MAIS ANTIGA (a recusa do salvamento de A, já fora do editor)
+interrompe todas as gravações em voo do escopo, inclusive a de B, mais nova, e a cópia de B era
+pulada (B se perdia). O serviço agora numera as edições na ordem em que as vê e anota, por projeto,
+a edição mais nova que já foi para uma cópia de saída pedida por ele (`stageExitCopy`,
+`exitCopyCovers`): a recusa só vira cópia quando nenhuma cópia cobre aquela edição. SVC, três
+testes vermelhos antes ("A recusada e B abortada: a cópia de B por cima", "a cópia de B já feita:
+a recusa de A não a cobre", "AbortError sem cópia deste serviço faz a cópia"); sem a anotação, o
+segundo volta a ficar vermelho.
 Achou também que a régua do aviso de projeto inicial ficava muda em blocos com parâmetros (o id do
 parâmetro é sorteado ao abrir): o `extraState` passou a ser comparado sem ids. O alerta de que o
 `flush` dos blocos regeneraria por cima do código da Ponte depende de eventos de variável do
@@ -132,11 +143,13 @@ na sua conta" 4 s depois de voltar à vista
 ## Outros itens da seção 13 conferidos neste lote
 
 - **"Abrir um projeto Python já o marca como mudado"** (visto no staging em 20/11): é de propósito na
-  PRIMEIRA abertura de um arquivo sem a área Programa (o `PythonBlocklyEditor` grava a área inicial,
-  e o e2e `e2e-python-editor/program-areas.spec.ts` exige: "Opening an example alone persists
-  Programa"). Pelo código, as aberturas seguintes restauram a área salva e não gravam. O que se viu
-  no staging foi a primeira abertura de exemplos da galeria. Não foi conferido de novo no app do
-  Kids.
+  PRIMEIRA abertura de um arquivo sem as áreas gravadas (o `PythonBlocklyEditor` grava as áreas
+  iniciais; desde 22/11/2026 são as seis áreas `sz_py_area_<kind>`, no lugar da área única
+  Programa). O e2e `e2e-python-editor/program-areas.spec.ts` exige isso no caso "Pac-Man program
+  areas reveal editable functions and persist non-executable scratch": a abertura sozinha grava as
+  áreas, sem mexer no layout nem no código. Pelo código, as aberturas seguintes restauram as áreas
+  salvas e não gravam (o mesmo caso confere os ids dos blocos na reabertura). O que se viu no
+  staging foi a primeira abertura de exemplos da galeria. Não foi conferido de novo no app do Kids.
 - **Vínculo Clássico → Pro**: existe nos dados. As duas conversões (JavaScript e Python) gravam
   `proMeta.origin = { projectId, revision }` apontando para a cópia em Blocos guardada; o esquema
   canônico do documento valida o campo (`core/src/studio/project-document.ts`). As provas: no

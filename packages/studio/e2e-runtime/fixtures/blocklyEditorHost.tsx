@@ -10,6 +10,7 @@ import {
   type PythonBlocklyEditorProps,
 } from '../../src/components/blocks/PythonBlocklyEditor'
 import { isPythonProject } from '../../src/core/editableProject'
+import { executablePythonAreaFrames, PYTHON_AREA_INPUT } from '../../src/python/blocks/areaFrames'
 import { type PythonBlocklyBlock, pythonVisualToWorkspace } from '../../src/python/blocks/blockly'
 import { PYTHON_PROGRAMMING_CODECS } from '../../src/python/blocks/catalog'
 import { call, expression, moduleNode, name, text } from '../../src/python/blocks/nodes'
@@ -153,6 +154,11 @@ export async function createBlocklyEditorProbe() {
       })
       mount()
     },
+    /** Os números do programa, lidos dos blocos (o campo de uma função fechada não aparece). */
+    numbers: () =>
+      (workspace?.getAllBlocks(true) ?? [])
+        .filter((block) => block.type === 'sz_py_integer')
+        .map((block) => String(block.getFieldValue('NUMBER'))),
     state: () => ({
       source: source(),
       pending: draft()?.pending ?? false,
@@ -225,6 +231,8 @@ export async function createBlocklyEditorProbe() {
         | undefined
       if (!block) throw new Error('Print missing')
       block.setPythonOption('args:count', 2)
+      // O soquete novo nasce com o valor padrão: tirá-lo deixa o bloco incompleto de propósito.
+      block.getInput('args:1')!.connection!.setShadowState(null)
       stores.pendingEditorEdits.flush()
     },
     renameAssignment(value: string) {
@@ -269,7 +277,9 @@ export async function createBlocklyEditorProbe() {
     },
     rearrangeAndInsert() {
       if (!workspace) throw new Error('Workspace missing')
-      const first = workspace.getTopBlocks(false)[0]!,
+      // As linhas moram dentro das áreas do projeto: a primeira linha da primeira área.
+      const frame = executablePythonAreaFrames(workspace)[0]!
+      const first = frame.getInputTargetBlock(PYTHON_AREA_INPUT)!,
         second = first.getNextBlock()
       if (!second || second.getNextBlock()) throw new Error('Expected two statements')
       const scratch = new Blockly.Workspace()
@@ -289,6 +299,8 @@ export async function createBlocklyEditorProbe() {
         const added = Blockly.serialization.blocks.append(newState, workspace, { recordUndo: true })
         const number = first.getDescendants(false).find((block) => block.type === 'sz_py_integer')!
         second.unplug()
+        first.unplug()
+        frame.getInput(PYTHON_AREA_INPUT)!.connection!.connect(second.previousConnection!)
         second.nextConnection!.connect(added.previousConnection!)
         added.nextConnection!.connect(first.previousConnection!)
         number.setFieldValue('10', 'NUMBER')
@@ -298,7 +310,7 @@ export async function createBlocklyEditorProbe() {
       stores.pendingEditorEdits.flush()
     },
     transferFunctionCommand() {
-      const from = workspace?.getTopBlocks(false).find((block) => block.type === 'sz_py_def')
+      const from = workspace?.getAllBlocks(true).find((block) => block.type === 'sz_py_def')
       const to = from?.getNextBlock()
       const command = from?.getInputTargetBlock('body')
       const destination = to?.getInputTargetBlock('body')

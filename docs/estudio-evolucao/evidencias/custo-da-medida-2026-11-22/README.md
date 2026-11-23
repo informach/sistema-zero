@@ -13,7 +13,8 @@ outro processo:
 - Três braços alternados na mesma rodada, cada um num documento novo da prévia: a gaveta fechada (o
   documento de sempre), a medida do Desempenho ligada e o Investigar ligado. A gaveta fechada é
   medida duas vezes por rodada (antes de cada braço).
-- Em cada janela de 4 s, depois de 2,5 s de aquecimento: o tempo de tarefa do processo do jogo
+- Em cada janela de 4 s, depois de 3 s de aquecimento (`WARMUP_MS`; eram 2,5 s na versão que mediu
+  a tabela local abaixo, antes da revisão do lote 3): o tempo de tarefa do processo do jogo
   (`Performance.getMetrics` numa sessão de depuração do quadro do jogo) dividido pelos quadros que o
   navegador desenhou, contados por um relógio de `requestAnimationFrame` igual nos três braços.
 - Custo = (tempo por quadro com a aba − sem a aba) ÷ 16,7 ms, na mediana das rodadas. O teste
@@ -34,10 +35,16 @@ outro processo:
   Python exige Bun 1.4 no Windows, então esta parte só roda no CI (Linux). Custo = (CPU por
   segundo com a aba − sem) ÷ 1000 ms, na mediana das rodadas; o teste reprova acima de 5%.
 
-## Resultado (local, Windows, Chromium completo, 3 rodadas)
+## Resultado (local, Windows, Chromium completo, 3 rodadas nos motores e 5 no Pro)
 
-Medido sobre `5482c2778` com o teste ainda sem commit (`resultado-local.json`). Mediana das rodadas,
-em porcentagem do quadro de 16,7 ms:
+Medido sobre `5482c2778` com o teste ainda sem commit (`resultado-local.json`, 22/11, 11:37 UTC),
+ou seja, com a versão do teste de ANTES da revisão do lote 3 (`0046c196a` e `9cfd7fe6d`): 2,5 s de
+aquecimento, sem a contagem das mensagens que prova que a aba trabalhou e sem a gaveta aberta na
+aba Mensagens no braço fechado. O arquivo também não registra o renderizador do WebGL (a leitura
+dele entrou depois, em `9cfd7fe6d`), e a mesma estação aparece em
+[`../../motores-inventario.md`](../../motores-inventario.md) como "Chromium 159 sem placa de vídeo".
+Não há registro, então, de que estes números foram medidos com placa de vídeo. Mediana das
+rodadas, em porcentagem do quadro de 16,7 ms:
 
 | Motor | Jogo | Desempenho | Investigar | Gaveta fechada (ms por quadro) |
 |---|---|---|---|---|
@@ -71,8 +78,9 @@ segundo), e mesmo assim fica em até 2%. Os negativos são ruído, como nos jogo
 - **Jogo 3D, Mundo 3D e 3D Avançado:** cobrados só com placa de vídeo. No `studio-engines.yml`
   (Linux sem placa, SwiftShader), o tempo por quadro variou de −40% a +45% entre rodadas com a
   gaveta fechada dos dois lados: o teste reconhece a GPU emulada pelo nome do renderizador e
-  registra os números sem cobrar (regra 4 do guia, "emulado é emulado"). A prova dos 3D é a
-  tabela acima, medida com placa de vídeo.
+  registra os números sem cobrar (regra 4 do guia, "emulado é emulado"). Para os 3D fica a tabela
+  local acima, que não registra o renderizador; uma rodada dos 3D com placa de vídeo registrada
+  ainda não existe.
 - **Pro:** a ponte de verdade da prévia do Pro sobre um jogo de canvas sintético, não a prévia
   real (o playground não abre o Pro sem o WebContainer).
 - **Python:** cobrado na suíte da homologação (tabela acima).
@@ -81,7 +89,8 @@ segundo), e mesmo assim fica em até 2%. Os negativos são ruído, como nos jogo
   O palco tem o mesmo tamanho nos três braços (no fechado, a gaveta abre na aba Mensagens).
 
 Números negativos são ruído: a diferença entre duas janelas da gaveta fechada da mesma rodada chega
-a 0,3 ms por quadro (2% do quadro) nos jogos 3D. Mesmo assim, nenhum motor chegou perto da meta.
+a 0,65 ms por quadro (3,9% do quadro) no Mundo 3D, e a 0,19 ms no Jogo 3D e no 3D Avançado
+(`resultado-local.json`). Mesmo assim, nenhum motor chegou perto da meta.
 
 O Investigar dos jogos 3D conta os objetos da cena (`traverseVisible`), mas só duas vezes por
 segundo, na fatia da medida, e não a cada quadro: não houve o que consertar no

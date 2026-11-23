@@ -23,6 +23,9 @@ export const MENOR_LADO_DE_REGIAO = 4
 type PontoNoChao = { x: number; z: number }
 
 const arredondar = (v: number) => Math.round(v * 100) / 100
+/** Para dentro da base: o limite de baixo sobe e o de cima desce até o centímetro (com folga de float). */
+const centimetroAcima = (v: number) => Math.ceil(v * 100 - 1e-6) / 100
+const centimetroAbaixo = (v: number) => Math.floor(v * 100 + 1e-6) / 100
 
 /** A caixa entre dois cliques, com o menor lado garantido e presa dentro da base. */
 export function caixaDeDoisPontos(
@@ -47,21 +50,34 @@ export function caixaDeDoisPontos(
   return prenderNaBase(doc, { x0, z0, x1, z1 })
 }
 
-/** A caixa cortada pelo retângulo da base (o terreno ou o plano), com centímetros redondos. */
+/**
+ * A caixa cortada pelo retângulo da base (o terreno ou o plano), com centímetros redondos (full
+ * review final, 22/11/2026):
+ * - o arredondamento nunca tira a borda da base: os limites da base são arredondados PARA DENTRO
+ *   (numa base de 64,015 m, a borda 32,0075 virava 32,01, fora dela, e a região não guardava);
+ * - a borda que não mudou (`antes`) fica como estava, sem arredondar: ela pode encostar numa
+ *   vizinha gravada com mais casas, e arredondá-la a punha por cima da vizinha.
+ */
 export function prenderNaBase(
   doc: Pick<DocumentoDeCenario, 'base'>,
   caixa: CaixaDeRegiao,
+  antes?: CaixaDeRegiao,
 ): CaixaDeRegiao {
   const limite = retanguloDaBase(doc.base)
-  const c = limite
-    ? {
-        x0: Math.max(limite.x0, Math.min(caixa.x0, limite.x1)),
-        z0: Math.max(limite.z0, Math.min(caixa.z0, limite.z1)),
-        x1: Math.min(limite.x1, Math.max(caixa.x1, limite.x0)),
-        z1: Math.min(limite.z1, Math.max(caixa.z1, limite.z0)),
-      }
-    : caixa
-  return { x0: arredondar(c.x0), z0: arredondar(c.z0), x1: arredondar(c.x1), z1: arredondar(c.z1) }
+  const borda = (chave: keyof CaixaDeRegiao, menor?: number, maior?: number): number => {
+    const valor = caixa[chave]
+    if (antes && antes[chave] === valor) return valor
+    let v = arredondar(valor)
+    if (menor !== undefined) v = Math.max(centimetroAcima(menor), v)
+    if (maior !== undefined) v = Math.min(centimetroAbaixo(maior), v)
+    return v
+  }
+  return {
+    x0: borda('x0', limite?.x0, limite?.x1),
+    z0: borda('z0', limite?.z0, limite?.z1),
+    x1: borda('x1', limite?.x0, limite?.x1),
+    z1: borda('z1', limite?.z0, limite?.z1),
+  }
 }
 
 /** "Região 1", "Região 2"…: o primeiro nome que o cenário ainda não usa. */
@@ -114,12 +130,16 @@ export function regiaoComMedidas(
     c = Math.max(MENOR_LADO_DE_REGIAO, Number.isFinite(comprimento) ? comprimento : 0)
   return {
     ...r,
-    caixa: prenderNaBase(doc, {
-      x0: r.caixa.x0,
-      z0: r.caixa.z0,
-      x1: r.caixa.x0 + l,
-      z1: r.caixa.z0 + c,
-    }),
+    caixa: prenderNaBase(
+      doc,
+      {
+        x0: r.caixa.x0,
+        z0: r.caixa.z0,
+        x1: r.caixa.x0 + l,
+        z1: r.caixa.z0 + c,
+      },
+      r.caixa,
+    ),
   }
 }
 
@@ -163,12 +183,16 @@ export function caixaPelosCantos(
     x1 = Math.max(c.x0, c.x1),
     z0 = Math.min(c.z0, c.z1),
     z1 = Math.max(c.z0, c.z1)
-  return prenderNaBase(doc, {
-    x0,
-    z0,
-    x1: Math.max(x1, x0 + MENOR_LADO_DE_REGIAO),
-    z1: Math.max(z1, z0 + MENOR_LADO_DE_REGIAO),
-  })
+  return prenderNaBase(
+    doc,
+    {
+      x0,
+      z0,
+      x1: Math.max(x1, x0 + MENOR_LADO_DE_REGIAO),
+      z1: Math.max(z1, z0 + MENOR_LADO_DE_REGIAO),
+    },
+    antes,
+  )
 }
 
 /** Liga ou desliga uma vizinha no rascunho (até 8). */

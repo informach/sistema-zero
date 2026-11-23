@@ -116,6 +116,7 @@ jobs:
         run: |
           bun tests/image-smoke.ts
           bun tests/validation-smoke.ts
+          bun tests/templates-smoke.ts
 
       - name: Lint (biome ci)
         run: bun run ci

@@ -1,6 +1,11 @@
 import { buildProRuntimeBridgeScript, STUDIO_PRO_ARTIFACT_LIMITS } from '@sistemazero/core/studio'
 import { STUDIO_PRO_REMOTE_PACKAGES } from '@sistemazero/core/studio/pro-dependencies'
-import { parseBuildRequest, trustedPackageJson, trustedViteConfig } from '../src/contracts'
+import {
+  parseBuildRequest,
+  trustedPackageJson,
+  trustedViteConfig,
+  undeclaredDependencyMessage,
+} from '../src/contracts'
 import { prepareRuntimeDependencyLock } from '../src/dependency-lock'
 import { materializeTestTemplate } from './template-files'
 
@@ -16,6 +21,10 @@ import { materializeTestTemplate } from './template-files'
  * Confere em cada artefato: a página e os módulos saem do próprio caminho (nenhum `import` de
  * outro site, nenhum `<script src>` absoluto), a biblioteca foi mesmo empacotada e o artefato
  * cabe nos limites. Requer a imagem construída localmente (`bun run build:image`).
+ *
+ * E as duas recusas (revisão do lote 4): o `import` de uma biblioteca que o projeto não declarou
+ * (`nanoid`, que a imagem tem por ser dependência do postcss) para no plugin do catálogo com o
+ * recado da criança, e um erro de sintaxe para no Vite (o Worker responde 422 nos dois).
  */
 
 const args = process.argv.slice(2)
@@ -34,7 +43,12 @@ interface Case {
   marker: string
   /** Troca o package.json do modelo (a faixa `^`) e manda a trava junto. */
   range?: { name: keyof typeof STUDIO_PRO_REMOTE_PACKAGES }
+  /** O build TEM de falhar: acrescenta linhas no começo do `src/main.ts` e confere a saída. */
+  refuse?: { kind: 'undeclared' | 'syntax'; lines: string[] }
 }
+
+const NANOID_MESSAGE =
+  'A biblioteca nanoid não está no package.json deste jogo. Se ela é uma das bibliotecas do modelo, escreva ela no package.json; se não, tire o import.'
 
 const CASES: Case[] = [
   { label: 'three-ts', templateId: 'three-ts', marker: 'THREE.WebGLRenderer:' },
@@ -45,6 +59,21 @@ const CASES: Case[] = [
     templateId: 'three-ts',
     marker: 'THREE.WebGLRenderer:',
     range: { name: 'three' },
+  },
+  {
+    label: 'three-ts com import sem declarar',
+    templateId: 'three-ts',
+    marker: '',
+    refuse: {
+      kind: 'undeclared',
+      lines: ["import { nanoid } from 'nanoid'", 'console.log(nanoid())'],
+    },
+  },
+  {
+    label: 'three-ts com erro de sintaxe',
+    templateId: 'three-ts',
+    marker: '',
+    refuse: { kind: 'syntax', lines: ['const = ;'] },
   },
 ]
 
@@ -61,6 +90,8 @@ for (const item of CASES) {
     files['package.json'] = JSON.stringify(manifest, null, 2)
     files['package-lock.json'] = prepareRuntimeDependencyLock(files['package.json'])
   }
+  if (item.refuse)
+    files['src/main.ts'] = [...item.refuse.lines, files['src/main.ts'] ?? ''].join('\n')
   const input = parseBuildRequest({
     executionId: 'verify-1234567890abcdef',
     parentOrigin: 'https://kids.test',
@@ -76,6 +107,7 @@ for (const item of CASES) {
         // O Worker tira o package.json e a trava dos arquivos depois de conferir as dependências.
         sentLock: Boolean(files['package-lock.json']),
         dependencies: input.dependencies.dependencies,
+        refuse: item.refuse?.kind,
       }),
     )
     continue
@@ -102,6 +134,12 @@ try {
   fs.symlinkSync('/opt/sz-runtime/node_modules', root + '/node_modules');
   const run = (args) => cp.execFileSync('node', args, { cwd: root, stdio: 'inherit', timeout: 120000 });
   const start = Date.now();
+  if (${JSON.stringify(Boolean(item.refuse))}) {
+    // A recusa: o Vite tem de falhar, e a saída vai inteira para quem chamou conferir o recado.
+    const build = cp.spawnSync('node', ['/opt/sz-runtime/node_modules/vite/bin/vite.js', 'build', '--config', './vite.config.mjs', '--configLoader', 'native'], { cwd: root, encoding: 'utf8', timeout: 120000 });
+    process.stdout.write(JSON.stringify({ refused: build.status !== 0, output: [build.stdout || '', build.stderr || ''].join(String.fromCharCode(10)) }));
+    process.exit(0);
+  }
   run(['/opt/sz-runtime/node_modules/vite/bin/vite.js', 'build', '--config', './vite.config.mjs', '--configLoader', 'native']);
   run(['/opt/sz-runtime/pack-artifact.mjs', '${STUDIO_PRO_ARTIFACT_LIMITS.maxBytes}', '${STUDIO_PRO_ARTIFACT_LIMITS.maxFiles}']);
   const manifest = JSON.parse(fs.readFileSync(root + '/artifact-manifest.json'));
@@ -142,8 +180,27 @@ try {
       '-i',
       image,
     ],
-    { stdin: new TextEncoder().encode(script), stdout: 'inherit', stderr: 'inherit' },
+    {
+      stdin: new TextEncoder().encode(script),
+      stdout: item.refuse ? 'pipe' : 'inherit',
+      stderr: 'inherit',
+    },
   )
   const code = await child.exited
   if (code !== 0) process.exit(code)
+  if (item.refuse) {
+    const result = JSON.parse(await new Response(child.stdout).text()) as {
+      refused: boolean
+      output: string
+    }
+    const message = undeclaredDependencyMessage(result.output)
+    const ok =
+      result.refused &&
+      (item.refuse.kind === 'undeclared' ? message === NANOID_MESSAGE : message === null)
+    console.log(JSON.stringify({ template: item.label, ok, refused: result.refused, message }))
+    if (!ok) {
+      console.error(result.output)
+      process.exit(1)
+    }
+  }
 }

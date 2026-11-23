@@ -5,6 +5,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { expect, test } from '@playwright/test'
 import { STUDIO_PRO_ARTIFACT_LIMITS } from '@sistemazero/core/studio'
+import { resolveStudioProRemoteDependencies } from '@sistemazero/core/studio/pro-dependencies'
 import { serveArtifact, storeArtifact } from '../../studio-runtime/src/artifacts'
 import { trustedViteConfig } from '../../studio-runtime/src/contracts'
 import { memoryArtifactBucket } from '../../studio-runtime/tests/artifact-bucket'
@@ -47,7 +48,17 @@ for (const three of [false, true]) {
         await writeFile(join(root, path), content)
       }
       await symlink(join(runtime, 'node_modules'), join(root, 'node_modules'), 'junction')
-      await writeFile(join(root, 'vite.config.mjs'), trustedViteConfig('vanilla-vite'))
+      // As dependências conferidas do package.json do projeto, como o Worker faz: a configuração
+      // confiável só deixa o código importar o que o projeto declarou (o conversor declara o
+      // `three`; sem elas, o import do three seria recusado).
+      const manifest = files['package.json']
+      const dependencies = resolveStudioProRemoteDependencies(
+        typeof manifest === 'string' ? manifest : '{}',
+      )
+      await writeFile(
+        join(root, 'vite.config.mjs'),
+        trustedViteConfig('vanilla-vite', dependencies),
+      )
       await run(
         [
           join(runtime, 'node_modules/vite/bin/vite.js'),

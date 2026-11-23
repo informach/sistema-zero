@@ -1,5 +1,5 @@
 import * as Blockly from 'blockly/core'
-import { expandForShowing } from './transientExpansion'
+import { expandForShowing, withShowingScope } from './transientExpansion'
 
 /**
  * O sinal vermelho no bloco onde o jogo parou (redesenho do clássico, 11/2026): o aviso do
@@ -82,10 +82,15 @@ export function revealBlockInWorkspace(
 ): boolean {
   const block = liveBlock(workspace, blockId)
   if (!block) return false
-  expandAroundBlock(block, options)
-  // `blockOnly`: centraliza no PRÓPRIO bloco, não na pilha que vem embaixo dele.
-  workspace.centerOnBlock(block.id, true)
-  block.select()
+  const show = () => {
+    expandAroundBlock(block, options)
+    // `blockOnly`: centraliza no PRÓPRIO bloco, não na pilha que vem embaixo dele.
+    workspace.centerOnBlock(block.id, true)
+    block.select()
+  }
+  // Só para mostrar: o gesto inteiro num grupo próprio, sem desfazer (`withShowingScope`).
+  if (options.transient) withShowingScope(workspace, show)
+  else show()
   if (openBubble) {
     void block.getIcon(Blockly.icons.IconType.WARNING)?.setBubbleVisible(true)
   }

@@ -157,8 +157,13 @@ describe('contrato do executor Pro', () => {
     }
     expect(pkg.scripts).toEqual({ build: 'vite build' })
     expect(pkg.dependencies).toEqual({ react: '19.2.0', 'react-dom': '19.2.0' })
-    expect(trustedViteConfig('react-ts')).toContain('plugins: [react()]')
+    // O plugin do catálogo vem antes de tudo, com a lista do que o projeto declarou (revisão do
+    // lote 4: import sem declarar empacotava o que estava no `node_modules` da imagem).
+    expect(trustedViteConfig('react-ts')).toContain(
+      'plugins: [catalogImports(["react","react-dom","vite","@vitejs/plugin-react","typescript","@types/react","@types/react-dom"]), react()]',
+    )
     expect(trustedViteConfig('vanilla-js')).not.toContain('@vitejs/plugin-react')
+    expect(trustedViteConfig('vanilla-js')).toContain('plugins: [catalogImports([')
   })
 
   test('imagem instala dependências reproduzíveis pelo lockfile', async () => {

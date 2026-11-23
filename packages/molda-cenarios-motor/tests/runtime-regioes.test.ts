@@ -337,3 +337,71 @@ test('um foco inválido não derruba a carga: ela fica como estava (revisão do 
   expect(() => cena.quadro(camera, new Vector3(Number.NaN, 0, 50))).not.toThrow()
   expect(nos(cena)).toEqual(antes)
 })
+
+/** Quadros seguidos SEM esperar a carga: cada um deixa um pedido guardado com a região do foco. */
+async function quadrosSeguidos(cena: CenaNoThree, x: number, z: number, vezes: number) {
+  for (let i = 0; i < vezes; i++) {
+    cena.atualizar(0.01)
+    camera.position.set(x, 5, z - 10)
+    camera.updateMatrixWorld(true)
+    cena.quadro(camera, new Vector3(x, 0, z))
+    await new Promise((resolve) => setTimeout(resolve, 0))
+  }
+  for (let i = 0; i < 50 && cena.estadoDasRegioes()?.carregando.length; i++)
+    await new Promise((resolve) => setTimeout(resolve, 5))
+  await new Promise((resolve) => setTimeout(resolve, 20))
+}
+
+/** Conta as leituras de um arquivo do pacote (o arquivo que falta conta também). */
+function contarLeituras(p: Awaited<ReturnType<typeof pacote>>, arquivo: string) {
+  const ler = p.arquivos.get.bind(p.arquivos)
+  const contagem = { vezes: 0 }
+  p.arquivos.get = (chave: string) => {
+    if (chave === arquivo) contagem.vezes++
+    return ler(chave)
+  }
+  return contagem
+}
+
+// Guarda (full review final): o revisor apontou a nova tentativa imediata com quadros durante a
+// carga; aqui ela não muda o que carrega nem quantas leituras há (a tentativa a mais ocupa o lugar
+// da tentativa isolada de cada região). O caso prende esse comportamento.
+test('a falha durante a carga espera a vez dela, mesmo com quadros pedindo de novo no meio (full review final)', async () => {
+  // Em B, C (quebrada) e E (boa) entram juntas. Quadros seguidos durante a carga guardam um pedido
+  // feito antes de a falha de C existir: ele não pode levar C de novo antes da vez dela (1 s), nem
+  // cortar a tentativa de E.
+  const { p, cena } = await abrir()
+  p.arquivos.delete('modelos/c.glb')
+  const leituras = contarLeituras(p, 'modelos/c.glb')
+  await quadrosSeguidos(cena, centro('b').x, centro('b').z, 6)
+  expect(cena.estadoDasRegioes()?.falhas).toEqual(['c'])
+  expect(cena.estadoDasRegioes()?.carregadas).toContain('e')
+  // Mais quadros antes de 1 s: C não é lida de novo.
+  const depoisDaRodada = leituras.vezes
+  await quadrosSeguidos(cena, centro('b').x, centro('b').z, 6)
+  expect(leituras.vezes).toBe(depoisDaRodada)
+})
+
+test('o aviso de falha vai ao console uma vez e sai quando a região carrega (full review final)', async () => {
+  const { p, cena } = await abrir()
+  const bytes = p.arquivos.get('modelos/c.glb')!
+  p.arquivos.delete('modelos/c.glb')
+  const avisos: string[] = []
+  const warn = console.warn
+  console.warn = (msg: string) => avisos.push(msg)
+  try {
+    await andar(cena, 250, 50)
+    await andar(cena, 250, 50, 1)
+    await andar(cena, 250, 50, 1)
+    expect(avisos).toHaveLength(1)
+    expect(avisos[0]).toMatch(/Não consegui carregar uma parte do cenário/)
+    p.arquivos.set('modelos/c.glb', bytes)
+    // Depois de duas falhas a próxima tentativa é em 4 s (a régua de 1, 4 e 15 s).
+    for (let i = 0; i < 20 && !nos(cena).includes('no-c'); i++) await andar(cena, 250, 50, 1)
+    expect(nos(cena)).toContain('no-c')
+    expect(cena.estadoDasRegioes()).toMatchObject({ falhas: [], aviso: null })
+    expect(avisos).toHaveLength(1)
+  } finally {
+    console.warn = warn
+  }
+})

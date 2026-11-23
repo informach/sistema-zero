@@ -24,6 +24,7 @@ const bundle = buildSync({
       import { showBlocksFromTop } from './src/blockly/cornerSpacer';
       import { isDeferredBlock, prepareDeferredTail } from './src/blockly/deferredTail';
       import { drawDeferredBlocks } from './src/blockly/offscreenThreshold';
+      import { createOffscreenBodies } from './src/blockly/offscreenBodies';
       import { withWorkspaceLoad } from './src/blockly/loadFence';
       import { revealBlockInWorkspace } from './src/blockly/runtimeMark';
       import { saveWorkspaceState } from './src/blockly/savedWorkspaceState';
@@ -36,9 +37,14 @@ const bundle = buildSync({
       // Os desenhos de cada área de trabalho, contados ANTES de a cauda adiada embrulhar o método:
       // o que ela pula (bloco adiado) não chega aqui.
       const renders = new Map();
+      // Desenhos de um bloco FORA da página: o texto é medido sem a fonte (o getComputedStyle de
+      // um elemento fora do documento volta vazio).
+      const outOfPage = new Map();
       const renderEfficiently = Blockly.BlockSvg.prototype.renderEfficiently;
       Blockly.BlockSvg.prototype.renderEfficiently = function () {
         renders.set(this.workspace.id, (renders.get(this.workspace.id) ?? 0) + 1);
+        if (!this.getSvgRoot().isConnected)
+          outOfPage.set(this.workspace.id, (outOfPage.get(this.workspace.id) ?? 0) + 1);
         return renderEfficiently.call(this);
       };
       const BODY = 30;
@@ -92,7 +98,8 @@ const bundle = buildSync({
           await settle();
           return Boolean(load);
         },
-        resetRenders() { renders.clear(); },
+        resetRenders() { renders.clear(); outOfPage.clear(); },
+        outOfPage(name) { return outOfPage.get(spaces[name].id) ?? 0; },
         renders(name) { return renders.get(spaces[name].id) ?? 0; },
         isDeferred: (name, id) => isDeferredBlock(block(name, id)),
         state: (name) => JSON.stringify(saveWorkspaceState(spaces[name])),
@@ -116,6 +123,14 @@ const bundle = buildSync({
           const ws = spaces[name];
           for (let i = 0; i < 60; i++) ws.scroll(ws.scrollX, ws.scrollY - 600);
         },
+        scrollToTop(name) {
+          const ws = spaces[name];
+          for (let i = 0; i < 60; i++) ws.scroll(ws.scrollX, ws.scrollY + 600);
+        },
+        /** Liga o recorte dos corpos longe da vista (o editor liga a partir de 1.500 blocos). */
+        offscreen(name) { createOffscreenBodies(spaces[name], { minBlocks: 0 }); },
+        /** O desenho do bloco está na página? */
+        inPage: (name, id) => block(name, id).getSvgRoot().isConnected,
         /** Os blocos à vista que divergem do caminho normal, e as conexões adiadas no banco. */
         compare(name) {
           const ws = spaces[name], normal = spaces.normal;
@@ -395,6 +410,44 @@ test('recolher a função depois de mostrar no corpo comprido: o resto do corpo 
   await call(page, 'settle')
   await call(page, 'settle')
   expect(await call(page, 'isDeferred', 'adiado', 'c40_299')).toBe(false)
+  expect(await call(page, 'compare', 'adiado')).toEqual({
+    geometry: [],
+    trackedDeferred: 0,
+    trackedHidden: 0,
+    deferredInPage: 0,
+  })
+  expect(errors).toEqual([])
+})
+
+test('mostrar numa função lá de baixo depois de voltar ao alto: o corpo é desenhado dentro da página', async ({
+  page,
+}) => {
+  // Full review final: a partir de 1.500 blocos o editor tira da página o corpo dos blocos longe
+  // da vista (`offscreenBodies`), inclusive o corpo escondido de uma função recolhida já desenhada.
+  // Abrir essa função desenhava o corpo FORA da página, e o texto era medido sem a fonte dele.
+  test.setTimeout(120_000)
+  const errors = await openBoth(page)
+  await call(page, 'offscreen', 'adiado')
+  // As funções da cauda são desenhadas recolhidas, com os corpos escondidos adiados (o "Organizar
+  // blocos" faz isso; rolar até o fim também, aos poucos), e a criança volta ao alto.
+  await call(page, 'drawAll', 'adiado')
+  await call(page, 'settle')
+  await call(page, 'scrollToEnd', 'adiado')
+  await call(page, 'settle')
+  await call(page, 'scrollToTop', 'adiado')
+  await call(page, 'settle')
+  await call(page, 'settle')
+  // O corpo escondido da função 45 saiu da página (sem isto o caso não prova nada).
+  expect(await call(page, 'isDeferred', 'adiado', 'u45')).toBe(false)
+  expect(await call(page, 'inPage', 'adiado', 'c45_0')).toBe(false)
+  await call(page, 'resetRenders')
+  for (const name of ['adiado', 'normal']) await call(page, 'reveal', name, 'c45_10')
+  await call(page, 'settle')
+  // Nenhum bloco do corpo foi desenhado fora da página.
+  expect(await call(page, 'renders', 'adiado')).toBeGreaterThan(0)
+  expect(await call(page, 'outOfPage', 'adiado')).toBe(0)
+  expect(await call(page, 'inPage', 'adiado', 'c45_0')).toBe(true)
+  expect(await call(page, 'inPage', 'adiado', 'c45_10')).toBe(true)
   expect(await call(page, 'compare', 'adiado')).toEqual({
     geometry: [],
     trackedDeferred: 0,
