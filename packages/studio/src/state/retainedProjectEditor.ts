@@ -10,7 +10,8 @@ import {
 import { prepareEditableStudioProject } from './editableProjectValidation'
 import type { IdbWrite } from './idbTransaction'
 import { notifyRecoveredProjects } from './projectPersistenceEvents'
-import { projectRecoveryKey } from './projectStorageKeys'
+import { latestRecoveries, projectFromRecovery } from './projectStorageCoordinator'
+import { projectBlocksKey, projectRecoveryKey } from './projectStorageKeys'
 import { assembleProjectRecord } from './projectStorageRecords'
 import {
   acceptsLocalHead,
@@ -22,6 +23,11 @@ import {
   readLocalRevision,
 } from './projectStorageRevision'
 import type { ProjectStorageScope } from './projectStorageRuntime'
+import {
+  acknowledgeRetainedJournal,
+  readRetainedDrafts,
+  retainedDraftRelation,
+} from './retainedProjectDrafts'
 import { invalidRetention, prepareRetainedParts, type RetainedPart } from './retainedProjectParts'
 import {
   commitRetainedProject,
@@ -30,6 +36,7 @@ import {
   readRetainedParts,
 } from './retainedProjectStore'
 import { hasSynchronousExitJournal } from './synchronousExitJournalProbe'
+import { readSynchronousExitJournal } from './synchronousExitJournalRead'
 
 export type RetainedValues = Partial<Record<RetainedPart, unknown>>
 /** The private physical token fences all parts. The authored token also lets an unrelated
@@ -55,15 +62,7 @@ export async function readRetainedDocument(
   shell = false,
 ) {
   if (manifest.deleted) return null
-  try {
-    const saved = await preserveLegacyRegionalEdit(scope, manifest)
-    if (saved.created && saved.fork) notifyRecoveredProjects(scope, [saved.fork])
-  } catch (error) {
-    // Canonical bytes stay independently accessible. The gallery offers the exact old records;
-    // explicit deletion still requires the old source to be safely recoverable.
-    scope.signal?.throwIfAborted()
-    if (error instanceof DOMException && error.name === 'AbortError') throw error
-  }
+  await preserveLegacySources(scope, manifest)
   const names: RetainedPart[] = shell
     ? ['meta', 'files', 'assets', 'head']
     : ['meta', 'files', 'state', 'blocks', 'assets', 'head']
@@ -81,11 +80,25 @@ export async function readRetainedDocument(
   return installLocalRevision(project, scope.identity, retainedEditorHead(manifest, v.head))
 }
 
+async function preserveLegacySources(scope: ProjectStorageScope, manifest: RetainedManifest) {
+  try {
+    const saved = await preserveLegacyRegionalEdit(scope, manifest)
+    if (saved.created && saved.fork) notifyRecoveredProjects(scope, [saved.fork])
+  } catch (error) {
+    // Canonical bytes stay independently accessible. The gallery offers the exact old records;
+    // explicit deletion still requires the old source to be safely recoverable.
+    scope.signal?.throwIfAborted()
+    if (error instanceof DOMException && error.name === 'AbortError') throw error
+  }
+}
+
 export interface RetainedPatch {
   /** A missing part here stays untouched. An explicitly supplied undefined removes only that part. */
   values: RetainedValues
   /** Only authored edits replace the editor head. Auxiliary updates preserve it. */
   nextHead?: LocalHead
+  /** Captured exit copies this commit covers: deleted with it while still unchanged. */
+  retire?: ReadonlyArray<readonly [key: string, value: unknown]>
   ready?: () => boolean
 }
 export async function patchRetainedProject(
@@ -98,6 +111,7 @@ export async function patchRetainedProject(
   const values = copyStudioProjectJson(change.values) as RetainedValues
   const nextHead = change.nextHead && { ...change.nextHead }
   const ready = change.ready
+  const retired = change.retire ?? []
   let manifest = first
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
@@ -130,6 +144,7 @@ export async function patchRetainedProject(
         origin: manifest.origin,
         expectedToken: manifest.token,
         candidate: parts,
+        ...(retired.length ? { source: retired, retire: retired.map(([key]) => key) } : {}),
         ready,
       })
     } catch (error) {
@@ -186,8 +201,28 @@ export async function saveRetainedDocument(
   }
   // A freshly minted publication token also distinguishes edits made to a reused project object.
   const head = { ...next, token: crypto.randomUUID() }
-  await patchRetainedProject(scope, manifest, previous.token, { values: edits, nextHead: head })
+  // Exit copies this revision supersedes: older ones of the durable head, older ones of this
+  // editor and the draft it adopted. Leaving them made every later gallery fork them again.
+  const adopted = stamp.lineage.recoverySources ?? []
+  const covered = (await readRetainedDrafts(scope, manifest.id)).filter(
+    ({ recovery }) =>
+      retainedDraftRelation(previous, recovery.head) === 'covered' ||
+      retainedDraftRelation(head, recovery.head) === 'covered' ||
+      adopted.some(
+        (source) =>
+          source.key === projectRecoveryKey(manifest.id, recovery.head.writer) &&
+          source.token === recovery.head.token,
+      ),
+  )
+  await patchRetainedProject(scope, manifest, previous.token, {
+    values: edits,
+    nextHead: head,
+    retire: covered.flatMap(({ native }) => (native ? [native] : [])),
+  })
   stamp.lineage.durableToken = head.token
+  stamp.lineage.recovery = false
+  stamp.lineage.recoverySources = undefined
+  acknowledgeRetainedJournal(scope, covered)
 }
 
 export async function updateRetainedAssets(
@@ -232,18 +267,107 @@ export async function removeRetainedProject(
 ) {
   if (manifest.deleted) return
   const recovery = await preserveLegacyRegionalEdit(scope, manifest)
-  const noDraft = projectRecoveryKey(manifest.id, '')
+  // Explicit deletion also discards the project's own exit copies, like its legacy sources. An
+  // exit copy the editor cannot adopt (no blocks restored yet) used to block it forever.
+  const drafts = await readRetainedDrafts(scope, manifest.id)
+  const native = drafts.flatMap((draft) => (draft.native ? [draft.native] : []))
+  const captured = new Map(
+    drafts.flatMap((draft) => draft.journal.map((entry) => [entry.key, entry.encoded] as const)),
+  )
   await commitRetainedProject(scope, {
     id: manifest.id,
     origin: manifest.origin,
     expectedToken: manifest.token,
     candidate: null,
-    source: recovery.guards,
+    source: [...recovery.guards, ...native],
     retireLegacy: true,
-    absent: [IDBKeyRange.bound(noDraft, noDraft + '\uffff')],
-    ready: () => !hasSynchronousExitJournal(scope.exitJournalStorage, scope.identity, manifest.id),
+    retire: native.map(([key]) => key),
+    // Another tab staging an exit right now still wins: only the captured mirrors may remain.
+    ready: () => onlyCapturedJournal(scope, manifest.id, captured),
   })
+  acknowledgeRetainedJournal(scope, drafts)
   if (recovery.created && recovery.fork) notifyRecoveredProjects(scope, [recovery.fork])
+}
+
+function onlyCapturedJournal(
+  scope: ProjectStorageScope,
+  id: string,
+  captured: ReadonlyMap<string, string>,
+): boolean {
+  if (!hasSynchronousExitJournal(scope.exitJournalStorage, scope.identity, id)) return true
+  try {
+    const entries = readSynchronousExitJournal(scope.exitJournalStorage, scope.identity, id)
+    return (
+      entries.length > 0 &&
+      entries.every(
+        (entry) =>
+          captured.get(entry.key) === entry.encoded &&
+          scope.exitJournalStorage?.getItem(entry.key) === entry.encoded,
+      )
+    )
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Editor-only: the single exit copy that continues the retained head. Cloud, export and the
+ * gallery keep reading the committed revision. A copy staged before its blocks were restored
+ * takes the durable blocks, as the regular recovery keeps the stored partition.
+ */
+export async function loadRetainedProjectDraft(
+  scope: ProjectStorageScope,
+  manifest: RetainedManifest,
+): Promise<EditableStudioProject | null> {
+  if (manifest.deleted) return null
+  const drafts = await readRetainedDrafts(scope, manifest.id)
+  if (!drafts.length) return null
+  await preserveLegacySources(scope, manifest)
+  const { head: stored } = await readRetainedParts(scope, manifest, ['head'])
+  const head = retainedEditorHead(manifest, stored)
+  const eligible = latestRecoveries(
+    drafts
+      .map(({ recovery }) => recovery)
+      .filter((recovery) => retainedDraftRelation(head, recovery.head) === 'adoptable'),
+  )
+  // Never choose between competing writers silently.
+  if (eligible.length !== 1) return null
+  const draft = eligible[0]!
+  // Classic retained projects have no Pro applications to replay.
+  if (draft.applications.length || draft.resetApplications) return null
+  const id = manifest.id
+  const puts = [...(draft.write.puts ?? [])]
+  if (draft.incompleteBlocks && !puts.some(([key]) => key === projectBlocksKey(id))) {
+    const { blocks } = await readRetainedParts(scope, manifest, ['blocks'])
+    if (blocks !== undefined) puts.push([projectBlocksKey(id), blocks])
+  }
+  const raw = projectFromRecovery({ ...draft, write: { ...draft.write, puts } })
+  const project =
+    raw && (await prepareEditableStudioProject(raw, { [PRIVATE_REGIONAL_PROJECT]: scope }))
+  if (!project) return null
+  installLocalRevision(project, scope.identity, head)
+  const stamp = readLocalRevision(project)!
+  stamp.lineage.recovery = true
+  stamp.lineage.recoverySources = [
+    ...(draft.replacesRecovery ?? []),
+    { key: projectRecoveryKey(id, draft.head.writer), token: draft.head.token },
+  ]
+  return project
+}
+
+/**
+ * The gallery's regular recovery must leave a live retained project's exit copies alone when
+ * they belong to its lineage: replaying them into the legacy rows forked a new
+ * "(edição recuperada)" every session. Competing copies still become separate copies there.
+ */
+export async function retainedOwnsDrafts(scope: ProjectStorageScope, id: string) {
+  const manifest = await readRetainedManifest(scope, id)
+  if (!manifest || manifest.deleted) return false
+  const drafts = await readRetainedDrafts(scope, id)
+  if (!drafts.length) return false
+  const { head: stored } = await readRetainedParts(scope, manifest, ['head'])
+  const head = retainedEditorHead(manifest, stored)
+  return drafts.some(({ recovery }) => retainedDraftRelation(head, recovery.head) !== 'competing')
 }
 
 export async function editRetainedAuxiliary(

@@ -1049,3 +1049,114 @@ test('entradas normais mantêm a cabeça autoral na capa/placar, recusam a aba a
     else Reflect.deleteProperty(globalThis, 'IDBKeyRange')
   }
 })
+
+/** Promote a private regional project and return the helpers that observe its exit copies. */
+async function retainedWithExitCopies(profile: string, id: string) {
+  const { IDBKeyRange: Range } = await import('fake-indexeddb')
+  Object.defineProperty(globalThis, 'IDBKeyRange', { value: Range, configurable: true })
+  const { promoteLocalRegionalProject, legacyProjectKeys } = await import(
+    '../project-migrations/localRegionalAuthority'
+  )
+  const { readValue, readAllKeys } = await import('./idbTransaction')
+  const { readSynchronousExitJournal } = await import('./synchronousExitJournalRead')
+  const scope = privateRegionalProjectScope(profile)
+  setProjectStorageNamespace(scope.namespace)
+  const keys = legacyProjectKeys(id)
+  await persistProject(
+    { ...createEmptyProject(id, 'Vila'), assets: [image], blocksState },
+    {},
+    scope,
+  )
+  const expected = (await readValue(scope.store, keys.head)) as { token: string }
+  await promoteLocalRegionalProject({
+    scope,
+    id,
+    expectedV4Token: expected.token,
+    assets: [{ ...image, ...before }],
+  })
+  return {
+    scope,
+    drafts: async () =>
+      (await readAllKeys(scope.store)).filter((key) =>
+        String(key).startsWith(`sz:v4:project-recovery:${id}:`),
+      ),
+    journal: () => readSynchronousExitJournal(scope.exitJournalStorage, scope.identity, id),
+    script: (project: unknown) =>
+      (project as { files?: Record<string, string> } | null)?.files?.['script.js'],
+  }
+}
+
+test('projeto retido: abrir adota a cópia de saída e o save retido a aposenta; nenhuma sessão cria "(edição recuperada)"', async () => {
+  const { listProjectSummariesLight } = await import('./projectListStorage')
+  const { loadProjectShellById } = await import('./persistence')
+  const previous = captureProjectStorageScope()
+  const id = 'vila-saida'
+  try {
+    const { scope, drafts, journal, script } = await retainedWithExitCopies('saida-retida', id)
+    const open = async () => {
+      const shell = await prepareEditableStudioProject(
+        await loadProjectShellById(id, scope),
+        capability(scope),
+      )
+      if (!shell || isPythonProject(shell)) throw Error('O projeto não abriu.')
+      return shell
+    }
+    for (const session of [1, 2, 3]) {
+      const editor = await open()
+      editor.files = { ...editor.files, 'script.js': `console.log("saida-${session}")` }
+      await persistProject(editor, { exit: true, pageAlive: true }, scope)
+      expect(await drafts()).toHaveLength(1)
+      // A galeria abre antes do editor: a cópia de saída continua deste projeto.
+      expect((await listProjectSummariesLight(scope)).map(({ name }) => name)).toEqual(['Vila'])
+      const reopened = await open()
+      expect(script(reopened)).toBe(`console.log("saida-${session}")`)
+      reopened.files = { ...reopened.files, 'script.js': `console.log("salvo-${session}")` }
+      await persistProject(reopened, {}, scope)
+      expect(await drafts()).toEqual([])
+      expect(journal()).toEqual([])
+    }
+    // Uma cópia de saída já coberta por um save posterior do mesmo editor também sai.
+    const editor = await open()
+    editor.files = { ...editor.files, 'script.js': 'console.log("saida-coberta")' }
+    await persistProject(editor, { exit: true, pageAlive: true }, scope)
+    editor.files = { ...editor.files, 'script.js': 'console.log("final")' }
+    await persistProject(editor, {}, scope)
+    expect(await drafts()).toEqual([])
+    expect(journal()).toEqual([])
+    expect((await listProjectSummariesLight(scope)).map(({ name }) => name)).toEqual(['Vila'])
+    expect(script(await open())).toBe('console.log("final")')
+  } finally {
+    setProjectStorageNamespace(previous.namespace)
+  }
+})
+
+test('projeto retido: a cópia de saída sem blocos abre com os blocos guardados e não trava o apagar', async () => {
+  const { loadProjectShellById } = await import('./persistence')
+  const { readRetainedManifest } = await import('./retainedProjectStore')
+  const previous = captureProjectStorageScope()
+  const id = 'vila-sem-blocos'
+  try {
+    const { scope, drafts, journal, script } = await retainedWithExitCopies('saida-incompleta', id)
+    const shell = await prepareEditableStudioProject(
+      await loadProjectShellById(id, scope),
+      capability(scope),
+    )
+    if (!shell || isPythonProject(shell)) throw Error('O projeto não abriu.')
+    shell.files = { ...shell.files, 'script.js': 'console.log("antes-dos-blocos")' }
+    await persistProject(
+      { ...shell, blocksState: null },
+      { exit: true, incompleteBlocks: true, pageAlive: true },
+      scope,
+    )
+    expect(await drafts()).toHaveLength(1)
+    const adopted = await loadProjectShellById(id, scope)
+    expect(script(adopted)).toBe('console.log("antes-dos-blocos")')
+    expect((adopted as { blocksState?: unknown }).blocksState).toStrictEqual(blocksState)
+    await deleteProject(id, scope)
+    expect((await readRetainedManifest(scope, id))?.deleted).toBe(true)
+    expect(await drafts()).toEqual([])
+    expect(journal()).toEqual([])
+  } finally {
+    setProjectStorageNamespace(previous.namespace)
+  }
+})

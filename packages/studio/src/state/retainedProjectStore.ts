@@ -127,6 +127,8 @@ export async function commitRetainedProject(
     candidate: PreparedRetention | null
     source?: ReadonlyArray<Guard>
     retireLegacy?: true
+    /** Guarded rows (each one also in `source`) deleted in the same transaction. */
+    retire?: readonly IDBValidKey[]
     absent?: readonly IDBKeyRange[]
     ready?: () => boolean
   },
@@ -181,6 +183,8 @@ export async function commitRetainedProject(
       Object.values(retiredLegacy).some((key) => !source.some(([guard]) => guard === key)))
   )
     invalidRetention()
+  const retiredRows = [...(options.retire ?? [])]
+  if (retiredRows.some((key) => !source.some(([guard]) => guard === key))) invalidRetention()
   const raw = await readValue(scope.store, headKey)
   const before = readManifest(raw, id)
   if ((before?.token ?? null) !== expectedToken || (before?.deleted && candidate !== null))
@@ -270,6 +274,7 @@ export async function commitRetainedProject(
         ])
         deletes.push(...Object.values(retiredLegacy).filter((key) => key !== retiredLegacy.head))
       }
+      deletes.push(...retiredRows)
       puts.push([LEDGER, counter(used)])
       return { write: { puts, deletes }, result: nextManifest }
     },

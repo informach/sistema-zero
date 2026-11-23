@@ -327,6 +327,10 @@ export async function loadProjectById(
     const retained = await retainedAccess(scope, id)
     if (retained) {
       const editor = await import('./retainedProjectEditor')
+      if (options.recoverDraft) {
+        const draft = await editor.loadRetainedProjectDraft(scope, retained.manifest)
+        if (draft) return copyLocalRevision(draft, { ...draft })
+      }
       return editor.readRetainedDocument(scope, retained.manifest, false)
     }
   }
@@ -359,6 +363,8 @@ export async function loadProjectShellById(
     const retained = await retainedAccess(scope, id)
     if (retained) {
       const editor = await import('./retainedProjectEditor')
+      const draft = await editor.loadRetainedProjectDraft(scope, retained.manifest)
+      if (draft) return copyLocalRevision(draft, { ...draft })
       return editor.readRetainedDocument(scope, retained.manifest, true)
     }
   }
