@@ -8,12 +8,11 @@ import {
 import { createApplication } from '../../src/composition-root'
 import { loadEnv } from '../../src/infrastructure/config/env'
 import type { DbConnection } from '../../src/infrastructure/persistence/drizzle/db'
-import { kidsJourneyTestTarget, openKidsJourneyTestDatabase } from './kids-journey-database'
+import { openKidsJourneyTestDatabase, optInKidsJourneyDatabase } from './kids-journey-database'
 
 // This suite starts the complete Members application on loopback using its real composition root.
 // The profile and account UUIDs are private to each run. Existing database rows are preserved.
-const target = process.env.PINTA_CAUSAL_HTTP_TEST_DATABASE_URL
-if (target) kidsJourneyTestTarget(target)
+const target = optInKidsJourneyDatabase('PINTA_CAUSAL_HTTP_TEST_DATABASE_URL')
 const token = 'owned-causal-http-test-token'
 const gateway = { 'x-internal-token': token, 'x-consumer-id': 'member-shell' }
 

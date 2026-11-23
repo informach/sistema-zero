@@ -9,10 +9,9 @@ import {
 import { DrizzleCreationsRepository } from '../../src/infrastructure/persistence/drizzle/creations.repository'
 import type { DbConnection } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleUserDataPurgeRepository } from '../../src/infrastructure/persistence/drizzle/user-data-purge.repository'
-import { kidsJourneyTestTarget, openKidsJourneyTestDatabase } from './kids-journey-database'
+import { openKidsJourneyTestDatabase, optInKidsJourneyDatabase } from './kids-journey-database'
 
-const target = process.env.PINTA_PALETTE_TEST_DATABASE_URL
-if (target) kidsJourneyTestTarget(target)
+const target = optInKidsJourneyDatabase('PINTA_PALETTE_TEST_DATABASE_URL')
 const fixture = () => ({
   userId: randomUUID(),
   accountId: randomUUID(),

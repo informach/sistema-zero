@@ -14,11 +14,10 @@ import { loadEnv } from '../../src/infrastructure/config/env'
 import type { Database } from '../../src/infrastructure/persistence/drizzle/db'
 import { creations } from '../../src/infrastructure/persistence/drizzle/schema'
 import { authorizeStudioTransaction } from '../../src/infrastructure/persistence/drizzle/studio-sealed-write-state'
-import { kidsJourneyTestTarget, openKidsJourneyTestDatabase } from './kids-journey-database'
+import { openKidsJourneyTestDatabase, optInKidsJourneyDatabase } from './kids-journey-database'
 import { nativePensa } from './pensa-native-fixture'
 
-const target = process.env.STUDIO_SEALED_TEST_DATABASE_URL
-if (target) kidsJourneyTestTarget(target)
+const target = optInKidsJourneyDatabase('STUDIO_SEALED_TEST_DATABASE_URL')
 const token = 'studio-sealed-reader-http-fixture'
 const itemId = 'studio-sealed-qa'
 

@@ -11,10 +11,9 @@ import {
 import { createApplication } from '../../src/composition-root'
 import { loadEnv } from '../../src/infrastructure/config/env'
 import { DrizzleCreationsRepository } from '../../src/infrastructure/persistence/drizzle/creations.repository'
-import { kidsJourneyTestTarget, openKidsJourneyTestDatabase } from './kids-journey-database'
+import { openKidsJourneyTestDatabase, optInKidsJourneyDatabase } from './kids-journey-database'
 
-const target = process.env.PINTA_PALETTE_TEST_DATABASE_URL
-if (target) kidsJourneyTestTarget(target)
+const target = optInKidsJourneyDatabase('PINTA_PALETTE_TEST_DATABASE_URL')
 const legacy = process.env.PINTA_PALETTE_PREDECESSOR_ROOT
 const oldId = `/members/creations/pinta/${itemId}`
 const privatePath = '/members/internal/creations/pinta/palette/'

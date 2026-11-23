@@ -16,10 +16,9 @@ import { createApplication } from '../../src/composition-root'
 import { loadEnv } from '../../src/infrastructure/config/env'
 import { DrizzleCreationsRepository } from '../../src/infrastructure/persistence/drizzle/creations.repository'
 import { DrizzleStudioSealedRetirementRepository } from '../../src/infrastructure/persistence/drizzle/studio-sealed-retirement'
-import { kidsJourneyTestTarget, openKidsJourneyTestDatabase } from './kids-journey-database'
+import { openKidsJourneyTestDatabase, optInKidsJourneyDatabase } from './kids-journey-database'
 
-const target = process.env.STUDIO_SEALED_TEST_DATABASE_URL
-if (target) kidsJourneyTestTarget(target)
+const target = optInKidsJourneyDatabase('STUDIO_SEALED_TEST_DATABASE_URL')
 const predecessor = process.env.STUDIO_SEALED_PREDECESSOR_ROOT
 const secret = 'studio-sealed-test-authorization-token'
 const profile = () => {

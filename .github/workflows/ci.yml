@@ -396,6 +396,12 @@ jobs:
           MASTERY_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_mastery_ci
           MASTERY_CONCURRENCY_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_mastery_concurrency_ci
           MASTERY_RETENTION_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_mastery_retention_ci
+          # Pinta causal, paletas e Estúdio selado: cada arquivo cria e migra o próprio banco
+          # `kids_journey_*` e, neste passo, FALHA se a variável sumir (nunca pula calado).
+          PINTA_CAUSAL_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_pinta_causal_ci
+          PINTA_CAUSAL_HTTP_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_pinta_causal_http_ci
+          PINTA_PALETTE_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_pinta_palette_ci
+          STUDIO_SEALED_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_studio_sealed_ci
           # Molda Cenários: o teste cria o banco `cenarios_*` se ele ainda não existe.
           CENARIOS_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/cenarios_ci
 

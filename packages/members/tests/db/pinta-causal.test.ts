@@ -19,10 +19,9 @@ import type { DbConnection } from '../../src/infrastructure/persistence/drizzle/
 import { DrizzlePintaRetirementRepository } from '../../src/infrastructure/persistence/drizzle/pinta-causal-retirement'
 import { DrizzlePintaCausalRepository } from '../../src/infrastructure/persistence/drizzle/pinta-causal-units.repository'
 import { pintaCausalRoutes } from '../../src/interfaces/http/routes/pinta-causal.routes'
-import { kidsJourneyTestTarget, openKidsJourneyTestDatabase } from './kids-journey-database'
+import { openKidsJourneyTestDatabase, optInKidsJourneyDatabase } from './kids-journey-database'
 
-const url = process.env.PINTA_CAUSAL_TEST_DATABASE_URL
-if (url) kidsJourneyTestTarget(url)
+const url = optInKidsJourneyDatabase('PINTA_CAUSAL_TEST_DATABASE_URL')
 const time = '2026-11-22T12:00:00.000Z'
 async function rejection<T>(p: Promise<T>) {
   try {
