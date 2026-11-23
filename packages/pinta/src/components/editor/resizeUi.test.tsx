@@ -5,7 +5,7 @@
  * caminho é: botão com o tamanho de agora → formulário (o MESMO do assistente) →
  * um commit desfazível.
  */
-import { beforeEach, describe, expect, it } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { COPY } from '../../core/copy'
 import { clearIdbMock, setIdbWriteGuard } from '../../testing/idbMock'
@@ -17,6 +17,12 @@ const { createGalleryStore } = await import('../../state/galleryStore')
 beforeEach(() => {
   clearIdbMock()
   setPintaStorageNamespace('')
+})
+
+// O bloqueio de gravação é global no mock: o último teste o liga ("disco cheio") e, sem desligar
+// aqui, o arquivo seguinte do mesmo processo (no CI, o tilesetRemapUi) gravava sob ele e reprovava.
+afterEach(() => {
+  setIdbWriteGuard(null)
 })
 
 async function abrir(criar: (loja: ReturnType<typeof createGalleryStore>) => Promise<unknown>) {
