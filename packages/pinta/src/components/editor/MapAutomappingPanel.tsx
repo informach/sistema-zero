@@ -300,6 +300,7 @@ function AutomappingControls<Grid extends import('../../tiles/mapCellEdits').Aut
             <label key={l.id} className="flex min-h-11 items-center gap-2">
               <input
                 type="checkbox"
+                className="size-5 accent-pin-accent"
                 checked={chosen.includes(l.id)}
                 onChange={(e) =>
                   setChosen(
@@ -311,12 +312,13 @@ function AutomappingControls<Grid extends import('../../tiles/mapCellEdits').Aut
             </label>
           ))}
         </fieldset>
-        <label>
+        <label className="flex min-h-11 items-center gap-2">
           <input
             type="checkbox"
+            className="size-5 accent-pin-accent"
             checked={ignoreEmpty}
             onChange={(e) => setIgnoreEmpty(e.target.checked)}
-          />{' '}
+          />
           {COPY.automap.ignoreEmpty}
         </label>
         <label>
@@ -390,6 +392,7 @@ function AutomappingControls<Grid extends import('../../tiles/mapCellEdits').Aut
             <label className="flex min-h-11 items-center gap-2">
               <input
                 type="checkbox"
+                className="size-5 accent-pin-accent"
                 checked={armed}
                 onChange={(e) => {
                   cancel()
