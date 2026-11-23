@@ -17,7 +17,6 @@ import {
   tilemapNeedsV7,
 } from '../../../core/project'
 import { paintSelectionOverlay } from '../../../pixel/render'
-import { getPintaStorageNamespace } from '../../../state/persistence'
 import type { CellPos, CellRect } from '../../../tiles/cellGeometry'
 import { TileChunkCache } from '../../../tiles/chunks'
 import { mapCellBounds } from '../../../tiles/mapCells'
@@ -34,14 +33,7 @@ import { useWheelZoom } from '../useWheelZoom'
 import { keyboardCellBounds } from './keyboardPainting'
 import { paintMapCanvas } from './mapCanvas'
 import { createMapLayerActions } from './mapLayerActions'
-import {
-  isMapToolAvailable,
-  type MapLevel,
-  mapFeaturesFor,
-  mapFeaturesInUse,
-  readMapLevel,
-  writeMapLevel,
-} from './mapLevels'
+import { isMapToolAvailable, mapFeaturesFor, mapFeaturesInUse } from './mapLevels'
 import { createMapObjectActions } from './mapObjectActions'
 import { mapCellFromCanvas, mapPointFromPaper } from './mapViewport'
 import { createMapSelectionController, type MapSelection } from './selectionController'
@@ -50,6 +42,7 @@ import { type KeyboardMapPreview, useKeyboardPainting } from './useKeyboardPaint
 import { useLibraryPlacement } from './useLibraryPlacement'
 import { useMapAnimation } from './useMapAnimation'
 import { useMapKeyboard } from './useMapKeyboard'
+import { useMapLevel } from './useMapLevel'
 import type { MapModel } from './useMapModel'
 import { useMapSheets } from './useMapSheets'
 import { useObjectScatter } from './useObjectScatter'
@@ -79,11 +72,7 @@ export function useTilemapController(model: ReadyMapModel) {
 
   const [mapBrush, setMapBrush] = useState(DEFAULT_MAP_BRUSH)
   const [objectScatterSettings, setObjectScatterSettings] = useState(DEFAULT_OBJECT_SCATTER)
-  const [level, setLevelState] = useState<MapLevel>(() => readMapLevel(getPintaStorageNamespace()))
-  const setLevel = useCallback((next: MapLevel): void => {
-    setLevelState(next)
-    writeMapLevel(getPintaStorageNamespace(), next)
-  }, [])
+  const [level, setLevel] = useMapLevel()
   const [playtest, setPlaytest] = useState(false)
   const [activeLayerId, setActiveLayerId] = useState<string | null>(null)
   const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null)

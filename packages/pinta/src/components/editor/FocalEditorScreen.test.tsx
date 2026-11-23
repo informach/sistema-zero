@@ -1,5 +1,5 @@
 import { afterEach, expect, test } from 'bun:test'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { COPY } from '../../core/copy'
 import { createTilemapAsset, createTilesetAsset, isTileLayer } from '../../core/project'
 import type { LocalRegionAuthorSession } from '../../state/localRegionAuthorSession'
@@ -92,3 +92,29 @@ test('depois de uma mudança que falhou, o Avançado abre o cenário inteiro', a
     app.unmount()
   }
 }, 30_000)
+
+test('a janela focal segue o nível das ferramentas e o teclado do mapa comum', async () => {
+  const { app } = await openFocalWindow('focal-niveis-e-teclado')
+  try {
+    // "Começar" (o nível de um perfil novo): sem linha nem retângulo, como no mapa comum.
+    expect(screen.queryByRole('button', { name: COPY.tools.line })).toBeNull()
+    expect(screen.queryByRole('button', { name: COPY.tools.rect })).toBeNull()
+    expect(screen.getByRole('combobox', { name: COPY.layers.title }).className).toContain(
+      'min-h-11',
+    )
+    // A letra de uma ferramenta escondida pelo nível não a liga.
+    fireEvent.keyDown(window, { key: 'l' })
+    expect(screen.queryByRole('button', { name: COPY.tools.line })).toBeNull()
+    fireEvent.change(screen.getByRole('combobox', { name: COPY.scene.nivelDasFerramentas }), {
+      target: { value: 'create' },
+    })
+    const line = await screen.findByRole('button', { name: COPY.tools.line })
+    fireEvent.keyDown(window, { key: 'l' })
+    await waitFor(() => expect(line.getAttribute('aria-pressed')).toBe('true'))
+    // O balde não existe na janela focal: a letra dele não troca a ferramenta.
+    fireEvent.keyDown(window, { key: 'g' })
+    expect(line.getAttribute('aria-pressed')).toBe('true')
+  } finally {
+    app.unmount()
+  }
+})

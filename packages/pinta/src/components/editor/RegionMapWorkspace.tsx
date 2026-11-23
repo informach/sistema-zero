@@ -21,6 +21,7 @@ import { resolveMapTilesets } from '../../tiles/mapTilesets'
 import { expandRegionMap } from '../../tiles/regionMap'
 import { Panel } from '../ui/Panel'
 import { useToast } from '../ui/Toast'
+import { useToolCuration } from './editorContext'
 import { FocalRegionMapStage } from './FocalRegionMapStage'
 import { MapObjectPanel } from './MapObjectPanel'
 import { MapEditorObjectsOverlay } from './MapObjectsOverlay'
@@ -28,13 +29,16 @@ import { MapPaper } from './MapStage'
 import { MapStatusBar } from './MapStatusBar'
 import { DEFAULT_MAP_BRUSH, MapBrushPanel } from './MapTerrainPanel'
 import { paintMapCanvas } from './mapTools/mapCanvas'
+import { mapFeaturesFor } from './mapTools/mapLevels'
 import { createMapObjectActions } from './mapTools/mapObjectActions'
 import { mapCellFromCanvas } from './mapTools/mapViewport'
 import { createMapTileGestures, type PanGesture, type TileGesture } from './mapTools/tileGestures'
 import { useMapAnimation } from './mapTools/useMapAnimation'
+import { useMapKeyboard } from './mapTools/useMapKeyboard'
+import { useMapLevel } from './mapTools/useMapLevel'
 import { useMapSheets } from './mapTools/useMapSheets'
 import { stageCursor } from './stageCursor'
-import { type MapTool, TilemapToolbar } from './TilemapPanels'
+import { MAP_SELECT_CLASS, MapLevelSelect, type MapTool, TilemapToolbar } from './TilemapPanels'
 import { TilePicker } from './TilePicker'
 import { useMediaQuery } from './useMediaQuery'
 import { SessionZoomControls } from './ZoomControls'
@@ -98,6 +102,10 @@ function RegionalMapStage({
   const autoExpand = useStore(session, (state) => state.autoExpand)
   const activeLayer = useStore(session, (state) => state.layerId)
   const linked = useStore(editor, (state) => state.linkedAssets)
+  // Os três níveis e a curadoria da aula valem aqui como no mapa comum.
+  const [level, setLevel] = useMapLevel()
+  const allowTools = useToolCuration()
+  const features = mapFeaturesFor(level)
   const [brush, setBrush] = useState(DEFAULT_MAP_BRUSH)
   const [collision, setCollision] = useState(false)
   const [snap, setSnap] = useState(true)
@@ -111,6 +119,9 @@ function RegionalMapStage({
   const pan = useRef<PanGesture | null>(null)
   const previewCells = useRef<CellPos[]>([])
   const hover = useRef<(position: CellPos | null) => void>(() => {})
+  const noSelection = useRef(() => {})
+  const deleteObject = useRef<() => boolean>(() => false)
+  const cancelGesture = useRef<() => boolean>(() => false)
   const time = useRef(0)
   const cache = useMemo(() => new TileChunkCache(), [])
   const catalog = useMemo(() => {
@@ -281,6 +292,19 @@ function RegionalMapStage({
       },
     },
   )
+  deleteObject.current = () => objects.deleteSelected()
+  cancelGesture.current = () => gestures.cancel()
+  useMapKeyboard({
+    session,
+    mode: objectLayer ? 'objects' : 'tiles',
+    level,
+    allowTools,
+    availableTools: MAP_TOOLS,
+    hasSelection: () => false,
+    deleteSelectionRef: noSelection,
+    deleteObjectRef: deleteObject,
+    cancelGestureRef: cancelGesture,
+  })
   const selectTool = useCallback((tool: MapTool) => session.getState().setTool(tool), [session])
   if (!primary)
     return <div className="p-8 text-center text-pin-muted">{COPY.tiles.missingTileset}</div>
@@ -289,6 +313,7 @@ function RegionalMapStage({
       <div className="flex min-h-0 flex-1 flex-col items-stretch md:flex-row">
         <TilemapToolbar
           orientation={wide ? 'vertical' : 'horizontal'}
+          level={level}
           availableTools={MAP_TOOLS}
           tool={tool}
           mode={objectLayer ? 'objects' : 'tiles'}
@@ -345,9 +370,13 @@ function RegionalMapStage({
           </MapPaper>
         </div>
         <aside className="max-h-72 w-full shrink-0 overflow-y-auto bg-pin-surface md:max-h-none md:w-64">
+          <Panel title={COPY.scene.criarDoMeuJeito}>
+            <MapLevelSelect level={level} onChange={setLevel} />
+          </Panel>
           <Panel title={COPY.layers.title}>
             <select
               aria-label={COPY.layers.title}
+              className={MAP_SELECT_CLASS}
               value={layer?.id ?? ''}
               onChange={(event) => {
                 gestures.cancel()
@@ -367,7 +396,7 @@ function RegionalMapStage({
                 ))}
             </select>
           </Panel>
-          {map.schema === 9 && map.automapping ? (
+          {level === 'advanced' && map.schema === 9 && map.automapping ? (
             <Suspense fallback={null}>
               <RegionalRules
                 map={map}
@@ -409,7 +438,7 @@ function RegionalMapStage({
                 settings={brush}
                 onChange={setBrush}
                 session={session}
-                show={{ animation: false, terrain: true, scatter: true }}
+                show={{ animation: false, terrain: features.terrain, scatter: features.scatter }}
                 saveTileset={
                   embeddedTilesetOf(map, tileset.id)
                     ? undefined

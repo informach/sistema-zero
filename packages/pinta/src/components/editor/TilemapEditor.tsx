@@ -22,23 +22,16 @@ import { MapPlaytestDialog } from './MapPlaytestDialog'
 import { MapStage } from './MapStage'
 import { MapStatusBar } from './MapStatusBar'
 import { MapTerrainPanel } from './MapTerrainPanel'
-import { isMapLevel, MAP_LEVELS, type MapLevel } from './mapTools/mapLevels'
 import { useMapModel } from './mapTools/useMapModel'
 import { type ReadyMapModel, useTilemapController } from './mapTools/useTilemapController'
 import { RegionMapWorkspace, type RegionMapWorkspaceProps } from './RegionMapWorkspace'
-import { TilemapSidebar, TilemapToolbar } from './TilemapPanels'
+import { MapLevelSelect, TilemapSidebar, TilemapToolbar } from './TilemapPanels'
 import { useMediaQuery } from './useMediaQuery'
 import { ZoomControls } from './ZoomControls'
 
 const MapAutomappingPanel = lazy(async () => ({
   default: (await import('./MapAutomappingPanel')).MapAutomappingPanel,
 }))
-
-const LEVEL_LABEL: Record<MapLevel, string> = {
-  start: COPY.scene.comecar,
-  create: COPY.scene.criarMais,
-  advanced: COPY.scene.avancado,
-}
 
 export function TilemapEditor({
   setEditor = false,
@@ -78,20 +71,7 @@ function TilemapWorkspace({
 
   const levelPanel = (
     <Panel title={COPY.scene.criarDoMeuJeito}>
-      <select
-        aria-label={COPY.scene.nivelDasFerramentas}
-        className="min-h-11 w-full rounded-xl border-2 border-pin-border bg-pin-surface px-2 text-sm"
-        value={c.level}
-        onChange={(e) => {
-          if (isMapLevel(e.target.value)) c.setLevel(e.target.value)
-        }}
-      >
-        {MAP_LEVELS.map((level) => (
-          <option key={level} value={level}>
-            {LEVEL_LABEL[level]}
-          </option>
-        ))}
-      </select>
+      <MapLevelSelect level={c.level} onChange={c.setLevel} />
       {c.level === 'advanced' || tilemap.physics === 'precise' || c.physicsRequiredByObjects ? (
         <label
           className="mt-2 flex min-h-11 items-center gap-2 text-sm text-pin-text"

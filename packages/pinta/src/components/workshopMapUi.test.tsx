@@ -20,6 +20,10 @@ test('a oficina abre mapa regional com regras pelo cartão, salva, desfaz e reab
   const app = render(<PintaApp persistence={local} />)
   try {
     fireEvent.click(await screen.findByRole('button', { name: /Abrir mapa/i }))
+    // As regras por exemplo são do nível "Avançado", como no mapa comum.
+    const level = await screen.findByRole('combobox', { name: COPY.scene.nivelDasFerramentas })
+    expect(screen.queryByRole('button', { name: COPY.automap.seed })).toBeNull()
+    fireEvent.change(level, { target: { value: 'advanced' } })
     const reroll = await screen.findByRole('button', { name: COPY.automap.seed })
     await waitFor(() =>
       expect(

@@ -31,7 +31,9 @@ import { useToolCuration } from './editorContext'
 import { MapLayerPanel } from './MapLayerPanel'
 import {
   ALL_MAP_FEATURES,
+  isMapLevel,
   isToolInLevel,
+  MAP_LEVELS,
   type MapFeatures,
   type MapLevel,
 } from './mapTools/mapLevels'
@@ -139,6 +141,42 @@ interface TilemapToolbarProps {
   onToggleCollision: () => void
   onToggleSnapObjects?: () => void
 }
+
+const LEVEL_LABEL: Record<MapLevel, string> = {
+  start: COPY.scene.comecar,
+  create: COPY.scene.criarMais,
+  advanced: COPY.scene.avancado,
+}
+
+/** A escolha do nível ("Começar", "Criar mais", "Avançado"): a mesma em todo editor de mapa. */
+export function MapLevelSelect({
+  level,
+  onChange,
+}: {
+  level: MapLevel
+  onChange: (level: MapLevel) => void
+}): JSX.Element {
+  return (
+    <select
+      aria-label={COPY.scene.nivelDasFerramentas}
+      className={MAP_SELECT_CLASS}
+      value={level}
+      onChange={(e) => {
+        if (isMapLevel(e.target.value)) onChange(e.target.value)
+      }}
+    >
+      {MAP_LEVELS.map((option) => (
+        <option key={option} value={option}>
+          {LEVEL_LABEL[option]}
+        </option>
+      ))}
+    </select>
+  )
+}
+
+/** A caixa de escolha dos painéis do mapa: 44px de altura, como os outros alvos de toque. */
+export const MAP_SELECT_CLASS =
+  'min-h-11 w-full rounded-xl border-2 border-pin-border bg-pin-surface px-2 text-sm'
 
 export function TilemapToolbar({
   orientation = 'vertical',

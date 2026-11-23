@@ -21,16 +21,20 @@ import { REGION_EDIT_LIMIT } from '../../tiles/regionCells'
 import { Button } from '../ui/Button'
 import { Panel } from '../ui/Panel'
 import { useToast } from '../ui/Toast'
+import { useToolCuration } from './editorContext'
 import { FocalRegionObjectsPreview } from './MapObjectsOverlay'
 import { MapPaper } from './MapStage'
 import { MapStatusBar } from './MapStatusBar'
 import { DEFAULT_MAP_BRUSH, MapBrushPanel } from './MapTerrainPanel'
+import { mapFeaturesFor } from './mapTools/mapLevels'
 import { mapCellFromCanvas } from './mapTools/mapViewport'
 import type { PanGesture } from './mapTools/tileGestures'
 import { useMapAnimation } from './mapTools/useMapAnimation'
+import { useMapKeyboard } from './mapTools/useMapKeyboard'
+import { useMapLevel } from './mapTools/useMapLevel'
 import { useMapSheets } from './mapTools/useMapSheets'
 import { stageCursor } from './stageCursor'
-import { type MapTool, TilemapToolbar } from './TilemapPanels'
+import { MAP_SELECT_CLASS, MapLevelSelect, type MapTool, TilemapToolbar } from './TilemapPanels'
 import { TilePicker } from './TilePicker'
 import { useMediaQuery } from './useMediaQuery'
 import { SessionZoomControls } from './ZoomControls'
@@ -55,6 +59,10 @@ export function FocalRegionMapStage({
   const stamp = useStore(session, (state) => state.stamp)
   const tile = useStore(session, (state) => state.frameIndex)
   const active = useStore(session, (state) => state.layerId)
+  // Os três níveis e a curadoria da aula valem aqui como no mapa comum.
+  const [level, setLevel] = useMapLevel()
+  const allowTools = useToolCuration()
+  const features = mapFeaturesFor(level)
   const [brush, setBrush] = useState(DEFAULT_MAP_BRUSH)
   const [collision, setCollision] = useState(false)
   const [moving, setMoving] = useState(false)
@@ -66,6 +74,9 @@ export function FocalRegionMapStage({
   const stroke = useRef<Stroke | null>(null)
   const pan = useRef<PanGesture | null>(null)
   const hover = useRef<(at: CellPos | null) => void>(() => {})
+  const noSelection = useRef(() => {})
+  const noObjects = useRef(() => false)
+  const cancelGesture = useRef<() => boolean>(() => false)
   const fetchView = useRef<AbortController | null>(null)
   const viewport = useRef<{ bounds: MapViewport; revision: string } | null>(null)
   const windowView = useRef<NonNullable<Awaited<ReturnType<typeof focal.viewport>>> | null>(null)
@@ -268,11 +279,31 @@ export function FocalRegionMapStage({
     stopHand(event.pointerId)
     if (stroke.current?.pointerId === event.pointerId) stroke.current = null
   }
+  // Esc solta a pincelada ou o arrasto da mão sem gravar nada.
+  cancelGesture.current = () => {
+    const hand = pan.current
+    if (hand) stopHand(hand.pointerId)
+    if (!stroke.current) return hand !== null
+    stroke.current = null
+    return true
+  }
+  useMapKeyboard({
+    session,
+    mode: 'tiles',
+    level,
+    allowTools,
+    availableTools: TOOLS,
+    hasSelection: () => false,
+    deleteSelectionRef: noSelection,
+    deleteObjectRef: noObjects,
+    cancelGestureRef: cancelGesture,
+  })
   return (
     <div className="pin-work flex min-h-0 flex-1 flex-col">
       <div className="flex min-h-0 flex-1 flex-col items-stretch md:flex-row">
         <TilemapToolbar
           orientation={wide ? 'vertical' : 'horizontal'}
+          level={level}
           availableTools={TOOLS}
           tool={tool}
           mode="tiles"
@@ -329,9 +360,13 @@ export function FocalRegionMapStage({
           ) : null}
         </div>
         <aside className="max-h-72 w-full shrink-0 overflow-y-auto bg-pin-surface md:max-h-none md:w-64">
+          <Panel title={COPY.scene.criarDoMeuJeito}>
+            <MapLevelSelect level={level} onChange={setLevel} />
+          </Panel>
           <Panel title={COPY.layers.title}>
             <select
               aria-label={COPY.layers.title}
+              className={MAP_SELECT_CLASS}
               value={layer?.id ?? ''}
               onChange={(event) => {
                 stroke.current = null
@@ -366,7 +401,7 @@ export function FocalRegionMapStage({
                 settings={brush}
                 onChange={setBrush}
                 session={session}
-                show={{ animation: false, terrain: true, scatter: true }}
+                show={{ animation: false, terrain: features.terrain, scatter: features.scatter }}
               />
             </>
           ) : null}
