@@ -13,9 +13,7 @@ etapas de produção.
 A aula 1 ensina o conceito novo: vídeo da senha do cadeado, a experiência **A ordem dos símbolos**
 (cena `symbol-sequence`, com o passo à vista e o modo "só contando" para comparar) e três montagens
 guiadas por completo no vídeo (o sol começa, a lua pergunta a vez com Se e senão e a estrela abre o
-baú), um quiz de quatro perguntas e a entrega. A aula 2 é a transferência: o vídeo lembra a regra e
-a montagem completa da ilha fica no Passo a passo do projeto; duas montagens, um quiz de duas
-perguntas e a entrega.
+baú), a última delas envia o projeto, e um quiz de quatro perguntas fecha a aula. A aula 2 leva a regra para a ilha 3D: o vídeo lembra a Aula 1 e monta tudo de novo, com três (o sol, a lua e a estrela) montagens (a última envia) e um quiz de duas perguntas no fim.
 
 Nenhum bloco novo: a ordem usa uma variável de número e a comparação `=` de Programação
 (`sz_val_compare`, que já vem dentro do Se), iguais nos dois jogos. O baú é o das Moedas.

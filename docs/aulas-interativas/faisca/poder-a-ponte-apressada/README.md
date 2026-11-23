@@ -12,9 +12,7 @@ disponíveis. Gravação, escuta de voz e publicação ainda são etapas de prod
 A aula 1 ensina o conceito novo: vídeo do botão do semáforo, a experiência **A ponte apressada**
 (cena `timed-bridge`, com o tempo andando um segundo por clique) e três montagens guiadas por
 completo no vídeo (a alavanca baixa a ponte, a ponte sobe sozinha com o "depois de 4 segundos" e a
-travessia com Se e senão), um quiz de quatro perguntas e a entrega. A aula 2 é a transferência: o
-vídeo lembra a regra e a montagem completa da ilha fica no Passo a passo do projeto; duas montagens,
-um quiz de duas perguntas e a entrega.
+travessia com Se e senão), a última delas envia o projeto, e um quiz de quatro perguntas fecha a aula. A aula 2 leva a regra para a ilha 3D: o vídeo lembra a Aula 1 e monta tudo de novo, com duas montagens (a última envia) e um quiz de duas perguntas no fim.
 
 Nenhum bloco novo: o tempo usa o "depois de N segundos" de Programação → Repetições
 (`sz_js_set_timeout_seconds`), que é do iniciante e igual nos dois jogos.

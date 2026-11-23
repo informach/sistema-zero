@@ -11,9 +11,7 @@ produção.
 
 A aula 1 ensina o conceito novo: vídeo da bicicleta e do capacete, a experiência **A porta com duas
 peças** (cena `two-pieces`) e duas montagens guiadas por completo no vídeo (guardar o emblema, como
-a chave do Farol, e a pergunta da cabana com o bloco **e**), um quiz de quatro perguntas e a
-entrega. A aula 2 é a transferência: o vídeo lembra a regra e a montagem completa da ilha fica no
-Passo a passo do projeto; duas montagens, um quiz de duas perguntas e a entrega.
+a chave do Farol, e a pergunta da cabana com o bloco **e**), a última delas envia o projeto, e um quiz de quatro perguntas fecha a aula. A aula 2 leva a regra para a ilha 3D: o vídeo lembra a Aula 1 e monta tudo de novo, com duas montagens (a última envia) e um quiz de duas perguntas no fim.
 
 Nenhum bloco novo: a pergunta usa o bloco **e / ou** (`sz_val_logic`, Programação → Lógica e Se),
 que já é do iniciante nos dois jogos.

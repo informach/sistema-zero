@@ -10,9 +10,7 @@ são etapas de produção.
 
 A aula 1 ensina o conceito novo: vídeo do cofrinho, a experiência **O contador de moedas** (cena
 `coin-counter`) e quatro montagens guiadas por completo no vídeo (o contador, a coleta com o evento
-de grupo, o placar e o baú com Se/senão e "maior ou igual"), um quiz de quatro perguntas e a entrega.
-A aula 2 é a transferência: o vídeo lembra a regra e a montagem completa da ilha fica no Passo a
-passo do projeto; três montagens, um quiz de duas perguntas e a entrega.
+de grupo, o placar e o baú com Se/senão e "maior ou igual"), a última delas envia o projeto, e um quiz de quatro perguntas fecha a aula. A aula 2 leva a regra para a ilha 3D: o vídeo lembra a Aula 1 e monta tudo de novo, com três montagens (a última envia) e um quiz de duas perguntas no fim.
 
 ## A experiência na moldura nova (08/11/2026)
 

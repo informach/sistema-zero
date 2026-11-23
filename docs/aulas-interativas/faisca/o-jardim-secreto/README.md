@@ -10,7 +10,7 @@ A missão exige os conhecimentos investigados nas experiências e os blocos que 
 - [Posto Faísca](../README.md).
 - [Contrato da jornada](../../../jornada-do-criador.md).
 
-As montagens estão distribuídas em oito partes na aula 2D e sete na 3D, com objetivos por etapa e uma entrega por aula. O quiz cobre memória, escolha de teste, ponto de vista e altura. Reiniciar a partida preserva os blocos e a posição escolhida. Se o personagem não chega ao alvo, o executor informa que o teste não terminou; isso pede conferir movimento e acesso antes de diagnosticar a regra da flor.
+As montagens estão distribuídas em sete partes na aula 2D e seis na 3D, com objetivos por etapa; a última montagem de cada aula envia o projeto, e o quiz fecha a aula 3D. O quiz cobre memória, escolha de teste, ponto de vista e altura. Reiniciar a partida preserva os blocos e a posição escolhida. Se o personagem não chega ao alvo, o executor informa que o teste não terminou; isso pede conferir movimento e acesso antes de diagnosticar a regra da flor.
 
 ## Arquivos de produção
 
