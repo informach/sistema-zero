@@ -105,6 +105,7 @@ import {
   PALETTE_LIBRARY_KEY,
 } from './localPaletteAccount'
 import type { LocalRegionAuthorSession } from './localRegionAuthorSession'
+import type { LocalRegionCausalBinding } from './localRegionEditing'
 import type { RegionGalleryIndex } from './regionGalleryIndex'
 
 export {
@@ -438,7 +439,15 @@ export interface PintaPersistence<Asset extends PintaWorkshopAsset = PintaAsset>
     asset: Asset,
     resources: readonly PintaResourceObservation[],
   ): Promise<void>
-  openRegionSession?(id: string, signal?: AbortSignal): Promise<LocalRegionAuthorSession | null>
+  /**
+   * The focal window of a large map. `causal`: the account writer's binding, so the gesture's
+   * chunks and its V4 unit commit together (see `LocalRegionCausalBinding`).
+   */
+  openRegionSession?(
+    id: string,
+    signal?: AbortSignal,
+    causal?: LocalRegionCausalBinding,
+  ): Promise<LocalRegionAuthorSession | null>
   listGalleryIndex?(): Promise<RegionGalleryIndex | null>
   deleteAsset(id: string, base?: Asset): Promise<void>
   loadAssetById(id: string): Promise<Asset | null>

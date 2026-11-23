@@ -3,14 +3,23 @@ import { act, fireEvent, render, screen, waitFor, within } from '@testing-librar
 import { strToU8, zipSync } from 'fflate'
 import { missionSessionFixture } from '../../../ui/tests/mission-fixture'
 import { COPY } from '../core/copy'
-import { createPixelBackgroundAsset } from '../core/project'
+import {
+  createPixelBackgroundAsset,
+  createTilemapAsset,
+  createTilesetAsset,
+  isTileLayer,
+} from '../core/project'
 import type { PintaTaskSession } from '../core/types'
 import { galleryToPintaJson } from '../export/projectJson'
-import { clearIdbMock } from '../testing/idbMock'
+import { clearIdbMock, setIdbMockCodec } from '../testing/idbMock'
+import { prepareMapRegions } from '../tiles/regionMap'
+import { setCell } from '../tiles/tilemapOps'
+import { addTile } from '../tiles/tilesetOps'
 
 const { PintaApp } = await import('./PintaApp')
 const { createPintaPersistence, setPintaStorageNamespace } = await import('../state/persistence')
 const { createGalleryStore } = await import('../state/galleryStore')
+const { createWorkshopPintaPersistence } = await import('../state/workshopPersistence')
 
 beforeEach(() => {
   clearIdbMock()
@@ -64,6 +73,45 @@ describe('PintaApp — galeria', () => {
     expect(closed).toEqual(['terra', 'ceu'])
     expect(screen.getByRole('button', { name: /Abrir terra/ })).toBeTruthy()
   })
+
+  it('a janela focal segura a reserva da conta até a criança voltar, inclusive no Avançado', async () => {
+    const namespace = 'focal-reserva'
+    setPintaStorageNamespace(namespace)
+    setIdbMockCodec(true)
+    const workshop = createWorkshopPintaPersistence({ namespace })
+    const sheet = addTile(createTilesetAsset({ name: 'folha', tileSize: 16 }), 0)
+    const converted = prepareMapRegions(
+      createTilemapAsset({ name: 'vila', tilesetId: sheet.id, cols: 2, rows: 2 }),
+    )
+    if (!converted.ok) throw Error(converted.reason)
+    const layer = converted.map.layers.find(isTileLayer)
+    if (!layer) throw Error('Camada de peças ausente')
+    const map = setCell(converted.map, layer.id, 1, 1, 1)
+    await workshop.persistAssets([sheet, map])
+    const events: string[] = []
+    render(
+      <PintaApp
+        persistence={{
+          ...workshop,
+          holdOpen: async (id) => {
+            events.push(`reserva:${id}`)
+            return () => events.push(`solta:${id}`)
+          },
+        }}
+      />,
+    )
+    fireEvent.click(await screen.findByRole('button', { name: /Abrir vila/ }))
+    const advanced = await screen.findByRole('button', { name: COPY.scene.avancado })
+    expect(events).toEqual([`reserva:${map.id}`])
+    // O mesmo cenário segue aberto no editor inteiro: a reserva passa para ele, sem soltar.
+    fireEvent.click(advanced)
+    await waitFor(() =>
+      expect(screen.queryByRole('button', { name: COPY.scene.avancado })).toBeNull(),
+    )
+    expect(events).toEqual([`reserva:${map.id}`])
+    fireEvent.click(await screen.findByRole('button', { name: COPY.editor.back }))
+    await waitFor(() => expect(events).toEqual([`reserva:${map.id}`, `solta:${map.id}`]))
+  }, 30_000)
 
   it('aplica o tema no root (default light; host pode fixar dark)', async () => {
     const { container, unmount } = render(<PintaApp />)

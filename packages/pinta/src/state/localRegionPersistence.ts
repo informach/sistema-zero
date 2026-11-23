@@ -58,7 +58,8 @@ export function createRegionPintaPersistence(
   return {
     ...local,
     observesReferences: true,
-    openRegionSession: (id, signal) => openLocalRegionAuthorSession(namespace, id, signal),
+    openRegionSession: (id, signal, causal) =>
+      openLocalRegionAuthorSession(namespace, id, signal, causal),
     async persistRevision(previous, asset, resources) {
       if (
         isLocalRegionAsset(previous) &&

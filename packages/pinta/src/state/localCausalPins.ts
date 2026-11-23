@@ -3,9 +3,7 @@ import {
   pintaCausalEpochSchema,
   pintaCausalRevisionSchema,
 } from '@sistemazero/core/creations/pinta-causal'
-import type { PintaWorkshopAsset } from '../core/assetMemory'
 import { PintaLocalStorageError } from '../core/localStorageErrors'
-import type { LocalSnapshot } from './localAssetAuthority'
 import type { LocalCausalState, PintaCandidateBytes, PintaPreparedPut } from './localCausalOutbox'
 
 export const PINTA_CAUSAL_PIN_BLOBS_KEY = 'pinta:sync:observed-resources'
@@ -23,6 +21,15 @@ export interface PintaPinDraft {
 }
 
 export type LocalPins = Map<string, readonly PintaPinnedPut[]>
+
+/**
+ * What a causal stage reads of the documents its writer left in the transaction: each member's new
+ * revision and, for a pin, that the observed resource still has that revision with a body. A full
+ * snapshot satisfies it; the focal writer passes its directories without decoding chunks.
+ */
+export interface LocalCausalDocuments {
+  documents: ReadonlyMap<string, { revision: string; asset: unknown }>
+}
 
 function invalid(): never {
   throw new PintaLocalStorageError('Não consegui conferir as peças da versão guardada.')
@@ -95,9 +102,9 @@ export function readPinnedCandidate(
   return { puts: pins.map(({ put }) => put), blobs }
 }
 
-export function retainPinnedWrites<Asset extends PintaWorkshopAsset>(
+export function retainPinnedWrites(
   records: Map<string, unknown>,
-  snapshot: LocalSnapshot<Asset>,
+  snapshot: LocalCausalDocuments,
   state: LocalCausalState,
   opId: string,
   draft: PintaPinDraft,

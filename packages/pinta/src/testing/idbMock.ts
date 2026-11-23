@@ -6,6 +6,11 @@
  */
 import { mock } from 'bun:test'
 import { isLocalAssetInventoryKey } from '../state/assetAuthorityKeys'
+import {
+  type LocalStorageCodec,
+  localDenseStorageCodec,
+  planLocalStorageWrites,
+} from '../state/localChunkStorage'
 
 type KV = Map<IDBValidKey, unknown>
 
@@ -28,6 +33,17 @@ function serialized<T>(kv: KV, task: () => Promise<T>): Promise<T> {
 // falha (simula disco cheio/quota p/ testar caminhos de erro). Default no-op.
 let writeGuard: ((key: IDBValidKey, value: unknown) => void | Promise<void>) | null = null
 let readGuard: ((key: IDBValidKey, database: string) => void | Promise<void>) | null = null
+
+/**
+ * Off by default: the mock keeps logical documents, as the existing tests expect. On, a transaction
+ * that receives a storage codec reads, decodes and writes through it exactly like
+ * `transactAssetRecords`, so the disk holds the physical records of the real IndexedDB (chunked
+ * regional directories), and full reads and focal writes meet the same bytes.
+ */
+let physicalCodec = false
+export function setIdbMockCodec(enabled: boolean): void {
+  physicalCodec = enabled
+}
 
 /** Pauses a captured read to exercise profile changes between dependent reads. */
 export function setIdbReadGuard(guard: typeof readGuard): void {
@@ -124,29 +140,61 @@ async function withMockAssetTransaction<T>(
   store: { name?: string },
   plan: (records: Map<string, unknown>) => T,
   select?: (records: ReadonlyMap<string, unknown>) => readonly string[] | null,
-  _codec?: unknown,
+  requestedCodec?: LocalStorageCodec | null,
   inspectKeys?: (keys: readonly string[], allKeys: readonly IDBValidKey[]) => void,
 ): Promise<T> {
   const kv = resolveKV(store)
+  // The real boundary defaults a missing codec to the dense one; `null` means raw records.
+  const codec =
+    physicalCodec && requestedCodec !== null
+      ? (requestedCodec ?? localDenseStorageCodec)
+      : undefined
   return serialized(kv, async () => {
     stats.atomic++
     const records = new Map<string, unknown>()
+    const physical = new Map<string, unknown>()
+    const decoded = new Set<string>()
     const source = structuredClone(kv)
     inspectKeys?.([...source.keys()].filter(isLocalAssetInventoryKey), [...source.keys()])
     const visited = new Set<string>()
+    const read = async (key: string) => {
+      visited.add(key)
+      const value = structuredClone(source.get(key))
+      records.set(key, value)
+      if (codec) physical.set(key, value)
+      stats.atomicKeys++
+      await readGuard?.(key, store.name ?? '')
+    }
     while (true) {
+      if (codec) {
+        const chunks = [...records].flatMap(([key, value]) =>
+          decoded.has(key) ? [] : codec.keys(key, value),
+        )
+        const missing = [...new Set(chunks)].filter((key) => !visited.has(key))
+        if (missing.length) {
+          for (const key of missing) await read(key)
+          continue
+        }
+        for (const [key, value] of records)
+          if (!decoded.has(key)) {
+            records.set(key, codec.decode(key, value, records))
+            decoded.add(key)
+          }
+      }
       const keys = select?.(records) ?? [...source.keys()].filter(isLocalAssetInventoryKey)
       const pending = keys.filter((key) => !visited.has(key))
       if (!pending.length) break
-      for (const key of pending) {
-        visited.add(key)
-        records.set(key, structuredClone(source.get(key)))
-        stats.atomicKeys++
-        await readGuard?.(key, store.name ?? '')
-      }
+      for (const key of pending) await read(key)
     }
     const before = new Map(records)
     const result = plan(records)
+    if (codec) {
+      const writes = planLocalStorageWrites(before, records, physical, codec)
+      for (const [key, value] of writes.puts) await writeGuard?.(key, value)
+      for (const key of writes.deletes) kv.delete(key)
+      for (const [key, value] of writes.puts) kv.set(key, structuredClone(value))
+      return result
+    }
     for (const [key, value] of records)
       if (value !== before.get(key)) await writeGuard?.(key, value)
     for (const key of before.keys()) if (!records.has(key)) kv.delete(key)
@@ -169,6 +217,7 @@ mock.module('../state/assetAuthorityDb', () => ({
 /** Zera TODOS os "DBs" (chamar no beforeEach). */
 export function clearIdbMock(): void {
   dbs.clear()
+  physicalCodec = false
   writeGuard = null
   readGuard = null
   resetIdbMockStats()

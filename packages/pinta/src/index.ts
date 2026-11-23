@@ -33,6 +33,9 @@ export type {
 } from './core/types'
 export { holdPintaEditorLock, withClosedPintaEditors } from './state/causalEditorLocks'
 export type { PintaEditorWriteContext } from './state/editorStore'
+/** A janela focal de um cenário grande e a ligação dela com a fila causal da conta. */
+export type { LocalRegionAuthorSession } from './state/localRegionAuthorSession'
+export type { LocalRegionCausalBinding, LocalRegionCausalUnit } from './state/localRegionEditing'
 /** A biblioteca do perfil também é usada pelo Molda através do host. */
 export { createPaletteLibraryStore, type PaletteLibraryStore } from './state/paletteLibraryStore'
 export {

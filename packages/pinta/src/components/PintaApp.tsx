@@ -158,10 +158,12 @@ export function PintaApp({
     const resolved = persistence ?? createPintaPersistence()
     return {
       persistence: resolved,
+      // A trava de conta (`holdOpen`) não fecha a janela focal: a sessão a segura até fechar, e o
+      // armazenamento da conta só oferece a sessão ligada à fila causal. As pontes ainda pedem o
+      // documento inteiro.
       gallery: createGalleryStore(resolved, {
         focalGallery: Boolean(
           resolved.openRegionSession &&
-            !resolved.holdOpen &&
             !adapter?.taskSession &&
             !adapter?.onChange &&
             !adapter?.allowTools?.length &&
@@ -304,8 +306,11 @@ export function PintaApp({
               return
             }
             if (focal) {
+              releaseEditor.current?.()
               focused.current?.close()
               focused.current = focal
+              // A trava da conta acompanha a janela: a descida não grava sob o cenário aberto.
+              releaseEditor.current = release ?? null
               setView({ ...nextView, focal })
               return
             }
@@ -370,7 +375,11 @@ export function PintaApp({
       throw Error(COPY.scene.gestureChanged)
     gallery.getState().absorbMany(catalog)
     restoreGalleryIndex.current = true
+    // O mesmo cenário segue aberto no editor inteiro: a trava da conta passa para ele.
+    const hold = releaseEditor.current
+    releaseEditor.current = null
     retireOpen()
+    releaseEditor.current = hold
     releaseGalleryIndex.current = gallery.getState().holdFullInventory()
     setView({ screen: 'editor', assetId: asset.id })
   }

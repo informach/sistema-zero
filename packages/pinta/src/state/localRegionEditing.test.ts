@@ -1,4 +1,5 @@
 import { beforeEach, expect, test } from 'bun:test'
+import { DEFAULT_MAP_BRUSH } from '../components/editor/MapTerrainPanel'
 import { pintaLocalRevisionOf, pintaResourceObservation } from '../core/localAssetOrigin'
 import {
   createTilemapAsset,
@@ -11,17 +12,20 @@ import {
   idbMockDb,
   idbMockStats,
   resetIdbMockStats,
+  setIdbMockCodec,
   setIdbWriteGuard,
 } from '../testing/idbMock'
 import { expandRegionMap, prepareMapRegions } from '../tiles/regionMap'
 import { cellAt, setCell } from '../tiles/tilemapOps'
+import { addTile } from '../tiles/tilesetOps'
 import { PINTA_CAUSAL_OUTBOX_KEY } from './assetAuthorityKeys'
 import { authorityKey, LOCAL_ASSET_PREFIX, mirrorKey } from './localAssetAuthority'
-import { localPreparedKey, PINTA_CAUSAL_BLOBS_KEY } from './localCausalOutbox'
+import { localPreparedKey, PINTA_CAUSAL_BLOBS_KEY, readLocalCausalState } from './localCausalOutbox'
 import { PINTA_CAUSAL_PIN_BLOBS_KEY } from './localCausalPins'
 import { isLocalRegionAsset } from './localRegionAssetAuthority'
+import { openLocalRegionAuthorSession } from './localRegionAuthorSession'
 import { localRegionChunkKey } from './localRegionChunkStorage'
-import { readLocalRegionEditBase } from './localRegionEditing'
+import { type LocalRegionCausalBinding, readLocalRegionEditBase } from './localRegionEditing'
 import { createRegionPintaPersistence } from './localRegionPersistence'
 import { dbNameFor, setPintaStorageNamespace } from './persistence'
 import { createWorkshopPintaPersistence, sanitizeWorkshopAsset } from './workshopPersistence'
@@ -250,4 +254,114 @@ test('uma falha real na gravação incremental chega ao editor, sem gravação i
   expect(idbMockStats().atomic).toBe(1)
   expect(db.get(chunk(1, 0))).toBe(before.get(chunk(1, 0)))
   expect(cellAt(readPhysicalMap(db, id), layerId, 5, 5)).toBe(7)
+})
+
+/**
+ * A ligação mínima da conta: a fila V4 lida na transação do gesto recebe o mapa como membro único e
+ * coalesce na mesma unidade mutável. As arestas e os pins da conta são provados no member-shell.
+ */
+function accountBinding(opId: string): LocalRegionCausalBinding {
+  return {
+    unit: (state, change) => ({
+      opId,
+      baseEpoch: '7',
+      readSet: [],
+      replaces: state.pending
+        .filter((unit) => unit.members.some((member) => member.itemId === change.id))
+        .map((unit) => ({ opId: unit.opId, preparation: unit.preparation })),
+      member: { baseRevision: 1, operation: { type: 'update' } },
+    }),
+  }
+}
+
+test('pela conta, o gesto focal grava os chunks e a unidade V4 juntos; uma falha no PUT da fila não deixa nenhum dos dois', async () => {
+  const namespace = 'regiao-conta'
+  setPintaStorageNamespace(namespace)
+  setIdbMockCodec(true)
+  const persistence = createWorkshopPintaPersistence({ namespace, guardCausalWrites: true })
+  const sheet = addTile(createTilesetAsset({ name: 'folha', tileSize: 16 }), 0)
+  const converted = prepareMapRegions(
+    createTilemapAsset({ name: 'vila', tilesetId: sheet.id, cols: 2, rows: 2 }),
+  )
+  if (!converted.ok) throw Error(converted.reason)
+  const expanded = expandRegionMap(converted.map, { col: -64, row: -64, cols: 160, rows: 96 })
+  if (!expanded.ok) throw Error(expanded.reason)
+  const layer = expanded.map.layers.find(isTileLayer)
+  if (!layer) throw Error('Camada de peças ausente')
+  const map = setCell(setCell(expanded.map, layer.id, -64, -64, 1), layer.id, 40, 10, 1)
+  await persistence.persistAssets([sheet, map])
+  // A fila V4 existe: sem a ligação da conta, a janela continua fechada.
+  await persistence.causal.rememberProtocol()
+  const db = idbMockDb(dbNameFor(namespace))
+  expect(db.get(authorityKey(map.id))).toMatchObject({ version: 3, storage: 'pinta-regions-32-v1' })
+  await expect(openLocalRegionAuthorSession(namespace, map.id)).rejects.toThrow(
+    'Abra o cenário pela sua conta',
+  )
+
+  const opId = crypto.randomUUID()
+  const session = await openLocalRegionAuthorSession(
+    namespace,
+    map.id,
+    undefined,
+    accountBinding(opId),
+  )
+  if (!session) throw Error('A janela focal não abriu')
+  const opened = session.store.getState().revision
+  const chunk = (col: number, row: number) => localRegionChunkKey(map.id, layer.id, col, row)
+  const gesture = (col: number, row: number) =>
+    session.apply({
+      tool: 'pencil',
+      path: [{ col, row }],
+      layerId: layer.id,
+      stamp: null,
+      selectedTile: 1,
+      brush: DEFAULT_MAP_BRUSH,
+    })
+
+  // O IndexedDB recusa o PUT da fila: a transação inteira volta, sem chunk novo nem unidade.
+  const before = new Map(db)
+  const quota = new Error('Sem espaço no aparelho')
+  setIdbWriteGuard((key) => {
+    if (key === PINTA_CAUSAL_OUTBOX_KEY) throw quota
+  })
+  resetIdbMockStats()
+  expect(await gesture(5, 5)).toMatchObject({ ok: false, message: quota.message })
+  expect(idbMockStats().atomic).toBe(1)
+  expect([...db.keys()].map(String).sort()).toEqual([...before.keys()].map(String).sort())
+  for (const [key, value] of before) expect(db.get(key)).toBe(value)
+  expect(session.store.getState().revision).toBe(opened)
+
+  // A repetição grava a mesma pincelada numa transação: cabeçalho, espelho, chunk e a fila.
+  setIdbWriteGuard(null)
+  resetIdbMockStats()
+  expect(await session.retry()).toMatchObject({ ok: true, changed: true })
+  expect(idbMockStats().atomic).toBe(1)
+  const first = session.store.getState().revision
+  expect(first).not.toBe(opened)
+  expect(db.get(authorityKey(map.id))).toMatchObject({ version: 3, revision: first })
+  expect(db.get(chunk(-2, -2))).toBe(before.get(chunk(-2, -2)))
+  const queued = readLocalCausalState(
+    new Map([[PINTA_CAUSAL_OUTBOX_KEY, db.get(PINTA_CAUSAL_OUTBOX_KEY)]]),
+  )
+  expect(queued.pending).toHaveLength(1)
+  expect(queued.pending[0]).toMatchObject({
+    opId,
+    baseEpoch: '7',
+    members: [{ itemId: map.id, localRevision: first, action: 'put', baseRevision: 1 }],
+  })
+
+  // O gesto seguinte coalesce na mesma unidade, com a revisão nova e outra preparação.
+  expect(await gesture(41, 11)).toMatchObject({ ok: true, changed: true })
+  const second = session.store.getState().revision
+  const coalesced = readLocalCausalState(
+    new Map([[PINTA_CAUSAL_OUTBOX_KEY, db.get(PINTA_CAUSAL_OUTBOX_KEY)]]),
+  )
+  expect(coalesced.pending).toHaveLength(1)
+  expect(coalesced.pending[0]?.preparation).not.toBe(queued.pending[0]?.preparation)
+  expect(coalesced.pending[0]?.members).toMatchObject([{ itemId: map.id, localRevision: second }])
+  const reopened = await persistence.loadAssetById(map.id)
+  if (reopened?.kind !== 'tilemap' || !isLocalRegionAsset(reopened)) throw Error('Mapa ausente')
+  expect([cellAt(reopened, layer.id, 5, 5), cellAt(reopened, layer.id, 41, 11)]).toEqual([1, 1])
+  expect(pintaLocalRevisionOf(reopened)).toBe(second)
+  session.close()
 })
