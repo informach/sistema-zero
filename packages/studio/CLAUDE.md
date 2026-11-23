@@ -22,7 +22,9 @@ Lotes 5 a 7b e 9 da conclusão do plano (especificação em
   novas tentativas em 1, 4 e 15 s são o `NOVAS_TENTATIVAS` de
   `molda-cenarios-motor/src/compilar/runtime-three.ts`, que também expõe o `estadoDasRegioes()`.
   O estado do jogo (moedas, placar) nunca descarrega; onde a região não carregou, vale o relevo
-  global (ninguém cai).
+  global (ninguém cai). ⚠️ O céu do cenário (esfera de 3000 m na oficina) ajusta o raio a 90% do
+  alcance da câmera no `quadro` do ambiente: a câmera dos motores 3D do Estúdio enxerga 1000 m, e
+  com o raio fixo o céu saía preto (conferência no staging, 22/11/2026).
 - **O bloco** "Quando … entrar na região" é o valor `event: 'regiao'` da regra `onGame` (não um
   membro novo da união, pelo TS2590) e o `onEnterRegion` nos três motores 3D (`SZGame3D.onEnterRegion` no Jogo 3D; no Mundo 3D e no 3D Avançado pelo objeto do próprio motor, a partir das regras comuns de `game3dRules`), pago com o
   `fisica.apoio` do SDK (`three/scene3dPhysics.ts`) no lugar do laço de apoio de cada motor. O campo
