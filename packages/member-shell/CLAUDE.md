@@ -1,5 +1,17 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Arquivos dos exemplos grandes do Estúdio (22/11/2026)
+
+`routes/studio-example-files.ts` (`createStudioExampleFilesRoute`, montada no `createStudioRoutes`
+como `studioExampleFiles`; nos dois apps `app/api/studio/example-files/[...caminho]/route.ts`):
+entrega do mesmo domínio o arquivo do jogo E da galeria (`estudio-exemplos/<pasta>/<sha256>.json`
+no R2 público do ambiente, ligado por `STUDIO_EXAMPLES_ORIGIN`; sem ela, 404 e o card nem aparece).
+Só um formato de caminho passa e o nome é o hash do conteúdo (o Estúdio confere tamanho e hash ao
+abrir). Desde o full review final: só a EQUIPE recebe o arquivo (`media.requireUploadSession` +
+`isPrivilegedRole`, a mesma régua da página do Estúdio, porque a galeria é só dela nos dois apps;
+quem não é da equipe vê 404), o cache é `private` e o pedido ao R2 leva o `request.signal`.
+Testes: `tests/studio-example-files.test.ts`.
+
 ## Versões das ilhas do Molda Cenários (21/11/2026)
 
 `routes/cenarios-publicacoes.ts`: `GET /api/cenarios/publicacoes/perfis/:ilha/versoes` repassa com a

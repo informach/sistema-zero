@@ -1,4 +1,5 @@
 import { getEnv } from '../lib/env'
+import { isPrivilegedRole } from '../lib/studio-tier'
 
 /**
  * Os arquivos dos exemplos GRANDES da galeria "Ver os jogos prontos" (lote 9 da conclusão do
@@ -10,6 +11,9 @@ import { getEnv } from '../lib/env'
  *   do exemplo nem aparece (é como a produção fica até ela decidir).
  * - Só um formato de caminho passa: `<pasta>/<sha256>.json`. O nome é o hash do conteúdo, então o
  *   arquivo nunca muda e pode ficar em cache para sempre (o Estúdio confere o hash ao abrir).
+ * - Só a EQUIPE recebe o arquivo (a galeria é só dela nos dois apps, `isPrivilegedRole`, a mesma
+ *   régua da página do Estúdio): sem sessão vale a recusa da sessão; quem não é da equipe vê 404.
+ *   O cache é privado e o pedido ao R2 cai junto com o do navegador (full review final).
  */
 const PASTA = /^[a-z0-9-]{1,40}$/
 const ARQUIVO = /^[0-9a-f]{64}\.json$/
@@ -19,23 +23,29 @@ export function studioExampleFileUrl(origin: string, caminho: readonly string[])
   return `${origin.replace(/\/+$/, '')}/estudio-exemplos/${caminho[0]}/${caminho[1]}`
 }
 
-export function createStudioExampleFilesRoute(
-  deps: { origin?: () => string | undefined; fetcher?: typeof fetch } = {},
-) {
+export function createStudioExampleFilesRoute(deps: {
+  /** A sessão do pedido, ou a resposta de recusa dela (`media.requireUploadSession`). */
+  requireSession: (request: Request) => Promise<{ role?: string } | Response>
+  origin?: () => string | undefined
+  fetcher?: typeof fetch
+}) {
   const origin = deps.origin ?? (() => getEnv().STUDIO_EXAMPLES_ORIGIN)
   const fetcher = deps.fetcher ?? fetch
   return {
-    async GET(_request: Request, context: { params: Promise<{ caminho?: string[] }> }) {
+    async GET(request: Request, context: { params: Promise<{ caminho?: string[] }> }) {
+      const sessao = await deps.requireSession(request)
+      if (sessao instanceof Response) return sessao
+      if (!isPrivilegedRole(sessao.role)) return new Response('Not found', { status: 404 })
       const base = origin()
       const { caminho = [] } = await context.params
       const url = base ? studioExampleFileUrl(base, caminho) : null
       if (!url) return new Response('Not found', { status: 404 })
-      const resposta = await fetcher(url, { cache: 'no-store' })
+      const resposta = await fetcher(url, { cache: 'no-store', signal: request.signal })
       if (!resposta.ok || !resposta.body) return new Response('Not found', { status: 404 })
       return new Response(resposta.body, {
         headers: {
           'content-type': 'application/json',
-          'cache-control': 'public, max-age=31536000, immutable',
+          'cache-control': 'private, max-age=31536000, immutable',
           'x-content-type-options': 'nosniff',
         },
       })

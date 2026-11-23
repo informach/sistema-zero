@@ -1879,7 +1879,9 @@ export function createStudioRoutes(deps: {
   }
   return {
     studioPublicRuntime: createStudioPublicRuntimeRoute({ hub, members }),
-    studioExampleFiles: createStudioExampleFilesRoute(),
+    studioExampleFiles: createStudioExampleFilesRoute({
+      requireSession: (request) => media.requireUploadSession(request),
+    }),
     studioDescribe,
     studioPublish,
     studioPublishStandalone,
