@@ -9,7 +9,7 @@ import {
   type PintaCausalManifest,
   PintaCausalManifestSchema,
 } from '@sistemazero/core/creations/pinta-causal'
-import type { PintaMemoryAsset } from '../core/assetMemory'
+import type { PintaMemoryAsset, PintaWorkshopAsset } from '../core/assetMemory'
 import { utf8ByteLength } from '../core/jsonBytes'
 import { embeddedTilesetOf } from '../core/mapResourceVersions'
 import {
@@ -42,12 +42,11 @@ import {
   MAX_BACKUP_FILE_BYTES,
 } from './projectJson'
 import { admitsRegionBackupBuffers, REGION_BACKUP_VERSION } from './regionBackup'
-import { readWorkshopBookEnvelope } from './workshopDocument'
-import { decodeWorkshopProjectedMap, type WorkshopProjectedMap } from './workshopProjection'
+import { isWorkshopProjectedMap, readWorkshopNativeItem } from './workshopDocument'
 
-export type CausalAsset = PintaMemoryAsset | WorkshopProjectedMap
+export type CausalAsset = PintaWorkshopAsset
 export function causalRulebook(asset: CausalAsset) {
-  if (asset.kind === 'tilemap' && 'projection' in asset) return asset.automapping
+  if (isWorkshopProjectedMap(asset)) return asset.automapping
   return isPintaAuthoredMap(asset) ? asset.automapping : undefined
 }
 
@@ -262,10 +261,7 @@ function decodeDocument(
   regional: boolean,
 ): DecodedDocument | null {
   if (backupVersion === 9) {
-    const asset =
-      raw.capability === 'projection'
-        ? decodeWorkshopProjectedMap(raw)
-        : readWorkshopBookEnvelope(raw)
+    const asset = readWorkshopNativeItem(raw)
     // Both envelope readers verify every authored field against their canonical encoding.
     return asset ? { asset, encoded: raw, requiredNativeSchema: 9 } : null
   }

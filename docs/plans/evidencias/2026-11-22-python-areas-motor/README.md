@@ -1,4 +1,4 @@
-# Motor Python `2026-11-22-areas-1` (staging, preparado e NÃO implantado)
+# Motor Python `2026-11-22-areas-1` (staging: no R2 desde 23/11/2026)
 
 Versão nova do motor Python e da lista de blocos aprovados, uma vez só, com as três frentes:
 as áreas do projeto (bloco "repetir a cada" do Turtle, `sz_py_turtle_every`), as regiões do
@@ -33,20 +33,34 @@ Raylib 3D (`sz_py_rl3d_scene_load`, `_update`, `_draw`, `_entered`; recurso
 - **Worker**: seletor de staging `STUDIO_PYTHON_DISTRIBUTIONS_SHA256` =
   `1dd32fdc910646a12416c1f16fa12ee87e4a3d3f5c08bd825c79ba365ea0afb4`, em commit próprio.
 
-## Para implantar (quem implanta; nada disto foi feito)
+## Envio ao R2 de staging (23/11/2026, feito a pedido dela)
 
-1. R2 de staging: `bun packages/studio-runtime/scripts/promote-python-runtime.ts upload --plan
-   docs/plans/evidencias/2026-11-22-python-areas-motor/plano-staging.json --expect-plan-sha256
-   41e4a42a0235ed2d208be109e2aeee9f37c7d0460d733f65e0a7612cb8b0665d` (lê a distribuição em
-   `.cache/lote8-linux`).
-2. Worker de staging com o seletor `1dd32fdc…` (o commit do `wrangler.jsonc`). ⚠️ Desde o
-   lote 9 do Estúdio (22/11/2026, noite) o `wrangler.jsonc` volta a apontar o `fa8847d2…`, o
-   catálogo que já está no R2: o envio direto (`upload`) trava nesta máquina (o `workerd` local
-   não sobe; a conexão remota do `wrangler` fica em "Establishing remote connection…") e o
-   caminho do serviço temporário (`promotion-worker/README.md`) pede a aprovação operacional
-   revisada pela dona e um segredo de operador. Assim o HEAD segue implantável sem quebrar o
-   Python do staging. Quem fizer o upload troca o seletor para `1dd32fdc…` no mesmo passo.
-3. Os apps.
+Pelo serviço temporário (`promotion-worker/`), o mesmo caminho das promoções do Pinta de 20 e
+21/11, com a fonte do promotor intacta desde `c9d70dfc8`:
+
+- **Qualificação** (`qualificacao.json`, SHA-256 `31a4ce59…`): as famílias Pygame-ce (22) e
+  Raylib (26) passaram no Chrome servidas por ESTA distribuição Linux; os 110 arquivos lógicos são
+  os da distribuição local `1b9e2813…` dos e2e de 22/11 (só os 16 gzip e o fim de linha de uma
+  licença mudam).
+- **Aprovação** (`aprovacao-operacional.json`, janela de 29 minutos) e artefato `fd3355a1…`
+  (`operationalSha256` `6cd8570a…`), frame de 26.005.469 bytes (o já medido era 26.007.007).
+- **Envio** (`upload-r2.json`): HTTP 200 em 48 s, estado `complete`, 126 arquivos e 128 objetos
+  lidos de volta com o SHA-256 nativo, nenhuma falha, nada ativado. O serviço recusou pedido sem
+  assinatura (401) e tinha só o bucket de staging, a chave e o metadado de versão
+  (`servico-temporario.json`).
+- **Limpeza** (`limpeza.json`): serviço apagado e ausência confirmada; a chave temporária local
+  apagada; os objetos imutáveis ficam.
+- **Leitura independente pela CLI** (`leitura-r2.json`): marcador, catálogo `1dd32fdc…`,
+  `playtest.mjs` e `standalone.mjs` batem com o plano.
+- O verificador do Worker da staging local (com a integração do Pinta, que soma o recurso
+  `pinta-scene-regions-v1`) aceita o catálogo `1dd32fdc…` inteiro.
+
+## Para ativar
+
+1. ~~R2 de staging~~ (feito, acima).
+2. Worker de staging com o seletor `1dd32fdc…` (`wrangler.jsonc`, de volta no commit do envio) e
+   `bun run deploy:staging`; conferir o `/healthz`.
+3. Os apps (já têm os blocos novos desde o deploy de `abc47abbe`).
 4. Members por último: `STUDIO_AUTHORING_POLICY_SHA256=01c079c1…` e `STUDIO_RUNTIME_HOSTS_JSON` =
    `configuration.hosts` do plano (quatro releases, todas no Worker de staging), pela ordem de
    `docs/operations/studio-authoring-catalog.md`.

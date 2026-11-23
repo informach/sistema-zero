@@ -1,16 +1,24 @@
 import { isPintaAuthoredMap, type PintaAuthoredMap } from '../tiles/automapping/model'
 import type { AuthorMap } from '../tiles/mapCellEdits'
-import type { PintaMemoryAsset } from './assetMemory'
+import {
+  isWorkshopProjectedMap,
+  type PintaMemoryAsset,
+  type PintaWorkshopAsset,
+} from './assetMemory'
 import { PINTA_MAX_SCHEMA, type PintaAsset, withPintaSchemaStamp } from './project'
+
+export { isWorkshopProjectedMap } from './assetMemory'
 export function isWorkshopRegion(asset: PintaMemoryAsset): boolean {
   return (
     (asset.kind === 'tilemap' && 'origin' in asset) ||
     (asset.kind === 'map-set' && 'origin' in asset.map)
   )
 }
-export function isLegacyWorkshopAsset(asset: PintaMemoryAsset): asset is PintaAsset {
+export function isLegacyWorkshopAsset(asset: PintaWorkshopAsset): asset is PintaAsset {
   return (
-    !isWorkshopRegion(asset) && (!('schema' in asset) || (asset.schema ?? 0) <= PINTA_MAX_SCHEMA)
+    !isWorkshopProjectedMap(asset) &&
+    !isWorkshopRegion(asset) &&
+    (!('schema' in asset) || (asset.schema ?? 0) <= PINTA_MAX_SCHEMA)
   )
 }
 export function pintaWorkshopBody(asset: PintaAuthoredMap): AuthorMap

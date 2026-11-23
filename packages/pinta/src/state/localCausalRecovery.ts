@@ -1,22 +1,21 @@
 import { pintaValuesEqual } from '../core/assetEquality'
-import type { PintaMemoryAsset } from '../core/assetMemory'
+import { isWorkshopProjectedMap, type PintaWorkshopAsset } from '../core/assetMemory'
 import {
   isObjectLayer,
-  isTileLayer,
+  isTileLayerGraph,
   isTilesetKind,
+  type MapGraph,
   pintaAssetDependencyIds,
-  type TilemapAsset,
-  type TilemapCells,
   tileLayerTilesetId,
 } from '../core/project'
 import { pintaDoorBinding, pintaDoorBindings } from '../core/sceneMapClosure'
-import { automapSheetDefinition } from '../tiles/automapping/book'
-import { isPintaAuthoredMap, type PintaAuthoredMap } from '../tiles/automapping/model'
+import { type AutomapBook, automapSheetDefinition } from '../tiles/automapping/book'
+import { isPintaAuthoredMap } from '../tiles/automapping/model'
 import { planImport } from './importPlan'
 import type { LocalAssetTransition, LocalSnapshot } from './localAssetAuthority'
 import type { PintaCausalLocalPull } from './localCausalOutbox'
 
-export function localRecoverySeeds<Asset extends PintaMemoryAsset>(
+export function localRecoverySeeds<Asset extends PintaWorkshopAsset>(
   pull: PintaCausalLocalPull<Asset>,
   local: ReadonlyMap<string, Asset>,
   official: ReadonlyMap<string, Asset>,
@@ -58,7 +57,7 @@ export function localRecoverySeeds<Asset extends PintaMemoryAsset>(
 }
 
 /** Both sides keep their authored references, including readers of a restored sheet. */
-export function localRecoveryClosure<Asset extends PintaMemoryAsset>(
+export function localRecoveryClosure<Asset extends PintaWorkshopAsset>(
   seeds: ReadonlySet<string>,
   assets: ReadonlyMap<string, Asset>,
 ): { ids: string[]; incomplete: boolean } {
@@ -98,9 +97,9 @@ export function localRecoveryClosure<Asset extends PintaMemoryAsset>(
 
 /** A portal follows the original global target even when the map has an embedded alias. */
 function restoreDoorTargets(
-  before: TilemapAsset<TilemapCells>,
-  copy: TilemapAsset<TilemapCells>,
-  originals: ReadonlyMap<string, PintaMemoryAsset>,
+  before: MapGraph,
+  copy: MapGraph,
+  originals: ReadonlyMap<string, PintaWorkshopAsset>,
   recoveredIds: ReadonlyMap<string, string>,
 ): void {
   for (const [i, layer] of copy.layers.entries()) {
@@ -129,17 +128,18 @@ function restoreDoorTargets(
 
 /** Keep the exact rule signature on a copy with new layer/sheet IDs. A changed sheet requires
  * an explicit recovery from the original bytes; the IDB compare-and-swap never guesses a hash. */
-function restoreRuleBindings<Asset extends PintaMemoryAsset>(
-  original: PintaAuthoredMap,
-  copy: PintaAuthoredMap,
+function restoreRuleBindings<Asset extends PintaWorkshopAsset>(
+  original: MapGraph,
+  rules: AutomapBook,
+  copy: MapGraph & { automapping?: AutomapBook },
   originals: ReadonlyMap<string, Asset>,
   copies: ReadonlyMap<string, Asset>,
 ): boolean {
   const layers = new Map(original.layers.map((layer, i) => [layer.id, i]))
   const checked = new Map<string, string>()
-  const lookup = (map: PintaAuthoredMap, catalog: ReadonlyMap<string, Asset>, id: string) =>
+  const lookup = (map: MapGraph, catalog: ReadonlyMap<string, Asset>, id: string) =>
     map.resources?.find((row) => row.asset.id === id)?.asset ?? catalog.get(id)
-  const book = structuredClone(original.automapping)
+  const book = structuredClone(rules)
   for (const rule of book.rules)
     for (const group of [rule.input, ...rule.outputs])
       for (const plane of group) {
@@ -149,8 +149,8 @@ function restoreRuleBindings<Asset extends PintaMemoryAsset>(
         if (
           !from ||
           !into ||
-          !isTileLayer<TilemapCells>(from) ||
-          !isTileLayer<TilemapCells>(into) ||
+          !isTileLayerGraph(from) ||
+          !isTileLayerGraph(into) ||
           tileLayerTilesetId(original, from) !== plane.sheet
         )
           return false
@@ -175,7 +175,7 @@ function restoreRuleBindings<Asset extends PintaMemoryAsset>(
   return true
 }
 
-export function projectRecoveryCopies<Asset extends PintaMemoryAsset>(
+export function projectRecoveryCopies<Asset extends PintaWorkshopAsset>(
   selected: readonly Asset[],
   originals: ReadonlyMap<string, Asset>,
   destination: ReadonlyMap<string, Asset>,
@@ -220,7 +220,16 @@ export function projectRecoveryCopies<Asset extends PintaMemoryAsset>(
     const original = selected[i]!
     if (
       isPintaAuthoredMap(original) &&
-      (!isPintaAuthoredMap(copy) || !restoreRuleBindings(original, copy, originals, catalog))
+      (!isPintaAuthoredMap(copy) ||
+        !restoreRuleBindings(original, original.automapping, copy, originals, catalog))
+    )
+      return null
+    // A projected copy carries its book too; the same rebinding keeps its exact signature.
+    if (
+      isWorkshopProjectedMap(original) &&
+      original.automapping &&
+      (!isWorkshopProjectedMap(copy) ||
+        !restoreRuleBindings(original, original.automapping, copy, originals, catalog))
     )
       return null
     const expected = pintaDoorBindings(original, originals).map(({ binding }) =>
@@ -234,7 +243,7 @@ export function projectRecoveryCopies<Asset extends PintaMemoryAsset>(
   return { copies, catalog }
 }
 
-export function recoverLocalAssets<Asset extends PintaMemoryAsset>(
+export function recoverLocalAssets<Asset extends PintaWorkshopAsset>(
   ids: readonly string[],
   pull: PintaCausalLocalPull<Asset>,
   snapshot: LocalSnapshot<Asset>,

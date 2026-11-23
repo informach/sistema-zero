@@ -1,6 +1,8 @@
 import {
   effectiveLayer,
   isTileLayer,
+  isTileLayerGraph,
+  type MapGraph,
   type TilemapCells,
   tileLayerTilesetId,
 } from '../../core/project'
@@ -31,14 +33,14 @@ type PlaneState = { reader: TileCellReader; locked: boolean }
  * preserve such a book as it is, and the editor reports it through `checkAutomapBindings`.
  */
 export function checkAutomapLayers(
-  map: AuthorMap,
+  map: MapGraph,
   book: AutomapBook,
 ): 'missing-layer' | 'changed-sheet' | undefined {
   for (const rule of book.rules)
     for (const planes of [rule.input, ...rule.outputs])
       for (const plane of planes) {
         const layer = map.layers.find((item) => item.id === plane.layer)
-        if (!layer || !isTileLayer<TilemapCells>(layer)) return 'missing-layer'
+        if (!layer || !isTileLayerGraph(layer)) return 'missing-layer'
         if (tileLayerTilesetId(map, layer) !== plane.sheet) return 'changed-sheet'
       }
 }

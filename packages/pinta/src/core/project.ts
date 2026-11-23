@@ -562,6 +562,19 @@ export type TilemapLayer<Cells extends TilemapCells = Int16Array> =
   | TilemapObjectLayer
   | TilemapGroupLayer
 
+/** A layer of any map, dense, regional or projected, with its cells left opaque. */
+export type MapGraphLayer = Omit<TilemapTileLayer, 'cells'> | TilemapObjectLayer | TilemapGroupLayer
+/** The references every map shares (sheets, layers, objects, resource versions), not its cells. */
+export interface MapGraph {
+  id: string
+  tilesetId: string
+  resources?: TilemapResourceVersion[]
+  layers: readonly MapGraphLayer[]
+}
+export function isTileLayerGraph(layer: MapGraphLayer): layer is Omit<TilemapTileLayer, 'cells'> {
+  return layer.kind === undefined || layer.kind === 'tiles'
+}
+
 export interface TilemapAsset<Cells extends TilemapCells = Int16Array> extends PintaAssetBase {
   kind: 'tilemap'
   /** Explicit opt-in for existing maps; scene 1/2 games keep their previous tile-grid physics. */
@@ -704,10 +717,10 @@ export function tileLayerTilesetId(
 }
 
 /** Todos os tilesets que o mapa referencia, sem repetir: o PADRÃO primeiro. */
-export function tilemapTilesetIds(tilemap: TilemapAsset<TilemapCells>): string[] {
+export function tilemapTilesetIds(tilemap: MapGraph): string[] {
   const ids = [tilemap.tilesetId]
   for (const layer of tilemap.layers) {
-    if (!isTileLayer(layer)) continue
+    if (!isTileLayerGraph(layer)) continue
     const id = tileLayerTilesetId(tilemap, layer)
     if (!ids.includes(id)) ids.push(id)
   }
@@ -816,16 +829,16 @@ export function isCompatibleMapTileset(base: AnyTilesetAsset, candidate: AnyTile
  * novos. No legado, camada que cai no padrão perde a chave (forma canônica). Mesmo asset
  * quando nada muda.
  */
-export function remapTilemapTilesetIds<Map extends TilemapAsset<TilemapCells>>(
+export function remapTilemapTilesetIds<Map extends MapGraph>(
   tilemap: Map,
   remap: (id: string) => string,
 ): Map {
   const tilesetId = remap(tilemap.tilesetId)
-  // Explicit binding remains authorial data in native 8; legacy canonicalization is unchanged.
+  // Explicit binding remains authorial data in native 8 and 9; legacy canonicalization is unchanged.
   const preserveExplicit = 'origin' in tilemap
   let changed = tilesetId !== tilemap.tilesetId
   const layers = tilemap.layers.map((layer) => {
-    if (!isTileLayer(layer) || layer.tilesetId === undefined) return layer
+    if (!isTileLayerGraph(layer) || layer.tilesetId === undefined) return layer
     const next = remap(layer.tilesetId)
     if (next === layer.tilesetId && (preserveExplicit || next !== tilesetId)) return layer
     changed = true

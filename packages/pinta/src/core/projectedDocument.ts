@@ -14,6 +14,7 @@ import {
 } from '@sistemazero/core/creations'
 import { PintaMapProjectionSchema } from '@sistemazero/core/creations/pinta-map-projection'
 import { pintaAssetToWire } from '../assets/wire'
+import type { AutomapBook } from '../tiles/automapping/book'
 import { cellTile } from '../tiles/cell'
 import { RegionMetadataBudgetCache, regionDocumentMetadata } from './mapDocumentBoundary'
 import {
@@ -46,6 +47,8 @@ type ProjectedMap<Grid> = Omit<RegionTilemapAsset, 'schema' | 'layers' | 'automa
 }
 
 export type ProjectedTilemapAsset = ProjectedMap<ProjectedTileCells>
+/** A native-9 projected map as the workshop keeps it: the optional book beside the body. */
+export type WorkshopProjectedMap = ProjectedTilemapAsset & { automapping?: AutomapBook }
 export type ProjectedMapSetAsset = Omit<RegionMapSetAsset, 'schema' | 'map'> & {
   schema: typeof PROJECTED_TILEMAP_SCHEMA
   map: ProjectedTilemapAsset

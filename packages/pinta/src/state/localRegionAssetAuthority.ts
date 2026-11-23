@@ -1,5 +1,9 @@
 import { pintaValuesEqual } from '../core/assetEquality'
-import type { PintaMemoryAsset } from '../core/assetMemory'
+import {
+  isWorkshopProjectedMap,
+  type PintaMemoryAsset,
+  type PintaWorkshopAsset,
+} from '../core/assetMemory'
 import { PintaLocalStorageError, PintaStorageBudgetError } from '../core/localStorageErrors'
 import {
   type PintaAsset,
@@ -15,11 +19,12 @@ import { galleryBackupByteLength, MAX_BACKUP_FILE_BYTES } from '../export/projec
 import { RegionBackupSizeCache } from '../export/regionBackupSize'
 import { createLocalAssetAuthority } from './localAssetAuthority'
 
+/** A physical-3 region. The projected map also has `origin`, but it is not one. */
 export function isLocalRegionAsset(
-  asset: PintaMemoryAsset,
+  asset: PintaWorkshopAsset,
 ): asset is RegionTilemapAsset | RegionMapSetAsset {
   return (
-    (asset.kind === 'tilemap' && 'origin' in asset) ||
+    (asset.kind === 'tilemap' && 'origin' in asset && !isWorkshopProjectedMap(asset)) ||
     (asset.kind === 'map-set' && 'origin' in asset.map)
   )
 }
@@ -75,24 +80,30 @@ export function matchesLocalRegionMirror(
   )
 }
 
-/** Internal only: the public persistence still selects the native-7 authority. */
-export function createLocalRegionAssetAuthority(authored?: {
-  sanitize(raw: unknown): PintaMemoryAsset | null
-  stamp(asset: PintaMemoryAsset): PintaMemoryAsset
-  schema(asset: PintaMemoryAsset): number
-  size(sizing: RegionBackupSizeCache, assets: readonly PintaMemoryAsset[]): number
-}) {
-  const sanitize = authored?.sanitize ?? sanitizeLocalRegionAsset
-  const schema =
-    authored?.schema ??
-    ((asset: PintaMemoryAsset) => (isLocalRegionAsset(asset) ? 8 : pintaAssetSchema(asset)))
-  const compact = (asset: PintaMemoryAsset) =>
-    isLocalRegionAsset(asset) || (!!authored && schema(asset) === 9)
+interface RegionAuthorityPolicy<Asset extends PintaWorkshopAsset> {
+  maxSchema: number
+  sanitize(raw: unknown): Asset | null
+  stamp(asset: Asset): Asset
+  schema(asset: Asset): number
+  /** Stored behind a compact mirror, so that older tabs never read it as a legacy drawing. */
+  compact(asset: Asset): boolean
+  size(sizing: RegionBackupSizeCache, assets: readonly Asset[]): number
+}
 
-  return createLocalAssetAuthority<PintaMemoryAsset>({
-    maxSchema: authored ? 9 : 8,
+/** Native-9 workshop policy over the same authority; it also keeps the projected map. */
+export interface WorkshopRegionPolicy {
+  sanitize(raw: unknown): PintaWorkshopAsset | null
+  stamp(asset: PintaWorkshopAsset): PintaWorkshopAsset
+  schema(asset: PintaWorkshopAsset): number
+  size(sizing: RegionBackupSizeCache, assets: readonly PintaWorkshopAsset[]): number
+}
+
+function regionAuthority<Asset extends PintaWorkshopAsset>(policy: RegionAuthorityPolicy<Asset>) {
+  const { sanitize, schema, compact } = policy
+  return createLocalAssetAuthority<Asset>({
+    maxSchema: policy.maxSchema,
     sanitize,
-    stamp: authored?.stamp ?? stampLocalRegionAsset,
+    stamp: policy.stamp,
     schema,
     mirror(asset, revision) {
       return compact(asset)
@@ -124,14 +135,7 @@ export function createLocalRegionAssetAuthority(authored?: {
       // Persistence accepts mutable caller revisions, unlike the editor's immutable snapshots.
       // Numerical identity summaries are shared within this transaction, never across writes.
       const sizing = new RegionBackupSizeCache()
-      const size = (assets: readonly PintaMemoryAsset[]) =>
-        authored
-          ? authored.size(sizing, assets)
-          : assets.some(isLocalRegionAsset)
-            ? sizing.byteLength(assets)
-            : galleryBackupByteLength(
-                assets.filter((asset): asset is PintaAsset => !isLocalRegionAsset(asset)),
-              )
+      const size = (assets: readonly Asset[]) => policy.size(sizing, assets)
       const projected = size(after) + (bytes?.after ?? 0)
       if (projected <= MAX_BACKUP_FILE_BYTES) return
       if (projected < size(before) + (bytes?.before ?? 0)) return
@@ -147,5 +151,35 @@ export function createLocalRegionAssetAuthority(authored?: {
         return
       throw new PintaStorageBudgetError(projected)
     },
+  })
+}
+
+/** Internal only: the public persistence still selects the native-7 authority. */
+export function createLocalRegionAssetAuthority(): ReturnType<
+  typeof regionAuthority<PintaMemoryAsset>
+>
+export function createLocalRegionAssetAuthority(
+  authored: WorkshopRegionPolicy,
+): ReturnType<typeof regionAuthority<PintaWorkshopAsset>>
+export function createLocalRegionAssetAuthority(authored?: WorkshopRegionPolicy) {
+  if (authored) {
+    const native = (asset: PintaWorkshopAsset) => {
+      const schema = authored.schema(asset)
+      return schema === 8 || schema === 9
+    }
+    return regionAuthority<PintaWorkshopAsset>({ maxSchema: 9, compact: native, ...authored })
+  }
+  return regionAuthority<PintaMemoryAsset>({
+    maxSchema: 8,
+    sanitize: sanitizeLocalRegionAsset,
+    stamp: stampLocalRegionAsset,
+    schema: (asset) => (isLocalRegionAsset(asset) ? 8 : pintaAssetSchema(asset)),
+    compact: isLocalRegionAsset,
+    size: (sizing, assets) =>
+      assets.some(isLocalRegionAsset)
+        ? sizing.byteLength(assets)
+        : galleryBackupByteLength(
+            assets.filter((asset): asset is PintaAsset => !isLocalRegionAsset(asset)),
+          ),
   })
 }

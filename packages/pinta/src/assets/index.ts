@@ -21,7 +21,7 @@
  */
 
 export { pintaValuesEqual } from '../core/assetEquality'
-export type { PintaMemoryAsset } from '../core/assetMemory'
+export type { PintaMemoryAsset, PintaWorkshopAsset } from '../core/assetMemory'
 export { inheritPintaLocalOrigin, pintaLocalRevisionOf } from '../core/localAssetOrigin'
 export { PintaLocalConflictError, PintaLocalStorageError } from '../core/localStorageErrors'
 export {

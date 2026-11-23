@@ -6,13 +6,15 @@ import {
   isProjectedTileLayer,
   type ProjectedTilemapAsset,
   type ProjectedTilemapDocument,
+  type WorkshopProjectedMap,
 } from '../core/projectedDocument'
 import { type AutomapBook, readAutomapBook } from '../tiles/automapping/book'
 import { sameEncodedValue } from '../tiles/automapping/native'
 import { cellTile } from '../tiles/cell'
 import { decodePintaBackupAsset, encodePintaBackupAsset } from './projectJson'
 import { admitsRegionBackupBuffers } from './regionBackup'
-export type WorkshopProjectedMap = ProjectedTilemapAsset & { automapping?: AutomapBook }
+
+export type { WorkshopProjectedMap }
 export interface WorkshopProjectionEnvelope {
   kind: 'tilemap'
   id: string

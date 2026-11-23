@@ -25,7 +25,7 @@ test('a oficina com leitor A guarda a autoria pela conta em realm isolado', asyn
       new Response(child.stderr).text(),
     ])
     expect(code, stdout + stderr).toBe(0)
-    expect(stdout + stderr).toMatch(/\b1 pass\b/)
+    expect(stdout + stderr).toMatch(/\b2 pass\b/)
   } finally {
     clearTimeout(deadline)
     if (child.exitCode === null) child.kill()

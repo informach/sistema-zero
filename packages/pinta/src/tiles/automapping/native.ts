@@ -1,12 +1,17 @@
-import type { PintaMemoryAsset } from '../../core/assetMemory'
+import {
+  isWorkshopProjectedMap,
+  type PintaMemoryAsset,
+  type PintaWorkshopAsset,
+} from '../../core/assetMemory'
 import { utf8ByteLength } from '../../core/jsonBytes'
 import { REGION_METADATA_BUDGET } from '../../core/mapDocumentBoundary'
 import {
-  isTileLayer,
+  isTileLayerGraph,
   isTilesetKind,
-  type TilemapCells,
+  type MapGraph,
   tileLayerTilesetId,
 } from '../../core/project'
+import type { WorkshopProjectedMap } from '../../core/projectedDocument'
 import { collectAssetBundle } from '../../export/assetJson'
 import {
   encodePintaBackupAsset,
@@ -14,15 +19,24 @@ import {
   pintaBackupFromEncoded,
   pintaEncodedBackupByteLength,
 } from '../../export/projectJson'
-import { decodeRegionGalleryBackup, encodeRegionGalleryBackup } from '../../export/regionBackup'
-import type { AuthorMap } from '../mapCellEdits'
+import {
+  admitsRegionBackupBuffers,
+  decodeRegionGalleryBackup,
+  encodeRegionGalleryBackup,
+} from '../../export/regionBackup'
 import { type AutomapBook, automapSheetIdentity, readAutomapBook, type SheetIdentity } from './book'
 import { checkAutomapLayers } from './engine'
 
-/** Native 9 is private until every durable writer/reader can preserve an authored rulebook. */
-export interface AutomapGallery {
-  assets: PintaMemoryAsset[]
+/** Native 9 is private until every durable writer/reader can preserve an authored rulebook.
+ * `books` holds the rulebooks of non-projected maps; a projected map carries its own. */
+export interface AutomapGallery<Asset extends PintaWorkshopAsset = PintaMemoryAsset> {
+  assets: Asset[]
   books: ReadonlyMap<string, AutomapBook>
+}
+/** The projected envelope belongs to the workshop document; the gallery only places it. */
+export interface ProjectedEntryCodec {
+  encode(asset: WorkshopProjectedMap): { map: unknown } | null
+  decode(raw: unknown): WorkshopProjectedMap | null
 }
 export function automapDocumentEnvelope<T extends { id?: unknown }>(
   assets: readonly T[],
@@ -37,12 +51,12 @@ export function automapDocumentEnvelope<T extends { id?: unknown }>(
     }),
   }
 }
-export async function automapSheetIndex(map: AuthorMap, assets: readonly PintaMemoryAsset[]) {
-  const gallery = new Map(assets.map((item) => [item.id, item]))
+export async function automapSheetIndex(map: MapGraph, assets: readonly PintaWorkshopAsset[]) {
+  const gallery = new Map<string, PintaWorkshopAsset>(assets.map((item) => [item.id, item]))
   for (const version of map.resources ?? []) gallery.set(version.asset.id, version.asset)
   const sheets = new Map<string, SheetIdentity>()
   for (const layer of map.layers) {
-    if (!isTileLayer<TilemapCells>(layer)) continue
+    if (!isTileLayerGraph(layer)) continue
     const id = tileLayerTilesetId(map, layer),
       asset = gallery.get(id)
     if (!sheets.has(id) && asset && isTilesetKind(asset))
@@ -52,20 +66,25 @@ export async function automapSheetIndex(map: AuthorMap, assets: readonly PintaMe
 }
 /** Structure and IDs, as storage checks them. A repainted sheet leaves a book out of date
  * without making it invalid: one such map must not refuse the whole gallery backup. */
-export async function validGallery({ assets, books }: AutomapGallery) {
-  const byId = new Map(assets.map((item) => [item.id, item]))
-  if (!books.size || byId.size !== assets.length) return false
+export async function validGallery({ assets, books }: AutomapGallery<PintaWorkshopAsset>) {
+  const byId = new Map<string, PintaWorkshopAsset>(assets.map((item) => [item.id, item]))
+  const projected = assets.filter(isWorkshopProjectedMap)
+  if ((!books.size && !projected.length) || byId.size !== assets.length) return false
   const dependencies = new Map<string, readonly string[] | null>()
   for (const [id, book] of books) {
     const map = byId.get(id)
     if (
       map?.kind !== 'tilemap' ||
+      isWorkshopProjectedMap(map) ||
       !collectAssetBundle(map, byId, dependencies) ||
       !readAutomapBook(JSON.stringify(book)) ||
       checkAutomapLayers(map, book)
     )
       return false
   }
+  // A projected book was bound to its layers by its own codec; its sheets travel along, too.
+  for (const map of projected)
+    if (map.automapping && !collectAssetBundle(map, byId, dependencies)) return false
   return true
 }
 export function encodeAutomapBodies(assets: readonly PintaMemoryAsset[]) {
@@ -131,20 +150,54 @@ export function readExactAutomapBodies(raw: readonly unknown[]) {
     return null
   return base.assets
 }
-export async function encodeAutomapGallery(gallery: AutomapGallery): Promise<string | null> {
+export async function encodeAutomapGallery(gallery: AutomapGallery): Promise<string | null>
+export async function encodeAutomapGallery(
+  gallery: AutomapGallery<PintaWorkshopAsset>,
+  projection: ProjectedEntryCodec,
+): Promise<string | null>
+export async function encodeAutomapGallery(
+  gallery: AutomapGallery<PintaWorkshopAsset>,
+  projection?: ProjectedEntryCodec,
+): Promise<string | null> {
   try {
     if (!(await validGallery(gallery))) return null
-    const encoded = encodeAutomapBodies(gallery.assets)
+    const plain = gallery.assets.filter(
+      (asset): asset is PintaMemoryAsset => !isWorkshopProjectedMap(asset),
+    )
+    const encoded = encodeAutomapBodies(plain)
     if (!encoded || !readExactAutomapBodies(encoded)) return null
-    const doc = automapDocumentEnvelope(encoded, gallery.books)
-    return pintaEncodedBackupByteLength(doc.assets, 9) <= MAX_BACKUP_FILE_BYTES
-      ? pintaBackupFromEncoded(doc.assets, 9)
+    const wrapped = automapDocumentEnvelope(encoded, gallery.books).assets
+    const entries: unknown[] = []
+    const bodies: unknown[] = [...encoded]
+    let next = 0
+    for (const asset of gallery.assets) {
+      if (!isWorkshopProjectedMap(asset)) {
+        entries.push(wrapped[next++])
+        continue
+      }
+      const entry = projection?.encode(asset)
+      if (!entry) return null
+      entries.push(entry)
+      bodies.push(entry.map)
+    }
+    // One decoded-buffer budget for the whole file, plain and projected bodies together.
+    if (!admitsRegionBackupBuffers(bodies)) return null
+    return pintaEncodedBackupByteLength(entries, 9) <= MAX_BACKUP_FILE_BYTES
+      ? pintaBackupFromEncoded(entries, 9)
       : null
   } catch {
     return null
   }
 }
-export async function decodeAutomapGallery(text: string): Promise<AutomapGallery | null> {
+export async function decodeAutomapGallery(text: string): Promise<AutomapGallery | null>
+export async function decodeAutomapGallery(
+  text: string,
+  projection: ProjectedEntryCodec,
+): Promise<AutomapGallery<PintaWorkshopAsset> | null>
+export async function decodeAutomapGallery(
+  text: string,
+  projection?: ProjectedEntryCodec,
+): Promise<AutomapGallery<PintaWorkshopAsset> | null> {
   if (text.length > MAX_BACKUP_FILE_BYTES || utf8ByteLength(text) > MAX_BACKUP_FILE_BYTES)
     return null
   try {
@@ -158,9 +211,16 @@ export async function decodeAutomapGallery(text: string): Promise<AutomapGallery
       return null
     const books = new Map<string, AutomapBook>()
     const raw: unknown[] = []
-    for (const asset of doc.assets) {
+    const projected: { index: number; entry: { map?: unknown } }[] = []
+    for (const [index, asset] of doc.assets.entries()) {
       if (asset?.schema !== 9) {
         raw.push(asset)
+        continue
+      }
+      // The projected envelope is the only native-9 item with `capability`; its codec decides.
+      if (Object.hasOwn(asset, 'capability')) {
+        if (!projection) return null
+        projected.push({ index, entry: asset })
         continue
       }
       if (
@@ -178,8 +238,17 @@ export async function decodeAutomapGallery(text: string): Promise<AutomapGallery
       books.set(asset.id, book)
       raw.push(asset.map)
     }
-    const assets = readExactAutomapBodies(raw)
-    if (!assets) return null
+    // Every body, plain or projected, is admitted against one budget before any decoding.
+    if (!admitsRegionBackupBuffers([...raw, ...projected.map(({ entry }) => entry.map)]))
+      return null
+    const plain = readExactAutomapBodies(raw)
+    if (!plain) return null
+    const assets: PintaWorkshopAsset[] = [...plain]
+    for (const { index, entry } of projected) {
+      const map = projection?.decode(entry)
+      if (!map) return null
+      assets.splice(index, 0, map)
+    }
     const result = { assets, books }
     return (await validGallery(result)) ? result : null
   } catch {
@@ -204,12 +273,13 @@ export async function copyAutomapDocument(
   return encodeAutomapGallery({ assets, books })
 }
 
+/** Any map with a book, rulebook or projected: plane layers and sheets follow the copied IDs. */
 export async function rebindCopiedAutomapBook(
-  map: AuthorMap,
-  copy: AuthorMap,
+  map: MapGraph,
+  copy: MapGraph,
   book: AutomapBook,
-  before: readonly PintaMemoryAsset[],
-  assets: readonly PintaMemoryAsset[],
+  before: readonly PintaWorkshopAsset[],
+  assets: readonly PintaWorkshopAsset[],
 ): Promise<AutomapBook | null> {
   if (map.layers.length !== copy.layers.length || checkAutomapLayers(map, book)) return null
   const original = await automapSheetIndex(map, before)
@@ -220,7 +290,7 @@ export async function rebindCopiedAutomapBook(
     for (const planes of [rule.input, ...rule.outputs])
       for (const plane of planes) {
         const layer = layers.get(plane.layer)
-        if (!layer || !isTileLayer<TilemapCells>(layer)) return null
+        if (!layer || !isTileLayerGraph(layer)) return null
         const sheet = tileLayerTilesetId(copy, layer),
           identity = index.get(sheet)
         if (!identity) return null

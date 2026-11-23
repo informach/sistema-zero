@@ -6,6 +6,7 @@
 import { PensaMissionLayout } from '@sistemazero/ui/pensa-mission-panel'
 import type { JSX } from 'react'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { isPintaMemoryAsset } from '../core/assetMemory'
 import { COPY } from '../core/copy'
 import {
   createGuidedBackgroundAsset,
@@ -147,7 +148,7 @@ export function PintaApp({
   adapter?: PintaHostAdapter
   onCompletionControlChange?: (control: PintaCompletionControl | null) => void
   /** Ausente = IndexedDB do perfil. O bloco de aula injeta o armazenamento dele. */
-  persistence?: PintaPersistence<import('../core/assetMemory').PintaMemoryAsset>
+  persistence?: PintaPersistence<import('../core/assetMemory').PintaWorkshopAsset>
   /** Informa ao host quando o editor ocupa toda a área, sem acoplar o Pinta ao menu externo. */
   onWorkspaceChange?: (active: boolean) => void
 }): JSX.Element {
@@ -309,15 +310,22 @@ export function PintaApp({
               return
             }
           }
-          const catalog = fullCatalog || card ? await store.persistence.listAllAssets() : null
-          const asset = catalog
-            ? catalog.find((item) => item.id === id)
+          const listed = fullCatalog || card ? await store.persistence.listAllAssets() : null
+          const catalog = listed?.filter(isPintaMemoryAsset) ?? null
+          const found = listed
+            ? listed.find((item) => item.id === id)
             : await store.persistence.loadAssetById(id)
           if (generation !== openGeneration.current) return
-          if (!asset) {
+          if (!found) {
             setOpenFailure({ message: COPY.gallery.drawingGone })
             return
           }
+          // A projected map stays stored as it is; no editor here opens it yet.
+          if (!isPintaMemoryAsset(found)) {
+            setOpenFailure({ message: COPY.gallery.projectedUnavailable([found.name]) })
+            return
+          }
+          const asset = found
           if (catalog) {
             releaseGalleryIndex.current?.()
             releaseGalleryIndex.current = gallery.getState().holdFullInventory()
@@ -351,7 +359,7 @@ export function PintaApp({
   const openComplete = async (focal: LocalRegionAuthorSession) => {
     const generation = openGeneration.current
     const revision = focal.store.getState().revision
-    const catalog = await store.persistence.listAllAssets()
+    const catalog = (await store.persistence.listAllAssets()).filter(isPintaMemoryAsset)
     const asset = catalog.find((item) => item.id === focal.id)
     if (generation !== openGeneration.current || focused.current !== focal) return
     if (

@@ -5,7 +5,7 @@
  * desenhos de um jogo de exemplo), que precisa saber QUAL id novo cada desenho ganhou.
  */
 
-import type { PintaMemoryAsset } from '../core/assetMemory'
+import type { PintaWorkshopAsset } from '../core/assetMemory'
 import { COPY } from '../core/copy'
 import { newId } from '../core/id'
 import { cloneMapIds, mapPropertyRefs, remapMapAssets } from '../core/mapClone'
@@ -25,7 +25,10 @@ export function uniqueName(base: string, taken: Set<string>): string | null {
 }
 
 /** Clona um asset com ids NOVOS (asset + animações + camadas) p/ o Duplicar e a importação. */
-export function cloneWithNewIds<Asset extends PintaMemoryAsset>(asset: Asset, name: string): Asset {
+export function cloneWithNewIds<Asset extends PintaWorkshopAsset>(
+  asset: Asset,
+  name: string,
+): Asset {
   const now = Date.now()
   const copy = structuredClone(asset)
   copy.id = newId()
@@ -46,7 +49,7 @@ export function cloneWithNewIds<Asset extends PintaMemoryAsset>(asset: Asset, na
   return copy
 }
 
-export interface ImportPlan<Asset extends PintaMemoryAsset = PintaAsset> {
+export interface ImportPlan<Asset extends PintaWorkshopAsset = PintaAsset> {
   /** O desenho como veio e o que vai ao disco (id novo, nome único, peças religadas). */
   pairs: Array<{ source: Asset; restored: Asset }>
   /** id de origem → id novo. */
@@ -60,7 +63,7 @@ export interface ImportPlan<Asset extends PintaMemoryAsset = PintaAsset> {
  * `taken`. Um mapa cujas peças vieram junto mas não entraram no plano é pulado (ficaria órfão).
  * A peça de camada que não veio segue apontando para o id de antes.
  */
-export function planImport<Asset extends PintaMemoryAsset>(
+export function planImport<Asset extends PintaWorkshopAsset>(
   eligible: readonly Asset[],
   incomingTilesetIds: ReadonlySet<string>,
   taken: Set<string>,

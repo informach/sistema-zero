@@ -5,7 +5,7 @@ import {
   type PintaRegionBounds,
   type PintaRegionCells,
 } from '@sistemazero/core/creations'
-import type { PintaMemoryAsset } from '../core/assetMemory'
+import { isWorkshopProjectedMap, type PintaWorkshopAsset } from '../core/assetMemory'
 import { decodedBitmapByteLength } from '../core/bitmapCodec'
 import { JsonByteSizeCache } from '../core/jsonBytes'
 import { REGION_METADATA_BUDGET } from '../core/mapDocumentBoundary'
@@ -16,11 +16,14 @@ import {
   type RegionTilemapAsset,
 } from '../core/project'
 import { PINTA_MAP_FORMAT_LIMITS, PINTA_MAX_SCHEMA } from '../core/projectConfig'
+import type { WorkshopProjectedMap } from '../core/projectedDocument'
 import { cellTile } from '../tiles/cell'
 import { encodePintaBackupAsset, MAX_BACKUP_FILE_BYTES, pintaBackupContainer } from './projectJson'
 import { admitsRegionBackupBuffers, REGION_BACKUP_VERSION } from './regionBackup'
+import { encodeWorkshopProjectedMap } from './workshopProjection'
 
-function regional(asset: PintaMemoryAsset): asset is RegionTilemapAsset | RegionMapSetAsset {
+function regional(asset: PintaWorkshopAsset): asset is RegionTilemapAsset | RegionMapSetAsset {
+  if (isWorkshopProjectedMap(asset)) return false
   return (
     (asset.kind === 'tilemap' && asset.schema === REGION_BACKUP_VERSION && 'origin' in asset) ||
     (asset.kind === 'map-set' && asset.schema === REGION_BACKUP_VERSION && 'origin' in asset.map)
@@ -47,6 +50,8 @@ type Chunk = PintaRegionCells['chunks'][number]
  */
 export class RegionBackupSizeCache {
   private readonly legacy = new WeakMap<object, PintaAsset>()
+  /** A projected map is measured as the exact native-9 envelope its gallery entry writes. */
+  private readonly projected = new WeakMap<object, WorkshopProjectedMap>()
   private readonly grids = new WeakMap<
     object,
     { grid: PintaRegionCells; bounds: PintaRegionBounds }
@@ -59,6 +64,12 @@ export class RegionBackupSizeCache {
   private serialize(value: object): object {
     const asset = this.legacy.get(value)
     if (asset) return encodePintaBackupAsset(asset)
+    const projected = this.projected.get(value)
+    if (projected) {
+      const entry = encodeWorkshopProjectedMap(projected)
+      if (!entry) throw new RangeError('Mapa projetado fora do contrato do Pinta.')
+      return entry
+    }
     const grid = this.grids.get(value)
     if (grid) {
       // Core defines the actual wire header. Child chunks have their own codec summaries.
@@ -95,14 +106,15 @@ export class RegionBackupSizeCache {
 
   /** Whole snapshot/batch size, including every repeated occurrence; Infinity refuses. */
   byteLength(
-    assets: readonly PintaMemoryAsset[],
-    envelope?: (assets: readonly PintaMemoryAsset[]) => unknown,
+    assets: readonly PintaWorkshopAsset[],
+    envelope?: (assets: readonly PintaWorkshopAsset[]) => unknown,
   ): number {
     try {
       if (!admitsRegionBackupBuffers(assets, bitmapBytes)) return Infinity
       const maps: RegionTilemapAsset[] = []
       for (const asset of assets) {
-        if (regional(asset)) maps.push(asset.kind === 'tilemap' ? asset : asset.map)
+        if (isWorkshopProjectedMap(asset)) this.projected.set(asset, asset)
+        else if (regional(asset)) maps.push(asset.kind === 'tilemap' ? asset : asset.map)
         else {
           if (
             (asset.kind === 'tilemap' || asset.kind === 'map-set') &&

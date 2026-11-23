@@ -5,7 +5,12 @@
  * mensagem gentil no estado (a UI oferece retry) — nunca lançam.
  */
 import { createStore, type StoreApi } from 'zustand/vanilla'
-import type { PintaMemoryAsset } from '../core/assetMemory'
+import {
+  isPintaMemoryAsset,
+  isWorkshopProjectedMap,
+  type PintaMemoryAsset,
+  type PintaWorkshopAsset,
+} from '../core/assetMemory'
 import { COPY } from '../core/copy'
 import { type PintaResourceObservation, pintaLocalRevisionOf } from '../core/localAssetOrigin'
 import { embeddedTilesetOf } from '../core/mapResourceVersions'
@@ -21,6 +26,7 @@ import {
   pintaAssetDependencyIds,
   sanitizeProjectRef,
 } from '../core/project'
+import type { WorkshopProjectedMap } from '../core/projectedDocument'
 import { observePintaReferences } from '../core/sceneMapClosure'
 import { pintaWorkshopBody } from '../core/workshopAsset'
 import { findTemplate } from '../templates/catalog'
@@ -53,6 +59,11 @@ export interface PintaGalleryState {
    * entram em `assets`: a galeria só avisa e oferece atualizar a página.
    */
   readIssues: PintaReadIssue[]
+  /**
+   * Mapas projetados (nativo 9) que este editor ainda não abre: ficam guardados, entram no backup
+   * da galeria e protegem as folhas e desenhos que usam. Não viram cartão nem ganham ação.
+   */
+  projected: WorkshopProjectedMap[]
   needsRetainedRecovery: boolean
   /** Keep complete dependencies available while an integral map/tileset editor is open. */
   holdFullInventory(): () => void
@@ -105,13 +116,29 @@ export interface PintaGalleryState {
    * quantos ficaram de fora.
    */
   importAssets(
-    assets: PintaMemoryAsset[],
+    assets: readonly PintaWorkshopAsset[],
     options?: { atomic?: boolean },
   ): Promise<{ added: number; skipped: number }>
   clearMutateError(): void
 }
 
 export type PintaGalleryStore = StoreApi<PintaGalleryState>
+
+/** The gallery lists what its editors open; projected maps are kept aside, whole. */
+function partitionProjected(listed: readonly PintaWorkshopAsset[]) {
+  return {
+    assets: listed.filter(isPintaMemoryAsset),
+    projected: listed.filter(isWorkshopProjectedMap),
+    cards: [] as RegionalGalleryCard[],
+  }
+}
+/** The rulebook travels beside the copied map; a projected map keeps it in its own field. */
+function copiedBook(asset: PintaWorkshopAsset) {
+  if (isWorkshopProjectedMap(asset)) return asset.automapping
+  return isPintaAuthoredMap(asset) ? asset.automapping : undefined
+}
+const workshopBody = (asset: PintaWorkshopAsset): PintaWorkshopAsset =>
+  isPintaMemoryAsset(asset) ? pintaWorkshopBody(asset) : asset
 
 function upsertSorted(assets: PintaMemoryAsset[], asset: PintaMemoryAsset): PintaMemoryAsset[] {
   const next = assets.filter((a) => a.id !== asset.id)
@@ -133,14 +160,16 @@ function persistenceErrorMessage(error: unknown): string {
 const CHANGED_RELOAD_DELAY_MS = 250
 
 export function createGalleryStore(
-  persistence: PintaPersistence<PintaMemoryAsset> = createPintaPersistence(),
+  persistence: PintaPersistence<PintaWorkshopAsset> = createPintaPersistence(),
   options: { focalGallery?: boolean } = {},
 ): PintaGalleryStore {
   let fullInventoryHolders = 0
   function names(except?: string): Set<string> {
-    const { assets, regionCards } = store.getState()
+    const { assets, regionCards, projected } = store.getState()
     return new Set(
-      [...assets, ...regionCards].filter(({ id }) => id !== except).map(({ name }) => name),
+      [...assets, ...regionCards, ...projected]
+        .filter(({ id }) => id !== except)
+        .map(({ name }) => name),
     )
   }
   async function displayedAsset(id: string): Promise<PintaMemoryAsset | null> {
@@ -150,11 +179,14 @@ export function createGalleryStore(
     const card = regionCards.find((card) => card.id === id)
     if (!card) return null
     const actual = await persistence.loadAssetById(id)
-    if (!actual || pintaLocalRevisionOf(actual) !== card.revision)
+    if (!actual || !isPintaMemoryAsset(actual) || pintaLocalRevisionOf(actual) !== card.revision)
       throw Error(COPY.editor.saveError)
     return actual
   }
-  function contextFor(assets: readonly PintaMemoryAsset[]) {
+  /** Who still uses this ID among the maps that this editor does not open yet. */
+  const usedByProjected = (id: string) =>
+    store.getState().projected.some((map) => pintaAssetDependencyIds(map).includes(id))
+  function contextFor(assets: readonly PintaWorkshopAsset[]) {
     const catalog = [...store.getState().assets, ...assets]
     const resources = new Map<string, PintaResourceObservation>()
     for (const asset of assets)
@@ -162,11 +194,11 @@ export function createGalleryStore(
         resources.set(observed.id, observed)
     return { resources: [...resources.values()] }
   }
-  const persistOne = (asset: PintaMemoryAsset) =>
+  const persistOne = (asset: PintaWorkshopAsset) =>
     persistence.observesReferences
       ? persistence.persistAsset(asset, contextFor([asset]))
       : persistence.persistAsset(asset)
-  const persistMany = (assets: readonly PintaMemoryAsset[]) =>
+  const persistMany = (assets: readonly PintaWorkshopAsset[]) =>
     persistence.observesReferences
       ? persistence.persistAssets(assets, contextFor(assets))
       : persistence.persistAssets(assets)
@@ -187,6 +219,7 @@ export function createGalleryStore(
     loading: false,
     syncing: false,
     readIssues: [],
+    projected: [],
     needsRetainedRecovery: persistence.needsRetainedRecovery?.() ?? false,
     holdFullInventory() {
       fullInventoryHolders++
@@ -207,14 +240,14 @@ export function createGalleryStore(
     async load() {
       set({ loading: true, loadError: null })
       try {
-        const { assets, cards } = await perfSpanAsync('pinta:gallery:load', async () => {
+        const { assets, cards, projected } = await perfSpanAsync('pinta:gallery:load', async () => {
           const index =
             options.focalGallery && !fullInventoryHolders
               ? await persistence.listGalleryIndex?.()
               : null
           return index && !fullInventoryHolders
-            ? index
-            : { assets: await persistence.listAllAssets(), cards: [] }
+            ? { ...index, projected: [] }
+            : partitionProjected(await persistence.listAllAssets())
         })
         // O estilo do asset mais recente vira o default do "Criar novo".
         const recentStyle = assets
@@ -223,6 +256,7 @@ export function createGalleryStore(
         set((state) => ({
           assets,
           regionCards: cards,
+          projected,
           loaded: true,
           loading: false,
           lastStyle: recentStyle ?? state.lastStyle,
@@ -395,6 +429,14 @@ export function createGalleryStore(
       try {
         const asset = await displayedAsset(id)
         if (!asset) return false
+        if (usedByProjected(id)) {
+          set({
+            mutateError: isTilesetKind(asset)
+              ? COPY.gallery.tilesetUsedByProjected
+              : COPY.gallery.drawingUsedByProjected,
+          })
+          return false
+        }
         if (
           get().assets.some((item) => pintaAssetDependencyIds(item).includes(id)) ||
           get().regionCards.some((card) => card.dependencies.includes(id))
@@ -447,7 +489,7 @@ export function createGalleryStore(
       const ordered = [...incoming].sort(
         (a, b) => (a.kind === 'tilemap' ? 1 : 0) - (b.kind === 'tilemap' ? 1 : 0),
       )
-      const eligible: PintaMemoryAsset[] = []
+      const eligible: PintaWorkshopAsset[] = []
       for (const asset of ordered) {
         if (
           asset.kind === 'tilemap' &&
@@ -470,7 +512,7 @@ export function createGalleryStore(
       // (as peças padrão E as de cada camada; peça de camada que não veio no
       // arquivo segue apontando para o id de antes: a camada volta sem aparência,
       // o mapa não se perde).
-      const plan = planImport(eligible.map(pintaWorkshopBody), incomingTilesetIds, names())
+      const plan = planImport(eligible.map(workshopBody), incomingTilesetIds, names())
       const idMap = plan.idMap
       skipped += plan.skipped
       importError ??= plan.error
@@ -481,40 +523,47 @@ export function createGalleryStore(
 
       const restoredPairs = plan.pairs
       const restored = restoredPairs.map(({ restored: asset }) => asset)
-      const authored = eligible.filter(isPintaAuthoredMap)
-      if (authored.length) {
+      const booked = eligible.filter((asset) => copiedBook(asset) !== undefined)
+      if (booked.length) {
         try {
           const { rebindCopiedAutomapBook } = await import('../tiles/automapping/native')
           const { attachWorkshopBook } = await import('../export/workshopDocument')
           if (skipped) throw Error(COPY.editor.saveError)
           const byId = new Map(restored.map((asset, i) => [asset.id, i]))
-          for (const asset of authored) {
+          for (const asset of booked) {
             const id = idMap.get(asset.id),
               i = id === undefined ? undefined : byId.get(id)
-            if (i === undefined) throw Error(COPY.editor.saveError)
-            const copy = restored[i]
-            if (copy?.kind !== 'tilemap') throw Error(COPY.editor.saveError)
-            const book = await rebindCopiedAutomapBook(
-              pintaWorkshopBody(asset),
+            const copy = i === undefined ? undefined : restored[i]
+            const original = workshopBody(asset)
+            const book = copiedBook(asset)
+            if (i === undefined || !book || copy?.kind !== 'tilemap' || original.kind !== 'tilemap')
+              throw Error(COPY.editor.saveError)
+            const rebound = await rebindCopiedAutomapBook(
+              original,
               copy,
-              asset.automapping,
+              book,
               [...current, ...eligible],
               [...current, ...restored],
             )
-            const bound = book && attachWorkshopBook(copy, book)
-            if (!bound) throw Error(COPY.editor.saveError)
-            restored[i] = bound
+            if (!rebound) throw Error(COPY.editor.saveError)
+            if (isWorkshopProjectedMap(copy)) restored[i] = { ...copy, automapping: rebound }
+            else {
+              const bound = attachWorkshopBook(copy, rebound)
+              if (!bound) throw Error(COPY.editor.saveError)
+              restored[i] = bound
+            }
           }
         } catch {
           set({ mutateError: COPY.editor.saveError })
           return { added: 0, skipped: incoming.length }
         }
       }
-      if (options.atomic || authored.length) {
+      if (options.atomic || booked.length) {
         try {
           await persistMany(restored)
           set((state) => ({
-            assets: restored.reduce(upsertSorted, state.assets),
+            assets: restored.filter(isPintaMemoryAsset).reduce(upsertSorted, state.assets),
+            projected: [...state.projected, ...restored.filter(isWorkshopProjectedMap)],
             mutateError: null,
           }))
           return { added: restored.length, skipped: 0 }
@@ -543,7 +592,11 @@ export function createGalleryStore(
         try {
           await persistOne(restoredAsset)
           persistedIds.add(restoredAsset.id)
-          set((state) => ({ assets: upsertSorted(state.assets, restoredAsset) }))
+          set((state) =>
+            isPintaMemoryAsset(restoredAsset)
+              ? { assets: upsertSorted(state.assets, restoredAsset) }
+              : { projected: [...state.projected, restoredAsset] },
+          )
           added += 1
         } catch (error) {
           skipped += 1

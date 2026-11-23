@@ -19,6 +19,7 @@ import { PINTA_CAUSAL_OUTBOX_KEY } from './assetAuthorityKeys'
 import { authorityKey, LOCAL_ASSET_PREFIX, mirrorKey } from './localAssetAuthority'
 import { localPreparedKey, PINTA_CAUSAL_BLOBS_KEY } from './localCausalOutbox'
 import { PINTA_CAUSAL_PIN_BLOBS_KEY } from './localCausalPins'
+import { isLocalRegionAsset } from './localRegionAssetAuthority'
 import { localRegionChunkKey } from './localRegionChunkStorage'
 import { readLocalRegionEditBase } from './localRegionEditing'
 import { createRegionPintaPersistence } from './localRegionPersistence'
@@ -120,7 +121,7 @@ function readPhysicalMap(db: Map<IDBValidKey, unknown>, id: string) {
   const decoded = workshopCodec.decode(authorityKey(id), records.get(authorityKey(id)), records)
   if (!decoded || typeof decoded !== 'object' || !('asset' in decoded)) throw Error('Mapa ausente')
   const asset = sanitizeWorkshopAsset(decoded.asset)
-  if (asset?.kind !== 'tilemap' || !('origin' in asset)) throw Error('Mapa regional ausente')
+  if (asset?.kind !== 'tilemap' || !isLocalRegionAsset(asset)) throw Error('Mapa regional ausente')
   return asset
 }
 
@@ -149,7 +150,8 @@ async function seedPhysicalRegion(namespace: string) {
   await persistence.persistAssets([sheet, map])
   const previous = await persistence.loadAssetById(map.id)
   const readSheet = await persistence.loadAssetById(sheet.id)
-  if (previous?.kind !== 'tilemap' || !('origin' in previous)) throw Error('Cenário não reabriu')
+  if (previous?.kind !== 'tilemap' || !isLocalRegionAsset(previous))
+    throw Error('Cenário não reabriu')
   const observed = readSheet && pintaResourceObservation(readSheet)
   if (!observed) throw Error('Folha sem revisão local')
   const db = idbMockDb(dbNameFor(namespace))

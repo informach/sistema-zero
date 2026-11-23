@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "kind": "studio.python.operational-promotion-approval",
+  "planSha256": "41e4a42a0235ed2d208be109e2aeee9f37c7d0460d733f65e0a7612cb8b0665d",
+  "distributionSha256": "f3b6ef00c982d522c51be2d7dbe31a919d3bc7a5c85a5d4ae32fc674c4e0eef0",
+  "qualificationSha256": "31a4ce59f2d9c2207ef431aaa0a02239232fda82783571d5caa063f74d367f6f",
+  "workerName": "sistemazero-python-promoter-staging-41e4a42a0235",
+  "operatorOrigin": "https://sistemazero-python-promoter-staging-41e4a42a0235.helena-bcc.workers.dev",
+  "notBefore": 1795423833168,
+  "expiresAt": 1795425573168
+}

@@ -18,7 +18,7 @@ import { readPintaRegionImageData } from '@sistemazero/core/studio/pinta-region-
 import { readPintaRegionImageWorld } from '@sistemazero/core/studio/pinta-region-image-world'
 import { readPintaPngText } from '@sistemazero/core/studio/pinta-region-png-text'
 import { readPintaRegionScene } from '@sistemazero/core/studio/pinta-region-scene'
-import type { PintaMemoryAsset } from '../core/assetMemory'
+import type { PintaWorkshopAsset } from '../core/assetMemory'
 import {
   isObjectLayer,
   isTileLayer,
@@ -60,7 +60,7 @@ function regionMap(asset: unknown): RegionTilemapAsset {
   return map
 }
 
-function expectSheet(asset: PintaMemoryAsset | undefined) {
+function expectSheet(asset: PintaWorkshopAsset | undefined) {
   if (asset?.kind !== 'tileset') throw Error('Folha ausente')
   expect(asset).toMatchObject({ id: 'folha-chao', name: 'chao', tileSize: 16 })
   expect(asset.solid).toEqual([false, true, false, false])

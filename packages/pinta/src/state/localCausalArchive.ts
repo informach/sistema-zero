@@ -1,5 +1,5 @@
 import { pintaValuesEqual } from '../core/assetEquality'
-import type { PintaMemoryAsset } from '../core/assetMemory'
+import type { PintaWorkshopAsset } from '../core/assetMemory'
 import { isTilesetKind, pintaAssetDependencyIds } from '../core/project'
 import { pintaDoorBindings } from '../core/sceneMapClosure'
 import type { LocalAssetTransition, LocalSnapshot } from './localAssetAuthority'
@@ -27,8 +27,8 @@ interface RecoveryDraft {
   hashes: ReadonlyMap<string, string>
 }
 
-type Pull<Asset extends PintaMemoryAsset> = PintaCausalLocalPull<Asset>
-type Archived<Asset extends PintaMemoryAsset> = NonNullable<Pull<Asset>['archived']>[number]
+type Pull<Asset extends PintaWorkshopAsset> = PintaCausalLocalPull<Asset>
+type Archived<Asset extends PintaWorkshopAsset> = NonNullable<Pull<Asset>['archived']>[number]
 type Read = RecoveryDraft['readSet'][number]
 
 function matchesRead(
@@ -42,7 +42,7 @@ function matchesRead(
   )
 }
 
-function recoveryDrafts<Asset extends PintaMemoryAsset>(
+function recoveryDrafts<Asset extends PintaWorkshopAsset>(
   pull: Pull<Asset>,
   state: LocalCausalState,
 ) {
@@ -81,7 +81,7 @@ function recoveryDrafts<Asset extends PintaMemoryAsset>(
 }
 
 /** Build distinct authoring catalogs from retained members and their recorded reads. */
-export function planArchivedRecovery<Asset extends PintaMemoryAsset>(
+export function planArchivedRecovery<Asset extends PintaWorkshopAsset>(
   pull: Pull<Asset>,
   state: LocalCausalState,
   snapshot: LocalSnapshot<Asset>,
@@ -372,7 +372,7 @@ export function planArchivedRecovery<Asset extends PintaMemoryAsset>(
   return result
 }
 
-function resourceIds<Asset extends PintaMemoryAsset>(
+function resourceIds<Asset extends PintaWorkshopAsset>(
   asset: Asset,
   catalog: ReadonlyMap<string, Asset>,
 ): string[] {
@@ -383,7 +383,7 @@ function resourceIds<Asset extends PintaMemoryAsset>(
   return [...ids]
 }
 
-export function copyArchivedRecovery<Asset extends PintaMemoryAsset>(
+export function copyArchivedRecovery<Asset extends PintaWorkshopAsset>(
   recovery: ReturnType<typeof planArchivedRecovery<Asset>>,
   destination: ReadonlyMap<string, Asset>,
 ): { copies: Asset[]; writes: LocalAssetTransition<Asset>[] } | null {

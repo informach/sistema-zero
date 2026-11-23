@@ -1,9 +1,24 @@
 import type { VectorShape } from '../vector/model'
 import { bitmapBytes, type SharedPart } from './history'
 import type { PintaAsset, PintaBitmap, RegionMapSetAsset, RegionTilemapAsset } from './project'
+import type { WorkshopProjectedMap } from './projectedDocument'
 
 /** Internal regional documents are measured without advertising public editing support. */
 export type PintaMemoryAsset = PintaAsset | RegionTilemapAsset | RegionMapSetAsset
+/**
+ * Every native-9 variant the workshop persistence keeps, opens and writes again: the editing union
+ * plus the projected map. The projected map stays out of `PintaMemoryAsset`, where `'origin' in`
+ * still means a physical-3 region, until a projected editor exists.
+ */
+export type PintaWorkshopAsset = PintaMemoryAsset | WorkshopProjectedMap
+/** The projected native-9 map; it also has `origin`, so test it before any regional check. */
+export function isWorkshopProjectedMap(asset: PintaWorkshopAsset): asset is WorkshopProjectedMap {
+  return asset.kind === 'tilemap' && 'projection' in asset
+}
+/** Everything the editors open; a projected map stays out until a projected editor exists. */
+export function isPintaMemoryAsset(asset: PintaWorkshopAsset): asset is PintaMemoryAsset {
+  return !isWorkshopProjectedMap(asset)
+}
 
 function shapeBytes(shape: VectorShape): number {
   let bytes = 128
