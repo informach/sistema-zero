@@ -261,11 +261,9 @@
   },
   "promocao": {
     "em": "2026-11-24",
-    "estado": "bloqueada",
-    "motivo": "promote-kids (produção) e copy-adult (staging) falharam na validação da Aula 1 dentro da publicação de cursos: 'Configure a atividade e sua verificação...; A checagem deve pertencer à própria seção.' (course-sync.ts:306). Nada foi publicado; os cursos de produção e o adulto continuam em rascunho.",
-    "trabalhos": {
-      "promote-kids": "62dc63fe-fec6-4f35-ae63-7b419813d501",
-      "copy-adult-staging": "411bee30-e2a6-4c1c-ab29-57424e1edb9b"
-    }
+    "causa": "as três primeiras experiências da Ilha falam 19 frases e o teto de vozes da cena era 12 (VOZ_LIMITS.entradas); a publicação gravava o dicionário e a validação recusava a Aula 1",
+    "conserto": "teto 32 no core (a4beb3872) e o await do operador (143640eb4), PR #284 na main (8d87bbff8) e merge b1220ea67 na staging",
+    "staging": "Members e Admin publicados em b1220ea67; cópia para o adulto concluída (trabalho d9b8dc8a-80fc-4bc7-a1b9-01bf8558a66f); as vozes geradas nela foram postas nas três aulas do Kids (23 blocos) e as aulas publicadas de novo",
+    "producao": "pendente: o deploy de produção parou na conferência da configuração do Railway (6 alterações pendentes que não vêm do PR); promoção e cópia para o adulto ainda não feitas"
   }
 }
