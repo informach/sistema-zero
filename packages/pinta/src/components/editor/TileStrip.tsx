@@ -8,13 +8,18 @@
 import { clsx } from 'clsx'
 import type { JSX } from 'react'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { isPintaMemoryAsset, type PintaWorkshopAsset } from '../../core/assetMemory'
+import {
+  isPintaMemoryAsset,
+  isWorkshopProjectedMap,
+  type PintaWorkshopAsset,
+} from '../../core/assetMemory'
 import { COPY } from '../../core/copy'
 import {
   type AnyTilesetAsset,
   isTilesetKind,
   type PintaAsset,
   type PintaBitmap,
+  pintaAssetDependencyIds,
   resolveAssetPalette,
   type VectorFrame,
 } from '../../core/project'
@@ -173,10 +178,22 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
       if (limitToast) showToast(limitToast)
       return
     }
+    const renumbers = remap && ('removedAt' in remap || remap.insertedAt < current.tiles.length)
     const apply = (catalog: readonly PintaWorkshopAsset[]): void => {
       if (!active.current || editor.getState().asset !== current) return
       let accepted: boolean
       if (remap) {
+        // A projected map is not opened here, so its cells cannot follow the new numbering.
+        if (
+          renumbers &&
+          [...catalog, ...gallery.getState().projected].some(
+            (asset) =>
+              isWorkshopProjectedMap(asset) && pintaAssetDependencyIds(asset).includes(current.id),
+          )
+        ) {
+          showToast(COPY.tiles.remapRefusedProjected)
+          return
+        }
         const linked = remapTilesetConsumers(
           catalog.filter(isPintaMemoryAsset),
           (workshopEditor ?? editor).getState().linkedAssets ?? [],
@@ -207,7 +224,6 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
       }
       if (accepted && selectIndex !== undefined) session.getState().selectFrame(selectIndex)
     }
-    const renumbers = remap && ('removedAt' in remap || remap.insertedAt < current.tiles.length)
     if (renumbers && persistence.prepareTileRemap)
       return persistence.prepareTileRemap(current).then(apply, () => {
         if (active.current) showToast(COPY.tiles.remapRefused(current.name))

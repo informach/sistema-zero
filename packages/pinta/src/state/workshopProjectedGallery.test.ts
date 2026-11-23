@@ -1,11 +1,12 @@
 /**
- * A galeria da oficina ainda não abre mapas projetados: ela os guarda inteiros, leva no backup e
- * restaura como cópia.
+ * A galeria da oficina ainda não abre mapas projetados: ela os guarda inteiros, leva no backup,
+ * restaura como cópia e não deixa apagar a folha ou o desenho que eles usam.
  */
 import { beforeEach, expect, test } from 'bun:test'
 import '../testing/idbMock'
 import { strFromU8, unzipSync } from 'fflate'
 import { COPY } from '../core/copy'
+import { createTilesetAsset } from '../core/project'
 import { isWorkshopProjectedMap } from '../core/workshopAsset'
 import { PINTA_GALLERY_ZIP_ENTRY } from '../export/backupFormat'
 import { pintaWorkshopAssetToJson, readPintaWorkshopBackup } from '../export/workshopDocument'
@@ -94,4 +95,26 @@ test('restaurar o backup traz o projetado como cópia, com o livro religado à c
     ),
   )
   expect(reopened.getState().projected.every(isWorkshopProjectedMap)).toBe(true)
+})
+
+test('apagar a folha ou o desenho que um projetado usa é recusado; sem projetado segue como antes', async () => {
+  const { store, stored, sheet } = await workshopGallery('galeria-apaga-folha')
+  const before = stored()
+  expect(await store.getState().remove(sheet.id)).toBe(false)
+  expect(store.getState().mutateError).toBe(COPY.gallery.tilesetUsedByProjected)
+  expect(store.getState().assets.some(({ id }) => id === sheet.id)).toBe(true)
+  const after = stored()
+  for (const [index, record] of before.entries()) expect(after[index]).toBe(record)
+
+  // A sheet nobody uses is removed exactly as before, projected maps or not.
+  const spare = createTilesetAsset({ name: 'sobra', tileSize: 16 })
+  await store.getState().importAssets([spare])
+  const added = store.getState().assets.find(({ name }) => name === 'sobra')
+  if (!added) throw Error('Folha extra ausente')
+  expect(await store.getState().remove(added.id)).toBe(true)
+
+  // Without projected maps, the same sheet keeps the previous answer (used by the rulebook map).
+  const plain = await workshopGallery('galeria-apaga-folha-sem-projetado', false)
+  expect(await plain.store.getState().remove(plain.sheet.id)).toBe(false)
+  expect(plain.store.getState().mutateError).toBe(COPY.gallery.tilesetInUse)
 })

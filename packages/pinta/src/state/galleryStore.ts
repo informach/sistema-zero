@@ -183,6 +183,9 @@ export function createGalleryStore(
       throw Error(COPY.editor.saveError)
     return actual
   }
+  /** Who still uses this ID among the maps that this editor does not open yet. */
+  const usedByProjected = (id: string) =>
+    store.getState().projected.some((map) => pintaAssetDependencyIds(map).includes(id))
   function contextFor(assets: readonly PintaWorkshopAsset[]) {
     const catalog = [...store.getState().assets, ...assets]
     const resources = new Map<string, PintaResourceObservation>()
@@ -426,6 +429,14 @@ export function createGalleryStore(
       try {
         const asset = await displayedAsset(id)
         if (!asset) return false
+        if (usedByProjected(id)) {
+          set({
+            mutateError: isTilesetKind(asset)
+              ? COPY.gallery.tilesetUsedByProjected
+              : COPY.gallery.drawingUsedByProjected,
+          })
+          return false
+        }
         if (
           get().assets.some((item) => pintaAssetDependencyIds(item).includes(id)) ||
           get().regionCards.some((card) => card.dependencies.includes(id))

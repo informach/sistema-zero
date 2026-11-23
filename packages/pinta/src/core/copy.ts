@@ -372,6 +372,10 @@ export const COPY = {
       names.length === 1
         ? `O mapa "${names[0]}" ainda não abre nesta versão do Pinta. Ele continua guardado.`
         : `${names.length} mapas ainda não abrem nesta versão do Pinta. Eles continuam guardados.`,
+    tilesetUsedByProjected:
+      'Esta folha é usada por um mapa que ainda não abre nesta versão do Pinta. Ela continua guardada.',
+    drawingUsedByProjected:
+      'Este desenho é usado por um mapa que ainda não abre nesta versão do Pinta. Ele continua guardado.',
     cancel: 'Cancelar',
     recoveredLocal:
       'Recuperei uma edição de outra janela numa cópia. Seus desenhos foram protegidos.',
@@ -956,6 +960,8 @@ export const COPY = {
     tileLimit: 'Você chegou ao limite de peças.',
     remapRefused: (name: string) =>
       `Não consegui atualizar as peças de "${name}". Nada foi alterado.`,
+    remapRefusedProjected:
+      'Esta folha é usada por um mapa que ainda não abre nesta versão do Pinta. Nada foi alterado.',
     blankTile:
       'Essa peça ainda está em branco! Desenhe nela em "Peças do cenário" que o mapa se pinta sozinho.',
     layers: 'Camadas',

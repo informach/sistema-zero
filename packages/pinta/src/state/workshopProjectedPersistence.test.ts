@@ -178,6 +178,89 @@ test('o pull pelo manifesto causal instala as três variantes e elas reexportam 
   expect(book && !isWorkshopProjectedMap(book) && isPintaAuthoredMap(book)).toBe(true)
 })
 
+test('gravar outro desenho da mesma galeria deixa o projetado com os mesmos bytes', async () => {
+  const namespace = 'oficina-outro-desenho'
+  setPintaStorageNamespace(namespace)
+  const { sheet, authored, hex, iso } = await gallery()
+  const local = createWorkshopPintaPersistence({ namespace })
+  await local.persistAssets([sheet, authored, hex, iso])
+  const db = idbMockDb(dbNameFor(namespace))
+  const keys = [hex.id, iso.id].flatMap((id) => [authorityKey(id), mirrorKey(id)])
+  const before = new Map(keys.map((key) => [key, db.get(key)]))
+  const physical = [hex.id, iso.id].map(
+    (id) => codec.encode(authorityKey(id), db.get(authorityKey(id)), new Map()).document,
+  )
+  // Autosaves of the sheet (new collision) and of the rulebook map (new name), one by one.
+  const readSheet = await local.loadAssetById(sheet.id)
+  const readMap = await local.loadAssetById(authored.id)
+  if (readSheet?.kind !== 'tileset' || !readMap) throw Error('Galeria não reabriu')
+  await local.persistAsset({ ...readSheet, solid: [true, true, false, false] })
+  await local.persistAsset({ ...readMap, name: 'vila-renomeada' })
+  for (const key of keys) expect(db.get(key)).toBe(before.get(key))
+  expect(
+    [hex.id, iso.id].map(
+      (id) => codec.encode(authorityKey(id), db.get(authorityKey(id)), new Map()).document,
+    ),
+  ).toEqual(physical)
+  const reopened = createWorkshopPintaPersistence({ namespace })
+  for (const map of [hex, iso]) {
+    const again = await reopened.loadAssetById(map.id)
+    expect(again && pintaWorkshopAssetToJson(again)).toBe(pintaWorkshopAssetToJson(map))
+  }
+})
+
+test('um pull que renumera a folha não reescreve o projetado que só existe neste aparelho', async () => {
+  const namespace = 'oficina-pull-renumera'
+  setPintaStorageNamespace(namespace)
+  const { sheet, iso } = await gallery()
+  if (sheet.kind !== 'tileset') throw Error('Folha ausente')
+  const local = createWorkshopPintaPersistence({ namespace, guardCausalWrites: true })
+  const remote = (revision: number) => ({
+    revision,
+    layoutRevision: String(revision),
+    sha256: String(revision).repeat(64),
+  })
+  expect(
+    await local.causal.applyPull(
+      {
+        fromEpoch: null,
+        epoch: '1',
+        transitions: [
+          { id: sheet.id, before: null, beforeRevision: null, after: sheet, remote: remote(1) },
+        ],
+      },
+      () => true,
+    ),
+  ).toBe(true)
+  await local.persistAsset(iso)
+  const db = idbMockDb(dbNameFor(namespace))
+  const stored = db.get(authorityKey(iso.id))
+  const [base] = await local.causal.capture([sheet.id])
+  if (base?.before?.kind !== 'tileset') throw Error('Folha ausente')
+  const pull = {
+    fromEpoch: '1',
+    epoch: '2',
+    transitions: [
+      {
+        ...base,
+        after: {
+          ...base.before,
+          tiles: base.before.tiles.slice(1),
+          solid: base.before.solid.slice(1),
+          platform: base.before.platform.slice(1),
+        },
+        remote: remote(2),
+      },
+    ],
+  }
+  const impact = await local.causal.pullImpact(pull)
+  expect(impact).toEqual({ ids: [sheet.id, iso.id], blocked: true })
+  expect(await local.causal.applyPull({ ...pull, coveredIds: impact.ids }, () => true)).toBe(false)
+  expect(db.get(authorityKey(iso.id))).toBe(stored)
+  const again = await local.loadAssetById(iso.id)
+  expect(again && pintaWorkshopAssetToJson(again)).toBe(pintaWorkshopAssetToJson(iso))
+})
+
 test('a recuperação copia o projetado divergente inteiro e religa o livro às camadas da cópia', async () => {
   const namespace = 'oficina-recupera-projetado'
   setPintaStorageNamespace(namespace)
