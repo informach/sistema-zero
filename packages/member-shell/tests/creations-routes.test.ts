@@ -311,6 +311,73 @@ describe('protocolo de isolamento adulto durante deploy e rollback', () => {
       'creations/adult/user-1/studio/proj-1/2.json.gz',
     ])
   })
+
+  /** Perfil adulto causal: a listagem do Pinta exige o protocolo causal; a paleta fica fora da cerca. */
+  const causalAdultMembers = (studioBody: unknown) => ({
+    listCreations: async (tool: string) =>
+      tool === 'pinta'
+        ? {
+            status: 409,
+            body: { error: { code: 'PINTA_CAUSAL_CONFLICT' }, reason: 'protocol-required' },
+          }
+        : { status: 200, body: studioBody },
+    reserveCreationUpload: async () => ({
+      status: 200,
+      body: {
+        revision: 3,
+        bytes: 100,
+        storageKey: 'creations/adult/user-1/pinta/sz-pinta-palettes/3.json.gz',
+      },
+    }),
+  })
+  const palette = { params: Promise.resolve({ tool: 'pinta', itemId: 'sz-pinta-palettes' }) }
+  const paletteUpload = () =>
+    post({
+      name: 'Minhas paletas',
+      kind: 'palette-library',
+      itemUpdatedAt: '2026-11-22T12:00:00Z',
+      bytes: 100,
+    })
+
+  test('paleta adulta pelo caminho antigo sobe num perfil causal: a sonda não cruza a cerca', async () => {
+    const { routes, calls } = buildRoutes({
+      audience: 'adult',
+      members: causalAdultMembers({ audience: 'adult', items: [] }),
+    })
+    expect((await routes.creationsUploadUrl.POST(paletteUpload(), palette)).status).toBe(200)
+    expect((await routes.creationsCommit.POST(post({ revision: 3 }), palette)).status).toBe(200)
+    expect((await routes.creationsDelete.DELETE(deleteRequest(3), palette)).status).toBe(200)
+    expect(r2.presignPut.map((entry) => entry.key)).toEqual([
+      'creations/adult/user-1/pinta/sz-pinta-palettes/3.json.gz',
+    ])
+    expect(calls.commitCreationUpload).toHaveLength(1)
+    expect(calls.deleteCreation).toHaveLength(1)
+  })
+
+  test('paleta adulta continua recusada por members que ignora audience; desenho causal segue cercado', async () => {
+    const legacy = buildRoutes({
+      audience: 'adult',
+      members: causalAdultMembers({ items: [] }),
+    })
+    expect((await legacy.routes.creationsUploadUrl.POST(paletteUpload(), palette)).status).toBe(503)
+    expect((await legacy.routes.creationsCommit.POST(post({ revision: 3 }), palette)).status).toBe(
+      503,
+    )
+    expect((await legacy.routes.creationsDelete.DELETE(deleteRequest(3), palette)).status).toBe(503)
+    expect(legacy.calls.commitCreationUpload).toBeUndefined()
+    expect(legacy.calls.deleteCreation).toBeUndefined()
+    expect(r2.presignPut).toEqual([])
+
+    const drawing = { params: Promise.resolve({ tool: 'pinta', itemId: 'desenho-1' }) }
+    const causal = buildRoutes({
+      audience: 'adult',
+      members: causalAdultMembers({ audience: 'adult', items: [] }),
+    })
+    const fenced = await causal.routes.creationsDelete.DELETE(deleteRequest(3), drawing)
+    expect(fenced.status).toBe(409)
+    expect(await fenced.json()).toMatchObject({ reason: 'protocol-required' })
+    expect(causal.calls.deleteCreation).toBeUndefined()
+  })
 })
 
 beforeEach(() => {

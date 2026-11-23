@@ -283,10 +283,21 @@ export function createCreationsRoutes(deps: {
     return null
   }
 
-  /** Confirma o protocolo antes de mutar: members antigo ignora `audience` na query. */
-  async function requireAdultNamespace(tool: ToolName): Promise<NextResponse | null> {
+  /**
+   * Confirma o protocolo antes de mutar: members antigo ignora `audience` na query. O eco
+   * `audience` da listagem vem do repositório adulto e vale para qualquer ferramenta. A
+   * paleta do Pinta fica fora da cerca causal de propósito, mas a listagem do Pinta não:
+   * num perfil causal ela responde 409 `protocol-required` e a paleta nunca mais subiria
+   * pelo caminho antigo. Para a paleta, a sonda lista o Estúdio, que a cerca não alcança.
+   */
+  async function requireAdultNamespace(item: {
+    tool: ToolName
+    itemId: string
+  }): Promise<NextResponse | null> {
     if (session.audience !== 'adult') return null
-    const probe = await members.listCreations(tool, { limit: 1 })
+    const probe = await members.listCreations(paletteItem(item) ? 'studio' : item.tool, {
+      limit: 1,
+    })
     if (probe.status !== 200) return response(probe.status, probe.body)
     if (probe.body?.audience === 'adult') return null
     return NextResponse.json(
@@ -352,7 +363,7 @@ export function createCreationsRoutes(deps: {
       }
       const readonly = await requireWritableSession(req)
       if (readonly) return readonly
-      const incompatible = await requireAdultNamespace(item.tool)
+      const incompatible = await requireAdultNamespace(item)
       if (incompatible) return incompatible
       if (!parsed.success) return invalid()
       // Acima do teto por item (manifesto + partes declaradas): a MESMA resposta que o members
@@ -499,7 +510,7 @@ export function createCreationsRoutes(deps: {
       }
       const readonly = await requireWritableSession(req)
       if (readonly) return readonly
-      const incompatible = await requireAdultNamespace(item.tool)
+      const incompatible = await requireAdultNamespace(item)
       if (incompatible) return incompatible
       if (!parsed.success) return invalid()
       // PARTES que o cliente diz ter enviado: HEAD best-effort no R2 ANTES do members — um 404
@@ -654,7 +665,7 @@ export function createCreationsRoutes(deps: {
       const mismatch = await requireViewerMatch(req)
       if (mismatch) return mismatch
       if (!palette) {
-        const incompatible = await requireAdultNamespace(item.tool)
+        const incompatible = await requireAdultNamespace(item)
         if (incompatible) return incompatible
       }
       const ticket = studioReader
@@ -717,7 +728,7 @@ export function createCreationsRoutes(deps: {
       }
       const readonly = await requireWritableSession(req)
       if (readonly) return readonly
-      const incompatible = await requireAdultNamespace(item.tool)
+      const incompatible = await requireAdultNamespace(item)
       if (incompatible) return incompatible
       if (!parsed.success) return invalid()
       const { status, body } = await members.deleteCreation(item.tool, item.itemId, parsed.data)
