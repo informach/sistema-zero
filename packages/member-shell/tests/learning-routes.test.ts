@@ -194,6 +194,34 @@ describe('learning BFF boundary', () => {
     ).toBe(413)
     expect(calls).toHaveLength(1)
   })
+  test('o aquecimento leva só a revisão, com a mesma fronteira de perfil', async () => {
+    const { routes, calls } = setup()
+    const section = { params: Promise.resolve({ lessonId, sectionId: blockId }) }
+    expect(
+      (await routes.learningProjectCheckWarm.POST(request({ revision: lessonId }), section)).status,
+    ).toBe(200)
+    expect(calls[0]).toEqual({
+      path: `/members/lessons/${lessonId}/sections/${blockId}/project-check/warm`,
+      opts: { method: 'POST', body: { revision: lessonId } },
+    })
+    expect(
+      (
+        await routes.learningProjectCheckWarm.POST(
+          request({ revision: lessonId }, 'other-profile'),
+          section,
+        )
+      ).status,
+    ).toBe(409)
+    expect(
+      (
+        await routes.learningProjectCheckWarm.POST(
+          request({ revision: lessonId, project: {} }),
+          section,
+        )
+      ).status,
+    ).toBe(400)
+    expect(calls).toHaveLength(1)
+  })
   test('project checks forward a complete live context and reject partial or forged context', async () => {
     const { routes, calls } = setup()
     const section = { params: Promise.resolve({ lessonId, sectionId: blockId }) }
