@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process'
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { basename, dirname, join, resolve } from 'node:path'
-import { createRegionCellReader } from '@sistemazero/core/creations'
+import { createRegionCellReader, PINTA_REGION_LIMITS } from '@sistemazero/core/creations'
 import type { PintaRegionSceneWire } from '@sistemazero/core/studio/pinta-region-scene'
 import { nativeImageOf } from '../../../scripts/homologacao/generate'
 import { projectedVila } from '../../testing/projectedVila'
@@ -32,6 +32,7 @@ interface Layer {
   properties?: Property[]
 }
 interface TiledDocument {
+  editorsettings?: { chunksize?: { width: number; height: number } }
   infinite: boolean
   orientation: string
   tiledversion: string
@@ -164,6 +165,80 @@ test('private return reads the edited Tiled chunks and properties instead of the
   expect(occupied(backInTiled as unknown as TiledDocument)).toEqual(occupied(input))
   chunk.x--
   await expect(importRegionalTiledScene(input, source.resolver)).rejects.toThrow('fora da área')
+})
+
+test('the regional Tiled files ask Tiled to keep 32×32 chunks in JSON and TMX', async () => {
+  const { map, assets } = regionVila()
+  const files = await buildScenePackage(map, assets, 'tiled', { imageOf: nativeImageOf })
+  const document = JSON.parse(String(files['mapas/mapa-0/mapa.json'])) as TiledDocument
+  expect(document.editorsettings).toEqual({ chunksize: { width: 32, height: 32 } })
+  const tmx = String(files['mapas/mapa-0/mapa.tmx'])
+  expect(tmx).toContain('<editorsettings><chunksize width="32" height="32"/></editorsettings>')
+  expect(tmx.indexOf('<editorsettings>')).toBeLessThan(tmx.indexOf('<properties>'))
+  const entries = new Map(
+    Object.entries(files).map(([key, value]) => [
+      key,
+      typeof value === 'string' ? new TextEncoder().encode(value) : value,
+    ]),
+  )
+  const source = tiledPackageSource(entries, 'mapas/mapa-0/mapa.tmx')
+  const fromTmx = await importRegionalTiledScene(tiledXmlToJson(tmx), source.resolver)
+  const fromJson = await importRegionalTiledScene(document, source.resolver)
+  expect(fromTmx.scene).toEqual(fromJson.scene)
+})
+
+test('a large map re-saved by Tiled in 16×16 chunks returns whole: the ceiling counts Pinta regions', async () => {
+  const { map, assets } = regionVila()
+  const files = await buildScenePackage(map, assets, 'tiled', { imageOf: nativeImageOf })
+  const path = 'mapas/mapa-0/mapa.json'
+  const input = JSON.parse(String(files[path])) as TiledDocument
+  const floor = flatten(input.layers).find((layer) =>
+    layer.chunks?.some((chunk) => chunk.x === -64 && chunk.y === -64),
+  )
+  if (!floor?.chunks) throw new Error('A camada assinada da Vila não veio no Tiled.')
+  const gid = floor.chunks.find((chunk) => chunk.x === -64 && chunk.y === -64)!.data[0]!
+  // 23×23 Pinta regions filled to the edge: 529 regions, which Tiled writes as 2,116 chunks.
+  const side = 23 * 32,
+    start = 2048
+  const cells = new Map<string, number>()
+  for (const chunk of floor.chunks)
+    for (const [i, value] of chunk.data.entries())
+      if (value)
+        cells.set(`${chunk.x + (i % chunk.width)},${chunk.y + Math.floor(i / chunk.width)}`, value)
+  for (let y = start; y < start + side; y++)
+    for (let x = start; x < start + side; x++) cells.set(`${x},${y}`, gid)
+  const tiledChunks = new Map<string, Chunk>()
+  for (const [key, value] of cells) {
+    const [x, y] = key.split(',').map(Number) as [number, number]
+    const cx = Math.floor(x / 16) * 16,
+      cy = Math.floor(y / 16) * 16
+    let chunk = tiledChunks.get(`${cx},${cy}`)
+    if (!chunk) {
+      chunk = { x: cx, y: cy, width: 16, height: 16, data: new Array(256).fill(0) }
+      tiledChunks.set(`${cx},${cy}`, chunk)
+    }
+    chunk.data[(y - cy) * 16 + x - cx] = value
+  }
+  floor.chunks = [...tiledChunks.values()]
+  expect(floor.chunks.length).toBeGreaterThan(PINTA_REGION_LIMITS.maxChunks)
+  const source = tiledPackageSource(
+    new Map(
+      Object.entries(files).map(([key, value]) => [
+        key,
+        typeof value === 'string' ? new TextEncoder().encode(value) : value,
+      ]),
+    ),
+    path,
+  )
+  const { scene } = await importRegionalTiledScene(input, source.resolver)
+  const imported = scene.layers.find((layer) => layer.id === property(floor.properties, 'pinta:id'))
+  if (imported?.kind !== 'tiles') throw new Error('A camada re-salva não voltou.')
+  const reader = createRegionCellReader(imported.cells)
+  expect(reader.at(-64, -64)).toBe(3)
+  expect(reader.at(start, start)).toBe(reader.at(-64, -64))
+  expect(reader.at(start + side - 1, start + side - 1)).toBe(reader.at(-64, -64))
+  expect(reader.at(start + side, start)).toBe(-1)
+  expect(imported.cells.chunks.length).toBeGreaterThanOrEqual(529)
 })
 
 test('missing linked maps fail instead of producing a partial package', async () => {

@@ -690,6 +690,11 @@ export async function tiledMap(
     orientation: projection?.kind ?? 'orthogonal',
     ...(projection && projection.kind !== 'orthogonal' ? {} : { renderorder: 'right-down' }),
     infinite: regional,
+    // Tiled re-saves infinite layers in its own chunk size (16×16 by default); asking for the
+    // Pinta region keeps the file returning in the same 32×32 regions.
+    ...(regional
+      ? { editorsettings: { chunksize: { width: PINTA_REGION_SIDE, height: PINTA_REGION_SIDE } } }
+      : {}),
     width: regional ? 0 : scene.cols,
     height: regional ? 0 : scene.rows,
     tilewidth: projection?.tileWidth ?? scene.tileSize,
@@ -764,6 +769,12 @@ function attrs(obj: Record<string, unknown>, keys: string[]): string {
     .map((k) => ` ${k}="${xml(typeof obj[k] === 'boolean' ? (obj[k] ? 1 : 0) : obj[k])}"`)
     .join('')
 }
+function editorSettings(raw: unknown): string {
+  const size = (raw as { chunksize?: { width: number; height: number } } | undefined)?.chunksize
+  return size
+    ? `<editorsettings><chunksize width="${xml(size.width)}" height="${xml(size.height)}"/></editorsettings>`
+    : ''
+}
 function props(raw: unknown): string {
   const values = raw as Property[] | undefined
   return values?.length
@@ -814,5 +825,5 @@ export function tiledMapXml(map: Record<string, unknown>, external = false): str
     }
     return `<objectgroup${a} draworder="index">${p}${((l.objects as Record<string, unknown>[]) ?? []).map((o) => `<object${attrs(o, ['id', 'name', 'type', 'x', 'y', 'width', 'height', 'rotation', 'gid', 'visible'])}>${props(o.properties)}${o.point ? '<point/>' : ''}${o.ellipse ? '<ellipse/>' : ''}${o.polygon || o.polyline ? `<${o.polygon ? 'polygon' : 'polyline'} points="${((o.polygon || o.polyline) as { x: number; y: number }[]).map((p) => `${p.x},${p.y}`).join(' ')}"/>` : ''}</object>`).join('')}</objectgroup>`
   }
-  return `<?xml version="1.0" encoding="UTF-8"?><map${attrs(map, ['version', 'tiledversion', 'orientation', 'renderorder', 'width', 'height', 'tilewidth', 'tileheight', 'infinite', 'staggeraxis', 'staggerindex', 'hexsidelength', 'nextlayerid', 'nextobjectid'])}>${props(map.properties)}${(map.tilesets as Record<string, unknown>[]).map((t, i) => (external ? `<tileset firstgid="${t.firstgid}" source="tiles-${i}.tsx"/>` : tiledTilesetXml(t).replace('<tileset ', `<tileset firstgid="${t.firstgid}" `))).join('')}${(map.layers as Record<string, unknown>[]).map(layer).join('')}</map>`
+  return `<?xml version="1.0" encoding="UTF-8"?><map${attrs(map, ['version', 'tiledversion', 'orientation', 'renderorder', 'width', 'height', 'tilewidth', 'tileheight', 'infinite', 'staggeraxis', 'staggerindex', 'hexsidelength', 'nextlayerid', 'nextobjectid'])}>${editorSettings(map.editorsettings)}${props(map.properties)}${(map.tilesets as Record<string, unknown>[]).map((t, i) => (external ? `<tileset firstgid="${t.firstgid}" source="tiles-${i}.tsx"/>` : tiledTilesetXml(t).replace('<tileset ', `<tileset firstgid="${t.firstgid}" `))).join('')}${(map.layers as Record<string, unknown>[]).map(layer).join('')}</map>`
 }
