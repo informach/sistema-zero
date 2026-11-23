@@ -185,20 +185,23 @@ export async function writeRegionTiledFiles(
     'As propriedades pinta:* guardam a área autoral, os conjuntos, as ligações e a física. O Tiled edita o mapa, e a execução das portas e colisões depende do jogo que o carrega.',
     'Os objetos extras de conjuntos são cópias para exibição. A definição fica em pinta:sets.',
   ]
+  // The regional players read maps.json and start.json, never mapa.json: only the Tiled
+  // package itself needs the supplement.
+  const fallback =
+    target === 'pygame'
+      ? 'Consulte o cenário completo em cenario.png.'
+      : target === 'godot'
+        ? 'Consulte o cenário completo em maps.json.'
+        : target === 'phaser'
+          ? 'O jogo em index.html usa o cenário completo de maps.json.'
+          : null
   for (const { folder, scene, decoded } of world.maps.values()) {
     let tiled: Awaited<ReturnType<typeof tiledMap>>
     try {
       tiled = await tiledMap(decoded)
     } catch (error) {
-      // As in the dense packages, only the game targets carry the scene without the Tiled supplement.
-      if (
-        !(error instanceof TiledSceneCompatibilityError) ||
-        (target !== 'pygame' && target !== 'godot')
-      )
-        throw error
-      reports.push(
-        `Mapa ${scene.name}. ${error.message} Consulte o cenário completo em ${target === 'pygame' ? 'cenario.png' : 'maps.json'}.`,
-      )
+      if (!(error instanceof TiledSceneCompatibilityError) || !fallback) throw error
+      reports.push(`Mapa ${scene.name}. ${error.message} ${fallback}`)
       continue
     }
     world.put(`${folder}/mapa.json`, JSON.stringify(tiled))

@@ -15,6 +15,7 @@ import { PHASER_SHA256, PHASER_VERSION } from '../../scripts/generate-phaser'
 import { vilaEFloresta } from '../../scripts/homologacao/fixture'
 import { nativeImageOf } from '../../scripts/homologacao/generate'
 import { createTilemapAsset, createTilesetAsset } from '../core/project'
+import { prepareMapRegions } from '../tiles/regionMap'
 import { createMapSet } from '../tiles/sets'
 import { parseGodotText, validateAtlasCoordinates, validateGodotProject } from './godot/textFormat'
 import { importPintaJson } from './projectJson'
@@ -96,6 +97,35 @@ it('Pygame and Godot retain affine art and explicitly report omitted incompatibl
     await expect(
       buildScenePackage(root, assets, target, { imageOf: nativeImageOf }),
     ).rejects.toBeInstanceOf(TiledSceneCompatibilityError)
+})
+
+it('o Phaser regional segue sem o suplemento do Tiled, como Pygame e Godot, e registra a omissão', async () => {
+  const { root, assets } = shearedArt()
+  const prepared = prepareMapRegions(root)
+  if (!prepared.ok) throw new Error('O mapa de teste devia virar regiões.')
+  const regional = prepared.map,
+    inventory = [regional, ...assets.filter((asset) => asset.id !== root.id)]
+  for (const target of ['phaser', 'pygame', 'godot'] as const) {
+    const files = await buildScenePackage(regional, inventory, target, { imageOf: nativeImageOf })
+    expect(
+      Object.keys(files).some(
+        (path) => path.endsWith('mapa.json') || path.endsWith('.tmx') || path.endsWith('.tsx'),
+      ),
+    ).toBe(false)
+    const report = files['COMPATIBILIDADE-TILED.txt'] as string
+    expect(report).toContain('cisalhamento')
+    expect(report).toContain(
+      target === 'phaser'
+        ? 'O jogo em index.html usa o cenário completo de maps.json.'
+        : `Consulte o cenário completo em ${target === 'pygame' ? 'cenario.png' : 'maps.json'}.`,
+    )
+    expect(JSON.parse(files['maps.json'] as string)[regional.id]).toBeDefined()
+    expect(files['start.json']).toBe(JSON.stringify(regional.id))
+    if (target === 'phaser') expect(files['main.js']).toBeDefined()
+  }
+  await expect(
+    buildScenePackage(regional, inventory, 'tiled', { imageOf: nativeImageOf }),
+  ).rejects.toBeInstanceOf(TiledSceneCompatibilityError)
 })
 
 const pygame = [process.env.PYTHON, 'python3', 'python'].find(
