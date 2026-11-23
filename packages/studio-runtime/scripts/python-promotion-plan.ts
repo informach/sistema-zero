@@ -21,9 +21,18 @@ import { createStudioAuthoringPolicy } from '../../members/src/domain/studio/aut
 import { createStudioRuntimeHosts } from '../../members/src/domain/studio/runtime-hosts'
 import { PYTHON_PROGRAMMING_CODECS } from '../../studio/src/python/blocks/catalog'
 import { describePythonCatalog } from '../../studio/src/python/blocks/selection'
-import { PYTHON_PGZERO_CODECS } from '../../studio/src/python/extensions/pgzero/catalog'
-import { PYTHON_PYGAME_CODECS } from '../../studio/src/python/extensions/pygame/catalog'
-import { PYTHON_RAYLIB_2D_CODECS } from '../../studio/src/python/extensions/raylib2d/catalog'
+import {
+  PYTHON_PGZERO_CODECS,
+  PYTHON_PGZERO_PINTA_SCENE_CODECS,
+} from '../../studio/src/python/extensions/pgzero/catalog'
+import {
+  PYTHON_PYGAME_CODECS,
+  PYTHON_PYGAME_PINTA_SCENE_CODECS,
+} from '../../studio/src/python/extensions/pygame/catalog'
+import {
+  PYTHON_RAYLIB_2D_CODECS,
+  PYTHON_RAYLIB_2D_PINTA_SCENE_CODECS,
+} from '../../studio/src/python/extensions/raylib2d/catalog'
 import { PYTHON_RAYLIB_3D_CODECS } from '../../studio/src/python/extensions/raylib3d/catalog'
 import { PYTHON_TURTLE_CODECS } from '../../studio/src/python/extensions/turtle/catalog'
 import { PGZERO_EXTENSION } from '../../studio/src/runtime/python/pgzero/contract'
@@ -256,13 +265,18 @@ export async function preparePythonPromotion(raw: unknown, baseDirectory = proce
     (entry) => entry.runtime.manifestSha256 === release.manifestSha256,
   )
   const status = existingPolicy?.status ?? existingDeployment?.status ?? 'active'
-  // Approval follows these immutable bytes, not every codec in the current editor.
+  // Approval follows these immutable bytes, not every codec in the current editor. The Pinta
+  // scene blocks live apart from each 2D catalog (the editor puts them first) and are approved only
+  // by a distribution with `pinta-scene-regions-v1`, like every feature-gated block.
   const codecs = [
     ...PYTHON_PROGRAMMING_CODECS,
     ...PYTHON_TURTLE_CODECS,
     ...PYTHON_PGZERO_CODECS,
+    ...PYTHON_PGZERO_PINTA_SCENE_CODECS,
     ...PYTHON_PYGAME_CODECS,
+    ...PYTHON_PYGAME_PINTA_SCENE_CODECS,
     ...PYTHON_RAYLIB_2D_CODECS,
+    ...PYTHON_RAYLIB_2D_PINTA_SCENE_CODECS,
     ...PYTHON_RAYLIB_3D_CODECS,
   ].filter((codec) =>
     (codec.requiredRuntimeFeatures ?? []).every((feature) =>
