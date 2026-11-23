@@ -1160,3 +1160,64 @@ test('projeto retido: a cópia de saída sem blocos abre com os blocos guardados
     setProjectStorageNamespace(previous.namespace)
   }
 })
+
+test('placar do jogo num projeto retido: sobrevive ao autosave, a fila espera o commit e a leitura relê', async () => {
+  const { loadProjectShellById } = await import('./persistence')
+  const { readRetainedManifest } = await import('./retainedProjectStore')
+  const { editRetainedAuxiliary } = await import('./retainedProjectEditor')
+  const { loadGameStorage, writeGameStorage, createGameStorageSession } = await import(
+    './gameStorage'
+  )
+  const { runSerializedProjectWrite } = await import('./projectStorageRuntime')
+  const previous = captureProjectStorageScope()
+  const id = 'vila-placar'
+  try {
+    const { scope, script } = await retainedWithExitCopies('placar-retido', id)
+    const editor = await prepareEditableStudioProject(
+      await loadProjectShellById(id, scope),
+      capability(scope),
+    )
+    if (!editor || isPythonProject(editor)) throw Error('O projeto não abriu.')
+    const save = async (text: string) => {
+      editor.files = { ...editor.files, 'script.js': text }
+      await persistProject(editor, {}, scope)
+    }
+
+    // O placar capturou o manifesto antes de um autosave do editor: repete sobre a cabeça nova.
+    const captured = (await readRetainedManifest(scope, id))!
+    await save('console.log("autosave")')
+    await editRetainedAuxiliary(scope, captured, { game: { placar: '7' } })
+    expect(await loadGameStorage(id)).toStrictEqual({ placar: '7' })
+    await save('console.log("depois-do-placar")')
+    expect(script(await loadProjectShellById(id, scope))).toBe('console.log("depois-do-placar")')
+
+    // A próxima escrita do projeto só começa depois de o placar chegar ao disco.
+    const written = writeGameStorage(id, { placar: '8' })
+    let seen: unknown
+    const next = runSerializedProjectWrite(scope, id, async () => {
+      seen = await loadGameStorage(id)
+      return undefined
+    })
+    await Promise.all([written, next])
+    expect(seen).toStrictEqual({ placar: '8' })
+
+    // Um save entre ler o manifesto e ler o placar não faz o jogo começar vazio.
+    let raced = false
+    const racing = {
+      ...scope,
+      store: ((mode, callback) => {
+        const read = scope.store(mode, callback)
+        if (raced || mode !== 'readonly') return read
+        raced = true
+        return read.then(async (value) => {
+          await save('console.log("no-meio-da-leitura")')
+          return value
+        })
+      }) as typeof scope.store,
+    }
+    expect(await createGameStorageSession(id, racing).load()).toStrictEqual({ placar: '8' })
+    expect(raced).toBe(true)
+  } finally {
+    setProjectStorageNamespace(previous.namespace)
+  }
+})

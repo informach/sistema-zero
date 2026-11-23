@@ -104,10 +104,12 @@ export interface RetainedPatch {
 export async function patchRetainedProject(
   scope: ProjectStorageScope,
   first: RetainedManifest,
-  expectedEditorToken: string,
+  /** `null` only for auxiliary values, which ride on whatever authored head is current. */
+  expectedEditorToken: string | null,
   change: RetainedPatch,
 ) {
-  if (first.deleted) throw new ProjectWriteConflict()
+  if (first.deleted || (change.nextHead && expectedEditorToken === null))
+    throw new ProjectWriteConflict()
   const values = copyStudioProjectJson(change.values) as RetainedValues
   const nextHead = change.nextHead && { ...change.nextHead }
   const ready = change.ready
@@ -117,7 +119,8 @@ export async function patchRetainedProject(
     try {
       const source = await readRetainedParts(scope, manifest)
       const current = retainedEditorHead(manifest, source.head)
-      if (current.token !== expectedEditorToken) throw new ProjectWriteConflict()
+      if (expectedEditorToken !== null && current.token !== expectedEditorToken)
+        throw new ProjectWriteConflict()
       const merged = {
         ...source,
         ...values,
@@ -370,14 +373,15 @@ export async function retainedOwnsDrafts(scope: ProjectStorageScope, id: string)
   return drafts.some(({ recovery }) => retainedDraftRelation(head, recovery.head) !== 'competing')
 }
 
+/**
+ * Thumbnail and game storage keep the authored head. An autosave that lands first only means the
+ * values go over the newer head: pinning the old head token silently dropped the game's score.
+ */
 export async function editRetainedAuxiliary(
   scope: ProjectStorageScope,
   manifest: RetainedManifest,
   values: RetainedValues,
 ) {
   const captured = copyStudioProjectJson(values) as RetainedValues
-  const stored = await readRetainedParts(scope, manifest, ['head'])
-  return patchRetainedProject(scope, manifest, retainedEditorHead(manifest, stored.head).token, {
-    values: captured,
-  })
+  return patchRetainedProject(scope, manifest, null, { values: captured })
 }
