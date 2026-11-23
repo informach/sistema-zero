@@ -1,0 +1,30 @@
+{
+  "at": "2026-11-23T17:00:00Z",
+  "scope": "independent remote R2 CLI readback (wrangler r2 object get --remote)",
+  "results": [
+    {
+      "name": "complete",
+      "key": "runtimes/efc1ad5e9a62442321853e023db793b7bc59329ddbe5a92c89f4330fb6636b1e/complete.json",
+      "sha256": "a06fa6bd50532cb53e2c6e82b21d81b498e04fd90ee432455865e9ab7d551670",
+      "matchesPlan": true
+    },
+    {
+      "name": "catalog",
+      "key": "runtime-configs/05294b0e0df2ed0a128bde227a927c7f88fef3db784baf59368ae0246ee22ead.json",
+      "sha256": "05294b0e0df2ed0a128bde227a927c7f88fef3db784baf59368ae0246ee22ead",
+      "matchesPlan": true
+    },
+    {
+      "name": "playtest.mjs",
+      "key": "runtimes/efc1ad5e9a62442321853e023db793b7bc59329ddbe5a92c89f4330fb6636b1e/files/playtest.mjs",
+      "sha256": "2fe07699deb1f4acc99633ed7a6bca36113c13b226fe00dd6659a2b1db86f539",
+      "matchesPlan": true
+    },
+    {
+      "name": "standalone.mjs",
+      "key": "runtimes/efc1ad5e9a62442321853e023db793b7bc59329ddbe5a92c89f4330fb6636b1e/files/standalone.mjs",
+      "sha256": "5001d85e7a7bd9c04b4fdc076eb68a9beab3a7381a1e2bf6aac00015b32f7a05",
+      "matchesPlan": true
+    }
+  ]
+}
