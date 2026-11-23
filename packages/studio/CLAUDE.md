@@ -32,7 +32,14 @@ Lotes 5 a 7b e 9 da conclusão do plano (especificação em
 - **Python:** o `cenario.py` carrega por regiões com as mesmas regras (casos compartilhados com o
   TypeScript em `runtime/python/raylib/__tests__/regioes-casos.json`, gerados por
   `scripts/gen-raylib-region-cases.ts`); os blocos de cenário do Raylib 3D só ligam com o recurso
-  `molda-scene-regions-v1` da distribuição (`core/src/studio/python-runtime-features.ts`).
+  `molda-scene-regions-v1` da distribuição (`core/src/studio/python-runtime-features.ts`). O relevo de
+  mundo grande (plano "Mundos de 2 km", lote 6): o `cenario.py` lê o campo (alturas e pesos em PNG
+  com `zlib`) e monta pedaços com a cor no vértice (o Raylib do Estúdio não tem neblina nem o
+  material do editor): completos até 1,5 pedaço do foco, grossos longe, um completo por quadro, nada
+  atrás da câmera nem além de 1000 m. A conta é a de `molda-cenarios-core/src/compilar/relevo-pedacos.ts`,
+  conferida byte a byte pelos casos `__tests__/relevo-casos.json` (`scripts/gen-raylib-relevo-cases.ts`).
+  O Estúdio só pede o campo num projeto Python com o recurso `molda-scene-relevo-v1`
+  (`scene3DRuntimeReadsRelevo`); o Raylib do computador recusa o campo com recado.
 - **Ordem segura:** leitores em todo lugar antes do escritor; o interruptor `CENARIOS_REGIOES` do
   Members (desligado por padrão) mostra a ferramenta Regiões e deixa o servidor aceitar `regioes`.
 - **Exemplos grandes na galeria** (`examples/bigExamples.ts`): entram no grupo do motor com nome,

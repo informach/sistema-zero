@@ -7,6 +7,7 @@ import { StudioPythonDistributionSchema } from '@sistemazero/core/studio/python-
 import {
   PYTHON_BACKGROUND_FOCUS_FEATURE,
   PYTHON_MOLDA_REGIONS_FEATURE,
+  PYTHON_MOLDA_RELEVO_FEATURE,
   PYTHON_MOLDA_SCENE_FEATURE,
   PYTHON_PINTA_PHYSICS_FEATURE,
   PYTHON_PINTA_REGIONS_FEATURE,
@@ -251,6 +252,7 @@ export async function buildPythonRuntimeDistribution(
       PYTHON_MOLDA_SCENE_FEATURE,
       PYTHON_BACKGROUND_FOCUS_FEATURE,
       PYTHON_MOLDA_REGIONS_FEATURE,
+      PYTHON_MOLDA_RELEVO_FEATURE,
     ],
     previewHostAudioVersion: 1,
     ...(http.representations.length ? { httpRepresentations: http.representations } : {}),

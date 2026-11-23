@@ -1,4 +1,5 @@
 """Contrato do cenário compilado com o motor Python real do Estúdio, sem janela nativa."""
+import base64
 import contextlib
 import copy
 import hashlib
@@ -12,6 +13,7 @@ import struct
 import sys
 import tempfile
 import unittest
+import zlib
 
 sys.path.insert(0, sys.argv.pop(1))
 import _szraylib
@@ -719,6 +721,195 @@ class CenarioTest(unittest.TestCase):
             self.assertIsNot(s._nos['pessoa'][1], s._nos['outra'][1])
         finally:
             s.descartar()
+
+
+# O relevo de mundo grande (plano "Mundos de 2 km", lote 6): o cenário monta os pedaços com a
+# mesma conta da referência do núcleo TypeScript (`relevo-casos.json`, de
+# `scripts/gen-raylib-relevo-cases.ts`).
+RELEVO = json.loads((Path(__file__).resolve().parent / 'relevo-casos.json').read_text(encoding='utf-8'))
+
+
+def png_rgba(largura, altura, rgba, filtro=0):
+    """PNG RGBA de 8 bits como o codificador do Molda (filtro 0 em toda linha)."""
+    fila = largura * 4
+    cru = b''.join(bytes([filtro]) + rgba[j * fila:(j + 1) * fila] for j in range(altura))
+
+    def parte(tipo, dados):
+        return (struct.pack('>I', len(dados)) + tipo + dados
+                + struct.pack('>I', zlib.crc32(tipo + dados) & 0xffffffff))
+
+    return (b'\x89PNG\r\n\x1a\n' + parte(b'IHDR', struct.pack('>IIBBBBB', largura, altura, 8, 6, 0, 0, 0))
+            + parte(b'IDAT', zlib.compress(cru)) + parte(b'IEND', b''))
+
+
+def com_relevo(data, folder, forma, alturas, pesos, camadas, buracos=None):
+    """Troca o piso plano pelo relevo em campo (sem lotes de terreno nem colisão do chão)."""
+    (folder / 'terreno').mkdir()
+    arquivos = {'terreno/alturas.bin': alturas}
+    nomes = []
+    for k, png in enumerate(pesos):
+        nome = f'terreno/pesos-{"ab"[k]}.png'
+        arquivos[nome] = png
+        nomes.append(nome)
+    if buracos is not None:
+        arquivos['terreno/buracos.bin'] = buracos
+    for nome, b in arquivos.items():
+        (folder / nome).write_bytes(b)
+        data['arquivos'].append({'caminho': nome, 'bytes': len(b), 'digest': hashlib.sha256(b).hexdigest(),
+                                 'mime': 'image/png' if nome.endswith('.png') else 'application/octet-stream',
+                                 'papel': 'pesos' if nome.endswith('.png') else 'terreno'})
+    valores = struct.unpack(f'<{len(alturas) // 4}f', alturas)
+    data.pop('plano', None)
+    data['terreno'] = {
+        **forma, 'min': min(valores) - 1, 'max': max(valores) + 1, 'fundo': min(valores) - 1,
+        'cobertura': 'grade', 'pecas': [], 'recortes': [], 'alturas': 'terreno/alturas.bin',
+        'pngAlturas': 'terreno/alturas.png',
+        **({'buracos': 'terreno/buracos.bin'} if buracos is not None else {}),
+        'relevo': {'tipo': 'campo', 'pesos': nomes,
+                   'camadas': [{'id': f'c{k}', **c} for k, c in enumerate(camadas)]},
+    }
+    return data
+
+
+def relevo_dos_casos(data, folder):
+    f = RELEVO['forma']
+    buracos = bytearray(f['colunas'] * f['linhas'])
+    for i in RELEVO['buracos']:
+        buracos[i] = 1
+    return com_relevo(data, folder, f, base64.b64decode(RELEVO['alturas']),
+                      [base64.b64decode(p) for p in RELEVO['pesosPng']], RELEVO['camadas'], bytes(buracos))
+
+
+def relevo_grande(data, folder, colunas=512):
+    """Um relevo de 512 m (8 × 8 pedaços de 64 m, um metro de passo), com uma camada só."""
+    largura = colunas + 1
+    alturas = struct.pack(f'<{largura * largura}f', *(
+        math.sin(i / 9) + math.cos(j / 11) for j in range(largura) for i in range(largura)))
+    rgba = bytes([255, 0, 0, 0]) * (largura * largura)
+    forma = {'origem': {'x': 0, 'z': 0}, 'passo': 1, 'colunas': colunas, 'linhas': colunas}
+    return com_relevo(data, folder, forma, alturas, [png_rgba(largura, largura, rgba)],
+                      [{'cor': '#80c060', 'corMedia': '#ffffff'}])
+
+
+class RelevoTest(unittest.TestCase):
+    def setUp(self):
+        self.folder = ROOT / f'relevo-{len(list(ROOT.iterdir()))}'
+        self.data = fixture(self.folder)
+
+    def abrir(self):
+        return cenario.Cenario(self.folder, self.data)
+
+    def test_os_pedacos_sao_os_do_nucleo(self):
+        relevo_dos_casos(self.data, self.folder)
+        s = self.abrir()
+        try:
+            for caso in RELEVO['pedacos']:
+                p = caso['pedaco']
+                vertices, cores, indices = s._relevo.malha(p['i0'], p['j0'], p['celulas'], p['passo'])
+                self.assertEqual(vertices.tobytes(), base64.b64decode(caso['vertices']), p)
+                self.assertEqual(bytes(cores), base64.b64decode(caso['cores']), p)
+                self.assertEqual(indices.tobytes(), base64.b64decode(caso['indices']), p)
+                self.assertEqual(s._relevo.saia(p['i0'], p['j0'], p['celulas']), caso['saia'])
+        finally:
+            s.descartar()
+
+    def test_a_altura_le_o_campo_inteiro(self):
+        relevo_dos_casos(self.data, self.folder)
+        s = self.abrir()
+        try:
+            self.assertEqual(s._pecas, set())
+            for a in RELEVO['alturasNoPonto']:
+                self.assertAlmostEqual(s.altura(a['x'], a['z']), a['altura'], places=4)
+            f = RELEVO['forma']
+            # A célula (20, 10) é buraco; fora da grade não há chão.
+            self.assertIsNone(s.altura(f['origem']['x'] + 20.5 * f['passo'], f['origem']['z'] + 10.5 * f['passo']))
+            self.assertIsNone(s.altura(f['origem']['x'] - 1, f['origem']['z']))
+        finally:
+            s.descartar()
+
+    def test_desenha_e_solta_os_pedacos(self):
+        relevo_dos_casos(self.data, self.folder)
+        s = self.abrir()
+        try:
+            estado = s.estado_do_relevo()
+            self.assertGreater(estado['desenhados'], 0)
+            self.assertEqual(estado['faltam'], 0)
+            P.begin_drawing()
+            P.begin_mode_3d(P.Camera3D((0, 30, 0), (10, 0, 10), (0, 1, 0), 45, 0))
+            s.desenhar()
+            P.end_mode_3d()
+            P.end_drawing()
+        finally:
+            s.descartar()
+        self.assertEqual(s._relevo, None)
+
+    def test_perto_completo_longe_grosso_um_por_quadro(self):
+        relevo_grande(self.data, self.folder)
+        self.data['marcadores'][0]['posicao'] = {'x': 32, 'y': 0, 'z': 32}
+        s = self.abrir()
+        try:
+            r = s._relevo
+            # Na abertura, tudo o que está perto já vem completo.
+            completos = sorted(k for k in r.desenho if k[0] == 'c')
+            self.assertEqual(completos, [('c', 0, 0), ('c', 0, 1), ('c', 0, 2), ('c', 1, 0), ('c', 1, 1), ('c', 2, 0)])
+            # Longe, blocos grossos de 2 × 2 pedaços (o canto oposto inteiro).
+            self.assertIn(('b', 6, 6), r.desenho)
+            # O mesmo pedaço nunca aparece em dois desenhos.
+            cobertos = []
+            for tipo, x, z in r.desenho:
+                lado = 2 if tipo == 'b' else 1
+                cobertos += [(x + a, z + b) for a in range(lado) for b in range(lado)]
+            self.assertEqual(len(cobertos), len(set(cobertos)))
+            self.assertEqual(len(cobertos), 64)
+            # Andando até o meio: um completo novo por quadro, e o grosso fica até ele chegar.
+            s.atualizar(256.0, 256.0)
+            self.assertGreater(s.estado_do_relevo()['faltam'], 0)
+            antes = s.estado_do_relevo()['faltam']
+            s.atualizar(256.0, 256.0)
+            self.assertEqual(s.estado_do_relevo()['faltam'], antes - 1)
+            for _ in range(40):
+                s.atualizar(256.0, 256.0)
+            self.assertEqual(s.estado_do_relevo()['faltam'], 0)
+            self.assertLessEqual(sum(1 for k in r.modelos if k[0] == 'c'), cenario._RELEVO_COMPLETOS_GUARDADOS)
+        finally:
+            s.descartar()
+
+    def test_pula_o_que_esta_atras_da_camera(self):
+        relevo_grande(self.data, self.folder)
+        self.data['marcadores'][0]['posicao'] = {'x': 256, 'y': 0, 'z': 256}
+        s = self.abrir()
+        try:
+            camera = P.Camera3D((256, 5, 256), (300, 0, 256), (0, 1, 0), 45, 0)
+            for _ in range(40):
+                s.atualizar(256.0, 256.0, camera=camera)
+            atras = [k for k in s._relevo.desenho if k[0] != 'c' and k[1] <= 1]
+            self.assertEqual(atras, [])
+            self.assertTrue(any(k[0] != 'c' and k[1] >= 6 for k in s._relevo.desenho))
+        finally:
+            s.descartar()
+
+    def test_fora_do_estudio_recusa_com_recado(self):
+        relevo_dos_casos(self.data, self.folder)
+        anterior = cenario._NO_ESTUDIO
+        cenario._NO_ESTUDIO = False
+        try:
+            with self.assertRaisesRegex(ValueError, 'só abre no Estúdio'):
+                self.abrir()
+        finally:
+            cenario._NO_ESTUDIO = anterior
+
+    def test_recusa_pesos_com_outro_filtro_ou_tamanho(self):
+        f = RELEVO['forma']
+        largura = f['colunas'] + 1
+        rgba = bytes(largura * largura * 4)
+        for png in (png_rgba(largura, largura, rgba, filtro=1), png_rgba(largura - 1, largura - 1, rgba)):
+            with self.subTest(png=len(png)):
+                self.setUp()
+                buracos = bytes(f['colunas'] * f['linhas'])
+                com_relevo(self.data, self.folder, f, base64.b64decode(RELEVO['alturas']), [png],
+                           [{'cor': '#ffffff', 'corMedia': '#ffffff'}], buracos)
+                with self.assertRaisesRegex(ValueError, 'pesos do relevo'):
+                    self.abrir()
 
 
 if __name__ == '__main__':

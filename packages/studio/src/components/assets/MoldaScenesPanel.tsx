@@ -8,6 +8,7 @@ import { normalizeSearchText } from '../../core/searchText'
 import {
   MOLDA_SCENE_RUNTIME_MESSAGE,
   scene3DRuntimeCompatible,
+  scene3DRuntimeReadsRelevo,
 } from '../../runtime/scene3dCompatibility'
 import { captureProjectStorageScope } from '../../state/projectStorageRuntime'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
@@ -156,8 +157,11 @@ export function MoldaScenesPanel({
         signal,
         juntar,
         // O relevo em campo (plano "Mundos de 2 km"): os motores 3D em JavaScript o leem; o
-        // Python só com a distribuição que o declara (lote 6).
-        ...(capturado.programmingLanguage !== 'python' ? { relevo: 'campo' as const } : {}),
+        // Python só com a versão do runtime que o declara (lote 6, `molda-scene-relevo-v1`).
+        ...(!isPythonProject(capturado) ||
+        scene3DRuntimeReadsRelevo(capturado.runtime, ambiente?.catalog)
+          ? { relevo: 'campo' as const }
+          : {}),
         progresso: (p) => {
           if (aberto())
             setProgresso(`${p.nome ?? t('moldaScenes.preparing')} · ${p.feitos}/${p.total}`)
