@@ -118,8 +118,9 @@ export function measuredFocalRegionalGesture() {
 export async function inspectFocalRegionalCells(seed: Seed, change = false) {
   const local = createRegionPintaPersistence({ namespace: seed.namespace })
   const map = await local.loadAssetById(seed.id)
-  const ground = map?.kind === 'tilemap' && map.layers.find(isTileLayer)
-  if (map?.kind !== 'tilemap' || !('origin' in map) || !ground) throw Error('Mapa ausente')
+  if (map?.kind !== 'tilemap' || !('origin' in map)) throw Error('Mapa ausente')
+  const ground = map.layers.find(isTileLayer)
+  if (!ground) throw Error('Mapa ausente')
   if (change) await local.persistAsset(setCell(map, ground.id, -33, -53, 12))
   return [
     cellAt(map, ground.id, -33, -55),

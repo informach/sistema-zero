@@ -300,6 +300,8 @@ for (const target of ['g2d', 'gk'] as const) {
 test('only the private composition carries the regional factory and requires explicit physics throughout', async () => {
   const world = admit(regional('legacy'))
   const scene = world.maps.get(world.rootId)!.data.scene
+  // Only Scene 4 may omit physics in its own schema; the gate under test is the bootstrap's.
+  if (scene.version !== 4) throw Error('Cena regional esperada')
   const invalid = { ...scene, id: 'incomplete', physics: undefined }
   const both = {
     ...world,
