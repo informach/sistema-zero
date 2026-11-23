@@ -411,7 +411,7 @@ test('a parte com objetivo que roda o jogo aquece o contêiner ao abrir e enquan
     lessonId: 'lesson',
     courseSlug: 'course',
     viewerWatermark: null,
-    ...(viewerId ? { viewerId } : {}),
+    viewerId: viewerId ?? null,
     initialPositionSeconds: null,
     sectionProjectCheck: {
       blockId: 'block',
