@@ -21,10 +21,8 @@ const token = 'local-palette-http-fixture-token'
 const gateway = { 'x-internal-token': token, 'x-consumer-id': 'member-shell' }
 const fixture = () => ({ userId: randomUUID(), accountId: randomUUID(), audience: 'kids' as const })
 
-async function server(
-  profile: ReturnType<typeof fixture>,
-  options: { flag?: string; predecessor?: string } = {},
-) {
+// Sem flag nem lista de perfis (23/11/2026): a composição real negocia a paleta com todo perfil.
+async function server(options: { predecessor?: string } = {}) {
   const socket = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch: () => new Response(null) })
   const port = socket.port!
   await socket.stop(true)
@@ -35,8 +33,6 @@ async function server(
     PORT: String(port),
     GATEWAY_HMAC_SECRET: 'local-verified-upstream-fixture',
     INTERNAL_API_TOKEN: token,
-    PINTA_PALETTE_WRITE_CANDIDATE: options.flag,
-    PINTA_CAUSAL_QA_PROFILES: JSON.stringify([profile]),
   }
   const previous = options.predecessor
   const app = previous
@@ -91,9 +87,9 @@ describe.skipIf(!target)('palette writer across actual Members HTTP deployments'
   }, 60_000)
   afterAll(() => db?.close())
 
-  test('strict negotiation returns an adopted head and never reopens the legacy writer when disabled', async () => {
+  test('strict negotiation returns an adopted head and never reopens the legacy writer after a restart', async () => {
     const actor = fixture()
-    const active = await server(actor, { flag: '1' })
+    const active = await server()
     const current = clients(active, actor)
     const absent = { protocol, adopted: false, generation: null, exists: false, revision: 0 }
     const command = {
@@ -119,9 +115,6 @@ describe.skipIf(!target)('palette writer across actual Members HTTP deployments'
       expect((await current.internal('head', {}, { 'x-consumer-id': 'unrelated' })).status).toBe(
         401,
       )
-      expect(
-        (await clients(active, { ...actor, userId: randomUUID() }).internal('head', {})).status,
-      ).toBe(404)
       const early = await current.external('/upload', 'POST', beforeCapability)
       expect(early.status).toBe(200)
       const legacyRevision = (await early.json()).revision
@@ -139,6 +132,19 @@ describe.skipIf(!target)('palette writer across actual Members HTTP deployments'
         revision: ticket.revision,
         exists: true,
       })
+      // Todo perfil negocia a própria biblioteca, e só ela: outro perfil da conta vê a sua (vazia),
+      // e o par perfil + outra conta é recusado sem revelar a cabeça deste.
+      expect(
+        await (
+          await clients(active, { ...actor, userId: randomUUID() }).internal('head', {})
+        ).json(),
+      ).toEqual({ paletteHead: absent, download: null })
+      const crossed = await clients(active, { ...actor, accountId: randomUUID() }).internal(
+        'head',
+        {},
+      )
+      expect(crossed.status).not.toBe(200)
+      expect(await crossed.text()).not.toContain(receipt.paletteHead.generation)
       expect(
         (
           await current.internal('ticket', {
@@ -198,23 +204,27 @@ describe.skipIf(!target)('palette writer across actual Members HTTP deployments'
     } finally {
       await active.stop()
     }
-    const disabled = await server(actor)
+    // Outro processo do mesmo serviço (reinício, outra réplica): a adoção continua valendo. O
+    // escritor antigo lê, mas não grava por cima; quem nunca adotou segue no caminho antigo.
+    const restarted = await server()
     try {
-      const rolled = clients(disabled, actor)
-      expect((await rolled.internal('head', {})).status).toBe(404)
+      const rolled = clients(restarted, actor)
+      expect(await (await rolled.internal('head', {})).json()).toMatchObject({
+        paletteHead: receipt!.paletteHead,
+      })
       expect((await rolled.external('/download', 'GET')).status).toBe(200)
-      expect(
-        (
-          await rolled.external('/upload', 'POST', {
-            ...beforeCapability,
-            baseRevision: receipt!.paletteHead.revision,
-          })
-        ).status,
-      ).toBe(409)
-      const other = clients(disabled, fixture())
+      const legacyWrite = await rolled.external('/upload', 'POST', {
+        ...beforeCapability,
+        baseRevision: receipt!.paletteHead.revision,
+      })
+      expect(legacyWrite.status).toBe(409)
+      expect(await legacyWrite.json()).toMatchObject({
+        error: { code: 'PINTA_PALETTE_WRITE_REQUIRED' },
+      })
+      const other = clients(restarted, fixture())
       expect((await other.external('/upload', 'POST', beforeCapability)).status).toBe(200)
     } finally {
-      await disabled.stop()
+      await restarted.stop()
     }
   }, 45_000)
 
@@ -222,9 +232,9 @@ describe.skipIf(!target)('palette writer across actual Members HTTP deployments'
     'a running predecessor can read but rolls back all SQL writes after adoption',
     async () => {
       const actor = fixture()
-      const previous = await server(actor, { predecessor: legacy })
+      const previous = await server({ predecessor: legacy })
       const old = clients(previous, actor)
-      const next = await server(actor, { flag: '1' })
+      const next = await server()
       const current = clients(next, actor)
       const name = 'Paletas do Pinta'
       const when = new Date().toISOString()

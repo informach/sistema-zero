@@ -2772,12 +2772,25 @@ o hash e o sha256 dos bytes da cópia antes de confirmar. Recusas: `GALLERY_PINT
 `GALLERY_PINTA_DRAWING_UNCERTIFIED` (cobertura `unknown`: o desenho aparece bloqueado com "Abra
 este desenho no Pinta uma vez para poder enviar."; a sincronização do Pinta adota a unidade por
 backfill e o hash passa a existir). `GALLERY_PINTA_CAUSAL_UNSUPPORTED` fica só para perfil causal
-sem a leitura causal (protocolo desligado ou fora de `PINTA_CAUSAL_QA_PROFILES`). A página da
+sem a leitura causal (o serviço montado sem ela, como nos testes; em produção ela existe para todo
+perfil desde 23/11/2026, sem flag nem lista de perfis). A página da
 galeria (só ela; o inventário e o arquivo seguem pelo id) vem do mais novo para o mais antigo
 ATRAVÉS das páginas: `date_trunc('milliseconds', item_updated_at) desc, item_id collate "C" desc`
 (a data ao milissegundo é a do fio, e o schema confere essa ordem). O cursor continua sendo o id
 da última entrada; a linha do cursor é relida na mesma época e, se não está viva, `epoch-changed`
 (a lista recomeça, nunca encurta em silêncio). Prova com 231 desenhos em `tests/db/pinta-causal.test.ts`.
+
+**Sem flag (23/11/2026).** `PINTA_CAUSAL_CANDIDATE`, `PINTA_PALETTE_WRITE_CANDIDATE`,
+`PINTA_CAUSAL_QA_PROFILES`, `STUDIO_SEALED_PARTS_CANDIDATE` e `STUDIO_SEALED_QA_PROFILES` saíram do
+`env.ts`: a composição monta sempre o inventário causal (rotas + galeria da aula), a paleta negociada e
+o gravador selado. As rotas internas continuam exigindo `INTERNAL_API_TOKEN` e o consumidor
+`member-shell`, e o teto de 2 MiB das provas vale sempre. Sem a lista, o dono é o par conta + perfil
+do envelope HMAC: o inventário filtra por conta (`wherePersonal`) e `checkEpoch`/`paletteGeneration`
+recusam um par trocado. A cerca do cliente antigo não mudou: num perfil adotado, lista, download,
+reserva, commit e DELETE individuais de um desenho respondem 409 `PINTA_CAUSAL_CONFLICT`/
+`protocol-required` sem tocar na linha (prova em `tests/db/pinta-causal-http.test.ts`). Adoção de
+um perfil grande e antigo, retomada no meio: `tests/db/pinta-causal-adocao.test.ts`. Inventário:
+`docs/superpowers/plans/2026-11-23-pinta-sem-flags.md` (raiz).
 
 **Reserva (07/09):** ticket inclui `formatVersion` validada, independente da revisão.
 BFF e cliente conferem essa confirmação antes de PUT; omissão confirma só legado 1.

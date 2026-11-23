@@ -1,7 +1,4 @@
-import {
-  PintaCausalViewerSchema,
-  pintaCausalQaAllows,
-} from '@sistemazero/core/creations/pinta-causal'
+import { PintaCausalViewerSchema } from '@sistemazero/core/creations/pinta-causal'
 import {
   StudioSealedBaseCommandSchema,
   StudioSealedCommitProofSchema,
@@ -55,7 +52,6 @@ export function studioSealedWriteRoutes(deps: CreationsRoutesDeps) {
       }
       const { userId, accountId, audience, privileged = false, payload } = parsed.data
       const actor = { userId, accountId, audience }
-      if (!pintaCausalQaAllows(config.qaProfiles, actor)) return new Response(null, { status: 404 })
       const input = schema.safeParse(payload)
       if (!input.success) return Response.json({ reason: 'invalid-payload' }, { status: 422 })
       const services = audience === 'adult' ? deps.adult : deps

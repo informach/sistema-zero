@@ -30,7 +30,7 @@ const library = {
   removed: [],
 }
 
-function fixture(options: { enabled?: boolean; allowed?: boolean; expired?: boolean } = {}) {
+function fixture(options: { enabled?: boolean; parent?: boolean; expired?: boolean } = {}) {
   const content = gzipSync(JSON.stringify(library))
   const ticket = {
     protocol,
@@ -65,7 +65,6 @@ function fixture(options: { enabled?: boolean; allowed?: boolean; expired?: bool
   let downloadKey = sealedKey
   const routes = createPintaPaletteWrites({
     enabled: () => options.enabled ?? true,
-    profileAllowed: () => options.allowed ?? true,
     session: {
       audience: 'kids',
       getAccessToken: async () => 'local-verified',
@@ -80,7 +79,7 @@ function fixture(options: { enabled?: boolean; allowed?: boolean; expired?: bool
                 status: 'active',
                 role: 'staff',
                 activeProfile: { accountId },
-                kids: { kind: 'student', sessionId },
+                kids: { kind: options.parent ? 'parent' : 'student', sessionId },
               },
             },
     } as never,
@@ -238,7 +237,9 @@ test('absence is authenticated and distinguishable from disabled negotiation', a
   expect(await absent.json()).toMatchObject({
     paletteHead: { protocol, generation, adopted: true, exists: false, revision: 0 },
   })
-  for (const options of [{ enabled: false }, { allowed: false }, { expired: true }]) {
+  // Sem flag (23/11/2026): só a infraestrutura desligada, a sessão dos pais ou a sessão vencida
+  // ficam de fora, sem tocar no Members.
+  for (const options of [{ enabled: false }, { parent: true }, { expired: true }]) {
     const blocked = fixture(options)
     const response = await blocked.routes.head(blocked.req())
     expect(await response.json()).not.toHaveProperty('paletteHead')

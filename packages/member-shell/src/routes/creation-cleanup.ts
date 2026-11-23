@@ -34,7 +34,6 @@ export function createCreationCleanupWorkerRoutes(deps: {
   gateway: Pick<GatewayModule, 'gatewayFetchHmac'>
   deletePrefixes?: typeof r2DeleteUgcPrefixes
   deleteObjects?: typeof r2DeleteObjectsUgc
-  pintaCausalEnabled?: () => boolean
 }) {
   return {
     creationCleanupWorker: {
@@ -54,10 +53,9 @@ export function createCreationCleanupWorkerRoutes(deps: {
           )
         }
 
-        const pintaEnabled =
-          deps.pintaCausalEnabled?.() ??
-          (env.PINTA_CAUSAL_CANDIDATE === '1' || env.PINTA_PALETTE_WRITE_CANDIDATE === '1')
-        const scopes = ['pensa', 'gallery', ...(pintaEnabled ? ['pinta'] : []), 'studio-seal']
+        // A nuvem causal do Pinta vale para todo perfil (23/11/2026): o worker declara sempre que
+        // entende as chaves exatas de `pinta` e de `studio-seal`.
+        const scopes = ['pensa', 'gallery', 'pinta', 'studio-seal']
         let rewardsFailed = false
         try {
           const drained = await deps.gateway.gatewayFetchHmac(
@@ -90,7 +88,6 @@ export function createCreationCleanupWorkerRoutes(deps: {
             if (job.scope === 'pinta' || job.scope === 'studio-seal') {
               const keyShape = job.scope === 'pinta' ? pintaObjectKey : studioObjectKey
               if (
-                (job.scope === 'pinta' && !pintaEnabled) ||
                 job.prefixes.length !== 0 ||
                 job.userIds.length !== 0 ||
                 !Array.isArray(job.objectKeys) ||

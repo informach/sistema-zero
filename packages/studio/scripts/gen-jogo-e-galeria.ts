@@ -135,7 +135,7 @@ export const JOGO_E_ARQUIVO = {
   sha256: '${sha256}',
   bytes: ${conteudo.length},
 } as const
-/** A capa: a foto da Floresta, tirada pela própria prova do jogo E (e2e/engine-regions.spec.ts). */
+/** A capa: o início do jogo, com o herói na vila (\`olhar-inicio.png\` da pasta do jogo). */
 export const JOGO_E_CAPA =
   '${capa}'
 `
@@ -146,7 +146,7 @@ export const ${C}_ARQUIVO = {
   sha256: '${sha256}',
   bytes: ${conteudo.length},
 } as const
-/** A capa: a vila do ${configuracao.nome}, pela câmera "em volta" do próprio Jogo 3D. */
+/** A capa: o início do ${configuracao.nome}, com o herói na vila (\`olhar-inicio.png\` da pasta). */
 export const ${C}_CAPA =
   '${capa}'
 `,

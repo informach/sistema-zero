@@ -3,7 +3,7 @@ import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import type { PintaCausalViewer } from '@sistemazero/core/creations/pinta-causal'
 import type { PintaExportedAsset, PintaHostAdapter } from '@sistemazero/pinta'
 import type { ReactNode } from 'react'
-import { PintaPaletteScope } from '../../src/components/creator/pinta-palette-scope'
+import { PintaAccountScope } from '../../src/components/creator/pinta-account-scope'
 
 GlobalRegistrator.register({ settings: { disableIframePageLoading: true } })
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
@@ -27,7 +27,12 @@ let lookupGate = Promise.withResolvers<void>()
 let lookupEntered = Promise.withResolvers<void>()
 let linked = false
 let saveOk = true
-const connections: { viewerId: string; pintaPaletteWriteEnabled: boolean }[] = []
+const connections: {
+  viewerId: string
+  pintaPaletteWriteEnabled: boolean
+  pintaCausalEnabled: boolean
+}[] = []
+const mirrors: Array<{ namespace: string; causal: boolean }> = []
 const lookups: Array<{ id: string; namespace: string }> = []
 const saves: Array<{ asset: PintaExportedAsset; namespace: string }> = []
 const retired: Array<{ viewerId: string; abort?: boolean }> = []
@@ -59,25 +64,41 @@ mock.module('@sistemazero/pinta', () => ({
     return null
   },
 }))
-// Sem conta, o host monta a oficina regional (etapa 1 das regiões): o mesmo dono de armazenamento.
+// Sem conta, o host monta a oficina regional (etapa 1 das regiões); com a conta (o padrão de todo
+// aluno desde 23/11/2026, sem flag), a mesma oficina vai para a fila causal. O dono do
+// armazenamento é o mesmo nos dois casos.
 mock.module('@sistemazero/pinta/workshop-reader', () => ({
-  createWorkshopPintaPersistence: ({ namespace }: { namespace: string }) => ({ namespace }),
+  createWorkshopPintaPersistence: ({ namespace }: { namespace: string }) => ({
+    namespace,
+    causal: {},
+  }),
 }))
 mock.module('../../src/lib/creations-cloud', () => ({
-  createCreationsCloud: (options: { viewerId: string; pintaPaletteWriteEnabled: boolean }) => {
+  createCreationsCloud: (options: {
+    viewerId: string
+    pintaPaletteWriteEnabled: boolean
+    pintaCausalEnabled: boolean
+  }) => {
     const { viewerId } = options
     connections.push(options)
     return {
+      ...(options.pintaCausalEnabled ? { pintaCausal: {} } : {}),
       flush: async () => {},
       dispose: (opts?: { abort?: boolean }) => retired.push({ viewerId, ...opts }),
     }
   },
 }))
 mock.module('../../src/lib/pinta-cloud-persistence', () => ({
-  createCloudMirroredPintaPersistence: ({ local }: { local: { namespace: string } }) => ({
-    ...local,
-    dispose: () => {},
-  }),
+  createCloudMirroredPintaPersistence: ({
+    local,
+    causal,
+  }: {
+    local: { namespace: string }
+    causal?: unknown
+  }) => {
+    mirrors.push({ namespace: local.namespace, causal: !!causal })
+    return { namespace: local.namespace, dispose: () => {} }
+  },
 }))
 mock.module('../../src/components/creator/focus-mode', () => ({
   useFocusMode: () => ({ setWorkspaceActive: () => {} }),
@@ -127,6 +148,7 @@ beforeEach(() => {
   saveOk = true
   lookups.length = saves.length = 0
   connections.length = 0
+  mirrors.length = 0
   retired.length = 0
   lookupGate = Promise.withResolvers<void>()
   lookupEntered = Promise.withResolvers<void>()
@@ -149,13 +171,19 @@ async function harness(audience: 'kids' | 'adult', owned = true) {
     element.remove()
   }
   cleanups.push(unmount)
-  const render = async (viewerId: string | null, scope: PintaCausalViewer | null = null) => {
+  // Todo aluno logado tem o escopo da sua conta (o servidor o entrega sem flag): é o padrão aqui.
+  const render = async (
+    viewerId: string | null,
+    scope: PintaCausalViewer | null = viewerId
+      ? { userId: viewerId, accountId: `conta-${viewerId}`, audience }
+      : null,
+  ) => {
     current = undefined
     await act(async () => {
       root.render(
-        <PintaPaletteScope viewer={scope}>
+        <PintaAccountScope viewer={scope}>
           <PintaClient viewerId={viewerId} audience={audience} studioAvailable={owned} />
-        </PintaPaletteScope>,
+        </PintaAccountScope>,
       )
     })
     return mountedAdapter()
@@ -167,6 +195,7 @@ test('switching to the local workshop retires the prior queue and changes the st
   const view = await harness('adult')
   await view.render('a')
   expect(storageOwner).toBe('adult:a')
+  expect(mirrors.at(-1)).toEqual({ namespace: 'adult:a', causal: true })
   await view.render(null)
   expect(storageOwner).toBe('')
   expect(retired).toEqual([{ viewerId: 'a', abort: true }])
@@ -190,6 +219,9 @@ test('unlinked resync does not create a canonical record or expose an unowned se
 test('explicit PUSH and linked resync pass the unchanged canonical sheet; failures keep their reason', async () => {
   const view = await harness('kids')
   const adapter = await view.render('a')
+  // O envio ao Estúdio parte da oficina na fila causal: o padrão de todo perfil.
+  expect(connections.at(-1)).toMatchObject({ viewerId: 'a', pintaCausalEnabled: true })
+  expect(mirrors.at(-1)).toEqual({ namespace: 'a', causal: true })
   expect(await adapter.sendToStudio?.(canonical)).toMatchObject({ ok: true })
   linked = true
   lookupGate.resolve()
@@ -235,25 +267,32 @@ for (const audience of ['kids', 'adult'] as const) {
 }
 
 test('a sessão do Pinta confere a audiência e o perfil e aposenta a fila ao mudar a conta', async () => {
-  const saved = process.env.NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1
   const viewer = { userId: 'A', accountId: 'P', audience: 'kids' } as const
   const view = await harness('kids')
-  try {
-    delete process.env.NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1
-    await view.render('A', viewer)
-    expect(connections.at(-1)?.pintaPaletteWriteEnabled).toBe(false)
-    process.env.NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1 = '1'
-    await view.render('A', viewer)
-    expect(connections.at(-1)?.pintaPaletteWriteEnabled).toBe(true)
-    const count = retired.length
-    await view.render('A', { ...viewer, accountId: 'P2' })
-    expect(retired).toHaveLength(count + 1)
-    await view.render('A', { ...viewer, audience: 'adult' })
-    expect(connections.at(-1)?.pintaPaletteWriteEnabled).toBe(false)
-    await view.render('B', viewer)
-    expect(connections.at(-1)).toMatchObject({ viewerId: 'B', pintaPaletteWriteEnabled: false })
-  } finally {
-    if (saved === undefined) delete process.env.NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1
-    else process.env.NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1 = saved
-  }
+  // Sem escopo (suporte em modo leitura, servidor sem storage): o armazenamento de sempre.
+  await view.render('A', null)
+  expect(connections.at(-1)).toMatchObject({
+    pintaPaletteWriteEnabled: false,
+    pintaCausalEnabled: false,
+  })
+  expect(mirrors.at(-1)).toEqual({ namespace: 'A', causal: false })
+  await view.render('A', viewer)
+  expect(connections.at(-1)).toMatchObject({
+    pintaPaletteWriteEnabled: true,
+    pintaCausalEnabled: true,
+  })
+  const count = retired.length
+  await view.render('A', { ...viewer, accountId: 'P2' })
+  expect(retired).toHaveLength(count + 1)
+  await view.render('A', { ...viewer, audience: 'adult' })
+  expect(connections.at(-1)).toMatchObject({
+    pintaPaletteWriteEnabled: false,
+    pintaCausalEnabled: false,
+  })
+  await view.render('B', viewer)
+  expect(connections.at(-1)).toMatchObject({
+    viewerId: 'B',
+    pintaPaletteWriteEnabled: false,
+    pintaCausalEnabled: false,
+  })
 })

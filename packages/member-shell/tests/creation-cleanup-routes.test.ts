@@ -56,8 +56,8 @@ describe('worker durável de limpeza das criações', () => {
     // Todo claim DECLARA que este worker entende a limpeza de plano: sem isso o members
     // nunca entrega job de plano (um worker antigo finalizaria a conta da família).
     expect(claimBodies).toEqual([
-      { scopes: ['pensa', 'gallery', 'studio-seal'] },
-      { scopes: ['pensa', 'gallery', 'studio-seal'] },
+      { scopes: ['pensa', 'gallery', 'pinta', 'studio-seal'] },
+      { scopes: ['pensa', 'gallery', 'pinta', 'studio-seal'] },
     ])
   })
   test('recusa chamada sem o bearer do scheduler', async () => {
@@ -200,22 +200,29 @@ describe('worker durável de limpeza das criações', () => {
   })
 })
 
+// Sem flag (23/11/2026): o worker sempre declara o escopo `pinta`, e mesmo assim só apaga as chaves
+// EXATAS de uma unidade causal. Uma chave fora do formato (prefixo, outra ferramenta) vira falha.
 test.each([
-  false,
-  true,
-])('causal cleanup advertises the scope only when enabled (%s)', async (enabled) => {
+  [
+    'exact',
+    'creations/11111111-1111-4111-8111-111111111111/pinta/vila/units/22222222-2222-4222-8222-222222222222/1.sealed.gz',
+  ],
+  ['prefix', 'creations/11111111-1111-4111-8111-111111111111/pinta/vila/'],
+  [
+    'other-tool',
+    'creations/11111111-1111-4111-8111-111111111111/studio/vila/units/22222222-2222-4222-8222-222222222222/1.sealed.gz',
+  ],
+] as const)('causal cleanup advertises pinta and deletes only exact unit keys (%s)', async (shape, key) => {
   const paths: string[] = []
   const claimBodies: unknown[] = []
-  const keys = [
-    'creations/11111111-1111-4111-8111-111111111111/pinta/vila/units/22222222-2222-4222-8222-222222222222/1.sealed.gz',
-  ]
+  const keys = [key]
   const deleted: (readonly string[])[] = []
   const gateway = {
     async gatewayFetchHmac(path: string, options?: { body?: unknown }) {
       paths.push(path)
       if (!path.endsWith('/claim')) return { status: 200, body: {} }
       claimBodies.push(options?.body)
-      if (!enabled || claimBodies.length > 1) return { status: 204, body: null }
+      if (claimBodies.length > 1) return { status: 204, body: null }
       return {
         status: 200,
         body: {
@@ -234,7 +241,6 @@ test.each([
   } as unknown as GatewayModule
   const route = createCreationCleanupWorkerRoutes({
     gateway,
-    pintaCausalEnabled: () => enabled,
     deletePrefixes: async () => {
       throw new Error('A prova não entrega prefixos')
     },
@@ -243,10 +249,10 @@ test.each([
     },
   }).creationCleanupWorker
   expect((await route.POST(request())).status).toBe(200)
-  expect(claimBodies[0]).toEqual({
-    scopes: ['pensa', 'gallery', ...(enabled ? ['pinta'] : []), 'studio-seal'],
-  })
-  expect(deleted).toEqual(enabled ? [keys] : [])
-  expect(paths.includes('/members/internal/creation-cleanups/pinta-unit/complete')).toBe(enabled)
+  expect(claimBodies[0]).toEqual({ scopes: ['pensa', 'gallery', 'pinta', 'studio-seal'] })
+  const exact = shape === 'exact'
+  expect(deleted).toEqual(exact ? [keys] : [])
+  expect(paths.includes('/members/internal/creation-cleanups/pinta-unit/complete')).toBe(exact)
+  expect(paths.includes('/members/internal/creation-cleanups/pinta-unit/fail')).toBe(!exact)
   expect(paths.some((path) => path.includes('account-deletion'))).toBe(false)
 })

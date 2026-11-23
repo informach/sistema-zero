@@ -2,10 +2,7 @@ import {
   PINTA_PALETTE_LIBRARY_ITEM_ID,
   PINTA_PALETTE_LIBRARY_KIND,
 } from '@sistemazero/core/creations'
-import {
-  PintaCausalViewerSchema,
-  pintaCausalQaAllows,
-} from '@sistemazero/core/creations/pinta-causal'
+import { PintaCausalViewerSchema } from '@sistemazero/core/creations/pinta-causal'
 import {
   PintaPaletteBaseCommandSchema,
   PintaPaletteCommitProofSchema,
@@ -54,8 +51,6 @@ export function pintaPaletteWriteRoutes(deps: CreationsRoutesDeps) {
         return Response.json({ reason: 'invalid-actor' }, { status: 422 })
       const { userId, accountId, audience, privileged, payload } = parsed.data
       const actor = { userId, accountId, audience }
-      if (!pintaCausalQaAllows(palette.qaProfiles, actor))
-        return Response.json({ reason: 'not-found' }, { status: 404 })
       const input = schema.safeParse(payload)
       if (!input.success) return Response.json({ reason: 'invalid-payload' }, { status: 422 })
       const services = audience === 'adult' ? deps.adult : deps

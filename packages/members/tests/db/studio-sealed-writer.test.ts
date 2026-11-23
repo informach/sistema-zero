@@ -35,10 +35,9 @@ const metadata = () => ({
   itemUpdatedAt: new Date().toISOString(),
 })
 
-async function server(
-  owner: ReturnType<typeof profile>,
-  flags: { enabled?: boolean; prior?: string } = {},
-) {
+// Sem flag nem lista de perfis (23/11/2026): o gravador selado existe para todo perfil; só o
+// token interno do gateway e o consumidor `member-shell` abrem as rotas.
+async function server(owner: ReturnType<typeof profile>, flags: { prior?: string } = {}) {
   const listener = Bun.serve({ port: 0, hostname: '127.0.0.1', fetch: () => new Response(null) })
   const port = listener.port!
   await listener.stop(true)
@@ -49,8 +48,6 @@ async function server(
     PORT: String(port),
     GATEWAY_HMAC_SECRET: 'studio-sealed-test-gateway-fixture',
     INTERNAL_API_TOKEN: secret,
-    STUDIO_SEALED_PARTS_CANDIDATE: flags.enabled ? '1' : undefined,
-    STUDIO_SEALED_QA_PROFILES: JSON.stringify([owner]),
   }
   const app = flags.prior
     ? await (async () => {
@@ -134,11 +131,10 @@ describe.skipIf(!target)('Studio sealed writer authority', () => {
 
   test('negotiates, protects earlier tickets, requires current grants and preserves reused parts during GC', async () => {
     const owner = profile()
-    const active = await server(owner, { enabled: true })
+    const active = await server(owner)
     const catalog = { protocol, itemId }
     try {
       expect((await active.inner('head', catalog, { consumer: 'other-service' })).status).toBe(401)
-      expect((await active.inner('head', catalog, { owner: profile() })).status).toBe(404)
       const initial = await active.outer('/upload', 'POST', {
         ...metadata(),
         formatVersion: 2,
@@ -158,6 +154,10 @@ describe.skipIf(!target)('Studio sealed writer authority', () => {
         ).status,
       ).toBe(200)
       const head = (await (await active.inner('head', catalog)).json()).studioHead
+      // Outro perfil lê só o próprio projeto (ausente), nunca o deste.
+      const stranger = await active.inner('head', catalog, { owner: profile() })
+      expect(stranger.status).toBe(200)
+      expect((await stranger.json()).studioHead).toMatchObject({ exists: false, revision: 0 })
       const command = {
         ...catalog,
         ...metadata(),
@@ -252,7 +252,7 @@ describe.skipIf(!target)('Studio sealed writer authority', () => {
     'rollback reader still downloads while predecessor writes fail after adoption and compaction',
     async () => {
       const owner = profile()
-      const active = await server(owner, { enabled: true })
+      const active = await server(owner)
       const old = await server(owner, { prior: predecessor })
       try {
         const catalog = { protocol, itemId }

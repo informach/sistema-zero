@@ -1,9 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import {
-  type PintaCausalEntry,
-  type PintaCausalViewer,
-  pintaCausalQaAllows,
-} from '@sistemazero/core/creations/pinta-causal'
+import type { PintaCausalEntry, PintaCausalViewer } from '@sistemazero/core/creations/pinta-causal'
 import { resolveCreationPartKey } from '@sistemazero/core/creations/studio-sealed-storage'
 import { DomainError, ValidationError } from '@sistemazero/core/errors'
 import { awaitWithSignal } from '@sistemazero/core/http'
@@ -63,10 +59,9 @@ export interface PintaCausalGalleryHeads {
   ): Promise<{ entry: PintaCausalEntry; storageRef: string }>
 }
 
-/** A leitura causal da galeria existe só onde o protocolo causal está ligado, para os mesmos perfis. */
+/** A leitura causal da galeria: a mesma das rotas causais, para todo perfil (23/11/2026, sem flag). */
 export interface PintaCausalGallery {
   heads: PintaCausalGalleryHeads
-  qaProfiles: readonly PintaCausalViewer[]
 }
 
 /** O que a entrega copia de um trabalho escolhido, venha da leitura antiga ou da causal. */
@@ -322,12 +317,11 @@ export class GalleryDeliveryService {
     }
   }
 
-  /** A leitura causal da galeria segue a mesma cerca das rotas causais (QA; adulto = a conta). */
+  /** A leitura causal da galeria segue a mesma cerca das rotas causais (conta + perfil dono; adulto = a conta). */
   private causalHeads(actor: LearningActor, audience: CourseAudience) {
     const causal = this.pintaCausal
     if (!causal || (audience === 'adult' && actor.userId !== actor.accountId)) return null
-    const viewer = { userId: actor.userId, accountId: actor.accountId, audience }
-    return pintaCausalQaAllows(causal.qaProfiles, viewer) ? causal.heads : null
+    return causal.heads
   }
 
   /** Only exposed to the BFF with a signed body, after all storage copies succeed. */

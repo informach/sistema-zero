@@ -95,6 +95,27 @@ com a marca lida ali. Sem época (`unbased`) ou com recuperação pendente, devo
 inteiro). Desenho: `docs/superpowers/plans/2026-11-23-pinta-focal-na-conta.md`; provas em
 `tests/fixtures/pinta-focal-account.fixture.ts` (mock do IndexedDB no modo físico, `setIdbMockCodec`).
 
+## Pinta: a conta sem flag (23/11/2026)
+
+Decisão da dona: "Não precisa ter flag de nada." A fila causal, as paletas negociadas e o gravador
+selado do Estúdio valem para todo perfil. Inventário e variáveis remotas sem uso em
+`docs/superpowers/plans/2026-11-23-pinta-sem-flags.md` (raiz).
+- **Quem recebe a conta do Pinta:** `pintaAccountViewer(session, audience)`
+  (`server/pinta-causal-eligibility.ts`), entregue pelo `PintaAccountSession` dos layouts e do
+  Arquipélago. Todo aluno ativo (perfil kids com a conta responsável; adulto = a própria conta).
+  Pais, suporte em modo leitura e sessão sem aluno ficam no armazenamento de sempre.
+- **O host não recebe prop:** o `PintaClient` e o `MoldaClient` leem `usePintaAccount(viewerId,
+  audience)`. O Pinta do Arquipélago entra na fila causal pelo mesmo escopo; antes ele ficava no
+  caminho antigo, que um perfil causal recusa.
+- **O que sobrou é infraestrutura:** `pintaAccountStorageReady()` (segredo HMAC + R2 privado). Sem
+  ela, as rotas `/api/pinta/causal/*` e `/api/pinta/palette/*` respondem 404 e o escopo é nulo.
+- **Members:** o inventário causal, a paleta negociada e o gravador selado são montados sempre; as
+  rotas internas exigem o token interno e o consumidor `member-shell`. O ator é o par conta + perfil
+  do envelope HMAC; o repositório confere a conta guardada e recusa um par trocado.
+- **O worker de limpeza** declara sempre os escopos `pinta` e `studio-seal`, e só apaga chaves exatas.
+- **Guarda:** `scripts/ci/pinta-sem-flags.test.ts` falha se alguma das variáveis antigas voltar ao
+  código, a um Dockerfile ou ao CI.
+
 ## Pinta: regiões ligadas, sem flag (23/11/2026)
 
 O `PintaClient` escolhe o armazenamento assim:
@@ -105,8 +126,9 @@ O `PintaClient` escolhe o armazenamento assim:
   fica no `createPintaPersistence` de sempre.
 
 O nativo 9 / nuvem 8 não é anunciado: a oficina do host tem `nativeCeiling: 8`. O BFF admite o
-documento regional para todo perfil causal (`allowRegions`); o `allowWorkshop` segue atrás de
-`PINTA_WORKSHOP_SERVICE_READER`.
+documento regional para todo perfil (`allowRegions`); o `allowWorkshop` é a constante de capacidade
+`WORKSHOP_BODY_READABLE` (`server/pinta-causal-proof.ts`), que só liga quando o core anunciar o leitor
+8 (`PINTA_INVENTORY_READER_VERSION`), na etapa 8. Não há variável de ambiente.
 
 Cliente antigo e dado regional:
 - o piso do inventário (7) fecha a conta para o leitor 6;

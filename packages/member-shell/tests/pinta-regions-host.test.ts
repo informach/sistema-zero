@@ -21,7 +21,7 @@ test('o host do Pinta solto monta a oficina regional quando a conta pode guardar
       new Response(child.stderr).text(),
     ])
     expect(code, stdout + stderr).toBe(0)
-    expect(stdout + stderr).toMatch(/\b4 pass\b/)
+    expect(stdout + stderr).toMatch(/\b6 pass\b/)
   } finally {
     clearTimeout(deadline)
     if (child.exitCode === null) child.kill()

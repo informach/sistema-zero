@@ -39,7 +39,9 @@ Lotes 5 a 7b e 9 da conclusão do plano (especificação em
   atrás da câmera nem além de 1000 m. A conta é a de `molda-cenarios-core/src/compilar/relevo-pedacos.ts`,
   conferida byte a byte pelos casos `__tests__/relevo-casos.json` (`scripts/gen-raylib-relevo-cases.ts`).
   O Estúdio só pede o campo num projeto Python com o recurso `molda-scene-relevo-v1`
-  (`scene3DRuntimeReadsRelevo`); o Raylib do computador recusa o campo com recado.
+  (`scene3DRuntimeReadsRelevo`). No jogo exportado para o computador (raylib do pip) a malha de cada
+  pedaço é memória do C (`_memoria`, solta no `unload_model`); prova local com o raylib instalado:
+  `__tests__/cenario_nativo_test.py` (pulado sem ele).
 - **Ordem segura:** leitores em todo lugar antes do escritor; o interruptor `CENARIOS_REGIOES` do
   Members (desligado por padrão) mostra a ferramenta Regiões e deixa o servidor aceitar `regioes`.
 - **Exemplos grandes na galeria** (`examples/bigExamples.ts`): entram no grupo do motor com nome,

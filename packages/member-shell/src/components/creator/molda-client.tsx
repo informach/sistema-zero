@@ -28,7 +28,7 @@ import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loadi
 import { useFocusMode } from './focus-mode'
 import { type MoldaGuidePersistence, MoldaMissionGuide } from './molda-mission-guide'
 import { PensaMissionBlocked } from './pensa-mission-blocked'
-import { usePintaPaletteAccount } from './pinta-palette-scope'
+import { usePintaAccount } from './pinta-account-scope'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
 import {
   canOpenPensaMission,
@@ -77,7 +77,7 @@ export function MoldaClient({
   narrationEnabled?: boolean
   onCompletionControlChange?: (control: EmbeddedCreationControl | null) => void
 }) {
-  const paletteAccount = usePintaPaletteAccount(viewerId, audience)
+  const paletteAccount = usePintaAccount(viewerId, audience)
   const localNamespace = creatorStorageNamespace(viewerId, audience)
   const [mod, setMod] = useState<MoldaModule | null>(null)
   const [loadError, setLoadError] = useState(false)

@@ -2,7 +2,7 @@
  * O jogo E no Estúdio (lote 7 da conclusão do plano do Estúdio, 22/11/2026), a segunda metade do
  * gerador: lê os dois pacotes que `packages/molda-cenarios/playground/jogo-e/preparar-cenario.ts`
  * gravou (com e sem regiões), importa pelo Estúdio (que confere o orçamento por janela), escreve o
- * programa só com blocos que existem (o cenário, o herói do Molda, as moedas logo acima do relevo,
+ * programa só com blocos que existem (o cenário, o herói, as moedas logo acima do relevo,
  * o placar e o "Quando o heroi entrar na região" no canto da tela), confere que cada linha vira um
  * bloco de verdade e a ida e volta código e blocos, e grava os documentos do motor para a prova.
  *
@@ -33,12 +33,15 @@ import { buildIRFromWorkspace } from '../../src/blockly/buildIR'
 import { HTMLConnectionChecker } from '../../src/blockly/htmlConnectionChecker'
 import { ensureBlocklyInitialized } from '../../src/blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../src/blockly/workspaceState'
+// O aventureiro do curso A Ilha do Farol (biblioteca de modelos dos cursos, clipes "andando" e
+// "parado"). Até 23/11/2026 o herói era o `HEROI_DO_MOLDA_GLB`, a peça técnica de teste de ossos
+// do Molda (dois triângulos planos em três cópias): no jogo ele aparecia deitado no chão.
+import AVENTUREIRO_GLB from '../../src/core/course-models/m-3edd1abdaeb67b153adfb1c625267e887d390e5274ad93d725abc53cf0f71a51.generated'
 import { createEmptyProject, type Project } from '../../src/core/project'
 import { prepararImportacaoDeCena3D } from '../../src/core/scene3d/importar'
 import { generateJS } from '../../src/generators/js'
 import { behaviorStatements, splitLegacyBehavior } from '../../src/ir/behavior'
 import { gameThreeDBlocks } from '../../src/official-extensions/game-3d/blocks'
-import { HEROI_DO_MOLDA_GLB } from '../../src/official-extensions/game-3d/exampleAssets'
 import { parseProjectFilesFromParts } from '../../src/parsers/project'
 import { gravarDocumentosDoMotor } from './documentos-do-motor'
 import { prepararVendors } from './preparar-vendors'
@@ -86,13 +89,13 @@ async function lerPacote(nome: string): Promise<PacoteCompilado> {
 }
 
 const HEROI = {
-  id: 'example-heroi-do-molda',
-  name: 'heroi-do-molda',
+  id: 'example-aventureiro',
+  name: 'aventureiro',
   kind: 'model3d' as const,
-  dataUrl: HEROI_DO_MOLDA_GLB,
-  originalFileName: 'heroi-do-molda.glb',
+  dataUrl: AVENTUREIRO_GLB,
+  originalFileName: 'aventureiro.glb',
   source: 'library' as const,
-  libId: 'example-heroi-do-molda',
+  libId: 'example-aventureiro',
 }
 
 /** As regiões do jogo (nome e centro): as seis da grade do jogo E, ou as do pacote. */
@@ -132,10 +135,14 @@ function programa(
   const linhas = [
     'const cena = SZGame3D.createFullscreenScene("#9bd7f5");',
     `SZGame3D.loadScene(cena, ${JSON.stringify(cenaId)});`,
-    'const heroi = SZGame3D.createModelFile(cena, "heroi-do-molda", 2);',
+    'const heroi = SZGame3D.createModelFile(cena, "aventureiro", 1.8);',
     'SZGame3D.sceneStart(heroi);',
     'SZGame3D.body(heroi, 36);',
-    'SZGame3D.cameraMode(cena, "tras", heroi);',
+    'SZGame3D.walkAnimations(heroi, "parado", "andando");',
+    // A câmera segue de trás por um lado fixo ("longe"), como as setas (que andam pelos eixos do
+    // mundo): a "tras" gira com o personagem e, com ele virado para onde anda, ficava na frente.
+    'SZGame3D.cameraDistance(cena, 7, 3.5);',
+    'SZGame3D.cameraMode(cena, "longe", heroi);',
     'SZGame3D.hudText("top-left", "Ande pelas seis regiões e pegue as moedas.");',
     'const moedas = SZGame3D.createGroup();',
     'const moldeMoeda = SZGame3D.createCylinder(cena, { radius: 0.6, height: 0.2, color: "#facc15" });',
@@ -161,13 +168,8 @@ function programa(
     '  SZGame3D.remove(moeda);',
     '});',
     'SZGame3D.animate(cena, () => {',
-    '  SZGame3D.controlWithKeys(heroi, 8);',
-    '  SZGame3D.stepBody(heroi, cena);',
-    '  if (SZGame3D.isMoving(heroi)) {',
-    '    SZGame3D.playAnimation(heroi, "Esticar", "repetir");',
-    '  } else {',
-    '    SZGame3D.playAnimation(heroi, "Acenar", "repetir");',
-    '  }',
+    // O andar dos jogos dos cursos: as setas, o chão do cenário, virar para onde anda e os clipes.
+    '  SZGame3D.topDown(heroi, 8);',
     '});',
   )
   return linhas.join('\n')

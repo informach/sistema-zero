@@ -153,12 +153,7 @@ import type { LiveRewardsPort } from './domain/ports/live-rewards.port'
 import type { MasteryOwner } from './domain/ports/mastery-repository.port'
 import { createStudioRuntimeHosts } from './domain/studio/runtime-hosts'
 import { createStudioRuntimePolicy } from './domain/studio/runtime-policy'
-import {
-  type Env,
-  pintaCausalCandidateConfigured,
-  pintaPaletteWriteCandidateConfigured,
-  studioSealedCandidateConfigured,
-} from './infrastructure/config/env'
+import type { Env } from './infrastructure/config/env'
 import { loadStudioAuthoringPolicy } from './infrastructure/config/studio-authoring-policy'
 import { createAdminPublicationMediaClient } from './infrastructure/course-publication/admin-media.client'
 import { createAdminCourseTransferClient } from './infrastructure/course-publication/admin-transfer.client'
@@ -1310,11 +1305,10 @@ export async function createApplication(env: Env): Promise<Application> {
     studioRuntimePolicy,
     () => clock().getTime(),
   )
-  // O inventário causal do Pinta: as rotas causais e a galeria da aula leem o MESMO repositório,
-  // ligado e cercado pelos mesmos perfis de QA.
-  const pintaCausal = pintaCausalCandidateConfigured(env)
-    ? new DrizzlePintaCausalRepository(db, clock)
-    : undefined
+  // O inventário causal do Pinta, para todo perfil (23/11/2026, sem flag nem lista de perfis): as
+  // rotas causais e a galeria da aula leem o MESMO repositório. As rotas internas continuam
+  // exigindo o token do gateway e o consumidor `member-shell`.
+  const pintaCausal = new DrizzlePintaCausalRepository(db, clock)
   const server = createServer({
     coursePromotion:
       sourcePeer && env.COURSE_PUBLICATION_PEER_TOKEN
@@ -1394,7 +1388,7 @@ export async function createApplication(env: Env): Promise<Application> {
           storageBaseURL: env.STUDIO_GALLERY_STORAGE_BASE_URL,
           allowLoopbackHttp: env.NODE_ENV !== 'production',
         }),
-        pintaCausal ? { heads: pintaCausal, qaProfiles: env.PINTA_CAUSAL_QA_PROFILES } : undefined,
+        { heads: pintaCausal },
       ),
       preferences,
       learning,
@@ -1527,28 +1521,16 @@ export async function createApplication(env: Env): Promise<Application> {
       internalToken: env.INTERNAL_API_TOKEN,
     },
     creations: {
-      ...(studioSealedCandidateConfigured(env)
-        ? {
-            studioSeal: {
-              repository: { kids: creationsRepo, adult: adultCreationsRepo },
-              clock,
-              qaProfiles: env.STUDIO_SEALED_QA_PROFILES,
-              authoring: freeStudioAccess,
-            },
-          }
-        : {}),
-      ...(pintaPaletteWriteCandidateConfigured(env)
-        ? {
-            palette: {
-              repository: { kids: creationsRepo, adult: adultCreationsRepo },
-              clock,
-              qaProfiles: env.PINTA_CAUSAL_QA_PROFILES,
-            },
-          }
-        : {}),
-      ...(pintaCausal
-        ? { causal: pintaCausal, causalQaProfiles: env.PINTA_CAUSAL_QA_PROFILES }
-        : {}),
+      studioSeal: {
+        repository: { kids: creationsRepo, adult: adultCreationsRepo },
+        clock,
+        authoring: freeStudioAccess,
+      },
+      palette: {
+        repository: { kids: creationsRepo, adult: adultCreationsRepo },
+        clock,
+      },
+      causal: pintaCausal,
       adult: {
         list: new ListCreationsService(adultCreationsRepo),
         reserveUpload: new ReserveCreationUploadService(

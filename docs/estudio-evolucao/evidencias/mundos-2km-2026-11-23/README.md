@@ -58,5 +58,11 @@ céu do Estúdio, por isso o céu preto): [`jogo-e-384m-em-volta.png`](jogo-e-38
 [`mundo-2km-em-volta.png`](mundo-2km-em-volta.png). A estrada aparece sobre o relevo em campo, sem
 tremido.
 
-⚠️ Pendência que não é deste plano: nas duas páginas (inclusive a de 384 m, de antes destas mudanças)
-o herói do Molda aparece quase todo afundado no chão, com só os braços à vista.
+O herói (resolvido em 23/11/2026, à noite): o "herói do Molda" das páginas do jogo E era o
+`HEROI_DO_MOLDA_GLB`, a peça técnica de teste de ossos do Molda (uma malha de 6 vértices, dois
+triângulos planos de 25 cm, em três cópias espelhadas): no jogo ele aparecia deitado, com só os
+"braços" à vista. Os dois jogos (384 m e 2 km) passaram a usar o aventureiro do curso A Ilha do
+Farol (1,8 m, clipes `andando` e `parado`) com o andar dos jogos dos cursos ("Fazer … andar com as
+setas", que vira o personagem para onde anda) e a câmera que segue de trás por um lado fixo
+(`longe`, 7 m): a `tras` gira com o personagem e, com ele virado para onde anda, ficava na frente.
+Medido na página: pés a 1 cm do chão; andando para frente ele fica de costas para a câmera.

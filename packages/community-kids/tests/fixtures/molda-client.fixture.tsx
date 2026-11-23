@@ -1,5 +1,5 @@
 import { afterAll, afterEach, expect, mock, test } from 'bun:test'
-import { PintaPaletteScope } from '@sistemazero/member-shell/components/creator/pinta-palette-scope'
+import { PintaAccountScope } from '@sistemazero/member-shell/components/creator/pinta-account-scope'
 import type { MoldaHostAdapter } from '@sistemazero/molda'
 import { createModelAsset, type MoldaAsset } from '@sistemazero/molda/assets'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
@@ -407,10 +407,8 @@ test('missão ocupada mostra a frase autorizada e volta ao plano sem montar o Mo
 
 test('a biblioteca Pinta no editor negocia no perfil eleito e trocar a política não reinicia o modelo', async () => {
   const viewer = { userId: PROFILE_ID, accountId: 'account-owner', audience: 'kids' } as const
-  const original = process.env.NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1
   const originalIdb = globalThis.indexedDB
   globalThis.indexedDB = new IDBFactory()
-  process.env.NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1 = '1'
   const reads: string[] = []
   // Quem leu sem o protocolo novo: no CI esta conferência falhou uma vez (23/11/2026) e não
   // reproduziu aqui. Se voltar a falhar, o recado mostra o caminho e o perfil de cada leitura.
@@ -443,9 +441,9 @@ test('a biblioteca Pinta no editor negocia no perfil eleito e trocar a política
     { preconnect: originalFetch.preconnect },
   )
   const renderHost = (scope: typeof viewer | null) => (
-    <PintaPaletteScope viewer={scope}>
+    <PintaAccountScope viewer={scope}>
       <MoldaClient viewerId={PROFILE_ID} studioAvailable={false} />
-    </PintaPaletteScope>
+    </PintaAccountScope>
   )
   const view = render(renderHost(viewer))
   try {
@@ -469,7 +467,5 @@ test('a biblioteca Pinta no editor negocia no perfil eleito e trocar a política
   } finally {
     view.unmount()
     globalThis.indexedDB = originalIdb
-    if (original === undefined) delete process.env.NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1
-    else process.env.NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1 = original
   }
 })
