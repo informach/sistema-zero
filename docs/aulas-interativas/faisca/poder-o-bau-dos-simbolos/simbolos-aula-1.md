@@ -64,10 +64,10 @@ A lua pergunta a vez.
 
 A estrela abre o baú.
 
-- Intenção: application.
-- Blocos: video-estrela, ponte-estrela.
+- Intenção: delivery.
+- Blocos: video-estrela, ponte-estrela, projeto.
 - Estúdio: projeto.
-- Conclusão: video-estrela.
+- Conclusão: video-estrela, projeto; envio atualizado.
 
 - O encontro com a estrela pergunta se é a vez dela (Se, com senão).
 - Tocando o sol, a lua e a estrela, nessa ordem, o baú abre.
@@ -80,27 +80,13 @@ A estrela abre o baú.
 
 Pense na ordem.
 
-- Intenção: explanation.
+- Intenção: closing.
 - Blocos: ponte-revisao, quiz.
 - Estúdio: não.
 - Conclusão: quiz.
 
 
 
-## Parte 8. Envie o seu jogo com o baú
-
-Envie o seu jogo com o baú.
-
-- Intenção: delivery.
-- Blocos: video-entrega, ponte-entrega, projeto.
-- Estúdio: projeto.
-- Conclusão: video-entrega, projeto; envio atualizado.
-
-- O encontro com a estrela pergunta se é a vez dela (Se, com senão).
-- Tocando o sol, a lua e a estrela, nessa ordem, o baú abre.
-- Um símbolo fora da vez recomeça: depois do sol e da estrela, o baú não abre e a lua não acende.
-- Depois de errar, começar de novo pelo sol abre o baú.
-- Uma nova partida (tecla R) começa com os símbolos apagados.
-- O farol continua: com a chave, ele acende.
+Na edição kids, Debinha diz as frases das tabelas de substituição do roteiro.
 
 [Fala integral](simbolos-aula-1.roteiro.md) · [Passo a passo](passo-a-passo.md).

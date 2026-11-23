@@ -13,8 +13,52 @@
     "video-experiencia",
     "video-sol",
     "video-lua",
-    "video-estrela",
-    "video-entrega"
+    "video-estrela"
   ],
-  "intervencoes": []
+  "intervencoes": [
+    {
+      "id": "video-abertura-K1",
+      "clipe": "video-abertura",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "aqui: quando eu levo o personagem até o sol, o sol acende. Repare também no aviso aqui em cima: agora ele pede a lua.",
+      "ancoraDepois": "Isso eu deixo para você descobrir. O farol continua como antes: com a chave, ele acende. Para começar outra partida,",
+      "falaPrincipal": "E se eu tocar um símbolo fora da ordem?",
+      "falaPersonagem": "E se eu tocar um símbolo fora da ordem?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-experiencia-K1",
+      "clipe": "video-experiencia",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "minha vez? O baú pode conferir a senha de dois jeitos: só contando os símbolos tocados, ou conferindo a vez de cada um.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que acontece com passo quando os",
+      "falaPrincipal": "E o que acontece com passo quando um símbolo vem fora da vez?",
+      "falaPersonagem": "E o que acontece com passo quando um símbolo vem fora da vez?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-lua-K1",
+      "clipe": "video-lua",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "Agora clique no 0, apague e escreva 1. Pronto: agora o Se pergunta se passo é igual a 1. Ou seja: o sol já foi tocado?",
+      "ancoraDepois": "Num espaço do próprio Se. A resposta do sim fica no espaço do então, e a resposta do não fica no espaço do senão. Só",
+      "falaPrincipal": "E onde fica o que acontece quando não é a vez da lua?",
+      "falaPersonagem": "E onde fica o que acontece quando não é a vez da lua?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-estrela-K1",
+      "clipe": "video-estrela",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "até a estrela, sem passar pela lua. Olha só: o sol apaga, o baú continua fechado, e o aviso pede para começar pelo sol.",
+      "ancoraDepois": "Não. É só voltar ao sol e seguir a placa de novo, na mesma partida. Sem tocar na tecla R, leve o personagem de volta",
+      "falaPrincipal": "E se eu errar a ordem, preciso começar outra partida?",
+      "falaPersonagem": "E se eu errar a ordem, preciso começar outra partida?",
+      "tags": ["[curious]"]
+    }
+  ]
 }

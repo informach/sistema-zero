@@ -7,7 +7,7 @@ import { simbolosChecks } from './simbolos-criterios'
 import { montarProjetoSimbolos, SIMBOLOS_CURSO, SIMBOLOS_ETAPAS } from './simbolos-projeto'
 import { simbolosQuiz2d, simbolosQuiz3d } from './simbolos-quiz'
 
-const help = `# Passo a passo do projeto — O baú dos símbolos\n\nPoder do Faísca. Aqui está o que investigar na experiência e cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.\n\n## ${simbolosExperiencia.title}\n\n**A ideia:** ${simbolosExperiencia.idea}\n\n**O que investigar:**\n\n${simbolosExperiencia.goals.map((g) => `- ${g}`).join('\n')}\n\n${simbolosExperiencia.observe}\n\n${simbolosAulas
+const help = `# Passo a passo do projeto: O baú dos símbolos\n\nPoder do Faísca. Aqui está o que investigar na experiência e cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.\n\n## ${simbolosExperiencia.title}\n\n**A ideia:** ${simbolosExperiencia.idea}\n\n**O que investigar:**\n\n${simbolosExperiencia.goals.map((g) => `- ${g}`).join('\n')}\n\n${simbolosExperiencia.observe}\n\n${simbolosAulas
   .map(
     (a) =>
       `## ${a.dimension === '2d' ? 'Aula 1 · Jogo 2D' : 'Aula 2 · Ilha 3D'}: ${a.title}\n\n${simbolosAjuda(
@@ -21,7 +21,7 @@ const help = `# Passo a passo do projeto — O baú dos símbolos\n\nPoder do Fa
   )
   .join(
     '\n\n',
-  )}\n\n## Entrega\n\nEm cada aula, jogue uma partida inteira: abra o baú na ordem certa, erre a ordem e recomece pelo sol. Toque na tecla R e confira que o baú volta fechado.\n\nDepois clique em Verificar projeto e corrija o que faltar.\n\nPor fim, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.\n`
+  )}\n\n## Entrega\n\nEm cada aula, o envio fica na montagem da estrela, a última. Depois de montar, jogue uma partida inteira: abra o baú na ordem certa, erre a ordem e recomece pelo sol. Toque na tecla R e confira que o baú volta fechado.\n\nDepois clique em Verificar projeto e corrija o que faltar. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.\n\nQuando aparecer Projeto enviado!, clique em Próxima parte. Na última parte da aula, responda às perguntas: escolha uma resposta e clique em Ver o que acontece ou, nas perguntas sem cena, em Responder. Você pode tentar de novo. Quando terminar, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.\n`
 
 await gerarPoder({
   nome: 'O baú dos símbolos',
@@ -86,14 +86,14 @@ await gerarPoder({
   cenaDoZappy: 'symbol-sequence',
   passoAPasso: help,
   modulos:
-    '# O baú dos símbolos — organização do curso\n\nPoder 4 do posto Faísca (`jornada-faisca-poder-4`). Módulo: **O baú dos símbolos**. Preservar o ID do curso, do módulo reservado e da `aula-1`; a `aula-2` é criada no Admin, no mesmo curso, antes da importação.\n\n' +
+    '# O baú dos símbolos: organização do curso\n\nPoder 4 do posto Faísca (`jornada-faisca-poder-4`). Módulo: **O baú dos símbolos**. Preservar o ID do curso, do módulo reservado e da `aula-1`; a `aula-2` é criada no Admin, no mesmo curso, antes da importação.\n\n' +
     simbolosAulas
       .map(
         (a, i) =>
           `## Aula ${i + 1}. ${a.title}\n\nIdentificador: ${a.slug}. Dimensão: ${a.dimension.toUpperCase()}.\n\n${a.trechos.map((t, n) => `${n + 1}. ${t.title}.`).join('\n')}\n\n[Manifesto](simbolos-${a.slug}.manifesto.json) · [Roteiro](simbolos-${a.slug}.roteiro.md).`,
       )
       .join('\n\n') +
-    '\n\nUma entrega por aula. O Poder conta com as duas aulas concluídas. Sem certificado nem publicação na comunidade. Produzir e anexar a mídia real antes de publicar; publicar o curso só depois da `aula-2`.\n',
+    '\n\nUma entrega por aula, na montagem da estrela; depois dela, só o quiz, que fecha a aula. O Poder conta com as duas aulas concluídas. Sem certificado nem publicação na comunidade. Produzir e anexar a mídia real antes de publicar; publicar o curso só depois da `aula-2`.\n',
   resumo:
     'Baú dos símbolos: duas aulas, roteiros, voz, ajuda, inventário e quatro projetos portáteis gerados.',
 })
