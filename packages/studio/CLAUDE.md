@@ -38,8 +38,15 @@ Lotes 5 a 7b e 9 da conclusão do plano (especificação em
   (20 MB) mora no R2 do ambiente (`estudio-exemplos/jogo-e/<sha256>.json`, gerado por
   `scripts/gen-jogo-e-galeria.ts`) e chega pela rota do host (`exampleFilesBaseUrl`, no Kids e no
   adulto `/api/studio/example-files`, ligada por `STUDIO_EXAMPLES_ORIGIN`); sem o endereço o card
-  não aparece, e o arquivo só abre com o tamanho e o hash certos. ⚠️ A galeria continua só para a
-  equipe nos dois apps (decisão dela).
+  não aparece, e o arquivo só abre com o tamanho e o hash certos (e com programa: arquivo de IR
+  vazia é recusado). ⚠️ A galeria continua só para a equipe nos dois apps (decisão dela).
+- ⚠️⚠️ **A galeria monta os blocos ANTES de o editor registrar as extensões do projeto**: o
+  `buildProjectFromKitEntry` registra as regras (contratos) dos blocos das extensões do exemplo
+  antes do `buildWorkspaceStateFromIR`. Sem elas o construtor não sabe que um bloco está fora do
+  lugar (não o troca por código) e a carga inteira do editor falha com "Não deu para abrir estes
+  blocos" (o jogo E no staging, 22/11/2026; `projects/KitGallery.placement.test.ts`). Teste de
+  blocos sem navegador precisa das regras registradas, senão passa por sorte. O gerador do jogo E
+  recusa qualquer linha que vire código cru.
 - Provas: `e2e/engine-regions.spec.ts` (no `studio-engines.yml`), `moldaFullScenario.contract.test.ts`,
   os testes do bloco nos três motores, `__tests__/cenario_test.py`, `e2e-runtime/python-raylib.spec.ts`
   e `examples/bigExamples.test.ts`. O mundo do jogo E tem 384 m (1 km passa dos tetos de hoje).
