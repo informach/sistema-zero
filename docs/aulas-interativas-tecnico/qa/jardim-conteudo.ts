@@ -10,11 +10,12 @@
  * - cada etapa mostra o que o jogo precisa fazer (o jogo do começo da etapa e as animações da
  *   edição) e diz em que aula do curso base aquilo foi ensinado; nenhum bloco é montado no vídeo, e o
  *   Verificar projeto confere pelo que o jogo faz, então qualquer solução certa passa;
- * - a última etapa envia o projeto; depois do envio, a parte do fim entrega o Passo a passo do
- *   projeto (o caderno), para conferir e entender;
+ * - a última etapa envia o projeto; depois do envio, o fim da Aula 1 entrega o Passo a passo do
+ *   projeto (o caderno, com as duas aulas), para conferir e entender, e o fim da Aula 2 é só a
+ *   comemoração;
  * - sem dicas e sem quiz: quem tiver dúvida volta na aula do curso base;
  * - a Debinha (Aula 1) e o Dedé (Aula 2) fazem as perguntas marcadas em `kids`.
- * Na publicação, o PDF entra nas duas aulas sem a marca de caderno do Zappy, que o daria ao Zappy desde
+ * Na publicação, o PDF entra na Aula 1 sem a marca de caderno do Zappy, que o daria ao Zappy desde
  * o começo da aula.
  *
  * Os caminhos das setas no Na tela contam a velocidade de cada jogo (`jardim-projeto.ts`). No 2D
@@ -181,11 +182,12 @@ export const jardimAulas: {
       {
         key: 'missao-cumprida',
         title: 'Missão cumprida!',
-        kind: 'material',
-        screen: `No "Missão cumprida!", a edição mostra o jogo pronto [na edição: o jardim 3D com a flor aberta]. ${TELA_DO_CADERNO('Concluir aula')}`,
+        kind: 'fecho',
+        screen:
+          'No "Missão cumprida!", a edição mostra o jogo pronto [na edição: o jardim 3D com a flor aberta]. No "o Passo a passo do projeto está no fim da Aula 1", a edição mostra a capa do caderno [na edição: capa do Passo a passo do projeto]. No "Agora clique em Concluir aula", clicar em **Concluir aula** [concluir aula].',
         ponte:
-          'Missão cumprida! Este é o seu Passo a passo do projeto: confira como cada etapa dos dois jardins pode ser montada. Você pode ler aqui mesmo ou baixar para guardar. Quando terminar, clique em Concluir aula.',
-        text: `[pleased, lively voice] Missão cumprida! Você programou O Jardim Secreto em duas e em três dimensões, sozinho. [engaging, energetic, conversational voice] Com as duas aulas concluídas, a sua missão do Faísca está completa. ${FALA_DO_CADERNO} [confident, clear, unhurried voice] Agora clique em Concluir aula.`,
+          'Missão cumprida! Você programou O Jardim Secreto em 2D e em 3D. Se quiser conferir como cada etapa pode ser montada, o Passo a passo do projeto está no fim da Aula 1. Clique em Concluir aula.',
+        text: '[pleased, lively voice] Missão cumprida! Você programou O Jardim Secreto em duas e em três dimensões, sozinho. [engaging, energetic, conversational voice] Com as duas aulas concluídas, a sua missão do Faísca está completa. [upbeat, encouraging voice] Se quiser conferir como cada etapa pode ser montada, o Passo a passo do projeto está no fim da Aula 1. [confident, clear, unhurried voice] Agora clique em Concluir aula.',
       },
     ],
   },

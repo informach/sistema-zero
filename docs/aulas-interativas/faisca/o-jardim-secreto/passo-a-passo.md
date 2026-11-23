@@ -1,6 +1,6 @@
 # Passo a passo do projeto: O Jardim Secreto
 
-Missão do Faísca. Aqui está um jeito de montar cada etapa das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Ele chega no fim de cada aula, depois do envio, para conferir o jogo e entender cada escolha. O seu jeito pode ser diferente e estar certo também.
+Missão do Faísca. Aqui está um jeito de montar cada etapa das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Ele chega no fim da Aula 1, depois do envio, para conferir o jogo e entender cada escolha. O seu jeito pode ser diferente e estar certo também.
 
 ## Faça o jardim florescer em 2D
 
@@ -191,6 +191,6 @@ Em cada aula, o envio fecha a última montagem, a do lugar do regador. Antes de 
 
 Depois clique em Verificar projeto e corrija o que faltar. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.
 
-Quando aparecer Projeto enviado!, clique em Próxima parte: lá está este Passo a passo. Depois clique em Concluir aula.
+Quando aparecer Projeto enviado!, clique em Próxima parte. Na Aula 1, lá está este Passo a passo; na Aula 2, a última parte comemora a missão cumprida. Depois clique em Concluir aula.
 
 A missão conta quando as duas aulas estão concluídas. Ela não dá certificado nem promove sozinha: a jornada também confere os dois cursos-base e um Poder.

@@ -4,7 +4,8 @@
  * cursos base, com outro tema. Este teste confere que:
  * - nenhum Na tela monta blocos nem envia (sem gestos de montagem, de paleta ou de envio);
  * - cada etapa diz em que aula do curso base aquilo foi ensinado e termina no Verificar projeto;
- * - a última etapa envia, e depois dela só vem o fim, com o Passo a passo (o caderno);
+ * - a última etapa envia, e depois dela só vem o fim: o Passo a passo (o caderno) na primeira aula e
+ *   a comemoração nas outras, porque o caderno é um só e traz todas as aulas;
  * - não há quiz, nem caderno antes do envio;
  * - a Debinha (Aula 1) e o Dedé (Aula 2) dizem as frases marcadas, na tabela e na voz.
  * Os outros cursos do Faísca, que ensinam montando no vídeo, ficam em faisca-padrao.test.ts.
@@ -49,7 +50,7 @@ for (const missao of MISSOES) {
   describe(`${missao.nome}: padrão da missão do posto`, () => {
     test.each(
       missao.aulas.map((a, i) => [a.slug, i] as const),
-    )('%s: abertura, etapas, envio e o Passo a passo no fim, sem quiz', (slug, i) => {
+    )('%s: abertura, etapas, envio e o fim, sem quiz', (slug, i) => {
       const aula = missao.aulas[i]!
       const s = (
         JSON.parse(
@@ -62,7 +63,9 @@ for (const missao of MISSOES) {
       expect(entrega).toBeGreaterThan(1)
       expect(s.slice(1, entrega).every((x) => x.intent === 'application')).toBe(true)
       expect(s.slice(entrega + 1).map((x) => x.intent)).toEqual(['closing'])
-      expect(s.at(-1)!.blockKeys).toContain('materiais')
+      // O caderno é um só: no fim da primeira aula; nas outras, o fim é só a comemoração.
+      if (i === 0) expect(s.at(-1)!.blockKeys).toContain('materiais')
+      else expect(s.some((x) => x.blockKeys.includes('materiais'))).toBe(false)
       expect(s.slice(0, entrega + 1).some((x) => x.blockKeys.includes('materiais'))).toBe(false)
       expect(s.some((x) => x.blockKeys.includes('quiz'))).toBe(false)
       expect(aula.trechos.some((t) => t.kind === 'quiz')).toBe(false)

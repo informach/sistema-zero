@@ -1114,7 +1114,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Missão cumprida! Este é o seu Passo a passo do projeto: confira como cada etapa dos dois jardins pode ser montada. Você pode ler aqui mesmo ou baixar para guardar. Quando terminar, clique em Concluir aula."
+        "text": "Missão cumprida! Você programou O Jardim Secreto em 2D e em 3D. Se quiser conferir como cada etapa pode ser montada, o Passo a passo do projeto está no fim da Aula 1. Clique em Concluir aula."
       }
     },
     {
@@ -5465,51 +5465,6 @@
           }
         }
       }
-    },
-    {
-      "key": "materiais",
-      "content": {
-        "kind": "materials",
-        "title": "Passo a passo do projeto: O Jardim Secreto",
-        "bookPreview": true,
-        "items": [
-          {
-            "id": "texto-ajuda",
-            "kind": "text",
-            "markdown": "Precisa de ajuda com a plataforma? Abra um destes passo a passo do Como fazer."
-          },
-          {
-            "id": "como-estudio",
-            "kind": "link",
-            "label": "Como usar o Estúdio",
-            "url": "/como-fazer/estudio-achar-e-organizar-blocos"
-          },
-          {
-            "id": "plataforma-baixar-materiais",
-            "kind": "link",
-            "label": "Como abrir o Passo a passo do projeto e os materiais",
-            "url": "/como-fazer/plataforma-baixar-materiais"
-          },
-          {
-            "id": "plataforma-abrir-uma-aula",
-            "kind": "link",
-            "label": "Como abrir uma aula e trocar de parte",
-            "url": "/como-fazer/plataforma-abrir-uma-aula"
-          },
-          {
-            "id": "plataforma-ampliar-a-atividade",
-            "kind": "link",
-            "label": "Como dar mais espaço ao jogo e à experiência",
-            "url": "/como-fazer/plataforma-ampliar-a-atividade"
-          },
-          {
-            "id": "plataforma-pedir-ajuda",
-            "kind": "link",
-            "label": "Como pedir ajuda à equipe",
-            "url": "/como-fazer/plataforma-pedir-ajuda"
-          }
-        ]
-      }
     }
   ],
   "sections": [
@@ -6697,7 +6652,7 @@
       "title": "Missão cumprida!",
       "intent": "closing",
       "objective": "Missão cumprida!.",
-      "blockKeys": ["video-missao-cumprida", "ponte-missao-cumprida", "materiais"],
+      "blockKeys": ["video-missao-cumprida", "ponte-missao-cumprida"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],

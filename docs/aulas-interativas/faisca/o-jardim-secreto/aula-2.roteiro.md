@@ -158,7 +158,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-missao-cumprida`
 
-**Na tela:** No "Missão cumprida!", a edição mostra o jogo pronto [na edição: o jardim 3D com a flor aberta]. No "Aqui está o Passo a passo do projeto", apontar o material [apontar livro]. No "Nele está um jeito de montar", colocar o livro em tela cheia [livro tela cheia]. No "cada etapa da missão", passar da capa para a página seguinte [livro próxima]. No "bloco por bloco", passar mais uma página [livro próxima]. No "Use para conferir o seu jogo", passar mais uma página [livro próxima]. No "O seu jeito pode ser diferente", passar mais uma página [livro próxima]. No "Se quiser", sair da tela cheia [livro sair da tela cheia]. No "você pode ler aqui mesmo", mostrar o livro no tamanho da aula [apontar livro]. No "também pode clicar em Baixar", clicar no botão **Baixar**, ao lado do nome do arquivo [baixar]. No "Agora clique em Concluir aula", clicar em **Concluir aula** [concluir aula]. Não demonstrar a impressão nem os controles do leitor.
+**Na tela:** No "Missão cumprida!", a edição mostra o jogo pronto [na edição: o jardim 3D com a flor aberta]. No "o Passo a passo do projeto está no fim da Aula 1", a edição mostra a capa do caderno [na edição: capa do Passo a passo do projeto]. No "Agora clique em Concluir aula", clicar em **Concluir aula** [concluir aula].
 
 **Fala para ElevenLabs:**
 
@@ -167,13 +167,9 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [engaging, energetic, conversational voice] Com as duas aulas concluídas, a sua missão do Faísca está completa.
 
-[engaging, energetic, conversational voice] Aqui está o Passo a passo do projeto. Nele está um jeito de montar cada etapa da missão, bloco por bloco.
-
-[engaging, energetic, conversational voice] Use para conferir o seu jogo e entender cada escolha. O seu jeito pode ser diferente e estar certo também, porque o Verificar projeto confere o que o jogo faz.
-
-[upbeat, encouraging voice] Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o material.
+[upbeat, encouraging voice] Se quiser conferir como cada etapa pode ser montada, o Passo a passo do projeto está no fim da Aula 1.
 
 [confident, clear, unhurried voice] Agora clique em Concluir aula.
 ```
 
-**Recado na página (não gravar):** Missão cumprida! Este é o seu Passo a passo do projeto: confira como cada etapa dos dois jardins pode ser montada. Você pode ler aqui mesmo ou baixar para guardar. Quando terminar, clique em Concluir aula.
+**Recado na página (não gravar):** Missão cumprida! Você programou O Jardim Secreto em 2D e em 3D. Se quiser conferir como cada etapa pode ser montada, o Passo a passo do projeto está no fim da Aula 1. Clique em Concluir aula.

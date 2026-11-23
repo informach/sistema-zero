@@ -96,10 +96,6 @@
 
 [engaging, energetic, conversational voice] Com as duas aulas concluídas, a sua missão do Faísca está completa.
 
-[engaging, energetic, conversational voice] Aqui está o Passo a passo do projeto. Nele está um jeito de montar cada etapa da missão, bloco por bloco.
-
-[engaging, energetic, conversational voice] Use para conferir o seu jogo e entender cada escolha. O seu jeito pode ser diferente e estar certo também, porque o Verificar projeto confere o que o jogo faz.
-
-[upbeat, encouraging voice] Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o material.
+[upbeat, encouraging voice] Se quiser conferir como cada etapa pode ser montada, o Passo a passo do projeto está no fim da Aula 1.
 
 [confident, clear, unhurried voice] Agora clique em Concluir aula.
