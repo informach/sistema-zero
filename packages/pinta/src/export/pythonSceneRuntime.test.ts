@@ -498,6 +498,49 @@ print(json.dumps(dict(spawn=cena.ponto_inicial(),bounds=cena.limites,objects=[o[
 )
 
 it.skipIf(!purePython)(
+  'bloqueado and pouso read a Raylib Rectangle by its fields, like the (x, y, w, h) tuple',
+  async () => {
+    const boxes: Box[] = []
+    for (let y = -3; y < 65; y += 3)
+      for (let x = -21; x < 50; x += 3) boxes.push([2 * x + 0.25, 2 * y + 0.25, 4, 4])
+    const values = (await runPurePython(
+      runtime,
+      `${setup}
+class Rectangle:
+    # Like pyray's struct (and the Studio's Raylib): fields to read, nothing to unpack.
+    __slots__ = ('x', 'y', 'width', 'height')
+    def __init__(self, x, y, width, height):
+        self.x, self.y, self.width, self.height = x, y, width, height
+    def __iter__(self):
+        raise TypeError("cdata 'Rectangle' does not support iteration")
+kinds = [Rectangle]
+try:
+    import cffi
+except ImportError:
+    pass
+else:
+    ffi = cffi.FFI()
+    ffi.cdef('typedef struct Rectangle { float x; float y; float width; float height; } Rectangle;')
+    kinds.append(lambda *fields: ffi.new('Rectangle *', fields)[0])
+boxes = [tuple(b) for b in request['boxes']]
+hits = [cena.bloqueado(b) for b in boxes]
+pairs = [(b, (b[0], b[1] + 22 * g, b[2], b[3]), g) for b in boxes[::5] for g in (1, -1)]
+land = [cena.pouso(a, b, g) for a, b, g in pairs]
+for kind in kinds:
+    assert [cena.bloqueado(kind(*b)) for b in boxes] == hits
+    assert [cena.pouso(kind(*a), kind(*b), g) for a, b, g in pairs] == land
+print(json.dumps(dict(kinds=len(kinds), hits=sum(hits), free=len(hits) - sum(hits),
+                      land=sum(1 for l in land if l))))`,
+      { png: await envelope(fixture(), 2), boxes },
+    )) as { kinds: number; hits: number; free: number; land: number }
+    expect(values.kinds).toBeGreaterThan(0)
+    expect(values.hits).toBeGreaterThan(0)
+    expect(values.free).toBeGreaterThan(0)
+    expect(values.land).toBeGreaterThan(0)
+  },
+)
+
+it.skipIf(!purePython)(
   'limits inverse cell windows before asking the regional reader and keeps off-screen storage cold',
   async () => {
     const source = fixture('legacy')

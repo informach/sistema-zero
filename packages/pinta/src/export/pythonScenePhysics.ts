@@ -22,6 +22,13 @@ export const pythonScenePhysics = `def _tile_intersects(points, body):
     return True
 
 
+def _body_box(corpo):
+    # A raylib Rectangle is a C struct: its fields can be read but it cannot be unpacked.
+    if all(hasattr(corpo, k) for k in ('x', 'y', 'width', 'height')):
+        return _SceneBox(corpo.x, corpo.y, corpo.width, corpo.height)
+    return _SceneBox(*corpo)
+
+
 def _platform_surface(points, body, direction):
     left = max(body.left, min(p[0] for p in points))
     right = min(body.right, max(p[0] for p in points))
@@ -79,7 +86,7 @@ class _ScenePhysics:
 
     def bloqueado(self, corpo):
         """Full body versus map bounds and solid tiles. Precise mode adds authored outlines."""
-        box = _SceneBox(*corpo)
+        box = _body_box(corpo)
         if not box.valid():
             return False
         limits = self.limites
@@ -101,7 +108,7 @@ class _ScenePhysics:
 
     def pouso(self, anterior, atual, gravidade=1, *, _body_epsilon=1e-6):
         """Resolve a precise one-way platform after solid motion. Does not mutate either body."""
-        before, after = _SceneBox(*anterior), _SceneBox(*atual)
+        before, after = _body_box(anterior), _body_box(atual)
         if (
             self.fisica != 'precise'
             or not before.valid()

@@ -110,11 +110,40 @@ def pixel(cena,x,y):
     finally:
         ray.unload_image(image)
 
+def grid(cena,camera,mode_2d=None):
+    ray.begin_texture_mode(target)
+    ray.clear_background(ray.BLACK)
+    if mode_2d is not None:
+        ray.begin_mode_2d(mode_2d)
+    cena.desenhar(camera=camera,tempo=135,viewport=(160,96))
+    cena.desenhar(camera=camera,frente=True,tempo=135,viewport=(160,96))
+    if mode_2d is not None:
+        ray.end_mode_2d()
+    ray.end_texture_mode()
+    image = ray.load_image_from_texture(target.texture)
+    try:
+        return [tuple(getattr(ray.get_image_color(image,x,y),k) for k in 'rgb')
+                for y in range(0,96,4) for x in range(0,160,4)]
+    finally:
+        ray.unload_image(image)
+
 try:
 ${shared(recusa)
   .split('\n')
   .map((line) => `    ${line}`)
   .join('\n')}
+    with pinta.carregar_cenario('mundo') as cena:
+        # pyray's Rectangle is a C struct: read by its fields, never unpacked.
+        for box in ((-2000,-2000,8,8),(40,40,8,8),(32,32,4,4)):
+            assert cena.bloqueado(ray.Rectangle(*box)) == cena.bloqueado(box), box
+        assert cena.bloqueado(ray.Rectangle(-2000,-2000,8,8))
+        # Inside begin_mode_2d the Camera2D draws what the pair camera draws outside it.
+        for focus in ((16,8),(-40,-24)):
+            reference = grid(cena,focus)
+            assert any(color != (0,0,0) for color in reference), focus
+            camera = ray.Camera2D((0,0),focus,0,1)
+            assert grid(cena,camera,camera) == reference, focus
+    print('Rectangle e Camera2D do raylib aceitos')
 finally:
     ray.unload_render_texture(target)
     ray.close_window()
@@ -216,6 +245,8 @@ for (const { extension, body, python } of [
         expect(result.stdout).toContain('Módulo nativo verificado')
         if (extension.id === PGZERO_EXTENSION.id)
           expect(result.stdout).toContain('Raiz do Pygame Zero seguida')
+        if (extension.id === RAYLIB_2D_EXTENSION.id)
+          expect(result.stdout).toContain('Rectangle e Camera2D do raylib aceitos')
       } finally {
         for (const path of written) unlinkSync(path)
         rmdirSync(assets)
