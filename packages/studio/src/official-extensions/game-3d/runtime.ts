@@ -790,7 +790,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
       if (geo) disposeOwnedGeometry(geo, false);
       if (!world._objectLimitWarned) {
         world._objectLimitWarned = true;
-        console.warn("Crie os objetos UMA vez, fora do bloco 'a cada quadro' — o cenário 3D parou de crescer para não travar.");
+        warn("a cena chegou a " + MAX_OBJECTS + " objetos e os novos não aparecem. Apague os que saíram da tela, ou crie os objetos uma vez só, fora do bloco 'a cada quadro'.");
       }
       return null;
     }
