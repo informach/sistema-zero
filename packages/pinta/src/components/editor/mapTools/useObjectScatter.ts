@@ -33,6 +33,7 @@ type Gesture = {
   pad: number
   cellPx: number
   positions: ObjectScatterStroke
+  lastPointer: { x: number; y: number }
   last: CellPos | null
   result: ObjectScatterResult | null
   workRefused: boolean
@@ -144,6 +145,7 @@ export function useObjectScatter(deps: {
       const current = valid()
       if (!current || current.pointerId !== event.pointerId) return
       event.preventDefault()
+      current.lastPointer = { x: event.clientX, y: event.clientY }
       const at = point(event, current.map)
       if (at) paint(current, at)
       else {
@@ -160,7 +162,16 @@ export function useObjectScatter(deps: {
         return
       }
       event.preventDefault()
-      const result = paint(current, at)
+      // Um aviso assíncrono pode deslocar o papel sem mover o dedo. Soltar nessa
+      // mesma posição confirma a prévia, sem pintar uma casa nova pelo reflow.
+      // Ainda lemos o ponto final quando o navegador não enviou o último move.
+      const result =
+        current.last &&
+        current.result &&
+        current.lastPointer.x === event.clientX &&
+        current.lastPointer.y === event.clientY
+          ? current.result
+          : paint(current, at)
       gesture.current = null
       setPreview(null)
       const d = latest.current
@@ -275,6 +286,7 @@ export function useObjectScatter(deps: {
         cellPx: d.cellPx,
         pad: d.pad,
         positions: new ObjectScatterStroke(map, d.settings.width),
+        lastPointer: { x: event.clientX, y: event.clientY },
         last: null,
         result: null,
         workRefused: false,

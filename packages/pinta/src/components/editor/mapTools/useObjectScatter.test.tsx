@@ -46,6 +46,121 @@ function geometry(container: HTMLElement): void {
 }
 const at = { button: 0, isPrimary: true, pointerId: 1, clientX: 80, clientY: 80 }
 
+it('soltar sem mover o ponteiro confirma a prévia mesmo se o cabeçalho deslocar o papel', () => {
+  const map = scene(),
+    editor = createEditorStore({ asset: map, persist: async () => {} })
+  let top = 0
+  function Host() {
+    const paperRef = useRef<HTMLDivElement>(null),
+      stageRef = useRef<HTMLDivElement>(null),
+      scatter = useObjectScatter({
+        editor,
+        map,
+        layerId: map.layers.at(-1)!.id,
+        source: map.layers.filter(isObjectLayer)[0]!.objects[0]!,
+        active: true,
+        settings,
+        tileSize: 16,
+        cellPx: 32,
+        pad: 0,
+        paperRef,
+        stageRef,
+        showToast: () => {},
+      })
+    return (
+      <div ref={stageRef}>
+        <div ref={paperRef}>
+          <canvas role="img" aria-label="Pintar" onPointerDown={scatter.down} />
+        </div>
+        <output>{JSON.stringify(scatter.preview?.addedIds ?? [])}</output>
+      </div>
+    )
+  }
+  const view = render(<Host />)
+  for (const element of view.container.querySelectorAll('div'))
+    Object.defineProperty(element, 'getBoundingClientRect', {
+      value: () => ({ left: 0, top, width: 256, height: 192, right: 256, bottom: top + 192 }),
+    })
+  fireEvent.pointerDown(screen.getByRole('img', { name: 'Pintar' }), { ...at, clientY: 144 })
+  fireEvent.pointerMove(document, { ...at, clientX: 208, clientY: 144 })
+  const preview = JSON.parse(screen.getByRole('status').textContent ?? '[]')
+  expect(preview).toHaveLength(5)
+  top = 32
+  fireEvent.pointerUp(document, { ...at, clientX: 208, clientY: 144 })
+  const saved = editor.getState().asset
+  if (saved.kind !== 'tilemap') throw new Error('Mapa esperado')
+  expect(
+    saved.layers
+      .filter(isObjectLayer)[0]!
+      .objects.slice(1)
+      .map((object) => object.id),
+  ).toEqual(preview)
+  editor.getState().undo()
+  expect(editor.getState().asset).toBe(map)
+  // Um ponto novo no pointerup ainda faz parte do gesto, mesmo sem último move.
+  fireEvent.pointerDown(screen.getByRole('img', { name: 'Pintar' }), { ...at, clientY: 144 })
+  fireEvent.pointerMove(document, { ...at, clientX: 176, clientY: 144 })
+  fireEvent.pointerUp(document, { ...at, clientX: 208, clientY: 144 })
+  const moved = editor.getState().asset
+  if (moved.kind !== 'tilemap') throw new Error('Mapa esperado')
+  const placed = moved.layers.filter(isObjectLayer)[0]!.objects.slice(1)
+  expect(placed).toHaveLength(5)
+  expect(placed.at(-1)?.id).toEndWith(':30:0')
+})
+
+it('arrastar da biblioteca também conserva a posição da prévia após deslocamento do papel', () => {
+  const map = scene(),
+    source = createPixelSpriteAsset({ name: 'árvore', frameSize: 16 }),
+    editor = createEditorStore({ asset: map, persist: async () => {} })
+  let top = 0
+  function Host() {
+    const paperRef = useRef<HTMLDivElement>(null),
+      stageRef = useRef<HTMLDivElement>(null),
+      library = useLibraryPlacement({
+        editor,
+        map,
+        layerId: map.layers.at(-1)!.id,
+        assets: [source],
+        tileSize: 16,
+        cellPx: 32,
+        pad: 0,
+        snap: true,
+        paperRef,
+        stageRef,
+        position: () => ({ x: 40, y: 40 }),
+        showToast: () => {},
+        onSelect: () => {},
+      })
+    return (
+      <div ref={stageRef}>
+        <div ref={paperRef}>
+          <button type="button" onPointerDown={(event) => library.down(source, event)}>
+            Árvore
+          </button>
+        </div>
+        <output>{JSON.stringify(library.preview?.object ?? null)}</output>
+      </div>
+    )
+  }
+  const view = render(<Host />)
+  for (const element of view.container.querySelectorAll('div'))
+    Object.defineProperty(element, 'getBoundingClientRect', {
+      value: () => ({ left: 0, top, width: 256, height: 192, right: 256, bottom: top + 192 }),
+    })
+  fireEvent.pointerDown(screen.getByRole('button', { name: 'Árvore' }), { ...at, clientX: 300 })
+  fireEvent.pointerMove(document, { ...at, clientX: 208, clientY: 144 })
+  const preview = JSON.parse(screen.getByRole('status').textContent ?? 'null')
+  expect(preview).not.toBeNull()
+  top = 32
+  fireEvent.pointerUp(document, { ...at, clientX: 208, clientY: 144 })
+  const saved = editor.getState().asset
+  if (saved.kind !== 'tilemap') throw new Error('Mapa esperado')
+  const placed = saved.layers.filter(isObjectLayer)[0]!.objects.at(-1)!
+  expect({ x: placed.x, y: placed.y }).toEqual({ x: preview.x, y: preview.y })
+  editor.getState().undo()
+  expect(editor.getState().asset).toBe(map)
+})
+
 for (const operation of ['library', 'scatter'] as const)
   for (const set of [false, true])
     for (const adoption of ['host', 'subscriber'] as const)
