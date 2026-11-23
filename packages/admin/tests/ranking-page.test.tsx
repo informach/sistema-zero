@@ -90,10 +90,24 @@ describe('ranking administrativo por plataforma', () => {
         )
       })
       expect(container.querySelector('a[href="/admin/membros/pais"]')).toBeNull()
-      await waitFor(() => requests.length > beforeSwitch)
+      // Outras consultas pendentes do admin podem chegar ao fetch antes do debounce do ranking.
+      // Espere a consulta desta tela para conferir o primeiro offset da plataforma nova.
+      await waitFor(() =>
+        requests
+          .slice(beforeSwitch)
+          .some(
+            (request) =>
+              request.pathname === '/api/admin/ranking' &&
+              request.searchParams.get('audience') === 'adult',
+          ),
+      )
       const firstAdult = requests
         .slice(beforeSwitch)
-        .find((request) => request.searchParams.get('audience') === 'adult')
+        .find(
+          (request) =>
+            request.pathname === '/api/admin/ranking' &&
+            request.searchParams.get('audience') === 'adult',
+        )
       expect(firstAdult?.searchParams.get('offset')).toBe('0')
     } finally {
       globalThis.fetch = originalFetch
