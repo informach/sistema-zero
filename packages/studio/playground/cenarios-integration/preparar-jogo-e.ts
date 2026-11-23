@@ -95,11 +95,13 @@ const MOEDAS = REGIOES.flatMap(([, coluna, linha]) => {
 
 /** A altura do chão do cenário em (x, z), pela mesma consulta do terreno compilado. */
 function alturaDoChao(pacote: PacoteCompilado): (x: number, z: number) => number {
-  const bruto = pacote.arquivos.get(pacote.cena.terreno.alturas)
+  const terreno = pacote.cena.terreno
+  assert.ok(terreno, 'o cenário do jogo E não tem terreno')
+  const bruto = pacote.arquivos.get(terreno.alturas)
   assert.ok(bruto, 'o pacote do jogo E não tem o arquivo de alturas do terreno')
   // Cópia alinhada: o Float32Array não aceita um deslocamento que não seja múltiplo de 4.
   const alturas = new Float32Array(bruto.slice().buffer)
-  return criarFonteDeAlturasCompilada(pacote.cena.terreno as never, alturas)
+  return criarFonteDeAlturasCompilada(terreno, alturas)
 }
 
 function programa(cenaId: string, chao: (x: number, z: number) => number): string {
@@ -164,9 +166,9 @@ for (const nome of ['regioes', 'inteiro'] as const) {
     !JSON.stringify(estado).includes('"sz_adv_raw_js"'),
     'uma linha do jogo E não vira bloco (bloco fora do lugar?)',
   )
-  const ws = new Blockly.Workspace({
-    plugins: { connectionChecker: HTMLConnectionChecker },
-  } as Blockly.BlocklyOptions)
+  const ws = new Blockly.Workspace(
+    new Blockly.Options({ plugins: { connectionChecker: HTMLConnectionChecker } }),
+  )
   let codigo: string
   try {
     Blockly.serialization.workspaces.load({ ...estado }, ws)

@@ -43,9 +43,9 @@ it('um exemplo com um bloco fora do lugar dele abre nos blocos, com aquele trech
   // O editor registra os blocos da extensão só depois, ao abrir o projeto.
   ensureBlocklyInitialized()
   registerExtensionBlocks(gameThreeDBlocks)
-  const workspace = new Blockly.Workspace({
-    plugins: { connectionChecker: HTMLConnectionChecker },
-  } as Blockly.BlocklyOptions)
+  const workspace = new Blockly.Workspace(
+    new Blockly.Options({ plugins: { connectionChecker: HTMLConnectionChecker } }),
+  )
   try {
     expect(() =>
       Blockly.serialization.workspaces.load(projeto.blocksState as never, workspace),
