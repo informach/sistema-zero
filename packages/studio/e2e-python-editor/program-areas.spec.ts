@@ -94,6 +94,28 @@ async function clickBlocks(page: Page, button: 'left' | 'right' = 'left') {
 }
 
 /**
+ * O botão direito num ponto do PRÓPRIO bloco que nada cobre. Um ponto fixo do bloco (8, 12) cai
+ * embaixo do "Mais blocos" da paleta quando o bloco sobe para o canto (homologação 45092707228, no
+ * Chrome e no Edge do Linux: o bloco da classe em `translate(16, 48)`).
+ */
+async function rightClickBlock(page: Page, id: string | null) {
+  if (!id) throw new Error('Sem o id do bloco.')
+  const point = await page.evaluate((blockId) => {
+    const block = document.querySelector(`[data-id="${blockId}"]`)
+    if (!block) return undefined
+    const box = block.getBoundingClientRect()
+    for (let y = box.top + 6; y < Math.min(box.bottom, box.top + 40); y += 6)
+      for (let x = box.left + 6; x < box.right - 4; x += 8) {
+        const hit = document.elementFromPoint(x, y)
+        if (hit?.closest('[data-id]')?.getAttribute('data-id') === blockId) return { x, y }
+      }
+    return undefined
+  }, id)
+  if (!point) throw new Error(`Nenhum ponto livre do bloco ${id}.`)
+  await page.mouse.click(point.x, point.y, { button: 'right' })
+}
+
+/**
  * Arrasta o fundo dos blocos até o alvo caber na parte visível. No modo Ponte com o jogo à vista
  * a área dos blocos é estreita, e com a fonte do Linux o fim de um bloco largo passa da borda e
  * fica embaixo do painel do código (o clique cai no Monaco).
@@ -168,7 +190,7 @@ test('program index opens a secondary scratch class and nested functions without
   await expect
     .poll(() => page.evaluate(() => pythonBridgeProbe.state().source))
     .not.toContain('x = 3')
-  await page.locator(`[data-id="${classId}"]`).click({ button: 'right', position: { x: 8, y: 12 } })
+  await rightClickBlock(page, classId)
   await page.getByRole('menuitem', { name: 'Mover este bloco para Rascunhos', exact: true }).click()
   await expect.poll(() => page.evaluate(() => pythonBridgeProbe.state().pending)).toBe(false)
   await expect.poll(() => page.evaluate(() => pythonBridgeProbe.state().source?.trim())).toBe('')

@@ -6,8 +6,15 @@
  * (`src/examples/jogoEArquivo.generated.ts`: caminho, hash, tamanho e a capa, a foto do início
  * tirada pela própria prova do jogo E).
  *
- * Entrada: a pasta que `playground/cenarios-integration/preparar-jogo-e.ts` grava (`regioes.project.json`
- * e `olhar-inicio.png`); no CI ela vai nos artefatos do `studio-engines.yml`.
+ * Entrada: a pasta que `playground/cenarios-integration/preparar-jogo-e.ts` grava
+ * (`regioes.project.json`, `regioes.programa.js` e `olhar-inicio.png`); no CI ela vai nos
+ * artefatos do `studio-engines.yml`.
+ *
+ * ⚠️ O projeto do jogo E é do modo Ponte: o programa mora no CÓDIGO (`files['script.js']`), e a
+ * `ir` e o `blocksState` dele ficam vazios. A galeria abre o exemplo pela IR, então ela é montada
+ * aqui a partir do programa da galeria (`regioes.programa.js`, o código regerado dos blocos, sem a
+ * ponte de ensaio), como o gerador do jogo D faz. O primeiro arquivo levou a `ir` vazia e o
+ * Estúdio abria um projeto em branco (conferência logada no staging, 22/11/2026).
  *
  *   bun scripts/gen-jogo-e-galeria.ts [pasta]
  *
@@ -18,6 +25,7 @@ import { createHash } from 'node:crypto'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
 import sharp from 'sharp'
+import { parseProjectFilesFromParts } from '../src/parsers/project'
 import { writeGeneratedSource } from './writeGeneratedSource'
 
 const raiz = resolve(import.meta.dir, '../../..')
@@ -47,7 +55,18 @@ const extensions = (projeto.installedExtensions ?? []).map((extensao) => ({
 }))
 if (!extensions.some((extensao) => extensao.extensionId === 'game-3d'))
   throw new Error('O jogo E precisa do Jogo 3D.')
-const ir = { ...(semIds(projeto.ir) as Record<string, unknown>), extensions }
+const programa = await readFile(join(pasta, 'regioes.programa.js'), 'utf8')
+const montada = parseProjectFilesFromParts({
+  html: [{ type: 'canvas', id: 'tela', width: 960, height: 600 }] as never,
+  cssSource: '',
+  jsSource: programa,
+}).ir
+if (JSON.stringify(montada).includes('"rawJS"'))
+  throw new Error('O programa do jogo E saiu como código cru.')
+const ir = { ...(semIds(montada) as Record<string, unknown>), extensions }
+const comportamento = (ir as { behavior?: Record<string, unknown> }).behavior ?? {}
+if (!Object.values(comportamento).some((lista) => Array.isArray(lista) && lista.length > 0))
+  throw new Error('A IR do jogo E saiu sem programa.')
 const conteudo = Buffer.from(JSON.stringify({ ir, assets: projeto.assets }))
 const sha256 = createHash('sha256').update(conteudo).digest('hex')
 const destino = join(import.meta.dir, '../.cache/galeria/estudio-exemplos/jogo-e')
