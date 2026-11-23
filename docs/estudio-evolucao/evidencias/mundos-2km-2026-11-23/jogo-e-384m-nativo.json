@@ -1,0 +1,92 @@
+{
+  "mundo": "jogo-e-384m",
+  "pagina": "regioes.html",
+  "perfil": {
+    "nome": "nativo",
+    "largura": 1280,
+    "altura": 720,
+    "cpu": 1
+  },
+  "vsync": false,
+  "medidoEm": "2026-11-23T11:01:52.085Z",
+  "sha": "9973e9514135264bff8045da4ab19d714baae7e9",
+  "sujo": true,
+  "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3050 (0x00002584) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "duracaoMs": 90000,
+  "quadros": 107185,
+  "fpsMediano": 1250,
+  "quadroMs": {
+    "p50": 0.7999999999992724,
+    "p95": 1.3000000000029104,
+    "p99": 1.6999999999970896,
+    "maximo": 8.80000000000291
+  },
+  "desenhos": {
+    "p50": 16,
+    "p95": 34,
+    "maximo": 38
+  },
+  "triangulos": {
+    "p50": 131994,
+    "p95": 212364,
+    "maximo": 216514
+  },
+  "entradas": [
+    {
+      "regiao": "Floresta",
+      "quadros": 1771,
+      "acima100": 0,
+      "acima200": 0,
+      "piorMs": 6.099999999998545
+    },
+    {
+      "regiao": "Caverna",
+      "quadros": 2395,
+      "acima100": 0,
+      "acima200": 0,
+      "piorMs": 5.400000000001455
+    },
+    {
+      "regiao": "Montanha",
+      "quadros": 2442,
+      "acima100": 0,
+      "acima200": 0,
+      "piorMs": 5.19999999999709
+    },
+    {
+      "regiao": "Praia",
+      "quadros": 2706,
+      "acima100": 0,
+      "acima200": 0,
+      "piorMs": 3.1999999999970896
+    },
+    {
+      "regiao": "Lago",
+      "quadros": 2119,
+      "acima100": 0,
+      "acima200": 0,
+      "piorMs": 3.7999999999883585
+    }
+  ],
+  "regioesVisitadas": [
+    "Vila",
+    "Floresta",
+    "Caverna",
+    "Montanha",
+    "Praia",
+    "Lago"
+  ],
+  "memoria": {
+    "heapJs": 269138165,
+    "geometrias": 12,
+    "texturas": 10,
+    "programas": 14,
+    "bytesDeTexturas": 1179648
+  },
+  "rota": {
+    "pontos": 8,
+    "metros": 896,
+    "voltas": 0.8
+  },
+  "erros": []
+}

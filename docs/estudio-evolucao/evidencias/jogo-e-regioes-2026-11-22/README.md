@@ -67,17 +67,21 @@ volta.
 ## O tamanho do mundo: 384 m, e por quê
 
 O plano pedia ~1024 × 1024 m. Com os tetos de hoje, o maior mundo que o Estúdio aceita fica perto
-de 384 m, e o motivo é o chão pintado:
+de 384 m.
 
-- a compilação pinta o chão a **8 pixels por metro**: cada peça de 64 m vira uma imagem de
-  512 × 512, contada decodificada no pacote e na janela;
-- **1024 m** são 256 peças: passa do teto de **256 MiB** decodificados do pacote;
-- **640 m** cabe no pacote, mas a janela da Vila (com Floresta e Lago) passa dos **128 MiB** por
-  janela;
-- **512 m** cabe nas memórias, mas os arquivos somam 24,5 MB e passam do teto de **24 MiB de
-  materiais por projeto** do Estúdio;
-- **384 m** cabe em tudo (36 peças de relevo).
+⚠️ **Corrigido em 23/11/2026.** A primeira versão desta seção culpava o chão pintado a 8 pixels
+por metro, e isso está errado. O chão deste jogo é só de cor e sai a **2 pixels por metro**
+(`pixelsPorMetroDoSolo`, `packages/molda-cenarios-motor/src/compilar/solo.ts`, desde o commit
+`0a881cf00`): cada peça de 64 m vira uma imagem de 128 × 128. O que enche os tetos é a
+**geometria do relevo**. Conferido no `pacote-regioes`:
 
-Um mundo de 1 km no Estúdio pede um chão mais leve no destino Estúdio (por exemplo, 2 pixels por
-metro: 16 vezes menos memória e arquivo) ou tetos maiores. É uma decisão de produto, registrada no
-relatório final.
+- o terreno tem **um vértice por metro** (384 × 384 células, passo de 1 m) e vai **duas vezes** no
+  pacote: nos lotes desenhados (`lotes/`, 8,2 MB com os objetos) e na colisão do chão
+  (`colisoes/chao-*.glb`, 36 arquivos, 5,5 MB), de 14,4 MB no total;
+- são cerca de 82 bytes por célula nos arquivos. Escalando pela área, **512 m** passa dos **24 MiB
+  de arquivos por projeto** do Estúdio e **1024 m** passa dos **256 MiB decodificados** do pacote.
+
+Os mundos grandes saem do plano [`docs/plans/2026-11-23-mundos-de-2km.md`](../../../plans/2026-11-23-mundos-de-2km.md)
+(decisão dela, 23/11/2026: mundos de 2 km, sem subir nenhum teto): o relevo é gerado na hora a
+partir do campo de alturas, com menos detalhe longe da câmera, e a colisão usa o campo de alturas;
+os lotes de terreno e a colisão do chão saem do pacote.

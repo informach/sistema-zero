@@ -8,11 +8,14 @@ import { type ReactNode, useState } from 'react'
 import { handoffFixture, PROFILE_ID } from '../../../pensa/src/components/pensa.fixture'
 import { missionSessionFixture } from '../../../ui/tests/mission-fixture'
 
-const actualNavigation = await import('next/navigation')
-const actualMolda = await import('@sistemazero/molda')
-const actualPinta = await import('@sistemazero/pinta')
+// CÓPIAS das exportações, não os namespaces: o `mock.module` do Bun reescreve as exportações
+// vivas, e restaurar com o namespace guardado devolveria o falso aos arquivos seguintes (ver o
+// `pinta-client.test.tsx`).
+const actualNavigation = { ...(await import('next/navigation')) }
+const actualMolda = { ...(await import('@sistemazero/molda')) }
+const actualPinta = { ...(await import('@sistemazero/pinta')) }
 const originalCreatePaletteLibraryStore = actualPinta.createPaletteLibraryStore
-const actualPersonal = await import('@sistemazero/studio/personal-assets')
+const actualPersonal = { ...(await import('@sistemazero/studio/personal-assets')) }
 const namespaces: string[] = []
 const originalFetch = globalThis.fetch
 let query = new URLSearchParams()

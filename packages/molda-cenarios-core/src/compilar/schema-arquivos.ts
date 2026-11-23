@@ -63,6 +63,7 @@ export const ArquivoCompiladoSchema = z
       'pintura',
       'ceu',
       'textura',
+      'pesos',
     ]),
     malhas: z.number().int().positive().max(8192).optional(),
     triangulos: z.number().int().nonnegative().max(16_000_000).optional(),
@@ -95,10 +96,13 @@ export const ArquivoCompiladoSchema = z
         falhar('A imagem compilada precisa de dimensões.')
       if (!a.caminho.endsWith(a.mime === 'image/png' ? '.png' : '.webp'))
         falhar('A extensão da imagem compilada é incompatível.')
-      if (!['alturas', 'pintura', 'ceu', 'textura'].includes(a.papel))
+      if (!['alturas', 'pintura', 'ceu', 'textura', 'pesos'].includes(a.papel))
         falhar('O papel da imagem compilada é incompatível.')
+      if (a.papel === 'pesos' && a.mime !== 'image/png')
+        falhar('Os pesos do relevo precisam ser PNG.')
       if (
         a.papel !== 'alturas' &&
+        a.papel !== 'pesos' &&
         a.largura !== undefined &&
         a.altura !== undefined &&
         (a.largura > 4096 || a.altura > 4096 || a.largura * a.altura > 8388608)
