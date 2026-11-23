@@ -105,13 +105,17 @@ describe('PintaApp — galeria', () => {
     expect(events).toEqual([`reserva:${map.id}`])
     // O mesmo cenário segue aberto no editor inteiro: a reserva passa para ele, sem soltar.
     fireEvent.click(advanced)
+    // ⚠️ `expect(elemento).toBeNull()` dentro do `waitFor` NÃO: na 1ª checagem o botão ainda está
+    // na tela, e para escrever a falha o Bun formata o elemento do happy-dom inteiro (com o
+    // documento junto). Uma falha dessas levava 10 s e passava de 2,5 GB, e o CI matou a suíte do
+    // Pinta por memória (23/11/2026). Comparar com `null` dá a mesma prova sem formatar nada.
     await waitFor(() =>
-      expect(screen.queryByRole('button', { name: COPY.scene.avancado })).toBeNull(),
+      expect(screen.queryByRole('button', { name: COPY.scene.avancado }) === null).toBe(true),
     )
     expect(events).toEqual([`reserva:${map.id}`])
     fireEvent.click(await screen.findByRole('button', { name: COPY.editor.back }))
     await waitFor(() => expect(events).toEqual([`reserva:${map.id}`, `solta:${map.id}`]))
-  }, 90_000) // 11 s aqui; no CI passou de 31 s (23/11/2026), com a máquina três vezes mais lenta.
+  })
 
   it('aplica o tema no root (default light; host pode fixar dark)', async () => {
     const { container, unmount } = render(<PintaApp />)

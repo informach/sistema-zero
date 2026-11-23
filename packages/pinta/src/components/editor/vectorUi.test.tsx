@@ -136,13 +136,17 @@ describe('ajustar degradê no desenho', () => {
     fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradientAdjust }))
     fireEvent.keyDown(window, { key: 'Escape' })
     await waitFor(() =>
-      expect(screen.queryByRole('toolbar', { name: COPY.vector.gradientAdjustMode })).toBeNull(),
+      expect(screen.queryByRole('toolbar', { name: COPY.vector.gradientAdjustMode }) === null).toBe(
+        true,
+      ),
     )
     fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradient }))
     fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradientAdjust }))
     fireEvent.click(screen.getByRole('button', { name: COPY.vector.brush }))
     await waitFor(() =>
-      expect(screen.queryByRole('toolbar', { name: COPY.vector.gradientAdjustMode })).toBeNull(),
+      expect(screen.queryByRole('toolbar', { name: COPY.vector.gradientAdjustMode }) === null).toBe(
+        true,
+      ),
     )
   })
 
@@ -3886,7 +3890,7 @@ describe('arrastar formas: sem laço acidental e sem palco preso (06/09/2026)', 
     fireEvent.pointerMove(stage, { pointerId: 1, clientX: 300, clientY: 60 })
     fireEvent.pointerUp(stage, { pointerId: 1 })
     await waitFor(() =>
-      expect(screen.queryByRole('button', { name: COPY.vector.selRemove })).toBeNull(),
+      expect(screen.queryByRole('button', { name: COPY.vector.selRemove }) === null).toBe(true),
     )
   })
 })

@@ -257,7 +257,7 @@ describe('camada de objetos no editor de mapa', () => {
     fireEvent.change(campoNome(), { target: { value: 'saida' } })
     fireEvent.pointerDown(svg, at(40, 20, 4))
     fireEvent.pointerUp(svg, at(40, 20, 4))
-    await waitFor(() => expect(screen.queryByLabelText(COPY.tiles.objectName)).toBeNull())
+    await waitFor(() => expect(screen.queryByLabelText(COPY.tiles.objectName) === null).toBe(true))
     await waitFor(
       async () => {
         const objects = await objetosNoDisco()
@@ -279,7 +279,9 @@ describe('camada de objetos no editor de mapa', () => {
     // O último desfazer ainda é o "Objeto 2" nascendo, não uma edição que não houve.
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
     await waitFor(() =>
-      expect(screen.queryByRole('button', { name: COPY.tiles.pickObject('Objeto 2') })).toBeNull(),
+      expect(
+        screen.queryByRole('button', { name: COPY.tiles.pickObject('Objeto 2') }) === null,
+      ).toBe(true),
     )
     expect(screen.getByRole('button', { name: COPY.tiles.pickObject('Objeto 1') })).toBeTruthy()
   })
@@ -300,7 +302,9 @@ describe('camada de objetos no editor de mapa', () => {
     }
     fireEvent.keyDown(window, { key: 'Delete' })
     await waitFor(() =>
-      expect(screen.queryByRole('button', { name: COPY.tiles.pickObject('Objeto 2') })).toBeNull(),
+      expect(
+        screen.queryByRole('button', { name: COPY.tiles.pickObject('Objeto 2') }) === null,
+      ).toBe(true),
     )
   })
 
