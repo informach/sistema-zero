@@ -85,6 +85,30 @@
       }
     },
     {
+      "key": "video-aparencia",
+      "plannedVideo": "Título: Deixe o jogo com a sua cara\n\nMaster integral da professora. Roteiro: ilha-aula-3.roteiro.md, clipe video-aparencia. Gravação pendente."
+    },
+    {
+      "key": "ponte-aparencia",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "A surpresa chegou! Que combinação você vai criar? Troque o que quiser: personagem, barco, chave, farol ou cenário. Troque só o modelo e deixe o nome e o tamanho como estão. Teste e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
+      }
+    },
+    {
+      "key": "video-personalizar",
+      "plannedVideo": "Título: Escolha seu esconderijo e teste de verdade\n\nMaster integral da professora. Roteiro: ilha-aula-3.roteiro.md, clipe video-personalizar. Gravação pendente."
+    },
+    {
+      "key": "ponte-personalizar",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora escolha o esconderijo da chave! Mude o x e o z no bloco Colocar o objeto chave e teste se o personagem alcança. Se quiser, escreva os seus avisos. Depois clique em Verificar projeto, em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte."
+      }
+    },
+    {
       "key": "ponte-quiz",
       "content": {
         "kind": "dialogue",
@@ -183,30 +207,6 @@
             "explanation": "Ver a chave não garante que o personagem consiga alcançá-la. Jogue até o novo lugar, confira a coleta e depois leve a chave ao farol."
           }
         ]
-      }
-    },
-    {
-      "key": "video-aparencia",
-      "plannedVideo": "Título: Deixe o jogo com a sua cara\n\nMaster integral da professora. Roteiro: ilha-aula-3.roteiro.md, clipe video-aparencia. Gravação pendente."
-    },
-    {
-      "key": "ponte-aparencia",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "A surpresa chegou! Que combinação você vai criar? Troque o que quiser: personagem, barco, chave, farol ou cenário. Troque só o modelo e deixe o nome e o tamanho como estão. Teste e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
-      }
-    },
-    {
-      "key": "video-personalizar",
-      "plannedVideo": "Título: Escolha seu esconderijo e teste de verdade\n\nMaster integral da professora. Roteiro: ilha-aula-3.roteiro.md, clipe video-personalizar. Gravação pendente."
-    },
-    {
-      "key": "ponte-personalizar",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Agora escolha o esconderijo da chave! Mude o x e o z no bloco Colocar o objeto chave e teste se o personagem alcança. Se quiser, escreva os seus avisos. Depois clique em Verificar projeto, em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte."
       }
     },
     {
@@ -14461,20 +14461,6 @@
       }
     },
     {
-      "key": "revisao",
-      "title": "O que você descobriu no 3D",
-      "intent": "explanation",
-      "objective": "Conferir ponto de vista, posição, altura e escolha de teste.",
-      "blockKeys": ["ponte-quiz", "quiz"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["quiz"]
-      }
-    },
-    {
       "key": "aparencia",
       "title": "Deixe o jogo com a sua cara",
       "intent": "application",
@@ -16903,6 +16889,20 @@
           }
         ],
         "submissionUpToDate": true
+      }
+    },
+    {
+      "key": "revisao",
+      "title": "O que você descobriu no 3D",
+      "intent": "closing",
+      "objective": "Conferir ponto de vista, posição, altura e escolha de teste.",
+      "blockKeys": ["ponte-quiz", "quiz"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz"]
       }
     },
     {
