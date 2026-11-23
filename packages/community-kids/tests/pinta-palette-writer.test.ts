@@ -2,6 +2,7 @@ import '../../pinta/src/testing/idbMock'
 import { expect, test } from 'bun:test'
 import {
   type PintaPaletteHead,
+  type PintaPaletteUploadCapability,
   PINTA_PALETTE_WRITE_PROTOCOL as protocol,
 } from '@sistemazero/core/creations/pinta-palette-writer'
 import type { PaletteLibrary } from '../../pinta/src/core/paletteLibrary'
@@ -395,7 +396,7 @@ test('reabre antes do PUT e troca um ticket ausente apenas pelo mesmo documento'
     adopted: false,
     generation: null,
   }
-  const firstTicket = {
+  const firstTicket: PintaPaletteUploadCapability = {
     protocol,
     nonce: crypto.randomUUID(),
     baseGeneration: null,

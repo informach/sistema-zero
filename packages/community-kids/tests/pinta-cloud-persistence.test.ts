@@ -817,7 +817,7 @@ describe('biblioteca "Minhas paletas" no espelho da nuvem', () => {
       expect(await host.loadPaletteLibrary?.()).toEqual(saved)
       expect(uploads.size).toBe(0)
     } finally {
-      host.dispose()
+      host.dispose?.()
     }
   })
 
@@ -842,7 +842,7 @@ describe('biblioteca "Minhas paletas" no espelho da nuvem', () => {
       expect(snapshot?.meta?.baseRevision).toBe(0)
       expect(JSON.parse(snapshot?.json ?? 'null')).toEqual(local.library.current)
     } finally {
-      mirrored.dispose()
+      mirrored.dispose?.()
     }
   })
 
@@ -878,7 +878,7 @@ describe('biblioteca "Minhas paletas" no espelho da nuvem', () => {
         { id: 'minha', removedAt: 20 },
       ])
     } finally {
-      mirrored.dispose()
+      mirrored.dispose?.()
     }
   })
 
@@ -944,7 +944,7 @@ describe('biblioteca "Minhas paletas" no espelho da nuvem', () => {
       expect(marks.get(PALETTE_LIBRARY_ITEM_ID)).toBe(30)
     } finally {
       resume()
-      mirrored.dispose()
+      mirrored.dispose?.()
     }
   })
 
@@ -985,7 +985,7 @@ describe('biblioteca "Minhas paletas" no espelho da nuvem', () => {
     })
     const read = mirrored.syncPaletteLibrary?.()
     await started.promise
-    mirrored.dispose()
+    mirrored.dispose?.()
     release()
     await read?.catch(() => {})
     expect(signals.map((signal) => signal.aborted)).toEqual([true])
@@ -1035,7 +1035,7 @@ describe('biblioteca "Minhas paletas" no espelho da nuvem', () => {
       expect(local.library.current?.removed).toEqual([{ id: 'antiga', removedAt: 20 }])
       expect(await uploads.get(id)?.produce()).not.toBeNull()
     } finally {
-      mirrored.dispose()
+      mirrored.dispose?.()
     }
   })
 
@@ -1055,7 +1055,7 @@ describe('biblioteca "Minhas paletas" no espelho da nuvem', () => {
       expect(marks.revision(id)).toBeUndefined()
       expect(uploads.size).toBe(0)
     } finally {
-      mirrored.dispose()
+      mirrored.dispose?.()
     }
   })
 
@@ -1104,7 +1104,7 @@ describe('biblioteca "Minhas paletas" no espelho da nuvem', () => {
     expect(local.rows.size).toBe(0)
     expect(uploads.has(PALETTE_LIBRARY_ITEM_ID)).toBe(true)
     expect(await uploads.get(PALETTE_LIBRARY_ITEM_ID)?.produce()).not.toBeNull()
-    mirrored.dispose()
+    mirrored.dispose?.()
   })
 
   test('sincroniza apenas a biblioteca ao abrir o Molda, sem baixar desenhos do Pinta', async () => {

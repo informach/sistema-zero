@@ -812,7 +812,9 @@ describe('createCreationsCloud', () => {
     cloud.enqueueUpload(
       'd-1',
       async () => ({ json: '{}', meta: { name: 'x', kind: 'pixel-sprite', updatedAt: 777 } }),
-      (r) => uploaded.push(r),
+      (r) => {
+        uploaded.push(r)
+      },
     )
     expect(uploaded).toEqual([])
     await cloud.flush()
@@ -986,7 +988,9 @@ describe('createCreationsCloud', () => {
       cloud.enqueueUpload(
         'p-1',
         async () => ({ json: '{}', meta: { name: 'Nave', kind: 'classic', baseRevision: base } }),
-        (r) => uploaded.push(r.revision),
+        (r) => {
+          uploaded.push(r.revision)
+        },
         async ({ itemId }) => {
           stale.push(itemId)
           // O adaptador "resolve": passa a conhecer a revisão corrente e sobe de novo.
@@ -1524,7 +1528,9 @@ describe('createCreationsCloud', () => {
         meta: { name: 'Jogo', kind: 'classic', updatedAt: 5 },
         parts: [a],
       }),
-      ({ revision }) => uploaded.push(revision),
+      ({ revision }) => {
+        uploaded.push(revision)
+      },
     )
     await cloud.flush()
     expect(uploaded).toEqual([2])
