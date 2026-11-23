@@ -121,6 +121,10 @@ const builds: IlhaParte[][] = [
   ['sem-chave', 'decisao', 'uma-vez', 'aparencia', 'personalizar'],
 ]
 const starts: IlhaParte[] = ['inicio', 'movimento', 'aviso']
+// A revisão da Aula 3 é a penúltima parte: a criança termina de construir e enviar, revisa e só então
+// comemora (o fecho). É o lugar do quiz no Cadê e na Chave do Farol, logo antes do certificado. Antes, ela
+// vinha entre o farol que acende uma vez e a aparência (mudado a pedido da Helena, 23/11/2026).
+const QUIZ_ANTES_DE = 'fecho'
 for (const [i, aula] of ilhaAulas.entries()) {
   const sections: any[] = [],
     blocks: any[] = []
@@ -139,7 +143,9 @@ for (const [i, aula] of ilhaAulas.entries()) {
     sections.push({
       key: 'revisao',
       title: 'O que você descobriu no 3D',
-      intent: 'explanation',
+      // Depois da entrega, o quiz é o "Quiz de fechamento" da plataforma (section-templates.ts): a entrega
+      // só vale como a última do projeto se depois dela vierem apenas fechamentos (isFinalProjectSection).
+      intent: 'closing',
       objective: 'Conferir ponto de vista, posição, altura e escolha de teste.',
       blockKeys: ['ponte-quiz', 'quiz'],
       workspaceKey: null,
@@ -149,8 +155,7 @@ for (const [i, aula] of ilhaAulas.entries()) {
     })
   }
   for (const t of aula.trechos) {
-    // A revisão vem logo depois de o farol acender, antes da personalização.
-    if (i === 2 && t.key === 'aparencia') addQuiz()
+    if (i === 2 && t.key === QUIZ_ANTES_DE) addQuiz()
     const vk = `video-${t.key}`,
       pk = `ponte-${t.key}`,
       keys = [vk, pk],
@@ -358,11 +363,11 @@ for (const [i, aula] of ilhaAulas.entries()) {
 A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para gerar a voz integral. Na montagem kids, ${avatarDaAula(i)} substitui somente as frases das tabelas de substituição, com a voz do arquivo .${avatarDaAula(i) === 'Dedé' ? 'dede' : 'debinha'}.elevenlabs.txt e sem voz sobreposta; o adulto usa o master integral. O jogo é de teclado: o robô dá o foco ao jogo (Rodar de novo no Estúdio, ou um toque no jogo pronto) antes de segurar as setas. Os tempos das setas no Na tela são estimativas para a velocidade 4 e se acertam no Verificar plano. Gravação e publicação desta revisão ainda não confirmadas.
 
 `
-  // A numeração segue as partes da aula, com a revisão onde o manifesto a põe (antes da aparência).
+  // A numeração segue as partes da aula, com a revisão onde o manifesto a põe (antes do fecho).
   // Antes, o roteiro a punha antes do uma-vez e trocava os recados dessas duas partes.
   const parte = (key: string) => sections.findIndex((s) => s.key === key) + 1
   for (const t of aula.trechos) {
-    if (i === 2 && t.key === 'aparencia')
+    if (i === 2 && t.key === QUIZ_ANTES_DE)
       script += `## Parte ${parte('revisao')}. O que você descobriu no 3D\n\nQuiz sem vídeo: escolha, demonstração, explicação e nova tentativa.\n\n`
     script += `## Parte ${parte(t.key)}. ${t.title}\n\n${renderizarClipe(falaDaParte(t, i), t.screen)}\n`
   }
