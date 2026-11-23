@@ -1,4 +1,11 @@
-import { codificarRecursoDeBuracos, digestDosBytes } from '@sistemazero/molda-cenarios-core/v2'
+import {
+  CELULAS_DA_PECA,
+  codificarPecaDeAlturas,
+  codificarRecursoDeBuracos,
+  digestDosBytes,
+  LADO_DAS_AMOSTRAS,
+} from '@sistemazero/molda-cenarios-core/v2'
+import type { EditableStudioProject } from '../core/editableProject'
 import { createEmptyProject } from '../core/project'
 import { prepararImportacaoDeCena3D } from '../core/scene3d/importar'
 import { criarFonteDeCenarioDeEnsaio } from './moldaSceneFixture'
@@ -18,6 +25,8 @@ export async function criarTransporteDeEnsaio({
   passo = 1,
   juntar = false,
   fundo = 0,
+  comRelevo = false,
+  projeto,
 }: {
   comBuraco?: boolean
   origem?: { x: number; z: number }
@@ -36,6 +45,10 @@ export async function criarTransporteDeEnsaio({
   /** "Juntar peças", como o Estúdio faz ao trazer um cenário. */
   juntar?: boolean
   fundo?: number
+  /** Colinas de verdade: uma peça de alturas por lote, da mesma função nas bordas. */
+  comRelevo?: boolean
+  /** O projeto que recebe o cenário (padrão: um projeto JavaScript vazio). */
+  projeto?: EditableStudioProject
 } = {}) {
   const { host, resumo, fonte } = await criarFonteDeCenarioDeEnsaio(1),
     aberto = await host.abrirCenario(resumo.id)
@@ -51,6 +64,27 @@ export async function criarTransporteDeEnsaio({
       digest = await digestDosBytes(conteudo)
     await host.guardarRecursos(resumo.id, [{ digest, conteudo }])
     buracos = [{ coluna: 0, linha: 0, digest }]
+  }
+  const pecasDeAltura: { coluna: number; linha: number; digest: string }[] = []
+  if (comRelevo) {
+    const recursos: { digest: string; conteudo: Uint8Array }[] = []
+    const lotes = colunas / CELULAS_DA_PECA
+    for (let linha = 0; linha < lotes; linha++)
+      for (let coluna = 0; coluna < lotes; coluna++) {
+        const amostras = new Float64Array(LADO_DAS_AMOSTRAS ** 2)
+        for (let j = 0; j < LADO_DAS_AMOSTRAS; j++)
+          for (let i = 0; i < LADO_DAS_AMOSTRAS; i++) {
+            const x = origem.x + (coluna * CELULAS_DA_PECA + i) * passo,
+              z = origem.z + (linha * CELULAS_DA_PECA + j) * passo
+            amostras[j * LADO_DAS_AMOSTRAS + i] =
+              1 + 1.5 * Math.sin(x / 37) + 1.2 * Math.cos(z / 53)
+          }
+        const conteudo = codificarPecaDeAlturas(amostras, -2, 4),
+          digest = await digestDosBytes(conteudo)
+        recursos.push({ digest, conteudo })
+        pecasDeAltura.push({ coluna, linha, digest })
+      }
+    await host.guardarRecursos(resumo.id, recursos)
   }
   const pisos: Parameters<typeof host.editarCenario>[2] = []
   if (comRampa)
@@ -159,7 +193,7 @@ export async function criarTransporteDeEnsaio({
               min: -2,
               max: 4,
               fundo,
-              pecas: [],
+              pecas: pecasDeAltura,
               ...(comBuraco ? { buracos } : {}),
             },
             ...(comRegioes
@@ -196,5 +230,5 @@ export async function criarTransporteDeEnsaio({
       juntar,
       ...(relevoEmCampo ? { relevo: 'campo' as const } : {}),
     })
-  return prepararImportacaoDeCena3D(createEmptyProject('p', 'Meu jogo'), pacote)
+  return prepararImportacaoDeCena3D(projeto ?? createEmptyProject('p', 'Meu jogo'), pacote)
 }
