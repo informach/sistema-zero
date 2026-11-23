@@ -192,3 +192,54 @@ describe('o adaptador do studio-runtime', () => {
     expect(ctx.bodies).toHaveLength(3)
   })
 })
+
+describe('o aquecimento do contêiner (23/11/2026)', () => {
+  function warmSetup(status = 200) {
+    const calls: { url: string; body: Record<string, unknown> }[] = []
+    let clock = 0
+    const checker = createStudioRuntimeChecker({
+      runtimeUrl: 'https://runtime.test/',
+      runtimeToken: 'token-with-enough-length',
+      now: () => clock,
+      fetchImpl: async (url, init) => {
+        const body = JSON.parse(String(init?.body)) as Record<string, unknown>
+        calls.push({ url: String(url), body })
+        if (String(url).endsWith('/v1/check/warm'))
+          return Response.json({ ok: status === 200 }, { status })
+        return ok()
+      },
+    })
+    return { checker, calls, advance: (ms: number) => (clock += ms) }
+  }
+
+  test('liga o MESMO contêiner que a verificação vai usar, sem esperar a resposta', async () => {
+    const ctx = warmSetup()
+    ctx.checker.warm?.({ requester: 'u1', threeD: true })
+    await ctx.checker.check({ requester: 'u1', project, kind: 'classic', objectives: [objective] })
+    const warm = ctx.calls.find((call) => call.url === 'https://runtime.test/v1/check/warm')
+    const check = ctx.calls.find((call) => call.url === 'https://runtime.test/v1/check')
+    expect(warm?.body).toEqual({ executionId: check?.body.executionId, threeD: true })
+  })
+
+  test('no máximo um aquecimento por criança a cada 3 minutos; outra criança é outra conta', async () => {
+    const ctx = warmSetup()
+    ctx.checker.warm?.({ requester: 'u1', threeD: false })
+    ctx.checker.warm?.({ requester: 'u1', threeD: false })
+    ctx.checker.warm?.({ requester: 'u2', threeD: false })
+    await Bun.sleep(1)
+    expect(ctx.calls).toHaveLength(2)
+    ctx.advance(3 * 60_000)
+    ctx.checker.warm?.({ requester: 'u1', threeD: false })
+    await Bun.sleep(1)
+    expect(ctx.calls).toHaveLength(3)
+  })
+
+  test('aquecimento que falha deixa a próxima abertura tentar de novo', async () => {
+    const ctx = warmSetup(500)
+    ctx.checker.warm?.({ requester: 'u1', threeD: false })
+    await Bun.sleep(1)
+    ctx.checker.warm?.({ requester: 'u1', threeD: false })
+    await Bun.sleep(1)
+    expect(ctx.calls).toHaveLength(2)
+  })
+})
