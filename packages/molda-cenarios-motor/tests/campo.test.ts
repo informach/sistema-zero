@@ -184,3 +184,89 @@ describe('a colisão pelo campo de alturas', () => {
     expect(rastrearNoCampo(campo, new Vector3(-101, 50, 0), new Vector3(-101, -50, 0))).toBeNull()
   })
 })
+
+describe('o MundoDoTeste com o campo no lugar das malhas do chão', () => {
+  const campo = campoDeTeste()
+  // Uma caixa sólida por cima do relevo, nos dois mundos: o campo convive com as malhas.
+  const caixa = new BufferGeometry()
+  caixa.setAttribute(
+    'position',
+    new BufferAttribute(
+      new Float32Array([0, 0, 0, 4, 0, 0, 4, 0, 4, 0, 0, 4, 0, 6, 0, 4, 6, 0, 4, 6, 4, 0, 6, 4]),
+      3,
+    ),
+  )
+  caixa.setIndex([
+    0, 1, 2, 0, 2, 3, 4, 6, 5, 4, 7, 6, 0, 4, 5, 0, 5, 1, 1, 5, 6, 1, 6, 2, 2, 6, 7, 2, 7, 3, 3, 7,
+    4, 3, 4, 0,
+  ])
+  const matrizDaCaixa = new Matrix4().makeTranslation(10, 2, 20)
+  const fontesDoChao = () => {
+    const lista = []
+    for (let linha = 0; linha < campo.linhas / CELULAS_DA_PECA; linha++)
+      for (let coluna = 0; coluna < campo.colunas / CELULAS_DA_PECA; coluna++) {
+        const malha = malhaDeGradeNaPeca(
+          campo,
+          { coluna, linha },
+          (x, z) =>
+            campo.alturas[
+              (linha * CELULAS_DA_PECA + z) * (campo.colunas + 1) + coluna * CELULAS_DA_PECA + x
+            ] as number,
+          (gx, gz) => campo.buracos?.[gz * campo.colunas + gx] === 1,
+        )
+        const geometria = new BufferGeometry()
+        geometria.setAttribute('position', new BufferAttribute(malha.vertices, 3))
+        geometria.setIndex(new BufferAttribute(malha.indices, 1))
+        lista.push({
+          geometria,
+          matriz: new Matrix4().makeTranslation(malha.origem.x, 0, malha.origem.z),
+        })
+      }
+    return lista
+  }
+  const antigo = new MundoDoTeste([
+    ...fontesDoChao(),
+    { objeto: 'caixa', geometria: caixa, matriz: matrizDaCaixa },
+  ])
+  const novo = new MundoDoTeste(
+    [{ objeto: 'caixa', geometria: caixa, matriz: matrizDaCaixa }],
+    undefined,
+    campo,
+  )
+
+  test('o limite inferior é o mesmo', () => {
+    expect(novo.limiteInferior).toBeCloseTo(antigo.limiteInferior!, 5)
+  })
+
+  test('300 cápsulas saem do chão do mesmo jeito', () => {
+    const sorteio = sorteador(71)
+    let empurradas = 0
+    for (let caso = 0; caso < 300; caso++) {
+      const x = -95 + sorteio() * 245,
+        z = -55 + sorteio() * 245
+      const pes = new Vector3(x, antigo.apoio(x, z, 0, 100, -100, -1)?.y ?? 0, z)
+      pes.y += -0.6 + sorteio() * 0.8
+      const a = antigo.resolver(pes, 1.8, 0.4),
+        b = novo.resolver(pes, 1.8, 0.4)
+      if (a.posicao.distanceTo(pes) > 1e-3) empurradas++
+      expect(b.posicao.distanceTo(a.posicao), `caso ${caso}`).toBeLessThan(1e-4)
+    }
+    expect(empurradas).toBeGreaterThan(50)
+  })
+
+  test('o apoio e os triângulos numa caixa são os mesmos (a caixa sólida também conta)', () => {
+    const sorteio = sorteador(97)
+    for (let caso = 0; caso < 200; caso++) {
+      const x = -95 + sorteio() * 245,
+        z = -55 + sorteio() * 245,
+        a = antigo.apoio(x, z, 0.4, 100, -100, 0.5),
+        b = novo.apoio(x, z, 0.4, 100, -100, 0.5)
+      expect(b === null, `caso ${caso}`).toBe(a === null)
+      if (a && b) expect(b.y, `caso ${caso}`).toBeCloseTo(a.y, 4)
+    }
+    const caixaDaConsulta = new Box3(new Vector3(5, -20, 15), new Vector3(20, 20, 30))
+    expect(novo.triangulosNaCaixa(caixaDaConsulta).length).toBe(
+      antigo.triangulosNaCaixa(caixaDaConsulta).length,
+    )
+  })
+})

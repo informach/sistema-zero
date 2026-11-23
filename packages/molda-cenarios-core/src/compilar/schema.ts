@@ -208,6 +208,29 @@ export const CenaCompiladaSchema = z
       if (!a || !['image/png', 'image/webp'].includes(a.mime))
         falhar(`A textura “${t.id}” não possui um arquivo de imagem válido.`)
     }
+    // O relevo em campo (plano "Mundos de 2 km", lote 2): um PNG de pesos por vértice da grade, as
+    // texturas das camadas no pacote, e nada do terreno de sempre (desenharia e colidiria duas vezes).
+    const relevo = d.terreno?.relevo
+    if (relevo) {
+      const t = d.terreno!
+      for (const caminho of relevo.pesos) {
+        const a = arquivos.get(caminho)
+        if (a?.papel !== 'pesos' || a.largura !== t.colunas + 1 || a.altura !== t.linhas + 1)
+          falhar('Os pesos do relevo precisam de um PNG com um pixel por vértice da grade.')
+      }
+      for (const c of relevo.camadas)
+        if (c.textura && !texturas.has(c.textura.id))
+          falhar(`A textura da camada “${c.id}” do relevo não está no pacote.`)
+      if (
+        d.arquivos.some((a) => a.papel === 'terreno') ||
+        d.colisoes.some((c) => c.tipo === 'terreno')
+      )
+        falhar('O relevo em campo não leva lotes nem colisão de terreno.')
+    }
+    const pesos = new Set(relevo?.pesos ?? [])
+    for (const a of d.arquivos)
+      if (a.papel === 'pesos' && !pesos.has(a.caminho))
+        falhar(`O arquivo de pesos “${a.caminho}” não pertence ao relevo da cena.`)
     const ceu = d.ambiente.ceu
     if (ceu?.tipo === 'panorama') {
       const ref = texturas.get(ceu.textura),

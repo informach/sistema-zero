@@ -189,3 +189,17 @@ terreno `grade` nativo sem `recortes`:
   `docs/estudio-evolucao/evidencias/mundos-2km-2026-11-23/`; documentos corrigidos.
 - Lote 1: feito (23/11/2026). `molda-cenarios-motor/src/teste/campo.ts`,
   `molda-cenarios-core/src/compilar/relevo.ts`, `molda-cenarios-core/src/v2/png-de-pesos.ts`.
+- Lote 2: feito na staging local (23/11/2026). O terreno compilado ganhou o campo opcional `relevo`
+  (`tipo: 'campo'`, `pesos`, `camadas`) e o papel de arquivo `pesos`; o carregador de cena desenha o
+  relevo em pedaços (`molda-cenarios-motor/src/compilar/runtime-relevo.ts`) e a colisão lê o campo
+  (`MundoDoTeste` com `campo`). Mudanças de decisão, com o motivo:
+  - **sem reservar 16 das 48 malhas da janela**: o teto de 48 é das malhas COMPILADAS que uma janela
+    carrega; os pedaços do relevo são gerados na hora e têm o teto próprio (`maximoDeNos`, 96, e
+    no máximo 64 guardados além dos da tela, ~52 KB cada). Os desenhos na tela entram no aceite
+    (≤ 100) e são medidos;
+  - **a fixture congelada sai no lote 3**: as fixtures saem do produtor real, e o escritor do campo
+    é o lote 3; no lote 2 os leitores são provados com um pacote montado pelo próprio
+    `gravarDadosDoTerreno` + `codificarPngDePesos` (`tests/runtime-relevo-cena.test.ts`);
+  - a saia de cada pedaço tem a profundidade da maior fresta MEDIDA nas bordas dele (contra um
+    vizinho um nível mais grosso e um mais fino), não um número fixo: o teste mostrou fresta de
+    9,7 m com a saia fixa de 8,5 m.
