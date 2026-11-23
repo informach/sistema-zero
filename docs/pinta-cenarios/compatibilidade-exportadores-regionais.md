@@ -70,7 +70,10 @@ Phaser 3.90.0 no Chromium 159, CPython 3.14.2 com pygame-ce 2.5.7 e Godot 4.7.2.
 Tiled e Phaser vêm de `71746fdc7` e `6d00d0c8c`. O `pinta.gd` regional e o projetado são byte a
 byte os de `347b2527e`, a linha ensaiada no Godot 4.7.2, exceto o orçamento de índices da
 cena 5, que `a730f1dc1` elevou ao da cena 4. `src/export/godot/regional.test.ts` prende os dois por sha256
-e confere essa única diferença. Pygame usa o módulo fornecido da raiz, não o módulo
-daquela linha. Os quatro ensaios precisam ser repetidos no pacote integrado. Os testes de
+e confere essa única diferença. Em 23/11/2026, no pacote integrado, o Godot 4.7.2 rodou
+`verify-region-godot.ts` com e sem `--projected` sem falhas (Vila e Floresta e Cabana; 19
+camadas com física precisa; 16 camadas isométricas). Pygame usa o módulo fornecido da raiz,
+não o módulo daquela linha. Os ensaios de Tiled, Phaser e Pygame ainda precisam ser repetidos
+no pacote integrado. Os testes de
 unidade cobrem o conteúdo dos pacotes Godot e Pygame, a leitura do PNG 5 e o orçamento
 dos conjuntos.
