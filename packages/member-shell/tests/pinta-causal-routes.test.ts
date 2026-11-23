@@ -20,6 +20,9 @@ mock.module('server-only', () => ({}))
 const { createPintaCausalRoutes } = await import('../src/routes/pinta-causal')
 const { readPintaCausalBlob } = await import('../src/server/pinta-causal-content')
 const { createSessionModule } = await import('../src/server/session')
+// A sessão verifica com o `getEnv()` cacheado; outro arquivo da suíte pode trocar o
+// `process.env` depois que o cache aqueceu, então o token assina com o mesmo segredo.
+const { getEnv } = await import('../src/lib/env')
 
 const userId = '11111111-1111-4111-8111-111111111111'
 const accountId = '22222222-2222-4222-8222-222222222222'
@@ -477,7 +480,7 @@ test('the adult causal route requires a currently valid access token before sign
     { accessCookie: 'qa-access', refreshCookie: 'qa-refresh' },
     'qa-palette',
   )
-  const key = new TextEncoder().encode(process.env.JWT_HS256_SECRET!)
+  const key = new TextEncoder().encode(getEnv().JWT_HS256_SECRET!)
   const issued = Math.floor(Date.now() / 1000)
   const token = (expiresAt: number, role: string, subject = userId) =>
     new SignJWT({ sub: subject, role, status: 'active' })
@@ -514,7 +517,7 @@ test('an adult refresh rechecks the current actor and an unavailable refresh pre
     { accessCookie: 'qa-access', refreshCookie: 'qa-refresh' },
     'qa-palette',
   )
-  const key = new TextEncoder().encode(process.env.JWT_HS256_SECRET!)
+  const key = new TextEncoder().encode(getEnv().JWT_HS256_SECRET!)
   const issued = Math.floor(Date.now() / 1000)
   const access = (subject: string, expiresAt: number) =>
     new SignJWT({ sub: subject, role: 'customer', status: 'active' })
