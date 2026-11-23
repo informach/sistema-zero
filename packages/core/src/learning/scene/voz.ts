@@ -34,8 +34,13 @@ export const ZAPPY_PRONUNCIATION_PROFILE_VERSION = 'pt-BR-1'
 /**
  * Tetos do dicionário. A chave inclui a versão do perfil, portanto acompanha o teto de uma fala
  * possível, e não o tamanho pequeno dos exemplos atuais.
+ *
+ * As entradas eram 12, o tamanho exato das maiores experiências do Cadê e da Chave do Farol. As da
+ * Ilha do Farol falam 19 frases (24/11/2026): com 12, o botão de voz e a publicação de cursos
+ * gravavam um dicionário que a validação recusava ("Configure a atividade e sua verificação").
+ * 32 cobre essas cenas com folga; o quiz tem o próprio teto (`QUIZ_VOZ_LIMITS`).
  */
-export const VOZ_LIMITS = { entradas: 12, chave: 6000 } as const
+export const VOZ_LIMITS = { entradas: 32, chave: 6000 } as const
 
 const PAUSE_TAG = /<break time="(0\.\d+|[12](?:\.\d+)?|3(?:\.0+)?)s"\s*\/>/g
 const QUALQUER_TAG = /<[^>]*>/g
