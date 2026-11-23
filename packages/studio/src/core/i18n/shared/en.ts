@@ -35,6 +35,7 @@ export const en: Record<string, string> = {
   'run.endInput': 'End input',
   'run.endInputHint': 'Ends text input (EOF) without stopping the program',
   'run.fullscreen': 'Full screen',
+  'run.exitFullscreen': 'Exit full screen',
   'run.fullscreenUnavailable': 'Full screen is not available in this browser.',
   'run.stale': 'Your code changed. Press Run again to see the new version.',
   'run.noEnvironment': 'The Python environment is not available on this page yet.',

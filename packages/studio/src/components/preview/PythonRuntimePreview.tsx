@@ -1,10 +1,11 @@
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
-import { Button } from '#ui'
+import { Button, IconMaximize, IconMinimize } from '#ui'
 import type { PythonProjectDocument } from '../../core/editableProject'
 import {
   hasRegionalPintaReference,
   PRIVATE_REGIONAL_PROJECT,
 } from '../../core/pintaRegionalReference'
+import { useFullscreen } from '../../hooks/useFullscreen'
 import type { StudioRuntimeCapture } from '../../runtime/capture'
 import type { StudioRuntimeEnvironment } from '../../runtime/environment'
 import { pythonProjectNeedsAudioGesture } from '../../runtime/python/audio/activation'
@@ -81,6 +82,7 @@ export function PythonRuntimePreview(props: PythonRuntimePreviewProps) {
   const regionalScope = useStudioExecution()[PRIVATE_REGIONAL_PROJECT]
   const latestRegionalScope = useRef(regionalScope)
   const root = useRef<HTMLDivElement>(null)
+  const fullscreenRoot = useFullscreen(root)
   const mount = useRef<HTMLDivElement>(null)
   const latest = useRef(props)
   const [controller, setController] = useState<PythonExecutionController | null>(null)
@@ -281,7 +283,7 @@ export function PythonRuntimePreview(props: PythonRuntimePreviewProps) {
   }
   handlers.current = { run, stop }
   function fullscreen() {
-    void root.current?.requestFullscreen?.().catch(() => setError(t('run.fullscreenUnavailable')))
+    void fullscreenRoot.toggle().catch(() => setError(t('run.fullscreenUnavailable')))
   }
   function sendInput(eof = false) {
     if (!controller || !view.input || inputSubmission.current) return
@@ -350,8 +352,14 @@ export function PythonRuntimePreview(props: PythonRuntimePreviewProps) {
           <span className="min-w-0 flex-1 px-1 text-xs text-sz-fg-soft" role="status">
             {t(STATUS_KEYS[view.status])}
           </span>
-          <Button size="sm" variant="ghost" aria-label={t('run.fullscreen')} onClick={fullscreen}>
-            ⛶
+          <Button
+            size="sm"
+            variant="ghost"
+            aria-label={t(fullscreenRoot.active ? 'run.exitFullscreen' : 'run.fullscreen')}
+            title={t(fullscreenRoot.active ? 'run.exitFullscreen' : 'run.fullscreen')}
+            onClick={fullscreen}
+          >
+            {fullscreenRoot.active ? <IconMinimize /> : <IconMaximize />}
           </Button>
         </div>
       )}

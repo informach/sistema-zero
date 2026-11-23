@@ -294,7 +294,8 @@ hosts. Só CSS e API pública do Blockly 12 dentro dos blocos.
   `proRun` (sem barra própria); `ProRunControls` no meio da Topbar (fora do celular). O olhinho
   virou "Mostrar o jogo" no ⋯. `ClassicStage` (`components/preview/`) é o palco: título
   Jogo/Página/Programa, pílula, Jogo maior, tela cheia, cartões "Aperte Rodar" e "Opa, o jogo
-  parou". `useClassicStage` liga o `PanelGroup`, o `revealStage` e os pedidos do estreito.
+  parou". A tela cheia é o MESMO botão para entrar e sair (`hooks/useFullscreen.ts`, que segue o
+  `fullscreenchange`: sair pelo Esc também volta o botão), também na prévia do Python (23/11/2026). `useClassicStage` liga o `PanelGroup`, o `revealStage` e os pedidos do estreito.
 - **Âncoras das aulas gravadas** (robô `palco-gravacao`): o Rodar da barra
   (`[data-live-target="studio-run"]`, que se chama "Rodar" ou "Rodar de novo" conforme a fase; o
   antigo "Atualizar o preview" do palco não existe mais desde o redesenho, conferido em 17/11/2026),

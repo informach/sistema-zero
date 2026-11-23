@@ -35,6 +35,7 @@ export const ptBR: Record<string, string> = {
   'run.endInput': 'Encerrar entrada',
   'run.endInputHint': 'Encerra a entrada de texto (EOF), sem parar o programa',
   'run.fullscreen': 'Tela cheia',
+  'run.exitFullscreen': 'Sair da tela cheia',
   'run.fullscreenUnavailable': 'A tela cheia não está disponível neste navegador.',
   'run.stale': 'Seu código mudou. Aperte Rodar de novo para ver a nova versão.',
   'run.noEnvironment': 'O ambiente Python ainda não está disponível nesta página.',

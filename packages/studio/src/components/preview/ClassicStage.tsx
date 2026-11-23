@@ -1,7 +1,8 @@
 import { type JSX, type ReactNode, useEffect, useRef, useState } from 'react'
 import type { ImperativePanelGroupHandle } from 'react-resizable-panels'
 import { useShallow } from 'zustand/react/shallow'
-import { cn, IconColumns, IconMaximize, IconPlay, IconRefresh, IconStop } from '#ui'
+import { cn, IconColumns, IconMaximize, IconMinimize, IconPlay, IconRefresh, IconStop } from '#ui'
+import { useFullscreen } from '../../hooks/useFullscreen'
 import { useMeasuredWidth } from '../../hooks/useMeasuredWidth'
 import { useHighlightStoreApi } from '../../state/highlightStore'
 import { useProjectStore } from '../../state/projectStore'
@@ -64,6 +65,7 @@ export function ClassicStage({
   const api = useProRunApi()
   const card = useRef<HTMLDivElement>(null)
   const width = useMeasuredWidth(card)
+  const fullscreen = useFullscreen(card)
   const compact = phone || (width > 0 && width < STAGE_HEAD_COMPACT_MAX_PX)
   const stageLarge = useUIStore((s) => s.stageLarge)
   const { state, canRun, canStop } = useProRun(
@@ -108,11 +110,11 @@ export function ClassicStage({
         <button
           type="button"
           className="sz-pro-btn sz-pro-btn--sm sz-pro-btn--icon"
-          aria-label={t('run.fullscreen')}
-          title={t('run.fullscreen')}
-          onClick={() => void card.current?.requestFullscreen?.().catch(() => undefined)}
+          aria-label={t(fullscreen.active ? 'run.exitFullscreen' : 'run.fullscreen')}
+          title={t(fullscreen.active ? 'run.exitFullscreen' : 'run.fullscreen')}
+          onClick={() => void fullscreen.toggle().catch(() => undefined)}
         >
-          <IconMaximize />
+          {fullscreen.active ? <IconMinimize /> : <IconMaximize />}
         </button>
       </header>
       <div className="relative min-h-0 flex-1">
