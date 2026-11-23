@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url'
 import { alturaDoCampo } from '@sistemazero/molda-cenarios-core/v2'
 import { decodeProjectAsset } from '../../../core/assetBinary'
 import { buildPythonAssetBundle } from '../../../core/pythonAssets'
+import type { PythonProProjectDocument } from '../../../core/pythonProject'
 import { prepararFontesPythonDoCenario } from '../../../core/scene3d/python'
 import { lerAssetDeCena3D } from '../../../core/scene3d/referencias'
 import { documentFixture } from '../../../state/fixtures/projectDocuments'
@@ -24,10 +25,11 @@ const motor = fileURLToPath(new URL('./py', import.meta.url))
 const script = fileURLToPath(new URL('./__tests__/cenario_campo.py', import.meta.url))
 
 test('um mundo de 2 km em campo, trazido para um projeto Python, abre e anda no cenario.py', async () => {
-  const projeto = documentFixture('python', 'pro')
-  if (projeto.programmingLanguage !== 'python' || projeto.kind !== 'pro') throw new Error('fixture')
+  const documento = documentFixture('python', 'pro')
+  if (documento.programmingLanguage !== 'python' || documento.kind !== 'pro')
+    throw new Error('fixture')
+  const projeto: PythonProProjectDocument = { ...documento, assets: [] }
   projeto.installedExtensions = [{ ...RAYLIB_3D_EXTENSION, installedAt: projeto.createdAt }]
-  projeto.assets = []
   delete projeto.coverAssetName
   projeto.python.entrypoint = 'main.py'
   projeto.tree = pythonFilesToTree({ 'main.py': 'import cenario\n' })

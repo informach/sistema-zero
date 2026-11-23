@@ -102,13 +102,12 @@ test('em campo, a colisão é gravada sem a matriz e o volume da entidade, e a l
   expect(herdadas.length).toBeGreaterThan(0)
   for (const c of herdadas) expect(c.volume).toBeUndefined()
   const lida = lerAssetDeCena3D(cena)
-  const entidades = new Map(
-    lida.cena.entidades.map((e) => [e.id, e as { matriz?: number[]; volume?: unknown }]),
-  )
+  const entidades = new Map(lida.cena.entidades.map((e) => [e.id, e]))
   for (const c of lida.cena.colisoes) {
     expect(c.matriz).toHaveLength(16)
     const e = c.entidade ? entidades.get(c.entidade) : undefined
     if (e && herdadas.some((h) => h.entidade === c.entidade)) {
+      if (!e.volume) throw new Error('A entidade da colisão herdada precisa de um volume.')
       expect(c.matriz).toEqual(e.matriz!)
       expect(c.volume).toEqual(e.volume)
     }
