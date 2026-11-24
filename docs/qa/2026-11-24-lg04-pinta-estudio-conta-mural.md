@@ -1,6 +1,6 @@
 # LG04 — Pinta, Estúdio, conta e Mural
 
-Em qualificação. Esta candidata ainda não foi integrada nem implantada. O [plano de execução](../plans/2026-11-24-lg04-pinta-estudio-conta-mural.md) contém o percurso e os critérios de aceite.
+Em qualificação em homologação. Produção ainda não recebeu esta entrega. O [plano de execução](../plans/2026-11-24-lg04-pinta-estudio-conta-mural.md) contém o percurso e os critérios de aceite.
 
 ## Comportamento da entrega
 
@@ -18,6 +18,7 @@ A publicação recebe o documento conferido e remove os vínculos privados da bi
 - A confirmação de exclusão da biblioteca não capturava a revisão exibida. Ela passa a guardar perfil, hash e data da revisão; uma atualização em outra aba recusa a confirmação antiga.
 - Uma exclusão durante o primeiro envio poderia deixar uma tentativa antiga livre para recriar o projeto. O cliente agora passa pela exclusão autoritativa mesmo sem uma primeira confirmação local.
 - Em homologação, a confirmação do Pinta recebia HTTP 400 depois de upload e verificação aprovados. O adaptador HTTP entregava um stream de zero bytes, e o BFF recusava a mera presença do stream. Commit e cancelamento passam a conferir os bytes efetivos; qualquer corpo não vazio continua recusado.
+- O botão real “Jogar meu mapa” ainda exigia os campos legados `tilemap`/`scene` e recusava o PNG regional antes de chamar o host. A interface passa a reconhecer o marcador regional, mantendo a admissão integral no destino. A prova pelo botão reproduziu três falhas nos navegadores antes da correção; a rodada seguinte aprovou os 18 cenários. Esse percurso foi acrescentado ao CI obrigatório.
 
 ## Evidências locais
 
@@ -34,6 +35,9 @@ A publicação recebe o documento conferido e remove os vínculos privados da bi
 | Arquivos gerados | Cópias Pro, runtime regional, integração Phaser e perfil da imagem aprovados |
 | Suíte oficial completa do Estúdio | 1.006 arquivos em 182 processos, zero falhas; 783 segundos |
 | SDKs 3D regenerados e contratos do compilador | 112 testes 3D aprovados, dois TODOs preexistentes, zero falhas; mais dois contratos canônicos aprovados |
+| Pinta completo após a correção do botão regional | 3.037 aprovados, 18 condicionais pulados, zero falhas; 37.194 expectativas |
+| Navegadores após a correção do botão regional | 18 aprovados em Chrome, Edge e Chromium; rodada final de 58,3 segundos |
+| Tipos após a correção do botão regional | Pinta, member-shell e Estúdio aprovados; conferências dos SDKs e perfil da imagem aprovadas |
 
 As provas com serviços reais usam banco e bucket exclusivos de QA, com listeners de loopback e processos encerrados pelo próprio teste. A sessão injetada nessa prova não substitui o aceite infantil autenticado em homologação.
 
@@ -55,3 +59,12 @@ Essa prova de imagem passou na primeira candidata. A qualificação adicional de
 Preservar os commits concorrentes de aulas em staging. A candidata de produção parte de main e não incorpora o currículo da outra sessão. A entrega exige CI e plano aprovados, integração também em staging e recibos das fontes efetivamente implantadas.
 
 O retorno operacional deve preservar os objetos selados e as autoridades locais. Um leitor incompatível recusa o projeto antes de obter permissão de escrita; não converter referências regionais para o formato legado como forma de retorno.
+
+## Qualificação hospedada em andamento
+
+- Candidata `6606c563b03f3473579a0585c2c9bff8283b1514`: os 13 jobs de validação do [CI da PR](https://github.com/informach/sistema-zero/actions/runs/45488604088), o plano Railway e a prova de dez mil blocos passaram. A correção posterior do botão exige nova rodada sobre seu próprio commit.
+- Integração em staging `6a0fde4bb7a65baade7dc19b36caec460cc7d750`: [CI e implantação normal aprovados](https://github.com/informach/sistema-zero/actions/runs/45488644607), preservando os commits de aulas da outra sessão.
+- Imagem qualificada `sha256:a65cc06c02251211a1154b2cb96a54b68bc6f195a05d7e07fbbc6973a6c09236`, perfil `98ec9667f1a3b893503d9427317dda4b1fb3c0cbfa665ad9c11c8837df05a8a3`: cinco suítes de imagem aprovadas, mais quatro provas Python sem promover catálogo. Guardas de aulas: cinco provas de navegador e quatro verificações do Farol, incluindo negativos intencionais, aprovadas.
+- Worker de homologação `cfc0f196-0e93-4648-b308-9fd5b7b847bc`: os dois executores existentes ficaram prontos com a imagem qualificada, sem alterar seus limites ou catálogo. Prova autenticada pelo Members `6a0fde4`: compilação e verificação responderam 200 com o perfil esperado.
+- Sessão infantil real de homologação: backup nativo 8 próprio importado pela interface; commit causal do Pinta respondeu 200 e a galeria mostrou o cenário guardado na conta. Importação pelo Estúdio recusou corretamente projeto sem motor; após instalação normal do Jogo 2D, o cenário entrou no projeto próprio de QA. Reabertura em contexto sem dados locais e publicação/atualização ainda estão em aceite.
+- Projeto próprio `01M87ZFYJ5S4ZT64YR0MBCX2FK`: quatro confirmações seladas 200, com revisão e recibo. Um novo contexto, recebendo somente os cookies de autenticação, recuperou o projeto e seu PNG regional pela conta; a interface mostrou `qa-lg04-ilhas` nos materiais e permitiu baixar o projeto. Nenhum IndexedDB, biblioteca ou cache foi copiado entre esses contextos. Isso prova duas sessões isoladas no mesmo computador; não representa teste em um segundo aparelho físico.

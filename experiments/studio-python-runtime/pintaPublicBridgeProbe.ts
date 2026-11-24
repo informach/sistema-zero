@@ -1,8 +1,11 @@
+import { mountPintaPlayButton } from '../../packages/member-shell/qa/pinta-play-button.fixture'
+import { savePintaStudioBundle } from '../../packages/member-shell/src/components/creator/save-pinta-studio-bundle'
 import {
   exportAssetForStudio,
   listGalleryForStudio,
 } from '../../packages/pinta/src/export/studioLibrary'
 import { createRegionPintaPersistence } from '../../packages/pinta/src/state/localRegionPersistence'
+import { setPintaStorageNamespace } from '../../packages/pinta/src/state/persistence'
 import { regionVila } from '../../packages/pinta/src/testing/regionVila'
 import {
   getPersonalAsset,
@@ -16,6 +19,42 @@ import {
   setProjectStorageNamespace,
 } from '../../packages/studio/src/state/projectStorageRuntime'
 import { loadSanitizedProjectById } from '../../packages/studio/src/state/projectStore'
+
+type PlayButtonState = { view: ReturnType<typeof mountPintaPlayButton>; projectId: string | null }
+let playButton: PlayButtonState | null = null
+
+/** The editor's real button, exporter, host library and first project write in a fresh namespace. */
+export async function showPintaPlayButton(namespace: string) {
+  setPintaStorageNamespace(namespace)
+  setProjectStorageNamespace(namespace)
+  const { map, assets } = regionVila()
+  const persistence = createRegionPintaPersistence({ namespace })
+  await persistence.persistAssets(assets)
+  const state: PlayButtonState = {
+    projectId: null,
+    view: mountPintaPlayButton(persistence, {
+      studioOwned: true,
+      async sendGameToStudio(payload) {
+        const saved = await savePintaStudioBundle(payload, namespace)
+        if (!saved.ok) return saved
+        const project = await buildTilemapGameProject(saved.asset)
+        if (!project) throw new Error('The editor must create a regional playable project.')
+        state.projectId = project.id
+        return { ok: true }
+      },
+    }),
+  }
+  playButton = state
+  return { name: map.name }
+}
+
+export async function readPintaPlayButton(namespace: string) {
+  const state = playButton
+  if (!state?.projectId) return null
+  state.view.dispose()
+  playButton = null
+  return showPintaPublicBridge(namespace, state.projectId)
+}
 
 /** Browser qualification through the public export, storage and player boundaries. */
 export async function showPintaPublicBridge(namespace: string, existingId?: string) {

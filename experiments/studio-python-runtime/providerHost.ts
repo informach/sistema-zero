@@ -61,6 +61,12 @@ function get(slot: string) {
   return entry
 }
 const api = {
+  async showPintaPlayButton(namespace: string) {
+    return (await import('./pintaPublicBridgeProbe')).showPintaPlayButton(namespace)
+  },
+  async readPintaPlayButton(namespace: string) {
+    return (await import('./pintaPublicBridgeProbe')).readPintaPlayButton(namespace)
+  },
   async showPintaPublicBridge(
     ...args: Parameters<typeof import('./pintaPublicBridgeProbe').showPintaPublicBridge>
   ) {
