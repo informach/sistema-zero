@@ -22,6 +22,12 @@ for (const audience of ['kids', 'adult'] as const)
       ).json()
       if (!isLearningManifest(authored)) throw Error('Autoria inválida')
       const document = manifestoParaDestino(authored, { courseSlug: slug, lessonSlug: lesson.slug })
+      const expectedChecks = document.sections.map(
+        (section) => section.completion?.projectChecks ?? [],
+      )
+      expect(expectedChecks.flat().map((check) => check.rule.type)).toEqual(
+        expect.arrayContaining(['collectionMemory', 'changedGamePosition']),
+      )
       const request = (action: string, body: unknown) =>
         env.app.handle(
           new Request(`http://localhost/members/admin/lessons/${lessonId}/${action}`, {
@@ -51,9 +57,9 @@ for (const audience of ['kids', 'adult'] as const)
         const ids = draft.document.blocks.map((b) => b.id)
         if (round === 0) firstIds = ids
         else expect(ids).toEqual(firstIds)
-        expect(JSON.stringify(draft)).toContain('collectionMemory')
-        expect(JSON.stringify(draft)).toContain('changedGamePosition')
-        if (n === 2) expect(JSON.stringify(draft)).toContain('jardim-height')
+        expect(
+          draft.document.sections.map((section) => section.completion?.projectChecks ?? []),
+        ).toEqual(expectedChecks)
         expect(env.courses.lessons.find((l) => l.id === lessonId)?.slug).toBe(`aula-${n}`)
       }
     })
