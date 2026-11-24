@@ -1,5 +1,9 @@
 # Publicar um curso a partir do Kids de staging
 
+> O fluxo completo (cadastro no Kids de staging, troca dos vídeos provisórios pelos finais, cópia
+> para o adulto e produção) está em [`cursos-passo-a-passo.md`](cursos-passo-a-passo.md). Este guia
+> detalha a promoção entre ambientes.
+
 ## Fluxo habitual
 
 1. Concluir e publicar o curso e todas as aulas no Kids de staging. Um rascunho diferente do publicado impede a cópia.

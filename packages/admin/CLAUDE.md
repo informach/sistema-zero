@@ -46,6 +46,10 @@ enviada pelo cliente. A exclusão do proxy Next é exata e não dispensa a auten
 Não usar busca textual Vimeo para localizar o marcador: a consulta paginada compara o nome
 exato. O Vimeo normaliza o alias `www`; a comparação da whitelist usa a mesma normalização.
 Runbook: `docs/operations/publicar-cursos.md`. Provas locais não equivalem a deploy.
+**Passo a passo completo** (cadastro no Kids de staging, troca de vídeos com capa e Zappy, adulto e
+produção): `docs/operations/cursos-passo-a-passo.md`; a troca de vídeos é `scripts/cursos/trocar-videos.ts`.
+A base do Zappy sem navegador (`scripts/cursos/base-do-zappy.ts`) roda `extractZappySourceContent` deste
+pacote fora do Next, com `--conditions=react-server`: mantenha essa função sem depender de sessão.
 
 ## Voz na cópia de curso entre públicos (01/11/2026)
 

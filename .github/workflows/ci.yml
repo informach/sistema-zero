@@ -101,7 +101,7 @@ jobs:
         run: bun run --cwd packages/studio-runtime typecheck:promoter
 
       - name: Verificar barreira de manutenção
-        run: bun test scripts/release scripts/ci ./scripts/molda-cenarios-arte.test.ts
+        run: bun test scripts/release scripts/ci scripts/cursos ./scripts/molda-cenarios-arte.test.ts
 
       - name: Auditar dependências da imagem do Studio Pro
         working-directory: packages/studio-runtime

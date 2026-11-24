@@ -1,5 +1,8 @@
 # Copiar um curso pronto do Kids para o adulto
 
+> O fluxo completo do curso está em [`cursos-passo-a-passo.md`](cursos-passo-a-passo.md). Este guia
+> detalha a cópia do Kids para o adulto.
+
 O comando cria o curso adulto ausente ou atualiza o existente, a pedido da equipe. Não mantém sincronização automática. A origem precisa estar publicada e com todas as aulas ativas publicadas. O curso e as aulas do adulto ficam publicados ao final da transação.
 
 ## Conteúdo e identidade
