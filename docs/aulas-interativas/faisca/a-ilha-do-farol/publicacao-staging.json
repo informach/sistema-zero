@@ -265,5 +265,6 @@
     "conserto": "teto 32 no core (a4beb3872) e o await do operador (143640eb4), PR #284 na main (8d87bbff8) e merge b1220ea67 na staging",
     "staging": "Members e Admin publicados em b1220ea67; cópia para o adulto concluída (trabalho d9b8dc8a-80fc-4bc7-a1b9-01bf8558a66f); as vozes geradas nela foram postas nas três aulas do Kids (23 blocos) e as aulas publicadas de novo",
     "producao": "publicada em 24/11/2026. Members, Admin e Kids de produção publicados direto no commit 8d87bbff8 da main (diferença para 3d7c53253: só voz.ts e publish-course.ts, sem migração), porque o workflow Deploy produção recusa o plano de configuração com 6 alterações feitas fora do IaC; essas alterações não foram aplicadas. Promoção Kids (trabalho b1118907-2e36-4e87-b6d6-c2830d48bebb) e cópia para o adulto (61244671-6957-4091-8883-be661c097f5c) concluídas: os dois cursos publicados, 3 aulas, 17 vídeos próprios da produção (nenhum da staging), 23 blocos com voz do Zappy e o PDF na Aula 1."
-  }
+  },
+  "blocosLiberados": "24/11/2026: studioUnlockBlocks do curso Kids de staging com 28 blocos, o inventário blocos.json (blocks); estava vazio"
 }
