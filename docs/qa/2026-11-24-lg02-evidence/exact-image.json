@@ -427,7 +427,243 @@
             }
           ]
         }
-      ]
+      ],
+      "imageProvenance": {
+        "recordedFrom": "Original per-case process receipts retained locally; image identifiers and hashes extracted here. Historical runner environment was not retained.",
+        "cases": [
+          {
+            "name": "function-input",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/function-input/process.json",
+            "processReceiptSha256": "625897016b2d4c0fdd9825ebe8124133e263206493bd2561e080276b40e04a08",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "four-input-lines",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/four-input-lines/process.json",
+            "processReceiptSha256": "afc3984612c87717ce46ea370b5e1cc4e09cbff1d8e8a556cc234c0b72d6e6cb",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "unused-input",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/unused-input/process.json",
+            "processReceiptSha256": "52c1d0992e60b6be7876d476070cb7e747a6f0d0a853f11f4f22cfcc6d440f43",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "extra-input",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/extra-input/process.json",
+            "processReceiptSha256": "14dcc9571b1370f3f72453db6f7ecd69185284ba03333a900a9199100473b1ce",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "stdout-limit",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/stdout-limit/process.json",
+            "processReceiptSha256": "edec46dc5365057f44481de406ec89bd817d1303a8a94b63f8e0a1d0d50e938e",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "network-denied",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/network-denied/process.json",
+            "processReceiptSha256": "a0bb019169a8b60afad1b4a2e846e9ea61cefd1bec6e0717c481a160bdcde71b",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "host-file-denied",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/host-file-denied/process.json",
+            "processReceiptSha256": "bb6c71c04f136c94e66abebd836c649f30ecd1de15cf9fe6ab5d828b81ec2051",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "console-correct",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/console-correct/process.json",
+            "processReceiptSha256": "d8fc4b482870b9d95ec093cb7b1620ffe26186024be3d15766fab6f560630fda",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "console-wrong",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/console-wrong/process.json",
+            "processReceiptSha256": "ff324bd6becc6b3f460cae942a0b36ca407ae0cab0032772fa29c69d23df69ca",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "dead-branch",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/dead-branch/process.json",
+            "processReceiptSha256": "299a42f0e62fd1c0c75c91ee46cc7acb7fca51e2a723bb41c6a847471b636583",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "input",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/input/process.json",
+            "processReceiptSha256": "668c3a0de0d6b55b01a56b7a381d912d941156bdb73956e2b7af0323413330a2",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "exception",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/exception/process.json",
+            "processReceiptSha256": "a41a4844d45a415af7ac9d23082967f130539703ba63b425291c1f2829ebe46e",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "function",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/function/process.json",
+            "processReceiptSha256": "611b9b7e416449f256b2d0b91ae280a4e2b00747e1fef26f7c75ae5e843d8843",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "function-wrong",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/function-wrong/process.json",
+            "processReceiptSha256": "34fbc090d2a9f4720c9b8d14c5df0c323588cfc6ef3cf369ffbdcfd787f98ea4",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "async-function",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/async-function/process.json",
+            "processReceiptSha256": "d649ccd7a97f8552ec3ad0666548c1f11ed749bb5eeefe642820295450f600b6",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "cpu-loop",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/cpu-loop/process.json",
+            "processReceiptSha256": "f9895504fff582d1c43eac87485bdc8ad11edeccf5d3ae446a21dbe1e6f441c7",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "turtle-3",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/turtle-3/process.json",
+            "processReceiptSha256": "715c4c07a89bc8bcc70589f20768454767253be4029929df587e96f827491c95",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "turtle-9",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/turtle-9/process.json",
+            "processReceiptSha256": "6ac98294268c39ee31506bfc11e87874c2f0a11ab478ded1a5a436c5ff3faf53",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "turtle--3",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/turtle--3/process.json",
+            "processReceiptSha256": "4a33bbc6e09dc1a87e52e92259ae7c4956194056088d26bbf941edb08d5ca389",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "turtle-0",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/turtle-0/process.json",
+            "processReceiptSha256": "bece395610112142cf202a45285a0f53005e38e6f1ac5b8547570660a925cd31",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "turtle-click-score",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/turtle-click-score/process.json",
+            "processReceiptSha256": "c0c9acec93bcb94f226a1818c54c02cc5cb4f2c223da1efa43e51e4a53207907",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "turtle-autonomous",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/turtle-autonomous/process.json",
+            "processReceiptSha256": "cf29bc5ad3da3d01234e23c8142012e45d522878c7e1e6c38fb03fe6afec6f2a",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "raylib-2d-3",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/raylib-2d-3/process.json",
+            "processReceiptSha256": "4ed00d670473a7e3f0caf9449f6f953a2f695f23b041f6105418f81f665b1d9a",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "raylib-2d--3",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/raylib-2d--3/process.json",
+            "processReceiptSha256": "d0d301615dadc1337a5ea7501bde34cf27e2a59152a3cf437ec21b8b5a0df66d",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "raylib-2d-0",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/raylib-2d-0/process.json",
+            "processReceiptSha256": "cb4482b6d73fe6d8c1a91ec00971c59e05588bb95af7f0efad3b5a298ef99dbb",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "raylib-3d-3",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/raylib-3d-3/process.json",
+            "processReceiptSha256": "c65e08f36e0bd59bac94abe7bd67e8657cb60d05c83f5742d176709cc7405e64",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "raylib-3d--3",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/raylib-3d--3/process.json",
+            "processReceiptSha256": "9c01dd07e5d19345831fd427c1128e7cd8712ecded7fbd8839cfbc5cf7094117",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "raylib-3d-0",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/raylib-3d-0/process.json",
+            "processReceiptSha256": "6c5086491733efe8c1ea43697e4b863dcdc4ca626fc479262e4fcca8c9125254",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "raylib-click",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/raylib-click/process.json",
+            "processReceiptSha256": "1691c497b2e4c1461c87dc4abae8ecaa54ecc477fd6650282e06171c522761a8",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "raylib-other-module",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/raylib-other-module/process.json",
+            "processReceiptSha256": "9e6d80dfecf3843293a1eba57c1b4d5efcd579618975763e8f99521d6f831368",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "pgzero--3",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/pgzero--3/process.json",
+            "processReceiptSha256": "c8a61c8b7bb0693298e8283f60e7fb96c8ce29a89459d27c9a301a5e3a00c049",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "pgzero-3",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/pgzero-3/process.json",
+            "processReceiptSha256": "fd225a4413265ac5783760a1446debdcc93b452b680dc98bb87914d66ad4e45d",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          },
+          {
+            "name": "pgzero-0",
+            "processReceipt": ".cache/lg02/exact-image/mission-docker/bcf66c6b-b075-4cc5-adc2-80b682ed713e/pgzero-0/process.json",
+            "processReceiptSha256": "1b380096c0c0aa085fe9c4b15964c3d078593e8b303db243f7ceee2347875182",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "imageSelection": "Immutable digest argument in the recorded docker run command"
+          }
+        ]
+      }
     },
     {
       "script": "packages/studio-runtime/tests/python-playtest-smoke.ts",
@@ -455,7 +691,51 @@
           "expected": "failed",
           "exitCode": 0
         }
-      ]
+      ],
+      "imageProvenance": {
+        "reason": "The initial health run did not persist image selection. This subsequent run explicitly pins and verifies the same immutable image; it supplies the health qualification evidence.",
+        "requalification": {
+          "startedAt": "2026-11-24T15:27:05.375Z",
+          "completedAt": "2026-11-24T15:27:34.592Z",
+          "source": "0180e39fdc4717ed3becb42c899e8c837b9fa4fd",
+          "script": "packages/studio-runtime/tests/python-playtest-smoke.ts",
+          "scriptSha256": "0b1c0c9b13710d7c021c55df79bc95fbd98e2d4c4ed0643cdbdc63983b76d456",
+          "command": [
+            "bun",
+            "packages/studio-runtime/tests/python-playtest-smoke.ts",
+            "--docker",
+            "--health"
+          ],
+          "environment": {
+            "STUDIO_PYTHON_TEST_IMAGE": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a"
+          },
+          "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+          "exitCode": 0,
+          "logSha256": "df9b477b677ee977de88a677abf76afb82bb65e052819767d7e9ef82740f1a9b",
+          "cases": [
+            {
+              "name": "health-correct",
+              "expected": "passed",
+              "exitCode": 0
+            },
+            {
+              "name": "health-import-error",
+              "expected": "failed",
+              "exitCode": 0
+            },
+            {
+              "name": "health-cpu-loop",
+              "expected": "failed",
+              "exitCode": 0
+            },
+            {
+              "name": "health-input",
+              "expected": "failed",
+              "exitCode": 0
+            }
+          ]
+        }
+      }
     },
     {
       "script": "packages/studio-runtime/tests/three-objectives-smoke.ts",
@@ -748,7 +1028,148 @@
             }
           ]
         }
-      ]
+      ],
+      "imageProvenance": {
+        "recordedFrom": "Original per-case process receipts retained locally; image identifiers and hashes extracted here. Historical runner environment was not retained.",
+        "cases": [
+          {
+            "name": "blocks",
+            "processReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/blocks/process.json",
+            "processReceiptSha256": "771b506b67339198a883bbcdc09478dd7964633e565c54129565cc1524b35db2",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "summaryReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/blocks/summary.json",
+            "summaryReceiptSha256": "6a27a3a009b7d6615888832431388513c558a29c6bc37e9aecea8d3e89aae0d5"
+          },
+          {
+            "name": "classic-3",
+            "processReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/classic-3/process.json",
+            "processReceiptSha256": "f69f04165e915c763ca9794301272aacad02c33ba1934b03ee7e8b033c0e4a09",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "summaryReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/classic-3/summary.json",
+            "summaryReceiptSha256": "0b7f77688e26401ee36b53b4de83562da92e4de83d6922187769979f4824c47e"
+          },
+          {
+            "name": "classic-9",
+            "processReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/classic-9/process.json",
+            "processReceiptSha256": "45b14d0bc051b00102eb9a860b64452386ad67855b14b41fd48ff6f955792cdc",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "summaryReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/classic-9/summary.json",
+            "summaryReceiptSha256": "44194eee2e93e591a45128fb682ecf2599b41703acf9bd25fa4fdd1c9cbb15ca"
+          },
+          {
+            "name": "classic--3",
+            "processReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/classic--3/process.json",
+            "processReceiptSha256": "74606ef00f29b668f4249f436f376e0a416c60e8c2e96394a07a4ad23c7b0972",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "summaryReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/classic--3/summary.json",
+            "summaryReceiptSha256": "9405a7c21eb9b167fe16e548c605b3802b9d32252ba9b22601d98784566685ae"
+          },
+          {
+            "name": "classic-0",
+            "processReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/classic-0/process.json",
+            "processReceiptSha256": "fffce6fb1acd821077b50cb214961c7933478485f4f1e82511d51c630d70263e",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "summaryReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/classic-0/summary.json",
+            "summaryReceiptSha256": "21bd3ce43c186b8a381bc006528cb989c68226901f7a46465c89fa0200491eea"
+          },
+          {
+            "name": "pro-3",
+            "processReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/pro-3/process.json",
+            "processReceiptSha256": "e6129101e042bc866537e05f6e303c2e578e9abd77bb6322e1cde22b0047586c",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "summaryReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/pro-3/summary.json",
+            "summaryReceiptSha256": "6930a456965d8e10de594f88a7da36f1a795ef3f9f2f44b462934ad87781f5f6"
+          },
+          {
+            "name": "pro-9",
+            "processReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/pro-9/process.json",
+            "processReceiptSha256": "02117c11094baa5b65ba1b61b2f0bb1836e3c75d2b86503f46b03bfcfee40884",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "summaryReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/pro-9/summary.json",
+            "summaryReceiptSha256": "56d93b347a43a92c5708801d95e9599572ebef2acb35ef1c726439c4c8d7015d"
+          },
+          {
+            "name": "pro--3",
+            "processReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/pro--3/process.json",
+            "processReceiptSha256": "1f5672539d80ab2f3a85a9714fc477fb995540ab65078888661543238604e8d4",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "summaryReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/pro--3/summary.json",
+            "summaryReceiptSha256": "0d7c82c4a00ee2dedf964b6c15a4c1f58635f68d9e62d5ea1633429e1fbd8162"
+          },
+          {
+            "name": "pro-0",
+            "processReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/pro-0/process.json",
+            "processReceiptSha256": "fe927fb9a0801f68fc5d8a355d2a671a55b1f29717dd5649e4818a64562693b4",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "summaryReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/pro-0/summary.json",
+            "summaryReceiptSha256": "338e1fc9ce7ca3269529a93979b0d0a97d63af6899ffc2ea9603074ff6d0d77b"
+          },
+          {
+            "name": "pro-no-export",
+            "processReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/pro-no-export/process.json",
+            "processReceiptSha256": "31d7329a7af3b69a4fd45346de4ab8e593c2979e84058bc96f95b6c2c7107dc2",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "summaryReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/pro-no-export/summary.json",
+            "summaryReceiptSha256": "8b65ea6855b59a2a1a40509cfd47cc00bb55093fd311df7a1c88e04f28debf46"
+          },
+          {
+            "name": "classic-x",
+            "processReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/classic-x/process.json",
+            "processReceiptSha256": "7425afc773a136183fe02f21af4916c7640a7d8ff7d2a2014f1b316e270dde6e",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "summaryReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/classic-x/summary.json",
+            "summaryReceiptSha256": "9bf6a6c633ef9dfefa2b2779876de3eff901731a0761014cbeafb4ab0b137d41"
+          },
+          {
+            "name": "classic-y",
+            "processReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/classic-y/process.json",
+            "processReceiptSha256": "f1bc867b3d33ceced3d3d29f895dc23576e26794444694b3480bdc742b414b79",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "summaryReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/classic-y/summary.json",
+            "summaryReceiptSha256": "bad299fd68c35b38927bffa0d9eb85b3d464c37163989a24c77654dd757861b0"
+          },
+          {
+            "name": "pro-x",
+            "processReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/pro-x/process.json",
+            "processReceiptSha256": "053c96af11331ce894fc5d612051591a173c56ac14bf61ac01c9b71ef90675d4",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "summaryReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/pro-x/summary.json",
+            "summaryReceiptSha256": "da5f1647b067ba988e8e2b975826d1d27366e090b61fa24cebf2d7da2bfb169a"
+          },
+          {
+            "name": "pro-y",
+            "processReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/pro-y/process.json",
+            "processReceiptSha256": "f4882c687aa0faf70b195cc50b8162b32c88f968f367c678b44412e20b602474",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "summaryReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/pro-y/summary.json",
+            "summaryReceiptSha256": "48b80821cefbd6c4a425cdb353ba3a2dcdbf1bcc546a1ef481613568cd847758"
+          },
+          {
+            "name": "pro-wrong-return",
+            "processReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/pro-wrong-return/process.json",
+            "processReceiptSha256": "69d7f6138ae72a5c9e333060584b2844053c42383ba0798ac9775d3219fb9bd8",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "summaryReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/pro-wrong-return/summary.json",
+            "summaryReceiptSha256": "b76cc662e992a37ce68f00f17d6b0a4995cd8a223ffda9c48208b442b3e95175"
+          },
+          {
+            "name": "pro-error",
+            "processReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/pro-error/process.json",
+            "processReceiptSha256": "de28a9ce32b26de8caede82835a752137b4da5c11acbf3f25585f22ceeef1e51",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "summaryReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/pro-error/summary.json",
+            "summaryReceiptSha256": "b20ff40616a70af85ae00442ad8aedfbb4c3c2fd57b806a6568ebd7dc2b9c4f4"
+          },
+          {
+            "name": "pro-network",
+            "processReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/pro-network/process.json",
+            "processReceiptSha256": "dbcd12089bd06c1ed2b325bd19761243c3e597759545273368b427aaedbaecf3",
+            "resolvedImageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+            "summaryReceipt": ".cache/lg02/exact-image/three-objectives/cea6b854-657b-4970-af2e-bfdf32a24e0e/pro-network/summary.json",
+            "summaryReceiptSha256": "2168c0385b22542549dc6a399e8979ca13429a30d70d0c87901fff4308a9fe90"
+          }
+        ]
+      }
     }
   ]
 }
